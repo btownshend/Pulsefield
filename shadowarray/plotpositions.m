@@ -11,5 +11,3 @@ for l=1:size(lp,1)
   plot(lp(l,1),lp(l,2),'r.','MarkerSize',1);
 end
 axis equal
-axis ij
-

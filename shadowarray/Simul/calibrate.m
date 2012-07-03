@@ -2,70 +2,77 @@
 % Use spos(c,l) - sensor position (linear) of led l in camera c, null if not visible
 % Normalize to distance between LED's
 % Unknowns are:
-%  cp(ncameras,2) - camera positions
-%  cd(ncameras,2) - camera direction
+%  cp(ncamera,2) - camera positions
+%  cd(ncamera,2) - camera direction
 %  lp(nled, 2) - led positions
 % Data is:
-%  spos(ncameras,led) - position of LED on sensor in pixels
-%  sp2ang(sensorpos) - mapping from sensor position in pixels to angle relative to cd()
+%  spos(ncamera,nled) - position of LED on sensor in pixels
+%  p - camera, setup parameters
 % Approach:
 %  initial estimate of all variables
-%  fix cp,cd, find optimal position of each lp
-%  fix lp, find optimal positions of each cp, cd 
+%  build linear system relating changes in positions of each variable needed to correct observed sensor angles
+%  solve system
 %  repeat until stable
-function [cp,cd,lp,espos]=calibrate4(spos,p,cpos,cdir,lpos)
+% Pass in true cpos, cdir, lpos to allow tracking of errors during simulation
+function calib=calibrate(p,layout,spos,doplot)
+if nargin<4
+  doplot=false;
+end
 ncamera=size(spos,1);
 nled=size(spos,2);
-%nled=50;
 
 % Convert spos to sa (angles)
-[spos,sa]=calcspos(cpos,cdir,lpos,p,1);
+for c=1:size(spos,1)
+  sa(c,:)=spos2angle(spos(c,:),p.camera(c));
+end
+
 % Distort lens a bit
 sa=sa*1.00;
 
 % initialize camera positions randomly offset from actual ones with 5cm stdev
-cp=cpos+rand(size(cpos))*.1*p.scale;
+cp=layout.cpos+rand(size(layout.cpos))*.0;
 % But fix first 2 cameras to eliminate scale/rotation of frame of reference variation
-cp(1:2,:)=cpos(1:2,:);
+cp(1:2,:)=layout.cpos(1:2,:);
 
-cd=cdir+rand(size(cdir))*.0;
+cd=layout.cdir+rand(size(layout.cdir))*.01;
 % normalize direction vectors
 for i=1:ncamera
   cd(i,:)=cd(i,:)/norm(cd(i,:));
 end
 
 % initialize LED positions randomly offset from actual ones with 1cm stdev
-lp=lpos+randn(size(lpos))*.0*p.scale;
+lp=layout.lpos+randn(size(layout.lpos))*.0;
 
-doplot=1;
 errtarget=1e-10;
 
 % Plot vectors from actual to estimated
 if doplot
-  figure(7);
+  setfig('calibrate.initial');
   clf;
   hold on;
   for c=1:ncamera
-    plot([cp(c,1),cpos(c,1)],[cp(c,2),cpos(c,2)],'r');
+    plot([cp(c,1),layout.cpos(c,1)],[cp(c,2),layout.cpos(c,2)],'r');
     plot(cp(c,1)+50*[0,cd(c,1)],cp(c,2)+50*[0,cd(c,2)],'b');
-    plot(cpos(c,1)+50*[0,cdir(c,1)],cpos(c,2)+50*[0,cdir(c,2)],'m');
+    plot(layout.cpos(c,1)+50*[0,layout.cdir(c,1)],layout.cpos(c,2)+50*[0,layout.cdir(c,2)],'m');
   end
   for l=1:10:nled
-    plot([lp(l,1),lpos(l,1)],[lp(l,2),lpos(l,2)],'g');
+    plot([lp(l,1),layout.lpos(l,1)],[lp(l,2),layout.lpos(l,2)],'g');
   end
-  title(sprintf('Actual to estimated - iniital\n'));
+  title(sprintf('Actual to estimated - initial\n'));
   pause(0);
 end
 
 % Find delta for each component to move to observed spos
 % All of the dlp,dcp,dcd give the avg amount to move to fix spos by 1 pixel
-[espos,esa]=calcspos(cp,cd,lp,p,1,1);
+calib=layout;
+calib.cpos=cp; calib.cdir=cd; calib.lpos=lp;
+[espos,esa]=calcspos(p,calib,1,1);
 sel=isfinite(spos(:)+espos(:));
 serr=norm(spos(sel)-espos(sel));
 lastserr=serr;
 
 % Check error
-fprintf('Iter 0: RMS error in lpos=%f, cpos=%f, cdir=%f, spos=%f\n', norm(lpos-lp), norm(cpos-cp), norm(cdir-cd),serr);
+fprintf('Iter 0: RMS error in layout.lpos=%f, layout.cpos=%f, layout.cdir=%f, spos=%f\n', norm(layout.lpos-lp), norm(layout.cpos-cp), norm(layout.cdir-cd),serr);
 
 rmse=[];
 
@@ -106,13 +113,13 @@ for iter=1:500
   end
   % Fix location of 2 cameras to lock rotation/scaling down
   A(npts+1,1)=1;
-  b(npts+1)=cpos(1,1)-cp(1,1);
+  b(npts+1)=layout.cpos(1,1)-cp(1,1);
   A(npts+2,2)=1;
-  b(npts+2)=cpos(1,2)-cp(1,2);
+  b(npts+2)=layout.cpos(1,2)-cp(1,2);
   A(npts+3,3)=1;
-  b(npts+3)=cpos(2,1)-cp(2,1);
+  b(npts+3)=layout.cpos(2,1)-cp(2,1);
   A(npts+4,4)=1;
-  b(npts+4)=cpos(2,2)-cp(2,2);
+  b(npts+4)=layout.cpos(2,2)-cp(2,2);
   npts=npts+4;
   
   A=A(1:npts,:); b=b(1:npts,1);
@@ -124,12 +131,13 @@ for iter=1:500
   dlp=[x(ncamera*3+1:2:end),x(ncamera*3+2:2:end)];
   dcd= [cos(dga).*cd(:,1)-sin(dga).*cd(:,2), sin(dga).*cd(:,1)+cos(dga).*cd(:,2)] - cd;
 
-  k=[1 1 1];
+  k=[0 1 0];
   % Update all variables by k*delta
-  while max(k)>1e-6
+  while max(k)>1e-10
     % Find delta for each component to move to observed spos
     % All of the dlp,dcp,dcd give the avg amount to move to fix spos by 1 pixel
-    [espos,esa]=calcspos(cp+k(1)*dcp,cd+k(2)*dcd,lp+k(3)*dlp,p,1,1);
+    calib.cpos=cp+k(1)*dcp; calib.cdir=cd+k(2)*dcd; calib.lpos=lp+k(3)*dlp;
+    [espos,esa]=calcspos(p,calib,1,1);
     sel=isfinite(spos(:)+espos(:));
     serr=norm(spos(sel)-espos(sel));
     if serr<lastserr
@@ -140,10 +148,10 @@ for iter=1:500
   end
 
   % Check error
-  rmse(iter,1:3)=[norm(lpos-lp)/sqrt(length(lp(:))), norm(cpos-cp)/sqrt(length(cp(:))), norm(cdir-cd)/sqrt(length(cd(:)))];
+  rmse(iter,1:3)=[norm(layout.lpos-lp)/sqrt(length(lp(:))), norm(layout.cpos-cp)/sqrt(length(cp(:))), norm(layout.cdir-cd)/sqrt(length(cd(:)))];
   rmse(iter,4)= serr;
 
-  fprintf('Iter %d: RMS error in lpos=%f, cpos=%f, cdir=%f, spos=%f\n', iter, rmse(iter,:));
+  fprintf('Iter %d: RMS error in layout.lpos=%f, cpos=%f, layout.cdir=%f, spos=%f\n', iter, rmse(iter,:));
   if serr>lastserr
     fprintf('Divergence!\n');
     break;
@@ -159,97 +167,78 @@ for iter=1:500
   end
 end
 
-% Rescale and center
-for j=1:0
-  refcenter=mean(lpos);
-  refsz=mean(abs(lpos(:,1)-refcenter(1))+abs(lpos(:,2)-refcenter(2)));
-  refangle=mean(unwrap(atan2(lpos(:,2)-refcenter(2),lpos(:,1)-refcenter(1))));
-  center=mean(lp);
-  sz=mean(abs(lp(:,1)-center(1))+abs(lp(:,2)-center(2)));
-  angle=mean(unwrap(atan2(lp(:,2)-center(2),lp(:,1)-center(1))));
-  adjangle=-(refangle-angle);
-  fprintf('Scaling by 1+%.2g, offset by (%.4f,%.4f), rotate by %.4f degrees\n', refsz/sz-1, center-refcenter, adjangle*180/pi);
-  lp(:,1)=(lp(:,1)-center(1))*cos( adjangle)+(lp(:,2)-center(2))*sin(adjangle);
-  lp(:,2)=(lp(:,1)-center(1))*sin(-adjangle)+(lp(:,2)-center(2))*cos(adjangle);
-  cp(:,1)=(cp(:,1)-center(1))*cos( adjangle)+(cp(:,2)-center(2))*sin(adjangle);
-  cp(:,2)=(cp(:,1)-center(1))*sin(-adjangle)+(cp(:,2)-center(2))*cos(adjangle);
-  cd(:,1)=cd(:,1)*cos( adjangle)+cd(:,2)*sin(adjangle);
-  cd(:,2)=cd(:,1)*sin(-adjangle)+cd(:,2)*cos(adjangle);
-  for k=1:2
-    lp(:,k)=lp(:,k)*refsz/sz + refcenter(k);
-    cp(:,k)=cp(:,k)*refsz/sz + refcenter(k);
-  end
-end
-rmse(end+1,1:3)=[norm(lpos-lp)/sqrt(length(lp(:))), norm(cpos-cp)/sqrt(length(cp(:))), norm(cdir-cd)/sqrt(length(cd(:)))];
-rmse(end,4)= serr;
-
 if doplot
   % Plot all points and delta
-  figure(8);
+  setfig('calibrate.deltas');
   clf;
   hold on;
 
   for c=1:ncamera
     plot(cp(c,1)+[0,dcp(c,1)],cp(c,2)+[0,dcp(c,2)],'g');
     plot(cp(c,1),cp(c,2),'go');
-    plot(cpos(c,1),cpos(c,2),'gx');
+    plot(layout.cpos(c,1),layout.cpos(c,2),'gx');
   end
   for l=1:20:nled
     plot(lp(l,1)+[0,dlp(l,1)],lp(l,2)+[0,dlp(l,2)],'r');
     plot(lp(l,1),lp(l,2),'ro');
-    plot(lpos(l,1),lpos(l,2),'rx');
+    plot(layout.lpos(l,1),layout.lpos(l,2),'rx');
   end
-
+  title('calibrate.deltas');
+  
   % Plot vectors from actual to estimated
-  figure(9);
+  setfig('calibrate.estimates');
   clf;
   hold on;
   for c=1:ncamera
-    plot([cp(c,1),cpos(c,1)],[cp(c,2),cpos(c,2)],'r');
-    plot(cp(c,1)+50*[0,cd(c,1)],cp(c,2)+50*[0,cd(c,2)],'b');
-    plot(cpos(c,1)+50*[0,cdir(c,1)],cpos(c,2)+50*[0,cdir(c,2)],'m');
+    dirlen=0.1;	% Length of direction vectors to draw (in meters)
+    plot([cp(c,1),layout.cpos(c,1)],[cp(c,2),layout.cpos(c,2)],'r');
+    plot(cp(c,1)+dirlen*[0,cd(c,1)],cp(c,2)+dirlen*[0,cd(c,2)],'b');
+    plot(layout.cpos(c,1)+dirlen*[0,layout.cdir(c,1)],layout.cpos(c,2)+dirlen*[0,layout.cdir(c,2)],'m');
   end
   for l=1:10:nled
-    plot([lp(l,1),lpos(l,1)],[lp(l,2),lpos(l,2)],'g');
+    plot([lp(l,1),layout.lpos(l,1)],[lp(l,2),layout.lpos(l,2)],'g');
   end
   title(sprintf('Actual to estimated, iteration %d\n', iter));
 
-  figure(10);
+  setfig('calibrate.rmse');
   semilogy(rmse,'-');
   xlabel('Iteration');
   ylabel('RMSE');
   legend('lpos','cpos','cdir','spos');
-
-  figure(11);
+  title('RMSE');
+  
+  setfig('calibrate.sensorerr');
   clf;
   plot(espos'-spos');
   xlabel('LED');
   ylabel('Sensor position error (pixel)');
   title(sprintf('Iteration %d',iter));
   
-  figure(12);
+  setfig('calibrate.lederr');
   clf;
   subplot(211);
-  plot((lp(:,1)-lpos(:,1))/p.scale*100,'.','MarkerSize',1);
+  plot((lp(:,1)-layout.lpos(:,1))*100,'.','MarkerSize',1);
   title('X Position error for LEDs');
   xlabel('LED');
   ylabel('Error (cm)');
   subplot(212);
-  plot((lp(:,2)-lpos(:,2))/p.scale*100,'.','MarkerSize',1);
+  plot((lp(:,2)-layout.lpos(:,2))*100,'.','MarkerSize',1);
   title('Y Position error for LEDs');
   xlabel('LED');
   ylabel('Error (cm)');
 
-  figure(13);
+  setfig('calibrate.camerr');
   clf;
   subplot(211);
-  plot((cp(:,1)-cpos(:,1))/p.scale*100,'o');
+  plot((cp(:,1)-layout.cpos(:,1))*100,'o');
   title('X Position error for cameras');
   xlabel('Camera');
   ylabel('Error (cm)');
   subplot(212);
-  plot((cp(:,2)-cpos(:,2))/p.scale*100,'o');
+  plot((cp(:,2)-layout.cpos(:,2))*100,'o');
   title('Y Position error for cameras');
   xlabel('Camera');
   ylabel('Error (cm)');
 end
+calib=layout;
+calib.cpos=cp; calib.cdir=cd; calib.lpos=lp;
