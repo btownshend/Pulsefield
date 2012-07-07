@@ -51,9 +51,31 @@ if ~isfield(p.camera(1),'pixcalib')
   end
 end
 
-porig=p;
-layoutorig=layout;
+if ~isfield(p,'crosstalk')
+  disp('Crosstalk calculation');
+  p.crosstalk=crosstalk(p);
+end
+
+% Refine position of cameras
+% Need to physically block cameras for this...
+% Instead use prior calibration
+cposcalib=[ 1.0361   -2.2656
+            -1.3310   -2.1188
+            -1.3218    2.1082
+            1.0443    2.2606];
+if length(cpos)==4 && max(max(abs(cposcalib-layout.cpos)))<0.1
+  fprintf('Forcing camera positions to previously calibrated values\n')
+  layout.cpos=cposcalib;
+else
+  %layout.cpos=locatecameras();
+  fprintf('*** Should run locatecameras()\n');
+end
+
+% Use the layout and the pixcalibration to update the anglemaps and the camera cdir
 [p,layout]=updateanglemap(p,layout);
+
+% Could also adjust positions of LEDs based on pixel calibration, but this doesn't work yet
+%adjpos(p,layout)
 
 % Add ray image to structure (rays from each camera to each LED) to speed up target blocking calculation (uses true coords)
 if ~exist('rays')
@@ -62,12 +84,15 @@ if ~exist('rays')
 end
 
 disp('Measuring');
-[v,lev]=getvisible(p,doplot>1);
+vis=getvisible(p,doplot>1);
+if doplot>1
+  plotvisible(p,vis);
+end
 
 % Analyze data to estimate position of targets using layout
-[possible,tgtestimate]=analyze(p,layout,v,rays,doplot);
+[possible,tgtestimate]=analyze(p,layout,vis.v,rays,doplot);
 
-
-
-
-
+% Run recording
+recvis=recordvis(p,layout,rays,5);
+recanalyze(recvis); % Analyze whole recording to get tracking
+recanalyze(recvis,2);   % Analyze specific sample

@@ -13,7 +13,7 @@ if exist('p')==0
 
   %  layout=layoutsquare(p, doplot);
   %  layout=layoutspiral(p,doplot);
-  layout=layoutpolygon(6,ncamera,529,doplot);
+  layout=layoutpolygon(6,ncamera,numled(),doplot);
   % layout=layoutlinear(p,100,doplot);
 
   % Add ray image to structure (rays from each camera to each LED) to speed up target blocking calculation (uses true coords)

@@ -9,6 +9,7 @@ DEBUG=false;
 nrpt=1;
 nled=numled();
 nbits=ceil(log2(nled));
+minpixels=5;   % Minimum number of active pixels to accept an LED
 if nargin<2 || isempty(im)
   s1=arduino_ip();
   tic;
@@ -65,15 +66,16 @@ if nargin<2 || isempty(im)
 %          im{k,j,p,iid}=imtmp.im;
 %        end
       end
-      % Now clear them all
-      c=setled(s1,-1,[0,0,0],0);
-      awrite(s1,c);
-      nsent(p)=nsent(p)+length(c);
-      show(s1);
-      sync(s1);
-      nsent(p)=nsent(p)+3;  % For show+sync
       nset=nset+1;
     end
+    % Now clear them all
+    c=setled(s1,-1,[0,0,0],0);
+    awrite(s1,c);
+    nsent(p)=nsent(p)+length(c);
+    show(s1);
+    sync(s1);
+    nsent(p)=nsent(p)+3;  % For show+sync
+
     nrcvd(p)=getnumrcvd(s1);
     nsent(p)=nsent(p)+1;  % For getnumrcvd() cmd
 %%    fprintf('Iteration %d, sent %d, Arduino received %d\n', p, nsent(p), nrcvd(p));
@@ -175,6 +177,7 @@ for iid=1:length(ids)
   yany=any(imat,2);
   roi=[find(xany,1),find(xany,1,'last'),find(yany,1),find(yany,1,'last')];
   imatroi=imat(roi(3):roi(4),roi(1):roi(2));
+  fprintf('Size(imatroi(%d))=%d %d; roi=%d %d %d %d\n', iid,size(imatroi),roi);
   notvis=[];
   for i=1:length(sainfo.led)
     ledid=sainfo.led(i).id;
@@ -190,18 +193,26 @@ for iid=1:length(ids)
       calib(i).diameter=nan;
     else
       [maxarea,mpos]=max([stats.Area]);
-      minarea=maxarea/2;
-      calib(i).pos=stats(mpos).Centroid;
-      calib(i).diameter=stats(mpos).EquivDiameter;
-      calib(i).pixelList=stats(mpos).PixelList;
-      calib(i).pixelList(:,1)=calib(i).pixelList(:,1)+roi(1)-1;
-      calib(i).pixelList(:,2)=calib(i).pixelList(:,2)+roi(3)-1;
-      indices=sub2ind(size(zd{1}),calib(i).pixelList(:,2),calib(i).pixelList(:,1));
-      calib(i).difftotal=sum(abs(zd{1}(indices)));
-      for j=1:length(stats)
-        if j~=mpos && stats(j).Area >= minarea
-          fprintf('LED %3d is also visible to camera %d at (%4.0f,%4.0f) in addition to (%4.0f,%4.0f), distance=%.1f\n',...
-                  ledid,id,stats(j).Centroid,stats(mpos).Centroid,norm(stats(j).Centroid-stats(mpos).Centroid));
+      if size(stats(mpos).PixelList,1)<minpixels
+        notvis=[notvis,ledid];
+        calib(i).pos=[nan,nan];
+        calib(i).diameter=nan;
+        fprintf('LED %3d is only visible to camera %d at %d pixels; ignoring.\n',...
+                    ledid,id,size(stats(mpos).PixelList,1));
+      else
+        minarea=maxarea/2;
+        calib(i).pos=stats(mpos).Centroid;
+        calib(i).diameter=stats(mpos).EquivDiameter;
+        calib(i).pixelList=stats(mpos).PixelList;
+        % Compute indices of pixels in cropped images
+        calib(i).indices=sub2ind(size(imatroi),calib(i).pixelList(:,2),calib(i).pixelList(:,1));
+        calib(i).pixelList(:,1)=calib(i).pixelList(:,1)+roi(1)-1;
+        calib(i).pixelList(:,2)=calib(i).pixelList(:,2)+roi(3)-1;
+        for j=1:length(stats)
+          if j~=mpos && stats(j).Area >= minarea
+            fprintf('LED %3d is also visible to camera %d at (%4.0f,%4.0f) in addition to (%4.0f,%4.0f), distance=%.1f\n',...
+                    ledid,id,stats(j).Centroid,stats(mpos).Centroid,norm(stats(j).Centroid-stats(mpos).Centroid));
+          end
         end
       end
     end
@@ -234,4 +245,28 @@ for iid=1:length(ids)
   % Make divisible by 32 for camera
   sainfo.camera(iid).roi([1,3])=floor((sainfo.camera(iid).roi([1,3])-1)/32)*32+1;
   sainfo.camera(iid).roi([2,4])=ceil((sainfo.camera(iid).roi([2,4])-1)/32)*32+1;
+
 end % iid
+
+% Setup valid flag and indices from pixelList
+for iid=1:length(sainfo.camera)
+  roi=sainfo.camera(iid).roi
+  for i=1:length(sainfo.camera(iid).pixcalib)
+    if isfinite(sainfo.camera(iid).pixcalib(i).diameter)
+      pixelList=sainfo.camera(iid).pixcalib(i).pixelList;
+      pixelList(:,1)=pixelList(:,1)-roi(1)+1;
+      pixelList(:,2)=pixelList(:,2)-roi(3)+1;
+      % Setup indices from pixellists
+      sainfo.camera(iid).pixcalib(i).indices=...
+          sub2ind([roi(4)-roi(3),roi(2)-roi(1)],pixelList(:,2),pixelList(:,1));
+      sainfo.camera(iid).pixcalib(i).rgbindices=[...
+          sub2ind([roi(4)-roi(3),roi(2)-roi(1),3],pixelList(:,2),pixelList(:,1),1*ones(size(pixelList,1),1));...
+          sub2ind([roi(4)-roi(3),roi(2)-roi(1),3],pixelList(:,2),pixelList(:,1),2*ones(size(pixelList,1),1));...
+          sub2ind([roi(4)-roi(3),roi(2)-roi(1),3],pixelList(:,2),pixelList(:,1),3*ones(size(pixelList,1),1))]
+      % Flag for quick decisions
+     sainfo.camera(iid).pixcalib(i).valid = true;
+    else
+     sainfo.camera(iid).pixcalib(i).valid = false;
+    end
+  end
+end

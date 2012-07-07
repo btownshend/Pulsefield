@@ -6,18 +6,21 @@ if nargin<4
   doplot=0;
 end
 % Work in meters
-if nargin<3 || isempty(nleds)
-  ledspacing=1/32;
-else
-  ledspacing=nan;
-end
 inchpermeter=39.3700787;
 feetpermeter=inchpermeter/12;
 conlen=(1+1/16)/inchpermeter;   % Length that connectors add to legs
 leglen=96.5/inchpermeter+2*conlen;
 strutlength=4/feetpermeter;
-entrylength=4/feetpermeter+2*conlen;
+entrylength=conlen+4/feetpermeter;  % First LED is ledspacing(1) in from the end of 4' member
 opening=2/feetpermeter;   % 24" opening
+
+% Spacing between LED and prior one (including post-space after last one)
+ledspacing=1/32*ones(1,numled());   % May be overridden later by setting of nleds
+% Extra gaps at end of each strip
+firstleds=cumsum(numled(1:3));
+ledspacing(firstleds)=[6,5.6,5.9]/100;  
+ledspacing(1)=0.5/inchpermeter;  % First LED inset from end of 4' member by 0.5in
+ledspacing(end+1)=ledspacing(1);  % Assume same space after last LED
 
 % Angle subtended by each 8' leg
 legtheta=2*pi*(leglen*nlegs)/(leglen*nlegs+opening)/nlegs;
@@ -63,7 +66,7 @@ ledlength=sum(sqrt(dled(:,1).^2+dled(:,2).^2));
 fprintf('Total LED length = %.1fm\n', ledlength);
 
 % Camera positions
-camera=[];
+cpos=[];
 cdir=[];
 outercameras=1:floor(ncameras/2);
 cvertices=unique([2+outercameras,size(pos,1)-outercameras-1]);
@@ -82,34 +85,40 @@ if length(cvertices)~=ncameras
   fprintf('Only able to place %d cameras\n',length(cvertices));
 end
 for i=cvertices
-  camera(end+1,:)=pos(i,:);
+  cpos(end+1,:)=pos(i,:);
   cdir(end+1,:)=-pos(i,:)/norm(pos(i,:));  % Directed towards center
-%  fprintf('Placed camera at vertex %d (%.1f,%.1f)\n', i, camera(end,:));
+%  fprintf('Placed camera at vertex %d (%.1f,%.1f)\n', i, cpos(end,:));
 end
-  
+
+
 % LED positions
-if isnan(ledspacing)
-  ledspacing=ledlength/nleds;
-  fprintf('Using LED spacing of %.2f cm (nominal = %.2f) for %d LEDs\n',ledspacing*100,100/32,nleds);
+if nargin>=3 && ~isempty(nleds)
+  rescale=ledlength/sum(ledspacing);
+  fprintf('Rescaling led spacing by %.3f for %d LEDs\n',rescale,nleds);
+  ledspacing=ledspacing*rescale;
 end
 
 seg=1;
-lpos=[];
-ldir=[];
+lpos=nan(nleds,2);
+ldir=nan(nleds,2);
   
-offset=ledspacing/2;   % Initial LED
+offset=ledspacing(1);   % Initial LED
+lnum=1;
 for seg=1:size(ledcorners,1)-1
   v=ledcorners(seg+1,:)-ledcorners(seg,:);
   seglen=norm(v);
-  segpos=offset:ledspacing:seglen;
   v=v/seglen;
-  ind=size(lpos,1);
-  lpos(ind+1:ind+length(segpos),:)=[ledcorners(seg,1)+segpos*v(1);ledcorners(seg,2)+segpos*v(2)]';
-  ldir(ind+1:ind+length(segpos),1)=v(2);
-  ldir(ind+1:ind+length(segpos),2)=-v(1);
-  offset=segpos(end)+ledspacing-seglen;
+  while offset<=seglen && lnum<=nleds
+    lpos(lnum,:)=ledcorners(seg,:)+v*offset;
+    ldir(lnum,:)=[v(2),-v(1)];
+    lnum=lnum+1;
+    offset=offset+ledspacing(lnum);
+  end
+  offset=offset-seglen;
 end
-
+if size(lpos,1)~=numled()
+  error('Placed %d LEDs instead of expected %d', size(lpos,1),numled());
+end
 if doplot
   setfig('layoutpolygon');
   clf;
@@ -123,8 +132,8 @@ if doplot
   end
   labels{2}='LED struts';
   % Cameras
-  for i=1:size(camera,1)
-    h(3)=plot(camera(i,1),camera(i,2),'ko');
+  for i=1:size(cpos,1)
+    h(3)=plot(cpos(i,1),cpos(i,2),'ko');
   end
   labels{3}='Cameras';
 
@@ -141,5 +150,8 @@ if doplot
   pause(0);
 end
 
+active=ledcorners;
+% At entry use intersection of camera 2,3 sightlines to last leds
+active(end+1,:)=lineintersect(cpos(3,:),lpos(1,:),cpos(2,:),lpos(end,:));
 % Setup return variables
-layout=struct('cpos',camera,'cdir',cdir,'lpos',lpos,'ldir',ldir,'active',ledcorners,'pos',pos);
+layout=struct('cpos',cpos,'cdir',cdir,'lpos',lpos,'ldir',ldir,'active',active,'pos',pos);

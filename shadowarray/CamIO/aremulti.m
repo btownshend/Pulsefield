@@ -4,6 +4,7 @@
 function im=aremulti(id,roi,plot)
 
 p.captstart=now;
+cmd='';
 for i=1:length(id)
   url=sprintf('http://192.168.0.%d/image?res=full&quality=21&doublescan=0',70+id(i));
   if nargin<2 || isempty(roi{i})
@@ -11,30 +12,11 @@ for i=1:length(id)
   else
     url=[url,sprintf('&x0=%d&x1=%d&y0=%d&y1=%d',roi{i}-1)];
   end
-  cmd=sprintf('curl -s ''%s'' >/tmp/im%d.jpg &', url,id(i));
-  system(cmd);
+  cmd=[cmd,sprintf('curl -s ''%s'' >/tmp/im%d.jpg &', url,id(i))];
 end
-p.captend=now;
-lbytes=zeros(1,length(id));
-while true
-  changed=0;
-  for i=1:length(id)
-    fname=sprintf('/tmp/im%d.jpg',id(i));
-    d=dir(fname);
-    fprintf('%6d ',d(1).bytes);
-    if d(1).bytes>lbytes(i) || d(1).bytes==0
-      changed=1;
-      lbytes(i)=d(1).bytes;
-    end
-  end
-  fprintf('\n');
-  if ~changed
-    break;
-  end
-  pause(0.5);
-end
-fprintf('Files completed after %.3f sec\n',(now-p.captend)*24*3600);
-im={};
+cmd=[cmd,' wait'];
+system(cmd);
+im=cell(1,length(id));
 for i=1:length(id)
   fname=sprintf('/tmp/im%d.jpg',id(i));
   try

@@ -20,6 +20,7 @@ if nargin<4
 end
 ncamera=size(spos,1);
 nled=size(spos,2);
+dirlen=0.1;	% Length of direction vectors to draw (in meters)
 
 % Convert spos to sa (angles)
 for c=1:size(spos,1)
@@ -34,7 +35,7 @@ cp=layout.cpos+rand(size(layout.cpos))*.0;
 % But fix first 2 cameras to eliminate scale/rotation of frame of reference variation
 cp(1:2,:)=layout.cpos(1:2,:);
 
-cd=layout.cdir+rand(size(layout.cdir))*.01;
+cd=layout.cdir+rand(size(layout.cdir))*.0;
 % normalize direction vectors
 for i=1:ncamera
   cd(i,:)=cd(i,:)/norm(cd(i,:));
@@ -52,8 +53,8 @@ if doplot
   hold on;
   for c=1:ncamera
     plot([cp(c,1),layout.cpos(c,1)],[cp(c,2),layout.cpos(c,2)],'r');
-    plot(cp(c,1)+50*[0,cd(c,1)],cp(c,2)+50*[0,cd(c,2)],'b');
-    plot(layout.cpos(c,1)+50*[0,layout.cdir(c,1)],layout.cpos(c,2)+50*[0,layout.cdir(c,2)],'m');
+    plot(cp(c,1)+dirlen*[0,cd(c,1)],cp(c,2)+dirlen*[0,cd(c,2)],'b');
+    plot(layout.cpos(c,1)+dirlen*[0,layout.cdir(c,1)],layout.cpos(c,2)+dirlen*[0,layout.cdir(c,2)],'m');
   end
   for l=1:10:nled
     plot([lp(l,1),layout.lpos(l,1)],[lp(l,2),layout.lpos(l,2)],'g');
@@ -82,11 +83,11 @@ for iter=1:500
   for c=1:ncamera
     ang=atan2(cd(c,2),cd(c,1));
     % Add led position angles  
-    dir(c,:,1)=cos(sa(c,:)+ang);
-    dir(c,:,2)=sin(sa(c,:)+ang);
+    dir(c,:,1)=cos(-sa(c,:)+ang);
+    dir(c,:,2)=sin(-sa(c,:)+ang);
   end
 
-  dsa=esa-sa;
+  dsa=-esa+sa;
 
   % Setup a system of equations Ax=b
   % Where x=[dcp : dga : dlp] where x,y are interleaved
@@ -97,18 +98,18 @@ for iter=1:500
     sel=find(isfinite(sa(c,:)));
     for ls=1:length(sel)
       l=sel(ls);
-      dist=norm(cp(c,:)-lp(l,:));
-      % We know that cp(c,:)-lp(l,:) should change by dist in direction orthogonal to dir(c,l,:)
-      npts=npts+1;
-      % Contribution due to error in camera position
-      A(npts,2*c-1)=-dir(c,l,2);
-      A(npts,2*c)=dir(c,l,1);
-      % Contribution due to error in gaze angle
-      A(npts,2*ncamera+c)=dist;
-      % Contribution due to error in led position
-      A(npts,3*ncamera+2*l-1)=dir(c,l,2);
-      A(npts,3*ncamera+2*l)=-dir(c,l,1);
-      b(npts)=dsa(c,l)*dist;
+        dist=norm(cp(c,:)-lp(l,:));
+        % We know that cp(c,:)-lp(l,:) should change by dist in direction orthogonal to dir(c,l,:)
+        npts=npts+1;
+        % Contribution due to error in camera position
+        A(npts,2*c-1)=-dir(c,l,2);
+        A(npts,2*c)=dir(c,l,1);
+        % Contribution due to error in gaze angle
+        A(npts,2*ncamera+c)=dist;
+        % Contribution due to error in led position
+        A(npts,3*ncamera+2*l-1)=dir(c,l,2);
+        A(npts,3*ncamera+2*l)=-dir(c,l,1);
+        b(npts)=dsa(c,l)*dist;
     end
   end
   % Fix location of 2 cameras to lock rotation/scaling down
@@ -131,9 +132,9 @@ for iter=1:500
   dlp=[x(ncamera*3+1:2:end),x(ncamera*3+2:2:end)];
   dcd= [cos(dga).*cd(:,1)-sin(dga).*cd(:,2), sin(dga).*cd(:,1)+cos(dga).*cd(:,2)] - cd;
 
-  k=[0 1 0];
+  k=[1 1 1];
   % Update all variables by k*delta
-  while max(k)>1e-10
+  while max(k)>1e-6
     % Find delta for each component to move to observed spos
     % All of the dlp,dcp,dcd give the avg amount to move to fix spos by 1 pixel
     calib.cpos=cp+k(1)*dcp; calib.cdir=cd+k(2)*dcd; calib.lpos=lp+k(3)*dlp;

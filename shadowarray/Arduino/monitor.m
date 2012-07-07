@@ -26,7 +26,7 @@ stop(ar);
   
 function timer(ar,ev)
 global env lastsamp s1
-nled=160;
+nled=numled();
 cursamp=ar.CurrentSample;
 if cursamp<2
   return
@@ -80,13 +80,11 @@ cmd=[];
 if lev>bk(1)
   lev=lev+bk(2)-bk(1);
 end
-for i=1:4
-  cmd=[cmd,setled(s1,160*(i-1)+[0,min(bk(1),lev-1)],cols(i,:))];
-  if lev>bk(1)
-    cmd=[cmd,setled(s1,160*(i-1)+[bk(2),min(bk(3),lev-1)],cols(i,:))];
-  end
-  cmd=[cmd,setled(s1,160*(i-1)+[lev,nled-1],[0,0,0])];
+cmd=[cmd,setled(s1,[0,min(bk(1),lev-1)],cols(i,:))];
+if lev>bk(1)
+  cmd=[cmd,setled(s1,[bk(2),min(bk(3),lev-1)],cols(i,:))];
 end
+cmd=[cmd,setled(s1,[lev,nled-1],[0,0,0])];
 cmd=[cmd,'G'];
 awrite(s1,cmd);
 sync(s1,3);

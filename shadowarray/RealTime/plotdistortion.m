@@ -38,7 +38,7 @@ end
 xlabel('Angle to right of center');
 ylabel('Pixels/Degree');
 c=axis;
-axis([-90,90,max([-100,c(3)]),min([100,c(4)])]);
+axis([-90,90,max([0,c(3)]),min([50,c(4)])]);
 title('Delta pixels/degree');
 
 % Plot cumulative

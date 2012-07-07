@@ -30,9 +30,19 @@ end
 im=~ai;
 
 % Draw all visible rays
+cnt0=zeros(size(im));
+cnt1=zeros(size(im));
 for c=1:size(v,1)
-  im=im | ismember(squeeze(rays.rays(c,:,:)),find(v(c,:)==1));
+  isone=ismember(squeeze(rays.rays(c,:,:)),find(v(c,:)==1));
+  iszero=ismember(squeeze(rays.rays(c,:,:)),find(v(c,:)==0));
+  im=im | isone;
+  cnt0(iszero)=cnt0(iszero)+1;
+  cnt1(isone)=cnt1(isone)+1;
+%  fprintf('c=%d, cnt0(500,500)=%d, cnt1=%d\n', c, cnt0(500,500), cnt1(500,500));
 end
+imc=zeros(size(im,1),size(im,2),3);
+imc(:,:,1)=cnt0/size(v,1);
+imc(:,:,2)=cnt1/size(v,1)/4;
 
 % Convert target diameters into (float) pixel coords
 mintgtdiampix=m2pix(rays.imap,p.analysisparams.mintgtdiam);
@@ -51,7 +61,7 @@ tgts.tpos=pix2m(rays.imap,[cx,cy]);
 if doplot>1
   setfig('analyze.rays');
   clf;
-  imshowmapped(rays.imap,im);
+  imshowmapped(rays.imap,imc);
   title('analyze.rays');
   hold on;
   if exist('truetgts','var')

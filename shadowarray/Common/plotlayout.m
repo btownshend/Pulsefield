@@ -21,5 +21,8 @@ end
 text(l.cpos(1,1),l.cpos(1,2),'C1');
 text(l.cpos(end,1),l.cpos(end,2),sprintf('C%d',size(l.cpos,1)));
 labels{2}='Cameras';
+
+h(3)=plot([l.active(:,1);l.active(1,1)],[l.active(:,2);l.active(1,2)],'c');
+labels{3}='Active';
 legend(h,labels);
 axis equal

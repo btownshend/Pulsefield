@@ -2,6 +2,7 @@
 % setled(s1,index,color,execute)
 % s1-descriptor
 % index-LED number(s) to turn on (-1 for all LEDs), a 2-element vector for a range, otherwise the LED numbers
+% LED number has 0-origin
 function cmd=setled(s1,index,color,execute)
 if nargin<4
   execute=1;
@@ -18,7 +19,7 @@ else
     index=index(1):index(2);
   end
   % Map index (clockwise sequential) to correct led number
-  posmap=[480+(159:-1:0),0:48,320+(159:-1:0),160+(0:159)];
+  posmap=[480+(159:-1:0),0:50,320+(159:-1:0),160+(0:159)];
   if max(index+1)>length(posmap) || min(index+1)<1
     error('Index out of range; should be 0..%d\n', length(posmap)-1);
   end
