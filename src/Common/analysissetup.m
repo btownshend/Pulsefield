@@ -1,0 +1,10 @@
+function aparams=analysissetup
+waistcircum=1;
+wcsigma=0.14;
+meantgtdiam=waistcircum/pi;
+sdevtgtdiam=wcsigma/pi;
+aparams.mintgtdiam=meantgtdiam/1.2-sqrt(3)*sdevtgtdiam;  % 1.2 for eccentricity of shapes
+aparams.maxtgtdiam=meantgtdiam*1.2+sqrt(3)*sdevtgtdiam;
+aparams.npixels=500;
+aparams.minmargin=50;  % Minimum margin between on-level and off-level to use a given LED->camera
+aparams.thresh=250;    % LED detection threshold if crosstalk has not been run
