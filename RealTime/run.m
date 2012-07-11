@@ -1,4 +1,4 @@
-bino 
+% Run the entire calibration/analysis chain
 
 if ~exist('p')
   disp('Initializing setup')
