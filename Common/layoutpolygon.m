@@ -1,8 +1,8 @@
 % layoutoctagon - compute position of LED's and cameras in octagon setup (with 1m entry opening)
 % nlegs - number of sides of polygon
 % doplot - 1 to plot
-function layout=layoutpolygon(nlegs,ncameras,nleds,doplot)
-if nargin<4
+function layout=layoutpolygon(nlegs,ncameras,doplot)
+if nargin<3
   doplot=0;
 end
 % Work in meters
@@ -73,6 +73,7 @@ cvertices=unique([2+outercameras,size(pos,1)-outercameras-1]);
 if length(cvertices)<ncameras
   cvertices=unique([cvertices,floor(nlegs/2)+2]);
 end
+
 for k=2:-1:1
   if length(cvertices)<ncameras
     cvertices=[k,cvertices];
@@ -92,15 +93,13 @@ end
 
 
 % LED positions
-if nargin>=3 && ~isempty(nleds)
-  rescale=ledlength/sum(ledspacing);
-  fprintf('Rescaling led spacing by %.3f for %d LEDs\n',rescale,nleds);
-  ledspacing=ledspacing*rescale;
-end
+rescale=ledlength/sum(ledspacing);
+fprintf('Rescaling led spacing by %.3f for %d LEDs\n',rescale,numled());
+ledspacing=ledspacing*rescale;
 
 seg=1;
-lpos=nan(nleds,2);
-ldir=nan(nleds,2);
+lpos=nan(numled(),2);
+ldir=nan(numled(),2);
   
 offset=ledspacing(1);   % Initial LED
 lnum=1;
@@ -108,7 +107,7 @@ for seg=1:size(ledcorners,1)-1
   v=ledcorners(seg+1,:)-ledcorners(seg,:);
   seglen=norm(v);
   v=v/seglen;
-  while offset<=seglen && lnum<=nleds
+  while offset<=seglen && lnum<=numled()
     lpos(lnum,:)=ledcorners(seg,:)+v*offset;
     ldir(lnum,:)=[v(2),-v(1)];
     lnum=lnum+1;
@@ -155,5 +154,8 @@ active=ledcorners(2:end-1,:);
 % At entry use intersection of camera 2,3 sightlines to last leds
 %active(end+1,:)=lineintersect(cpos(3,:),lpos(1,:),cpos(2,:),lpos(end,:));
 
+% Entry point
+entry=mean(ledcorners([2,end-1],:));
+
 % Setup return variables
-layout=struct('cpos',cpos,'cdir',cdir,'lpos',lpos,'ldir',ldir,'active',active,'pos',pos);
+layout=struct('cpos',cpos,'cdir',cdir,'lpos',lpos,'ldir',ldir,'active',active,'pos',pos,'entry',entry);

@@ -17,7 +17,7 @@ for c=1:length(col)  % Loop over colors (4=white)
   outlevs=[];
   for l=1:length(levs)
     vis=getvisible(p,1,levs(l)*col{c});
-    outlevs(l)=nanmedian(vis.lev(:));
+    outlevs(l)=min(nanmedian(vis.lev,2));
   end
   if doplot
     plot(levs,outlevs,pcol(c));

@@ -3,16 +3,20 @@
 %   h.prob(k,isize,isize) - for each individual, k, a map of the prob they are centered at the given coord (1=possibly there, 0=not there)
 %   h.pos(k,2) - MLE position estimate for person k
 %   possible(isize,isize) - pixel positions that could be a center point of a person
-%   maxchange - max movement of anyone in pixels
+%   maxmovement - max movement of anyone in m
 % Output:
 %   hf.prob - updated hprob
-function hf=updatehypo(p,layout,imap,h,possible,maxchange,doplot)
-if nargin<5
-  doplot=0;
-end
+function hf=updatehypo(p,layout,imap,h,possible,maxmovement)
 pghost=0.5;   % Prob any given pixel is a ghost pixel
+% Account for possibility of an error - target is where possible says that someone cannot be
+possible=possible+0.01/length(possible(:));
+possible=possible/sum(possible(:));   %renormonalize
 % Build a filter to allow movement
-fsize=ceil(m2pix(imap,p.simul.speed*p.simul.dt));
+if isfield(p,'simul')
+  fsize=ceil(m2pix(imap,p.simul.speed*p.simul.dt));
+else
+  fsize=ceil(m2pix(imap,maxmovement));
+end
 filt=fspecial('disk',fsize);
 % increase probability of stationary
 filt=filt/2;

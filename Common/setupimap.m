@@ -5,6 +5,7 @@ if length(imap.isize)==1
   % Equalize pixel count
   imap.isize(2)=imap.isize(1);
 end
-all=[layout.cpos;layout.lpos;layout.active];
+%all=[layout.cpos;layout.lpos;layout.active];
+all=layout.active;
 imap.scale=isize ./max(max(all)-min(all));
 imap.origin=min(all);

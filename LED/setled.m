@@ -7,7 +7,7 @@ function cmd=setled(s1,index,color,execute)
 if nargin<4
   execute=1;
 end
-if length(index)==1 && index==-1
+if length(index)==1 && index==-1 && max(color)==0
   % All LEDs
   cmd=zeros(1,4,'uint8');
   cmd(1)='A';
@@ -15,7 +15,9 @@ if length(index)==1 && index==-1
   cmd(3)=color(2);
   cmd(4)=color(3);
 else
-  if length(index)==2
+  if length(index)==1 && index==-1
+    index=0:numled()-1;
+  elseif length(index)==2
     index=index(1):index(2);
   end
   % Map index (clockwise sequential) to correct led number

@@ -1,8 +1,13 @@
-function plotlayout(l)
-
-setfig('plotlayout');
-clf;
+function plotlayout(l,newfig)
+if nargin<2
+  newfig=1;
+end
+if newfig
+  setfig('plotlayout');
+  clf;
+end
 hold on;
+
 title(sprintf('Layout with %d cameras, %d LEDs',size(l.cpos,1),size(l.lpos,1)));
 for i=1:size(l.lpos,1)
   h(1)=plot(l.lpos(:,1),l.lpos(:,2),'xm');
@@ -24,5 +29,8 @@ labels{2}='Cameras';
 
 h(3)=plot([l.active(:,1);l.active(1,1)],[l.active(:,2);l.active(1,2)],'c');
 labels{3}='Active';
+
+h(4)=plot(l.entry(1),l.entry(2),'r*');
+labels{4}='Entry';
 legend(h,labels);
 axis equal

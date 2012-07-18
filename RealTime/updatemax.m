@@ -15,11 +15,18 @@ for i=1:size(tpos,1)
 end
 
 % Update step sequencer
-sendtomax('/seq',{'active',int32(size(tpos,1)>0)});
-for i=1:size(tpos,1)
-  sendtomax('/seq',{'pitch',int32(i),pos2pitch(tpos(i,1))});
+if size(tpos,1)>0
+  pitches=pos2pitch(tpos(:,1));
+  disprange=[min([pitches-4;36]),max([pitches+4;86])];
+  sendtomax('/seq',{'zoom',int32(disprange(1)),int32(disprange(2))});
+  sendtomax('/seq',{'loop',int32(1),int32(max(1,size(tpos,1)))});
+  for i=1:size(tpos,1)
+    sendtomax('/seq',{'pitch',int32(i),pos2pitch(tpos(i,1))});
+  end
+  sendtomax('/seq',{'active',int32(1)});
+else
+  sendtomax('/seq',{'active',int32(0)});
 end
-sendtomax('/seq',{'loop',int32(1),int32(max(1,size(tpos,1)))});
 
 % Map a position in meters to a MIDI pitch val
 function pitch=pos2pitch(pos)

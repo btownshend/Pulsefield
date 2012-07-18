@@ -1,4 +1,5 @@
 % Run the entire calibration/analysis chain
+doplot=2;
 
 if ~exist('p')
   disp('Initializing setup')
@@ -14,7 +15,7 @@ if ~exist('p')
   % layout.cpos(end,:)=[-0.68,1.16];
   % layout.cdir(end,:)=[1,0];
   % layout.cdir(3,:)=[-1,1]*sqrt(2)/2;
-  layout=layoutpolygon(6,4,length(p.led),0);
+  layout=layoutpolygon(6,4,0);
   plotlayout(layout);
 end
 
@@ -92,6 +93,6 @@ end
 [possible,tgtestimate]=analyze(p,layout,vis.v,rays,doplot);
 
 % Run recording
-recvis=recordvis(p,layout,rays,5);
-recanalyze(recvis); % Analyze whole recording to get tracking
-recanalyze(recvis,2);   % Analyze specific sample
+%recvis=recordvis(p,layout,rays,5);
+%recanalyze(recvis); % Analyze whole recording to get tracking
+%recanalyze(recvis,2);   % Analyze specific sample

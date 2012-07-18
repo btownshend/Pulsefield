@@ -13,7 +13,7 @@ end
 if setleds
   s1=arduino_ip();
   % Turn on all LED's
-  fprintf('Turning on LEDs\n');
+  %  fprintf('Turning on LEDs\n');
   setled(s1,-1,onval,1);
   show(s1);
   sync(s1);
@@ -47,6 +47,6 @@ if isfield(sainfo,'crosstalk')
   v(sainfo.crosstalk.margin<sainfo.analysisparams.minmargin)=nan;
 else
   % Just assume a threshold level
-  v=single(lev>p.analysisparams.thresh);
+  v=single(lev>sainfo.analysisparams.thresh);
 end
 vis=struct('v',v,'lev',lev,'im',{im},'when',when);

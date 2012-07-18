@@ -1,6 +1,7 @@
-% Initialize hyothesis of locations 
+% Initialize hypothesis of locations using fixed positions
 % Input:
-%   tgts
+%   tgts - struct holding positions of targets
+%   imap - map from physical dimensions to pixels on bitmaps of space
 % Output:
 %   h.prob(k,isize,isize) - for each individual, k, a map of the prob they are centered at the given coord (1=possibly there, 0=not there)
 function h=inithypo(tgts,imap)

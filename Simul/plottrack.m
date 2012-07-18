@@ -1,6 +1,7 @@
 function plottrack(tgts,hypo)  
 setfig('analyze.estimates');
 hold on;
+tpos=nan(length(tgts),max(cellfun(@(z) size(z.tpos,1),tgts)),2);
 for i=1:length(tgts)
   n=size(tgts{i}.tpos,1);
   tpos(i,1:n,:)=tgts{i}.tpos;

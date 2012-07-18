@@ -28,6 +28,8 @@ offlev=(vis{1}.lev(:,:)+vis{5}.lev(:,:))/2;
 onlev=vis{4}.lev(:,:);
 neighlev(:,1:2:length(p.led))=vis{3}.lev(:,1:2:length(p.led));
 neighlev(:,2:2:length(p.led))=vis{2}.lev(:,2:2:length(p.led));
+halflev(:,1:2:length(p.led))=vis{2}.lev(:,1:2:length(p.led));
+halflev(:,2:2:length(p.led))=vis{3}.lev(:,2:2:length(p.led));
 neighlev=max(offlev,neighlev);  % In case neighbor shows up lower
 margin=onlev-neighlev;
 % Set threshold at max of on-lev-margin and halfway between on and neighbor-on levels
@@ -49,9 +51,10 @@ for k=1:length(p.camera)
   hold on;
   plot(1:length(p.led),neighlev(k,:),'r');
   plot(1:length(p.led),offlev(k,:),'y');
+  plot(1:length(p.led),halflev(k,:),'m');
   xlabel('LED');
   ylabel('Signal');
-  legend('LED on','Neighs only','All Off');
+  legend('All LEDs on','Neighs only','All Off','Half On');
   title(sprintf('Camera %d signals',k));
   c=axis; c(3)=0;axis(c);
 
@@ -67,4 +70,4 @@ for k=1:length(p.camera)
 end
 pause(0.01);
 
-ct=struct('onlev',onlev,'offlev',offlev,'neighlev',neighlev,'thresh',thresh,'margin',margin,'when',when);
+ct=struct('onlev',onlev,'offlev',offlev,'neighlev',neighlev,'halflev',halflev,'thresh',thresh,'margin',margin,'when',when);
