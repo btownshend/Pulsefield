@@ -1,28 +1,63 @@
 % Update MAX with a new set of locations for the targets
-function updatemax(tpos,prevtpos)
-if nargin<2
-   % Clear all old values since we don't know the specific ones to replace
-   sendtomax('/coll',{'clear'});
-elseif size(prevtpos,1) > size(tpos,1)
-   % Just clear the ones we are not updating
-   for i=size(tpos,1)+1:size(prevtpos,1)
-     sendtomax('/coll',{'remove',int32(i)});
-   end
+function updatemax(snap,prevsnap)
+% Clear all old values since we don't know the specific ones to replace
+sendtomax('/coll',{'clear'});
+
+if nargin<1
+  return;
 end
+
 % Send new values
-for i=1:size(tpos,1)
-  sendtomax('/coll',{'symbol',int32(i),single(tpos(i,1)),single(tpos(i,2))});
+for i=1:length(snap.hypo)
+  pos=snap.hypo(i).pos;
+  sendtomax('/coll',{'symbol',int32(i),single(pos(1)),single(pos(2))});
 end
 
 % Update step sequencer
-if size(tpos,1)>0
-  pitches=pos2pitch(tpos(:,1));
-  disprange=[min([pitches-4;36]),max([pitches+4;86])];
-  sendtomax('/seq',{'zoom',int32(disprange(1)),int32(disprange(2))});
-  sendtomax('/seq',{'loop',int32(1),int32(max(1,size(tpos,1)))});
-  for i=1:size(tpos,1)
-    sendtomax('/seq',{'pitch',int32(i),pos2pitch(tpos(i,1))});
+nsteps=8;
+rng=[-2,2];
+stepsize=diff(rng)/(nsteps-1);
+stepedges=rng(1)+(0:nsteps-2)*stepsize;
+velocity=127;
+duration=120;
+
+if length(snap.hypo)>0
+  pitches=[]; step=[]; channel=[];
+  for i=1:length(snap.hypo)
+    step(i)=max([1,find(snap.hypo(i).pos(1)>stepedges)]);
+    pitches(i)=pos2pitch(snap.hypo(i).pos(2));
+    channel(i)=i;
   end
+  [step,ord]=sort(step);
+  pitches=pitches(ord);
+  channel=channel(ord);
+  pv=zeros(1,nsteps);
+  for i=1:nsteps
+    sel=find(step==i);
+    if length(sel)>1
+      step(sel(2:end))=step(sel(2:end))+1;
+      sel=find(step==i);
+    end
+    if isempty(sel)
+      p=0;
+      ch=0;
+    else
+      p=pitches(sel);
+      ch=channel(sel);
+    end
+      
+    if p>0
+      sendtomax('/seq',{'step',int32(i),int32(p), int32(velocity), int32(duration), int32(ch)});
+    else
+      sendtomax('/seq',{'step',int32(i),int32(p), int32(0), int32(duration), int32(ch)});
+    end
+    if p>0
+      fprintf('step %d: pitch=%d\n', i, p);
+    end
+  end
+  disprange=[min([pitches(pitches>0)-4,36]),max([pitches+4,86])];
+  sendtomax('/seq',{'zoom',int32(disprange(1)),int32(disprange(2))});
+  sendtomax('/seq',{'loop',int32(1),int32(nsteps)});
   sendtomax('/seq',{'active',int32(1)});
 else
   sendtomax('/seq',{'active',int32(0)});

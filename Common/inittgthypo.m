@@ -6,14 +6,16 @@
 %       .pos(2) - position
 %	.tnum - target number(s)
 %	.like - likelihood
-function h=inittgthypo(tgts)
+function snap=inittgthypo(snap)
 h=[];
-% Prob=1 that they are where they are
-for i=1:size(tgts.tpos,1)
-  if tgts.nunique(i)>10
-    h=[h,struct('pos',tgts.tpos(i,:),'tnum',i,'like',1,'id',1,'entrytime',tgts.when,'lasttime',tgts.when)];
-    fprintf('Initializing hypo %d to position of target %d - (%.1f, %.1f)\n', length(h), i, tgts.tpos(i,:));
+tgts=snap.tgts;
+for i=1:length(tgts)
+  if tgts(i).nunique>10
+    h=[h,struct('pos',tgts(i).pos,'tnum',i,'like',1,'id',1,'entrytime',snap.when,'lasttime',snap.when)];
+    fprintf('Initializing hypo %d to position of target %d - (%.1f, %.1f)\n', length(h), i, tgts(i).pos);
   else
-    fprintf('Initializing hypo: skip target %d - nunique=%d\n', i, tgts.nunique(i));
+    fprintf('Initializing hypo: skip target %d - nunique=%d\n', i, tgts(i).nunique);
   end
 end
+snap.nextid=length(h)+1;
+snap.hypo=h;

@@ -90,7 +90,7 @@ if doplot>1
 end
 
 % Analyze data to estimate position of targets using layout
-[possible,tgtestimate]=analyze(p,layout,vis.v,rays,doplot);
+samp=analyze(p,layout,vis.v,rays,doplot);
 
 % Run recording
 %recvis=recordvis(p,layout,rays,5);

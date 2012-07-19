@@ -91,7 +91,7 @@ for i=1:ncameras
     b=sqrt(1/(1+k^2));
     a=k*b;
     c=-a*tlp(1)-b*tlp(2);
-    dist=abs(a*xp(1)+b*xp(2)+c);
+    dist=abs(a*xp(1)+b*xp(2)+c)/norm([a b]);
     fprintf('Err=%.3f\n',dist);
     lines(end+1,:)=[a b c];
   end

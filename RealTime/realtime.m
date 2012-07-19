@@ -1,15 +1,13 @@
-plothypo=1;
-plottgts=0;
-plotvis=0;
-plotana=0;
-plotstats=1;
-if ~exist('userecvis')
-  userecvis=0;
+% Set plots to do of hypo, vis, ana, stats
+plots={'stats','hypo'};  % 
+plots={};
+if ~exist('userecvis','var')
+  userecvis=1;
 end
 if ~userecvis
   fprintf('Type saverecvis when done to save\n');
 end
-if userecvis && ~exist('timedreplay')
+if userecvis && ~exist('timedreplay','var')
   timedreplay=0;   % Set to 1 before running script to replay at same pacing as recording
 end
 if ~userecvis
@@ -17,21 +15,13 @@ if ~userecvis
   recvis=struct('p',p,'layout',layout,'rays',rays,'vis',[],'tgtestimate',[],'possible',{{}});
   setled(s1,[0,numled()-1],p.colors{1},1); show(s1); sync(s1);
 end
-if plottgts
-  setfig('plottgts');clf;
-  plotlayout(recvis.layout,0)
-  hold on;
-end
-if plothypo
+if ismember('hypo',plots)
   setfig('plothypo');clf;
   plotlayout(recvis.layout,0)
   hold on;
 end
 samp=1;
-tlen=100;
-tgtestimate={};
-hypo={};
-possible={};
+snap={};
 starttime=now;
 while ~userecvis || samp<=length(recvis.vis)
   tic;
@@ -43,119 +33,95 @@ while ~userecvis || samp<=length(recvis.vis)
       sleeptime=((vis.when-recvis.vis(1).when)-(now-starttime))*24*3600;
       if sleeptime>0
         pause(sleeptime);
+      elseif sleeptime<-1
+        fprintf('Running behind by %.1f seconds\n', -sleeptime);
       end
     end
   else
     vis=getvisible(recvis.p,0);
     recvis.vis=[recvis.vis,vis];
   end
-  if plotvis
+  if ismember('vis',plots)
     plotvisible(recvis.p,vis);
   end
+  % Check for bad data
+  transitions=sum(abs(diff(vis.v'))==1);
+  if any(transitions>20)
+    fprintf('Too many LED blockage transitions at snapshot %d: %s\n', samp, sprintf('%d ',transitions));
+  end
+
   % Analyze data to estimate position of targets using layout
-  [possible{samp},tgtestimate{samp}]=analyze(recvis.p,recvis.layout,vis.v,recvis.rays,plotana);
+  snap{samp}=analyze(recvis.p,recvis.layout,vis.v,recvis.rays,ismember('ana',plots));
   if ~userecvis
-    recvis.tgtestimate=[recvis.tgtestimate,tgtestimate{samp}];
+    recvis.snap=[recvis.snap,snap{samp}];
     recvis.possible={recvis.possible,possible{samp}};
   end
-  tgtestimate{samp}.when=vis.when;
+  snap{samp}.when=vis.when;
   if samp==1
-    % hypo{samp}=inithypo(tgtestimate{1},recvis.rays.imap);
-    hypo{samp}=inittgthypo(tgtestimate{1});
+    % hypo{samp}=inithypo(snap{1},recvis.rays.imap);
+    snap{1}=inittgthypo(snap{1});
   else
-    dt=(recvis.vis(samp).when-recvis.vis(samp-1).when)*24*3600;
-    maxspeed=1.3;  % m/s
-    maxmovement=maxspeed*dt;
-    %    hypo{samp}=updatehypo(recvis.p,recvis.layout,recvis.rays.imap,hypo{samp-1},possible{samp},maxmovement);
-    hypo{samp}=updatetgthypo(recvis.p,recvis.layout,recvis.rays.imap,hypo{samp-1},tgtestimate{samp},maxmovement);
+    snap{samp}=updatetgthypo(recvis.layout,snap{samp-1},snap{samp});
   end
   
-  if plottgts
-    setfig('plottgts');
-    % Erase old symbols
-    if samp>1 & size(tgtestimate{samp-1}.tpos,1)>0
-      plot(tgtestimate{samp-1}.tpos(:,1),tgtestimate{samp-1}.tpos(:,2),'+w');
-    end
-
-    if size(tgtestimate{samp}.tpos,1)>0
-      plot(tgtestimate{samp}.tpos(:,1),tgtestimate{samp}.tpos(:,2),'+r');
-      if samp>1
-        for j=1:size(tgtestimate{samp}.tpos,1)
-          tj=tgtestimate{samp}.tpos(j,:);
-          for k=1:size(tgtestimate{samp-1}.tpos,1)
-            tk=tgtestimate{samp-1}.tpos(k,:);
-            if norm(tj-tk)<0.3
-              % Join nearby positions
-              plot([tj(1),tk(1)],[tj(2),tk(2)],'g');
-            end
-          end
-        end
-      end
-    end
-  end
-  
-  if plothypo
+  if ismember('hypo',plots)
     setfig('plothypo');
-    cols='rgbcymk';
-    foundk=zeros(length(hypo{samp}),1);
+    foundk=zeros(length(snap{samp}.hypo),1);
 
     if samp>1
-      foundj=zeros(length(hypo{samp-1}),1);
-      for j=1:length(hypo{samp-1})
-        hj=hypo{samp-1}(j);
-        for k=1:length(hypo{samp})
-          hk=hypo{samp}(k);
+      foundj=zeros(length(snap{samp-1}.hypo),1);
+      for j=1:length(snap{samp-1}.hypo)
+        hj=snap{samp-1}.hypo(j);
+        for k=1:length(snap{samp}.hypo)
+          hk=snap{samp}.hypo(k);
           if hj.id==hk.id
             % Join nearby positions
-            col=cols(mod(hj.id-1,length(cols))+1);
-            plot([hj.pos(1),hk.pos(1)],[hj.pos(2),hk.pos(2)],col);
+            col=id2color(hj.id);
+            plot([hj.pos(1),hk.pos(1)],[hj.pos(2),hk.pos(2)],'Color',col);
             foundj(j)=1;
             foundk(k)=1;
           end
         end
       end
-      for j=1:length(hypo{samp-1})
+      for j=1:length(snap{samp-1}.hypo)
         if ~foundj(j)
-          hj=hypo{samp-1}(j);
-          col=cols(mod(hj.id-1,length(cols))+1);
-          plot(hj.pos(1),hj.pos(2),['x',col]);
+          hj=snap{samp-1}.hypo(j);
+          col=id2color(hj.id);
+          plot(hj.pos(1),hj.pos(2),'x','Color',col);
         end
       end
     end
-    for k=1:length(hypo{samp})
+    for k=1:length(snap{samp}.hypo)
       if ~foundk(k)
-        hk=hypo{samp}(k);
-        col=cols(mod(hk.id-1,length(cols))+1);
-        plot(hk.pos(1),hk.pos(2),['o',col]);
+        hk=snap{samp}.hypo(k);
+        col=id2color(hk.id);
+        plot(hk.pos(1),hk.pos(2),'o','Color',col);
       end
     end
   end
 
   % Display coords
   fprintf('%3d@%4.1f ',samp,elapsed);
-  for j=1:size(tgtestimate{samp}.tpos,1)
-    tj=tgtestimate{samp}.tpos(j,:);
+  for j=1:length(snap{samp}.tgts)
+    tj=snap{samp}.tgts(j).pos;
     fprintf('T%d:(%.2f,%.2f) ',j,tj);
   end
-  for j=1:length(hypo{samp})
-    hj=hypo{samp}(j);
-    if samp>1 && length(hypo{samp-1})>=j && hypo{samp-1}(j).id==hj.id
-      hk=hypo{samp-1}(j);
-      spd=norm(hj.pos-hk.pos)/dt;
-    else
-      spd=nan;
+  for j=1:length(snap{samp}.hypo)
+    hj=snap{samp}.hypo(j);
+    if samp>1 && length(snap{samp-1}.hypo)>=j && snap{samp-1}.hypo(j).id==hj.id
+      hk=snap{samp-1}.hypo(j);
     end
-    fprintf('H%d:(%.2f,%.2f)@%.1f m/s ',hj.id,hj.pos,spd);
+    fprintf('H%d:(%.2f,%.2f)@%.1f m/s ',hj.id,hj.pos,hj.speed);
   end
   fprintf('\n');
   
   if samp>1
-    updatemax(tgtestimate{samp}.tpos,tgtestimate{samp-1}.tpos);
+    updatemax(snap{samp},snap{samp-1});
   else
-    updatemax(tgtestimate{samp}.tpos);
+    updatemax(snap{samp});
   end
   if ~userecvis
-    updateleds(recvis.p,recvis.layout,tgtestimate{samp}.tpos);
+    updateleds(recvis.p,recvis.layout,snap{samp}.tgts.pos);
   end
   loopend=toc;
 %  fprintf('Loop time = %.2f seconds\n', loopend);
@@ -163,55 +129,13 @@ while ~userecvis || samp<=length(recvis.vis)
   samp=samp+1;
 end
 % Turn off any remaining notes
-updatemax([]);
+updatemax();
 
 if ~userecvis
   % Turn off LEDs
   setled(s1,-1,[0,0,0],1);show(s1);
 end
 
-if plotstats
-  setfig('hypo stats');clf;
-  time=[];speed=[];area=[];
-  for i=1:length(hypo)
-    for j=1:length(hypo{i})
-      speed(i,j)=hypo{i}(j).speed;
-      area(i,j)=hypo{i}(j).area;
-      time(i,j)=hypo{i}(j).lasttime;
-      majoraxislength(i,j)=hypo{i}(j).majoraxislength;
-      minoraxislength(i,j)=hypo{i}(j).minoraxislength;
-    end
-  end
-  speed(speed==0)=nan;
-  area(area==0)=nan;
-  majoraxislength(majoraxislength==0)=nan;
-  minoraxislength(minoraxislength==0)=nan;
-  time=(time-min(time(time>0)))*24*3600;
-  time(time<0)=nan;
-  subplot(411);
-  plot(time,speed);
-  xlabel('Time (sec)');
-  ylabel('Speed (m/s)');
-  title('Speed');
-  c=axis;c(3)=0;c(4)=3;axis(c);
-  subplot(412);
-  plot(time,area);
-  xlabel('Time (sec)');
-  ylabel('Area (m2)');
-  title('Area');
-  c=axis;c(3)=0;c(4)=0.25;axis(c);
-  subplot(413);
-  plot(time,majoraxislength);
-  xlabel('Time (sec)');
-  ylabel('Length (m)');
-  title('Major Axis Length');
-  c=axis;c(3)=0;c(4)=0.8;axis(c);
-  subplot(414);
-  plot(time,minoraxislength);
-  xlabel('Time (sec)');
-  ylabel('Length (m)');
-  title('Minor Axis Length');
-  c=axis;c(3)=0;c(4)=0.8;axis(c);
+if ismember('stats',plots)
+  plotstats(snap);
 end
-  
-  
