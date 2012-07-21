@@ -1,11 +1,20 @@
 function plotvisible(sainfo,vis)
 setfig('getvisible');
 clf;
-for i=1:size(vis.lev,1)
+ncol=1;
+if isfield(vis,'xcorr')
+  ncol=2;
+end
+if isfield(vis,'im')
+  ncol=ncol+1;
+end
+for i=1:size(vis.v,1)
   c=sainfo.camera(i).pixcalib;
   roi=sainfo.camera(i).roi;
+  col=1;
   if isfield(vis,'im')
-    subplot(length(vis.im),2,i*2-1)
+    subplot(length(vis.im),ncol,(i-1)*ncol+col);
+    col=col+1;
     imshow(vis.im{i});
     axis normal
     hold on;
@@ -20,24 +29,39 @@ for i=1:size(vis.lev,1)
         end
       end
     end
-    subplot(size(vis.lev,1),2,i*2);
-  else
-    subplot(size(vis.lev,1),1,i);
   end
-  lev=double(vis.lev(i,:));
-  lev(isnan(vis.v(i,:)))=nan;
-  plot(lev,'g');
-  hold on;
-  % Plot threshold
-  plot(sainfo.crosstalk.thresh(i,:),'c');
-  plot(sainfo.crosstalk.neighlev(i,:),'m');
-  % Plot signals below threshold in red
-  lev(vis.v(i,:)==1)=nan;
-  plot(lev,'rx');
-  ax=axis;
-  ax(3)=0;ax(4)=260;
-  axis(ax);
+  if isfield(vis,'lev')
+    subplot(size(vis.v,1),ncol,(i-1)*ncol+col);col=col+1;
+    lev=double(vis.lev(i,:));
+    lev(isnan(vis.v(i,:)))=nan;
+    plot(lev,'g');
+    hold on;
+    % Plot threshold
+    plot(sainfo.crosstalk.thresh(i,:),'c');
+    plot(sainfo.crosstalk.neighlev(i,:),'m');
+    % Plot off signals in red
+    lev(vis.v(i,:)==1)=nan;
+    plot(lev,'rx');
+    ax=axis;
+    ax(3)=0;ax(4)=260;
+    axis(ax);
+    legend('Signal','Threshold','Neighlev');
+  end
+  if isfield(vis,'xcorr')
+    subplot(size(vis.v,1),ncol,(i-1)*ncol+col);col=col+1;
+    xcorr=vis.xcorr(i,:);
+    xcorr(isnan(vis.v(i,:)))=nan;
+    plot(xcorr,'g');
+    hold on;
+    plot([1,length(xcorr)],sainfo.analysisparams.mincorr+[0,0],'c');
+    % Plot off signals in red
+    xcorr(vis.v(i,:)==1)=nan;
+    plot(xcorr,'rx');
+    ax=axis;
+    ax(3)=min(ax(3),0);ax(4)=1.0;
+    axis(ax);
+    legend('Correlation','Threshold');
+  end
   xlabel('LED');
   ylabel('Signal');
-  legend('Signal','Threshold','Neighlev');
 end

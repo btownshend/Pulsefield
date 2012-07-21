@@ -25,7 +25,7 @@ figure(1);
 clf;
 mv=[];
 for j=1:50
-  im=aremulti(ids,roi);
+  im=aremulti(ids,'av10115',roi);
   for i=1:length(ids)
     subplot(length(ids),1,i);
     [~,mpos]=max(max(max(im2double(im{i}),[],3),[],1));

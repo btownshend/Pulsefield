@@ -1,5 +1,6 @@
 % Crosstalk - measure LED crosstalk
-function ct=crosstalk(p,onval)
+function p=crosstalk(p,onval)
+
 % Measure signal with all LEDs off, even only, odd only
 s1=arduino_ip();
 if nargin<2
@@ -31,16 +32,22 @@ neighlev(:,2:2:length(p.led))=vis{2}.lev(:,2:2:length(p.led));
 halflev(:,1:2:length(p.led))=vis{2}.lev(:,1:2:length(p.led));
 halflev(:,2:2:length(p.led))=vis{3}.lev(:,2:2:length(p.led));
 neighlev=max(offlev,neighlev);  % In case neighbor shows up lower
-margin=onlev-neighlev;
+margin=onlev-offlev;
 % Set threshold at max of on-lev-margin and halfway between on and neighbor-on levels
 thresh=max(onlev-p.analysisparams.minmargin,(onlev+neighlev)/2);
 
 for j=1:length(p.camera)
   c=p.camera(j).pixcalib;
-  lowmargin=isfinite(c(j).pos(1)) & margin(j,:)<p.analysisparams.minmargin;
+  lowmargin=[c.valid] & margin(j,:)<p.analysisparams.minmargin;
   if sum(lowmargin)>0
-    fprintf('Low margin for camera %d to LEDs %s\n', j, sprintf('%d ',find(lowmargin)));
+    fprintf('Low margin for camera %d to LEDs %s - disabling\n', j, shortlist(find(lowmargin)));
+    keyboard;
   end
+
+  for i=1:length(lowmargin)
+    c(i).inuse=c(i).valid & ~lowmargin(i);
+  end
+  p.camera(j).pixcalib=c;
 end
 
 setfig('crosstalk');
@@ -71,3 +78,4 @@ end
 pause(0.01);
 
 ct=struct('onlev',onlev,'offlev',offlev,'neighlev',neighlev,'halflev',halflev,'thresh',thresh,'margin',margin,'when',when);
+p.crosstalk=ct;

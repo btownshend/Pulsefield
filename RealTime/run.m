@@ -1,15 +1,18 @@
 % Run the entire calibration/analysis chain
 doplot=2;
+dolevcheck=false;
 
 if ~exist('p')
   disp('Initializing setup')
   p=struct;
   p.analysisparams=analysissetup();
-  p.camera(1)=setupcamera('av10115',1);
-  p.camera(2)=setupcamera('av10115',2);
-  p.camera(3)=setupcamera('av10115',3);
-  p.camera(4)=setupcamera('av10115',4);
+  ctype='av10115';
+  p.camera(1)=setupcamera(ctype,1);
+  p.camera(2)=setupcamera(ctype,2);
+  p.camera(3)=setupcamera(ctype,3);
+  p.camera(4)=setupcamera(ctype,4);
   p.led=struct('id',num2cell(1:numled()));
+  p.colors={127*[1 1 1], 127*[1 0 0], 127*[0 1 0], 127*[0 0 1]};
 
 %  layout=layoutlinear(p,length(p.led));
   % layout.cpos(end,:)=[-0.68,1.16];
@@ -24,9 +27,13 @@ fprintf('Setting camera exposures\n');
 for id=[p.camera.id]
   arecont_set(id,'autoexp','on');
   arecont_set(id,'exposure','on');
-  arecont_set(id,'brightness',-50);
+  arecont_set(id,'brightness',0);
   arecont_set(id,'lowlight','highspeed');
-  arecont_set(id,'shortexposures',2);
+  if strcmp(p.camera(1).type,'av10115')
+    arecont_set(id,'shortexposures',2);
+  else
+    arecont_set(id,'shortexposures',2);
+  end
   arecont_set(id,'maxdigitalgain',32);
   arecont_set(id,'analoggain',1);
 end
@@ -46,14 +53,15 @@ if ~isfield(p.camera(1),'pixcalib')
   end
 end
 
-if ~isfield(p,'colors')
-  disp('Getting color map levels');
-  p.colors=levcheck(p,1);
+if strcmp(p.analysisparams.visalgorithm,'xcorr') && ~isfield(p.camera(1).pixcalib,'ref')
+  % Acquire templates for cross-correlations
+  p=gettemplates(p);
 end
 
 if ~isfield(p,'crosstalk')
+  % Only really needed 
   disp('Crosstalk calculation');
-  p.crosstalk=crosstalk(p);
+  p=crosstalk(p);
 end
 
 % Refine position of cameras
@@ -96,3 +104,8 @@ samp=analyze(p,layout,vis.v,rays,doplot);
 %recvis=recordvis(p,layout,rays,5);
 %recanalyze(recvis); % Analyze whole recording to get tracking
 %recanalyze(recvis,2);   % Analyze specific sample
+
+if dolevcheck
+  disp('Check levels');
+  levcheck(p,1);
+end

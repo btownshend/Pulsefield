@@ -9,7 +9,7 @@ DEBUG=false;
 nrpt=1;
 nled=numled();
 nbits=ceil(log2(nled));
-minpixels=5;   % Minimum number of active pixels to accept an LED
+minpixels=3;   % Minimum number of active pixels to accept an LED
 if nargin<2 || isempty(im)
   s1=arduino_ip();
   tic;
@@ -20,7 +20,7 @@ if nargin<2 || isempty(im)
   nrcvd=zeros(1,nrpt);
 
   % Get image with LEDs off
-  imtmp=aremulti(ids);
+  imtmp=aremulti(ids,sainfo.camera(1).type);
 
   for i=1:length(imtmp)
     % Check for clipping
@@ -56,7 +56,7 @@ if nargin<2 || isempty(im)
                               % Wait at least one frame time
         pause(1);
         % Get image
-        imtmp=aremulti(ids);
+        imtmp=aremulti(ids,sainfo.camera(1).type);
         for ii=1:length(imtmp)
           im{k,j,p,ii}=imtmp{ii};
         end
@@ -179,6 +179,7 @@ for iid=1:length(ids)
   imatroi=imat(roi(3):roi(4),roi(1):roi(2));
   fprintf('Size(imatroi(%d))=%d %d; roi=%d %d %d %d\n', iid,size(imatroi),roi);
   notvis=[];
+  calib=struct([]);
   for i=1:length(sainfo.led)
     ledid=sainfo.led(i).id;
     lpos=imatroi==ledid;
@@ -191,34 +192,62 @@ for iid=1:length(ids)
       notvis=[notvis,ledid];
       calib(i).pos=[nan,nan];
       calib(i).diameter=nan;
+      calib(i).valid=false;
     else
       [maxarea,mpos]=max([stats.Area]);
       if size(stats(mpos).PixelList,1)<minpixels
         notvis=[notvis,ledid];
-        calib(i).pos=[nan,nan];
-        calib(i).diameter=nan;
+        calib(i).valid=false;
         fprintf('LED %3d is only visible to camera %d at %d pixels; ignoring.\n',...
-                    ledid,id,size(stats(mpos).PixelList,1));
+                ledid,id,size(stats(mpos).PixelList,1));
       else
-        minarea=maxarea/2;
-        calib(i).pos=stats(mpos).Centroid;
-        calib(i).diameter=stats(mpos).EquivDiameter;
-        calib(i).pixelList=stats(mpos).PixelList;
-        % Compute indices of pixels in cropped images
-        calib(i).indices=sub2ind(size(imatroi),calib(i).pixelList(:,2),calib(i).pixelList(:,1));
-        calib(i).pixelList(:,1)=calib(i).pixelList(:,1)+roi(1)-1;
-        calib(i).pixelList(:,2)=calib(i).pixelList(:,2)+roi(3)-1;
+        calib(i).valid=true;
+        minarea=maxarea;
         for j=1:length(stats)
           if j~=mpos && stats(j).Area >= minarea
             fprintf('LED %3d is also visible to camera %d at (%4.0f,%4.0f) in addition to (%4.0f,%4.0f), distance=%.1f\n',...
                     ledid,id,stats(j).Centroid,stats(mpos).Centroid,norm(stats(j).Centroid-stats(mpos).Centroid));
+            % TODO - if close, could merge with first region
           end
         end
       end
+      calib(i).pos=stats(mpos).Centroid;
+      calib(i).diameter=stats(mpos).EquivDiameter;
+      calib(i).pixelList=stats(mpos).PixelList;
+      % Compute indices of pixels in cropped images
+      calib(i).indices=sub2ind(size(imatroi),calib(i).pixelList(:,2),calib(i).pixelList(:,1));
+      % Pixel list in full imagespace coords
+      calib(i).pixelList(:,1)=calib(i).pixelList(:,1)+roi(1)-1;
+      calib(i).pixelList(:,2)=calib(i).pixelList(:,2)+roi(3)-1;
+    end
+    calib(i).inuse=calib(i).valid;   % For now, all valid pixels can be used
+  end
+  % Check for stray points
+  maxpixelsep=50;
+  for i=1:length(sainfo.led)
+    if calib(i).inuse 
+      closest=2e10;
+      if i>1 && calib(i-1).inuse
+        closest=norm(calib(i).pos-calib(i-1).pos);
+      end
+      if i<length(sainfo.led) && calib(i+1).inuse
+        closest=min([closest,norm(calib(i).pos-calib(i+1).pos)]);
+      end
+      if closest>maxpixelsep && closest<1e10
+        if closest<1e10
+          fprintf('LED %d is at least %d pixels from its neighbors -- rejecting it\n',i,closest);
+        else
+          fprintf('LED %d has no visible neighbors -- rejecting it\n',i);
+        end
+        calib(i).valid=false;  
+        calib(i).inuse=false;
+      end
+      calib(i).closest=closest;
     end
   end
+      
   if ~isempty(notvis)
-    fprintf('LEDs not visible to camera %d: \n', id);
+    fprintf('LEDs not visible to camera %d: ', id);
     i=1;
     while i<=length(notvis)
       j=i;
@@ -245,14 +274,13 @@ for iid=1:length(ids)
   % Make divisible by 32 for camera
   sainfo.camera(iid).roi([1,3])=floor((sainfo.camera(iid).roi([1,3])-1)/32)*32+1;
   sainfo.camera(iid).roi([2,4])=ceil((sainfo.camera(iid).roi([2,4])-1)/32)*32+1;
-
 end % iid
 
-% Setup valid flag and indices from pixelList
+% Setup indices from pixelList
 for iid=1:length(sainfo.camera)
-  roi=sainfo.camera(iid).roi
+  roi=sainfo.camera(iid).roi;
   for i=1:length(sainfo.camera(iid).pixcalib)
-    if isfinite(sainfo.camera(iid).pixcalib(i).diameter)
+    if sainfo.camera(iid).pixcalib(i).valid
       pixelList=sainfo.camera(iid).pixcalib(i).pixelList;
       pixelList(:,1)=pixelList(:,1)-roi(1)+1;
       pixelList(:,2)=pixelList(:,2)-roi(3)+1;
@@ -262,11 +290,7 @@ for iid=1:length(sainfo.camera)
       sainfo.camera(iid).pixcalib(i).rgbindices=[...
           sub2ind([roi(4)-roi(3),roi(2)-roi(1),3],pixelList(:,2),pixelList(:,1),1*ones(size(pixelList,1),1));...
           sub2ind([roi(4)-roi(3),roi(2)-roi(1),3],pixelList(:,2),pixelList(:,1),2*ones(size(pixelList,1),1));...
-          sub2ind([roi(4)-roi(3),roi(2)-roi(1),3],pixelList(:,2),pixelList(:,1),3*ones(size(pixelList,1),1))]
-      % Flag for quick decisions
-     sainfo.camera(iid).pixcalib(i).valid = true;
-    else
-     sainfo.camera(iid).pixcalib(i).valid = false;
+          sub2ind([roi(4)-roi(3),roi(2)-roi(1),3],pixelList(:,2),pixelList(:,1),3*ones(size(pixelList,1),1))];
     end
   end
 end

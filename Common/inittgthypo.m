@@ -18,4 +18,5 @@ for i=1:length(tgts)
   end
 end
 snap.nextid=length(h)+1;
-snap.hypo=h;
+snap.hypo=[];
+snap.like=[];

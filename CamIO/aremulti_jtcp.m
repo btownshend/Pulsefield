@@ -1,8 +1,11 @@
 % Load simultaneously from multiple cameras
 % id is an array of ids to load
+% type is type of camera
 % result is a cell array of images
-function im=aremulti_jtcp(id,roi,plot)
-
+function im=aremulti_jtcp(id,type,roi,plot)
+if ~strcmp(type,'av10115')
+  error('Unsupported camera type: %s\n', type);
+end
 p.captstart=now;
 fd={};
 for i=1:length(id)

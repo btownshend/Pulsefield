@@ -1,9 +1,14 @@
 % Check if any cameras/LEDs have moved
-function checkcalibration(p,vis)
-nl=15;
+function checkcalibration(p,vis,leds)
+if nargin<3
+  nl=4;
+  leds=round(1:(numled()-1)/(nl-1):numled());
+else
+  nl=length(leds);
+end
+
 wind=5;
-leds=round(1:(numled()-1)/(nl-1):numled());
-if nargin<2
+if nargin<2 || isempty(vis)
   s1=arduino_ip();
   setled(s1,-1,[0,0,0],1);
   setled(s1,leds-1,20*[1 1 1],1);
@@ -18,6 +23,12 @@ end
 setfig('checkcalibration');
 clf;
 nc=length(p.camera);
+if isfield(vis,'tgt')
+  nstack=3;
+else
+  nstack=1;
+end
+
 for c=1:nc
   pixcalib=p.camera(c).pixcalib;
   fvalid=find([pixcalib.valid]);
@@ -25,8 +36,8 @@ for c=1:nc
   first=1;
   for i=1:nl
     l=leds(i);
-    if pixcalib(l).valid
-      subplot(nc,nl,(c-1)*nl+i);
+    if ~isempty(pixcalib(l).pixelList)
+      subplot(nc,nl*nstack,(c-1)*nl*nstack+(i-1)*nstack+1);
       plist=pixcalib(l).pixelList;
       roi=p.camera(c).roi;
       plist(:,1)=plist(:,1)-roi(1)+1;
@@ -38,14 +49,28 @@ for c=1:nc
       imshow(imled);
       %    imshow(imled/max(imled(:)));
       hold on;
-      for i=1:size(plist,1)
-        plot(-(rng{1}(1)-1)-0.5+plist(i,1)+[0 1 1 ],-(rng{2}(1)-1)-0.5+plist(i,2)+[1 1 0 ],'r');
+      for k=1:size(plist,1)
+        plot(-(rng{1}(1)-1)-0.5+plist(k,1)+[0 1 1 ],-(rng{2}(1)-1)-0.5+plist(k,2)+[1 1 0 ],'r');
       end
       if first
         ylabel(sprintf('Camera %d',c));
         first=0;
       end
-      title(sprintf('LED %d\n', l));
+      if pixcalib(l).valid
+        title(sprintf('L%d\n', l));
+      else
+        title(sprintf('*L%d\n', l));
+      end
+      if nstack>1
+        subplot(nc,nl*nstack,(c-1)*nl*nstack+(i-1)*nstack+2);
+        sc=max([vis.tgt{c,l}(:);p.camera(c).pixcalib(l).ref(:)]);
+        imshow(vis.tgt{c,l}/sc);
+        title('Tgt');
+        xlabel(sprintf('p=%.2f',vis.xcorr(c,l)));
+        subplot(nc,nl*nstack,(c-1)*nl*nstack+(i-1)*nstack+3);
+        imshow(p.camera(c).pixcalib(l).ref/sc);
+        title('Ref');
+      end
     end
   end
 end
