@@ -22,7 +22,6 @@ for c=1:length(p.camera)
   for l=1:length(p.led)
     if p.camera(c).pixcalib(l).valid
       s=vis{1}.tgt{c,l};
-      s=s/std(s);   % Normalize, in case getvisible didn't (for optimization)
       for i=2:nsamp
         s=s+vis{i}.tgt{c,l};
       end
