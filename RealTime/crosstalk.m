@@ -1,6 +1,8 @@
 % Crosstalk - measure LED crosstalk
 function p=crosstalk(p,onval)
 
+minmargin=50;  % Minimum margin between on-level and off-level to flag a LED->camera
+
 % Measure signal with all LEDs off, even only, odd only
 s1=arduino_ip();
 if nargin<2
@@ -22,7 +24,7 @@ for i=1:5
   show(s1);
   sync(s1);
   pause(0.3);
-  vis{i}=getvisible(p,0);
+  vis{i}=getvisible(p,'setleds',false,'stats',true);
 end
 when=(when+now)/2;  % Middle of time window
 offlev=(vis{1}.lev(:,:)+vis{5}.lev(:,:))/2;
@@ -34,20 +36,21 @@ halflev(:,2:2:length(p.led))=vis{3}.lev(:,2:2:length(p.led));
 neighlev=max(offlev,neighlev);  % In case neighbor shows up lower
 margin=onlev-offlev;
 % Set threshold at max of on-lev-margin and halfway between on and neighbor-on levels
-thresh=max(onlev-p.analysisparams.minmargin,(onlev+neighlev)/2);
+thresh=max(onlev-minmargin,(onlev+neighlev)/2);
 
+% Check for low margin LEDs
 for j=1:length(p.camera)
   c=p.camera(j).pixcalib;
-  lowmargin=[c.valid] & margin(j,:)<p.analysisparams.minmargin;
+  lowmargin=[c.valid] & margin(j,:)<minmargin;
   if sum(lowmargin)>0
-    fprintf('Low margin for camera %d to LEDs %s - disabling\n', j, shortlist(find(lowmargin)));
-    keyboard;
+    fprintf('Low margin for camera %d to LEDs %s\n', j, shortlist(find(lowmargin)));
   end
 
-  for i=1:length(lowmargin)
-    c(i).inuse=c(i).valid & ~lowmargin(i);
-  end
-  p.camera(j).pixcalib=c;
+% Don't actually disable low margin ones since we're using correlation instead now
+%  for i=1:length(lowmargin)
+%    c(i).inuse=c(i).valid & ~lowmargin(i);
+%  end
+%  p.camera(j).pixcalib=c;
 end
 
 setfig('crosstalk');

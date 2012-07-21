@@ -76,7 +76,7 @@ while true
   end
   fnum=fread(pipefd,1,'uint32');
   when=fread(pipefd,1,'double');
-  fprintf('Loading frame %d from %s\n', fnum, datestr(when));
+  fprintf('Loading: %d@%.2f ', fnum, (now-when)*24*3600);
   ncamera=length(p.camera);
   nled=length(p.led);
   [binary,cnt]=fread(pipefd,ncamera*nled,'*uint8');
@@ -87,10 +87,11 @@ while true
   %fprintf('Read %d data points\n', cnt);
   latency=(now-when)*24*3600;
   if latency > 0.2
-    fprintf('*** High latency: %.1f seconds, dropping a frame\n', latency);
+    fprintf('*');
     % Skip the frame
   else
     break;
   end
 end
+fprintf('\n');
   vis=struct('v',reshape(binary,ncamera,nled),'when',when);

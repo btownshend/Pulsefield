@@ -111,7 +111,7 @@ while ~userecvis || samp<=length(recvis.vis)
   end
 
   % Display coords
-  fprintf('%3d@%4.1f ',samp,elapsed);
+%  fprintf('%3d@%4.1f ',samp,elapsed);
   for j=1:length(snap{samp}.tgts)
     tj=snap{samp}.tgts(j).pos;
     fprintf('T%d:(%.2f,%.2f) ',j,tj);
@@ -134,8 +134,10 @@ while ~userecvis || samp<=length(recvis.vis)
     updateleds(recvis.p,recvis.layout,snap{samp});
   end
   loopend=toc;
-%  fprintf('Loop time = %.2f seconds\n', loopend);
-  pause(0.01);   % Give time for figures to refresh
+  %  fprintf('Loop time = %.2f seconds\n', loopend);
+  if ~isempty(plots)
+    pause(0.01);   % Give time for figures to refresh
+  end
   samp=samp+1;
 end
 % Turn off any remaining notes

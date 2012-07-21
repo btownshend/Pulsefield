@@ -25,7 +25,7 @@ frame=1;
 while true
   fstart=now;
   fprintf('Frame %d: Acquiring...', frame);
-  vis=getvisible(recvis.p,0);
+  vis=getvisible(recvis.p,'setleds',false);
   fprintf('done in %.2f sec.  ',(now-fstart)*24*3600);
   fstart=now;
   binary=uint8(vis.v);

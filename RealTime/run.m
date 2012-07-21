@@ -6,7 +6,8 @@ if ~exist('p')
   disp('Initializing setup')
   p=struct;
   p.analysisparams=analysissetup();
-  ctype='av10115';
+%  ctype='av10115';
+  ctype='av10115-half';
   p.camera(1)=setupcamera(ctype,1);
   p.camera(2)=setupcamera(ctype,2);
   p.camera(3)=setupcamera(ctype,3);
@@ -53,9 +54,9 @@ if ~isfield(p.camera(1),'pixcalib')
   end
 end
 
-if strcmp(p.analysisparams.visalgorithm,'xcorr') && ~isfield(p.camera(1).pixcalib,'ref')
-  % Acquire templates for cross-correlations
-  p=gettemplates(p);
+if ~isfield(p.camera(1),'viscache')
+  disp('Visible calibration');
+  [allvis,p]=getvisible(p,'init');
 end
 
 if ~isfield(p,'crosstalk')
@@ -92,7 +93,7 @@ if ~exist('rays')
 end
 
 disp('Measuring');
-vis=getvisible(p,1);
+vis=getvisible(p,'stats',true);
 if doplot>1
   plotvisible(p,vis);
 end

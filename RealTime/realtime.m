@@ -14,7 +14,8 @@ setled(s1,[0,numled()-1],p.colors{1},1); show(s1); sync(s1);
 
 % Start acquisition
 
-recvis=mainloop(recvis,[],{'hypo','ana','rays'});
+%recvis=mainloop(recvis,[],{'hypo'});
+recvis=mainloop(recvis,[],{});
 
 % Turn off LEDs
 setled(s1,-1,[0,0,0],1);show(s1);

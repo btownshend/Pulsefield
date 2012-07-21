@@ -9,7 +9,7 @@ DEBUG=false;
 nrpt=1;
 nled=numled();
 nbits=ceil(log2(nled));
-minpixels=3;   % Minimum number of active pixels to accept an LED
+minpixels=2;   % Minimum number of active pixels to accept an LED
 if nargin<2 || isempty(im)
   s1=arduino_ip();
   tic;
@@ -227,18 +227,24 @@ for iid=1:length(ids)
   for i=1:length(sainfo.led)
     if calib(i).inuse 
       closest=2e10;
-      if i>1 && calib(i-1).inuse
-        closest=norm(calib(i).pos-calib(i-1).pos);
-      end
-      if i<length(sainfo.led) && calib(i+1).inuse
-        closest=min([closest,norm(calib(i).pos-calib(i+1).pos)]);
-      end
-      if closest>maxpixelsep && closest<1e10
-        if closest<1e10
-          fprintf('LED %d is at least %d pixels from its neighbors -- rejecting it\n',i,closest);
-        else
-          fprintf('LED %d has no visible neighbors -- rejecting it\n',i);
+      nledsep=0;
+      for j=i-1:-1:1
+        if calib(j).inuse
+          closest=norm(calib(i).pos-calib(j).pos);
+          nledsep=i-j;
+          break;
         end
+      end
+      for j=i+1:length(sainfo.led)
+        if calib(j).inuse
+          closest=min(closest,norm(calib(i).pos-calib(j).pos));
+          nledsep=min(nledsep,j-i);
+          break;
+        end
+      end
+
+      if nledsep>0 && closest>maxpixelsep*nledsep
+        fprintf('LED %d is at least %d pixels from its neighbor (%d LEDs away) -- rejecting it\n',i,closest, nledsep);
         calib(i).valid=false;  
         calib(i).inuse=false;
       end
@@ -266,14 +272,20 @@ for iid=1:length(ids)
   sainfo.camera(iid).pixcalib=calib;
   sainfo.camera(iid).pixcalibtime=now;
   % Setup ROI for each camera
-  cp=reshape([calib.pos],2,[]);
-  border=max([calib.diameter]);
+  cp=reshape([calib([calib.valid]).pos],2,[]);
+  border=max([calib([calib.valid]).diameter]);
   sainfo.camera(iid).roi=[
       max(1,floor(min(cp(1,:))-border)),min(size(imat,2),ceil(max(cp(1,:))+border+31)),...
       max(1,floor(min(cp(2,:))-border)),min(size(imat,1),ceil(max(cp(2,:))+border+31))];
   % Make divisible by 32 for camera
   sainfo.camera(iid).roi([1,3])=floor((sainfo.camera(iid).roi([1,3])-1)/32)*32+1;
   sainfo.camera(iid).roi([2,4])=ceil((sainfo.camera(iid).roi([2,4])-1)/32)*32+1;
+  roi=sainfo.camera(iid).roi;
+  fprintf('Camera %d: ROI size = %d x %d\n', iid, (roi(2)-roi(1)),(roi(4)-roi(3)));
+  if (roi(4)-roi(3))>200
+    fprintf('**WARNING** Camera %d has excessive ROI size = %d x %d\n', iid, (roi(2)-roi(1)),(roi(4)-roi(3)));
+    keyboard
+  end
 end % iid
 
 % Setup indices from pixelList

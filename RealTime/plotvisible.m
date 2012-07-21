@@ -2,7 +2,7 @@ function plotvisible(sainfo,vis)
 setfig('getvisible');
 clf;
 ncol=1;
-if isfield(vis,'xcorr')
+if isfield(vis,'corr')
   ncol=2;
 end
 if isfield(vis,'im')
@@ -36,9 +36,11 @@ for i=1:size(vis.v,1)
     lev(isnan(vis.v(i,:)))=nan;
     plot(lev,'g');
     hold on;
-    % Plot threshold
-    plot(sainfo.crosstalk.thresh(i,:),'c');
-    plot(sainfo.crosstalk.neighlev(i,:),'m');
+    if isfield(sainfo,'crosstalk')
+      % Plot threshold
+      plot(sainfo.crosstalk.thresh(i,:),'c');
+      plot(sainfo.crosstalk.neighlev(i,:),'m');
+    end
     % Plot off signals in red
     lev(vis.v(i,:)==1)=nan;
     plot(lev,'rx');
@@ -47,16 +49,18 @@ for i=1:size(vis.v,1)
     axis(ax);
     legend('Signal','Threshold','Neighlev');
   end
-  if isfield(vis,'xcorr')
+  if isfield(vis,'corr')
     subplot(size(vis.v,1),ncol,(i-1)*ncol+col);col=col+1;
-    xcorr=vis.xcorr(i,:);
-    xcorr(isnan(vis.v(i,:)))=nan;
-    plot(xcorr,'g');
+    corr=vis.corr(i,:);
+    corr(isnan(vis.v(i,:)))=nan;
+    plot(corr,'g');
     hold on;
-    plot([1,length(xcorr)],sainfo.analysisparams.mincorr+[0,0],'c');
+    % Plot threshold, broken with NaNs for unused LEDs
+    mc=corr*0+vis.mincorr;
+    plot(mc,'c');
     % Plot off signals in red
-    xcorr(vis.v(i,:)==1)=nan;
-    plot(xcorr,'rx');
+    corr(vis.v(i,:)==1)=nan;
+    plot(corr,'rx');
     ax=axis;
     ax(3)=min(ax(3),0);ax(4)=1.0;
     axis(ax);
@@ -65,3 +69,4 @@ for i=1:size(vis.v,1)
   xlabel('LED');
   ylabel('Signal');
 end
+fprintf('Can use: checkcalibration(p,vis,[led list]) to check particular leds\n');

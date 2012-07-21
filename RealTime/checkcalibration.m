@@ -9,15 +9,7 @@ end
 
 wind=5;
 if nargin<2 || isempty(vis)
-  s1=arduino_ip();
-  setled(s1,-1,[0,0,0],1);
-  setled(s1,leds-1,20*[1 1 1],1);
-  show(s1);
-  sync(s1);
-  pause(2);
-  vis=getvisible(p,0);
-  setled(s1,-1,[0,0,0],1);
-  show(s1);
+  vis=getvisible(p,'onval',20*[1 1 1],'stats');
 end
 
 setfig('checkcalibration');
@@ -63,12 +55,11 @@ for c=1:nc
       end
       if nstack>1
         subplot(nc,nl*nstack,(c-1)*nl*nstack+(i-1)*nstack+2);
-        sc=max([vis.tgt{c,l}(:);p.camera(c).pixcalib(l).ref(:)]);
-        imshow(vis.tgt{c,l}/sc);
+        imshow(vis.tgt{c,l});
         title('Tgt');
-        xlabel(sprintf('p=%.2f',vis.xcorr(c,l)));
+        xlabel(sprintf('p=%.2f',vis.corr(c,l)));
         subplot(nc,nl*nstack,(c-1)*nl*nstack+(i-1)*nstack+3);
-        imshow(p.camera(c).pixcalib(l).ref/sc);
+        imshow(p.camera(c).viscache.ref{l});
         title('Ref');
       end
     end
