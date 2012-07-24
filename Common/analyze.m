@@ -38,12 +38,16 @@ if doplot>1
 end
 for c=1:size(v,1)
   v1=find(v(c,:)==1);
-  isone=ismember(rays.rays{c},v1,'R2012a');
-  im=im | isone;
+  % OLD way of doing this; was too slow
+  % isone=ismember(rays.rays{c},v1,'R2012a');
+  visone=v(c,:)==1;
+  im(rays.nzrayindices{c}(visone(rays.nzraymap{c})))=1;
   if doplot>1
+    isone=ismember(rays.rays{c},v1,'R2012a');
     cnt1(isone)=cnt1(isone)+1;
     %  fprintf('c=%d, cnt0(500,500)=%d, cnt1=%d\n', c, cnt0(500,500), cnt1(500,500));
-    iszero=ismember(rays.rays{c},find(v(c,:)==0));
+    % Count rays blocked by something inside (ie not including ones that high LEDs in corridor, since something there could be blocking them)
+    iszero=ismember(rays.rays{c},find(v(c,:)==0 & ~layout.outsider'),'R2012a');
     cnt0(iszero)=cnt0(iszero)+1;
   end
 end
@@ -57,10 +61,10 @@ shrink=floor(mintgtdiampix/2);
 se=strel('disk',shrink,0);
 possible=imerode(im==0,se);	% Erode image (1==center of person could be here)
 
-% Use a structuring element slightly smaller than the one used to erode so that the regions don't end up merging together
+% Regrow the region 
 ibd=imdilate(possible,se);	% Regrow it (1==person could be present)
-%lbl=bwlabel(ibd);	% Label it with object numbers
-lbl=bwlabel(possible);
+
+lbl=bwlabel(possible);		% Label eroded image (only pixels that could be centers)
 
 % Figure out centers of each possible target
 stats=regionprops(lbl','Centroid','Area','MinorAxisLength','MajorAxisLength','Orientation','ConvexHull','PixelList');  % Use transpose to go back to coord axis
@@ -78,41 +82,63 @@ for i=1:length(stats)
 end
         
 if doplot>1
-  setfig('analyze.rays');
-  clf;
-  imc=zeros(size(im,1),size(im,2),3);
-%  imc(:,:,1)=cnt0/size(v,1);
+  imc=zeros(size(im,1),size(im,2),4);
+  imc(:,:,1)=cnt0/size(v,1);
   imc(:,:,2)=cnt1/size(v,1);
-  imshowmapped(rays.imap,imc);
-  title('analyze.rays');
-  hold on;
-  if exist('truetgts','var')
-    viscircles(truetgts.tpos,truetgts.tgtdiam/2,'LineWidth',0.5);
-  end
-  for i=1:length(tgts)
-    plot(tgts(i).pos(1),tgts(i).pos(2),'or');
-    text(tgts(i).pos(1),tgts(i).pos(2),sprintf('%d',i),'color','r','HorizontalAlignment','center');
-  end
-  for i=1:size(layout.cpos,1)
-    plot(layout.cpos(i,1),layout.cpos(i,2),'og');
-    text(layout.cpos(i,1),layout.cpos(i,2),sprintf('%d',i),'HorizontalAlignment','center');
+  imc(:,:,3)=ibd;
+  
+  setfig('analyze.rays');clf;
+  for k=1:2
+    subplot(1,2,k);
+    if k==1
+      imshowmapped(rays.imap,imc(:,:,[1 4 3]));
+    else
+      imshowmapped(rays.imap,imc(:,:,[4 2 3]));
+    end
+    if k==1
+      title('Blocked rays');
+    else
+      title('Visible rays');
+      hold on;
+      if exist('truetgts','var')
+        viscircles(truetgts.tpos,truetgts.tgtdiam/2,'LineWidth',0.5);
+      end
+      for i=1:length(tgts)
+        plot(tgts(i).pos(1),tgts(i).pos(2),'or');
+        text(tgts(i).pos(1),tgts(i).pos(2),sprintf('%d',i),'color','r','HorizontalAlignment','center');
+      end
+      for i=1:size(layout.cpos,1)
+        plot(layout.cpos(i,1),layout.cpos(i,2),'og');
+        text(layout.cpos(i,1),layout.cpos(i,2),sprintf('%d',i),'HorizontalAlignment','center');
+      end
+    end
   end
 end
 
 % Compute which points are possible ghosts
-for i=1:length(tgts)
-  tgts(i).nunique=0;
-end
-[cind,lind]=ind2sub(size(v),find(v(:)==0));
-for i=1:length(cind)
-  c=cind(i);
-  l=lind(i);
-  %      profile=improfile(lbl,rays.raylines{c,l}(:,2),rays.raylines{c,l}(:,1));
-  profile=lbl(sub2ind(size(lbl),rays.raylines{c,l}(:,1),rays.raylines{c,l}(:,2)));
-  profile=profile(profile~=0);
-  if ~isempty(profile) && all(profile==profile(1))
-    % Unique object
-    tgts(profile(1)).nunique=tgts(profile(1)).nunique+1;
+if length(tgts)>0
+  alllbl=bwlabel(ibd==1);	% Label regrown image
+  %assert(length(unique(alllbl))==length(tgts)+1);  % This assert slows things down a lot...
+
+  for i=1:length(tgts)
+    tgts(i).nunique=0;
+  end
+  [cind,lind]=ind2sub(size(v),find(v(:)==0));
+  for i=1:length(cind)
+    c=cind(i);
+    l=lind(i);
+    if layout.outsider(l)
+      % fprintf('Skipping outsider %d\n', l);
+      continue;
+    end
+    %      profile=improfile(lbl,rays.raylines{c,l}(:,2),rays.raylines{c,l}(:,1));
+    % Count distinct objects on each ray
+    profile=alllbl(sub2ind(size(lbl),rays.raylines{c,l}(:,1),rays.raylines{c,l}(:,2)));
+    profile=profile(profile~=0);
+    if ~isempty(profile) && all(profile==profile(1))
+      % Unique object
+      tgts(profile(1)).nunique=tgts(profile(1)).nunique+1;
+    end
   end
 end
 

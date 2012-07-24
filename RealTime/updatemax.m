@@ -1,7 +1,7 @@
 % Update MAX with a new set of locations for the targets
-function updatemax(snap,prevsnap)
+function ok=updatemax(p,snap,prevsnap)
 % Clear all old values since we don't know the specific ones to replace
-sendtomax('/coll',{'clear'});
+ok=sendtomax('/coll',{'clear'});
 
 if nargin<1
   return;
@@ -10,8 +10,21 @@ end
 % Send new values
 for i=1:length(snap.hypo)
   pos=snap.hypo(i).pos;
-  sendtomax('/coll',{'symbol',int32(i),single(pos(1)),single(pos(2))});
+  ok=ok&sendtomax('/coll',{'symbol',int32(i),single(pos(1)),single(pos(2))});
 end
+
+% Update LCD
+lcdsize=200;
+for i=1:length(snap.hypo)
+  pos=snap.hypo(i).pos;
+   lp=int32((pos+2.5)*lcdsize/5);
+   sz=.2*lcdsize/5;
+   lp=lp-sz/2;
+   le=lp+sz;
+   col=255-int32(2*p.colors{i});
+   ok=ok&sendtomax('/lcd',{'frgb',col(1),col(2),col(3)});
+   ok=ok&sendtomax('/lcd',{'paintoval',lp(1),lp(2),le(1),le(2)});
+end	
 
 % Update step sequencer
 nsteps=8;
@@ -47,20 +60,20 @@ if length(snap.hypo)>0
     end
       
     if p>0
-      sendtomax('/seq',{'step',int32(i),int32(p), int32(velocity), int32(duration), int32(ch)});
+      ok=ok&sendtomax('/seq',{'step',int32(i),int32(p), int32(velocity), int32(duration), int32(ch)});
     else
-      sendtomax('/seq',{'step',int32(i),int32(p), int32(0), int32(duration), int32(ch)});
+      ok=ok&sendtomax('/seq',{'step',int32(i),int32(p), int32(0), int32(duration), int32(ch)});
     end
     if p>0
       fprintf('step %d: pitch=%d\n', i, p);
     end
   end
   disprange=[min([pitches(pitches>0)-4,36]),max([pitches+4,86])];
-  sendtomax('/seq',{'zoom',int32(disprange(1)),int32(disprange(2))});
-  sendtomax('/seq',{'loop',int32(1),int32(nsteps)});
-  sendtomax('/seq',{'active',int32(1)});
+  ok=ok&sendtomax('/seq',{'zoom',int32(disprange(1)),int32(disprange(2))});
+  ok=ok&sendtomax('/seq',{'loop',int32(1),int32(nsteps)});
+  ok=ok&sendtomax('/seq',{'active',int32(1)});
 else
-  sendtomax('/seq',{'active',int32(0)});
+  ok=ok&sendtomax('/seq',{'active',int32(0)});
 end
 
 % Map a position in meters to a MIDI pitch val

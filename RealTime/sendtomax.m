@@ -4,7 +4,8 @@
 function ok=sendtomax(path,data)
 global osc_addr;
 if isempty(osc_addr)
-  osc_addr=osc_new_address('192.168.0.141',7000);
+  osc_addr=osc_new_address('localhost',57120);
+%  osc_addr=osc_new_address('192.168.0.141',7000);
 end
 m=struct('path',path,'data',{data});
 ok=osc_send(osc_addr,m);

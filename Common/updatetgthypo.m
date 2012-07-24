@@ -2,21 +2,32 @@
 % Input:
 %   h - prior hypotheses
 %   snap - snapshot including target structure for current sample
+%   samp - sample number (for debug output)
 % Output:
 %   snap - w/hypo field added, snap.nextid updated
-function snap=updatetgthypo(layout,prevsnap,snap)
-debug=0;
+function snap=updatetgthypo(layout,prevsnap,snap,samp)
+debug=1;
 % PARAMETERS
 minunique=5;  % Could be ghost if less than this many unique rays
 pghost=0.9;	% with this prob
-droptime=5;   % Time to drop a missed target in seconds
+
+% Matching
 speedmu=0.5;	% Mu of exponential distribution for PDF of speeds expected (m/s)
-entryrate=1/30;	% 1 entries/30 seconds - also exponential (Poisson) distribution (entries/second)
-exitrate=entryrate;
 falselifetime=1;  % Mean lifetime of false signals (seconds)
 muhidden=1;     % Mean lifetime of hidden people (not appearing in any target, but still present)
-minimumlike=.001;  % Minimum likelihood (prob) to accept a matchup
+minimumlike=.1;  % Minimum likelihood (prob) to accept a matchup
 poserror=0.1;    % Mean position error
+maxspeed = 1.3;   % Max speed when extrapolating
+
+% Entries
+entryrate=1.0;	% conditional entry rate -- given that something is near the door (entries/second)
+
+% Exits
+droptime=5;   % Time to drop a missed target in seconds
+exitdroptime=1;  % Time to drop when in range of an exit
+exitrate=1.0;  % conditional exit rate -- given that they are beside the door (exits/seond)
+
+% Groups
 maxpersons=4;     % Maximum undivided group size
 meanpersonarea=0.11;   % In m^2
 stdpersonarea=0.04;    % Stddev of person area
@@ -26,6 +37,17 @@ ntgts=length(tgts);
 h=prevsnap.hypo;  % Start off by continuing old hypotheses
 snap.nextid=prevsnap.nextid;
 dt=(snap.when-prevsnap.when)*24*3600;
+
+% Extrapolate position using estimate velocity
+for j=1:length(h)
+  if isfinite(h(j).speed)
+    h(j).pos=h(j).pos+h(j).delta/norm(h(j).delta)*min(maxspeed,h(j).speed)*dt;
+    if ~inpolygon(h(j).pos(1),h(j).pos(2),layout.active(:,1),layout.active(:,2))
+      h(j).pos=prevsnap.hypo(j).pos;
+      fprintf('Extrapolating position from (%f,%f) would end up outside, skipping extrapolation\n',h(j).pos);
+    end
+  end
+end
 
 % Calculate probability that each target is multiple people
 pmultiple=zeros(ntgts,maxpersons);
@@ -37,44 +59,41 @@ for i=1:ntgts
 %  like(i,:)=like(i,:)*dot(pmultiple(i,:),1:maxpersons);
 end
 
-dist=nan(ntgts+1,length(h)+1);
+% Calculate likelihood matrix of each hypothesis matching each target
+dist=nan(ntgts,length(h));
 like=dist;
-newpos={};
+newpos=cell(ntgts,length(h));
 for i=1:ntgts
-  for j=1:length(h)+1
-    if j<=length(h)
-      % Find distance to all pixels of target
-      pixdist=sqrt((tgts(i).pixellist(:,1)-h(j).pos(:,1)).^2+(tgts(i).pixellist(:,2)-h(j).pos(:,2)).^2);
-      % Use closest pixel position as new position
-      [dist(i,j),closest]=min(pixdist);
-      newpos{i,j}=tgts(i).pixellist(closest,:);
-%      dist(i,j)=norm(tgts(i).pos-h(j).pos);
-      dist(i,j)=max(0,dist(i,j)-tgts(i).majoraxislength/4);
-      % Weight inversely by distance 
-      tlastseen=(snap.when-h(j).lasttime)*24*3600;
-      pspeed=exppdf(dist(i,j)/tlastseen,speedmu);
-      pdir=poserror/max(poserror,dist(i,j));   % Prob of heading in that direction
-      pentry=1;
-      % Decrease likelihood of missing ones linearly with time since last seen
-      phidden=exppdf(tlastseen,muhidden);
-      % Decrease likelihood for new ones
-      existent=(snap.when-h(j).entrytime)*24*3600;
-      pfalse=1-expcdf(existent,falselifetime);   % Probability of this being a false signal
-    elseif j==length(h)+1
-      % Add a new possible hypothesis corresponding to an entry
-      pixdist=sqrt((tgts(i).pixellist(:,1)-layout.entry(1)).^2+(tgts(i).pixellist(:,2)-layout.entry(2)).^2);
-      [dist(i,j),closest]=min(pixdist);
-      newpos{i,j}=tgts(i).pixellist(closest,:);
+  for j=1:length(h)
+    % Find distance to all pixels of target
+    pixdist=sqrt((tgts(i).pixellist(:,1)-h(j).pos(:,1)).^2+(tgts(i).pixellist(:,2)-h(j).pos(:,2)).^2);
+    % Use closest pixel position as new position
+    [dist(i,j),closest]=min(pixdist);
+    % But also push towards middle
+    newpos{i,j}=0.8*tgts(i).pixellist(closest,:)+0.2*tgts(i).pos;
+    % Although setting dist to zero if inside range of target would make sense for the probabilities,
+    % it doesn't allow selection between multiple possible overlapping targets
+    % So, make it monotonically increasing with distance from tgts(i).pos
+    dist(i,j)=norm(newpos{i,j}-h(j).pos);
 
-      % dist(i,j)=norm(tgts(i).pos-layout.entry);  % Distance from entry
-      pspeed=exppdf(dist(i,j)/(dt/2),speedmu);   % Prob they moved to here if they just entered
-      pdir=1;
-      pentry=exppdf(dt,entryrate);   % Prob they entered in last dt seconds
-      phidden=1;
-      pfalse=0;
+    % Scale down effective distance if we are inside the diameter of the target
+    if dist(i,j)<tgts(i).majoraxislength/2
+      dist(i,j)=dist(i,j)/2;
     end
+
+    % Weight inversely by distance 
+    tlastseen=(snap.when-h(j).lasttime)*24*3600;
+    pspeed=exppdf(dist(i,j)/tlastseen,speedmu);
+    pdir=poserror/max(poserror,dist(i,j));   % Prob of heading in that direction
+
+    % Decrease likelihood of missing ones linearly with time since last seen
+    phidden=exppdf(tlastseen,muhidden);
+    % Decrease likelihood for new ones
+    existent=(snap.when-h(j).entrytime)*24*3600;
+    pfalse=1-expcdf(existent,falselifetime);   % Probability of this being a false signal
+
     % Estimate of likelihood that target i is the same as hypo j (heuristic)
-    like(i,j)=pspeed*pdir*pentry*(1-pfalse)*phidden;
+    like(i,j)=pspeed*pdir*(1-pfalse)*phidden;
   end
   % Decrease likelhood of targets that don't have unique rays
   if tgts(i).nunique<minunique
@@ -82,42 +101,75 @@ for i=1:ntgts
   end
 end
 
-% Add in row for entries
-i=ntgts+1;
-for j=1:length(h)
-  % Add a new possible hypothesis corresponding to an exit
-  dist(i,j)=norm(h(j).pos-layout.entry);  % Distance from entry
-  pspeed=exppdf(dist(i,j)/(dt/2),speedmu);   % Prob they moved to here if they just entered
-  pentry=exppdf(dt,exitrate);   % Prob they entered in last dt seconds
-  phidden=1;
-  pfalse=0;
-  like(i,j)=pspeed*pentry*(1-pfalse)*phidden;
+% Calculate entry likelihoods
+for i=1:ntgts
+  % Add a new possible hypothesis corresponding to an entry
+  pixdist=sqrt((tgts(i).pixellist(:,1)-layout.entry(1)).^2+(tgts(i).pixellist(:,2)-layout.entry(2)).^2);
+  [entrydist(i),closest]=min(pixdist);
+  
+  % dist(i,j)=norm(tgts(i).pos-layout.entry);  % Distance from entry
+  pspeed=exppdf(entrydist(i)/(dt/2),speedmu);   % Prob they moved to here if they just entered
+  pentry=0.1; % expcdf(dt,1/entryrate);   % Prob they entered in last dt seconds
+
+  entrylike(i)=pspeed*pentry;
 end
 
+  
 
-if debug && size(like,1)>0
-  fprintf('\n  Uniq    XPos   YPos  ');
-  for j=1:size(like,2)-1
+% Normalize likelihood of targets with unique rays to a total of 1.0
+for i=1:ntgts
+  if tgts(i).nunique>=minunique  && sum(like(i,:))+entrylike(i)<1
+    % Scale to move total towards 1.0, but not exactly or all tgts in this situation will be interchangeable
+    % So, instead take average of current value and 1.0
+    sc=0.5+0.5/(sum(like(i,:))+entrylike(i));
+    like(i,:)=like(i,:)*sc;
+    entrylike(i)=entrylike(i)*sc;
+  end
+end
+
+% Calculate exit likelihoods
+for j=1:length(h)
+  % Add a new possible hypothesis corresponding to an exit
+  exitdist(j)=norm(h(j).pos-layout.entry);  % Distance from entry
+  interval=(snap.when-h(j).lasttime)*3600*24;  % Time since last seen
+  pspeed=exppdf(exitdist(j)/interval,speedmu);   % Prob they moved to here
+  pexit=expcdf(interval,1/exitrate);   % Prob they exited in last dt seconds
+  exitlike(j)=pspeed*pexit;
+end
+
+% Dump values
+if debug && length(like)>0
+  fprintf('\n%3d Uniq  XPos   YPos  ',samp);
+  for j=1:size(like,2)
     fprintf('  H%-3d  ',h(j).id);
   end
   fprintf(' Enter\n');
   for i=1:size(like,1)
-    if i==size(like,1)
-      fprintf('Exit    ');
-    else
-      fprintf('T%-2d %3d %6.3f %6.3f ',i,tgts(i).nunique,tgts(i).pos);
+    if all(isnan(like(i,:)))
+      continue;
     end
+    fprintf('T%-2d %3d %6.3f %6.3f ',i,tgts(i).nunique,tgts(i).pos);
     for j=1:size(like,2)
       fprintf('%7.5f ',like(i,j));
     end
+    fprintf('%7.5f\n',entrylike(i));
+  end
+  if length(h)>0
+    fprintf('Exit                  ');
+    fprintf('%7.5f ',exitlike);
     fprintf('\n');
   end
 end
+
+if samp==-1
+  keyboard
+end
+
 % Assign by highest likelihood
-hf=[];
+hf=struct('id',{},'pos',{},'tnum',{},'like',{},'entrytime',{},'lasttime',{},'area',{},'delta',{},'speed',{},'heading',{},'orientation',{},'minoraxislength',{},'majoraxislength',{});
+
 matched=0*[tgts.nunique];
-exitted=zeros(1,length(h));
-while length(like)>1
+while ~isempty(like)
   [maxlike,mpos]=max(like(:));
   [mi,mj]=ind2sub(size(like),mpos);
   if maxlike<minimumlike
@@ -126,40 +178,15 @@ while length(like)>1
     end
     break;
   end
-  if mi==ntgts+1
-    % Exit
-    if debug
-      fprintf('Exit by hypo %d\n', h(mj).id);
-    end
-    like(:,mj)=0;
-    exitted(mj)=1;
-    continue;   % Don't add hypo
-  end
-  if mj<=length(h) && (isempty(hf) || ~ismember(h(mj).id,[hf.id]))
+  if isempty(hf) || ~ismember(h(mj).id,[hf.id])
     id=h(mj).id;
     entrytime=h(mj).entrytime;
     interval=(snap.when-h(mj).lasttime)*3600*24;
     % Direction vector per second
-    delta=(newpos{mi,mj}-h(mj).pos)/interval;
+    % h(mj).pos already has a velocity prediction factor in it; go back to previous point estimate
+    delta=(newpos{mi,mj}-prevsnap.hypo(mj).pos)/interval;
     spd=norm(delta);
     heading=atan2d(delta(2),delta(1));
-  elseif mj==length(h)+1
-    % New entry
-    id=snap.nextid;
-    snap.nextid=snap.nextid+1;
-    entrytime=snap.when;
-    delta=nan;spd=nan;heading=nan;
-    if debug
-      fprintf('New entry with hypo %d\n', id);
-    end
-  else
-    % More than one target for this hypo
-    error('Assert failed\n');
-    id=snap.nextid;
-    snap.nextid=snap.nextid+1;
-    entrytime=snap.when;
-    delta=nan;spd=nan;heading=nan;
-    fprintf('Multiple targets correspond to prior hypothesis %d - adding hypo %d\n',h(mj).id, id);
   end
   hf=[hf,struct('id',id,'pos',newpos{mi,mj},'tnum',mi,'like',like(mi,mj),'entrytime',entrytime,'lasttime',snap.when,'area',tgts(mi).area,'delta',delta,'speed',spd,'heading',heading,'orientation',tgts(mi).orientation,'minoraxislength',tgts(mi).minoraxislength,'majoraxislength',tgts(mi).majoraxislength)];
   if debug
@@ -169,16 +196,20 @@ while length(like)>1
   % Adjust for this target also matching another hypothesis (convergence of hypotheses)
   pconverge=sum(pmultiple(mi,matched(mi)+1:end))/sum(pmultiple(mi,matched(mi):end));  
   like(mi,:)=like(mi,:)*pconverge;
+  entrylike(mi)=0;   % unlikely that it just picked up an entry as well
   like(:,mj)=0;  % Done with this hypo
 end
+
+% Check for exits or disappearances
 for i=1:length(h)
-  if ~exitted(i) && (isempty(hf) || ~ismember(h(i).id,[hf.id]))
+  if isempty(hf) || ~ismember(h(i).id,[hf.id])
     % No target assigned
     lostdur=snap.when-h(i).lasttime;
     if debug
-      fprintf('No target assigned to hypothesis %d (lost for %.1f seconds)\n', h(i).id, lostdur*24*3600);
+      fprintf('No target assigned to hypothesis %d (lost for %.1f seconds, exitlike=%f)\n', h(i).id, lostdur*24*3600,exitlike(i));
     end
-    if lostdur*24*3600>droptime
+
+    if exitlike(i)>minimumlike & lostdur*24*3600>exitdroptime  || lostdur*24*3600>droptime
       if debug
         fprintf('Dropping hypothesis %d after unseen for %.1f seconds\n', h(i).id,lostdur*24*3600);
       end
@@ -189,11 +220,40 @@ for i=1:length(h)
     end
   end
 end
-if debug
-  missed=find(~matched & [tgts.nunique]>minunique);
-  for i=1:length(missed)
-    t=tgts(missed(i));
-    fprintf('Target %d at (%.3f,%.3f) with %d unique rays, maxlike=%g, not matched\n', missed(i), t.pos, t.nunique,max(like(missed(i),:)));
+
+% Missed targets -- could be entries
+missed=find(~matched & [tgts.nunique]>minunique);
+for i=1:length(missed)
+  mi=missed(i);
+  t=tgts(mi);
+  if debug
+    fprintf('Target %d at (%.3f,%.3f) with %d unique rays, maxlike=%g, entrylike=%g, not matched\n', mi, t.pos, t.nunique,max(like(mi,:)),entrylike(mi));
+  end
+  % Check if it could be an entry
+  if entrylike(mi)>minimumlike
+    if 0
+      % Check if anyone else is already nearby (to prevent double counting entries)
+      nearby=false;
+      fprintf('Distance to other hypos is ');
+      for j=1:length(hf)
+        edist=norm(hf(j).pos-t.pos);
+        fprintf('%.2f ', edist);
+        nearby=nearby||(edist<0.2);   % TODO - choose value
+      end
+      if nearby
+        fprintf('.  Has close neighbors, not considering as an entry\n');
+        continue;
+      end
+    end
+    % New entry
+    id=snap.nextid;
+    snap.nextid=snap.nextid+1;
+    entrytime=snap.when;
+    delta=nan;spd=nan;heading=nan;
+    hf=[hf,struct('id',id,'pos',t.pos,'tnum',mi,'like',entrylike(mi),'entrytime',entrytime,'lasttime',snap.when,'area',tgts(mi).area,'delta',nan,'speed',nan,'heading',nan,'orientation',tgts(mi).orientation,'minoraxislength',tgts(mi).minoraxislength,'majoraxislength',tgts(mi).majoraxislength)];
+    if debug
+      fprintf('Assigned target %d (%6.3f,%6.3f) to NEW hypo %d with dist=%.2f, like=%.3f\n', mi, t.pos, id, entrydist(mi), entrylike(mi));
+    end
   end
 end
 
@@ -211,14 +271,6 @@ for i=1:ntgts
         hf(j).minoraxislength=nan;
         hf(j).majoraxislength=nan;
         hf(j).orientation=nan;
-        % Shift position by half of majoraxis towards prior position so that it will most likely retain correct identity on separation
-        % NO LONGER NEEDED - locking onto closest place in region 
-        % oldind=find([h.id]==hf(j).id,1);
-        % if ~isempty(oldind)
-        %   oldpos=h(oldind).pos;
-        %   dir=oldpos-hf(j).pos; dir=dir/norm(dir);
-        %   hf(j).pos=hf(j).pos+tgts(i).majoraxislength/4*dir;
-        % end
       end
     end
   end

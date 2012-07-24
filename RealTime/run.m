@@ -13,7 +13,7 @@ if ~exist('p')
   p.camera(3)=setupcamera(ctype,3);
   p.camera(4)=setupcamera(ctype,4);
   p.led=struct('id',num2cell(1:numled()));
-  p.colors={127*[1 1 1], 127*[1 0 0], 127*[0 1 0], 127*[0 0 1]};
+  p.colors={127*[1 1 1], 127*[1 0 0], 127*[0 1 0], 127*[0 0 1],127*[1 1 0],127*[1 0 1], 127*[0 1 1]};
 
 %  layout=layoutlinear(p,length(p.led));
   % layout.cpos(end,:)=[-0.68,1.16];

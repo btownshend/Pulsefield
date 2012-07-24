@@ -8,6 +8,9 @@ end
 if isfield(vis,'im')
   ncol=ncol+1;
 end
+if ~isfield(vis,'v')
+  vis.v=vis.lev>127;
+end
 for i=1:size(vis.v,1)
   c=sainfo.camera(i).pixcalib;
   roi=sainfo.camera(i).roi;

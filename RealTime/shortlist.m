@@ -1,5 +1,6 @@
 % Give short string to describe list with contiguous entries
 function l=shortlist(x)
+x=x(:)';
 l='';
 if isempty(x)
   l='[]';

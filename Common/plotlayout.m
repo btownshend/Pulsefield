@@ -11,6 +11,7 @@ hold on;
 title(sprintf('Layout with %d cameras, %d LEDs',size(l.cpos,1),size(l.lpos,1)));
 for i=1:size(l.lpos,1)
   h(1)=plot(l.lpos(:,1),l.lpos(:,2),'xm');
+  plot(l.lpos(l.outsider,1),l.lpos(l.outsider,2),'xr');   % Plot outsiders in red
 end
 for k=1:50:size(l.lpos,1)
   text(l.lpos(k,1),l.lpos(k,2),sprintf('L%d',k));
@@ -32,5 +33,5 @@ labels{3}='Active';
 
 h(4)=plot(l.entry(1),l.entry(2),'r*');
 labels{4}='Entry';
-legend(h,labels);
+%legend(h,labels);
 axis equal

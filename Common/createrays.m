@@ -36,6 +36,9 @@ for c=1:size(layout.cpos,1)
     end
   end
   r.rays{c}=rays;
+  rsel=r.rays{c}~=0;
+  r.nzrayindices{c}=find(rsel);
+  r.nzraymap{c}=r.rays{c}(rsel);
 end
 r.raylines=raylines;
 r.imap=imap;

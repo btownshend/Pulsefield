@@ -16,7 +16,7 @@ for i=1:length(id)
   % TODO - would be faster to open connection once and then make HTTP requests without closing
   % or use MJPEG
   url=sprintf('http://192.168.0.%d/image?res=%s&quality=21&doublescan=1&ver=HTTP/1.1',70+id(i),res);
-  if nargin<3 || isempty(roi{i})
+  if nargin<3 || isempty(roi)
     url=[url,sprintf('&x0=0&x1=9999&y0=0&y1=9999')];
   else
     if strcmp(res,'half')

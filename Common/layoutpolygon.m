@@ -150,12 +150,14 @@ if doplot
 end
 
 % Active region should not include corridor
-active=ledcorners(2:end-1,:);
-% At entry use intersection of camera 2,3 sightlines to last leds
-%active(end+1,:)=lineintersect(cpos(3,:),lpos(1,:),cpos(2,:),lpos(end,:));
+active=ledcorners(2:end-1,:);  % Slightly inside line of LEDs
 
 % Entry point
 entry=mean(ledcorners([2,end-1],:));
 
+% Flag LEDs outside of active region (so we don't assume that blockage of them is due to something inside active region)
+outsider=~inpolygon(lpos(:,1),lpos(:,2),active(:,1)*1.01,active(:,2)*1.01);
+fprintf('LEDs outside active region: %s\n',shortlist(find(outsider)));
+
 % Setup return variables
-layout=struct('cpos',cpos,'cdir',cdir,'lpos',lpos,'ldir',ldir,'active',active,'pos',pos,'entry',entry);
+layout=struct('cpos',cpos,'cdir',cdir,'lpos',lpos,'ldir',ldir,'active',active,'pos',pos,'entry',entry,'outsider',outsider);

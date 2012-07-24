@@ -11,7 +11,7 @@
 %	init:	  true to initialize data for operation, store in returned p struct (default false)
 % When 'init' is used, additional options are available:
 %	wsize:    2x1 size of window, in pixels, which will be centered on centroid of LED (default: [11 11], for init only)
-%	navg:	  number of samples to average over
+%	navg:	  number of samples to average over (default=number of colors in p.colors; which are used as onval)
 % Returns vis with fields:
 % 	v(ncam,nled) - 1 if LED is visible, 0 if not
 %	when - when acquisition too place
@@ -22,12 +22,13 @@
 % 	im{ncam} - full images
 %	tgt{ncam,nled} - images of each target
 function [vis,p]=getvisible(p,varargin)
-args=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',p.colors{1},'wsize',[11 11],'navg',8,'calccorr',true,'mincorr',0.5);
+args=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',p.colors{1},'wsize',[11 11],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5);
 i=1;
 while i<=length(varargin)
   if ~isfield(args,varargin{i})
     error('Unknown option: "%s"\n',varargin{i});
   end
+  args.(['SET',varargin{i}])=true;   % Flag that it was set explicitly
   if islogical(args.(varargin{i})) && (i==length(varargin) || ischar(varargin{i+1}))
     % Special case of option string without value for boolean, assume true
     args.(varargin{i})=true;
@@ -50,23 +51,6 @@ else
     error('"viscache" data structure not initialized; use "init" option first');
   end
 end
-
-if ~isempty(args.im)
-  args.setleds=false;
-end
-
-if args.setleds
-  s1=arduino_ip();
-  % Turn on all LED's
-  %  fprintf('Turning on LEDs\n');
-  setled(s1,-1,args.onval,1);
-  show(s1);
-  sync(s1);
-  % even sending second sync does not ensure that the strip has been set
-  % pause for 300ms (200ms sometimes wasn't long enough)
-  pause(0.3);
-end
-
 
 if args.init
   % Initialize data in p.camera(:).viscache needed by getvisible
@@ -110,13 +94,18 @@ if args.init
 
   % Acquire samples
   for i=1:args.navg
-    if iscell(args.onval)
-      if length(args.onval)~=args.navg
-        error('Initialized with %d samples, but passed in array of %d onvals\n',args.navg,length(args.onval));
+    if isfield(args,'SETonval')
+      if iscell(args.onval)
+        if length(args.onval)~=args.navg
+          error('Initialized with %d samples, but passed in array of %d onvals\n',args.navg,length(args.onval));
+        end
+        onval=args.onval{i};   % Can pass in cell array of onvals to use these for calibration
+      else
+        onval=args.onval;
       end
-      onval=args.onval{i};   % Can pass in cell array of onvals to use these for calibration
     else
-      onval=args.onval;
+      % Use pix colors
+      onval=p.colors{mod(i-1,length(p.colors))+1};
     end
     % Recursive call without init, full stats, no corr (since viscache not setup)
     vis{i}=getvisible(p,'calccorr',false,'stats',true,'onval',onval);
@@ -143,9 +132,9 @@ if args.init
       for i=1:length(vis)
         sc(l,i)=corr2(vis{i}.tgt{c,l},s);
       end
-      if min(sc(l,:))<0.8
-        fprintf('Warning: corr(%d,%d,:)=%.2f - disabling use\n', c,l,min(sc(l,:)));
-        p.camera(c).viscache(l).inuse=false;
+      if min(sc(l,:))<0.7
+        fprintf('Warning: disabling pixel due to min corr <0.7; corr(%d,%d,:)=%s\n', c,l,sprintf('%.2f ',sc(l,:)));
+        p.camera(c).viscache.inuse(l)=false;
       end
       p.camera(c).viscache.refvec(j,:)=s(:);
     end
@@ -156,6 +145,23 @@ if args.init
   fprintf('Done initializing viscache...\n');
   % In the init case, the returned vis is a cell array of args.navg vis structs
   return;
+end
+
+% Normal case -- not init
+if ~isempty(args.im)
+  args.setleds=false;
+end
+
+if args.setleds && ~args.init
+  s1=arduino_ip();
+  % Turn on all LED's
+  %  fprintf('Turning on LEDs\n');
+  setled(s1,-1,args.onval,1);
+  show(s1);
+  sync(s1);
+  % even sending second sync does not ensure that the strip has been set
+  % pause for 300ms (200ms sometimes wasn't long enough)
+  pause(0.3);
 end
 
 % Initialize result struct
@@ -174,8 +180,8 @@ for i=1:length(im)
   if length(vc.imgsize)==2 && length(size(im{i}))==3
     % Convert to gray since window was setup for gray scale image
 %    im{i}=rgb2gray(im{i});
-    % quick convert using R/4+G/2+B/4
-    im{i}=bitshift(im{i}(:,:,1),-2)+bitshift(im{i}(:,:,2),-1)+bitshift(im{i}(:,:,3),-2);
+    % quick convert using R/2+G/2+B/2 (with saturating addition)
+    im{i}=bitshift(im{i}(:,:,1),-1)+bitshift(im{i}(:,:,2),-2)+bitshift(im{i}(:,:,3),-2);
   end
   if any(vc.imgsize ~= size(im{i}))
     error('Incorrect image size from camera %d: expected [%s], read [%s]\n', i, sprintf('%d ',vc.imgsize),sprintf('%d ',size(im{i})));
@@ -236,18 +242,24 @@ if args.calccorr
     % Pack all the LEDs into matrix (to speed up correlation computation) using linear index in vc.indices
     w=single(reshape(im{i}(ind(:)),size(ind,1),size(ind,2)));
     % Calc cross-correlation
-    sww=sum(w.*w,2);
+    sww=sum(w.*w,2)+0.1;   % Add a little fuzz in case the image is a constant value, which would otherwise result in a NaN for the correlation
     sw=sum(w,2);
     swr=sum(w.*vc.refvec,2);
     vis.corr(i,vc.ledmap)=swr./sqrt(sww*size(ind,2)-sw.*sw);
   end
 
+  
   vis.mincorr=args.mincorr;
   vis.v=single(vis.corr>vis.mincorr);
   vis.v(isnan(vis.corr))=nan;
 
   % Turn off indicator for pixels not in use (but lev, corr still valid)
   for c=1:length(p.camera)
+    % DEBUGGING situation where corr=NaN due to constant value image (see fuzz above)
+    %if any(isnan(vis.corr(c,[p.camera(c).viscache.inuse])))
+    %  fprintf('Bad corr.');
+    %  keyboard;
+    %end
     vis.v(c,~[p.camera(c).viscache.inuse])=nan;
   end
 end

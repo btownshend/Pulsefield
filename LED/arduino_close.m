@@ -9,5 +9,5 @@ else
   catch me
     error('Failed close of port: %s\n',me.message);
   end
-  clear global arduino_ip_port
 end
+clear global arduino_ip_port

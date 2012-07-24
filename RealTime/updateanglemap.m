@@ -14,9 +14,13 @@ for i=1:length(p.camera)
     fit=polyfit(2*pix(sel)/c.hpixels-0.5,ad(sel),6);
     p.camera(i).anglemap=polyval(fit,2*(0:c.hpixels-1)/c.hpixels-0.5);
   else
-    [pix,ord]=sort(pix(sel));
+    pix=pix(sel);
     ad=ad(sel);
-    ad=ad(ord);
+    [pix,ia]=unique(pix);
+    ad=ad(ia);
+    [pix,ord]=sort(pix);
+    %ad=ad(ord);  % This can make an out-of-order seq
+    ad=sort(ad);
     p.camera(i).anglemap=interp1(pix,ad,0:c.hpixels-1,'linear','extrap');
     for j=2:length(p.camera(i).anglemap)
       if p.camera(i).anglemap(j)<=p.camera(i).anglemap(j-1)
