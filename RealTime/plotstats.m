@@ -1,8 +1,9 @@
+% Plot statistics from a recording
 function plotstats(snap)
 setfig('hypo stats');clf;
 time={};speed={};area={};orientation={};majoraxislength={};minoraxislength={};heading={};valid={};
 for i=1:length(snap)
-  h=snap{i}.hypo;
+  h=snap(i).hypo;
   if length(h)>0
     ids=unique([h.id]);
     for jj=1:length(ids)
@@ -27,7 +28,7 @@ for j=1:length(time)
   majoraxislength{j}(~valid{j})=nan;
   minoraxislength{j}(~valid{j})=nan;
   time{j}(~valid{j})=nan;
-  time{j}=(time{j}-snap{1}.when)*24*3600;
+  time{j}=(time{j}-snap(1).when)*24*3600;
   time{j}(time{j}<0)=nan;
 end
 

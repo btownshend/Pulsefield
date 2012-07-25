@@ -2,24 +2,21 @@
 doplot=2;
 dolevcheck=false;
 
-if ~exist('p')
+if ~exist('p') || ~exist('layout')
   disp('Initializing setup')
   p=struct;
   p.analysisparams=analysissetup();
 %  ctype='av10115';
   ctype='av10115-half';
-  p.camera(1)=setupcamera(ctype,1);
-  p.camera(2)=setupcamera(ctype,2);
-  p.camera(3)=setupcamera(ctype,3);
-  p.camera(4)=setupcamera(ctype,4);
+  ids=[1 2 5 3 4];   % In order around circle
+  ncamera=length(ids);
+  for i=1:ncamera
+    p.camera(i)=setupcamera('av10115-half',ids(i));
+  end
   p.led=struct('id',num2cell(1:numled()));
   p.colors={127*[1 1 1], 127*[1 0 0], 127*[0 1 0], 127*[0 0 1],127*[1 1 0],127*[1 0 1], 127*[0 1 1]};
 
-%  layout=layoutlinear(p,length(p.led));
-  % layout.cpos(end,:)=[-0.68,1.16];
-  % layout.cdir(end,:)=[1,0];
-  % layout.cdir(3,:)=[-1,1]*sqrt(2)/2;
-  layout=layoutpolygon(6,4,0);
+  layout=layoutpolygon(6,ncamera,0);
   plotlayout(layout);
 end
 

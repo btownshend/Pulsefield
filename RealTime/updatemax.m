@@ -14,14 +14,18 @@ for i=1:length(snap.hypo)
 end
 
 % Update LCD
-lcdsize=200;
+lcdsize=400;
 for i=1:length(snap.hypo)
   pos=snap.hypo(i).pos;
    lp=int32((pos+2.5)*lcdsize/5);
-   sz=.2*lcdsize/5;
+   sz=2;
    lp=lp-sz/2;
    le=lp+sz;
-   col=255-int32(2*p.colors{i});
+   col=id2color(snap.hypo(i).id);
+   if all(col==127)
+     col=[0 0 0];
+   end
+   col=int32(col*255);
    ok=ok&sendtomax('/lcd',{'frgb',col(1),col(2),col(3)});
    ok=ok&sendtomax('/lcd',{'paintoval',lp(1),lp(2),le(1),le(2)});
 end	
