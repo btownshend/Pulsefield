@@ -2,7 +2,7 @@
 doplot=2;
 dolevcheck=false;
 
-if ~exist('p') || ~exist('layout')
+if ~exist('p')
   disp('Initializing setup')
   p=struct;
   p.analysisparams=analysissetup();
@@ -16,8 +16,8 @@ if ~exist('p') || ~exist('layout')
   p.led=struct('id',num2cell(1:numled()));
   p.colors={127*[1 1 1], 127*[1 0 0], 127*[0 1 0], 127*[0 0 1],127*[1 1 0],127*[1 0 1], 127*[0 1 1]};
 
-  layout=layoutpolygon(6,ncamera,0);
-  plotlayout(layout);
+  p.layout=layoutpolygon(6,ncamera,0);
+  plotlayout(p.layout);
 end
 
 % Set camera exposures
@@ -47,7 +47,7 @@ if ~isfield(p.camera(1),'pixcalib')
     for i=1:length(p.camera)
       pixcalibplot(p.camera(i));
     end
-    plotdistortion(p,layout);
+    plotdistortion(p);
   end
 end
 
@@ -69,24 +69,24 @@ cposcalib=[ 1.0361   -2.2656
             -1.3310   -2.1188
             -1.3218    2.1082
             1.0443    2.2606];
-if length(layout.cpos)==4 && max(max(abs(cposcalib-layout.cpos)))<0.1
+if length(p.layout.cpos)==4 && max(max(abs(cposcalib-layout.cpos)))<0.1
   fprintf('Forcing camera positions to previously calibrated values\n')
-  layout.cpos=cposcalib;
+  p.layout.cpos=cposcalib;
 else
   %layout.cpos=locatecameras();
   fprintf('*** Should run locatecameras()\n');
 end
 
 % Use the layout and the pixcalibration to update the anglemaps and the camera cdir
-[p,layout]=updateanglemap(p,layout);
+p=updateanglemap(p);
 
 % Could also adjust positions of LEDs based on pixel calibration, but this doesn't work yet
-%adjpos(p,layout)
+%adjpos(p)
 
 % Add ray image to structure (rays from each camera to each LED) to speed up target blocking calculation (uses true coords)
 if ~exist('rays')
   disp('Precomputing rays');
-  rays=createrays(layout,p.analysisparams.npixels);
+  p.rays=createrays(p.layout,p.analysisparams.npixels);
 end
 
 disp('Measuring');
@@ -96,10 +96,10 @@ if doplot>1
 end
 
 % Analyze data to estimate position of targets using layout
-samp=analyze(p,layout,vis.v,rays,doplot);
+samp=analyze(p,vis.v,doplot);
 
 % Run recording
-%recvis=recordvis(p,layout,rays,5);
+%recvis=recordvis(p,5);
 %recanalyze(recvis); % Analyze whole recording to get tracking
 %recanalyze(recvis,2);   % Analyze specific sample
 

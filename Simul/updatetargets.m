@@ -1,5 +1,5 @@
 % updatetargets - update position of each target
-function tgts=updatetargets(p,layout,tgts)
+function tgts=updatetargets(p,tgts)
 % Determine if it stops/starts walking
 ntgts=size(tgts,1);
 start=tgts.speed>0 & rand(ntgts,1)<p.simul.dt/p.simul.meanstoptime;
@@ -18,7 +18,7 @@ tgts.tpos=tgts.tpos+dpos;
 for i=1:2
   front(:,i)=tgts.tpos(:,i)+hd(:,i).*tgts.tgtdiam'/2;
 end
-outside=~inpolygon(front(:,1),front(:,2),layout.active(:,1),layout.active(:,2));
+outside=~inpolygon(front(:,1),front(:,2),np.layout.active(:,1),p.layout.active(:,2));
 if sum(outside)>0
   fprintf('Bouncing %d targets off walls\n', sum(outside));
   tgts.tpos(outside,:)=tgts.tpos(outside,:)-dpos(outside,:);

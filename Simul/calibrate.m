@@ -14,10 +14,11 @@
 %  solve system
 %  repeat until stable
 % Pass in true cpos, cdir, lpos to allow tracking of errors during simulation
-function calib=calibrate(p,layout,spos,doplot)
-if nargin<4
+function calib=calibrate(p,spos,doplot)
+if nargin<3
   doplot=false;
 end
+layout=p.layout;
 ncamera=size(spos,1);
 nled=size(spos,2);
 dirlen=0.1;	% Length of direction vectors to draw (in meters)

@@ -1,7 +1,6 @@
 % Analyze sensor data to determine positions of targets
 % Input:
 %  p - setup
-%  layout - actual or estimated positions of cameras, leds
 %  v(c,l) - 1 if led l is visible to camera c, 0 if not visible, nan if not within field of view
 % Output:
 % snap:
@@ -10,10 +9,12 @@
 %    tpos - center of target
 %    maxdiam - maximum possible diameter of target
 %    nunique - number of rays blocked that could only be attributed to this target
-function snap=analyze(p,layout,v,rays,doplot,truetgts)
-if nargin<5
+function snap=analyze(p,v,doplot,truetgts)
+if nargin<3
   doplot=false;
 end
+layout=p.layout;
+rays=p.rays;
 % im is zero where someone could be, 1 where they can't be
 im=zeros(rays.imap.isize);
 

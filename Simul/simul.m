@@ -11,42 +11,42 @@ if exist('p')==0
   end
   p.simul=simulsetup();
 
-  %  layout=layoutsquare(p, doplot);
-  %  layout=layoutspiral(p,doplot);
-  layout=layoutpolygon(6,ncamera,numled(),doplot);
-  % layout=layoutlinear(p,100,doplot);
+  %  p.layout=layoutsquare(p, doplot);
+  %  p.layout=layoutspiral(p,doplot);
+  p.layout=layoutpolygon(6,ncamera,numled(),doplot);
+  % p.layout=layoutlinear(p,100,doplot);
 
   % Add ray image to structure (rays from each camera to each LED) to speed up target blocking calculation (uses true coords)
-  rays=createrays(layout,p.analysisparams.npixels);
+  p.rays=createrays(p.layout,p.analysisparams.npixels);
 
   % Run calibration.  First, calculate 'spos', the position on the sensors of each LED using design coords of everything.
-  spos=calcspos(p,layout);
+  spos=calcspos(p);
   
   % Use the spos data to compute the estimated positions of LEDs and cameras, and camera gaze (cdir)
-  calib=calibrate(p,layout,spos,doplot);
+  calib=calibrate(p,spos,doplot);
 end
 
 % Simulate some targets
 tgts={};v={}; tgtestimate={}; hypo={};
-tgts{1}=settargets(p,layout,5);
+tgts{1}=settargets(p,5);
 % Initial make it exactly correct
-hypo{1}=inithypo(tgts{1},rays.imap);
+hypo{1}=inithypo(tgts{1},p.rays.imap);
 
 nmoves=100;
 dt=1;   % 1 second of target movement per update
 for r=2:nmoves
   % Update actual positions
   maxchange=0.1; 	   % Maximum change in position in m (normal distn with stdev=maxchange/2, mean 0)
-  tgts{r}=updatetargets(p,layout,tgts{r-1});
+  tgts{r}=updatetargets(p,tgts{r-1});
 
   % Find visibility of each LED using true positions of everything (but using rays.raylines as a helper)
-  v{r}=calcvisible(p,layout,rays,tgts{r},doplot);
+  v{r}=calcvisible(p,tgts{r},doplot);
 
   % Analyze data to estimate position of targets using calibrated layout
-  [possible{r},tgtestimate{r}]=analyze(p,calib,v{r},rays,doplot,tgts{r});
+  [possible{r},tgtestimate{r}]=analyze(p,v{r},doplot,tgts{r});
 
   % Update hypotheses of positions
-  hypo{r}=updatehypo(p,layout,rays.imap,hypo{r-1},possible{r},maxchange);
+  hypo{r}=updatehypo(p,p.rays.imap,hypo{r-1},possible{r},maxchange);
 
   printtgtstats(p,tgts{r}.tpos,hypo{r}.pos,0.2);
   plottrack(tgts,hypo);

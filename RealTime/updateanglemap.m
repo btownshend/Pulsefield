@@ -1,11 +1,11 @@
 % Update angle map using observed LED->pixel mapping
-function [p,layout]=updateanglemap(p,layout)
+function p=updateanglemap(p)
 usepoly=0;
 for i=1:length(p.camera)
   c=p.camera(i);
   for j=1:length(c.pixcalib)
-    c2ldir=layout.lpos(j,:)-layout.cpos(i,:);
-    ad(j)=cart2pol(layout.cdir(i,1),layout.cdir(i,2))-cart2pol(c2ldir(1),c2ldir(2));
+    c2ldir=p.layout.lpos(j,:)-p.layout.cpos(i,:);
+    ad(j)=cart2pol(p.layout.cdir(i,1),p.layout.cdir(i,2))-cart2pol(c2ldir(1),c2ldir(2));
     pix(j)=c.pixcalib(j).pos(1);
   end
   sel=isfinite(pix)&(pix>350)&(pix<c.hpixels-350);
@@ -32,6 +32,6 @@ for i=1:length(p.camera)
   end
   % Recenter
   addangle=p.camera(i).anglemap(round((end+1)/2));
-  [layout.cdir(i,1),layout.cdir(i,2)]=pol2cart(cart2pol(layout.cdir(i,1),layout.cdir(i,2))-addangle,1);
+  [p.layout.cdir(i,1),p.layout.cdir(i,2)]=pol2cart(cart2pol(p.layout.cdir(i,1),p.layout.cdir(i,2))-addangle,1);
   p.camera(i).anglemap=p.camera(i).anglemap-addangle;
 end

@@ -10,7 +10,7 @@ if exist('recvis') && isfield(recvis,'vis') && ~isempty(recvis.vis) && ~isfield(
         return;
     end
 end
-recvis=struct('p',p,'layout',layout,'rays',rays,'vis',[],'tgtestimate',[],'possible',{{}},'randseed',rand());
+recvis=struct('p',p,'vis',[],'tgtestimate',[],'possible',{{}},'randseed',rand());
 
 % Save in well known location
 save('/tmp/pulsefield_setup.mat','-struct','recvis');

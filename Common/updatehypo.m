@@ -6,7 +6,8 @@
 %   maxmovement - max movement of anyone in m
 % Output:
 %   hf.prob - updated hprob
-function hf=updatehypo(p,layout,imap,h,possible,maxmovement)
+function hf=updatehypo(p,imap,h,possible,maxmovement)
+layout=p.layout;
 pghost=0.5;   % Prob any given pixel is a ghost pixel
 % Account for possibility of an error - target is where possible says that someone cannot be
 possible=possible+0.01/length(possible(:));

@@ -1,5 +1,6 @@
 % Show rays from camera to LED based on calibration
-function showled(p,layout,led)
+function showled(p,led)
+layout=p.layout;
 plotlayout(layout)
 hold on;
 lpos=layout.lpos(led,:);

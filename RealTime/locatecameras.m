@@ -6,7 +6,7 @@ if nargin<1
   pause(15);
   nsamps=150;
   fprintf('Acquiring %d samples\n', nsamps);
-  recvis=recordvis(p,layout,rays,nsamps);
+  recvis=recordvis(p,nsamps);
 end
 selcam=zeros(length(recvis.p.camera),length(recvis.vis));
 for i=1:length(recvis.vis)
@@ -25,7 +25,7 @@ subplot(212);
 plot(selcam');
 ylabel('Camera to calibrate');
 xlabel('Sample number');
-cpos=recvis.layout.cpos;
+cpos=recvis.p.layout.cpos;
 ncameras=length(recvis.p.camera);
 ncpos=nan(size(cpos));
 setfig('locatecams')
@@ -36,7 +36,7 @@ for i=1:ncameras
 
   subplot(2,2,i);
   hold on;
-  plot(recvis.layout.active(1:end-1,1),recvis.layout.active(1:end-1,2),'m');
+  plot(recvis.p.layout.active(1:end-1,1),recvis.p.layout.active(1:end-1,2),'m');
   plot(xp(1),xp(2),'r.');
   axis equal
   title(sprintf('Camera %d',i));
@@ -58,10 +58,10 @@ for i=1:ncameras
       fprintf('Skipping, off-LEDs not contiguous\n');
       continue;
     end
-    if any(recvis.layout.ldir(offleds(1),:)~=recvis.layout.ldir(offleds(end),:))
+    if any(recvis.p.layout.ldir(offleds(1),:)~=recvis.p.layout.ldir(offleds(end),:))
       fprintf('Skipping, off-LEDs not collinear\n');
     end
-    lp=mean(recvis.layout.lpos(offleds([1,end]),:));
+    lp=mean(recvis.p.layout.lpos(offleds([1,end]),:));
     fprintf('Off-LEDs center = [%.3f,%.3f] ',lp');
 
     tgtleds=find(v(i,:)==0);   % Which LEDs are off
@@ -76,7 +76,7 @@ for i=1:ncameras
       fprintf('Skipping, adj tgt LED is not visible\n');
       continue;
     end
-    endpos=recvis.layout.lpos(tgtleds([1,end]),:);
+    endpos=recvis.p.layout.lpos(tgtleds([1,end]),:);
     plot([endpos(1,1),endpos(2,1)],[endpos(1,2),endpos(2,2)],'r');
     tlp=mean(endpos);
     fprintf('Tgt LEDs center = [%.3f,%.3f] ',tlp');

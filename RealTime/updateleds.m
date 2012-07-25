@@ -1,16 +1,18 @@
 % Update MAX with a new set of locations for the targets
-function updateleds(p,layout,snap)
+function updateleds(p,snap)
 % Send new values
 s1=arduino_ip(0);
 mindist=1.0;   % 1m
 distrange=0.02;  % If within this distance of min, then change color
 setled(s1,[0,numled()-1],p.colors{1},1); 
-for i=1:length(snap.hypo)
+[~,ord]=sort([snap.hypo.id]);
+for ii=1:length(ord)
+  i=ord(ii);
   h=snap.hypo(i);
   pos=h.pos;
   col=id2color(h.id);
   diam=h.majoraxislength;
-  d2=sqrt((layout.lpos(:,1)-pos(1)).^2+(layout.lpos(:,2)-pos(2)).^2);
+  d2=sqrt((p.layout.lpos(:,1)-pos(1)).^2+(p.layout.lpos(:,2)-pos(2)).^2);
   [dmin,closest]=min(d2);
   %fprintf('Mindist to target %d = %.1f\n', i, dmin);
   if dmin<=mindist

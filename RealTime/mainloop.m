@@ -9,7 +9,7 @@ userecvis=length(recvis.vis)>0;
 if ismember('hypo',plots)
   setfig('plothypo');clf;
   subplot(221);
-  plotlayout(recvis.layout,0)
+  plotlayout(recvis.p.layout,0)
   hold on;
   subplot(222);
   hold on;
@@ -62,13 +62,13 @@ while ~userecvis || samp<=length(recvis.vis)
   if ismember('rays',plots)
     pflg=2;
   end
-  snap{samp}=analyze(recvis.p,recvis.layout,vis.v,recvis.rays,pflg);
+  snap{samp}=analyze(recvis.p,vis.v,pflg);
   snap{samp}.when=vis.when;
   if samp==1
-    % hypo{samp}=inithypo(snap{1},recvis.rays.imap);
+    % hypo{samp}=inithypo(snap{1},recvis.p.rays.imap);
     snap{1}=inittgthypo(snap{1});
   else
-    snap{samp}=updatetgthypo(recvis.layout,snap{samp-1},snap{samp},samp);
+    snap{samp}=updatetgthypo(recvis.p.layout,snap{samp-1},snap{samp},samp);
   end
   
   if ~userecvis
@@ -168,7 +168,7 @@ while ~userecvis || samp<=length(recvis.vis)
   end
 
   if ~userecvis
-    updateleds(recvis.p,recvis.layout,snap{samp});
+    updateleds(recvis.p,snap{samp});
   end
   loopend=toc;
   %  fprintf('Loop time = %.2f seconds\n', loopend);

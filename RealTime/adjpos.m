@@ -1,5 +1,6 @@
 % Adjust positions of LEDs based on pixel calibration
-function calib=adjpos(p,layout)
+function calib=adjpos(p)
+layout=p.layout;
 % Form spos
 spos=zeros(length(p.camera),length(p.led));
 for i=1:length(p.camera)

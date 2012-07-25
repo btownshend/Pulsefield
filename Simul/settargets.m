@@ -1,5 +1,6 @@
 % settargets - choose some targets
-function tgts=settargets(p,layout,ntgt)
+function tgts=settargets(p,ntgt)
+layout=p.layout;
 fprintf('Targets are %.1f-%.1f cm in diameter\n', 100*[p.analysisparams.mintgtdiam,p.analysisparams.maxtgtdiam]);
 mincdist=1;	% Minimum distance between cameras and targets
 

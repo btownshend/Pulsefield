@@ -9,7 +9,7 @@ while true
 
   % Analyze data to estimate position of targets using layout
   disp('Analyzing');
-  [possible,tgtestimate]=analyze(p,layout,v,rays,doplot);
+  [possible,tgtestimate]=analyze(p,v,doplot);
   
   setfig('track');
   for i=1:size(tgtestimate.tpos,1)

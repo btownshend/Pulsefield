@@ -1,5 +1,6 @@
 % plot distortion based on layout and pixcalib
-function anglemap=plotdistortion(p,layout)
+function anglemap=plotdistortion(p)
+layout=p.layout;
 setfig('plotdistortion');
 clf;
 hold on;

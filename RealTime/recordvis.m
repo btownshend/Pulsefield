@@ -1,5 +1,5 @@
 % recordvis - record LED states 
-function recvis=recordvis(p,layout,rays,nsamps)
+function recvis=recordvis(p,nsamps)
 s1=arduino_ip();
 % Turn on all LED's
 fprintf('Turning on LEDs\n');
@@ -10,7 +10,7 @@ sync(s1);
 % pause for 300ms (200ms sometimes wasn't long enough)
 pause(0.3);
 
-recvis=struct('p',p,'layout',layout,'rays',rays,'vis',[]);
+recvis=struct('p',p,'vis',[]);
 
 for i=1:nsamps
   vis=getvisible(p,0);

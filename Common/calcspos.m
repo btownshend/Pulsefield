@@ -1,12 +1,13 @@
 % calcspos - calculate position of LED images on cameras' sensors
-function [spos,sa]=calcspos(p,layout,quiet,nobad)
+function [spos,sa]=calcspos(p,quiet,nobad)
+layout=p.layout;
 cpos=layout.cpos;
 lpos=layout.lpos;
 cdir=layout.cdir;
-if nargin<3
+if nargin<2
   quiet=0;
 end
-if nargin<4
+if nargin<3
   % nobad indicates that out of range values should NOT be nan-ed
   nobad=0;
 end
