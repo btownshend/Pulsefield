@@ -7,6 +7,9 @@ function cmd=setled(s1,index,color,execute)
 if nargin<4
   execute=1;
 end
+if length(index)==0
+  return;
+end
 if length(index)==1 && index==-1 && max(color)==0
   % All LEDs
   cmd=zeros(1,4,'uint8');
@@ -44,7 +47,7 @@ else
       pcmd(6)=color(1);
       pcmd(7)=color(2);
       pcmd(8)=color(3);
-%      fprintf('Set %d-%d\n',index(i),index(j));
+      %      fprintf('Set %d-%d\n',index(i),index(j));
     else
       % A single LED
       pcmd=zeros(1,6,'uint8');
