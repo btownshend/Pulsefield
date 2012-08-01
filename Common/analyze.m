@@ -55,8 +55,9 @@ end
 
 % Convert target diameters into (float) pixel coords
 mintgtdiampix=m2pix(rays.imap,p.analysisparams.mintgtdiam);
+maxfalsegap=m2pix(rays.imap,p.analysisparams.maxfalsegap);
 
-% Dilate image using disk
+% Erode image using disk
 % structure element slightly smaller than a person
 shrink=floor(mintgtdiampix/2);
 se=strel('disk',shrink,0);
@@ -65,7 +66,14 @@ possible=imerode(im==0,se);	% Erode image (1==center of person could be here)
 % Regrow the region 
 ibd=imdilate(possible,se);	% Regrow it (1==person could be present)
 
-lbl=bwlabel(possible);		% Label eroded image (only pixels that could be centers)
+% Dilate image using disk to close any gaps that may be between legs
+sefg=strel('disk',ceil(maxfalsegap/2),0);   %Despite documentation, using N=0 is more than twice as fast than N=4
+rmgaps=imclose(ibd,sefg);  % dilate then erode
+
+lbl=possible.*bwlabel(rmgaps);		% Label gap removed image, then mask with eroded image (only pixels that could be centers)
+                                        % This will prevent a narrowing between the legs from separating them into 2 separate labels
+
+% The masking above could have completely removed some labels, watch out...
 
 % Figure out centers of each possible target
 stats=regionprops(lbl','Centroid','Area','MinorAxisLength','MajorAxisLength','Orientation','ConvexHull','PixelList');  % Use transpose to go back to coord axis
@@ -79,6 +87,10 @@ for i=1:length(stats)
   convexhull=pix2m(rays.imap,stats(i).ConvexHull);
   pixellist=pix2m(rays.imap,stats(i).PixelList);
   area=((sqrt(stats(i).Area)+2*shrink)/rays.imap.scale)^2;
+  % Due to the masking, regionprops sometimes returns an empty region (no pixels)
+  if isempty(pixellist) 
+    fprintf('Empty label index %d\n',i);
+  end
   tgts=[tgts,struct('pos',pos,'minoraxislength',minoraxislength,'majoraxislength',majoraxislength,'orientation',stats(i).Orientation,'convexhull',convexhull,'pixellist',pixellist,'area',area,'stats',stats(i),'nunique',nan)];
 end
         
@@ -86,7 +98,7 @@ if doplot>1
   imc=zeros(size(im,1),size(im,2),4);
   imc(:,:,1)=cnt0/size(v,1);
   imc(:,:,2)=cnt1/size(v,1);
-  imc(:,:,3)=ibd;
+  imc(:,:,3)=rmgaps;
   
   setfig('analyze.rays');clf;
   for k=1:2
@@ -118,7 +130,7 @@ end
 
 % Compute which points are possible ghosts
 if length(tgts)>0
-  alllbl=bwlabel(ibd==1);	% Label regrown image
+  alllbl=bwlabel(rmgaps==1);	% Label regrown image
   %assert(length(unique(alllbl))==length(tgts)+1);  % This assert slows things down a lot...
 
   for i=1:length(tgts)
@@ -142,6 +154,15 @@ if length(tgts)>0
     end
   end
 end
+
+% Remove any empty targets (due to label masking above)
+keeptgt=true(1,length(tgts));
+for i=1:length(tgts)
+  if isempty(tgts(i).pixellist)
+    keeptgt(i)=false;
+  end
+end
+tgts=tgts(keeptgt);
 
 if doplot>0
   setfig('analyze.estimates');
