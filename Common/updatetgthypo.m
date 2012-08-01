@@ -40,8 +40,9 @@ dt=(snap.when-prevsnap.when)*24*3600;
 
 % Extrapolate position using estimate velocity
 for j=1:length(h)
-  if isfinite(h(j).speed)
-    h(j).pos=h(j).pos+h(j).delta/norm(h(j).delta)*min(maxspeed,h(j).speed)*dt;
+  speed=norm(h(j).velocity);
+  if isfinite(speed)
+    h(j).pos=h(j).pos+h(j).velocity/speed*min(maxspeed,speed)*dt;
     if ~inpolygon(h(j).pos(1),h(j).pos(2),layout.active(:,1),layout.active(:,2))
       h(j).pos=prevsnap.hypo(j).pos;
       fprintf('Extrapolating position from (%f,%f) would end up outside, skipping extrapolation\n',h(j).pos);
@@ -166,7 +167,7 @@ if samp==-1
 end
 
 % Assign by highest likelihood
-hf=struct('id',{},'pos',{},'tnum',{},'like',{},'entrytime',{},'lasttime',{},'area',{},'delta',{},'speed',{},'heading',{},'orientation',{},'minoraxislength',{},'majoraxislength',{});
+hf=struct('id',{},'pos',{},'tnum',{},'like',{},'entrytime',{},'lasttime',{},'area',{},'velocity',{},'heading',{},'orientation',{},'minoraxislength',{},'majoraxislength',{});
 
 matched=0*[tgts.nunique];
 while ~isempty(like)
@@ -184,11 +185,10 @@ while ~isempty(like)
     interval=(snap.when-h(mj).lasttime)*3600*24;
     % Direction vector per second
     % h(mj).pos already has a velocity prediction factor in it; go back to previous point estimate
-    delta=(newpos{mi,mj}-prevsnap.hypo(mj).pos)/interval;
-    spd=norm(delta);
-    heading=atan2d(delta(2),delta(1));
+    velocity=(newpos{mi,mj}-prevsnap.hypo(mj).pos)/interval;
+    heading=atan2d(velocity(2),velocity(1));
   end
-  hf=[hf,struct('id',id,'pos',newpos{mi,mj},'tnum',mi,'like',like(mi,mj),'entrytime',entrytime,'lasttime',snap.when,'area',tgts(mi).area,'delta',delta,'speed',spd,'heading',heading,'orientation',tgts(mi).orientation,'minoraxislength',tgts(mi).minoraxislength,'majoraxislength',tgts(mi).majoraxislength)];
+  hf=[hf,struct('id',id,'pos',newpos{mi,mj},'tnum',mi,'like',like(mi,mj),'entrytime',entrytime,'lasttime',snap.when,'area',tgts(mi).area,'velocity',velocity,'heading',heading,'orientation',tgts(mi).orientation,'minoraxislength',tgts(mi).minoraxislength,'majoraxislength',tgts(mi).majoraxislength)];
   if debug
     fprintf('Assigned target %d (%6.3f,%6.3f) to hypo %d with dist=%.2f, like=%.3f\n', mi, newpos{mi,mj}, id, dist(mi,mj), like(mi,mj));
   end
@@ -215,7 +215,6 @@ for i=1:length(h)
       end
     else
       hf=[hf,h(i)];
-      hf(end).speed=nan;
       hf(end).area=nan;
     end
   end
@@ -249,8 +248,8 @@ for i=1:length(missed)
     id=snap.nextid;
     snap.nextid=snap.nextid+1;
     entrytime=snap.when;
-    delta=nan;spd=nan;heading=nan;
-    hf=[hf,struct('id',id,'pos',t.pos,'tnum',mi,'like',entrylike(mi),'entrytime',entrytime,'lasttime',snap.when,'area',tgts(mi).area,'delta',nan,'speed',nan,'heading',nan,'orientation',tgts(mi).orientation,'minoraxislength',tgts(mi).minoraxislength,'majoraxislength',tgts(mi).majoraxislength)];
+    velocity=[nan,nan];heading=nan;
+    hf=[hf,struct('id',id,'pos',t.pos,'tnum',mi,'like',entrylike(mi),'entrytime',entrytime,'lasttime',snap.when,'area',tgts(mi).area,'velocity',velocity,'heading',heading,'orientation',tgts(mi).orientation,'minoraxislength',tgts(mi).minoraxislength,'majoraxislength',tgts(mi).majoraxislength)];
     if debug
       fprintf('Assigned target %d (%6.3f,%6.3f) to NEW hypo %d with dist=%.2f, like=%.3f\n', mi, t.pos, id, entrydist(mi), entrylike(mi));
     end
