@@ -1,4 +1,5 @@
-function pixcalibplot(cam)
+% Plot results of pixcalibrate
+function plotpixcalib(cam)
 setfig(['pixcalibplot.diffs',cam.id]);
 clf;
 cp=reshape([cam.pixcalib.pos],2,[]);

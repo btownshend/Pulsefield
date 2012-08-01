@@ -65,7 +65,6 @@ while ~userecvis || samp<=length(recvis.vis)
   snap{samp}.when=vis.when;
   snap{samp}.samp=samp;
   if samp==1
-    % hypo{samp}=inithypo(snap{1},recvis.p.rays.imap);
     snap{1}=inittgthypo(snap{1});
   else
     snap{samp}=updatetgthypo(recvis.p.layout,snap{samp-1},snap{samp},samp);
