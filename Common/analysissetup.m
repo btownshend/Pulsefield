@@ -7,6 +7,10 @@ eccentricity=sqrt(1-(1/ellipseratio)^2);
 [~,Ee]=ellipke(eccentricity);
 aparams.mintgtdiam=waistcircum5pct/(4*Ee);
 aparams.maxtgtdiam=waistcircum95pct/(4*Ee)*ellipseratio;
+
+% Maximum false gap (in m), such as rays that go between the legs of somebody
+aparams.maxfalsegap=0.1;   % 10cm
+
 %wcsigma=0.14;
 %meantgtdiam=waistcircum/pi;
 %sdevtgtdiam=wcsigma/pi;
@@ -14,3 +18,6 @@ aparams.maxtgtdiam=waistcircum95pct/(4*Ee)*ellipseratio;
 %aparams.maxtgtdiam=meantgtdiam*1.2+sqrt(3)*sdevtgtdiam;
 aparams.npixels=500;
 
+aparams.fps=7;    % Max speed for AV10115 (unless sensorheight settings changed)
+aparams.updatetc=60;  % Time constant for update of reference image
+aparams.mincorr=0.5;
