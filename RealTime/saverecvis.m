@@ -7,7 +7,7 @@ if ~isempty(recvis.note)
     recvistmp.vis=rmfield(recvis.vis,'im');
     save(recname,'-struct','recvistmp');
   else
-    save(recname,'-struct','recvis');
+    save(recname,'-v7.3','-struct','recvis');
   end
   fprintf('done\n');
 end

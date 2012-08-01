@@ -273,10 +273,10 @@ for iid=1:length(ids)
   sainfo.camera(iid).pixcalibtime=now;
   % Setup ROI for each camera
   cp=reshape([calib([calib.valid]).pos],2,[]);
-  border=max([calib([calib.valid]).diameter]);
+  border=min(6,max([calib([calib.valid]).diameter]));
   sainfo.camera(iid).roi=[
-      max(1,floor(min(cp(1,:))-border)),min(size(imat,2),ceil(max(cp(1,:))+border+31)),...
-      max(1,floor(min(cp(2,:))-border)),min(size(imat,1),ceil(max(cp(2,:))+border+31))];
+      max(1,floor(min(cp(1,:))-border)),min(size(imat,2),ceil(max(cp(1,:))+border)),...
+      max(1,floor(min(cp(2,:))-border)),min(size(imat,1),ceil(max(cp(2,:))+border))];
   % Make divisible by 32 for camera
   sainfo.camera(iid).roi([1,3])=floor((sainfo.camera(iid).roi([1,3])-1)/32)*32+1;
   sainfo.camera(iid).roi([2,4])=ceil((sainfo.camera(iid).roi([2,4])-1)/32)*32+1;
@@ -284,7 +284,6 @@ for iid=1:length(ids)
   fprintf('Camera %d: ROI size = %d x %d\n', iid, (roi(2)-roi(1)),(roi(4)-roi(3)));
   if (roi(4)-roi(3))>200
     fprintf('**WARNING** Camera %d has excessive ROI size = %d x %d\n', iid, (roi(2)-roi(1)),(roi(4)-roi(3)));
-    keyboard
   end
 end % iid
 

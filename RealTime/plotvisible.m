@@ -1,13 +1,12 @@
-function plotvisible(sainfo,vis)
-setfig('getvisible');
+function plotvisible(sainfo,vis,figname)
+if nargin<3
+  setfig('getvisible');
+else
+  setfig(figname);
+end
 clf;
-ncol=1;
-if isfield(vis,'corr')
-  ncol=2;
-end
-if isfield(vis,'im')
-  ncol=ncol+1;
-end
+ncol=0;
+ncol=ncol+isfield(vis,'corr')+isfield(vis,'im')+isfield(vis,'refim')+isfield(vis,'lev');
 if ~isfield(vis,'v')
   vis.v=vis.lev>127;
 end
@@ -15,6 +14,24 @@ for i=1:size(vis.v,1)
   c=sainfo.camera(i).pixcalib;
   roi=sainfo.camera(i).roi;
   col=1;
+  if isfield(vis,'refim')
+    subplot(length(vis.refim),ncol,(i-1)*ncol+col);
+    col=col+1;
+    imshow(vis.refim{i});
+    axis normal
+    hold on;
+    title(sprintf('Reference %d',sainfo.camera(i).id));
+    pause(0.01);
+    for j=1:length(c)
+      if ~isnan(vis.v(i,j))
+        if vis.v(i,j)
+          plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,'og');
+        else
+          plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,'or');
+        end
+      end
+    end
+  end
   if isfield(vis,'im')
     subplot(length(vis.im),ncol,(i-1)*ncol+col);
     col=col+1;
@@ -58,9 +75,11 @@ for i=1:size(vis.v,1)
     corr(isnan(vis.v(i,:)))=nan;
     plot(corr,'g');
     hold on;
-    % Plot threshold, broken with NaNs for unused LEDs
-    mc=corr*0+vis.mincorr;
-    plot(mc,'c');
+    if isfield(vis,'mincorr')
+      % Plot threshold, broken with NaNs for unused LEDs
+      mc=corr*0+vis.mincorr;
+      plot(mc,'c');
+    end
     % Plot off signals in red
     corr(vis.v(i,:)==1)=nan;
     plot(corr,'rx');

@@ -3,7 +3,7 @@ function recvis=recordvis(p,nsamps)
 s1=arduino_ip();
 % Turn on all LED's
 fprintf('Turning on LEDs\n');
-setled(s1,[0,length(p.led)-1],p.colors{1},1);
+setled(s1,[0,length(p.led)-1],127*p.colors{1},1);
 show(s1);
 sync(s1);
 % even sending second sync does not ensure that the strip has been set

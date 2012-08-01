@@ -68,9 +68,9 @@ if length(snap.hypo)>0
     else
       ok=ok&sendtomax('/seq',{'step',int32(i),int32(p), int32(0), int32(duration), int32(ch)});
     end
-    if p>0
-      fprintf('step %d: pitch=%d\n', i, p);
-    end
+    %    if p>0
+    %      fprintf('step %d: pitch=%d\n', i, p);
+    % 	 end
   end
   disprange=[min([pitches(pitches>0)-4,36]),max([pitches+4,86])];
   ok=ok&sendtomax('/seq',{'zoom',int32(disprange(1)),int32(disprange(2))});

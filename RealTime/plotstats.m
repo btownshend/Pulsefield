@@ -8,7 +8,7 @@ for i=1:length(snap)
     ids=unique([h.id]);
     for jj=1:length(ids)
       j=ids(jj);
-      speed{j}(i)=h(jj).speed;
+      speed{j}(i)=norm(h(jj).velocity);
       heading{j}(i)=h(jj).heading;
       area{j}(i)=h(jj).area;
       orientation{j}(i)=h(jj).orientation;
@@ -49,7 +49,9 @@ end
 snum=(snum-1)*3+1;
 subplot(6,3,[snum,snum+1]);hold on;
 for j=1:length(t)
-  plot(t{j},v{j},'Color',id2color(j));
+  if any(isfinite(v{j}))
+    plot(t{j},v{j},'Color',id2color(j));
+  end
 end
 xlabel('Time (sec)');
 ylabel([lbl,' (',units,')']);
@@ -58,7 +60,7 @@ c=axis;if isfinite(minval) c(3)=minval; end; if isfinite(maxval) c(4)=maxval;end
 
 subplot(6,3,snum+2); hold on;
 for j=1:length(t)
-  if sum(isfinite(t{j}))>20
+  if sum(isfinite(v{j}))>20
     h=cdfplot(v{j}(isfinite(v{j})));
     set(h,'Color',id2color(j));
   end

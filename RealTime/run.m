@@ -6,15 +6,15 @@ if ~exist('p')
   disp('Initializing setup')
   p=struct;
   p.analysisparams=analysissetup();
-%  ctype='av10115';
-  ctype='av10115-half';
+  ctype='av10115';
+  %  ctype='av10115-half';
   ids=[1 2 5 3 4];   % In order around circle
   ncamera=length(ids);
   for i=1:ncamera
-    p.camera(i)=setupcamera('av10115-half',ids(i));
+    p.camera(i)=setupcamera(ctype,ids(i));
   end
   p.led=struct('id',num2cell(1:numled()));
-  p.colors={127*[1 1 1], 127*[1 0 0], 127*[0 1 0], 127*[0 0 1],127*[1 1 0],127*[1 0 1], 127*[0 1 1]};
+  p.colors={[1 1 1], [1 0 0], [0 1 0], [0 0 1],[1 1 0],[1 0 1], [0 1 1]};
 
   p.layout=layoutpolygon(6,ncamera,0);
   plotlayout(p.layout);
@@ -84,9 +84,9 @@ p=updateanglemap(p);
 %adjpos(p)
 
 % Add ray image to structure (rays from each camera to each LED) to speed up target blocking calculation (uses true coords)
-if ~exist('rays')
+if ~isfield(p,'rays')
   disp('Precomputing rays');
-  p.rays=createrays(p.layout,p.analysisparams.npixels);
+  p.rays=createrays(p);
 end
 
 disp('Measuring');

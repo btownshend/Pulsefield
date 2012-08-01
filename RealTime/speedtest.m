@@ -2,7 +2,7 @@
 ntest=50;
 % Turn on LEDs
 s1=arduino_ip(1);
-setled(s1,[0,numled()-1],p.colors{1},1); show(s1); sync(s1);
+setled(s1,[0,numled()-1],127*p.colors{1},1); show(s1); sync(s1);
 pause(2);
 vis={};
 fprintf('Running getvisible() %d times\n', ntest);

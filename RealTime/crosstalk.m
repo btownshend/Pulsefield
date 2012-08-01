@@ -6,7 +6,7 @@ minmargin=50;  % Minimum margin between on-level and off-level to flag a LED->ca
 % Measure signal with all LEDs off, even only, odd only
 s1=arduino_ip();
 if nargin<2
-  onval=p.colors{1};  % See output from levcheck
+  onval=p.colors{1}*127;  % See output from levcheck
 end
 when=now;
 for i=1:5

@@ -23,14 +23,18 @@ setled(s1,-1,[0,0,0],1); show(s1); sync(s1);
 
 % Sleep a bit
 fprintf('Starting in ');
-for i=10:-1:1
-  fprintf('%d...',i);
+for i=5:-1:1
   pause(1);
+  fprintf('%d...',i);
 end
-fprintf('Ready\n');
 
 % Turn on LEDs
-setled(s1,[0,numled()-1],p.colors{1},1); show(s1); sync(s1);
+setled(s1,[0,numled()-1],127*p.colors{1},1); show(s1); sync(s1);
+
+% Wait for them to stabilize
+pause(1);
+
+fprintf('Ready\n');
 
 % Start acquisition
 mainloop;
