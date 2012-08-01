@@ -17,7 +17,7 @@ if exist('p')==0
   % p.layout=layoutlinear(p,100,doplot);
 
   % Add ray image to structure (rays from each camera to each LED) to speed up target blocking calculation (uses true coords)
-  p.rays=createrays(p.layout,p.analysisparams.npixels);
+  p.rays=createrays(p);
 
   % Run calibration.  First, calculate 'spos', the position on the sensors of each LED using design coords of everything.
   spos=calcspos(p);
