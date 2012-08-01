@@ -70,7 +70,8 @@ for i=1:size(vis.v,1)
     legend('Signal','Threshold','Neighlev');
   end
   if isfield(vis,'corr')
-    subplot(size(vis.v,1),ncol,(i-1)*ncol+col);col=col+1;
+    subplot(size(vis.v,1),ncol,(i-1)*ncol+col);
+    col=col+1;
     corr=vis.corr(i,:);
     corr(isnan(vis.v(i,:)))=nan;
     plot(corr,'g');

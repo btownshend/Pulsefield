@@ -2,7 +2,7 @@
 doplot=2;
 dolevcheck=false;
 
-if ~exist('p')
+if ~exist('p','var')
   disp('Initializing setup')
   p=struct;
   p.analysisparams=analysissetup();
@@ -38,7 +38,7 @@ end
 
 if ~isfield(p.camera(1),'pixcalib')
   disp('Pixel calibration');
-  if exist('pixcalibimages')
+  if exist('pixcalibimages','var')
     p=pixcalibrate(p,pixcalibimages);
   else
     [p,pixcalibimages]=pixcalibrate(p);

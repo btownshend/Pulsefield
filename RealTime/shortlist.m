@@ -14,7 +14,7 @@ for i=1:length(bks)
   end
   if i<length(bks) && bks(i+1)~=bks(i)+1
     l=[l,sprintf('%d-%d',x(bks(i)),x(bks(i+1)-1))];
-  elseif i==length(bks) & length(x)>bks(i)
+  elseif i==length(bks) && length(x)>bks(i)
     l=[l,sprintf('%d-%d',x(bks(i)),x(end))];
   else
     l=[l,sprintf('%d',x(bks(i)))];

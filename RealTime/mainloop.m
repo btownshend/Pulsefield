@@ -4,7 +4,7 @@
 %	  plots - set of plots to do ('stats','hypo','ana','vis')
 %function recvis=mainloop(recvis,timedreplay,plots)
 global recvis
-userecvis=length(recvis.vis)>0;
+userecvis=~isempty(recvis.vis);
 
 if ismember('hypo',plots)
   setfig('plothypo');clf;

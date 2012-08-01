@@ -132,7 +132,6 @@ if args.init
     p.camera(c).viscache.inuse=[pc.valid];   % Initially same as valid (may be changed below)
     fvalid=find([pc.valid]);
     p.camera(c).viscache.ledmap=fvalid;
-    sc=nan(length(p.led),length(vis));
     for j=1:length(fvalid)
       l=fvalid(j);
       s=single(vis{1}.imspot{c,l});
@@ -258,8 +257,6 @@ if args.stats
     % Size of individuals windows in screen coords
     wsize=p.camera(i).viscache.wsize;
     assert(size(ind,2)==prod(wsize));
-
-    refvec=[];
 
     % Pack all the LEDs into matrix (to speed up correlation computation)
     w=reshape(im{i}(ind(:)),size(ind,1),size(ind,2));

@@ -4,7 +4,6 @@
 % im - optional arg to reuse image data
 function [sainfo,im]=pixcalibrate(sainfo,im)
 ids=[sainfo.camera.id];
-nrpt=1;
 DEBUG=false;
 nrpt=1;
 nled=numled();
@@ -83,9 +82,9 @@ if nargin<2 || isempty(im)
       fprintf('**** Dropped %d bytes (Send %d, Arduino received %d)\n', nsent(p)-nrcvd(p),nsent(p),nrcvd(p));
     end
   end
-  elapsed=toc;
-%  fprintf('Changed all %d LEDs %d times in %.2f seconds = %.2f changes/second\n', nled, nset, elapsed, nset/elapsed);
-%  fprintf('Wrote %d bytes, Read %d bytes in %.2f seconds. Effective rate = %.0f bytes/second\n', stopwrote-startwrote, stopread-startread, elapsed, (stopwrote-startwrote+stopread-startread)/(elapsed));
+  %  elapsed=toc;
+  %  fprintf('Changed all %d LEDs %d times in %.2f seconds = %.2f changes/second\n', nled, nset, elapsed, nset/elapsed);
+  %  fprintf('Wrote %d bytes, Read %d bytes in %.2f seconds. Effective rate = %.0f bytes/second\n', stopwrote-startwrote, stopread-startread, elapsed, (stopwrote-startwrote+stopread-startread)/(elapsed));
 end
 
 
@@ -143,11 +142,8 @@ for iid=1:length(ids)
   tmatthresh=max(tmat(:))/6;
   selmat=tmat>=tmatthresh;
   fprintf('Thresh(%d)=%f with %d points>thresh\n',iid, tmatthresh, sum(selmat(:)));
-  se2=strel('disk',2,0);
-  % Dilate the valid image to expand the valid regions
-  %selmat=imdilate(selmat,se2);
+
   % Unlabel invalid points
-  imatall=imat;
   imat(~selmat)=0;
   if DEBUG
     % Plot count of pixels per led
@@ -172,7 +168,6 @@ for iid=1:length(ids)
   end
 
   % Break each distinct LED into regions
-  stats={};
   xany=any(imat,1);
   yany=any(imat,2);
   roi=[find(xany,1),find(xany,1,'last'),find(yany,1),find(yany,1,'last')];

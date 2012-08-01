@@ -12,7 +12,7 @@ selcam=zeros(length(recvis.p.camera),length(recvis.vis));
 for i=1:length(recvis.vis)
   nblocked(i,:)=sum((recvis.vis(i).v==0)');
   [sn,ord]=sort(nblocked(i,:),'descend');
-  if sn(1)>20 & min(sn(1:3))>3
+  if sn(1)>20 && min(sn(1:3))>3
     selcam(ord(1),i)=1;
   end
 end

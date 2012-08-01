@@ -1,4 +1,4 @@
-% Update MAX with a new set of locations for the targets
+% Update LEDS to display tracking of each hypo
 function updateleds(p,snap)
 period=10.0;  % Period of pulsing (in seconds)
 maxlev=0.6;

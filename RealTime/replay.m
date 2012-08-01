@@ -1,5 +1,6 @@
+% Replay a recorded set of movements stored in recvis
 global recvis
-if ~exist('recvis') || isempty(recvis.vis)
+if ~exist('recvis','var') || isempty(recvis.vis)
     error('Nothing to replay -- need to load recvis');
 end
 timedreplay=0;   % Set to 1 to replay at same pacing as recording

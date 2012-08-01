@@ -4,7 +4,7 @@ plots={};
 
 % Setup data structure
 global recvis
-if exist('recvis') && isfield(recvis,'vis') && ~isempty(recvis.vis) && ~isfield(recvis,'note')
+if exist('recvis','var') && isfield(recvis,'vis') && ~isempty(recvis.vis) && ~isfield(recvis,'note')
     z=input(sprintf('Are you sure you want to overwrite existing recvis with %d samples? [Y/N]: ',length(recvis.vis)),'s');
     if isempty(z) || upper(z)~='Y'
         return;

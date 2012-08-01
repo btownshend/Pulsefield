@@ -7,12 +7,10 @@ hold on;
 lpos=layout.lpos;
 for i=1:length(p.camera)
   c=p.camera(i);
-  ctr=[c.hpixels,c.vpixels]/2;
   cdir=layout.cdir(i,:);
   cdir=cdir/norm(cdir);
   cpos=layout.cpos(i,:);
   for j=2:length(c.pixcalib)
-    pc=c.pixcalib(j);
     dpixel(i,j)=norm(c.pixcalib(j).pos-c.pixcalib(j-1).pos);
     c2ldir=lpos(j,:)-cpos;
     c2ldir=c2ldir/norm(c2ldir);
@@ -66,5 +64,5 @@ title('Absolute pixels vs angle');
 
 suptitle('Distortion');
 
-[upx,ord]=unique(px,'stable');
+[~,ord]=unique(px,'stable');
 anglemap=interp1(px(ord),stheta(ord),0:cam.hpixels-1,'pchip');

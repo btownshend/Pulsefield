@@ -13,7 +13,6 @@ else
   nl=length(leds);
 end
 
-wind=5;
 if nargin<2 || isempty(vis)
   % Use lower level to avoid clipping
   vis=getvisible(p,'onval',20*[1 1 1],'stats');
@@ -107,6 +106,5 @@ for c=1:nc
       imshow(p.camera(c).viscache.refimspot{l});
       title(sprintf('vc.refimspot %d',l));
     end
-  end
   end
 end

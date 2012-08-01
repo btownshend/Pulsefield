@@ -135,7 +135,7 @@ if ismember('seq',apps)
     velocity=127;
     duration=120;
 
-    if length(snap.hypo)>0
+    if ~isempty(snap.hypo)
       pitches=[]; step=[]; channel=[];
       for i=1:length(snap.hypo)
         step(i)=max([1,find(snap.hypo(i).pos(1)>stepedges)]);
@@ -145,7 +145,7 @@ if ismember('seq',apps)
       [step,ord]=sort(step);
       pitches=pitches(ord);
       channel=channel(ord);
-      pv=zeros(1,nsteps);
+
       for i=1:nsteps
         sel=find(step==i);
         if length(sel)>1
@@ -204,7 +204,7 @@ if running && nargin>=4 && ismember('guitar',apps)
         plucked=allplucked(pl);
         duration=120;
         velocity=max(5,min(127,round(norm(snap.hypo(i).velocity)/1.3*127)));
-        fret=min(find(pos(2)>[frety,-inf]))-1;
+        fret=find(pos(2)>[frety,-inf]),1)-1;
         pitch=fretpitches(plucked)+fret;
         fprintf('Plucked string %d at fret %d: pitch=%d, vel=%d, dur=%d\n',plucked,fret,pitch,velocity,duration);
         m{end+1}=msg('/pf/pass/guitar',{int32(snap.hypo(i).id),int32(pitch),int32(velocity),int32(duration)});

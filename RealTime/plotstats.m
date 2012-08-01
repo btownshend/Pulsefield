@@ -4,7 +4,7 @@ setfig('hypo stats');clf;
 time={};speed={};area={};orientation={};majoraxislength={};minoraxislength={};heading={};valid={};
 for i=1:length(snap)
   h=snap(i).hypo;
-  if length(h)>0
+  if ~isempty(h)
     ids=unique([h.id]);
     for jj=1:length(ids)
       j=ids(jj);
@@ -56,7 +56,16 @@ end
 xlabel('Time (sec)');
 ylabel([lbl,' (',units,')']);
 title(lbl);
-c=axis;if isfinite(minval) c(3)=minval; end; if isfinite(maxval) c(4)=maxval;end; axis(c);
+
+c=axis;
+if isfinite(minval) 
+  c(3)=minval; 
+end; 
+if 
+  isfinite(maxval) 
+  c(4)=maxval;
+end; 
+axis(c);
 
 subplot(6,3,snum+2); hold on;
 for j=1:length(t)

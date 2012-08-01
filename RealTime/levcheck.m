@@ -38,7 +38,7 @@ for c=1:length(colors)  % Loop over colors (4=white)
     ylabel('Fraction of valid LEDs Clipped');
     title('Clipping Count');
   end
-  satlev{c}=levs(min(find(outlevs==255)));
+  satlev{c}=levs(find(outlevs==255,1));
   maxout{c}=max(outlevs);
   if isempty(satlev{c})
     colors{c}=col*127;

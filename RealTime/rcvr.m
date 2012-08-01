@@ -30,7 +30,6 @@ if args.init
   sendmsg(addr,'/vis/set/corrthresh',{0.5});
   for i=1:length(p.camera)
     c=p.camera(i);
-    wsize=c.viscache.wsize;
     if strcmp(c.type,'av10115')
       res='full';
     elseif strcmp(c.type,'av10115-half')
@@ -85,7 +84,7 @@ end
 
 if args.stats
   % Request stats from frontend
-  flushvis=rcvr(p,'flush');   % Flush any queued data
+  rcvr(p,'flush');   % Flush any queued data
   addr=osc_new_address('localhost',frontendport);
   sendmsg(addr,'/vis/get/corr',{});
   sendmsg(addr,'/vis/get/refimage',{});
