@@ -1,11 +1,12 @@
 % Receiver of data from frontend (C++) that sends data via OSC
-
 function vis=rcvr(p,varargin)
 global visserver;
 frontendport=7770;
+frontendhost='localhost';
+myhost='localhost';
 myport=7773;
 
-args=struct('init',false,'stats',false,'flush',false,'nowait',false,'debug',false);
+args=struct('init',false,'connect', false, 'stats',false,'flush',false,'nowait',false,'debug',false,'sendquit',false);
 i=1;
 while i<=length(varargin)
   if ~isfield(args,varargin{i})
@@ -23,8 +24,14 @@ while i<=length(varargin)
 end
 
 if args.init
+  % Start frontend
+  cmd=sprintf('../FrontEnd/frontend >/tmp/frontend.log 2>&1 & sleep 1; cat /tmp/frontend.log; ');
+  fprintf('Running cmd: "%s"\n', cmd);
+  [s,r]=system(cmd);
+  fprintf('%s\n',r);
+
   % Initialize
-  addr=osc_new_address('localhost',frontendport);
+  addr=osc_new_address(frontendhost,frontendport);
   sendmsg(addr,'/vis/stop',{});
   sendmsg(addr,'/vis/set/fps',{p.analysisparams.fps});
   sendmsg(addr,'/vis/set/corrthresh',{0.5});
@@ -67,31 +74,51 @@ if args.init
     end
     pause(1);   % Try not to overrun UDP stack
   end
-  sendmsg(addr,'/vis/dest/add',{'localhost',myport});
+  osc_free_address(addr);
+end
+
+if args.connect
+  fprintf('Connecting to %s:%d from %s:%d\n', frontendhost, frontendport, myhost, myport);
+  addr=osc_new_address(frontendhost,frontendport);
+  sendmsg(addr,'/vis/dest/add',{myhost,myport});
 
   % Start a local server to receive vis messages
   port=myport;
   if ~isempty(visserver)
+    fprintf('Freeing old OSC server at port %d. ', port);
     osc_free_server(visserver);
   end
     
   visserver=osc_new_server(port);
   fprintf('Started new OSC server at port %d\n', port);
-  fprintf('Starting front end\n');
   sendmsg(addr,'/vis/start',{});
+  fprintf('Started front end;  waiting for /started reply...');
   osc_free_address(addr);
+  args.flush=false;   % This is not supported below;  if connect is set, will flush up until /vis/started is received anyway
+  args.nowait=false;  % Wait for acknowledge
 end
 
 if args.stats
   % Request stats from frontend
   rcvr(p,'flush');   % Flush any queued data
-  addr=osc_new_address('localhost',frontendport);
+  addr=osc_new_address(frontendhost,frontendport);
   sendmsg(addr,'/vis/get/corr',{});
   sendmsg(addr,'/vis/get/refimage',{});
   sendmsg(addr,'/vis/get/image',{});
   osc_free_address(addr);
   % Now, go ahead and read next frame
   % Could have a race though and next frame would not have the results (but a later one would)
+end
+
+if args.sendquit
+  addr=osc_new_address(frontendhost,frontendport);
+  sendmsg(addr,'/quit',{});
+  osc_free_address(addr);
+end
+
+if isempty(visserver)
+  fprintf('Not connected to server; use rcvr(p,''connect'')\n');
+  return;
 end
 
 global msgin;
@@ -114,7 +141,9 @@ while true
       continue;
     end
     % Nothing available
-    if frame==-1 || ~any(filled)
+    if args.connect
+      error('No /started acknowledge received');
+    elseif frame==-1 || ~any(filled)
       if args.debug
         fprintf('No frame available\n');
       end
@@ -135,7 +164,16 @@ while true
   if args.debug
     fprintf('Have %d messages, next is %s\n', length(msgin)+1, m.path);
   end
-  if strcmp(m.path,'/vis/beginframe')
+  if args.connect 
+    % Only waiting for started or stopped messages
+    if strcmp(m.path,'/vis/started')
+      fprintf('Got acknowledge from frontend that it has started\n');
+      args.connect = false;   % No longer waiting for start acknowledge
+    elseif strcmp(m.path,'/vis/stopped')
+      error('Front end has stopped -- need to re-init\n');
+      % TODO - handle this somehow
+    end
+  elseif strcmp(m.path,'/vis/beginframe')
     if frame~=-1
       fprintf('Missed /endframe messages, skipping to next frame\n');
     end
@@ -145,7 +183,7 @@ while true
     end
     filled=false(1,length(p.camera));
   elseif frame==-1
-    fprintf('Skipping message %s while looking for /newframe\n', m.path);
+    fprintf('Skipping message %s while looking for /vis/beginframe\n', m.path);
   else
     if strcmp(m.path,'/vis/endframe')
       if frame ~= m.data{1}
@@ -157,7 +195,7 @@ while true
           vis=[];
           fprintf('Skipping frame to flush buffers\n');
         else
-          vis.when=mean(vis.acquired);
+          vis.when=max(vis.acquired);
           break;  % Done
         end
       else
@@ -174,6 +212,9 @@ while true
       if strcmp(m.path,'/vis/visible')
         vis.mincorr=m.data{5};
         blob=m.data{6};
+        if length(blob)~=length(p.led)
+          error('/vis/visible message has incorrect number of LEDS: expected %d, got %d\n', length(p.led),length(blob));
+        end
         vis.v(c,:)=double(blob);
         vis.v(c,blob==2)=nan;
         % Turn off indicators for LEDs we're not using
@@ -186,6 +227,9 @@ while true
         end
       else
         blob=m.data{5};
+        if length(blob)~=size(vis.v,2)
+          error('/vis/corr message has incorrect number of LEDS: expected %d, got %d\n', size(vis.v,2),length(blob));
+        end
         vis.corr(c,:)=typecast(blob,'SINGLE');
       end
       if args.debug

@@ -6,10 +6,10 @@ if nargin<2
   plotlayout(rec.p.layout);
   hold on;
   for i=1:length(rec.vis)
-    [~,est]=analyze(rec.p,rec.vis(i).v,0);
+    est=analyze(rec.p,rec.vis(i).v,0);
     fprintf('Sample %d at %s:\n',i,datestr(rec.vis(i).when));
-    plot(est.tpos(:,1),est.tpos(:,2),'.');
-    text(est.tpos(:,1),est.tpos(:,2),num2str(i));
+    plot(est.tgts.tpos(:,1),est.tgts.tpos(:,2),'.');
+    text(est.tgts.tpos(:,1),est.tgts.tpos(:,2),num2str(i));
     pause(0.1);
   end
 else

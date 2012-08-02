@@ -3,6 +3,7 @@ function ok=oscupdate(p,sampnum,snap,prevsnap)
 global oscsetup;
 
 apps={'guitar','lcd'};   % Can be any of guitar,lcd,seq
+plotguitar=false;
 
 if isempty(oscsetup)
   % Need to init OSC
@@ -10,7 +11,8 @@ if isempty(oscsetup)
 end
 
 % Check for incoming messages to server
-dodump=false;
+dodump=nargin<4;   % First call - do a dump
+
 while true
   % Non-blocking receive
   msgin=osc_recv(oscsetup.server,0.0);
@@ -22,10 +24,7 @@ while true
     m=msgin{i};
     fprintf('Got message %s\n', m.path);
     if strcmp(m.path,'/pf/adddest')
-      host=m.data{1}; port=m.data{2};
-      addr=osc_new_address(host,port);
-      oscsetup.clients=[oscsetup.clients, struct('host',m.data{1},'port',m.data{2},'addr',addr)];
-      fprintf('Added OSC client at %s:%d\n', host, port);
+      oscadddest(m.data{1},m.data{2});
       dodump=true;   % Always start with a dump
     elseif strcmp(m.path,'/pf/rmdest')
       clients=oscsetup.clients;
@@ -204,40 +203,49 @@ if running && nargin>=4 && ismember('guitar',apps)
         plucked=allplucked(pl);
         duration=120;
         velocity=max(5,min(127,round(norm(snap.hypo(i).velocity)/1.3*127)));
-        fret=find(pos(2)>[frety,-inf]),1)-1;
+        fret=find(pos(2)>[frety,-inf],1)-1;
         pitch=fretpitches(plucked)+fret;
         fprintf('Plucked string %d at fret %d: pitch=%d, vel=%d, dur=%d\n',plucked,fret,pitch,velocity,duration);
         m{end+1}=msg('/pf/pass/guitar',{int32(snap.hypo(i).id),int32(pitch),int32(velocity),int32(duration)});
-        setfig('guitar');
-        if firstpluck
-          clf; 
-          plotlayout(p.layout,0);
-          hold on;
-          for j=1:length(frety)
-            plot([firststringx,laststringx],[frety(j),frety(j)],'k');
+        if plotguitar
+          setfig('guitar');
+          if firstpluck
+            clf; 
+            plotlayout(p.layout,0);
+            hold on;
+            for j=1:length(frety)
+              plot([firststringx,laststringx],[frety(j),frety(j)],'k');
+            end
+            plot([firststringx,laststringx],[frety(1),frety(1)]+.05,'k');  % Darken top 
+            for j=1:length(stringx)
+              plot([stringx(j),stringx(j)],[topfrety,lastfrety],'k');
+            end
+            firstpluck=false;
           end
-          plot([firststringx,laststringx],[frety(1),frety(1)]+.05,'k');  % Darken top 
-          for j=1:length(stringx)
-            plot([stringx(j),stringx(j)],[topfrety,lastfrety],'k');
-          end
-          firstpluck=false;
+          plot(ppos(1),ppos(2),'o','Color',id2color(snap.hypo(i).id));
+          plot([ppos(1),pos(1)],[ppos(2),pos(2)],'-','Color',id2color(snap.hypo(i).id));
+          plot(pos(1),pos(2),'x','Color',id2color(snap.hypo(i).id));
         end
-        plot(ppos(1),ppos(2),'o','Color',id2color(snap.hypo(i).id));
-        plot([ppos(1),pos(1)],[ppos(2),pos(2)],'-','Color',id2color(snap.hypo(i).id));
-        plot(pos(1),pos(2),'x','Color',id2color(snap.hypo(i).id));
       end
     end
   end
 end
 
 % Send to all clients
+toremove=zeros(1,length(oscsetup.clients));
 for c=1:length(oscsetup.clients)
   cl=oscsetup.clients(c);
   ok=osc_send(cl.addr,m);
   if ~ok
-    fprintf('Failed send of message to OSC target at %s:%d\n',cl.host,cl.host);
+    fprintf('Failed send of message to OSC target at %s:%d - removing\n',cl.host,cl.port);
+    osc_free_address(cl.addr);
+    toremove(c)=1;
   end
 end
+if any(toremove)
+  oscsetup.clients=oscsetup.clients(~toremove);
+end
+
 
 % Map a position in meters to a MIDI pitch val
 function pitch=pos2pitch(pos)

@@ -33,7 +33,7 @@ CamIO::CamIO(int _id) {
     buflen=RCVBUFSIZE;
     buffer = (byte *)new byte[buflen];
     if (buffer == (byte *)0) {
-	fprintf(stderr, "Unable to allocate memory for buffer\n");
+	fprintf(stderr, "CamIO: Unable to allocate %d bytes for buffer\n",buflen);
 	exit(1);
     }
 };
@@ -61,11 +61,13 @@ int CamIO::open() {
     servAddr.sin_port        = htons(80); /* Server port */ 
  
     /* Establish the connection to the echo server */ 
+    printf("Opening connection to camera %d at %s...",id,servIP); fflush(stdout);
     if (connect(sock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)  {
         perror("connect() failed"); 
 	return -1;
     }
- 
+    printf("done\n");
+
     const int MAXREQUEST = 1000;
     char request[MAXREQUEST];
     if (halfRes)
@@ -77,13 +79,15 @@ int CamIO::open() {
 		roiX0, roiY0, roiX1, roiY1, quality,fps);
 
     int reqlen = strlen(request);          /* Determine input length */ 
+    assert(reqlen+1<MAXREQUEST);
 
     /* Send the string to the server */ 
-    printf("Sending request to camera %d: %s\n", id, request);
+    printf("Sending request to camera %d: %s", id, request); fflush(stdout);
     if (send(sock, request, reqlen, 0) != reqlen)  {
         perror("send() sent a different number of bytes than expected"); 
 	return -1;
     }
+    printf("request accepted\n");
 
     totalBytesRcvd = 0;   // Empty
 
@@ -106,6 +110,7 @@ int CamIO::close() {
 	return -1;
     }
     sock=-1;
+    curFrame.clearValid();
     return 0;
 }
 
@@ -116,6 +121,7 @@ int CamIO::reset() {
 	if (open() < 0)
 	    return -1;
     }
+    return 0;
 }
 
 void CamIO::setROI(int x0, int y0, int x1, int y1) {
@@ -128,7 +134,7 @@ void CamIO::setROI(int x0, int y0, int x1, int y1) {
 
 // Find the first separator in the current buffer, or return NULL if not present    
 byte *CamIO::split() {
-    for (int i=0;i+strlen(sep)<=totalBytesRcvd;i++)
+    for (unsigned int i=0;i+strlen(sep)<=totalBytesRcvd;i++)
 	if (memcmp(&buffer[i],sep,strlen(sep))==0) {
 	    /// printf("Camera %d found separator at position %d\n", id, i);
 	    return &buffer[i];
@@ -185,12 +191,14 @@ int CamIO::read() {
 		int frameLen = len-strlen(frameHeader);
 		if (debug)
 		    printf("Camera %d: ", id);
-		curFrame.copy(frameStart,frameLen,blockStartTime);
-		frameValid=1;
+		if (curFrame.copy(frameStart,frameLen,blockStartTime) < 0) {
+		    fprintf(stderr,"curFrame.copy() failed\n");
+		    return -1;
+		}
 	    } else {
 		fprintf(stderr,"Bad multipart frame of length %d:\n", len);
 		dumpdata(buffer,len);
-		exit(1);
+		return -1;
 	    }
 	}
 	totalBytesRcvd -= (len+strlen(sep));
@@ -224,9 +232,13 @@ static void dumpdata(const byte *buffer, int len) {
     }
 }
 
-void CamIO::startStop(bool start) {
-    if (start && !isRunning())
-	open();
-    else if (!start && isRunning())
-	close();
+int  CamIO::startStop(bool start) {
+    if (start && !isRunning()) {
+	if (open() < 0)
+	    return -1;
+    } else if (!start && isRunning()) {
+	if (close() < 0)
+	    return -1;
+    }
+    return 0;
 }

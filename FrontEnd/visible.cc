@@ -68,7 +68,6 @@ void Visible::processImage(const Frame *frame, float fps) {
     assert(frame->getHeight() == refHeight);
     assert(frame->isColor());
     const byte *fimg=frame->getImage();
-    int nPixels = refWidth*refHeight;   // Number of pixels in each plane of image
     for (int i=0;i<nleds;i++) {
 	int N=tgtWidth[i]*tgtHeight[i];
 	if (xpos[i]<0 || ypos[i]<0) {
@@ -173,13 +172,15 @@ void Visible::updateTarget(const Frame *frame, float fps) {
     float scale=weight*refDepth/3/255;
     if (refDepth==1)
 	while (newimg<endimg) {
-	    *refimg++ = (*refimg)*oweight+(newimg[0]+newimg[1]+newimg[2])*scale;
+	    *refimg = (*refimg)*oweight+(newimg[0]+newimg[1]+newimg[2])*scale;
 	    newimg+=3;
+	    refimg++;
 	}
     else
 	while (newimg<endimg) {
-	    *refimg++ = (*refimg)*oweight+(*newimg)*scale;
+	    *refimg = (*refimg)*oweight+(*newimg)*scale;
 	    newimg++;
+	    refimg++;
 	}
 }
 
@@ -191,8 +192,9 @@ const char* Visible::saveRef() const {
     int fd=open(filename,O_CREAT|O_TRUNC|O_WRONLY,0644);
     int nbytes=refHeight*refWidth*refDepth*sizeof(*refImage);
     if (write(fd,refImage,nbytes)!=nbytes)  {
+	close(fd);
 	perror(filename);
-	exit(1);
+	return (char *)0;
     }
     close(fd);
     return filename;

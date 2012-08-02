@@ -7,9 +7,9 @@ end
 
 global oscsetup
 
-if ~isempty(oscsetup)
+if ~isempty(oscsetup)  && isfield(oscsetup,'server')
   % Already have a setup struct
-  if oscsetup.port==port
+  if isfield(oscsetup,'port') && oscsetup.port==port
     % All OK, just return
     fprintf('Skipping oscinit -- already have port setup\n');
     return

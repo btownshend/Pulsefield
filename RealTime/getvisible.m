@@ -197,6 +197,10 @@ if args.usefrontend  && ~args.stats
   while true
     % Call frontend to get next frame
     vis=rcvr(p);
+    if isempty(vis)
+      fprintf('Empty vis[] struct returned, waiting for next one\n');
+      continue;
+    end
     vis.whenrcvd=now;
     age=(vis.whenrcvd-max(vis.acquired))*24*3600;
     if (age>2)

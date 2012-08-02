@@ -16,20 +16,19 @@ class Frame {
     int height, width;
     bool color;
     byte *image;
-    int imageLen;
-    int imageAllocLen;
-
+    unsigned int imageLen;
+    unsigned int imageAllocLen;
  public:
     // Create a new frame from the provided data
     Frame();
     ~Frame();
-    void copy(const byte *buffer,int buflen,const struct timeval &ts);
+    int copy(const byte *buffer,int buflen,const struct timeval &ts);  // return -1 for error
     // Save image in a temp file, return filename
     const char* saveFrame() const;   // Save frame as JPG
     const char* saveImage() const;  // Save decoded image as RAW
     bool isValid() const { return valid; }
     void clearValid() { valid=false; }
-    void decompress();
+    int decompress();   // Return -1 if failure
     int getHeight() const { return height; }
     int getWidth() const { return width; }
     bool isColor() const { return color; }

@@ -1,6 +1,6 @@
 % Run what's needed after the system moves or otherwise needs recalibration
-input('Make sure Pulsefield is clear, hit return when ready','p');
-if isfield(p,pixcalib)
+input('Make sure Pulsefield is clear, hit return when ready: ','s');
+if isfield(p,'pixcalib')
   p.oldpixcalib=p.pixcalib;
   p.pixcalib=pixcalibrate(p);
 end

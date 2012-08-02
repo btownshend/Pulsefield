@@ -4,7 +4,7 @@ plots={};
 
 % Setup data structure
 global recvis
-if exist('recvis','var') && isfield(recvis,'vis') && ~isempty(recvis.vis) && ~isfield(recvis,'note')
+if exist('recvis','var') && isfield(recvis,'vis') && ~isempty(recvis.vis) && ~isfield(recvis,'note') && length(recvis.vis)>=5
     z=input(sprintf('Are you sure you want to overwrite existing recvis with %d samples? [Y/N]: ',length(recvis.vis)),'s');
     if isempty(z) || upper(z)~='Y'
         return;
@@ -35,6 +35,12 @@ setled(s1,[0,numled()-1],127*p.colors{1},1); show(s1); sync(s1);
 pause(1);
 
 fprintf('Ready\n');
+
+% Setup destination for outgoing OSC messages
+oscadddest('192.168.0.141',7001);
+
+% Connect to frontend and flush
+rcvr(p,'connect',true);
 
 % Start acquisition
 mainloop;

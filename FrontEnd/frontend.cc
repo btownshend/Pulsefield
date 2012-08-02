@@ -21,7 +21,7 @@ static void error(int num, const char *msg, const char *path)
 
 /* catch any incoming messages and display them. returning 1 means that the
  * message has not been fully handled and the server should try other methods */
-static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message msg, void *user_data) {
+static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message , void *) {
     int i;
     printf("Unhandled Message Rcvd: %s (", path);
     for (i=0; i<argc; i++) {
@@ -37,9 +37,12 @@ static int generic_handler(const char *path, const char *types, lo_arg **argv,in
     return 1;
 }
 
-static int quit_handler(const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data) {
-    printf("Quitting\n\n");
-    exit(0);
+static bool doQuit = false;
+
+static int quit_handler(const char *, const char *, lo_arg **, int, lo_message , void *) {
+    printf("Received /quit command, quitting\n");
+    doQuit = true;
+    return 0;
 }
 
 /* Handler stubs */
@@ -54,9 +57,9 @@ static int setROI_handler(const char *path, const char *types, lo_arg **argv, in
 static int setUpdateTC_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setUpdateTC(argv[0]->f); return 0; }
 static int setCorrThresh_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setCorrThresh(argv[0]->f); return 0; }
 
-static int getCorr_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::CORR); return 0; }
-static int getRefImage_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::REFIMAGE); return 0; }
-static int getImage_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::IMAGE); return 0; }
+static int getCorr_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::CORR,argv[0]->i); return 0; }
+static int getRefImage_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::REFIMAGE,argv[0]->i); return 0; }
+static int getImage_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::IMAGE,argv[0]->i); return 0; }
 
 static int addDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->addDest(&argv[0]->s,argv[1]->i); return 0; }
 static int rmDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->rmDest(&argv[0]->s,argv[1]->i); return 0; }
@@ -67,11 +70,17 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     nled=_nled;
     frame = 0;
 
-    printf("Starting %d cameras...",ncamera);fflush(stdout);
+    int ids[]={1,2,5,3,4,6};
+    int maxcamera=sizeof(ids)/sizeof(ids[0]);
+    if (maxcamera < ncamera) {
+	fprintf(stderr,"Attempt to initialize frontend with %d cameras, but max is %d\n", ncamera, maxcamera);
+	exit(1);
+    }
+
+    printf("Initializing with %d cameras...",ncamera);fflush(stdout);
     cameras = new  CamIO*[ncamera];
     vis = new Visible*[ncamera];
 
-    int ids[]={1,2,5,3,4};
     for (int i=0;i<ncamera;i++) {
 	cameras[i]=new CamIO(ids[i]);
 	vis[i] = new Visible(nled);
@@ -82,6 +91,10 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     char cbuf[10];
     sprintf(cbuf,"%d", serverPort);
     s = lo_server_new(cbuf, error);
+    if (s==0) {
+	fprintf(stderr,"Unable to start server on port %d -- perhaps another instance is running\n", serverPort);
+	exit(1);
+    }
 
     /* add method that will match the path /quit with no args */
     lo_server_add_method(s, "/quit", "", quit_handler, NULL);
@@ -99,9 +112,9 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     lo_server_add_method(s,"/vis/set/roi","iiiii",setROI_handler,this);
 
     
-    lo_server_add_method(s,"/vis/get/corr","",getCorr_handler,this);
-    lo_server_add_method(s,"/vis/get/refimage","",getRefImage_handler,this);
-    lo_server_add_method(s,"/vis/get/image","",getImage_handler,this);
+    lo_server_add_method(s,"/vis/get/corr","i",getCorr_handler,this);
+    lo_server_add_method(s,"/vis/get/refimage","i",getRefImage_handler,this);
+    lo_server_add_method(s,"/vis/get/image","i",getImage_handler,this);
 
     lo_server_add_method(s,"/vis/dest/add","si",addDest_handler,this);
     lo_server_add_method(s,"/vis/dest/remove","si",rmDest_handler,this);
@@ -109,6 +122,22 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
 
     /* add method that will match any path and args if they haven't been caught above */
     lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
+    
+    /* add default destinations */
+    addDest("localhost",7771);
+
+    /* Set to always send only VIS information */
+    sendAlways=VIS;
+}
+
+FrontEnd::~FrontEnd() {
+    for (int i=0;i<ncamera;i++) {
+	delete cameras[i];
+	delete vis[i];
+    }
+    delete [] cameras;
+    delete [] vis;
+    lo_server_free(s);
 }
 
 void FrontEnd::run() {
@@ -138,20 +167,25 @@ void FrontEnd::run() {
 	retval = select(maxfd + 1, &rfds, NULL, NULL, NULL); /* no timeout */
 	//	printf("rfds=0x%lx\n", *(unsigned long *)&rfds);
 	if (retval == -1) {
-	    printf("select() error\n");
+	    perror("select() error: ");
 	    exit(1);
 	} else if (retval > 0) {
 	    // Process OSC messages
 	    if (FD_ISSET(lo_fd, &rfds))
-		lo_server_recv_noblock(s, 0);
+		// Process all queued messages
+		while (lo_server_recv_noblock(s, 0) != 0)
+		    if (doQuit)
+			return;
 
 	    // Read input from cameras
 	    int haveAllFrames=1;
 	    for (int i=0;i<ncamera;i++) {
 		if (cameras[i]->isRunning() && FD_ISSET(cameras[i]->getSocket(),&rfds)) {
-		    // printf("Reading from  camera %d\n", i);
-		    if (cameras[i]->read() < 0)
-			exit(1);
+		    // printf("Reading from  camera %d\n", camera[i]->getID());
+		    if (cameras[i]->read() < 0) {
+			fprintf(stderr,"Error reading from camera %d, stopping acquisition\n", cameras[i]->getID());
+			startStop(0);	// This will also clear valid flag for all individual frames
+		    }
 		}
 		haveAllFrames=haveAllFrames && cameras[i]->getFrame()->isValid();
 	    }
@@ -162,6 +196,7 @@ void FrontEnd::run() {
 	    }
 	}
     }
+    // NOT REACHED
 }
 
 
@@ -195,7 +230,6 @@ void FrontEnd::processFrames() {
 		gettimeofday(&tend,NULL);
 		printf("processImage() took %.3f msec.\n",(tend.tv_usec-tstart.tv_usec)/1000.0+(tend.tv_sec-tstart.tv_sec));
 	    }
-	    tosend |= VIS|CORR;
 	    if (dumpVis) {
 		printf("V[%d]=",i);
 		for (int j=0;j<nled;j++)
@@ -214,11 +248,12 @@ void FrontEnd::processFrames() {
     frame=frame+1;
 }
 
-// Send all messages that are in the tosend list to the destinations
+// Send all messages that are in the sendOnce list to the destinations
 void FrontEnd::sendMessages() {
     if (debug>1)
-	printf("sendMessages()  tosend=%ld, ndest=%d\n",tosend,dests.count());
+	printf("sendMessages()  sendOnce=%ld, ndest=%d\n",sendOnce,dests.count());
 
+    sendOnce |= sendAlways;
     for (int i=0;i<dests.count();i++) {
 	char cbuf[10];
 	sprintf(cbuf,"%d",dests.getPort(i));
@@ -226,7 +261,7 @@ void FrontEnd::sendMessages() {
 	lo_send(addr,"/vis/beginframe","i",frame);
 	for (int c=0;c<ncamera;c++) {
 	    struct timeval ts=vis[c]->getTimestamp();
-	    if (tosend & VIS) {
+	    if (sendOnce & VIS) {
 		// Send visibility info
 		lo_blob data = lo_blob_new(nled,vis[c]->getVisible());
 		byte *data_ptr=(byte *)lo_blob_dataptr(data);
@@ -243,7 +278,7 @@ void FrontEnd::sendMessages() {
 		lo_send(addr, "/vis/visible","iiiifb",c,frame,ts.tv_sec, ts.tv_usec, vis[c]->getCorrThresh(), data);
 		lo_blob_free(data);
 	    }
-	    if (tosend & CORR) {
+	    if (sendOnce & CORR) {
 		// Send correlations
 		if (debug>1)
 		    printf("Sending CORR to %s:%d\n", dests.getHost(i),dests.getPort(i));
@@ -251,42 +286,68 @@ void FrontEnd::sendMessages() {
 		lo_send(addr, "/vis/corr","iiiib",c,frame,ts.tv_sec, ts.tv_usec, data);
 		lo_blob_free(data);
 	    }
-	    if (tosend & REFIMAGE) {
+	    if (sendOnce & REFIMAGE) {
 		if (debug)
 		    printf("Sending REFIMAGE to %s:%d\n", dests.getHost(i),dests.getPort(i));
 		const char *filename=vis[c]->saveRef();    // Save frame in file, retrieve filename (as float)
-		printf("Saved image in %s\n", filename);
-		int width=vis[c]->getRefWidth();
-		int height=vis[c]->getRefHeight();
-		int depth=vis[c]->getRefDepth();
-		lo_send(addr, "/vis/refimage","iiiiiiiss",c,frame,ts.tv_sec,ts.tv_usec, width, height,depth,"f",filename);
+		if (filename!=0) {
+		    printf("Saved image in %s\n", filename);
+		    int width=vis[c]->getRefWidth();
+		    int height=vis[c]->getRefHeight();
+		    int depth=vis[c]->getRefDepth();
+		    lo_send(addr, "/vis/refimage","iiiiiiiss",c,frame,ts.tv_sec,ts.tv_usec, width, height,depth,"f",filename);
+		}
 	    }	   
-	    if (tosend & IMAGE) {
+	    if (sendOnce & IMAGE) {
 		if (debug)
 		    printf("Sending IMAGE to %s:%d\n", dests.getHost(i),dests.getPort(i));
 		Frame *fptr=cameras[c]->getFrame();
 		const char *filename=fptr->saveImage();    // Save frame in file, retrieve filename (as bytes)
-		printf("Saved image in %s\n", filename);
-		int width=fptr->getWidth();
-		int height=fptr->getHeight();
-		int depth=fptr->isColor()?3:1;
-		lo_send(addr, "/vis/image","iiiiiiiss",c,frame,ts.tv_sec,ts.tv_usec, width, height,depth,"b",filename);
+		if (filename!=0) {
+		    printf("Saved image in %s\n", filename);
+		    int width=fptr->getWidth();
+		    int height=fptr->getHeight();
+		    int depth=fptr->isColor()?3:1;
+		    lo_send(addr, "/vis/image","iiiiiiiss",c,frame,ts.tv_sec,ts.tv_usec, width, height,depth,"b",filename);
+		}
 	    }
 	}
 	lo_send(addr,"/vis/endframe","i",frame);
 	lo_address_free(addr);
     }
-    tosend=0;
+    sendOnce=0;
 }
+
 
 void FrontEnd::startStop(bool start) {
     printf("FrontEnd: %s\n", start?"start":"stop");
     for (int i=0;i<ncamera;i++)
-	cameras[i]->startStop(start);
+	if (cameras[i]->startStop(start) < 0  && start) {
+	    fprintf(stderr,"Failed to start camera %d, aborting startup\n", cameras[i]->getID());
+	    start=false;
+	    // Stop any cameras we already started
+	    for (int j=0;j<=i;j++)
+		(void)cameras[j]->startStop(false);
+	    break;
+	}
+
+    // Send status update message
+    for (int i=0;i<dests.count();i++) {
+	char cbuf[10];
+	sprintf(cbuf,"%d",dests.getPort(i));
+	lo_address addr = lo_address_new(dests.getHost(i), cbuf);
+	if (start)
+	    lo_send(addr,"/vis/started","");
+	else
+	    lo_send(addr,"/vis/stopped","");
+	lo_address_free(addr);
+    }
 }
 
+// Get position of targets within images/refimages;   receive (0,0) is top left pixel of acquired images
 void FrontEnd::setPos(int camera, int led, int xpos, int ypos, int twidth, int theight) {
     if (led==0)
+	// Only print debug message once
 	printf("setPos(%d,%d,%d,%d,%d,%d)\n",camera,led,xpos,ypos,twidth,theight);
 
     if (camera<0 || camera>=ncamera) {
@@ -297,15 +358,6 @@ void FrontEnd::setPos(int camera, int led, int xpos, int ypos, int twidth, int t
 	fprintf(stderr,"setPos: bad led number: %d\n", led);
 	return;
     }
-    if (0) {
-	// NO - now they are in received image coordinates
-	/* The received xpos,ypos are for the full image space of the camera, but the images we're receiving are only the ROI -- need to offset the positions */
-	if (xpos!=-1)
-	    xpos-=cameras[camera]->getX0();
-	if (ypos!=-1)
-	    ypos-=cameras[camera]->getY0();
-    }
-
     vis[camera]->setPosition(led,xpos,ypos,twidth,theight);
 }
 
@@ -326,9 +378,14 @@ void FrontEnd::setCorrThresh(float thresh) {
 
 void FrontEnd::setRes(int camera, const char *res) {
     printf("setRes(%d,%s)\n", camera, res);
+    if (camera<0 || camera>=ncamera) {
+	fprintf(stderr,"setRes: bad camera number: %d\n", camera);
+	return;
+    }
     cameras[camera]->setRes(res);
 }
 
+// Set ROI to use with camera,  x0=1,y0=1 starts at top left pixel of full frame
 void FrontEnd::setROI(int camera, int x0, int y0, int x1, int y1) {
     if (camera<0 || camera>=ncamera) {
 	fprintf(stderr,"setROI: bad camera number: %d\n", camera);
@@ -350,7 +407,7 @@ void FrontEnd::setRefImage(int camera, int imgwidth, int imgheight, int imgdepth
     }
     int nelem=imgwidth*imgheight*imgdepth;
     float *buffer = new float[nelem];
-    int ntotal=0;
+    unsigned int ntotal=0;
     while (ntotal < nelem*sizeof(*buffer)) {
 	int nbytes=sizeof(*buffer)*nelem-ntotal;
 	int nr=read(fd,&buffer[ntotal],nbytes);
@@ -370,8 +427,14 @@ void FrontEnd::setRefImage(int camera, int imgwidth, int imgheight, int imgdepth
     delete [] buffer;
 }
 
-void FrontEnd::getStat(long int stat) {
-    tosend |= stat;
+void FrontEnd::getStat(long int stat, int mode) {
+    if (mode==2)
+	sendAlways |= stat;
+    else
+	sendAlways &= ~stat;
+
+    if (mode>0)
+	sendOnce |= stat;
 }
 
 void FrontEnd::addDest(const char *host, int port) {

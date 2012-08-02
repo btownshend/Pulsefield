@@ -26,7 +26,7 @@ Frame::~Frame() {
 	delete [] image;
 }
 
-void Frame::copy(const byte *buffer, int buflen,const struct timeval &ts) {
+int Frame::copy(const byte *buffer, int buflen,const struct timeval &ts) {
     if (buflen>allocLen) {
 	// Reallocate storage
 	if (allocLen>0)
@@ -42,8 +42,7 @@ void Frame::copy(const byte *buffer, int buflen,const struct timeval &ts) {
     if (valid)
 	printf("Frame::copy: Overwriting valid frame that is %d msecs old\n",elapsed);
     timestamp=ts;
-    decompress();
-    //    save();
+    return decompress();
 }
 
 const char *Frame::saveFrame() const {
@@ -52,7 +51,8 @@ const char *Frame::saveFrame() const {
     int fd=open(filename,O_CREAT|O_TRUNC|O_WRONLY,0644);
     if (write(fd,frame,frameLen)!=frameLen)  {
 	perror(filename);
-	exit(1);
+	close(fd);
+	return (char *)0;
     }
     close(fd);
     return filename;
@@ -63,20 +63,21 @@ const char *Frame::saveImage() const {
     sprintf(filename,"/tmp/image.%ld.%06ld.raw",(long int)timestamp.tv_sec,(long int)timestamp.tv_usec);
     int fd=open(filename,O_CREAT|O_TRUNC|O_WRONLY,0644);
     assert(imageLen>0);
-    if (write(fd,image,imageLen*sizeof(*image))!=imageLen*sizeof(*image))  {
+    if (write(fd,image,imageLen*sizeof(*image)) != (int)(imageLen*sizeof(*image)))  {
 	perror(filename);
-	exit(1);
+	close(fd);
+	return (char *)0;
     }
     close(fd);
     return filename;
 }
 
-void Frame::decompress() {
+int Frame::decompress() {
     njInit();
     nj_result_t res=njDecode(frame,frameLen);
     if (res != NJ_OK) {
 	fprintf(stderr,"Failed decode of JPEG image (error %d)\n", res);
-	exit(1);
+	return -1;
     }
     width=njGetWidth();
     height=njGetHeight();
@@ -92,4 +93,5 @@ void Frame::decompress() {
     memmove(image,njGetImage(),imageLen);
     njDone();
     valid=true;
+    return 0;
 }

@@ -154,19 +154,9 @@ while ~userecvis || samp<=length(recvis.vis)
   end
   
   if samp>1
-      if maxok
-        oscupdate(recvis.p,samp,snap{samp},snap{samp-1});
-          maxok=updatemax(recvis.p,snap{samp},snap{samp-1});
-          if ~maxok
-              fprintf('Disabling MAX updates\n');
-          end
-      end
+    oscupdate(recvis.p,samp,snap{samp},snap{samp-1});
   else
     oscupdate(recvis.p,samp,snap{samp});
-      maxok=updatemax(recvis.p,snap{samp});
-      if ~maxok
-          fprintf('Disabling MAX updates\n');
-      end
   end
 
   if ~userecvis

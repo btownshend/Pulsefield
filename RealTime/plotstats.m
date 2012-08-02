@@ -61,8 +61,7 @@ c=axis;
 if isfinite(minval) 
   c(3)=minval; 
 end; 
-if 
-  isfinite(maxval) 
+if isfinite(maxval) 
   c(4)=maxval;
 end; 
 axis(c);

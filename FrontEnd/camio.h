@@ -19,10 +19,9 @@ class CamIO {
 
     byte *buffer;     /* Buffer for receiving data */
     unsigned int buflen;      /* Length of buffer */
-    int totalBytesRcvd;   /* Bytes read into buffer so far */
+    unsigned int totalBytesRcvd;   /* Bytes read into buffer so far */
 
     Frame curFrame;   /* Current frame */
-    int frameValid;   /* Valid frame */
 
     // Camera request parameters
     bool halfRes;
@@ -67,7 +66,9 @@ class CamIO {
     int getY0() const { return roiY0; }
     int getY1() const { return roiY1; }
 
-    void startStop(bool start);
+    int startStop(bool start);   // -1 if failure
     bool isRunning() const { return sock!=-1; }
+
+    int getID() const { return id; }
 };
 #endif
