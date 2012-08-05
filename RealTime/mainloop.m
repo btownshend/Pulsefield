@@ -70,7 +70,9 @@ while ~userecvis || samp<=length(recvis.vis)
     snap{samp}=updatetgthypo(recvis.p.layout,snap{samp-1},snap{samp},samp);
   end
 
-  if ~userecvis
+  if userecvis
+    snap{samp}.whendone=recvis.snap(samp).whendone;
+  else
     snap{samp}.whendone=now;
     if samp==1
       recvis.snap=snap{samp};
@@ -171,9 +173,4 @@ while ~userecvis || samp<=length(recvis.vis)
   samp=samp+1;
 end
 % Turn off any remaining notes
-updatemax();
 oscupdate(recvis.p,samp);
-
-if ismember('stats',plots)
-  plotstats(snap);
-end

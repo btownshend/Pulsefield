@@ -1,9 +1,9 @@
 % locatecameras using blockage near LEDs
-function [ncpos,recvis]=locatecameras(recvis)
-if nargin<1
+function [ncpos,recvis]=locatecameras(p,recvis)
+if nargin<2
   fprintf('Move a black CD case around LED struts near each camera blocking LEDs to far camera and view from near camera\n');
-  input('Hit return when ready to start (15s pause will follow)','s');
-  pause(15);
+  input('Hit return when ready to start (5s pause will follow)','s');
+  pause(5);
   nsamps=150;
   fprintf('Acquiring %d samples\n', nsamps);
   recvis=recordvis(p,nsamps);
@@ -12,7 +12,7 @@ selcam=zeros(length(recvis.p.camera),length(recvis.vis));
 for i=1:length(recvis.vis)
   nblocked(i,:)=sum((recvis.vis(i).v==0)');
   [sn,ord]=sort(nblocked(i,:),'descend');
-  if sn(1)>20 && min(sn(1:3))>3
+  if sn(1)>20 && min(sn(1:3))>=2
     selcam(ord(1),i)=1;
   end
 end
@@ -34,7 +34,7 @@ for i=1:ncameras
   xp=cpos(i,:);
   fprintf('Calibrating camera %d at [%.3f,%.3f]\n', i,xp);
 
-  subplot(2,2,i);
+  subplot(3,2,i);
   hold on;
   plot(recvis.p.layout.active(1:end-1,1),recvis.p.layout.active(1:end-1,2),'m');
   plot(xp(1),xp(2),'r.');

@@ -40,7 +40,7 @@ end
 
 subplot(222);
 hold on;
-for samp=1:length(snap)
+for samp=2:length(snap)
   if isempty(snap(samp).hypo)
     continue;
   end
@@ -59,7 +59,7 @@ end
 
 subplot(224);
 hold on;
-for samp=1:length(snap)
+for samp=2:length(snap)
   if isempty(snap(samp).hypo)
     continue;
   end

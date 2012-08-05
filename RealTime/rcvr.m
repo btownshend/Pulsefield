@@ -6,22 +6,8 @@ frontendhost='localhost';
 myhost='localhost';
 myport=7773;
 
-args=struct('init',false,'connect', false, 'stats',false,'flush',false,'nowait',false,'debug',false,'sendquit',false);
-i=1;
-while i<=length(varargin)
-  if ~isfield(args,varargin{i})
-    error('Unknown option: "%s"\n',varargin{i});
-  end
-  args.(['SET',varargin{i}])=true;   % Flag that it was set explicitly
-  if islogical(args.(varargin{i})) && (i==length(varargin) || ischar(varargin{i+1}))
-    % Special case of option string without value for boolean, assume true
-    args.(varargin{i})=true;
-  else
-    args.(varargin{i})=varargin{i+1};
-    i=i+1;
-  end
-  i=i+1;
-end
+defaults=struct('init',false,'connect', false, 'stats',false,'flush',false,'nowait',false,'debug',false,'sendquit',false);
+args=processargs(defaults,varargin);
 
 if args.init
   % Start frontend

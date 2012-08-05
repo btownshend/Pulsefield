@@ -23,23 +23,9 @@
 % 	im{ncam} - full images
 %	tgt{ncam,nled} - images of each target
 function [vis,p]=getvisible(p,varargin)
-args=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[11 11],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5,...
+defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[11 11],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5,...
             'usefrontend',true);
-i=1;
-while i<=length(varargin)
-  if ~isfield(args,varargin{i})
-    error('Unknown option: "%s"\n',varargin{i});
-  end
-  args.(['SET',varargin{i}])=true;   % Flag that it was set explicitly
-  if islogical(args.(varargin{i})) && (i==length(varargin) || ischar(varargin{i+1}))
-    % Special case of option string without value for boolean, assume true
-    args.(varargin{i})=true;
-  else
-    args.(varargin{i})=varargin{i+1};
-    i=i+1;
-  end
-  i=i+1;
-end
+args=processargs(defaults,varargin);
 
 if args.init
   if nargout~=2

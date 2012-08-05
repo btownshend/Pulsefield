@@ -61,11 +61,12 @@ end
 % Refine position of cameras
 % Need to physically block cameras for this...
 % Instead use prior calibration
-cposcalib=[ 1.0361   -2.2656
-            -1.3310   -2.1188
-            -1.3218    2.1082
-            1.0443    2.2606];
-if length(p.layout.cpos)==4 && max(max(abs(cposcalib-layout.cpos)))<0.1
+cposcalib=[ 1.0417   -2.2688
+            -1.3200   -2.1270
+            -2.5115   -0.0019
+            -1.3293    2.1081
+            1.0517    2.2646];
+if length(p.layout.cpos)==length(cposcalib) && max(max(abs(cposcalib-p.layout.cpos)))<0.15
   fprintf('Forcing camera positions to previously calibrated values\n')
   p.layout.cpos=cposcalib;
 else

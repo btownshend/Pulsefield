@@ -1,5 +1,6 @@
 % Plot statistics from a recording
-function plotstats(snap)
+function plotstats(recvis)
+snap=recvis.snap;
 setfig('hypo stats');clf;
 time={};speed={};area={};orientation={};majoraxislength={};minoraxislength={};heading={};valid={};
 for i=1:length(snap)
@@ -32,7 +33,16 @@ for j=1:length(time)
   time{j}(time{j}<0)=nan;
 end
 
-plotvar(time,speed,'Speed','m/s',[0,nan],1);
+flen=5;
+for j=1:length(speed)
+  if (length(speed{j}) >= flen*3)
+    fspeed{j}=filtfilt(hanning(flen),1,speed{j});
+  else
+    fspeed{j}=speed{j};
+  end
+end
+
+plotvar(time,fspeed,'Speed (LPF)','m/s',[0,nan],1);
 plotvar(time,heading,'Heading','deg',[nan,nan],2);
 plotvar(time,area,'Area','m',0.3,3);
 plotvar(time,minoraxislength,'Minor Axis Length','m',0.8,4);
