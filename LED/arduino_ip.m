@@ -5,9 +5,10 @@ end
 arduino_port=[];
 global arduino_ip_port;
 if isempty(arduino_ip_port)
-  fprintf('Opening arduino IP port\n');
+  [h,p]=getsubsysaddr('AR');
+  fprintf('Opening arduino IP at %s:%d\n',h,p);
   try 
-    arduino_ip_port = jtcp('REQUEST','192.168.0.154',1500,'SERIALIZE',false);
+    arduino_ip_port = jtcp('REQUEST',h,p,'SERIALIZE',false);
   catch me
     error('Failed open of Arduino ethernet port: %s',me.message);
   end
@@ -26,7 +27,8 @@ if dosync
       fprintf('Closing and reopening port\n');
       try
         jtcp('CLOSE',arduino_ip_port);
-        arduino_ip_port = jtcp('REQUEST','192.168.0.154',1500,'SERIALIZE',false);
+        [h,p]=getsubsysaddr('AR');
+        arduino_ip_port = jtcp('REQUEST',h,p,'SERIALIZE',false);
       catch me
         error('Failed open of port: %s\n',me.message);
       end

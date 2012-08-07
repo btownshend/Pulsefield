@@ -1,5 +1,6 @@
 % Test ethernet interface
-jtcpobj=jtcp('REQUEST','192.168.0.154',1500,'SERIALIZE',false);
+[h,p]=getsubsysaddr('AR');
+jtcpobj=jtcp('REQUEST',h,p,'SERIALIZE',false);
 cmd=setled(0,80,[100,0,0],0);
 cmd(end+1)='V';
 cmd(end+1)='1';

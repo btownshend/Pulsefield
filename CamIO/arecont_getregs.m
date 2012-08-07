@@ -1,10 +1,11 @@
 % Get all register values from arecont
 function r=arecont_getregs(id)
+[h,p]=getsubsysaddr(sprintf('CA%d',id));
 r=[];
 for page=0:6
   fprintf('Getting page %d\n',page);
   for reg=0:255
-    url=sprintf('http://192.168.0.%d/getreg?page=%d&reg=%d',70+id,page,reg);
+    url=sprintf('http://%s/getreg?page=%d&reg=%d',h,page,reg);
     [resp,status]=urlread(url);
     if status~=1
       error('Failed read of %s',url);

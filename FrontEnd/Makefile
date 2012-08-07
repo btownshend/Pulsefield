@@ -7,7 +7,7 @@ CXXFLAGS=$(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO)
 CFLAGS=$(CXXFLAGS)
 LDFLAGS=-L$(LIBLO) $(DEBUG) $(PROFILE)
 LIBES=-llo -g
-CXXSRCS=frontend.cc camio.cc frame.cc  visible.cc dest.cc main.cc
+CXXSRCS=frontend.cc camio.cc frame.cc  visible.cc dest.cc main.cc urlconfig.cc
 CSRCS=nanojpeg.c
 SRCS=$(CXXSRCS) $(CSRCS)
 

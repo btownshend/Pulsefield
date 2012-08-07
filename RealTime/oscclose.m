@@ -9,9 +9,9 @@ end
 
 % Need to close existing clients and server
 for c=1:length(oscsetup.clients)
-  cl=oscsetup.clients{c};
+  cl=oscsetup.clients(c);
   osc_free_address(cl.addr);
-  fprintf('Closed connection to client at %s:%d\n', cl.host,cl.port);
+  fprintf('Closed connection to client at %s\n', cl.url);
 end
 oscsetup.clients=[];
 

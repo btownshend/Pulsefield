@@ -18,10 +18,10 @@ extern int debug;
 
 static void dumpdata(const byte *data, int len);
  
-CamIO::CamIO(int _id) {
+CamIO::CamIO(int _id, const char *_host, int _port) {
     id=_id;
-    servIP=new char[100];
-    sprintf(servIP,"192.168.0.%d",id+70);
+    servIP=_host;
+    servPort=_port;
     sock=-1;
     buffer=(byte *)0;
     buflen=0;

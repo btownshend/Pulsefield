@@ -12,7 +12,8 @@
 class CamIO {
     enum { HEADER, FRAMES } state;
     static const char *sep;
-    char *servIP;
+    const char *servIP;
+    int servPort;
     int id;
     int sock;	/* Socket for receiving data, -1 if not running */
     byte *frame;
@@ -35,7 +36,7 @@ class CamIO {
     // Find the first separator in the current buffer, or return NULL if not present    
     byte *split();
  public:
-    CamIO(int _id);
+    CamIO(int _id, const char *host, int port);
     ~CamIO();
 
     void setROI(int x0, int y0, int x1, int y1);

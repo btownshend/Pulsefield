@@ -9,8 +9,7 @@
 #include "camio.h"
 #include "visible.h"
 #include "frontend.h"
-
-const int FrontEnd::serverPort=7770;
+#include "urlconfig.h"
 
 int debug=0;
 
@@ -62,7 +61,9 @@ static int getRefImage_handler(const char *path, const char *types, lo_arg **arg
 static int getImage_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::IMAGE,argv[0]->i); return 0; }
 
 static int addDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->addDest(&argv[0]->s,argv[1]->i); return 0; }
+static int addDestPort_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->addDest(msg,argv[0]->i); return 0; }
 static int rmDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->rmDest(&argv[0]->s,argv[1]->i); return 0; }
+static int rmDestPort_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->rmDest(msg,argv[0]->i); return 0; }
 static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->rmAllDest(); return 0; }
 
 FrontEnd::FrontEnd(int _ncamera, int _nled) {
@@ -70,24 +71,17 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     nled=_nled;
     frame = 0;
 
-    int ids[]={1,2,5,3,4,6};
-    int maxcamera=sizeof(ids)/sizeof(ids[0]);
-    if (maxcamera < ncamera) {
-	fprintf(stderr,"Attempt to initialize frontend with %d cameras, but max is %d\n", ncamera, maxcamera);
-	exit(1);
-    }
-
-    printf("Initializing with %d cameras...",ncamera);fflush(stdout);
     cameras = new  CamIO*[ncamera];
     vis = new Visible*[ncamera];
 
-    for (int i=0;i<ncamera;i++) {
-	cameras[i]=new CamIO(ids[i]);
-	vis[i] = new Visible(nled);
+    URLConfig urls("/Users/bst/DropBox/PeopleSensor/config/urlconfig.txt");
+    serverPort=urls.getPort("FE");
+    if (serverPort<0) {
+	fprintf(stderr,"Invalid server port retrieved from %s when looking for FE\n", urls.getFilename());
+	exit(1);
     }
-    printf("done\n");fflush(stdout);
 
-    /* start a new server on port 7770 */
+    /* start a new server on OSC port  */
     char cbuf[10];
     sprintf(cbuf,"%d", serverPort);
     s = lo_server_new(cbuf, error);
@@ -95,6 +89,24 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
 	fprintf(stderr,"Unable to start server on port %d -- perhaps another instance is running\n", serverPort);
 	exit(1);
     }
+    printf("Started server on port %d\n", serverPort);
+
+
+    /* Start cameras */
+    printf("Initializing with %d cameras...",ncamera);fflush(stdout);
+    for (int i=0;i<ncamera;i++) {
+	char ident[20];
+	sprintf(ident,"CA%d",i+1);
+	int port=urls.getPort(ident);
+	if (port<0) {
+	    fprintf(stderr,"Unable to locate %s in config file %s\n", ident, urls.getFilename());
+	    exit(1);
+	}
+	const char *host=urls.getHost(ident);
+	cameras[i]=new CamIO(i+1,host,port);
+	vis[i] = new Visible(nled);
+    }
+    printf("done\n");fflush(stdout);
 
     /* add method that will match the path /quit with no args */
     lo_server_add_method(s, "/quit", "", quit_handler, NULL);
@@ -117,14 +129,16 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     lo_server_add_method(s,"/vis/get/image","i",getImage_handler,this);
 
     lo_server_add_method(s,"/vis/dest/add","si",addDest_handler,this);
+    lo_server_add_method(s,"/vis/dest/add/port","i",addDestPort_handler,this);
     lo_server_add_method(s,"/vis/dest/remove","si",rmDest_handler,this);
+    lo_server_add_method(s,"/vis/dest/remove/port","i",rmDestPort_handler,this);
     lo_server_add_method(s,"/vis/dest/clear","",rmAllDest_handler,this);
 
     /* add method that will match any path and args if they haven't been caught above */
     lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
     
     /* add default destinations */
-    addDest("localhost",7771);
+    // addDest("localhost",7771);
 
     /* Set to always send only VIS information */
     sendAlways=VIS;
@@ -428,6 +442,7 @@ void FrontEnd::setRefImage(int camera, int imgwidth, int imgheight, int imgdepth
 }
 
 void FrontEnd::getStat(long int stat, int mode) {
+    printf("getStat(%ld,%d)\n",stat,mode);fflush(stdout);
     if (mode==2)
 	sendAlways |= stat;
     else
@@ -441,8 +456,18 @@ void FrontEnd::addDest(const char *host, int port) {
     dests.add(host,port);
 }
 
+void FrontEnd::addDest(lo_message msg, int port) {
+    char *host=lo_url_get_hostname(lo_address_get_url(lo_message_get_source(msg)));
+    addDest(host,port);
+}
+
 void FrontEnd::rmDest(const char *host, int port) {
     dests.remove(host,port);
+}
+
+void FrontEnd::rmDest(lo_message msg, int port) {
+    char *host=lo_url_get_hostname(lo_address_get_url(lo_message_get_source(msg)));
+    rmDest(host,port);
 }
 
 void FrontEnd::rmAllDest() {

@@ -8,10 +8,9 @@ if ~exist('p','var')
   p.analysisparams=analysissetup();
   %ctype='av10115';
   ctype='av10115-half';
-  ids=[1 2 5 3 4];   % In order around circle
-  ncamera=length(ids);
+  ncamera=5;
   for i=1:ncamera
-    p.camera(i)=setupcamera(ctype,ids(i));
+    p.camera(i)=setupcamera(ctype,i);
   end
   p.led=struct('id',num2cell(1:numled()));
   p.colors={[1 1 1], [1 0 0], [0 1 0], [0 0 1],[1 1 0],[1 0 1], [0 1 1]};
@@ -34,6 +33,10 @@ for id=[p.camera.id]
   end
   arecont_set(id,'maxdigitalgain',32);
   arecont_set(id,'analoggain',1);
+  arecont_set(id,'illum','outdoor');
+  if id~=1
+    arecont_set(id,'daynight','day');
+  end
 end
 
 if ~isfield(p.camera(1),'pixcalib')
@@ -104,3 +107,12 @@ if dolevcheck
   disp('Check levels');
   levcheck(p,1);
 end
+
+save('p.mat','p');
+
+% Start frontend
+startfrontend(p);
+% Init with collected targets
+rcvr(p,'init');
+
+

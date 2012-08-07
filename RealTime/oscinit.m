@@ -2,7 +2,7 @@
 % Start a server on port which can later be polled for connections
 function oscinit(port)
 if nargin<1
-  port=7000;
+  [~,port]=getsubsysaddr('MPO');
 end
 
 global oscsetup

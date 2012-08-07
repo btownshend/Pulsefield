@@ -1,9 +1,10 @@
 function val=arecont_get(id,param)
+[h,p]=getsubsysaddr(sprintf('CA%d',id));
 if strncmp(param,'reg',3)
   v=sscanf(param,'reg_%d_%d');
-  url=sprintf('http://192.168.0.%d/getreg?page=%d&reg=%d',70+id,v(1),v(2));
+  url=sprintf('http://%s/getreg?page=%d&reg=%d',h,v(1),v(2));
 else  
-  url=sprintf('http://192.168.0.%d/get?%s',70+id,param);
+  url=sprintf('http://%s/get?%s',h,param);
 end
 [resp,status]=urlread(url);
 if status~=1

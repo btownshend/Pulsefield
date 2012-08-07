@@ -1,8 +1,11 @@
-% Update MAX with a new set of locations for the targets
-function ok=oscupdate(p,sampnum,snap,prevsnap)
+% Update OSC destinations with a new set of locations for the targets
+function [ok,needcal]=oscupdate(p,sampnum,snap,prevsnap)
 global oscsetup;
 
-apps={'guitar','lcd'};   % Can be any of guitar,lcd,seq
+debug=false;
+needcal=false;
+ok=true;
+apps={'cseq'};   % Can be any of guitar,lcd,cseq
 plotguitar=false;
 
 if isempty(oscsetup)
@@ -22,27 +25,23 @@ while true
   end
   for i=1:length(msgin)
     m=msgin{i};
-    fprintf('Got message %s\n', m.path);
-    if strcmp(m.path,'/pf/adddest')
-      oscadddest(m.data{1},m.data{2});
+    fprintf('Got message %s from %s\n', m.path, m.src);
+    if strcmp(m.path,'/pf/dest/add/port')
+      [host,port,proto]=spliturl(m.src);
+      url=sprintf('%s://%s:%d',proto,host,m.data{1});
+      oscadddest(url);
       dodump=true;   % Always start with a dump
-    elseif strcmp(m.path,'/pf/rmdest')
-      clients=oscsetup.clients;
-      toremove=zeros(1,length(clients));
-      for c=1:length(clients)
-        if strcmp(clients(c).host,m.data{1}) && clients(c).port==m.data{2}
-          toremove(c)=1;
-          osc_free_address(clients(c).addr);
-        end
-      end
-      if ~any(toremove)
-        fprintf('Unable to remove OSC destination %s:%d - not found\n', m.data{1},m.data{2});
-      else
-        fprintf('Removed %d OSC clients at %s:%d\n',sum(toremove),clients(c).host,clients(c).port);
-        oscsetup.clients=clients(~toremove);
-      end
+    elseif strcmp(m.path,'/pf/dest/remove/port')
+      [host,port,proto]=spliturl(m.src);
+      url=sprintf('%s://%s:%d',proto,host,m.data{1});
+      oscrmdest(url);
     elseif strcmp(m.path,'/pf/dump')
       dodump=true;
+    elseif strcmp(m.path,'/pf/calibrate')
+      if m.data{1}>0.5
+        % Don't respond to button up event (with data=0.0), only button down (1.0)
+        needcal=true;
+      end
     else
       fprintf('Unknown OSC message: %s\n', m.path);
     end
@@ -53,16 +52,16 @@ end
 m={};
 
 % Just began
-global firstpluck
+global juststarted
 running=true;
 if sampnum==1
   m{end+1}=msg('/pf/started',{});
   oscsetup.starttime=snap.when;
-  firstpluck=true;
+  juststarted=true;
 elseif nargin<3
   m{end+1}=msg('/pf/stopped',{});
   running=false;
-  firstpluck=false;
+  juststarted=false;
 end
 
 if dodump
@@ -76,30 +75,42 @@ end
 if running
   elapsed=(snap.when-oscsetup.starttime)*24*3600;
   
-  % Compute entries, exits
-  if nargin<4
-    % No prev, assume everything is an entry
-    entries=[snap.hypo.id];
-    exits=[];
+  ids=[snap.hypo.id];
+  if nargin>=4
+    previds=[prevsnap.hypo.id];
   else
-    % Check for entries, exits
-    entries=setdiff([snap.hypo.id],[prevsnap.hypo.id]);
-    exits=setdiff([prevsnap.hypo.id],[snap.hypo.id]);
-  end
-  for i=1:length(entries)
-    m{end+1}=msg('/pf/entry',{int32(sampnum),elapsed,int32(entries(i))});
-  end
-  for i=1:length(exits)
-    m{end+1}=msg('/pf/exit',{int32(sampnum),elapsed,int32(exits(i))});
+    previds=[];
   end
   
-  m{end+1}=msg('/pf/set/npeople',int32(length(snap.hypo)));
+  % Compute entries, exits
+  entries=setdiff(ids,previds);
+  exits=setdiff(previds,ids);
+  updates=intersect(ids,previds);
+  
+  m{end+1}=msg('/pf/frame',{int32(sampnum) });
+  
+  for i=entries
+    m{end+1}=msg('/pf/entry',{int32(sampnum),elapsed,int32(i)});
+    m{end+1}=msg(sprintf('/touchosc/loc/%d/color',mod(i-1,6)+1),{'green'});
+  end
+  for i=exits
+    m{end+1}=msg('/pf/exit',{int32(sampnum),elapsed,int32(i)});
+    m{end+1}=msg(sprintf('/touchosc/loc/%d/color',mod(i-1,6)+1),{'red'});
+  end
+  
+  people=length(ids);
+  prevpeople=length(previds);
+  if people~=prevpeople
+    m{end+1}=msg('/pf/set/npeople',int32(people));
+  end
   for i=1:length(snap.hypo)
     h=snap.hypo(i);
     % Compute groupid -- lowest id in group, or 0 if not in a group
     sametnum=find(h.tnum==[snap.hypo.tnum]);
     groupid=snap.hypo(min(sametnum)).id;
     m{end+1}=msg('/pf/update',{int32(sampnum), elapsed,int32(h.id),h.pos(1),h.pos(2),h.velocity(1),h.velocity(2),h.majoraxislength,h.minoraxislength,int32(groupid),int32(length(sametnum))});
+    xypos=h.pos ./max(abs(p.layout.active))
+    m{end+1}=msg(sprintf('/touchosc/loc/%d',mod(h.id-1,6)+1),{xypos(2),xypos(1)});
   end
 end
 
@@ -124,60 +135,65 @@ if running && ismember('lcd',apps)
   end	
 end
 
-% Update step sequencer
-if ismember('seq',apps)
+% Circular step sequencer
+if ismember('cseq',apps)
   if running
-    nsteps=8;
-    rng=[-2,2];
-    stepsize=diff(rng)/(nsteps-1);
-    stepedges=rng(1)+(0:nsteps-2)*stepsize;
-    velocity=127;
-    duration=120;
+    cseqsetup=struct('nsteps',16,'pitches',makescale('major','C',2),'minr',0.1,'maxr',2.5,'velocity',127,'duration',120,'touchsteps',16,'touchpitches',16);
 
-    if ~isempty(snap.hypo)
-      pitches=[]; step=[]; channel=[];
-      for i=1:length(snap.hypo)
-        step(i)=max([1,find(snap.hypo(i).pos(1)>stepedges)]);
-        pitches(i)=pos2pitch(snap.hypo(i).pos(2));
-        channel(i)=i;
-      end
-      [step,ord]=sort(step);
-      pitches=pitches(ord);
-      channel=channel(ord);
-
-      for i=1:nsteps
-        sel=find(step==i);
-        if length(sel)>1
-          step(sel(2:end))=step(sel(2:end))+1;
-          sel=find(step==i);
-        end
-        if isempty(sel)
-          pi=0;
-          ch=0;
-        else
-          pi=pitches(sel);
-          ch=channel(sel);
-        end
-        
-        if pi>0
-          m{end+1}=msg('/pf/pass/seq',{'step',int32(i),int32(pi), int32(velocity), int32(duration), int32(ch)});
-        else
-          m{end+1}=msg('/pf/pass/seq',{'step',int32(i),int32(pi), int32(0), int32(duration), int32(ch)});
-        end
-        if pi>0
-          fprintf('step %d: pitch=%d\n', i, pi);
-        end
-      end
-      disprange=[min([pitches(pitches>0)-4,36]),max([pitches+4,86])];
-      m{end+1}=msg('/pf/pass/seq',{'zoom',int32(disprange(1)),int32(disprange(2))});
-      m{end+1}=msg('/pf/pass/seq',{'loop',int32(1),int32(nsteps)});
-      m{end+1}=msg('/pf/pass/seq',{'active',int32(1)});
-    else
-      m{end+1}=msg('/pf/pass/seq',{'active',int32(0)});
+    if juststarted
+      m{end+1}=msg('/pf/pass/seqt',{'clear','cseq'});
+      m{end+1}=msg('/pf/pass/seqt',{'seq','cseq'});
+      m{end+1}=msg('/pf/pass/seqt',{'play',int32(1)});
     end
-  else
-    % Not running
-    m{end+1}=msg('/pf/pass/seq',{'active',int32(0)});
+    
+    %fprintf('cseq: start=%s, stop=%s, cont=%s\n',shortlist(entries), shortlist(exits), shortlist(updates));
+
+    for i=exits
+      [pphase,pstep,ppitch,ppitchstep]=pos2cseq(cseqsetup,prevsnap.hypo(previds==i).pos);
+      m{end+1}=msg('/pf/pass/seqt',{'delete','cseq',0.0,1.0,'playmidinote',int32(i)});
+      m{end+1}=tsmsg(cseqsetup,ppitchstep,pstep,0);
+    end
+
+    for i=entries
+      [phase,step,pitch,pitchstep]=pos2cseq(cseqsetup,snap.hypo(ids==i).pos);
+      if isfinite(phase)
+        velocity=cseqsetup.velocity;
+        duration=cseqsetup.duration;
+        channel=mod(i,16)+1;
+        m{end+1}=msg('/pf/pass/seqt',{'add','cseq',phase,'playmidinote',int32(i),int32(pitch), int32(velocity), int32(duration),  int32(channel) });
+        m{end+1}=tsmsg(cseqsetup,pitchstep,step,1);
+      end
+    end
+      
+    for i=updates
+      [phase,step,pitch,pitchstep]=pos2cseq(cseqsetup,snap.hypo(ids==i).pos);
+      [pphase,pstep,ppitch,ppitchstep]=pos2cseq(cseqsetup,prevsnap.hypo(previds==i).pos);
+      if pstep~=step || pitch~=ppitch
+        if isfinite(phase)
+          % Remove any old step for this ID
+          m{end+1}=msg('/pf/pass/seqt',{'delete','cseq',0.0,1.0,'playmidinote',int32(i)});
+          m{end+1}=tsmsg(cseqsetup,ppitchstep,pstep,0);
+        end
+        if isfinite(phase)
+          % Add new step
+          velocity=cseqsetup.velocity;
+          duration=cseqsetup.duration;
+          channel=mod(i,16)+1;
+          m{end+1}=msg('/pf/pass/seqt',{'add','cseq',phase,'playmidinote',int32(i),int32(pitch), int32(velocity), int32(duration),  int32(channel) });
+          m{end+1}=tsmsg(cseqsetup,pitchstep,step,1);
+        end
+      end
+    end
+
+    if ~isempty(exits) && isempty(entries) && isempty(updates)
+      % Last person left
+      m{end+1}=msg('/pf/pass/seqt',{'play',int32(0)});
+    end
+
+    if isempty(exits) && ~isempty(entries) && isempty(updates)
+      % First entry
+      m{end+1}=msg('/pf/pass/seqt',{'play',int32(1)});
+    end
   end
 end
 
@@ -206,10 +222,10 @@ if running && nargin>=4 && ismember('guitar',apps)
         fret=find(pos(2)>[frety,-inf],1)-1;
         pitch=fretpitches(plucked)+fret;
         fprintf('Plucked string %d at fret %d: pitch=%d, vel=%d, dur=%d\n',plucked,fret,pitch,velocity,duration);
-        m{end+1}=msg('/pf/pass/guitar',{int32(snap.hypo(i).id),int32(pitch),int32(velocity),int32(duration)});
+        m{end+1}=msg('/pf/pass/playmidinote',{int32(snap.hypo(i).id),int32(pitch),int32(velocity),int32(duration)});
         if plotguitar
           setfig('guitar');
-          if firstpluck
+          if juststarted && i==1 && pl==1
             clf; 
             plotlayout(p.layout,0);
             hold on;
@@ -220,7 +236,6 @@ if running && nargin>=4 && ismember('guitar',apps)
             for j=1:length(stringx)
               plot([stringx(j),stringx(j)],[topfrety,lastfrety],'k');
             end
-            firstpluck=false;
           end
           plot(ppos(1),ppos(2),'o','Color',id2color(snap.hypo(i).id));
           plot([ppos(1),pos(1)],[ppos(2),pos(2)],'-','Color',id2color(snap.hypo(i).id));
@@ -233,11 +248,18 @@ end
 
 % Send to all clients
 toremove=zeros(1,length(oscsetup.clients));
+if debug
+  for i=1:length(m)
+    fprintf('Msg: %s ',m{i}.path);
+    disp(m{i}.data);
+  end
+end
+
 for c=1:length(oscsetup.clients)
   cl=oscsetup.clients(c);
   ok=osc_send(cl.addr,m);
   if ~ok
-    fprintf('Failed send of message to OSC target at %s:%d - removing\n',cl.host,cl.port);
+    fprintf('Failed send of message to OSC target at %s - removing\n',cl.url);
     osc_free_address(cl.addr);
     toremove(c)=1;
   end
@@ -246,10 +268,10 @@ if any(toremove)
   oscsetup.clients=oscsetup.clients(~toremove);
 end
 
-
-% Map a position in meters to a MIDI pitch val
-function pitch=pos2pitch(pos)
-pitch=int32(60+pos*10);   % 10 notes/meter centered at middle-C
+% Clear juststarted flag
+if juststarted
+  juststarted=false;
+end
 
 function m=msg(path,data)
 if iscell(data)
@@ -258,3 +280,21 @@ else
   m=struct('path',{path},'data',{{data}});
 end
   
+function [phase,step,pitch,pitchstep]=pos2cseq(s,pos)
+[th,r]=cart2pol(pos(1),pos(2));
+th=mod(th+2*pi,2*pi);
+if r<s.minr
+  step=nan;
+  phase=nan;
+else
+  step=floor(s.nsteps*th/(2*pi))+1;
+  phase=(step-1)/s.nsteps;
+end
+pitchstep=min(length(s.pitches),max(1,ceil((r-s.minr)/(s.maxr-s.minr)*(length(s.pitches)+1))));
+pitch=s.pitches(pitchstep);
+fprintf('pos=(%.2f,%.2f), phase=%.3f, step=%d, pitch=%d, pitchstep=%d\n', pos,phase,step,pitch,pitchstep);
+
+function m=tsmsg(q,pitchstep,step,val)
+tsstep=int32(round(((step-1)*q.touchsteps/q.nsteps)+1));
+tspstep=int32(min(q.touchpitches,max(1,round(pitchstep+(length(q.pitches)-q.touchpitches)/2))));
+m=msg('/touchosc/seq',{tspstep,tsstep,int32(val)});

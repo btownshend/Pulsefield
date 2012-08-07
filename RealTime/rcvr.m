@@ -1,21 +1,12 @@
 % Receiver of data from frontend (C++) that sends data via OSC
 function vis=rcvr(p,varargin)
 global visserver;
-frontendport=7770;
-frontendhost='localhost';
-myhost='localhost';
-myport=7773;
+[frontendhost,frontendport]=getsubsysaddr('FE');
 
-defaults=struct('init',false,'connect', false, 'stats',false,'flush',false,'nowait',false,'debug',false,'sendquit',false);
+defaults=struct('init',false, 'stats',false,'flush',false,'nowait',false,'debug',false);
 args=processargs(defaults,varargin);
 
 if args.init
-  % Start frontend
-  cmd=sprintf('../FrontEnd/frontend >/tmp/frontend.log 2>&1 & sleep 1; cat /tmp/frontend.log; ');
-  fprintf('Running cmd: "%s"\n', cmd);
-  [s,r]=system(cmd);
-  fprintf('%s\n',r);
-
   % Initialize
   addr=osc_new_address(frontendhost,frontendport);
   sendmsg(addr,'/vis/stop',{});
@@ -60,76 +51,59 @@ if args.init
     end
     pause(1);   % Try not to overrun UDP stack
   end
+  sendmsg(addr,'/vis/start',{});   % (re)start it
   osc_free_address(addr);
 end
 
-if args.connect
-  fprintf('Connecting to %s:%d from %s:%d\n', frontendhost, frontendport, myhost, myport);
-  addr=osc_new_address(frontendhost,frontendport);
-  sendmsg(addr,'/vis/dest/add',{myhost,myport});
-
-  % Start a local server to receive vis messages
-  port=myport;
-  if ~isempty(visserver)
-    fprintf('Freeing old OSC server at port %d. ', port);
-    osc_free_server(visserver);
-  end
-    
-  visserver=osc_new_server(port);
-  fprintf('Started new OSC server at port %d\n', port);
-  sendmsg(addr,'/vis/start',{});
-  fprintf('Started front end;  waiting for /started reply...');
-  osc_free_address(addr);
-  args.flush=false;   % This is not supported below;  if connect is set, will flush up until /vis/started is received anyway
-  args.nowait=false;  % Wait for acknowledge
-end
 
 if args.stats
   % Request stats from frontend
   rcvr(p,'flush');   % Flush any queued data
   addr=osc_new_address(frontendhost,frontendport);
-  sendmsg(addr,'/vis/get/corr',{});
-  sendmsg(addr,'/vis/get/refimage',{});
-  sendmsg(addr,'/vis/get/image',{});
+  fprintf('Sending request for stats\n');
+  sendmsg(addr,'/vis/get/corr',{int32(1)});
+  sendmsg(addr,'/vis/get/refimage',{int32(1)});
+  sendmsg(addr,'/vis/get/image',{int32(1)});
+  %  osc_send(addr,struct('path',{'/vis/get/corr','/vis/get/refimage','/vis/get/image'},'data',{{int32(1)},{int32(1)},{int32(1)}}));
   osc_free_address(addr);
-  % Now, go ahead and read next frame
-  % Could have a race though and next frame would not have the results (but a later one would)
-end
-
-if args.sendquit
-  addr=osc_new_address(frontendhost,frontendport);
-  sendmsg(addr,'/quit',{});
-  osc_free_address(addr);
-end
-
-if isempty(visserver)
-  fprintf('Not connected to server; use rcvr(p,''connect'')\n');
+  % Now, go ahead and read next frames until we get one that has the requested fields
+  % Might be a few without these fields
+  % Could also be a race condition where only some of the above fields are filled, and the rest are in the next frame
+  for i=1:3
+    vis=rcvr(p)
+    if isfield(vis,'im')
+      if ~isfield(vis,'refim') || ~isfield(vis,'corr')
+        break;
+      end
+      return;
+    end
+  end
+  fprintf('Stats did not result in a vis struct that contained corr,refimage,image\n');
   return;
 end
 
-global msgin;
+if isempty(visserver)
+  fprintf('Not connected to server; use startfrontend()\n');
+  return;
+end
 
 vis=[];
 frame=-1;
 while true
-  if isempty(msgin)
-    % Get some more messages, timeout after 100msec
-    if args.nowait || args.flush
-      msgin=osc_recv(visserver,0.0);
-    else
-      msgin=osc_recv(visserver,1);
-    end
+  if args.nowait || args.flush
+    m=getnextfrontendmsg(0.0);
+  else
+    m=getnextfrontendmsg(1.0);
   end
-  if isempty(msgin)
+  if isempty(m)
     if args.flush
       fprintf('Buffers flushed, now looking for vis\n');
       args.flush=false;  % Now continue normally
+      frame=-1;
       continue;
     end
     % Nothing available
-    if args.connect
-      error('No /started acknowledge received');
-    elseif frame==-1 || ~any(filled)
+    if frame==-1 || ~any(filled)
       if args.debug
         fprintf('No frame available\n');
       end
@@ -140,26 +114,7 @@ while true
     end
     break;
   end
-  if iscell(msgin)
-    m=msgin{1};
-    msgin=msgin(2:end);
-  else
-    m=msgin;
-    msgin=[];
-  end
-  if args.debug
-    fprintf('Have %d messages, next is %s\n', length(msgin)+1, m.path);
-  end
-  if args.connect 
-    % Only waiting for started or stopped messages
-    if strcmp(m.path,'/vis/started')
-      fprintf('Got acknowledge from frontend that it has started\n');
-      args.connect = false;   % No longer waiting for start acknowledge
-    elseif strcmp(m.path,'/vis/stopped')
-      error('Front end has stopped -- need to re-init\n');
-      % TODO - handle this somehow
-    end
-  elseif strcmp(m.path,'/vis/beginframe')
+  if strcmp(m.path,'/vis/beginframe')
     if frame~=-1
       fprintf('Missed /endframe messages, skipping to next frame\n');
     end
@@ -206,14 +161,14 @@ while true
         % Turn off indicators for LEDs we're not using
         vis.v(c,~p.camera(c).viscache.inuse)=nan;
         filled(c)=true;
-        vis.frame(c)=frame;
+        vis.frame=frame;
         vis.acquired(c)=(((sec+usec/1e6)/3600-7)/24)+datenum(1970,1,1);   % Convert to matlab datenum (assuming 7 hours offset from GMT)
         if args.debug
           fprintf('Got frame %d, camera %d with total latency of %.3f sec\n', frame, c, (now-vis.acquired(c))*24*3600);
         end
       else
         blob=m.data{5};
-        if length(blob)~=size(vis.v,2)
+        if length(blob)~=size(vis.v,2)*4
           error('/vis/corr message has incorrect number of LEDS: expected %d, got %d\n', size(vis.v,2),length(blob));
         end
         vis.corr(c,:)=typecast(blob,'SINGLE');

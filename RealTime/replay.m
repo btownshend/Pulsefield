@@ -1,6 +1,6 @@
 % Replay a recorded set of movements stored in recvis
-function replayrecvis=replay(recvis,varargin)
-defaults=struct('timed',false,'plots',{{}});
+function replayrecvis=replay(varargin)
+defaults=struct('timed',false,'plots',{{}},'oscdests',{{'SG','LD','TO'}});
 args=processargs(defaults,varargin);
 
 global recvis
@@ -15,6 +15,14 @@ end
 
 timedreplay=args.timed;   % Set to 1 to replay at same pacing as recording
 plots=args.plots;
+
+% Setup destination for outgoing OSC messages
+for i=1:length(oscdests)
+  [h,p]=getsubsysaddr(oscdests{i});
+  if ~isempty(h)
+    oscadddest(['osc.udp://',h,':',num2str(p)])
+  end
+end
 mainloop
 
 % Copy in snap to new version

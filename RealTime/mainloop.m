@@ -5,6 +5,7 @@
 %function recvis=mainloop(recvis,timedreplay,plots)
 global recvis
 userecvis=~isempty(recvis.vis);
+needcal=false;
 
 if ismember('hypo',plots)
   setfig('plothypo');clf;
@@ -35,6 +36,13 @@ while ~userecvis || samp<=length(recvis.vis)
       end
     end
   else
+    if needcal
+      fprintf('Recalibrating...');
+      [~,recvis.p]=getvisible(recvis.p,'init');
+      s1=arduino_ip(0);
+      setled(s1,[0,numled()-1],127*recvis.p.colors{1},1); show(s1); sync(s1);
+      needcal=false;
+    end
     vis=getvisible(recvis.p,'setleds',false);
     %vis=getvisfrompipe(recvis.p,recvis.randseed);
     if samp==1
@@ -156,9 +164,9 @@ while ~userecvis || samp<=length(recvis.vis)
   end
   
   if samp>1
-    oscupdate(recvis.p,samp,snap{samp},snap{samp-1});
+    [ok,needcal]=oscupdate(recvis.p,samp,snap{samp},snap{samp-1});
   else
-    oscupdate(recvis.p,samp,snap{samp});
+    [ok,needcal]=oscupdate(recvis.p,samp,snap{samp});
   end
 
   if ~userecvis

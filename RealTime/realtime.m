@@ -1,6 +1,7 @@
 % Realtime run script
 %plots={'hypo'};
 plots={};
+countdown=0;
 
 % Setup data structure
 global recvis
@@ -21,11 +22,13 @@ s1=arduino_ip(1);
 % Turn off LEDS
 setled(s1,-1,[0,0,0],1); show(s1); sync(s1);
 
-% Sleep a bit
-fprintf('Starting in ');
-for i=5:-1:1
-  pause(1);
-  fprintf('%d...',i);
+if countdown>0
+  % Sleep a bit
+  fprintf('Starting in ');
+  for i=countdown:-1:1
+    pause(1);
+    fprintf('%d...',i);
+  end
 end
 
 % Turn on LEDs
@@ -36,11 +39,14 @@ pause(1);
 
 fprintf('Ready\n');
 
+oscdests={'SG','LD','TO'};
 % Setup destination for outgoing OSC messages
-oscadddest('192.168.0.141',7001);
-
-% Connect to frontend and flush
-rcvr(p,'connect',true);
+for i=1:length(oscdests)
+  [host,port]=getsubsysaddr(oscdests{i});
+  if ~isempty(host)
+    oscadddest(['osc.udp://',host,':',num2str(port)])
+  end
+end
 
 % Start acquisition
 mainloop;

@@ -9,7 +9,7 @@ class CamIO;
 class Visible;
 
 class FrontEnd {
-    static const int serverPort;
+    int serverPort;
 
     int ncamera, nled;
     CamIO **cameras;
@@ -42,7 +42,9 @@ class FrontEnd {
     void setRefImage(int camera, int imgwidth, int imgheight, int imgdepth, const char *filename);
     void getStat(long int stat,int mode);   // Set flag to return a particular piece of data next frame
     void addDest(const char *host, int port);
+    void addDest(lo_message msg, int port);
     void rmDest(const char *host, int port);
+    void rmDest(lo_message msg, int port);
     void rmAllDest();
 };
 #endif

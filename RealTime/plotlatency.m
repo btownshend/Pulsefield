@@ -21,7 +21,6 @@ rdelay=([recvis.vis.whenrcvd]-acquired)*24*3600;
 % Check for prior frames whose processing time may have delay receipt
 waittime=([recvis.vis.whenrcvd]-[nan,recvis.snap(1:end-1).whendone])*3600*24;
 latefinish=waittime<1e-4;   % Basically, time was determined by prior processing time
-latefinish(1000)=1;
 rdelay(latefinish)=nan;
 plot(1:length(recvis.vis),rdelay);
 if sum(latefinish)>0

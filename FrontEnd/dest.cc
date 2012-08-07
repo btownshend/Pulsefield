@@ -40,6 +40,7 @@ void Destinations::add(const char *host, int port) {
     hosts[ndest]=new char[strlen(host)+1];
     strcpy(hosts[ndest],host);
     ports[ndest]=port;
+    printf("Added destination %s:%d\n", host,port);
     ndest++;
 }
 
@@ -53,6 +54,7 @@ void Destinations::remove(const char *host, int port) {
 	    ndest--;
 	    delete [] hosts[ndest];
 	    i--;
+	    printf("Removed destination %s:%d\n", host,port);
 	}
 }
 	
@@ -60,4 +62,5 @@ void Destinations::removeAll() {
     for (int i=0;i<ndest;i++) 
 	delete [] hosts[i];
     ndest=0;
+    printf("Removed all destinations\n");
 }

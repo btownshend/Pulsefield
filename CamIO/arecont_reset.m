@@ -1,4 +1,5 @@
 function arecont_reset(id)
-url=sprintf('http://192.168.0.%d/set?params=factory',id+70);
+[h,p]=getsubsysaddr(sprintf('CA%d',id));
+url=sprintf('http://%s/set?params=factory',h);
 cmd=sprintf('curl -s ''%s'' &', url);
 system(cmd);

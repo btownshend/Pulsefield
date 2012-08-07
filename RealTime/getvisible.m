@@ -23,7 +23,7 @@
 % 	im{ncam} - full images
 %	tgt{ncam,nled} - images of each target
 function [vis,p]=getvisible(p,varargin)
-defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[11 11],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5,...
+defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[11 7],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5,...
             'usefrontend',true);
 args=processargs(defaults,varargin);
 
@@ -57,8 +57,8 @@ if args.init
       j=fvalid(vj);
       tpos=c(j).pos-[roi(1),roi(3)]+1;
       [s1,s2]=ind2sub(args.wsize,1:prod(args.wsize));
-      s1=ceil(tpos(:,2)+s1-mean(s1));
-      s2=ceil(tpos(:,1)+s2-mean(s2));
+      s1=round(tpos(:,2)+s1-mean(s1));
+      s2=round(tpos(:,1)+s2-mean(s2));
       % Shift window so it falls inside image
       if min(s1)<1
         fprintf('Shifting window down by %d pixels\n',1-min(s1));
@@ -81,7 +81,7 @@ if args.init
       tlpos(j,:)=[s2(1),s1(1)];
       brpos(j,:)=[s2(end),s1(end)];
     end
-    p.camera(i).viscache=struct('wsize',args.wsize,'imgsize',imgsize,'indices',ind,'when',now,'tlpos',tlpos,'brpos',brpos);
+    p.camera(i).viscache=struct('wsize',args.wsize,'imgsize',imgsize,'indices',ind,'when',now,'tlpos',tlpos,'brpos',brpos,'inuse',[c.valid]);
   end
 
   % Acquire samples
@@ -100,7 +100,8 @@ if args.init
       onval{i}=p.colors{mod(i-1,length(p.colors))+1}*127;
     end
     % Recursive call without init, full stats, no corr (since viscache not setup)
-    vis{i}=getvisible(p,'calccorr',false,'stats',true,'onval',onval{i});
+    % For now, don't use frontend since it doesn't give imspot{} data back, would need to reformat full images
+    vis{i}=getvisible(p,'calccorr',false,'stats',true,'onval',onval{i},'usefrontend',false);
   end
 
   % Take average to set template (in ref{} as individual images, and in refvec(l,:) as a matrix of vectors, 1 row per LED
@@ -115,7 +116,6 @@ if args.init
     
     pc=p.camera(c).pixcalib;
     p.camera(c).viscache.refimspot=cell(1,length(p.led));
-    p.camera(c).viscache.inuse=[pc.valid];   % Initially same as valid (may be changed below)
     fvalid=find([pc.valid]);
     p.camera(c).viscache.ledmap=fvalid;
     for j=1:length(fvalid)
@@ -165,6 +165,7 @@ end
 % Normal case -- not init
 if ~isempty(args.im)
   args.setleds=false;
+  args.usefrontend=false;
 end
 
 if args.setleds && ~args.init
@@ -179,20 +180,22 @@ if args.setleds && ~args.init
   pause(0.3);
 end
 
-if args.usefrontend  && ~args.stats
+if args.usefrontend
   while true
     % Call frontend to get next frame
-    vis=rcvr(p);
+    vis=rcvr(p,'stats',args.stats);
     if isempty(vis)
       fprintf('Empty vis[] struct returned, waiting for next one\n');
       continue;
     end
     vis.whenrcvd=now;
     age=(vis.whenrcvd-max(vis.acquired))*24*3600;
-    if (age>2)
+    if (age>1)
       fprintf('Skipping stale frame %d that is %.1f seconds old\n', vis.frame(1), age);
     else
-      fprintf('Got frame %d that is %.3f seconds old\n',vis.frame(1),age);
+      if mod(vis.frame(1),50)==0 || age>0.1
+        fprintf('Got frame %d that is %.3f seconds old\n',vis.frame(1),age);
+      end
       return;
     end
   end

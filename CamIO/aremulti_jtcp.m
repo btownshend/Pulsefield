@@ -16,8 +16,9 @@ for i=1:length(id)
     req=[req,sprintf('&x0=%d&x1=%d&y0=%d&y1=%d',roi{i}-1)];
   end
   req=[req,sprintf(' HTTP/1.1\r\n\r\n')];
+  [h,p]=getsubsysaddr(sprintf('CA%d',id(i)));
   try
-    fd{i}=jtcp('REQUEST',sprintf('192.168.0.%d',70+id(i)),80,'SERIALIZE',false)
+    fd{i}=jtcp('REQUEST',h,p,'SERIALIZE',false)
   catch me
     error('Failed open of camera %d: %s',id,me.message);
   end
