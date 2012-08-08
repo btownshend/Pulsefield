@@ -16,13 +16,16 @@ end
 timedreplay=args.timed;   % Set to 1 to replay at same pacing as recording
 plots=args.plots;
 
+oscdests={'MAX','LD','TO'};
+
 % Setup destination for outgoing OSC messages
 for i=1:length(oscdests)
-  [h,p]=getsubsysaddr(oscdests{i});
-  if ~isempty(h)
-    oscadddest(['osc.udp://',h,':',num2str(p)])
+  [host,port]=getsubsysaddr(oscdests{i});
+  if ~isempty(host)
+    oscadddest(['osc.udp://',host,':',num2str(port)],oscdests{i})
   end
 end
+
 mainloop
 
 % Copy in snap to new version

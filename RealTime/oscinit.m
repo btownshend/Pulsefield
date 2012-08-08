@@ -1,9 +1,11 @@
 % Initialize OSC struct
 % Start a server on port which can later be polled for connections
-function oscinit(port)
+function oscinit(myident)
 if nargin<1
-  [~,port]=getsubsysaddr('MPO');
+  myident='MPO';
 end
+
+[~,port]=getsubsysaddr(myident);
 
 global oscsetup
 
@@ -20,4 +22,4 @@ if ~isempty(oscsetup)  && isfield(oscsetup,'server')
 end
 server=osc_new_server(port);
 fprintf('Started new OSC server at port %d\n', port);
-oscsetup=struct('port',port,'server',server,'clients',[]);
+oscsetup=struct('port',port,'server',server,'clients',struct('ident',{},'url',{},'addr',{}));

@@ -83,8 +83,7 @@ if args.stats
 end
 
 if isempty(visserver)
-  fprintf('Not connected to server; use startfrontend()\n');
-  return;
+  error('Not connected to server; use startfrontend()\n');
 end
 
 vis=[];
@@ -194,18 +193,32 @@ while true
       if strcmp(m.path,'/vis/frame')
         vis.frame{c}=imread(filename);
       else
-        fd=fopen(filename,'r');
-        assert(type(1)=='b' || type(1)=='f');
-        if type(1)=='b'
-          rawimage=fread(fd,'*uint8');
-        elseif type(1)=='f'
-          rawimage=fread(fd,'*float');
-        else
-          fprintf('Bad type for %s: %s\n', m.path, type);
+        for retry=1:3
+          fd=fopen(filename,'r');
+          assert(type(1)=='b' || type(1)=='f');
+          if type(1)=='b'
+            rawimage=fread(fd,'*uint8');
+          elseif type(1)=='f'
+            rawimage=fread(fd,'*float');
+          else
+            fprintf('Bad type for %s: %s\n', m.path, type);
+          end
+          fclose(fd);
+          if length(rawimage)==depth*width*height
+            rawimage=permute(reshape(rawimage,depth,width,height),[3 2 1]);
+            break;
+          else
+            % Even though the frontend app closes the file before sending the packet, seems that the filesystem introduces
+            % some delay before this process sees the full file.  
+            fprintf('Image read from %s has %d/%d bytes on attempt %d\n',filename,length(rawimage),depth*width*height, retry);
+            if retry<3
+              pause(0.2);
+            else
+              fprintf('Failed read of image at %s\n', filename);
+              rawimage=[];
+            end
+          end
         end
-        rawimage=permute(reshape(rawimage,depth,width,height),[3 2 1]);
-        fclose(fd);
-        
         if strcmp(m.path,'/vis/image')
           vis.im{c}=rawimage;
         else  % /vis/refimage

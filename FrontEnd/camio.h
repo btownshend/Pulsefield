@@ -12,7 +12,7 @@
 class CamIO {
     enum { HEADER, FRAMES } state;
     static const char *sep;
-    const char *servIP;
+    char *servIP;
     int servPort;
     int id;
     int sock;	/* Socket for receiving data, -1 if not running */
@@ -23,6 +23,7 @@ class CamIO {
     unsigned int totalBytesRcvd;   /* Bytes read into buffer so far */
 
     Frame curFrame;   /* Current frame */
+    int camFrameNum;
 
     // Camera request parameters
     bool halfRes;

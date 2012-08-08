@@ -1,5 +1,5 @@
-% Add an OSC destination
-function oscrmdest(url)
+% Remove an OSC destination
+function oscrmdest(urlOrIdent)
 global oscsetup;
 if isempty(oscsetup) || ~isfield(oscsetup,'clients')
   return;
@@ -16,7 +16,7 @@ end
 clients=oscsetup.clients;
 toremove=zeros(1,length(clients));
 for c=1:length(clients)
-  if strcmp(clients(c).url,url)
+  if strcmp(clients(c).url,urlOrIdent) || strcmp(clients(c).ident,urlOrIdent)
     toremove(c)=1;
     osc_free_address(clients(c).addr);
   end
@@ -24,6 +24,6 @@ end
 if ~any(toremove)
   fprintf('Unable to remove OSC destination %s - not found\n', m.src);
 else
-  fprintf('Removed %d OSC clients at %s\n',sum(toremove),clients(c).url);
+  fprintf('Removed %d OSC clients at %s (%s)\n',sum(toremove),clients(c).url,clients(c).ident);
   oscsetup.clients=clients(~toremove);
 end

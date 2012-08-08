@@ -16,7 +16,15 @@ recvis=struct('p',p,'vis',[],'tgtestimate',[],'possible',{{}},'randseed',rand())
 % Save in well known location
 save('/tmp/pulsefield_setup.mat','-struct','recvis');
 
-%zz=input('Start frontend in another instance, press return when ready:','s');
+oscdests={'MAX','LD','TO'};
+
+% Setup destination for outgoing OSC messages
+for i=1:length(oscdests)
+  [host,port]=getsubsysaddr(oscdests{i});
+  if ~isempty(host)
+    oscadddest(['osc.udp://',host,':',num2str(port)],oscdests{i})
+  end
+end
 
 s1=arduino_ip(1);
 % Turn off LEDS
@@ -31,22 +39,16 @@ if countdown>0
   end
 end
 
-% Turn on LEDs
-setled(s1,[0,numled()-1],127*p.colors{1},1); show(s1); sync(s1);
+% Turn on LEDS directly (in case LED server is not running)
+setled(s1,-1,127*p.colors{1},1); show(s1); sync(s1);
+
+% Turn on LED Server
+oscmsgout('LD','/led/start',{});
 
 % Wait for them to stabilize
 pause(1);
 
 fprintf('Ready\n');
-
-oscdests={'SG','LD','TO'};
-% Setup destination for outgoing OSC messages
-for i=1:length(oscdests)
-  [host,port]=getsubsysaddr(oscdests{i});
-  if ~isempty(host)
-    oscadddest(['osc.udp://',host,':',num2str(port)])
-  end
-end
 
 % Start acquisition
 mainloop;

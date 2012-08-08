@@ -2,6 +2,7 @@
 % Inputs: recvis struct
 %	  timedreplay - true to run replay at same speed as original
 %	  plots - set of plots to do ('stats','hypo','ana','vis')
+% Outputs: recvis struct containing new snaps
 %function recvis=mainloop(recvis,timedreplay,plots)
 global recvis
 userecvis=~isempty(recvis.vis);
@@ -39,8 +40,8 @@ while ~userecvis || samp<=length(recvis.vis)
     if needcal
       fprintf('Recalibrating...');
       [~,recvis.p]=getvisible(recvis.p,'init');
-      s1=arduino_ip(0);
-      setled(s1,[0,numled()-1],127*recvis.p.colors{1},1); show(s1); sync(s1);
+      %s1=arduino_ip(0);
+      %setled(s1,[0,numled()-1],127*recvis.p.colors{1},1); show(s1); sync(s1);
       needcal=false;
     end
     vis=getvisible(recvis.p,'setleds',false);
@@ -171,7 +172,7 @@ while ~userecvis || samp<=length(recvis.vis)
 
   if ~userecvis
     % updateleds(recvis.p,snap{samp});
-    visleds(recvis.p,vis);
+    % visleds(recvis.p,vis);
   end
   loopend=toc;
   %  fprintf('Loop time = %.2f seconds\n', loopend);

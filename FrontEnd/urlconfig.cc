@@ -5,6 +5,7 @@
 #include "urlconfig.h"
 
 URLConfig::URLConfig(const char *configFile) {
+    printf("Loading config from %s\n", configFile);
     filename=new char[strlen(configFile)+1];
     strcpy(filename,configFile);
     FILE *fd=fopen(configFile,"r");
@@ -13,7 +14,15 @@ URLConfig::URLConfig(const char *configFile) {
 	exit(1);
     }
     for (int i=0;i<MAXURLS;i++) {
-	int nread=fscanf(fd,"%100[^,],%100[^,],%d\n",idents[i],hosts[i],&ports[i]);
+	const unsigned int MAXLEN=50;
+	char tmp_ident[MAXLEN+1];
+	char tmp_host[MAXLEN+1];
+	int nread=fscanf(fd,"%50[^,],%50[^,],%d\n",tmp_ident,tmp_host,&ports[i]);
+	if (strlen(tmp_ident)>=MAXLEN || strlen(tmp_host)>=MAXLEN) {
+	    fprintf(stderr,"Data field too long in %s near line %d\n", configFile, i+1);
+	    exit(1);
+	}
+
 	if  (nread<0) {
 	    nurl=i;
 	    return;
@@ -22,25 +31,41 @@ URLConfig::URLConfig(const char *configFile) {
 	    fprintf(stderr,"Format error near line %d while reading from %s, nread=%d\n", i+1,configFile,nread);
 	    exit(1);
 	}
+
+	idents[i]=new char[strlen(tmp_ident)+1];
+	strcpy(idents[i],tmp_ident);
+	hosts[i]=new char[strlen(tmp_host)+1];
+	strcpy(hosts[i],tmp_host);
+
+	// printf("Set %s to %s:%d\n", idents[i], hosts[i], ports[i]);
     }
     nurl=MAXURLS;
 }
 
-int URLConfig::getIndex(const char *ident) {
+URLConfig::~URLConfig() {
+    // printf("Deleting URLConfig (nurl=%d)\n",nurl); fflush(stdout);
+    delete [] filename;
+    for (int i=0;i<nurl;i++) {
+	delete [] idents[i];
+	delete [] hosts[i];
+    }
+}
+
+int URLConfig::getIndex(const char *ident) const {
     for (int i=0;i<nurl;i++)
 	if (strcmp(ident,idents[i])==0)
 	    return i;
     return -1;
 }
 
-const char *URLConfig::getHost(const char *ident) {	
+const char *URLConfig::getHost(const char *ident) const {	
     int index=getIndex(ident);
     if (index<0)
 	return (const char *)0;
     return hosts[index];
 }
 
-int URLConfig::getPort(const char *ident) {	
+int URLConfig::getPort(const char *ident) const {	
     int index=getIndex(ident);
     if (index<0)
 	return -1;

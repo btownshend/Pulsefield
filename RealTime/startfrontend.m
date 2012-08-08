@@ -26,6 +26,10 @@ fprintf('Started new OSC server for /vis data at port %d\n', myport);
 fprintf('Instructing frontend at %s:%d to use port %d to send us msgs\n', frontendhost, frontendport, myport);
 addr=osc_new_address(frontendhost,frontendport);
 osc_send(addr,struct('path','/vis/dest/add/port','data',{{myport}}));
+
+% Initialize data structures
+rcvr(p,'init');   % Send 
+
 osc_send(addr,struct('path','/vis/start','data',{{}}));
 fprintf('Sending /vis/start to front end;  waiting for /vis/started reply...');
 osc_free_address(addr);
@@ -33,8 +37,7 @@ osc_free_address(addr);
 
 m=getnextfrontendmsg(1.0);
 if isempty(m)
-  fprintf('No /started acknowledge received');
-  return;
+  error('No /started acknowledge received');
 end
       
 % Only waiting for started or stopped messages
@@ -42,7 +45,8 @@ if strcmp(m.path,'/vis/started')
   fprintf('Got acknowledge from frontend that it has started\n');
   ok=true;
 elseif strcmp(m.path,'/vis/stopped')
-  fprintf('Front end replied with /stopped messages\n');
+  error('Front end replied with /stopped messages\n');
 else
-  fprintf('Unexpected message from frontend while waiting for /started: %s\n', m.path);
+  error('Unexpected message from frontend while waiting for /started: %s\n', m.path);
 end
+

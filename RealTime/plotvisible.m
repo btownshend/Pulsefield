@@ -5,8 +5,7 @@ else
   setfig(figname);
 end
 clf;
-ncol=0;
-ncol=ncol+isfield(vis,'corr')+isfield(vis,'im')+isfield(vis,'refim')+isfield(vis,'lev');
+ncol=(isfield(vis,'corr')|isfield(vis,'v'))+isfield(vis,'im')+isfield(vis,'refim')+isfield(vis,'lev');
 if ~isfield(vis,'v')
   vis.v=vis.lev>127;
 end
@@ -88,6 +87,19 @@ for i=1:size(vis.v,1)
     ax(3)=min(ax(3),0);ax(4)=1.0;
     axis(ax);
     legend('Correlation','Threshold');
+  elseif isfield(vis,'v')   % .v only, no .corr
+    subplot(size(vis.v,1),ncol,(i-1)*ncol+col);
+    col=col+1;
+    vtmp=vis.v(i,:);
+    vtmp(isnan(vtmp))=0.5;
+    plot(vtmp,'g');
+    hold on;
+    % Plot off signals in red
+    vtmp( (vtmp~=0) & ([vtmp(2:end),0]~=0) & ([0,vtmp(1:end-1)]~=0) )=nan;
+    plot(vtmp,'r');
+    ax=axis;
+    ax(3)=-0.1;ax(4)=1.1;
+    axis(ax);
   end
   xlabel('LED');
   ylabel('Signal');

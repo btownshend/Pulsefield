@@ -20,7 +20,8 @@ static void dumpdata(const byte *data, int len);
  
 CamIO::CamIO(int _id, const char *_host, int _port) {
     id=_id;
-    servIP=_host;
+    servIP=new char[strlen(_host)+1];
+    strcpy(servIP,_host);
     servPort=_port;
     sock=-1;
     buffer=(byte *)0;
@@ -36,6 +37,8 @@ CamIO::CamIO(int _id, const char *_host, int _port) {
 	fprintf(stderr, "CamIO: Unable to allocate %d bytes for buffer\n",buflen);
 	exit(1);
     }
+   camFrameNum=0;
+   printf("Constructed camera %d at %s:%d\n", id, servIP, servPort);
 };
 
 
@@ -44,6 +47,7 @@ CamIO::~CamIO() {
 	(void)close();
     if (buflen>0)
 	delete buffer;
+    delete [] servIP;
 }
 
 int CamIO::open() {
@@ -191,10 +195,11 @@ int CamIO::read() {
 		int frameLen = len-strlen(frameHeader);
 		if (debug)
 		    printf("Camera %d: ", id);
-		if (curFrame.copy(frameStart,frameLen,blockStartTime) < 0) {
+		if (curFrame.copy(frameStart,frameLen,blockStartTime,id,camFrameNum) < 0) {
 		    fprintf(stderr,"curFrame.copy() failed\n");
 		    return -1;
 		}
+		camFrameNum++;
 	    } else {
 		fprintf(stderr,"Bad multipart frame of length %d:\n", len);
 		dumpdata(buffer,len);

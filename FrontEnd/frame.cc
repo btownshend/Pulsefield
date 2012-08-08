@@ -26,7 +26,7 @@ Frame::~Frame() {
 	delete [] image;
 }
 
-int Frame::copy(const byte *buffer, int buflen,const struct timeval &ts) {
+int Frame::copy(const byte *buffer, int buflen,const struct timeval &ts,int camid, int camFrameNum) {
     if (buflen>allocLen) {
 	// Reallocate storage
 	if (allocLen>0)
@@ -39,8 +39,10 @@ int Frame::copy(const byte *buffer, int buflen,const struct timeval &ts) {
     int elapsed = (ts.tv_usec - timestamp.tv_usec)/1000 + (ts.tv_sec-timestamp.tv_sec)*1000;
     if (debug)
 	printf("Got frame of length %d at time %ld.%06ld (interframe time=%d msec):\n",frameLen,(long int)ts.tv_sec,(long int)ts.tv_usec,elapsed);
-    if (valid)
-	printf("Frame::copy: Overwriting valid frame that is %d msecs old\n",elapsed);
+    if (valid) {
+	printf("Frame::copy: Overwriting valid camera %d frame %d that is %d msecs old\n",camid, camFrameNum, elapsed);
+	fflush(stdout);
+    }
     timestamp=ts;
     return decompress();
 }

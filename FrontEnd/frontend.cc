@@ -15,7 +15,7 @@ int debug=0;
 
 static void error(int num, const char *msg, const char *path)
 {
-    printf("liblo server error %d in path %s: %s\n", num, path, msg);
+    fprintf(stderr,"liblo server error %d in path %s: %s\n", num, path, msg);
 }
 
 /* catch any incoming messages and display them. returning 1 means that the
@@ -69,17 +69,23 @@ static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv,
 FrontEnd::FrontEnd(int _ncamera, int _nled) {
     ncamera=_ncamera;
     nled=_nled;
+    if (debug)
+	printf("FrontEnd::FrontEnd(%d,%d)\n", ncamera,nled);
+
     frame = 0;
 
     cameras = new  CamIO*[ncamera];
     vis = new Visible*[ncamera];
 
+
     URLConfig urls("/Users/bst/DropBox/PeopleSensor/config/urlconfig.txt");
+
     serverPort=urls.getPort("FE");
     if (serverPort<0) {
 	fprintf(stderr,"Invalid server port retrieved from %s when looking for FE\n", urls.getFilename());
 	exit(1);
     }
+
 
     /* start a new server on OSC port  */
     char cbuf[10];
@@ -158,6 +164,11 @@ void FrontEnd::run() {
     int retval;
 
     int lo_fd = lo_server_get_socket_fd(s);
+    if (lo_fd < 0) {
+	fprintf(stderr,"lo_server_get_socket_fd failed\n");
+	perror("");
+	exit(1);
+    }
     while (true) {  /* Forever */
 	fd_set rfds;
 

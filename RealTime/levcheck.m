@@ -20,7 +20,7 @@ for c=1:length(colors)  % Loop over colors (4=white)
   outlevs=[];
   clipped=[];
   for l=1:length(levs)
-    vis=getvisible(p,'onval',round(levs(l)*col),'stats',true);
+    vis=getvisible(p,'onval',round(levs(l)*col),'stats',true,'usefrontend',false);
     outlevs(l)=mean(nanmedian(vis.lev,2));
     clipped(l)=sum(vis.lev(isfinite(vis.lev(:)))>=clipthresh)/sum(isfinite(vis.lev(:)));
   end

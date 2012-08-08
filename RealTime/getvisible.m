@@ -42,6 +42,8 @@ end
 
 if args.init
   % Initialize data in p.camera(:).viscache needed by getvisible
+  fprintf('Stopping LEDServer\n');
+  oscmsgout('LD','/led/stop',{});
   fprintf('Initializing viscache...\n');
   for i=1:length(p.camera)
     c=p.camera(i).pixcalib;
@@ -154,6 +156,10 @@ if args.init
   
   % Done with init
   fprintf('Done initializing viscache...\n');
+  % Restart LED Server
+  fprintf('Restarting LED server\n');
+  oscmsgout('LD','/led/start',{});
+
   % In the init case, the returned vis is a cell array of args.navg vis structs
   if args.usefrontend
     fprintf('Sending initialize data to front end\n');
@@ -168,7 +174,7 @@ if ~isempty(args.im)
   args.usefrontend=false;
 end
 
-if args.setleds && ~args.init
+if args.setleds
   s1=arduino_ip();
   % Turn on all LED's
   %  fprintf('Turning on LEDs\n');

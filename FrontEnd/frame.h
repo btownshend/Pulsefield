@@ -22,7 +22,7 @@ class Frame {
     // Create a new frame from the provided data
     Frame();
     ~Frame();
-    int copy(const byte *buffer,int buflen,const struct timeval &ts);  // return -1 for error
+    int copy(const byte *buffer,int buflen,const struct timeval &ts, int camid,int camFrameNum);  // return -1 for error
     // Save image in a temp file, return filename
     const char* saveFrame() const;   // Save frame as JPG
     const char* saveImage() const;  // Save decoded image as RAW

@@ -17,6 +17,8 @@ int main(int argc, char *argv[])
     }
 
     FrontEnd fe(ncamera,nled);
+    printf("FrontEnd::FrontEnd() done\n");
+
     fe.run();   // Run until quit command received
 
     fprintf(stderr,"%s exitting\n", argv[0]);

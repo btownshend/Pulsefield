@@ -10,6 +10,7 @@ nled=numled();
 nbits=ceil(log2(nled));
 minpixels=2;   % Minimum number of active pixels to accept an LED
 if nargin<2 || isempty(im)
+  oscmsgout('LD','/led/stop',{});
   s1=arduino_ip();
   tic;
   nset=0;

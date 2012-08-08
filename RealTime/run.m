@@ -26,11 +26,7 @@ for id=[p.camera.id]
   arecont_set(id,'exposure','on');
   arecont_set(id,'brightness',0);
   arecont_set(id,'lowlight','highspeed');
-  if strcmp(p.camera(1).type,'av10115')
-    arecont_set(id,'shortexposures',2);
-  else
-    arecont_set(id,'shortexposures',2);
-  end
+  arecont_set(id,'shortexposures',20);
   arecont_set(id,'maxdigitalgain',32);
   arecont_set(id,'analoggain',1);
   arecont_set(id,'illum','outdoor');
@@ -52,7 +48,7 @@ end
 
 if ~isfield(p.camera(1),'viscache')
   disp('Visible calibration');
-  [allvis,p]=getvisible(p,'init');
+  [allvis,p]=getvisible(p,'init',true,'usefrontend',false);
 end
 
 if ~isfield(p,'crosstalk')
@@ -89,6 +85,11 @@ if ~isfield(p,'rays')
   p.rays=createrays(p);
 end
 
+% Start frontend
+startfrontend(p);
+% Init with collected targets
+rcvr(p,'init');
+
 disp('Measuring');
 vis=getvisible(p,'stats',true);
 if doplot>1
@@ -109,10 +110,5 @@ if dolevcheck
 end
 
 save('p.mat','p');
-
-% Start frontend
-startfrontend(p);
-% Init with collected targets
-rcvr(p,'init');
 
 

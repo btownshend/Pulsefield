@@ -5,6 +5,8 @@ s1=arduino_ip(1);
 setled(s1,[0,numled()-1],127*p.colors{1},1); show(s1); sync(s1);
 pause(2);
 vis={};
+% Flush any queued up
+rcvr(p,'flush',true);
 fprintf('Running getvisible() %d times\n', ntest);
 cpustart=cputime;
 tic

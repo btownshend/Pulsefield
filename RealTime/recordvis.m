@@ -13,7 +13,7 @@ pause(0.3);
 recvis=struct('p',p,'vis',[]);
 
 for i=1:nsamps
-  vis=getvisible(p,0);
+  vis=getvisible(p);
   fprintf('Got recording %d at %s\n',length(recvis.vis)+1,datestr(vis.when));
   recvis.vis=[recvis.vis,vis];
 end
