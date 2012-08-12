@@ -19,11 +19,11 @@ static const int nports=2;
 static const uint8_t datapins[nstrips]={49,47,45,43,37,35,33};
 static const uint8_t clkpins[nstrips]= {48,46,44,42,36,34,32};
 static const uint8_t ports[nstrips]={0,0,0,0,1,1,1};
+static const uint8_t clkpinmaskperport[nports] = {0xaa,0x2a};
+static const uint8_t datapinmaskperport[nports]={0x55,0x1f};
+static const uint8_t datapinmask[nstrips]={0x1,0x4,0x10,0x40,0x1,0x4,0x10};
 #endif
 
-static uint8_t clkpinmaskperport[nports];
-static uint8_t datapinmaskperport[nports];
-static uint8_t datapinmask[nstrips];
 // I/O register address
 static volatile uint8_t *portAddrs[nports];
 
@@ -36,16 +36,16 @@ LPD8806multi::LPD8806multi() {
 void LPD8806multi::init() {
     alloc(160*nstrips);
     // Enable pins as ouput
-    for (int i=0;i<nports;i++) {
-	clkpinmaskperport[i]=0;
-	datapinmaskperport[i]=0;
-    }
+    //    for (int i=0;i<nports;i++) {
+    //	clkpinmaskperport[i]=0;
+    //datapinmaskperport[i]=0;
+    //}
     for (int i=0;i<nstrips;i++) {
 	pinMode(datapins[i], OUTPUT);
 	pinMode(clkpins[i], OUTPUT);
-	datapinmask[i]=digitalPinToBitMask(datapins[i]);
-	datapinmaskperport[ports[i]]|=datapinmask[i];
-	clkpinmaskperport[ports[i]]|=digitalPinToBitMask(clkpins[i]);
+	//datapinmask[i]=digitalPinToBitMask(datapins[i]);
+	//	datapinmaskperport[ports[i]]|=datapinmask[i];
+	//	clkpinmaskperport[ports[i]]|=digitalPinToBitMask(clkpins[i]);
 	portAddrs[ports[i]]=portOutputRegister(digitalPinToPort(datapins[i]));  // Assume clk port is same as data port;  sets multiple times, but should always be same value
     }
     Serial.println("setup outputs");
@@ -114,41 +114,44 @@ void LPD8806multi::show(void) {
     //  Serial.println(datapinmask,HEX);
   
     // write 24 bits per pixel
+    uint8_t *pptr=&pixels[0];
     for (i=0; i<nl3; i++ ) {
+	uint8_t p0=*pptr;
+	uint8_t p1=pptr[160*3];
+	uint8_t p2=pptr[160*6];
+	uint8_t p3=pptr[160*9];
+	uint8_t p4=pptr[160*12];
+	uint8_t p5=pptr[160*15];
+	uint8_t p6=pptr[160*18];
 	for (uint8_t bit=0x80; bit; bit >>= 1) {
-	    *portAddrs[0] = ((pixels[i]&bit)?datapinmask[0]:0) |
-		((pixels[i+160*3] & bit)?datapinmask[1]:0) |
-		((pixels[i+160*6] & bit)?datapinmask[2]:0) |
-		((pixels[i+160*9] & bit)?datapinmask[3]:0) |
+	    *portAddrs[0] = ((p0&0x80)?datapinmask[0]:0) |
+		((p1 & 0x80)?datapinmask[1]:0) |
+		((p2 & 0x80)?datapinmask[2]:0) |
+		((p3 & 0x80)?datapinmask[3]:0) |
 		clkpinmaskperport[0];
-	    //	    uint8_t x=(*portAddrs[0] & ~datapinmaskperport[0]);
-	    //	    if (pixels[i] & bit) x |=  datapinmask[0];
-	    //if (pixels[i+160*3] & bit) x |=  datapinmask[1];
-	    //if (pixels[i+160*6] & bit) x |=  datapinmask[2];
-	    //if (pixels[i+160*9] & bit) x |=  datapinmask[3];
-	    //*portAddrs[0] = x;
-	    // *portAddrs[0] |= clkpinmaskperport[0];
 	    *portAddrs[0] &= ~clkpinmaskperport[0];
+	    p0<<=1;
+	    p1<<=1;
+	    p2<<=1;
+	    p3<<=1;
 
-	    *portAddrs[1]= ((pixels[i+160*12] & bit)?datapinmask[4]:0) |
-		((pixels[i+160*15] & bit)?datapinmask[5]:0) |
-		((pixels[i+160*18] & bit)?datapinmask[6]:0) | clkpinmaskperport[1];
-	    //x=(*portAddrs[1] & ~datapinmaskperport[1]);
-	    //if (pixels[i+160*12] & bit) x |=  datapinmask[4];
-	    //if (pixels[i+160*15] & bit) x |=  datapinmask[5];
-	    //if (pixels[i+160*18] & bit) x |=  datapinmask[6];
-	    //*portAddrs[1] =  x;
-	    //*portAddrs[1] |= clkpinmaskperport[1];
+	    *portAddrs[1]= ((p4 & 0x80)?datapinmask[4]:0) |
+		((p5 & 0x80)?datapinmask[5]:0) |
+		((p6 & 0x80)?datapinmask[6]:0) | 
+		clkpinmaskperport[1];
 	    *portAddrs[1] &= ~clkpinmaskperport[1];
-
+	    p4<<=1;
+	    p5<<=1;
+	    p6<<=1;
 #if NSTRIPS>7
 	    x=(*portAddrs[2] & ~datapinmaskperport[2]);
-	    if (pixels[i+160*21] & bit) x |=  datapinmask[7];
+	    if (pptr[160*21] & bit) x |=  datapinmask[7];
 	    *portAddrs[2] =  x;
 	    *portAddrs[2] |= clkpinmaskperport[2];
 	    *portAddrs[2] &= ~clkpinmaskperport[2];
 #endif
 	}
+	pptr++;
     }
     
     writeLatch(); // Write latch at end of data

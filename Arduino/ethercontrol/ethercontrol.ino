@@ -19,7 +19,7 @@ void setup() {
     // Setup serial port
     Serial.begin(115200);
     
-    if (0) {
+    if (1) {
 	// Check max malloc size
 	for (i=1;i<50000;i+=10) {
 	    int *x=(int *)malloc(i);
@@ -31,11 +31,13 @@ void setup() {
 	    }
 	}
 
-	for (i=36;i<=53;i++) {
+	for (i=32;i<=53;i++) {
 	    Serial.print("Pin ");
 	    Serial.print(i);
 	    Serial.print(": port=");
 	    Serial.print(digitalPinToPort(i));
+            Serial.print("@");
+            Serial.print((int)portOutputRegister(digitalPinToPort(i)),HEX);
 	    Serial.print(", bitmask=0x");
 	    Serial.println(digitalPinToBitMask(i),HEX);
 	}
@@ -51,6 +53,7 @@ void setup() {
     Serial.println(port);
   
   
+    strip.init();
     // Update the strip, to start they are all 'off'
     show();
     // Turn on one for power indication
@@ -89,7 +92,7 @@ void loop() {
 		r=client.read();
 		g=client.read();
 		b=client.read();
-                Serial.print(index);
+                //Serial.print(index);
 		//Serial.print(": ");
 		//Serial.print(r);
 		//Serial.print(",");
