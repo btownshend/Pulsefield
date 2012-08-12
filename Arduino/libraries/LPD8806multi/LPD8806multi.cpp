@@ -4,17 +4,70 @@
 // Arduino library to control LPD8806multi-based RGB LED Strips
 // (c) Adafruit industries
 // MIT license
+#define NSTRIPS 7
+static const int nstrips=NSTRIPS;
 
-// Constructor for use with hardware SPI (specific clock/data pins):
-LPD8806multi::LPD8806multi(uint16_t n) {
-    alloc(n);
-    updatePins();
+#if NSTRIPS==8
+static const int nports=3;
+// Masks for direct control of pins
+static const uint8_t datapins[nstrips]={49,47,45,43,37,35,33,41};
+static const uint8_t clkpins[nstrips]= {48,46,44,42,36,34,32,40};
+static const uint8_t ports[nstrips]={0,0,0,0,1,1,1,2};
+#else
+static const int nports=2;
+// Masks for direct control of pins
+static const uint8_t datapins[nstrips]={49,47,45,43,37,35,33};
+static const uint8_t clkpins[nstrips]= {48,46,44,42,36,34,32};
+static const uint8_t ports[nstrips]={0,0,0,0,1,1,1};
+#endif
+
+static uint8_t clkpinmaskperport[nports];
+static uint8_t datapinmaskperport[nports];
+static uint8_t datapinmask[nstrips];
+// I/O register address
+static volatile uint8_t *portAddrs[nports];
+
+// Constructor with compile-time fixed strip config
+LPD8806multi::LPD8806multi() {
+    Serial.begin(115200);
+    Serial.println("LPD8806multi()");
 }
 
-// Constructor for use with arbitrary clock/data pins:
-LPD8806multi::LPD8806multi(uint16_t n, uint8_t dpin, uint8_t cpin) {
-    alloc(n);
-    updatePins(dpin, cpin);
+void LPD8806multi::init() {
+    alloc(160*nstrips);
+    // Enable pins as ouput
+    for (int i=0;i<nports;i++) {
+	clkpinmaskperport[i]=0;
+	datapinmaskperport[i]=0;
+    }
+    for (int i=0;i<nstrips;i++) {
+	pinMode(datapins[i], OUTPUT);
+	pinMode(clkpins[i], OUTPUT);
+	datapinmask[i]=digitalPinToBitMask(datapins[i]);
+	datapinmaskperport[ports[i]]|=datapinmask[i];
+	clkpinmaskperport[ports[i]]|=digitalPinToBitMask(clkpins[i]);
+	portAddrs[ports[i]]=portOutputRegister(digitalPinToPort(datapins[i]));  // Assume clk port is same as data port;  sets multiple times, but should always be same value
+    }
+    Serial.println("setup outputs");
+    writeLatch();
+
+    Serial.print("data port addresses: ");
+    for (int i=0;i<nstrips;i++) {
+	Serial.print(ports[i]);
+	Serial.print(": ");
+	Serial.print((int)portOutputRegister(digitalPinToPort(datapins[i])),HEX);
+	Serial.print(",");
+    }
+    Serial.println("");
+
+    Serial.print("clk port addresses: ");
+    for (int i=0;i<nstrips;i++) {
+	Serial.print(ports[i]);
+	Serial.print(": ");
+	Serial.print((int)portOutputRegister(digitalPinToPort(clkpins[i])),HEX);
+	Serial.print(",");
+    }
+    Serial.println("");
 }
 
 // Allocate 3 bytes per pixel, init to RGB 'off' state:
@@ -25,140 +78,28 @@ void LPD8806multi::alloc(uint16_t n) {
 	numLEDs = n;
     } else
 	numLEDs = 0;
-    begun = slowmo = false;
+    begun =  false;
     pause = 0;
-}
-
-// via Michael Vogt/neophob: empty constructor is used when strip length
-// isn't known at compile-time; situations where program config might be
-// read from internal flash memory or an SD card, or arrive via serial
-// command.  If using this constructor, MUST follow up with updateLength()
-// and updatePins() to establish the strip length and output pins!
-LPD8806multi::LPD8806multi(void) {
-    numLEDs = 0;
-    pixels  = NULL;
-    begun   = slowmo = false;
-    pause   = 0;
-    updatePins(); // Must assume hardware SPI until pins are set
-}
-
-// Activate hard/soft SPI as appropriate:
-void LPD8806multi::begin(void) {
-    if (hardwareSPI == true) {
-	startSPI();
-    } else {
-	pinMode(datapin, OUTPUT);
-	pinMode(datapin+2, OUTPUT);
-	pinMode(datapin+4, OUTPUT);
-	pinMode(datapin+6, OUTPUT);
-	pinMode(clkpin , OUTPUT);
-	pinMode(clkpin+2, OUTPUT);
-	pinMode(clkpin+4, OUTPUT);
-	pinMode(clkpin+6, OUTPUT);
-	writeLatch(numLEDs);
-    }
-    begun = true;
-}
-
-// Change pin assignments post-constructor, switching to hardware SPI:
-void LPD8806multi::updatePins(void) {
-    hardwareSPI = true;
-    datapin     = clkpin = 0;
-    // If begin() was previously invoked, init the SPI hardware now:
-    if (begun == true)
-	startSPI();
-    // Otherwise, SPI is NOT initted until begin() is explicitly called.
-
-    // Note: any prior clock/data pin directions are left as-is and are
-    // NOT restored as inputs!
-}
-
-// Change pin assignments post-constructor, using arbitrary pins:
-void LPD8806multi::updatePins(uint8_t dpin, uint8_t cpin) {
-    if (begun == true) { // If begin() was previously invoked...
-	// If previously using hardware SPI, turn that off:
-	if (hardwareSPI == true)
-	    SPI.end();
-	// Regardless, now enable output on 'soft' SPI pins:
-	pinMode(datapin, OUTPUT);
-	pinMode(datapin+2, OUTPUT);
-	pinMode(datapin+4, OUTPUT);
-	pinMode(datapin+6, OUTPUT);
-	pinMode(clkpin , OUTPUT);
-	pinMode(clkpin+2, OUTPUT);
-	pinMode(clkpin+4, OUTPUT);
-	pinMode(clkpin+6, OUTPUT);
-	Serial.println("setup outputs");
-	writeLatch(numLEDs);
-    } // Otherwise, pins are not set to outputs until begin() is called.
-
-    // Note: any prior clock/data pin directions are left as-is and are
-    // NOT restored as inputs!
-
-    hardwareSPI = false;
-    datapin     = dpin;
-    clkpin      = cpin;
-    clkport     = portOutputRegister(digitalPinToPort(cpin));
-    clkpinmask  = digitalPinToBitMask(cpin) |digitalPinToBitMask(cpin+2) |digitalPinToBitMask(cpin+4) | digitalPinToBitMask(cpin+6);
-    dataport    = portOutputRegister(digitalPinToPort(dpin));
-    datapinmask1 = digitalPinToBitMask(dpin);
-    datapinmask2 = digitalPinToBitMask(dpin+2);
-    datapinmask3 = digitalPinToBitMask(dpin+4);
-    datapinmask4 = digitalPinToBitMask(dpin+6);
-    datapinmask = datapinmask1|datapinmask2|datapinmask3|datapinmask4;
-}
-
-// Enable SPI hardware and set up protocol details:
-void LPD8806multi::startSPI(void) {
-    SPI.begin();
-    SPI.setBitOrder(MSBFIRST);
-    SPI.setDataMode(SPI_MODE0);
-    SPI.setClockDivider(SPI_CLOCK_DIV8);  // 2 MHz
-    // SPI bus is run at 2MHz.  Although the LPD8806multi should, in theory,
-    // work up to 20MHz, the unshielded wiring from the Arduino is more
-    // susceptible to interference.  Experiment and see what you get.
-    writeLatch(numLEDs);
 }
 
 uint16_t LPD8806multi::numPixels(void) {
     return numLEDs;
 }
 
-// Change strip length (see notes with empty constructor, above):
-void LPD8806multi::updateLength(uint16_t n) {
-    if (pixels != NULL)
-	free(pixels); // Free existing data (if any)
-    if (NULL != (pixels = (uint8_t *)malloc(n * 3))) { // Alloc new data
-	memset(pixels, 0x80, n * 3); // Init to RGB 'off' state
-	numLEDs = n;
-    } else
-	numLEDs = 0;
-
-    // 'begun' state does not change -- pins retain prior modes
-    if (begun == true)
-	writeLatch(n); // Write zeros for new length
-}
-
 // Issue latch of appropriate length; pass # LEDs, *not* latch length
-void LPD8806multi::writeLatch(uint16_t n) {
-
+void LPD8806multi::writeLatch() {
     // Latch length varies with the number of LEDs:
-    n = ((n + 63) / 64) * 3;
+    const uint16_t nled=160;
+    const uint16_t n=((nled + 63) / 64) * 3;
+    
+    // Set all the data low
+    for (int i=0;i<nports;i++)
+	*portAddrs[i] &= ~datapinmaskperport[i]; // Data is held low throughout
 
-    if (hardwareSPI) {
-	while(n--)
-	    SPI.transfer(0);
-    } else if (slowmo) {
-	digitalWrite(datapin, LOW);
-	for(uint16_t i = 8 * n; i>0; i--) {
-	    digitalWrite(clkpin, HIGH);
-	    digitalWrite(clkpin, LOW);
-	}
-    } else {
-	*dataport &= ~datapinmask; // Data is held low throughout
-	for(uint16_t i = 8 * n; i>0; i--) {
-	    *clkport |=  clkpinmask;
-	    *clkport &= ~clkpinmask;
+    for(uint16_t i = 8 * n; i>0; i--) {
+	for (int j=0;j<nports;j++) {
+	    *portAddrs[j] |=  clkpinmaskperport[j];
+	    *portAddrs[j] &= ~clkpinmaskperport[j];
 	}
     }
 }
@@ -168,45 +109,53 @@ void LPD8806multi::writeLatch(uint16_t n) {
 // to sign an NDA or something stupid like that, but we reverse engineered
 // this from a strip controller and it seems to work very nicely!
 void LPD8806multi::show(void) {
-    uint16_t i, nl3 = numLEDs * 3; // 3 bytes per LED
+    uint16_t i, nl3 = 160 * 3; // 3 bytes per LED (all strips done in parallel)
     //  Serial.print("Datapinmask=0x");
     //  Serial.println(datapinmask,HEX);
   
     // write 24 bits per pixel
-    if (hardwareSPI) {
-	for (i=0; i<nl3; i++ ) {
-	    SPDR = pixels[i];
-	    while(!(SPSR & (1<<SPIF)));
-	}
-    } else if (slowmo) {
-	for (i=0; i<nl3; i++ ) {
-	    for (uint8_t bit=0x80; bit; bit >>= 1) {
-		if (pixels[i] & bit) digitalWrite(datapin, HIGH);
-		else                digitalWrite(datapin, LOW);
-		digitalWrite(clkpin, HIGH);
-		digitalWrite(clkpin, LOW);
-	    }
-	}
-    } else {
-	for (i=0; i<nl3/4; i++ ) {
-	    for (uint8_t bit=0x80; bit; bit >>= 1) {
-		uint8_t x=0;
-		if (pixels[i] & bit) x |=  datapinmask1;
-		if (pixels[i+160*3] & bit) x |=  datapinmask2;
-		if (pixels[i+320*3] & bit) x |=  datapinmask3;
-		if (pixels[i+480*3] & bit) x |=  datapinmask4;
-		*dataport = (*dataport & ~datapinmask) | x;
-		*clkport |=  clkpinmask;
-		*clkport &= ~clkpinmask;
-	    }
+    for (i=0; i<nl3; i++ ) {
+	for (uint8_t bit=0x80; bit; bit >>= 1) {
+	    *portAddrs[0] = ((pixels[i]&bit)?datapinmask[0]:0) |
+		((pixels[i+160*3] & bit)?datapinmask[1]:0) |
+		((pixels[i+160*6] & bit)?datapinmask[2]:0) |
+		((pixels[i+160*9] & bit)?datapinmask[3]:0) |
+		clkpinmaskperport[0];
+	    //	    uint8_t x=(*portAddrs[0] & ~datapinmaskperport[0]);
+	    //	    if (pixels[i] & bit) x |=  datapinmask[0];
+	    //if (pixels[i+160*3] & bit) x |=  datapinmask[1];
+	    //if (pixels[i+160*6] & bit) x |=  datapinmask[2];
+	    //if (pixels[i+160*9] & bit) x |=  datapinmask[3];
+	    //*portAddrs[0] = x;
+	    // *portAddrs[0] |= clkpinmaskperport[0];
+	    *portAddrs[0] &= ~clkpinmaskperport[0];
+
+	    *portAddrs[1]= ((pixels[i+160*12] & bit)?datapinmask[4]:0) |
+		((pixels[i+160*15] & bit)?datapinmask[5]:0) |
+		((pixels[i+160*18] & bit)?datapinmask[6]:0) | clkpinmaskperport[1];
+	    //x=(*portAddrs[1] & ~datapinmaskperport[1]);
+	    //if (pixels[i+160*12] & bit) x |=  datapinmask[4];
+	    //if (pixels[i+160*15] & bit) x |=  datapinmask[5];
+	    //if (pixels[i+160*18] & bit) x |=  datapinmask[6];
+	    //*portAddrs[1] =  x;
+	    //*portAddrs[1] |= clkpinmaskperport[1];
+	    *portAddrs[1] &= ~clkpinmaskperport[1];
+
+#if NSTRIPS>7
+	    x=(*portAddrs[2] & ~datapinmaskperport[2]);
+	    if (pixels[i+160*21] & bit) x |=  datapinmask[7];
+	    *portAddrs[2] =  x;
+	    *portAddrs[2] |= clkpinmaskperport[2];
+	    *portAddrs[2] &= ~clkpinmaskperport[2];
+#endif
 	}
     }
     
-    writeLatch(numLEDs); // Write latch at end of data
+    writeLatch(); // Write latch at end of data
 
     // We need to have a delay here, a few ms seems to do the job
     // shorter may be OK as well - need to experiment :(
-    delay(pause);
+    // delay(pause);
 }
 
 // Convert separate R,G,B into combined 32-bit GRB color:
