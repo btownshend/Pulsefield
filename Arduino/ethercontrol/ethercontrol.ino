@@ -3,20 +3,8 @@
 #include <Ethernet.h>
 #include "SPI.h"
 
-// Choose which 2 pins you will use for output.
-// Can be any valid output pins.
-const int dataPin = 43;   
-const int clockPin = 42; 
-
-// Set the first variable to the NUMBER of pixels. 32 = 32 pixels in a row
-// The LED strips are 32 LEDs per meter but you can extend/cut the strip
-// you can also use hardware SPI, for ultra fast writes by leaving out the
-// data and clock pin arguments. This will 'fix' the pins to the following:
-// on Arduino 168/328 thats data = 11, and clock = pin 13
-// on Megas thats data = 51, and clock = 52 
-
-// Multi strip uses multiple clock and data pins
-LPD8806multi strip = LPD8806multi(160*4,dataPin,clockPin);
+// Multi strip uses multiple clock and data pins in a fixed time (see LPD8806Multi.cpp)
+LPD8806multi strip = LPD8806multi();
 
 // Ethernet config
 byte mac[] = {  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -43,7 +31,7 @@ void setup() {
 	    }
 	}
 
-	for (i=1;i<53;i++) {
+	for (i=36;i<=53;i++) {
 	    Serial.print("Pin ");
 	    Serial.print(i);
 	    Serial.print(": port=");
@@ -63,8 +51,6 @@ void setup() {
     Serial.println(port);
   
   
-    // Start up the LED strip
-    strip.begin();
     // Update the strip, to start they are all 'off'
     show();
     // Turn on one for power indication
