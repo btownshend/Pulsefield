@@ -6,7 +6,7 @@
 % Output:
 %   snap - w/hypo field added, snap.nextid updated
 function snap=updatetgthypo(layout,prevsnap,snap,samp)
-debug=1;
+debug=0;
 % PARAMETERS
 minunique=5;  % Could be ghost if less than this many unique rays
 pghost=0.9;	% with this prob
@@ -45,7 +45,9 @@ for j=1:length(h)
     h(j).pos=h(j).pos+h(j).velocity/speed*min(maxspeed,speed)*dt;
     if ~inpolygon(h(j).pos(1),h(j).pos(2),layout.active(:,1),layout.active(:,2))
       h(j).pos=prevsnap.hypo(j).pos;
-      fprintf('Extrapolating position from (%f,%f) would end up outside, skipping extrapolation\n',h(j).pos);
+      if debug
+        fprintf('Extrapolating position from (%f,%f) would end up outside, skipping extrapolation\n',h(j).pos);
+      end
     end
   end
 end

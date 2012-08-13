@@ -50,20 +50,22 @@ function ledserver(p)
       if debug
         %fprintf('Have %d messages, next is %s\n', length(msgin)+1, m.path);
       end
-      if strcmp(m.path,'/leds/setapp')
-        found=false;
-        for i=1:length(apps)
-          if strcmp(m.data{1},apps(i).name)
-            currapp=apps(i);
-            found=true;
-            fprintf('Setting LEDs to app %s\n', currapp.name);
-          end
+      if strncmp(m.path,'/pf/dest/add/port',17)
+        [host,port,proto]=spliturl(m.src);
+        url=sprintf('%s://%s:%d',proto,host,m.data{1});
+        [tdhost,tdport]=getsubsysaddr('TO');
+        if length(m.data)>1
+          % Add with Ident
+          ident=m.data{2};
+        elseif length(m.path)>=19
+          ident=m.path(19:end);
+        else
+          fprintf('Received %s without an ident field\n', m.path);
+          ident='';
         end
-        if ~found
-          fprintf('Unknown app: %s %s\n', m.path,m.data{1});
-        end
-        refresh=true;
-    elseif strncmp(m.path,'/led/app/buttons/',17)
+        oscadddest(url,ident);
+        refresh=true;   % Always start with a dump
+      elseif strncmp(m.path,'/led/app/buttons/',17)
         % TouchOSC multibutton controller
         fprintf('Got message: %s\n', formatmsg(m.path,m.data));
         if m.data{1}==1
@@ -105,8 +107,19 @@ function ledserver(p)
           fprintf('Warning: latency=%.2f seconds\n', latency);
         end
       elseif strcmp(m.path,'/pf/entry')
-        info.hypo=[info.hypo,struct('id',m.data{3},'pos',[nan,nan],'velocity',[nan,nan])];
+        fprintf('Entry %d\n', m.data{3});
+        if isempty(info.hypo)
+          ids=[];
+        else
+          ids=[info.hypo.id];
+        end
+        if ismember(m.data{3},ids)
+          fprintf('Got entry for id %d, which was already inside\n',m.data{3});
+        else
+          info.hypo=[info.hypo,struct('id',m.data{3},'pos',[nan,nan],'velocity',[nan,nan])];
+        end
       elseif strcmp(m.path,'/pf/exit')
+        fprintf('Exit %d\n', m.data{3});
         if isempty(info.hypo)
           ids=[];
         else
@@ -114,10 +127,9 @@ function ledserver(p)
         end
         keepind=ids~=m.data{3};
         if sum(~keepind)~=1
-          fprintf('Bad exit id %d, have %s\n',m.data{3},shortlist(ids));
-        else
-          info.hypo=info.hypo(keepind);
+          fprintf('Bad exit id %d while only the following ids are inside: %s\n',m.data{3},shortlist(ids));
         end
+        info.hypo=info.hypo(keepind);
       elseif strcmp(m.path,'/pf/update')
         if isempty(info.hypo)
           ids=[];
@@ -125,14 +137,24 @@ function ledserver(p)
           ids=[info.hypo.id];
         end
         index=find(ids==m.data{3});
-        if length(index)~=1
-          fprintf('Bad update message: id=%d, known ids=%s\n', m.data{3}, shortlist(ids));
+        if length(index)<1
+          fprintf('Missed entry of ID %d\n', m.data{3});
+          info.hypo=[info.hypo,struct('id',m.data{3},'pos',[m.data{4},m.data{5}],'velocity',[m.data{6},m.data{7}])];
+        elseif length(index)>1
+          fprintf('Have multiple copies of same ids inside; ids=%s\n', shortlist(ids));
         else
-          info.hypo.pos(index,:)=[m.data{4},m.data{5}];
-          info.hypo.velocity(index,:)=[m.data{6},m.data{7}];
+          info.hypo(index).pos=[m.data{4},m.data{5}];
+          info.hypo(index).velocity=[m.data{6},m.data{7}];
         end
       elseif strcmp(m.path,'/pf/set/npeople')
         info.npeople=m.data{1};
+        if info.npeople ~= length(info.hypo)
+          fprintf('Number of people (%d) not matching number of tracked hypos (%d)\n', info.npeople,length(info.hypo));
+        end
+        if info.npeople<length(info.hypo)
+          fprintf('Discarding all hypos (will restore on update)\n');
+          info.hypo=info.hypo([]);
+        end
       elseif strcmp(m.path,'/seq/step')
         info.stepnum=m.data{1};
       else
@@ -175,7 +197,7 @@ function ledserver(p)
 end
 
 function ls_updateleds(info)
-  debug=1;
+  debug=0;
   s1=arduino_ip(0);
   cmd=[];
   for i=1:size(info.state,1)
@@ -237,7 +259,7 @@ function info=ls_follow(info)
       [angle,radius]=cart2pol(pos(:,1),pos(:,2));
       langle=cart2pol(info.layout.lpos(:,1),info.layout.lpos(:,2));
       indices = find(abs(langle-angle)<awidth/2 & ~info.layout.outsider);   % All LEDs inside active area, within awidth angle of person
-      fprintf('Angle=%.1f, RFrac=%.2f, NLed=%d\n', angle*360/pi, radius/meanradius,length(indices));
+      % fprintf('Angle=%.1f, RFrac=%.2f, NLed=%d\n', angle*360/pi, radius/meanradius,length(indices));
       for j=1:length(indices)
         info.state(indices(j),:)=col;
       end

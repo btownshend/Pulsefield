@@ -17,6 +17,7 @@ Frame::Frame() {
     valid=false;
     imageAllocLen=0;
     imageLen=0;
+    njInit();
 }
 
 Frame::~Frame() {
@@ -40,7 +41,7 @@ int Frame::copy(const byte *buffer, int buflen,const struct timeval &ts,int cami
     if (debug)
 	printf("Got frame of length %d at time %ld.%06ld (interframe time=%d msec):\n",frameLen,(long int)ts.tv_sec,(long int)ts.tv_usec,elapsed);
     if (valid) {
-	printf("Frame::copy: Overwriting valid camera %d frame %d that is %d msecs old\n",camid, camFrameNum, elapsed);
+	printf("Frame::copy: Overwriting unconsumed camera %d frame %d that is %d msecs old\n",camid, camFrameNum, elapsed);
 	fflush(stdout);
     }
     timestamp=ts;
@@ -75,10 +76,10 @@ const char *Frame::saveImage() const {
 }
 
 int Frame::decompress() {
-    njInit();
     nj_result_t res=njDecode(frame,frameLen);
     if (res != NJ_OK) {
 	fprintf(stderr,"Failed decode of JPEG image (error %d)\n", res);
+	njDone();
 	return -1;
     }
     width=njGetWidth();

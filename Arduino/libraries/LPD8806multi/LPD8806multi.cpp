@@ -13,6 +13,7 @@ static const int nports=3;
 static const uint8_t datapins[nstrips]={49,47,45,43,37,35,33,41};
 static const uint8_t clkpins[nstrips]= {48,46,44,42,36,34,32,40};
 static const uint8_t ports[nstrips]={0,0,0,0,1,1,1,2};
+TODO -- haven't fully modified code to support 8 strips
 #else
 static const int nports=2;
 // Masks for direct control of pins

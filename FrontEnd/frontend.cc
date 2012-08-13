@@ -11,7 +11,7 @@
 #include "frontend.h"
 #include "urlconfig.h"
 
-int debug=0;
+int debug=2;
 
 static void error(int num, const char *msg, const char *path)
 {
@@ -169,6 +169,7 @@ void FrontEnd::run() {
 	perror("");
 	exit(1);
     }
+    struct timeval ts1,ts2;
     while (true) {  /* Forever */
 	fd_set rfds;
 
@@ -189,8 +190,13 @@ void FrontEnd::run() {
 	    }
 	}
 
+	gettimeofday(&ts1,0);
+	if (debug)
+	    printf("At select after %.2f msec.", (ts1.tv_usec-ts2.tv_usec)/1000.0+(ts1.tv_sec-ts2.tv_sec)*1000);
 	retval = select(maxfd + 1, &rfds, NULL, NULL, NULL); /* no timeout */
-	//	printf("rfds=0x%lx\n", *(unsigned long *)&rfds);
+	gettimeofday(&ts2,0);
+	if (debug)
+	    printf("Select done after %.2f msec. rfds=0x%lx\n", (ts2.tv_usec-ts1.tv_usec)/1000.0+(ts2.tv_sec-ts1.tv_sec)*1000,*(unsigned long*)&rfds);
 	if (retval == -1) {
 	    perror("select() error: ");
 	    exit(1);
@@ -202,22 +208,37 @@ void FrontEnd::run() {
 		    if (doQuit)
 			return;
 
-	    // Read input from cameras
-	    int haveAllFrames=1;
+	    // Read input from cameras that haven't got a frame yet
 	    for (int i=0;i<ncamera;i++) {
-		if (cameras[i]->isRunning() && FD_ISSET(cameras[i]->getSocket(),&rfds)) {
-		    // printf("Reading from  camera %d\n", camera[i]->getID());
+		if (!cameras[i]->getFrame()->isValid() && cameras[i]->isRunning() && FD_ISSET(cameras[i]->getSocket(),&rfds)) {
+		    //printf("1.Reading from  camera %d\n", cameras[i]->getID());
+		    FD_CLR(cameras[i]->getSocket(),&rfds);
 		    if (cameras[i]->read() < 0) {
 			fprintf(stderr,"Error reading from camera %d, stopping acquisition\n", cameras[i]->getID());
 			startStop(0);	// This will also clear valid flag for all individual frames
 		    }
 		}
+	    }
+
+	    int haveAllFrames=1;
+	    for (int i=0;i<ncamera;i++) {
 		haveAllFrames=haveAllFrames && cameras[i]->getFrame()->isValid();
 	    }
 
 	    // Process if all the cameras have new frames
 	    if (haveAllFrames) {
 		processFrames();
+	    } else {
+		// Read any other queued cameras
+		for (int i=0;i<ncamera;i++) {
+		    if (cameras[i]->isRunning() && FD_ISSET(cameras[i]->getSocket(),&rfds)) {
+			//printf("2.Reading from  camera %d\n", cameras[i]->getID());
+			if (cameras[i]->read() < 0) {
+			    fprintf(stderr,"Error reading from camera %d, stopping acquisition\n", cameras[i]->getID());
+			    startStop(0);	// This will also clear valid flag for all individual frames
+			}
+		    }
+		}
 	    }
 	}
     }

@@ -3,7 +3,8 @@
 % s1-descriptor
 % index-LED number(s) to turn on (-1 for all LEDs), a 2-element vector for a range, otherwise the LED numbers
 % LED number has 0-origin
-function cmd=setled(s1,index,color,execute)
+% Remapped to order the strip/leds around the pulsefield methodically (unless arg5 is true, then no mapping is done)
+function cmd=setled(s1,index,color,execute,unmapped)
 if nargin<4
   execute=1;
 end
@@ -23,12 +24,17 @@ else
   elseif length(index)==2
     index=index(1):index(2);
   end
-  % Map index (clockwise sequential) to correct led number
-  posmap=[480+(159:-1:0),0:50,320+(159:-1:0),160+(0:159)];
-  if max(index+1)>length(posmap) || min(index+1)<1
-    error('Index out of range; should be 0..%d\n', length(posmap)-1);
+  if nargin<5 || ~unmapped
+    % Map index (clockwise sequential) to correct led number
+    posmap=[480+(159:-1:0),320+(0:50),0+(159:-1:0),160+(0:159)];
+    if max(index+1)>length(posmap) || min(index+1)<1
+      error('Index out of range; should be 0..%d\n', length(posmap)-1);
+    end
+    index=sort(posmap(index+1));
+  else
+    %fprintf('Not mapping IDs\n');
   end
-  index=sort(posmap(index+1));
+
   i=1;
   cmd=[];
   while i<=length(index)
@@ -47,7 +53,7 @@ else
       pcmd(6)=color(1);
       pcmd(7)=color(2);
       pcmd(8)=color(3);
-      %      fprintf('Set %d-%d\n',index(i),index(j));
+      %            fprintf('Set %d-%d\n',index(i),index(j));
     else
       % A single LED
       pcmd=zeros(1,6,'uint8');
@@ -57,7 +63,7 @@ else
       pcmd(4)=color(1);
       pcmd(5)=color(2);
       pcmd(6)=color(3);
-%      fprintf('Set %d\n',index(i));
+      %      fprintf('Set %d\n',index(i));
     end
     cmd=[cmd,pcmd];
     i=j+1;

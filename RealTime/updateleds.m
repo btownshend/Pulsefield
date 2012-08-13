@@ -30,7 +30,7 @@ for ii=1:length(ord)
   awidth=awidthmax * min(1,(norm(pos)-minradius)/meanradius);
 
   % Color of marker lights (track people)
-  col=id2color(h.id)*127;
+  col=id2color(h.id,p.colors)*127;
   if norm(pos)>0.5   % At least .5m away from enter
     angle=cart2pol(pos(:,1),pos(:,2));
     langle=cart2pol(p.layout.lpos(:,1),p.layout.lpos(:,2));

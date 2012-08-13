@@ -12,16 +12,16 @@ for i=1:length(oscsetup.clients)
   cl=oscsetup.clients(i);
   if strcmp(cl.url,url)
     if isempty(cl.ident) && ~isempty(ident)
-      fprintf('Updating OSC client at %s with ident (%s)\n', url, ident);
+      fprintf('Updating OSC client %s@%s\n', ident, url);
       oscsetup.clients(i).ident=ident;
     else
-      fprintf('Already have OSC client (%s) at %s\n', ident, url);
+      fprintf('Already have OSC client %s@%s\n', ident, url);
     end
     return;
   end
 end
-fprintf('Adding OSC client (%s) at %s\n', ident,url);
+fprintf('Adding OSC client %s@%s\n', ident,url);
 addr=osc_new_address(url);
 fprintf('done\n');
-oscsetup.clients=[oscsetup.clients, struct('url',url,'addr',addr,'ident',ident)];
+oscsetup.clients=[oscsetup.clients, struct('url',url,'addr',addr,'ident',ident,'downsince',nan)];
 

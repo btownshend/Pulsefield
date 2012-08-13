@@ -22,8 +22,8 @@ for c=1:length(clients)
   end
 end
 if ~any(toremove)
-  fprintf('Unable to remove OSC destination %s - not found\n', m.src);
+  fprintf('Unable to remove OSC destination %s - not found\n', urlOrIdent);
 else
-  fprintf('Removed %d OSC clients at %s (%s)\n',sum(toremove),clients(c).url,clients(c).ident);
+  fprintf('Removed OSC client %s@%s\n',sum(toremove),clients(c).ident,clients(c).url);
   oscsetup.clients=clients(~toremove);
 end

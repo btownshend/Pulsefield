@@ -34,6 +34,7 @@ for j=1:length(time)
 end
 
 flen=5;
+fspeed={};
 for j=1:length(speed)
   if (length(speed{j}) >= flen*3)
     fspeed{j}=filtfilt(hanning(flen),1,speed{j});
@@ -42,14 +43,14 @@ for j=1:length(speed)
   end
 end
 
-plotvar(time,fspeed,'Speed (LPF)','m/s',[0,nan],1);
-plotvar(time,heading,'Heading','deg',[nan,nan],2);
-plotvar(time,area,'Area','m',0.3,3);
-plotvar(time,minoraxislength,'Minor Axis Length','m',0.8,4);
-plotvar(time,majoraxislength,'Major Axis Length','m',0.8,5);
-plotvar(time,orientation,'Orientation','deg',[-90,90],6);
+plotvar(time,fspeed,'Speed (LPF)','m/s',[0,nan],1,recvis.p.colors);
+plotvar(time,heading,'Heading','deg',[nan,nan],2,recvis.p.colors);
+plotvar(time,area,'Area','m',0.3,3,recvis.p.colors);
+plotvar(time,minoraxislength,'Minor Axis Length','m',0.8,4,recvis.p.colors);
+plotvar(time,majoraxislength,'Major Axis Length','m',0.8,5,recvis.p.colors);
+plotvar(time,orientation,'Orientation','deg',[-90,90],6,recvis.p.colors);
 
-function plotvar(t,v,lbl,units,maxval,snum)
+function plotvar(t,v,lbl,units,maxval,snum,colors)
 if length(maxval)==2
   minval=maxval(1);
   maxval=maxval(2);
@@ -60,7 +61,7 @@ snum=(snum-1)*3+1;
 subplot(6,3,[snum,snum+1]);hold on;
 for j=1:length(t)
   if any(isfinite(v{j}))
-    plot(t{j},v{j},'Color',id2color(j));
+    plot(t{j},v{j},'Color',id2color(j,colors));
   end
 end
 xlabel('Time (sec)');
@@ -80,7 +81,7 @@ subplot(6,3,snum+2); hold on;
 for j=1:length(t)
   if sum(isfinite(v{j}))>20
     h=cdfplot(v{j}(isfinite(v{j})));
-    set(h,'Color',id2color(j));
+    set(h,'Color',id2color(j,colors));
   end
 end
 c=axis;if isfinite(minval) c(1)=minval;end; if isfinite(maxval) c(2)=maxval;end;axis(c);

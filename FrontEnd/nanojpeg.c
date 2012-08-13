@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 // NanoJPEG -- KeyJ's Tiny Baseline JPEG Decoder
 // version 1.3 (2012-03-05)
 // by Martin J. Fiedler <martin.fiedler@gmx.net>
@@ -517,6 +519,10 @@ NJ_INLINE void njDecodeSOF(void) {
     if (nj.pos[0] != 8) njThrow(NJ_UNSUPPORTED);
     nj.height = njDecode16(nj.pos+1);
     nj.width = njDecode16(nj.pos+3);
+    if (nj.height*nj.width == 0) {
+	fprintf(stderr,"njDecodeSOF(): image has bad size (%d,%d)\n", nj.height, nj.width);
+	njThrow(NJ_SYNTAX_ERROR);
+    }
     nj.ncomp = nj.pos[5];
     njSkip(6);
     switch (nj.ncomp) {

@@ -22,7 +22,7 @@ samp=1;
 snap={};
 starttime=now;
 suppressuntil=0;
-while ~userecvis || samp<=length(recvis.vis)
+while ~userecvis || samp<=min(length(recvis.vis),length(recvis.snap))
   tic;
     
   elapsed=(now-starttime)*24*3600;

@@ -51,53 +51,76 @@ CamIO::~CamIO() {
 }
 
 int CamIO::open() {
-    /* Create a reliable, stream socket using TCP */ 
-    if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)  {
-        perror("socket() failed: "); 
-	return -1;
-    }
- 
     /* Construct the server address structure */ 
     struct sockaddr_in servAddr; /* Echo server address */ 
     memset(&servAddr, 0, sizeof(servAddr));     /* Zero out structure */ 
     servAddr.sin_family      = AF_INET;             /* Internet address family */ 
     servAddr.sin_addr.s_addr = inet_addr(servIP);   /* Server IP address */ 
     servAddr.sin_port        = htons(80); /* Server port */ 
+
+    for (int msg=0;msg<2;msg++) {
+	// Need to do same operations to send 2 different messages (sensorheight, then image retrieve)
+	/* Create a reliable, stream socket using TCP */ 
+	
+	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)  {
+	    perror("socket() failed: "); 
+	    return -1;
+	}
+
+	/* Establish the connection to the echo server */ 
+	printf("Opening connection to camera %d at %s...",id,servIP); fflush(stdout);
+	if (connect(sock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)  {
+	    perror("connect() failed"); 
+	    return -1;
+	}
+	printf("done\n");
+
  
-    /* Establish the connection to the echo server */ 
-    printf("Opening connection to camera %d at %s...",id,servIP); fflush(stdout);
-    if (connect(sock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)  {
-        perror("connect() failed"); 
-	return -1;
+	const int MAXREQUEST = 1000;
+	char request[MAXREQUEST];
+
+	if (msg==0) {
+	    // Set sensorheight, sensortop first
+	    if (halfRes)
+		sprintf(request,"GET /set?sensortop=%d&sensorheight=%d HTTP/1.1\r\n\r\n", roiY0*2-1, (roiY1-roiY0)*2+1);
+	    else
+		sprintf(request,"GET /set?sensortop=%d&sensorheight=%d HTTP/1.1\r\n\r\n", roiY0, (roiY1-roiY0)+1);
+	} else {
+	    if (halfRes)
+		// ROI sent to camera is still in terms of full res
+		sprintf(request,"GET /mjpeg?res=half&x0=%d&y0=%d&x1=%d&y1=%d&quality=%d&doublescan=0&fps=%d HTTP/1.1\r\n\r\n",
+			roiX0*2-1, roiY0*2-1, roiX1*2-1, roiY1*2-1, quality,fps);
+	    else
+		sprintf(request,"GET /mjpeg?res=full&x0=%d&y0=%d&x1=%d&y1=%d&quality=%d&doublescan=0&fps=%d HTTP/1.1\r\n\r\n",
+			roiX0, roiY0, roiX1, roiY1, quality,fps);
+	}
+
+	int reqlen = strlen(request);          /* Determine input length */ 
+	assert(reqlen+1<MAXREQUEST);
+
+	/* Send the string to the server */ 
+	printf("Sending request to camera %d: %s", id, request); fflush(stdout);
+	int sendcnt=send(sock, request, reqlen, 0);
+	if (sendcnt<0) {
+	    perror("send");
+	    close();
+	    return -1;
+	} else if  (sendcnt  != reqlen)  {
+	    fprintf(stderr,"Socket send only sent %d/%d bytes\n", sendcnt, reqlen);
+	    close();
+	    return -1;
+	}
+	printf("request accepted\n");
+	if (msg==0)
+	    close();    // Done with setting sensor cropping
     }
-    printf("done\n");
-
-    const int MAXREQUEST = 1000;
-    char request[MAXREQUEST];
-    if (halfRes)
-	// ROI sent to camera is still in terms of full res
-	sprintf(request,"GET /mjpeg?res=half&x0=%d&y0=%d&x1=%d&y1=%d&quality=%d&doublescan=0&fps=%d HTTP/1.1\r\n\r\n",
-		roiX0*2-1, roiY0*2-1, roiX1*2-1, roiY1*2-1, quality,fps);
-    else
-	sprintf(request,"GET /mjpeg?res=full&x0=%d&y0=%d&x1=%d&y1=%d&quality=%d&doublescan=0&fps=%d HTTP/1.1\r\n\r\n",
-		roiX0, roiY0, roiX1, roiY1, quality,fps);
-
-    int reqlen = strlen(request);          /* Determine input length */ 
-    assert(reqlen+1<MAXREQUEST);
-
-    /* Send the string to the server */ 
-    printf("Sending request to camera %d: %s", id, request); fflush(stdout);
-    if (send(sock, request, reqlen, 0) != reqlen)  {
-        perror("send() sent a different number of bytes than expected"); 
-	return -1;
-    }
-    printf("request accepted\n");
 
     totalBytesRcvd = 0;   // Empty
 
     /* Set the socket to non-blocking to read the responses */
     if (fcntl(sock,F_SETFL,O_NONBLOCK)<0) {
 	perror("fcntl(NONBLOCK): ");
+	close();
 	return -1;
     }
 
@@ -193,6 +216,9 @@ int CamIO::read() {
 		// matched expected frame header 
 		byte *frameStart =buffer+strlen(frameHeader);
 		int frameLen = len-strlen(frameHeader);
+		if (frameLen<3000) {
+		    printf("Camera %d has short frame of %d bytes -- assuming this is a bug in camera\n", id,frameLen);
+		}
 		if (debug)
 		    printf("Camera %d: ", id);
 		if (curFrame.copy(frameStart,frameLen,blockStartTime,id,camFrameNum) < 0) {

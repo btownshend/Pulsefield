@@ -18,21 +18,21 @@ for samp=1:length(snap)
     for j=1:length(ids)
       hj=snap(samp-1).hypo(pid(j));
       hk=snap(samp).hypo(cid(j)); 
-      plot([hj.pos(1),hk.pos(1)],[hj.pos(2),hk.pos(2)],'Color',id2color(ids(j)));
+      plot([hj.pos(1),hk.pos(1)],[hj.pos(2),hk.pos(2)],'Color',id2color(ids(j),recvis.p.colors));
     end
 
     % Exits
     [~,exid]=setdiff([snap(samp-1).hypo.id],[snap(samp).hypo.id]);
     for j=1:length(exid)
       hj=snap(samp-1).hypo(exid(j));
-      plot(hj.pos(1),hj.pos(2),'x','Color',id2color(hj.id));
+      plot(hj.pos(1),hj.pos(2),'x','Color',id2color(hj.id,recvis.p.colors));
     end
 
     % Entrances
     [~,enid]=setdiff([snap(samp).hypo.id],[snap(samp-1).hypo.id]);
     for j=1:length(enid)
       hj=snap(samp).hypo(enid(j));
-      plot(hj.pos(1),hj.pos(2),'o','Color',id2color(hj.id));
+      plot(hj.pos(1),hj.pos(2),'o','Color',id2color(hj.id,recvis.p.colors));
     end
   end
 end
@@ -53,7 +53,7 @@ for samp=2:length(snap)
   for j=1:length(ids)
     hj=snap(samp-1).hypo(pid(j));
     hk=snap(samp).hypo(cid(j));
-    plot([samp-1,samp],[hj.pos(1),hk.pos(1)],'Color',id2color(hj.id));
+    plot([samp-1,samp],[hj.pos(1),hk.pos(1)],'Color',id2color(hj.id,recvis.p.colors));
   end
 end
 
@@ -72,6 +72,6 @@ for samp=2:length(snap)
   for j=1:length(ids)
     hj=snap(samp-1).hypo(pid(j));
     hk=snap(samp).hypo(cid(j));
-    plot([samp-1,samp],[hj.pos(2),hk.pos(2)],'Color',id2color(hj.id));
+    plot([samp-1,samp],[hj.pos(2),hk.pos(2)],'Color',id2color(hj.id,recvis.p.colors));
   end
 end

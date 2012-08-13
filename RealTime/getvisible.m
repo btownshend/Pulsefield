@@ -24,7 +24,7 @@
 %	tgt{ncam,nled} - images of each target
 function [vis,p]=getvisible(p,varargin)
 defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[11 7],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5,...
-            'usefrontend',true);
+            'usefrontend',true,'maxage',0.2);
 args=processargs(defaults,varargin);
 
 if args.init
@@ -196,7 +196,7 @@ if args.usefrontend
     end
     vis.whenrcvd=now;
     age=(vis.whenrcvd-max(vis.acquired))*24*3600;
-    if (age>1)
+    if (age>args.maxage)
       fprintf('Skipping stale frame %d that is %.1f seconds old\n', vis.frame(1), age);
     else
       if mod(vis.frame(1),50)==0 || age>0.1

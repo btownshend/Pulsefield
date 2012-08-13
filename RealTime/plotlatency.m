@@ -1,5 +1,10 @@
 function plotlatency(recvis)
 
+if length(recvis.vis)>length(recvis.snap)
+  fprintf('Truncating recvis.vis from %d to %d samples to match recvis.snaps\n', length(recvis.vis), length(recvis.snap));
+  recvis.vis=recvis.vis(1:length(recvis.snap));
+end
+
 jitter=[];acquired=[];
 for i=1:length(recvis.vis)
   acquired(i)=max(recvis.vis(i).acquired);

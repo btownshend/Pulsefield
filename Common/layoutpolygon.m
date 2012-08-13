@@ -1,10 +1,14 @@
 % layoutoctagon - compute position of LED's and cameras in octagon setup (with 1m entry opening)
 % nlegs - number of sides of polygon
 % doplot - 1 to plot
-function layout=layoutpolygon(nlegs,ncameras,doplot)
+function layout=layoutpolygon(nlegs,ncameras,doplot,nled)
 if nargin<3
   doplot=0;
 end
+if nargin<4
+  nled=numled();
+end
+
 % Work in meters
 inchpermeter=39.3700787;
 feetpermeter=inchpermeter/12;
@@ -15,7 +19,7 @@ entrylength=conlen+4/feetpermeter;  % First LED is ledspacing(1) in from the end
 opening=2/feetpermeter;   % 24" opening
 
 % Spacing between LED and prior one (including post-space after last one)
-ledspacing=1/32*ones(1,numled());   % May be overridden later by setting of nleds
+ledspacing=1/32*ones(1,nled());   % May be overridden later by setting of nleds
 % Extra gaps at end of each strip
 firstleds=cumsum(numled(1:3));
 ledspacing(firstleds)=[6,5.6,5.9]/100;  
@@ -94,12 +98,12 @@ end
 
 % LED positions
 rescale=ledlength/sum(ledspacing);
-fprintf('Rescaling led spacing by %.3f for %d LEDs\n',rescale,numled());
+fprintf('Rescaling led spacing by %.3f for %d LEDs\n',rescale,nled());
 ledspacing=ledspacing*rescale;
 
 seg=1;
-lpos=nan(numled(),2);
-ldir=nan(numled(),2);
+lpos=nan(nled(),2);
+ldir=nan(nled(),2);
   
 offset=ledspacing(1);   % Initial LED
 lnum=1;
@@ -107,7 +111,7 @@ for seg=1:size(ledcorners,1)-1
   v=ledcorners(seg+1,:)-ledcorners(seg,:);
   seglen=norm(v);
   v=v/seglen;
-  while offset<=seglen && lnum<=numled()
+  while offset<=seglen && lnum<=nled()
     lpos(lnum,:)=ledcorners(seg,:)+v*offset;
     ldir(lnum,:)=[v(2),-v(1)];
     lnum=lnum+1;
@@ -115,8 +119,8 @@ for seg=1:size(ledcorners,1)-1
   end
   offset=offset-seglen;
 end
-if size(lpos,1)~=numled()
-  error('Placed %d LEDs instead of expected %d', size(lpos,1),numled());
+if size(lpos,1)~=nled()
+  error('Placed %d LEDs instead of expected %d', size(lpos,1),nled());
 end
 if doplot
   setfig('layoutpolygon');

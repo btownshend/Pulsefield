@@ -6,7 +6,7 @@
 % options - options followed by values
 %   'debug' - true to log message using fprintf
 function ok=oscmsgout(ident,path,data,varargin)
-defaults=struct('debug',false);
+defaults=struct('debug',false,'log',true);
 args=processargs(defaults,varargin);
 
 global oscsetup;
@@ -15,7 +15,7 @@ ok=true;
 if iscell(ident)
   % Process multiple destinations recursively
   for i=1:length(ident)
-    ok=ok && msgout(ident{i},path,data);
+    ok=ok && oscmsgout(ident{i},path,data,'debug',args.debug);
   end
   return;
 end
@@ -47,15 +47,41 @@ end
 
 % Send message
 toremove=[];
+disabletime=30;
 for i=1:length(qi)
   cl=oscsetup.clients(qi(i));
+  if isfinite(cl.downsince)
+    if (now-cl.downsince)*24*3600<60
+      % Disabled
+      continue;
+    else
+      fprintf('Retrying client %s@%s that was down\n', cl.ident, cl.url);
+    end
+  end
   ok=osc_send(cl.addr,struct('path',path,'data',{data}));
   if args.debug
-    fprintf('Sending %s to %s\n', formatmsg(path,data),cl.url);
+    if isempty(cl.ident)
+      nm=cl.url;
+    else
+      nm=cl.ident;
+    end
+    fprintf('%s<-%s\n', nm, formatmsg(path,data));
   end
-  if ~ok
-    fprintf('Failed send of message to OSC target at %s - removing\n',cl.url);
-    toremove=[toremove,qi(i)];
+  if args.log
+    osclog('client',cl, 'path',path,'data',data);
+  end
+
+  if isfinite(cl.downsince)
+    if ok
+      % No longer down
+      oscsetup.clients(qi(i)).downsince=nan;
+      fprintf('Client %s@%s - osc_send succeeded\n', cl.ident,cl.url);
+    else
+      fprintf('Client %s@%s is still down\n', cl.ident,cl.url);
+    end
+  elseif ~ok
+    fprintf('Failed send of message to OSC target %s@%s - disabling for %d seconds\n',cl.ident,cl.url,disabletime);
+    oscsetup.clients(qi(i)).downsince = now;
   end
 end
 for i=length(toremove):-1:1

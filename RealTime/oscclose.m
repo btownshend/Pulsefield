@@ -11,7 +11,7 @@ end
 for c=1:length(oscsetup.clients)
   cl=oscsetup.clients(c);
   osc_free_address(cl.addr);
-  fprintf('Closed connection to client at %s\n', cl.url);
+  fprintf('Closed connection to client %s@%s\n', cl.ident, cl.url);
 end
 oscsetup.clients=[];
 
