@@ -102,6 +102,39 @@ void loop() {
 		nrcvd+=5;
 		strip.setPixelColor(index, strip.Color(r,g,b));
 		break;
+	    case 'F':	// Fast set mode F start_low,start_high,cnt,grbgrbgrb...; sets up to 255 LEDs in one command
+		// Note order is GRB, not RGB
+		while (client.available()<3 && client.connected())
+		    ;
+		index=client.read();
+		index2=client.read();
+		index=index2*256+index;
+		{
+		int cnt=client.read()*3;
+		uint8_t *p=strip.getPixelAddr(index);
+		//Serial.print("F: ");
+		//Serial.print(index);
+		//Serial.print(",");
+		//Serial.println(cnt);
+		nrcvd+=cnt+3;
+		uint16_t ngrp=0;
+		while (cnt>0) {
+		   ngrp=ngrp+1;
+		    int i=client.available();
+		    if (i>cnt)
+			i=cnt;
+		    else if (i==0 && ~client.connected())
+		        break;
+		    cnt=cnt-i;
+		    while (i-->0) {
+			*p++=client.read();    // High bit must already be set on host
+		    }
+		}
+		}
+                //Serial.println("done");
+		Serial.print(ngrp);
+		Serial.println(" groups");
+		break;
 	    case 'G':  // Go
 		if (pause>0 && micros()<lasttime+pause) {
 		    //Serial.print("Pausing for ");
