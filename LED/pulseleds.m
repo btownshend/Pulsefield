@@ -18,6 +18,8 @@ while true
 
   % Send new values
   s1=arduino_ip(0);
+  col=col+rand(size(col))/5;
+  col=col/max(col);
   setled(s1,-1,round(lev*col),1); 
   show(s1,dt);   % Show for at least 0.1s
   if mod(cnt,20)==0

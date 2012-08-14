@@ -11,7 +11,7 @@ byte mac[] = {  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 int port=1500;
 EthernetServer server = EthernetServer(port);
 
-int nrcvd;
+long nrcvd;
 
 void setup() {
     int i;
@@ -68,11 +68,28 @@ void setup() {
 }
 
 
+// Retrieve cmdlen bytes into buffer, return -1 if EOF, otherwise wait as needed
+int getcmd(EthernetClient *client, uint8_t *cmdbuf,int cmdlen) {
+    while (cmdlen>0) {
+        int nr=client->read(cmdbuf,cmdlen);
+	if (nr==0) {
+	   Serial.println("Error reading cmd");
+	   return -1;
+	}
+	if (nr>0) {
+	   cmdbuf+=nr;
+	   cmdlen-=nr;
+       }
+    }
+    return 0;   // OK
+}
+
 void loop() {
     EthernetClient client = server.available();
 
     if (client) {
-	unsigned long lasttime=micros(), pause=0;
+	static unsigned long lasttime=micros(), pause=0;
+        uint8_t cmdbuf[20];
 	while (client.available() != 0) {
 	    unsigned int id,r,g,b,index,index2,i1,i1b,i2,i2b;
 	    // Get a command from host 
@@ -104,42 +121,48 @@ void loop() {
 		break;
 	    case 'F':	// Fast set mode F start_low,start_high,cnt,grbgrbgrb...; sets up to 255 LEDs in one command
 		// Note order is GRB, not RGB
-		while (client.available()<3 && client.connected())
-		    ;
-		index=client.read();
-		index2=client.read();
-		index=index2*256+index;
-		{
-		int cnt=client.read()*3;
-		uint8_t *p=strip.getPixelAddr(index);
-		//Serial.print("F: ");
-		//Serial.print(index);
-		//Serial.print(",");
-		//Serial.println(cnt);
-		nrcvd+=cnt+3;
-		uint16_t ngrp=0;
-		while (cnt>0) {
-		   ngrp=ngrp+1;
-		    int i=client.available();
-		    if (i>cnt)
-			i=cnt;
-		    else if (i==0 && ~client.connected())
-		        break;
-		    cnt=cnt-i;
-		    while (i-->0) {
-			*p++=client.read();    // High bit must already be set on host
+    		if (getcmd(&client, cmdbuf, 3) >= 0) {
+		    uint16_t index=cmdbuf[1]*256+cmdbuf[0];
+		    int cnt=cmdbuf[2]*3;
+		    uint8_t *p=strip.getPixelAddr(index);
+		    //Serial.print("F: ");
+		    //Serial.print(index);
+		    //Serial.print(",");
+		    //Serial.println(cnt);
+		    nrcvd+=cnt+3;
+		    //uint16_t ngrp=0;
+		    while (cnt>0) {
+			int nread=client.read(p,cnt);
+			//Serial.print("read ");
+			//Serial.print(nread);
+			//Serial.print("/");
+			//Serial.println(cnt);
+			if (nread==cnt)
+			    // Common case, fastest
+			    break;
+			else if (nread==0) { // EOF
+			    Serial.println("disconnect");
+			    return;
+			} else if (nread<0) { // Nothing available
+			    Serial.println("Empty");
+			    nread=0;
+			}
+			cnt=cnt-nread;
+			p+=nread;
+			//ngrp++;
 		    }
-		}
-		}
-                //Serial.println("done");
-		Serial.print(ngrp);
-		Serial.println(" groups");
+		
+		    //Serial.println("done");
+		    //Serial.print(ngrp);
+		    //Serial.println(" groups");
+		} else
+		     Serial.println("getcmd failed\n");
 		break;
 	    case 'G':  // Go
 		if (pause>0 && micros()<lasttime+pause) {
-		    //Serial.print("Pausing for ");
-		    //Serial.println(pause-(micros()-lasttime));
-		    //Serial.print(" usec...");
+		    Serial.print("Pausing for ");
+		    Serial.println(pause-(micros()-lasttime));
+		    Serial.print(" usec...");
 		    while (micros()<lasttime+pause)
 			;
 		    //clSerial.println("done");
@@ -187,7 +210,9 @@ void loop() {
 	    case 'N':   // Num bytes received
 		// Number of bytes received
 		client.write('N');
-		client.write(nrcvd/256);
+		client.write((nrcvd>>24)&0xff);
+		client.write((nrcvd>>16)&0xff);
+		client.write((nrcvd>>8)&0xff);
 		client.write(nrcvd&0xff);
 		nrcvd=0;
 		break;

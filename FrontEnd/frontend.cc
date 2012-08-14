@@ -11,7 +11,7 @@
 #include "frontend.h"
 #include "urlconfig.h"
 
-int debug=2;
+int debug=0;
 
 static void error(int num, const char *msg, const char *path)
 {
@@ -65,6 +65,7 @@ static int addDestPort_handler(const char *path, const char *types, lo_arg **arg
 static int rmDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->rmDest(&argv[0]->s,argv[1]->i); return 0; }
 static int rmDestPort_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->rmDest(msg,argv[0]->i); return 0; }
 static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->rmAllDest(); return 0; }
+static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->ping(msg); return 0; }
 
 FrontEnd::FrontEnd(int _ncamera, int _nled) {
     ncamera=_ncamera;
@@ -128,7 +129,7 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     lo_server_add_method(s,"/vis/set/res","is",setRes_handler,this);
     lo_server_add_method(s,"/vis/set/refimage","iiiis",setRefImage_handler,this);
     lo_server_add_method(s,"/vis/set/roi","iiiii",setROI_handler,this);
-
+    lo_server_add_method(s,"/ping","",ping_handler,this);
     
     lo_server_add_method(s,"/vis/get/corr","i",getCorr_handler,this);
     lo_server_add_method(s,"/vis/get/refimage","i",getRefImage_handler,this);
@@ -504,4 +505,12 @@ void FrontEnd::rmDest(lo_message msg, int port) {
 
 void FrontEnd::rmAllDest() {
     dests.removeAll();
+}
+
+void FrontEnd::ping(lo_message msg) {
+    char *url=lo_address_get_url(lo_message_get_source(msg));
+    
+    lo_address addr = lo_address_new_from_url(url);
+    lo_send(addr,"/ack","");
+    lo_address_free(addr);
 }

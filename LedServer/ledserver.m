@@ -10,6 +10,9 @@ function ledserver(p)
   debug=1;
   ignores={};
   
+  % Reload subsystem table
+  getsubsysaddr('LD','reload');
+  
   fprintf('Initializing OSC struct\n');
   oscinit('LD');
 

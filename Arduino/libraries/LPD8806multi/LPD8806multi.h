@@ -18,6 +18,7 @@ class LPD8806multi {
 
   // These primarily exist for debugging and will likely come out later:
   uint8_t pause;  // Delay (in milliseconds) after latch
+  uint8_t *getPixelAddr(uint16_t n) { return &pixels[n*3]; }
  private:
   uint16_t numLEDs; // Number of RGB LEDs in strip
   uint8_t *pixels;  // Holds LED color values (3 bytes each)

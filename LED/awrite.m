@@ -1,7 +1,10 @@
 function awrite(s1,cmd)
+maxwrite=1024;
 if isfield(s1,'socket')
   % Ethernet
-  jtcp('write',s1,uint8(cmd));
+  for i=1:maxwrite:length(cmd)
+    jtcp('write',s1,uint8(cmd(i:min(end,i+maxwrite-1))));
+  end
 else
   % Serial
   while ~strcmp(s1.TransferStatus,'idle')

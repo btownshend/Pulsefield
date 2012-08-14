@@ -12,7 +12,7 @@ color(:,2)=mod((1:size(color,1))*2,127);
 color(:,3)=mod((1:size(color,1))*3,127);
 counter=-1;
 getnumrcvd(s1);   % Clear Arduino receipt count
-nrpt=200;
+nrpt=100;
 tic;
 for rpt=1:nrpt
   fprintf('Repeat %d/%d Num Sent=%d\n',rpt,nrpt,nsent);
@@ -20,12 +20,15 @@ for rpt=1:nrpt
   c1=setallleds(s1,color,0);
   c2=show(s1,delay,0);
   [counter,c3]=syncsend(s1,0);
-  c=[c1,c2,c3];
+  c=[c1,c2];
   awrite(s1,c);
   nsent=nsent+length(c);
   fprintf('sent %d bytes, wait...',length(c));
   n2=now;
-  syncwait(s1,counter,5);
+  sync(s1);
+  % Lot of strange timing things here
+  % Not sending a sync for a few frames results in SLOWER overall speed
+  nsent=nsent+2;
   n3=now;
   fprintf('%.0f,%.0f msec\n',[n2-n1,n3-n2]*24*3600*1e3);
 

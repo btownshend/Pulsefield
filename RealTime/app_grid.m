@@ -89,6 +89,11 @@ for i=1:length(info.updates)
     oscmsgout('MAX','/pf/pass/noteoff',{int32(id),int32(lastpitch),int32(channel)});
     oscmsgout('MAX','/pf/pass/noteon',{int32(id),int32(newpitch),int32(info.velocity),int32(info.duration),int32(channel)});
     oscmsgout('TO','/pf/grid/note',{int32(id),int32(newpitch)});
+    channel=mod(id-1,9)+1;
+    velocity=127;
+    oscmsgout('OSC','/pf/grid/noteparams',{int32(channel),int32(newpitch),int32(velocity)});
+    oscmsgout('OSC','/pf/grid/notetrigger',{0.0});
+    oscmsgout('OSC','/pf/grid/notetrigger',{1.0});
     if debug
       fprintf('ID %d moved from grid %d (%.2f) to grid %d (%.2f)\n', id, lastpitch, lastdist, newpitch, newdist);
     end

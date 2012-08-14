@@ -46,5 +46,6 @@ class FrontEnd {
     void rmDest(const char *host, int port);
     void rmDest(lo_message msg, int port);
     void rmAllDest();
+    void ping(lo_message msg);
 };
 #endif

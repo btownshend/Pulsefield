@@ -1,4 +1,7 @@
-function cmd=show(s1,holdtime)
+function cmd=show(s1,holdtime,execute)
+if nargin<3
+  execute=true;
+end
 cmd=uint8('G');
 if nargin>1
   while floor(holdtime*1000)>0
@@ -6,5 +9,7 @@ if nargin>1
     holdtime=holdtime-cmd(end)/1000;
   end
 end
-awrite(s1,cmd);
+if execute
+  awrite(s1,cmd);
+end
 

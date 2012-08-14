@@ -10,7 +10,7 @@ function flags=oscupdate(p,sampnum,snap,prevsnap)
   
   % Setup info structure to pass things into apps
   if isempty(info) || nargin<4
-    info=struct('duration',120,'velocity',127,'multichannel',1,'volume',1,'tempo',120,'scale',1,'key',1,'pgm',ones(1,6),'refresh',true,'channels',zeros(1,16),'preset',1);
+    info=struct('duration',120,'velocity',127,'multichannel',1,'volume',1,'tempo',120,'scale',1,'key',1,'pgm',ones(1,6),'refresh',true,'channels',zeros(1,16),'preset',0);
     % Channel(k) is the id that is on channel k, or 0 if not in use
     [s,us]=getscales();
     info.scales={us.name};
@@ -48,8 +48,8 @@ function flags=oscupdate(p,sampnum,snap,prevsnap)
   % Table of presets (set of program numbers for each channel)
   % Can be shorter than pgms[], only sets first N
   if ~isfield(info,'presets')
-    info.presets={[1 1 1 1 1 1],1:6,10:15};
-    info.presetnames={'Piano','PS2','PS3'};
+    info.presets={[1 1 1 1 1 1],25:2:35,[53,54,55,86,92],41:46};
+    info.presetnames={'Piano','Guitar','Voices','Strings'};
   end
   
   info.p=p;
@@ -188,7 +188,7 @@ function flags=oscupdate(p,sampnum,snap,prevsnap)
         fprintf('Got message: %s\n', formatmsg(rcvdmsg.path,rcvdmsg.data));
         if rcvdmsg.data{1}==1
           pos=rcvdmsg.path(21:end);
-          sampleum=find(strcmp(pos,{info.samples.pos}));
+          samplenum=find(strcmp(pos,{info.samples.pos}));
           if ~isempty(samplenum)
             info.currsample=info.samples(samplenum);
             fprintf('Switching to sample %d: %s\n',samplenum,info.currsample.name);
@@ -205,7 +205,7 @@ function flags=oscupdate(p,sampnum,snap,prevsnap)
           for i=1:length(ps)
             info.pgm(i)=ps(i);
           end
-          fprintf('Set preset to %d (msg=%s)\n',newpreset, rcvdmsg.path);
+          fprintf('Set preset to %d-%s (msg=%s)\n',newpreset, presetnames{newpreset}, rcvdmsg.path);
           info.refresh=true;
         else
           fprintf('Invalid preset %d (msg=%s)\n',newpreset, rcvdmsg.path);
