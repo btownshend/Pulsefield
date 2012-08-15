@@ -1,17 +1,15 @@
 % Receiver of data from frontend (C++) that sends data via OSC
 function vis=rcvr(p,varargin)
 global visserver;
-[frontendhost,frontendport]=getsubsysaddr('FE');
 
 defaults=struct('init',false, 'stats',false,'flush',false,'nowait',false,'debug',false);
 args=processargs(defaults,varargin);
 
 if args.init
   % Initialize
-  addr=osc_new_address(frontendhost,frontendport);
-  sendmsg(addr,'/vis/stop',{});
-  sendmsg(addr,'/vis/set/fps',{p.analysisparams.fps});
-  sendmsg(addr,'/vis/set/corrthresh',{0.5});
+  oscmsgout('FE','/vis/stop',{});
+  oscmsgout('FE','/vis/set/fps',{p.analysisparams.fps});
+  oscmsgout('FE','/vis/set/corrthresh',{0.5});
   for i=1:length(p.camera)
     c=p.camera(i);
     if strcmp(c.type,'av10115')
@@ -22,50 +20,47 @@ if args.init
       fprintf('Unable to determine resolution of %s: assuming full res\n', c.type);
       res='full';
     end
-    sendmsg(addr,'/vis/set/res',{int32(i-1),res});
+    oscmsgout('FE','/vis/set/res',{int32(i-1),res});
     if isfield(p.camera(i),'viscache') && isfield(p.camera(i).viscache,'refim')
-      sendmsg(addr,'/vis/set/updatetc',{ 0.0 });    % Turn off updates of reference image
+      oscmsgout('FE','/vis/set/updatetc',{ 0.0 });    % Turn off updates of reference image
       refim = im2single(p.camera(i).viscache.refim);
       filename=sprintf('/tmp/refim_%d.raw',i);
       fd=fopen(filename,'wb');
       fwrite(fd,permute(refim,[3,2,1]),'single');  % Write it in normal RGB order 
       fclose(fd);
       fprintf('Sending reference image to frontend in %s\n',filename);
-      sendmsg(addr,'/vis/set/refimage',{ int32(i-1), size(refim,2), size(refim,1), size(refim,3), filename});
+      oscmsgout('FE','/vis/set/refimage',{ int32(i-1), size(refim,2), size(refim,1), size(refim,3), filename});
     else
       fprintf('Frontend is automatically updating reference with a time constant of %f seconds\n', p.analysisparams.updatetc);
-      sendmsg(addr,'/vis/set/updatetc',{ p.analysisparams.updatetc });
+      oscmsgout('FE','/vis/set/updatetc',{ p.analysisparams.updatetc });
     end
       
     % setRoi expects x0, y0, x1, y1 (with 1-based indexing)
-    sendmsg(addr,'/vis/set/roi',{int32(i-1),int32(c.roi(1)),int32(c.roi(3)),int32(c.roi(2)),int32(c.roi(4))});
+    oscmsgout('FE','/vis/set/roi',{int32(i-1),int32(c.roi(1)),int32(c.roi(3)),int32(c.roi(2)),int32(c.roi(4))});
     
     for j=1:size(c.viscache.tlpos,1)
       tlpos=c.viscache.tlpos(j,:);
       brpos=c.viscache.brpos(j,:);
       if isnan(tlpos(1))
-        sendmsg(addr,'/vis/set/pos',{int32(i-1),int32(j-1),int32(-1),int32(-1),int32(-1),int32(-1)});
+        oscmsgout('FE','/vis/set/pos',{int32(i-1),int32(j-1),int32(-1),int32(-1),int32(-1),int32(-1)});
       else
-        sendmsg(addr,'/vis/set/pos',{int32(i-1),int32(j-1),int32(tlpos(1)-1),int32(tlpos(2)-1),int32(brpos(1)-tlpos(1)+1),int32(brpos(2)-tlpos(2)+1)});   % On the wire uses 0-based indexing
+        oscmsgout('FE','/vis/set/pos',{int32(i-1),int32(j-1),int32(tlpos(1)-1),int32(tlpos(2)-1),int32(brpos(1)-tlpos(1)+1),int32(brpos(2)-tlpos(2)+1)});   % On the wire uses 0-based indexing
       end
     end
     pause(1);   % Try not to overrun UDP stack
   end
-  sendmsg(addr,'/vis/start',{});   % (re)start it
-  osc_free_address(addr);
+  oscmsgout('FE','/vis/start',{});   % (re)start it
 end
 
 
 if args.stats
   % Request stats from frontend
   rcvr(p,'flush');   % Flush any queued data
-  addr=osc_new_address(frontendhost,frontendport);
   fprintf('Sending request for stats\n');
-  sendmsg(addr,'/vis/get/corr',{int32(1)});
-  sendmsg(addr,'/vis/get/refimage',{int32(1)});
-  sendmsg(addr,'/vis/get/image',{int32(1)});
-  %  osc_send(addr,struct('path',{'/vis/get/corr','/vis/get/refimage','/vis/get/image'},'data',{{int32(1)},{int32(1)},{int32(1)}}));
-  osc_free_address(addr);
+  oscmsgout('FE','/vis/get/corr',{int32(1)});
+  oscmsgout('FE','/vis/get/refimage',{int32(1)});
+  oscmsgout('FE','/vis/get/image',{int32(1)});
+
   % Now, go ahead and read next frames until we get one that has the requested fields
   % Might be a few without these fields
   % Could also be a race condition where only some of the above fields are filled, and the rest are in the next frame
@@ -144,12 +139,10 @@ while true
       end
     elseif strcmp(m.path,'/vis/visible')  || strcmp(m.path,'/vis/corr')
       c=m.data{1}+1;   % Camera
-      if frame ~= m.data{2}
-        fprintf('Got %s for frame %d while reading frame %d\n', m.path, m.data{2}, frame);
-      end
       sec=m.data{3};
       usec=m.data{4};
       if strcmp(m.path,'/vis/visible')
+        vis.cframe(c)=m.data{2};
         vis.mincorr=m.data{5};
         blob=m.data{6};
         if length(blob)~=length(p.led)
@@ -227,11 +220,4 @@ while true
       end
     end
   end
-end
-
-function sendmsg(addr,path,data)
-m=struct('path',path,'data',{data});
-ok=osc_send(addr,m);
-if ~ok
-  error('Failed send of setup data to VIS frontend\n');
 end

@@ -14,6 +14,8 @@ recvis=struct('p',p,'vis',[],'tgtestimate',[],'possible',{{}},'randseed',rand())
 save('/tmp/pulsefield_setup.mat','-struct','recvis');
 
 osclog('close');   % Close any old logs open
+oscclose();        % Close any old clients
+getsubsysaddr([],'reload',true);   % Reload subsystem addresses
 oscdests={'MAX','LD','TO'};
 
 % Setup destination for outgoing OSC messages

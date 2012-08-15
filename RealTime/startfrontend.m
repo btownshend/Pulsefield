@@ -46,16 +46,13 @@ end
 % Retrieve host,port and port for replies to me
 [frontendhost,frontendport]=getsubsysaddr('FE');
 fprintf('Instructing frontend at %s:%d to use port %d to send us msgs\n', frontendhost, frontendport, myport);
-addr=osc_new_address(frontendhost,frontendport);
-osc_send(addr,struct('path','/vis/dest/add/port','data',{{myport}}));
+oscmsgout('FE','/vis/dest/add/port',{myport});
 
 % Initialize data structures
 rcvr(p,'init');   % Send 
 
-osc_send(addr,struct('path','/vis/start','data',{{}}));
 fprintf('Sending /vis/start to front end;  waiting for /vis/started reply...');
-osc_free_address(addr);
-
+oscmsgout('FE','/vis/start',{});
 
 m=getnextfrontendmsg(1.0);
 if isempty(m)

@@ -18,6 +18,6 @@ aparams.maxfalsegap=0.1;   % 10cm
 %aparams.maxtgtdiam=meantgtdiam*1.2+sqrt(3)*sdevtgtdiam;
 aparams.npixels=500;
 
-aparams.fps=0;    % Max speed for AV10115 (unless sensorheight settings changed)
+aparams.fps=15;    % Max speed at which frontend can reasonably keep up
 aparams.updatetc=60;  % Time constant for update of reference image
 aparams.mincorr=0.5;

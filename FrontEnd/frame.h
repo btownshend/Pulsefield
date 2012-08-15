@@ -9,7 +9,7 @@ class Frame {
     byte *frame;
     int allocLen;
     int frameLen;
-    struct timeval timestamp;
+    struct timeval frameStartTime, frameEndTime;
     bool valid;
     
     // Decoded image
@@ -22,7 +22,7 @@ class Frame {
     // Create a new frame from the provided data
     Frame();
     ~Frame();
-    int copy(const byte *buffer,int buflen,const struct timeval &ts, int camid,int camFrameNum);  // return -1 for error
+    int copy(const byte *buffer,int buflen,const struct timeval &frameStartTime, const struct timeval &frameEndTime, int camid,int camFrameNum);  // return -1 for error
     // Save image in a temp file, return filename
     const char* saveFrame() const;   // Save frame as JPG
     const char* saveImage() const;  // Save decoded image as RAW
@@ -33,7 +33,7 @@ class Frame {
     int getWidth() const { return width; }
     bool isColor() const { return color; }
     const byte *getImage() const { return image; }
-    const struct timeval &getTimestamp() const { return timestamp; }
+    const struct timeval &getStartTime() const { return frameStartTime; }
 };
 
 

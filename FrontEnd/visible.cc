@@ -149,7 +149,7 @@ void Visible::processImage(const Frame *frame, float fps) {
     }
     updateTarget(frame,fps);
 
-    timestamp=frame->getTimestamp();
+    timestamp=frame->getStartTime();
 }
 
 // Update target by adding weight*currImage to (1-weight)*currTarget

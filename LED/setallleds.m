@@ -25,7 +25,7 @@ end
 physleds=max(posmap)+1;
 % Remap colors
 mcolor=zeros(physleds,3,'uint8');
-mcolor(posmap+1,:)= bitset(color,8);
+mcolor(posmap+1,:)= bitset(uint8(color),8);
 
 nsent=0;
 while nsent<size(mcolor,1)
@@ -43,3 +43,8 @@ while nsent<size(mcolor,1)
   cmd=[cmd,pcmd];
   nsent=nsent+send;
 end
+
+if execute
+  awrite(s1,cmd);
+end
+  

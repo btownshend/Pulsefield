@@ -197,15 +197,15 @@ function flags=oscupdate(p,sampnum,snap,prevsnap)
             fprintf('Attempt to switch to unsupported sample set %s\n', pos);
           end
         end
-      elseif strcmp(rcvdmsg.path,'/midi/preset')
-        newpreset=str2num(rcvdmsg.path(14:end));
+      elseif strncmp(rcvdmsg.path,'/midi/preset',12)  && rcvdmsg.data{1}==1
+        newpreset=16-str2num(rcvdmsg.path(14:end));   % Numbered from bottom 1..15
         if newpreset>=1 && newpreset<=length(info.presets)
           info.preset=newpreset;
           ps=info.presets{info.preset};
           for i=1:length(ps)
             info.pgm(i)=ps(i);
           end
-          fprintf('Set preset to %d-%s (msg=%s)\n',newpreset, presetnames{newpreset}, rcvdmsg.path);
+          fprintf('Set preset to %d-%s (msg=%s)\n',newpreset, info.presetnames{newpreset}, rcvdmsg.path);
           info.refresh=true;
         else
           fprintf('Invalid preset %d (msg=%s)\n',newpreset, rcvdmsg.path);
@@ -314,8 +314,14 @@ function flags=oscupdate(p,sampnum,snap,prevsnap)
       oscmsgout('TO',sprintf('/midi/pgm/%d/value',i),{info.pgms{info.pgm(i)}});
       oscmsgout('MAX','/pf/pass/pgmout',{int32(i),int32(info.pgm(i))});
     end
+    for i=1:15
+      if info.preset==16-i
+        oscmsgout('TO',sprintf('/midi/preset/%d/1',i),{int32(1)});
+      else
+        oscmsgout('TO',sprintf('/midi/preset/%d/1',i),{int32(0)});
+      end
+    end
     if info.preset>0
-      oscmsgout('TO',sprintf('/midi/preset/%d',info.preset),{int32(1)});
       oscmsgout('TO','/midi/presetname',{info.presetnames{info.preset}});
     else
       oscmsgout('TO','/midi/presetname',{''});
@@ -366,18 +372,6 @@ function flags=oscupdate(p,sampnum,snap,prevsnap)
         info.channels(channel)=i;
       end
     end
-    for i=info.exits
-      oscmsgout([],'/pf/exit',{int32(sampnum),elapsed,int32(i)});
-      channel=find(info.channels==i,1);
-      if isempty(channel)
-        fprintf('Unable to find channel mapped to id %d\n', i);
-      else
-%        oscmsgout('TO',sprintf('/touchosc/loc/%d/color',channel),{'red'});
-        oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{0});
-        oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{''});
-        info.channels(channel)=0;
-      end
-    end
 
     people=length(ids);
     prevpeople=length(previds);
@@ -392,12 +386,8 @@ function flags=oscupdate(p,sampnum,snap,prevsnap)
       % TODO - should send to all destinations except TO
       oscmsgout('LD','/pf/update',{int32(sampnum), elapsed,int32(h.id),h.pos(1),h.pos(2),h.velocity(1),h.velocity(2),h.majoraxislength,h.minoraxislength,int32(groupid),int32(length(sametnum))});
       xypos=h.pos ./max(abs(p.layout.active));
-      channel=find(info.channels==h.id,1);
-      if isempty(channel)
-        fprintf('Unable to find channel mapped to id %d\n', h.id);
-      else
-        oscmsgout('TO',sprintf('/touchosc/loc/%d',channel),{xypos(2),xypos(1)});
-      end
+      channel=id2channel(info,h.id);
+      oscmsgout('TO',sprintf('/touchosc/loc/%d',channel),{xypos(2),xypos(1)});
     end
   end
 
@@ -423,6 +413,19 @@ function flags=oscupdate(p,sampnum,snap,prevsnap)
 
   if running
     info=info.currapp.fn(info,'update');
+  end
+  
+  
+  % Need to handle exits last since app.fn may have needed to know which channel the id was on
+  if running
+    for i=info.exits
+      oscmsgout([],'/pf/exit',{int32(sampnum),elapsed,int32(i)});
+      channel=id2channel(info,i);
+      %        oscmsgout('TO',sprintf('/touchosc/loc/%d/color',channel),{'red'});
+      oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{0});
+      oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{''});
+      info.channels(channel)=0;
+    end
   end
 
   info.refresh=false;

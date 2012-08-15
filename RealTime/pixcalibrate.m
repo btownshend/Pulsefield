@@ -174,7 +174,6 @@ for iid=1:length(ids)
   roi=[find(xany,1),find(xany,1,'last'),find(yany,1),find(yany,1,'last')];
   imatroi=imat(roi(3):roi(4),roi(1):roi(2));
   fprintf('Size(imatroi(%d))=%d %d; roi=%d %d %d %d\n', iid,size(imatroi),roi);
-  notvis=[];
   calib=struct([]);
   for i=1:length(sainfo.led)
     ledid=sainfo.led(i).id;
@@ -185,14 +184,12 @@ for iid=1:length(ids)
     end
     calib(i).stats=stats;
     if isempty(stats)
-      notvis=[notvis,ledid];
       calib(i).pos=[nan,nan];
       calib(i).diameter=nan;
       calib(i).valid=false;
     else
       [maxarea,mpos]=max([stats.Area]);
       if size(stats(mpos).PixelList,1)<minpixels
-        notvis=[notvis,ledid];
         calib(i).valid=false;
         fprintf('LED %3d is only visible to camera %d at %d pixels; ignoring.\n',...
                 ledid,id,size(stats(mpos).PixelList,1));
@@ -216,23 +213,22 @@ for iid=1:length(ids)
       calib(i).pixelList(:,1)=calib(i).pixelList(:,1)+roi(1)-1;
       calib(i).pixelList(:,2)=calib(i).pixelList(:,2)+roi(3)-1;
     end
-    calib(i).inuse=calib(i).valid;   % For now, all valid pixels can be used
   end
   % Check for stray points
   maxpixelsep=50;
   for i=1:length(sainfo.led)
-    if calib(i).inuse 
+    if calib(i).valid 
       closest=2e10;
       nledsep=0;
       for j=i-1:-1:1
-        if calib(j).inuse
+        if calib(j).valid
           closest=norm(calib(i).pos-calib(j).pos);
           nledsep=i-j;
           break;
         end
       end
       for j=i+1:length(sainfo.led)
-        if calib(j).inuse
+        if calib(j).valid
           closest=min(closest,norm(calib(i).pos-calib(j).pos));
           nledsep=min(nledsep,j-i);
           break;
@@ -242,29 +238,32 @@ for iid=1:length(ids)
       if nledsep>0 && closest>maxpixelsep*nledsep
         fprintf('LED %d is at least %d pixels from its neighbor (%d LEDs away) -- rejecting it\n',i,closest, nledsep);
         calib(i).valid=false;  
-        calib(i).inuse=false;
       end
       calib(i).closest=closest;
     end
   end
-      
-  if ~isempty(notvis)
-    fprintf('LEDs not visible to camera %d: ', id);
-    i=1;
-    while i<=length(notvis)
-      j=i;
-      while j<length(notvis) && notvis(j+1)==notvis(j)+1
-        j=j+1;
+
+  % Check for Camera->LED that don't fall inside active area by at least 5% of the radius to the midpoint
+  for i=1:length(sainfo.led)
+    if calib(i).valid
+      midpoint=(sainfo.layout.cpos(iid,:)+sainfo.layout.lpos(i,:))/2;
+      if ~inpolygon(midpoint(1)*1.05,midpoint(2)*1.05,sainfo.layout.active(:,1),sainfo.layout.active(:,2))
+        fprintf('LED %d to camera midpoint at (%.1f,%.1f) is not far enough inside active area -- rejecting it\n', i, midpoint);
+        calib(i).valid=false;
       end
-      if j>i
-        fprintf('%d-%d ',notvis(i),notvis(j));
-      else
-        fprintf('%d ',notvis(i));
-      end
-      i=j+1;
     end
-    fprintf('\n');
   end
+  
+
+  for i=1:length(sainfo.led)
+    calib(i).inuse=calib(i).valid;   % For now, all valid pixels can be used
+  end
+  
+  notvis=find(~[calib.valid]);
+  if ~isempty(notvis)
+    fprintf('LEDs not visible to camera %d: %s\n', id, shortlist(notvis));
+  end
+
   sainfo.camera(iid).pixcalib=calib;
   sainfo.camera(iid).pixcalibtime=now;
   % Setup ROI for each camera

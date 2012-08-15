@@ -1,7 +1,7 @@
 % Add an OSC destination to global table
 function oscadddest(url,ident)
 if nargin<2
-  ident=[];
+  error('oscaddest with 1 arg no longer supported');
 end
 global oscsetup;
 if isempty(oscsetup) || ~isfield(oscsetup,'clients')
@@ -10,14 +10,15 @@ end
 
 for i=1:length(oscsetup.clients)
   cl=oscsetup.clients(i);
-  if strcmp(cl.url,url)
-    if isempty(cl.ident) && ~isempty(ident)
-      fprintf('Updating OSC client %s@%s\n', ident, url);
-      oscsetup.clients(i).ident=ident;
-    else
+  if strcmp(cl.ident,ident)
+    if strcmp(cl.url,url)
       fprintf('Already have OSC client %s@%s\n', ident, url);
+      return;
+    else
+      fprintf('Removing superceded OSC client %s@%s\n', ident, cl.url);
+      oscrmdest(ident);
     end
-    return;
+    break;
   end
 end
 fprintf('Adding OSC client %s@%s\n', ident,url);

@@ -24,7 +24,7 @@
 %	tgt{ncam,nled} - images of each target
 function [vis,p]=getvisible(p,varargin)
 defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[11 7],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5,...
-            'usefrontend',true,'maxage',0.2);
+            'usefrontend',true,'maxage',0.3);
 args=processargs(defaults,varargin);
 
 if args.init

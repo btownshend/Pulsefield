@@ -192,16 +192,27 @@ void FrontEnd::run() {
 	}
 
 	gettimeofday(&ts1,0);
-	if (debug)
+	if (debug>2) {
 	    printf("At select after %.2f msec.", (ts1.tv_usec-ts2.tv_usec)/1000.0+(ts1.tv_sec-ts2.tv_sec)*1000);
-	retval = select(maxfd + 1, &rfds, NULL, NULL, NULL); /* no timeout */
+	    fflush(stdout);
+	}
+	struct timeval timeout;
+	timeout.tv_usec=0;
+	timeout.tv_sec=5;
+	retval = select(maxfd + 1, &rfds, NULL, NULL, &timeout); /* no timeout */
 	gettimeofday(&ts2,0);
-	if (debug)
+	if (debug>2) {
 	    printf("Select done after %.2f msec. rfds=0x%lx\n", (ts2.tv_usec-ts1.tv_usec)/1000.0+(ts2.tv_sec-ts1.tv_sec)*1000,*(unsigned long*)&rfds);
+	    fflush(stdout);
+	}
 	if (retval == -1) {
 	    perror("select() error: ");
 	    exit(1);
-	} else if (retval > 0) {
+	} else if (retval == 0) {
+	    fprintf(stderr,"Select timeout - restarting cameras\n");
+	    for (int i=0;i<ncamera;i++) 
+		cameras[i]->reset();
+	} else {
 	    // Process OSC messages
 	    if (FD_ISSET(lo_fd, &rfds))
 		// Process all queued messages
@@ -216,7 +227,7 @@ void FrontEnd::run() {
 		    FD_CLR(cameras[i]->getSocket(),&rfds);
 		    if (cameras[i]->read() < 0) {
 			fprintf(stderr,"Error reading from camera %d, stopping acquisition\n", cameras[i]->getID());
-			startStop(0);	// This will also clear valid flag for all individual frames
+			cameras[i]->reset();
 		    }
 		}
 	    }
@@ -235,8 +246,8 @@ void FrontEnd::run() {
 		    if (cameras[i]->isRunning() && FD_ISSET(cameras[i]->getSocket(),&rfds)) {
 			//printf("2.Reading from  camera %d\n", cameras[i]->getID());
 			if (cameras[i]->read() < 0) {
-			    fprintf(stderr,"Error reading from camera %d, stopping acquisition\n", cameras[i]->getID());
-			    startStop(0);	// This will also clear valid flag for all individual frames
+			    fprintf(stderr,"Error reading from camera %d, restarting acquisition\n", cameras[i]->getID());
+			    cameras[i]->reset();
 			}
 		    }
 		}
@@ -255,7 +266,7 @@ void FrontEnd::processFrames() {
     double minus=1e99, maxus=0;
     for (int i=0;i<ncamera;i++) {
 	Frame *frame=cameras[i]->getFrame();
-	double us=frame->getTimestamp().tv_usec/1e6 + frame->getTimestamp().tv_sec;
+	double us=frame->getStartTime().tv_usec/1e6 + frame->getStartTime().tv_sec;
 	if (us<minus)
 	    minus=us;
 	else if (us>maxus)
@@ -286,7 +297,7 @@ void FrontEnd::processFrames() {
 	}
     }
     if (debug)
-	printf("Frame jitter = %.1f msec.\n", (maxus-minus)*1000);
+	printf("Frame jitter (based on first blocks received) = %.1f msec.\n", (maxus-minus)*1000);
 
     for (int i=0;i<ncamera;i++)
 	cameras[i]->getFrame()->clearValid();   // Ready to rewrite
@@ -322,7 +333,7 @@ void FrontEnd::sendMessages() {
 			n2++;
 		if (debug>1)
 		    printf("Sending VIS%d (%d/%d/%d) to %s:%d\n", c, n0, n1, n2, dests.getHost(i),dests.getPort(i));
-		lo_send(addr, "/vis/visible","iiiifb",c,frame,ts.tv_sec, ts.tv_usec, vis[c]->getCorrThresh(), data);
+		lo_send(addr, "/vis/visible","iiiifb",c,cameras[c]->getCamFrameNum(),ts.tv_sec, ts.tv_usec, vis[c]->getCorrThresh(), data);
 		lo_blob_free(data);
 	    }
 	    if (sendOnce & CORR) {

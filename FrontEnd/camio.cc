@@ -67,6 +67,20 @@ int CamIO::open() {
 	    return -1;
 	}
 
+	if (msg==1) {
+	    int rcvbuf;
+	    socklen_t rcvbuflen=sizeof(rcvbuf);
+	    if (getsockopt(sock,SOL_SOCKET,SO_RCVBUF, &rcvbuf, &rcvbuflen) < 0) {
+		perror("getsockopt failed: ");
+	    }
+	    printf("RCVBUF=%d\n", rcvbuf);
+	    rcvbuf=65536*10;
+	    if (setsockopt(sock,SOL_SOCKET,SO_RCVBUF, &rcvbuf, rcvbuflen) < 0) {
+		perror("setsockopt failed: ");
+	    }
+	    printf("RCVBUF set to %d\n", rcvbuf);
+	}
+
 	/* Establish the connection to the echo server */ 
 	printf("Opening connection to camera %d at %s...",id,servIP); fflush(stdout);
 	if (connect(sock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)  {
@@ -179,8 +193,8 @@ int CamIO::read() {
 	struct timeval ts;
 	gettimeofday(&ts,0);
 	int bytesRcvd = recv(sock, &buffer[totalBytesRcvd], buflen-totalBytesRcvd, 0);
-	//	printf("Received: %d bytes from camera %d at %ld.%06ld, last bytes=%02x%02x%02x%02x\n",bytesRcvd, id,(long int)ts.tv_sec,(long int)ts.tv_usec,
-	//       buffer[totalBytesRcvd+bytesRcvd-4],buffer[totalBytesRcvd+bytesRcvd-3],buffer[totalBytesRcvd+bytesRcvd-2],buffer[totalBytesRcvd+bytesRcvd-1]);
+	//printf("Received: %d bytes from camera %d at %ld.%06ld\n",bytesRcvd, id,(long int)ts.tv_sec,(long int)ts.tv_usec);
+	//	       buffer[totalBytesRcvd+bytesRcvd-4],buffer[totalBytesRcvd+bytesRcvd-3],buffer[totalBytesRcvd+bytesRcvd-2],buffer[totalBytesRcvd+bytesRcvd-1]);
         if (bytesRcvd < 0)  {
 	    if (errno==EAGAIN) 
 		break;  // Would block
@@ -201,44 +215,54 @@ int CamIO::read() {
         totalBytesRcvd += bytesRcvd;   /* Keep tally of total bytes */ 
  
 	byte *splitPos = split();
-	if (splitPos== NULL) 
-	    break;
-	// Found MIME separator, splitPos is at beginning of separator
-	int len=splitPos-buffer;
-	if (state == HEADER) {
-	    printf("Got header from camera %d:\n<",id);
-	    fwrite(buffer,len,1,stdout);
-	    printf(">\n");
-	    state = FRAMES;
-	} else {
-	    const char *frameHeader = "Content-Type: image/jpeg\r\n\r\n";
-	    if (memcmp(buffer,frameHeader,strlen(frameHeader))==0) {
-		// matched expected frame header 
-		byte *frameStart =buffer+strlen(frameHeader);
-		int frameLen = len-strlen(frameHeader);
-		if (frameLen<3000) {
-		    printf("Camera %d has short frame of %d bytes -- assuming this is a bug in camera\n", id,frameLen);
-		}
-		if (debug)
-		    printf("Camera %d: ", id);
-		if (curFrame.copy(frameStart,frameLen,blockStartTime,id,camFrameNum) < 0) {
-		    fprintf(stderr,"curFrame.copy() failed\n");
+	// Process as many frames as have been received
+	while (splitPos!=NULL) {
+	    // Found MIME separator, splitPos is at beginning of separator
+	    int len=splitPos-buffer;
+	    if (state == HEADER) {
+		printf("Got header from camera %d:\n<",id);
+		fwrite(buffer,len,1,stdout);
+		printf(">\n");
+		state = FRAMES;
+	    } else {
+		blockEndTime = ts;   // Timestamp of current frame is when we received last block of message
+		const char *frameHeader = "Content-Type: image/jpeg\r\n\r\n";
+		if (memcmp(buffer,frameHeader,strlen(frameHeader))==0) {
+		    // matched expected frame header 
+		    byte *frameStart =buffer+strlen(frameHeader);
+		    int frameLen = len-strlen(frameHeader);
+		    if (frameLen<3000) {
+			printf("Camera %d has short frame of %d bytes -- assuming this is a bug in camera\n", id,frameLen);
+		    }
+		    int frameElapsed = (blockEndTime.tv_usec - blockStartTime.tv_usec)/1000 + (blockEndTime.tv_sec-blockStartTime.tv_sec)*1000;
+		    if (frameElapsed>50)
+			printf("Camera %d, frame %d took %d msec for transmission\n", id, camFrameNum, frameElapsed);
+
+		    if (debug)
+			printf("Camera %d: ", id);
+		    if (curFrame.copy(frameStart,frameLen,blockStartTime,blockEndTime,id,camFrameNum) < 0) {
+			fprintf(stderr,"curFrame.copy() failed\n");
+			return -1;
+		    }
+		    camFrameNum++;
+		} else {
+		    fprintf(stderr,"Bad multipart frame of length %d:\n", len);
+		    dumpdata(buffer,len);
 		    return -1;
 		}
-		camFrameNum++;
-	    } else {
-		fprintf(stderr,"Bad multipart frame of length %d:\n", len);
-		dumpdata(buffer,len);
-		return -1;
 	    }
-	}
-	totalBytesRcvd -= (len+strlen(sep));
-	if (totalBytesRcvd > 0) {
-	    // copy rest of buffer
-	    memmove(buffer,splitPos+strlen(sep),totalBytesRcvd);
-	    // Still using old blockStartTime
-	    printf("Camera %d has pre-read %d bytes, timestamp may be off\n", id, totalBytesRcvd);
-	    blockStartTime=ts;   // Set it to the time of the last block read
+	    totalBytesRcvd -= (len+strlen(sep));
+	    if (totalBytesRcvd > 0) {
+		// copy rest of buffer
+		memmove(buffer,splitPos+strlen(sep),totalBytesRcvd);
+		// Still using old blockStartTime
+		printf("Camera %d has pre-read %d bytes, timestamp may be off\n", id, totalBytesRcvd);
+		blockStartTime=ts;   // Set it to the time of the last block read
+	    }
+	    if (totalBytesRcvd==0)
+		break;
+	    // Split remaining data
+	    splitPos=split();
 	}
 
 	if (totalBytesRcvd == buflen) {

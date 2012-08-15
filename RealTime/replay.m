@@ -20,6 +20,10 @@ end
 
 timedreplay=args.timed;   % Set to 1 to replay at same pacing as recording
 
+osclog('close');   % Close any old logs open
+oscclose();        % Close any old clients
+getsubsysaddr([],'reload',true);   % Reload subsystem addresses
+
 % Setup destination for outgoing OSC messages
 for i=1:length(args.oscdests)
   [host,port]=getsubsysaddr(args.oscdests{i});

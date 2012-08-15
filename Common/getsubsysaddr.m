@@ -12,13 +12,15 @@ if isempty(subsystems) || args.reload
   fclose(fd);
   subsystems=struct('id',c{1},'host',c{2},'port',num2cell(c{3}));
 end
-host=[];
-port=[];
-for i=1:length(subsystems)
-  if strcmp(subsystems(i).id,id)
-    host=subsystems(i).host;
-    port=subsystems(i).port;
-    return;
-  end
+if ~isempty(id)
+  host=[];
+  port=[];
+  for i=1:length(subsystems)
+    if strcmp(subsystems(i).id,id)
+      host=subsystems(i).host;
+      port=subsystems(i).port;
+      return;
+    end
+    end
+    fprintf('Error: unable to locate %s in URL config file\n', id);
 end
-fprintf('Error: unable to locate %s in URL config file\n', id);

@@ -27,7 +27,7 @@ Frame::~Frame() {
 	delete [] image;
 }
 
-int Frame::copy(const byte *buffer, int buflen,const struct timeval &ts,int camid, int camFrameNum) {
+int Frame::copy(const byte *buffer, int buflen,const struct timeval &tsStart,const struct timeval &tsEnd,int camid, int camFrameNum) {
     if (buflen>allocLen) {
 	// Reallocate storage
 	if (allocLen>0)
@@ -37,20 +37,22 @@ int Frame::copy(const byte *buffer, int buflen,const struct timeval &ts,int cami
     }
     frameLen=buflen;
     memcpy(frame,buffer,frameLen);
-    int elapsed = (ts.tv_usec - timestamp.tv_usec)/1000 + (ts.tv_sec-timestamp.tv_sec)*1000;
+    int interFrame = (tsEnd.tv_usec - frameEndTime.tv_usec)/1000 + (tsEnd.tv_sec-frameEndTime.tv_sec)*1000;
+    int txTime = (tsEnd.tv_usec - tsStart.tv_usec)/1000 + (tsEnd.tv_sec - tsStart.tv_sec)*1000;
     if (debug)
-	printf("Got frame of length %d at time %ld.%06ld (interframe time=%d msec):\n",frameLen,(long int)ts.tv_sec,(long int)ts.tv_usec,elapsed);
+	printf("Got frame of length %d at time %ld.%06ld (tx time=%d msec, rate=%.2f Mbytes/sec, total interframe time=%d msec):\n",frameLen,(long int)tsStart.tv_sec,(long int)tsStart.tv_usec,txTime, frameLen*1.0/txTime/1000.0, interFrame);
     if (valid) {
-	printf("Frame::copy: Overwriting unconsumed camera %d frame %d that is %d msecs old\n",camid, camFrameNum, elapsed);
+	printf("Frame::copy: Overwriting unconsumed camera %d frame %d that is %d msecs old\n",camid, camFrameNum, interFrame);
 	fflush(stdout);
     }
-    timestamp=ts;
+    frameStartTime=tsStart;
+    frameEndTime=tsEnd;
     return decompress();
 }
 
 const char *Frame::saveFrame() const {
     static char filename[1000];
-    sprintf(filename,"/tmp/frame.%ld.%06ld.jpg",(long int)timestamp.tv_sec,(long int)timestamp.tv_usec);
+    sprintf(filename,"/tmp/frame.%ld.%06ld.jpg",(long int)frameStartTime.tv_sec,(long int)frameStartTime.tv_usec);
     int fd=open(filename,O_CREAT|O_TRUNC|O_WRONLY,0644);
     if (write(fd,frame,frameLen)!=frameLen)  {
 	perror(filename);
@@ -63,7 +65,7 @@ const char *Frame::saveFrame() const {
 
 const char *Frame::saveImage() const {
     static char filename[1000];
-    sprintf(filename,"/tmp/image.%ld.%06ld.raw",(long int)timestamp.tv_sec,(long int)timestamp.tv_usec);
+    sprintf(filename,"/tmp/image.%ld.%06ld.raw",(long int)frameStartTime.tv_sec,(long int)frameStartTime.tv_usec);
     int fd=open(filename,O_CREAT|O_TRUNC|O_WRONLY,0644);
     assert(imageLen>0);
     if (write(fd,image,imageLen*sizeof(*image)) != (int)(imageLen*sizeof(*image)))  {

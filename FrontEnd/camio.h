@@ -33,6 +33,8 @@ class CamIO {
 
     // Start time of current block (when first byte was received)
     struct timeval blockStartTime;
+    // End time of current block (when last byte was received)
+    struct timeval blockEndTime;
  private:
     // Find the first separator in the current buffer, or return NULL if not present    
     byte *split();
@@ -43,6 +45,7 @@ class CamIO {
     void setROI(int x0, int y0, int x1, int y1);
     void setFPS(int _fps) { fps=_fps; reset(); }
     float getFPS() const { return fps; }
+    int getCamFrameNum() const { return camFrameNum; }
 
     void setRes(const char *res) { halfRes= (res[0]=='h' || res[0]=='H'); reset(); }
 
