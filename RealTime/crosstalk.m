@@ -4,7 +4,7 @@ function p=crosstalk(p,onval)
 minmargin=50;  % Minimum margin between on-level and off-level to flag a LED->camera
 
 % Measure signal with all LEDs off, even only, odd only
-oscmsgout('LD','/led/stop',{});
+lsctl(p,'pause');
 
 s1=arduino_ip();
 if nargin<2

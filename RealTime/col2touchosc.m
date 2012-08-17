@@ -6,6 +6,5 @@ cor=[];
 for i=1:length(colvals)
   cor(i)=dot(colvals{i},col)/sqrt(dot(colvals{i},colvals{i})*dot(col,col));
 end
-cor
 [mx,mxpos]=max(cor);
 colname=colnames{mxpos};

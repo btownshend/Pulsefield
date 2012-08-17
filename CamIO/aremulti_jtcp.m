@@ -16,7 +16,7 @@ for i=1:length(id)
     req=[req,sprintf('&x0=%d&x1=%d&y0=%d&y1=%d',roi{i}-1)];
   end
   req=[req,sprintf(' HTTP/1.1\r\n\r\n')];
-  [h,p]=getsubsysaddr(sprintf('CA%d',id(i)));
+  [h,p]=getsubsysaddr(sprintf('CA%d',id(i)),'reload',false);
   try
     fd{i}=jtcp('REQUEST',h,p,'SERIALIZE',false)
   catch me

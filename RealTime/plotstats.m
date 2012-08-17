@@ -43,7 +43,7 @@ for j=1:length(speed)
   end
 end
 
-plotvar(time,fspeed,'Speed (LPF)','m/s',[0,nan],1,recvis.p.colors);
+plotvar(time,speed,'Speed (LPF)','m/s',[0,nan],1,recvis.p.colors);
 plotvar(time,heading,'Heading','deg',[nan,nan],2,recvis.p.colors);
 plotvar(time,area,'Area','m',0.3,3,recvis.p.colors);
 plotvar(time,minoraxislength,'Minor Axis Length','m',0.8,4,recvis.p.colors);

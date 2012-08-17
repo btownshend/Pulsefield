@@ -18,19 +18,24 @@ rays=p.rays;
 % im is zero where someone could be, 1 where they can't be
 im=zeros(rays.imap.isize);
 
-% Points where someone could possibly be
-% Polygon in pixel coords
-active=m2pix(rays.imap,layout.active);
-% Convert to mask (need to transpose since masks are usually (y,x) addressed
-ai=poly2mask(active(:,1),active(:,2),size(im,1),size(im,2))';
-if doplot>2
-  setfig('ai');
-  imshowmapped(rays.imap,ai);
-  title('active area');
+if ~isfield(rays,'activemask')
+  error('p.rays.activemask missing: need to rerun p.rays=createrays(p)');
+end
+if 0
+  % Points where someone could possibly be
+  % Polygon in pixel coords
+  active=m2pix(rays.imap,layout.active);
+  % Convert to mask (need to transpose since masks are usually (y,x) addressed
+  ai=poly2mask(active(:,1),active(:,2),size(im,1),size(im,2))';
+  if doplot>2
+    setfig('ai');
+    imshowmapped(rays.imap,ai);
+    title('active area');
+  end
 end
 
 % Assume there isn't anyone outside
-im=~ai;
+im=~rays.activemask;
 
 % Draw all visible rays
 if doplot>1
@@ -68,7 +73,8 @@ ibd=imdilate(possible,se);	% Regrow it (1==person could be present)
 
 % Dilate image using disk to close any gaps that may be between legs
 sefg=strel('disk',ceil(maxfalsegap/2),0);   %Despite documentation, using N=0 is more than twice as fast than N=4
-rmgaps=imclose(ibd,sefg);  % dilate then erode
+rmgaps1=imdilate(ibd,sefg);
+rmgaps=imerode(rmgaps1,sefg);  % dilate then erode
 
 lbl=possible.*bwlabel(rmgaps);		% Label gap removed image, then mask with eroded image (only pixels that could be centers)
                                         % This will prevent a narrowing between the legs from separating them into 2 separate labels
@@ -76,7 +82,8 @@ lbl=possible.*bwlabel(rmgaps);		% Label gap removed image, then mask with eroded
 % The masking above could have completely removed some labels, watch out...
 
 % Figure out centers of each possible target
-stats=regionprops(lbl','Centroid','Area','MinorAxisLength','MajorAxisLength','Orientation','ConvexHull','PixelList');  % Use transpose to go back to coord axis
+% Use modified version of regionprops() to avoid time spent on input sanity checking
+stats=fastregionprops(lbl','Centroid','Area','MinorAxisLength','MajorAxisLength','Orientation','PixelList');  % Use transpose to go back to coord axis
 
 % Create structure of results
 tgts=struct('pos',{},'minoraxislength',{},'majoraxislength',{},'orientation',{},'convexhull',{},'area',{},'stats',{},'nunique',{},'pixellist',{});
@@ -84,7 +91,8 @@ for i=1:length(stats)
   pos=pix2m(rays.imap,stats(i).Centroid);
   minoraxislength=(stats(i).MinorAxisLength+2*shrink)/rays.imap.scale;
   majoraxislength=(stats(i).MajorAxisLength+2*shrink)/rays.imap.scale;
-  convexhull=pix2m(rays.imap,stats(i).ConvexHull);
+  % convexhull=pix2m(rays.imap,stats(i).ConvexHull);
+  convexhull=nan;
   pixellist=pix2m(rays.imap,stats(i).PixelList);
   area=((sqrt(stats(i).Area)+2*shrink)/rays.imap.scale)^2;
   % Due to the masking, regionprops sometimes returns an empty region (no pixels)
@@ -146,7 +154,7 @@ if length(tgts)>0
     end
     %      profile=improfile(lbl,rays.raylines{c,l}(:,2),rays.raylines{c,l}(:,1));
     % Count distinct objects on each ray
-    profile=alllbl(sub2ind(size(lbl),rays.raylines{c,l}(:,1),rays.raylines{c,l}(:,2)));
+    profile=alllbl(fastsub2ind(size(lbl),rays.raylines{c,l}(:,1),rays.raylines{c,l}(:,2)));
     profile=profile(profile~=0);
     if ~isempty(profile) && all(profile==profile(1))
       % Unique object
@@ -176,10 +184,13 @@ if doplot>0
   for i=1:length(tgts)
     cent=tgts(i).pos;
     plot(cent(1),cent(2),'or');
-    plot(tgts(i).convexhull(:,1),tgts(i).convexhull(:,2),'g');
+    % plot(tgts(i).convexhull(:,1),tgts(i).convexhull(:,2),'g');
     text(cent(1),cent(2),sprintf('%d (%d)',i,tgts(i).nunique),'color','k','HorizontalAlignment','center');
     fprintf('Object %d at (%.1f,%.1f) was unique for %d rays\n', i, cent, tgts(i).nunique);
   end
 end
 
 snap=struct('tgts',tgts,'possible',possible);
+
+function ndx=fastsub2ind(siz,v1,v2)
+ndx=v1+(v2-1).*siz(1);

@@ -22,4 +22,3 @@ if ~isempty(oscsetup)  && isfield(oscsetup,'server')
 end
 server=osc_new_server(port);
 fprintf('Started new OSC server at port %d\n', port);
-oscsetup=struct('port',port,'server',server,'clients',struct('ident',{},'url',{},'addr',{},'downsince',nan));

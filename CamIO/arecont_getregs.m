@@ -1,6 +1,6 @@
 % Get all register values from arecont
 function r=arecont_getregs(id)
-[h,p]=getsubsysaddr(sprintf('CA%d',id));
+[h,p]=getsubsysaddr(sprintf('CA%d',id),'reload',false);
 r=[];
 for page=0:6
   fprintf('Getting page %d\n',page);

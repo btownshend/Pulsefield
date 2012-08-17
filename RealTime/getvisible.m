@@ -10,6 +10,7 @@
 %	onval:	  3x1 vector holding RGB values of LED to use (defaults to p.colors{1})
 %	init:	  true to initialize data for operation, store in returned p struct (default false)
 %	usefrontend: use frontend to acquire high-speed stream (default true)
+%	timeout:  timeout in seconds to wait for frame (default 1.0)
 % When 'init' is used, additional options are available:
 %	wsize:    2x1 size of window, in pixels, which will be centered on centroid of LED (default: [11 11], for init only)
 %	navg:	  number of samples to average over (default=number of colors in p.colors; which are used as onval)
@@ -24,7 +25,7 @@
 %	tgt{ncam,nled} - images of each target
 function [vis,p]=getvisible(p,varargin)
 defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[11 7],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5,...
-            'usefrontend',true,'maxage',0.3);
+            'usefrontend',true,'timeout',1.0);
 args=processargs(defaults,varargin);
 
 if args.init
@@ -43,7 +44,7 @@ end
 if args.init
   % Initialize data in p.camera(:).viscache needed by getvisible
   fprintf('Stopping LEDServer\n');
-  oscmsgout('LD','/led/stop',{});
+  lsctl(p,'pause');
   fprintf('Initializing viscache...\n');
   for i=1:length(p.camera)
     c=p.camera(i).pixcalib;
@@ -157,13 +158,13 @@ if args.init
   % Done with init
   fprintf('Done initializing viscache...\n');
   % Restart LED Server
-  fprintf('Restarting LED server\n');
-  oscmsgout('LD','/led/start',{});
+  fprintf('Resuming LED server\n');
+  lsctl(p,'resume');
 
   % In the init case, the returned vis is a cell array of args.navg vis structs
   if args.usefrontend
     fprintf('Sending initialize data to front end\n');
-    rcvr(p,'init');
+    fectl(p,'start');
   end
   return;
 end
@@ -189,21 +190,16 @@ end
 if args.usefrontend
   while true
     % Call frontend to get next frame
-    vis=rcvr(p,'stats',args.stats);
+    vis=rcvr(p,'timeout',args.timeout,'stats',args.stats);
     if isempty(vis)
-      fprintf('Empty vis[] struct returned, waiting for next one\n');
-      continue;
+      return;
     end
     vis.whenrcvd=now;
     age=(vis.whenrcvd-max(vis.acquired))*24*3600;
-    if (age>args.maxage)
-      fprintf('Skipping stale frame %d that is %.1f seconds old\n', vis.frame(1), age);
-    else
-      if mod(vis.frame(1),50)==0 || age>0.1
-        fprintf('Got frame %d that is %.3f seconds old\n',vis.frame(1),age);
-      end
-      return;
+    if mod(vis.frame(1),50)==0 || age>0.3
+      fprintf('Got visframe %d that is %.3f seconds old\n',vis.frame(1),age);
     end
+    return;
   end
 end
 

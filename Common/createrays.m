@@ -43,3 +43,9 @@ for c=1:size(p.layout.cpos,1)
 end
 r.raylines=raylines;
 r.imap=imap;
+
+% Points where someone could possibly be
+% Polygon in pixel coords
+active=m2pix(imap,p.layout.active);
+% Convert to mask (need to transpose since masks are usually (y,x) addressed
+r.activemask=poly2mask(active(:,1),active(:,2),imap.isize(1),imap.isize(2))';

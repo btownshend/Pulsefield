@@ -1,22 +1,17 @@
-% Close OSC connections
+% Close all OSC connections
 function oscclose
-global oscsetup
+global oscservers
 
-if isempty(oscsetup)
-  fprintf('Nothing to close; oscsetup not found\n');
-  return
+if isempty(oscservers)
+  fprintf('No servers to close\n');
 end
 
-% Need to close existing clients and server
-for c=1:length(oscsetup.clients)
-  cl=oscsetup.clients(c);
-  osc_free_address(cl.addr);
-  fprintf('Closed connection to client %s@%s\n', cl.ident, cl.url);
+for i=1:length(oscservers)
+  fprintf('Closing %s server on port %d\n', oscservers(i).ident, oscservers(i).port);
+  osc_free_server(oscservers(i).addr);
 end
-oscsetup.clients=[];
 
-fprintf('Closing existing OSC server port\n');
-osc_free_server(oscsetup.server);
+oscservers=[];
 
-clear global oscsetup
-
+% Close all clients
+oscrmdest();

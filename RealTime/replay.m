@@ -22,15 +22,16 @@ timedreplay=args.timed;   % Set to 1 to replay at same pacing as recording
 
 osclog('close');   % Close any old logs open
 oscclose();        % Close any old clients
-getsubsysaddr([],'reload',true);   % Reload subsystem addresses
+
+% Run sanity tests
+if ~oscloopback('MPO') || ~oscloopback('MPL')
+  fprintf('Loopback test failed\n');
+  return;
+end
+oscclose();  % Don't want these all in the default destinations
 
 % Setup destination for outgoing OSC messages
-for i=1:length(args.oscdests)
-  [host,port]=getsubsysaddr(args.oscdests{i});
-  if ~isempty(host)
-    oscadddest(['osc.udp://',host,':',num2str(port)],args.oscdests{i})
-  end
-end
+recvis.p.oscdests=args.oscdests;
 
 if args.plothypo
   setfig('plothypo');clf;
@@ -47,6 +48,8 @@ starttime=now;
 suppressuntil=0;
 while samp<=min(length(recvis.vis),length(recvis.snap))
   vis=recvis.vis(samp);
+  simulskew = now-vis.whenrcvd;     % Delay in simulation from when it really happened
+  vis.whenrcvd=now;
   if timedreplay
     sleeptime=((vis.when-recvis.vis(1).when)-(now-starttime))*24*3600;
     if sleeptime>0
@@ -75,7 +78,7 @@ while samp<=min(length(recvis.vis),length(recvis.snap))
     snap{samp}=updatetgthypo(recvis.p.layout,snap{samp-1},snap{samp},samp);
   end
 
-  snap{samp}.whendone=recvis.snap(samp).whendone;
+  snap{samp}.whendone=now-simulskew;
 
   if args.plothypo && ~isempty(snap{samp}.hypo)
     setfig('plothypo');
@@ -156,6 +159,8 @@ while samp<=min(length(recvis.vis),length(recvis.snap))
   else
     flags=oscupdate(recvis.p,samp,snap{samp});
   end
+
+  snap{samp}.whendone2=now-simulskew;
 
   % loopend=toc;
   % fprintf('Loop time = %.2f seconds\n', loopend);

@@ -1,5 +1,5 @@
 function val=arecont_get(id,param)
-[h,p]=getsubsysaddr(sprintf('CA%d',id));
+[h,p]=getsubsysaddr(sprintf('CA%d',id),'reload',false);
 if strncmp(param,'reg',3)
   v=sscanf(param,'reg_%d_%d');
   url=sprintf('http://%s/getreg?page=%d&reg=%d',h,v(1),v(2));

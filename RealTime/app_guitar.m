@@ -5,6 +5,7 @@ if strcmp(op,'start')
   for i=1:length(info.pgm)
     info.pgm(i)=25+(i-1)*2;
   end
+  info.max=1;   % Need MAX
 end
 
 if ~strcmp(op,'update')

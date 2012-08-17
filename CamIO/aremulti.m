@@ -15,7 +15,7 @@ cmd='';
 for i=1:length(id)
   % TODO - would be faster to open connection once and then make HTTP requests without closing
   % or use MJPEG
-  [h,p]=getsubsysaddr(sprintf('CA%d',id(i)));
+  [h,p]=getsubsysaddr(sprintf('CA%d',id(i)),'reload',false);
   assert(~isempty(h));
   url=sprintf('http://%s/image?res=%s&quality=21&doublescan=1&ver=HTTP/1.1',h,res);
   if nargin<3 || isempty(roi)

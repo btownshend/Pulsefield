@@ -65,7 +65,7 @@ static int addDestPort_handler(const char *path, const char *types, lo_arg **arg
 static int rmDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->rmDest(&argv[0]->s,argv[1]->i); return 0; }
 static int rmDestPort_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->rmDest(msg,argv[0]->i); return 0; }
 static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->rmAllDest(); return 0; }
-static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->ping(msg); return 0; }
+static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->ping(msg,argv[0]->i); return 0; }
 
 FrontEnd::FrontEnd(int _ncamera, int _nled) {
     ncamera=_ncamera;
@@ -129,7 +129,7 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     lo_server_add_method(s,"/vis/set/res","is",setRes_handler,this);
     lo_server_add_method(s,"/vis/set/refimage","iiiis",setRefImage_handler,this);
     lo_server_add_method(s,"/vis/set/roi","iiiii",setROI_handler,this);
-    lo_server_add_method(s,"/ping","",ping_handler,this);
+    lo_server_add_method(s,"/ping","i",ping_handler,this);
     
     lo_server_add_method(s,"/vis/get/corr","i",getCorr_handler,this);
     lo_server_add_method(s,"/vis/get/refimage","i",getRefImage_handler,this);
@@ -199,7 +199,7 @@ void FrontEnd::run() {
 	struct timeval timeout;
 	timeout.tv_usec=0;
 	timeout.tv_sec=5;
-	retval = select(maxfd + 1, &rfds, NULL, NULL, &timeout); /* no timeout */
+	retval = select(maxfd + 1, &rfds, NULL, NULL, &timeout);
 	gettimeofday(&ts2,0);
 	if (debug>2) {
 	    printf("Select done after %.2f msec. rfds=0x%lx\n", (ts2.tv_usec-ts1.tv_usec)/1000.0+(ts2.tv_sec-ts1.tv_sec)*1000,*(unsigned long*)&rfds);
@@ -518,10 +518,12 @@ void FrontEnd::rmAllDest() {
     dests.removeAll();
 }
 
-void FrontEnd::ping(lo_message msg) {
-    char *url=lo_address_get_url(lo_message_get_source(msg));
-    
-    lo_address addr = lo_address_new_from_url(url);
-    lo_send(addr,"/ack","");
-    lo_address_free(addr);
+void FrontEnd::ping(lo_message msg, int seqnum) {
+    for (int i=0;i<dests.count();i++) {
+	char cbuf[10];
+	sprintf(cbuf,"%d",dests.getPort(i));
+	lo_address addr = lo_address_new(dests.getHost(i), cbuf);
+	lo_send(addr,"/ack","i",seqnum);
+	lo_address_free(addr);
+    }
 }

@@ -88,10 +88,10 @@ if ~isfield(p,'rays')
   p.rays=createrays(p);
 end
 
-% Start frontend
-startfrontend(p);
-% Init with collected targets
-rcvr(p,'init');
+% Start frontend and init
+if ~fectl(p,'start') 
+  error('Failed to start frontend\n');
+end
 
 disp('Measuring');
 vis=getvisible(p,'stats',true);

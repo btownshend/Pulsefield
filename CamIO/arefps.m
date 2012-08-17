@@ -18,7 +18,7 @@ arecont_set(id,'sensortop',roi(3));
 arecont_set(id,'sensorheight',roi(4)-roi(3)+1);
 
 fprintf('FPS setting = %.2f\n', arecont_get(id,'fps'));
-[h,p]=getsubsysaddr(sprintf('CA%d',id));
+[h,p]=getsubsysaddr(sprintf('CA%d',id),'reload',false);
 url=sprintf('http://%s/image?res=full&quality=21&doublescan=0&x0=%d&x1=%d&y0=%d&y1=%d',h,roi);
 cmd=sprintf('curl -s ''%s'' >/tmp/im%d.jpg', url,id);
 cnt=50;

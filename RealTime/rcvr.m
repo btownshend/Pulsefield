@@ -1,61 +1,11 @@
 % Receiver of data from frontend (C++) that sends data via OSC
 function vis=rcvr(p,varargin)
-global visserver;
-
-defaults=struct('init',false, 'stats',false,'flush',false,'nowait',false,'debug',false);
+defaults=struct('stats',false,'flush',false,'nowait',false,'debug',false,'skipstale',true,'timeout',1.0);
 args=processargs(defaults,varargin);
-
-if args.init
-  % Initialize
-  oscmsgout('FE','/vis/stop',{});
-  oscmsgout('FE','/vis/set/fps',{p.analysisparams.fps});
-  oscmsgout('FE','/vis/set/corrthresh',{0.5});
-  for i=1:length(p.camera)
-    c=p.camera(i);
-    if strcmp(c.type,'av10115')
-      res='full';
-    elseif strcmp(c.type,'av10115-half')
-      res='half';
-    else
-      fprintf('Unable to determine resolution of %s: assuming full res\n', c.type);
-      res='full';
-    end
-    oscmsgout('FE','/vis/set/res',{int32(i-1),res});
-    if isfield(p.camera(i),'viscache') && isfield(p.camera(i).viscache,'refim')
-      oscmsgout('FE','/vis/set/updatetc',{ 0.0 });    % Turn off updates of reference image
-      refim = im2single(p.camera(i).viscache.refim);
-      filename=sprintf('/tmp/refim_%d.raw',i);
-      fd=fopen(filename,'wb');
-      fwrite(fd,permute(refim,[3,2,1]),'single');  % Write it in normal RGB order 
-      fclose(fd);
-      fprintf('Sending reference image to frontend in %s\n',filename);
-      oscmsgout('FE','/vis/set/refimage',{ int32(i-1), size(refim,2), size(refim,1), size(refim,3), filename});
-    else
-      fprintf('Frontend is automatically updating reference with a time constant of %f seconds\n', p.analysisparams.updatetc);
-      oscmsgout('FE','/vis/set/updatetc',{ p.analysisparams.updatetc });
-    end
-      
-    % setRoi expects x0, y0, x1, y1 (with 1-based indexing)
-    oscmsgout('FE','/vis/set/roi',{int32(i-1),int32(c.roi(1)),int32(c.roi(3)),int32(c.roi(2)),int32(c.roi(4))});
-    
-    for j=1:size(c.viscache.tlpos,1)
-      tlpos=c.viscache.tlpos(j,:);
-      brpos=c.viscache.brpos(j,:);
-      if isnan(tlpos(1))
-        oscmsgout('FE','/vis/set/pos',{int32(i-1),int32(j-1),int32(-1),int32(-1),int32(-1),int32(-1)});
-      else
-        oscmsgout('FE','/vis/set/pos',{int32(i-1),int32(j-1),int32(tlpos(1)-1),int32(tlpos(2)-1),int32(brpos(1)-tlpos(1)+1),int32(brpos(2)-tlpos(2)+1)});   % On the wire uses 0-based indexing
-      end
-    end
-    pause(1);   % Try not to overrun UDP stack
-  end
-  oscmsgout('FE','/vis/start',{});   % (re)start it
-end
-
 
 if args.stats
   % Request stats from frontend
-  rcvr(p,'flush');   % Flush any queued data
+  rcvr(p,'flush',true,'skipstale',false);   % Flush any queued data (turn off skipstale to avoid confusing messages)
   fprintf('Sending request for stats\n');
   oscmsgout('FE','/vis/get/corr',{int32(1)});
   oscmsgout('FE','/vis/get/refimage',{int32(1)});
@@ -65,7 +15,7 @@ if args.stats
   % Might be a few without these fields
   % Could also be a race condition where only some of the above fields are filled, and the rest are in the next frame
   for i=1:3
-    vis=rcvr(p)
+    vis=rcvr(p,'skipstale',false)
     if isfield(vis,'im')
       if ~isfield(vis,'refim') || ~isfield(vis,'corr')
         break;
@@ -77,17 +27,13 @@ if args.stats
   return;
 end
 
-if isempty(visserver)
-  error('Not connected to server; use startfrontend()\n');
-end
-
 vis=[];
 frame=-1;
 while true
   if args.nowait || args.flush
-    m=getnextfrontendmsg(0.0);
+    m=oscmsgin('MPV',0.0);
   else
-    m=getnextfrontendmsg(1.0);
+    m=oscmsgin('MPV',args.timeout);
   end
   if isempty(m)
     if args.flush
@@ -101,16 +47,19 @@ while true
       if args.debug
         fprintf('No frame available\n');
       end
-    else
-      if args.debug
-        fprintf('Partial frame\n');
-      end
+      break;   % Return empty vis[]
     end
-    break;
+    if args.debug
+      fprintf('Partial frame\n');
+    end
+    % Wait a little longer to get a full frame
+    if args.timeout==0.0
+      args.timeout=0.001;  
+    end
   end
   if strcmp(m.path,'/vis/beginframe')
     if frame~=-1
-      fprintf('Missed /endframe messages, skipping to next frame\n');
+      fprintf('Missed /vis/endframe messages, skipping to next frame\n');
     end
     frame=m.data{1};
     if args.debug
@@ -130,8 +79,26 @@ while true
           vis=[];
           fprintf('Skipping frame to flush buffers\n');
         else
-          vis.when=max(vis.acquired);
-          break;  % Done
+          if args.skipstale
+            vis.when=max(vis.acquired);
+            peek=oscmsgin('MPV',0.0,true);   % Peak at next messages
+            havemore=false;
+            for i=1:length(peek)
+              if strcmp(peek{i}.path,'/vis/endframe')
+                fprintf('Skipping visframe %d since another /vis/endframe is queued\n', frame);
+                havemore=true;
+                break;
+              end
+            end
+            if havemore
+              frame=-1;
+              vis=[];
+            else
+              break;  % Done
+            end
+          else
+            break;
+          end
         end
       else
         fprintf('End of frame without having received data from cameras %s, waiting for next frame\n', shortlist(find(~filled)));
@@ -156,7 +123,7 @@ while true
         vis.frame=frame;
         vis.acquired(c)=(((sec+usec/1e6)/3600-7)/24)+datenum(1970,1,1);   % Convert to matlab datenum (assuming 7 hours offset from GMT)
         if args.debug
-          fprintf('Got frame %d, camera %d with total latency of %.3f sec\n', frame, c, (now-vis.acquired(c))*24*3600);
+          fprintf('Got visframe %d, camera %d with total latency of %.3f sec\n', frame, c, (now-vis.acquired(c))*24*3600);
         end
       else
         blob=m.data{5};

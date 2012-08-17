@@ -5,6 +5,7 @@ function info=app_cseq(info,op)
   if ~isfield(info,'seq') || strcmp(op,'start')
     info.seq=struct('nsteps',16,'npitchsteps',16,'minr',0.1,'maxr',2.5,'touchsteps',16,'touchpitches',16);
     info.seq.pitches=makescale(info.scales{info.scale},info.keys{info.key},info.seq.npitchsteps);
+    info.max=1;   % Need MAX for this
   end
 
   if strcmp(op,'start') || strcmp(op,'stop')

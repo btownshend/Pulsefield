@@ -159,9 +159,9 @@ int CamIO::reset() {
     if (isRunning()) {
 	if (close() < 0)
 	    return -1;
-	if (open() < 0)
-	    return -1;
     }
+    if (open() < 0)
+	return -1;
     return 0;
 }
 

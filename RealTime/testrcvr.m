@@ -1,7 +1,9 @@
 % Test C++ frontend 
 % 
 % Initialize frontend
-rcvr(p,'init');
+if ~fectl(p,'start')
+  error('Failed to start frontend\n');
+end
 
 % Turn on LEDs
 s1=arduino_ip();

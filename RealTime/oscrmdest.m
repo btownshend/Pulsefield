@@ -1,29 +1,20 @@
 % Remove an OSC destination
 function oscrmdest(urlOrIdent)
-global oscsetup;
-if isempty(oscsetup) || ~isfield(oscsetup,'clients')
+global oscclients;
+if isempty(oscclients)
   return;
 end
 
-if nargin==0
-  if ~isempty(oscsetup.clients)
-    fprintf('Removed all %d OSC clients\n',length(oscsetup.clients));
-    oscsetup.clients=[];
-  end
-  return;
-end
-
-clients=oscsetup.clients;
-toremove=zeros(1,length(clients));
-for c=1:length(clients)
-  if strcmp(clients(c).url,urlOrIdent) || strcmp(clients(c).ident,urlOrIdent)
+toremove=zeros(1,length(oscclients));
+for c=1:length(oscclients)
+  if nargin==0 || strcmp(oscclients(c).url,urlOrIdent) || strcmp(oscclients(c).ident,urlOrIdent)
     toremove(c)=1;
-    osc_free_address(clients(c).addr);
+    osc_free_address(oscclients(c).addr);
+    fprintf('Removed OSC client %s@%s\n',oscclients(c).ident,oscclients(c).url);
   end
 end
-if ~any(toremove)
-  fprintf('Unable to remove OSC destination %s - not found\n', urlOrIdent);
+if any(toremove)
+  oscclients=oscclients(~toremove);
 else
-  fprintf('Removed OSC client %s@%s\n',sum(toremove),clients(c).ident,clients(c).url);
-  oscsetup.clients=clients(~toremove);
+  fprintf('Unable to remove OSC destination %s - not found\n', urlOrIdent);
 end

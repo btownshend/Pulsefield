@@ -9,3 +9,4 @@ FrontEnd/frontend.dSYM
 Makefile.bak
 \.mat
 \.class
+.DS_Store
