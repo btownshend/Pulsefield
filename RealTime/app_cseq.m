@@ -1,5 +1,5 @@
 % Circular step sequencer
-function info=app_cseq(info,op)
+function info=app_cseq(p,info,op)
   debug=true;
   
   if ~isfield(info,'seq') || strcmp(op,'start')

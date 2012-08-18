@@ -42,7 +42,7 @@ function ledserver(p)
   currapp=apps(2);
 
   info=struct('state',zeros(numled(),3),'mix',zeros(numled(),3),'prevstate',[],'layout',p.layout,'vis',[],'hypo',[],'running',true,...
-              'colors',{p.colors},'back',struct('maxlev',1,'minlev',0.2,'state',zeros(numled(),3)),'maxtransport',{{0,0,0,0,4,4}});
+              'colors',{p.colors},'back',struct('maxlev',1,'minlev',0.2,'state',zeros(numled(),3)),'maxtransport',{{1,1,1,120,4,4}});
   latency=[];
   refresh=true;
   msgin=[];
@@ -52,7 +52,7 @@ function ledserver(p)
     maxwait=max(0.0,(lastupdate-now)*24*3600+period);
     m=oscmsgin('LD',maxwait);
     if ~isempty(m)
-      if ~strncmp(m.path,'/vis',4) && ~strcmp(m.path,'/pf/update')
+      if ~strncmp(m.path,'/vis',4) && ~strcmp(m.path,'/pf/update') && ~strcmp(m.path,'/max/transport')
         fprintf('Got message: %s\n', formatmsg(m.path,m.data));
       end
       if strncmp(m.path,'/pf/dest/add/port',17)
@@ -407,6 +407,11 @@ function info=fg_cseq(info)
   end
   % Relative position of sequencer
   relpos=(info.maxtransport{2}-1+info.maxtransport{3}/480)/info.maxtransport{6};
+  if relpos<0 || relpos >1.0
+    fprintf('Bad max transport relative position: %f\n',relpos);
+    info.maxtransport
+    relpos=0.0;
+  end
   binnum=floor(relpos*16)+1;
   bin(binnum,:)=[1 1 1];  % Some color distinct from the users
   % Normalize bins
@@ -415,7 +420,7 @@ function info=fg_cseq(info)
       bin(i,:)=127/max(bin(i,:))*bin(i,:);
     end
   end
-  fprintf('bins=%s\n', sprintf('[%d,%d,%d] ',bin'));
+  %fprintf('bins=%s\n', sprintf('[%d,%d,%d] ',bin'));
   % Set state based on bins
   langle=cart2pol(info.layout.lpos(:,1),info.layout.lpos(:,2));
   langle=mod(langle+2*pi,2*pi);

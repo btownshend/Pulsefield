@@ -1,11 +1,11 @@
 % Hotspots app
-function info=app_grid(info,op)
+function info=app_grid(p,info,op)
 debug=true;
 if ~isfield(info,'grid')|| strcmp(op,'start')
-  minx=min(info.p.layout.active(:,1))+0.1;
-  maxx=max(info.p.layout.active(:,1))-0.5;
-  miny=min(info.p.layout.active(:,2))+0.1;
-  maxy=max(info.p.layout.active(:,2))-0.1;
+  minx=min(p.layout.active(:,1))+0.1;
+  maxx=max(p.layout.active(:,1))-0.5;
+  miny=min(p.layout.active(:,2))+0.1;
+  maxy=max(p.layout.active(:,2))-0.1;
   nx=8;
   ny=9;
   dx=(maxx-minx)/nx;
@@ -15,7 +15,7 @@ if ~isfield(info,'grid')|| strcmp(op,'start')
   for i=nx:-1:1
     for j=1:ny
       pos=[minx+(i-0.5)*dx,miny+(j-0.5)*dy];
-      if inpolygon(pos(1),pos(2),info.p.layout.active(:,1),info.p.layout.active(:,2))
+      if inpolygon(pos(1),pos(2),p.layout.active(:,1),p.layout.active(:,2))
         position(end+1,:)=pos;
       end
       ind=ind+1;
@@ -23,26 +23,34 @@ if ~isfield(info,'grid')|| strcmp(op,'start')
   end
   cell=1:size(position,1);
   pitch=cell+round(64-mean(cell));
-  info.grid=struct('maxcliptime',5.0, 'hysteresis',hysteresis,'minx',minx,'maxx',maxx,'miny',miny,'maxy',maxy,'nx',nx,'ny',ny,'position',position,'pitch',pitch,'last',struct('cell',{},'id',{},'triggertime',{},'offtime',{}));
+  info.grid=struct('maxcliptime',5.0, 'hysteresis',hysteresis,'minx',minx,'maxx',maxx,'miny',miny,'maxy',maxy,'nx',nx,'ny',ny,'position',position,'pitch',pitch,'active',struct('cell',{},'id',{},'triggertime',{},'offtime',{}));
   % Initialize interface
   for channel=1:16
     oscmsgout('TO',sprintf('/grid/channel/%d/label/color',channel),{'red'});
     oscmsgout('TO',sprintf('/grid/channel/%d/pitch',channel),{''});
-  end    
+  end  
+  % Make sure all Ableton channels are off
+  oscmsgout('AL','/live/stop',{});
+  for i=1:length(info.channels)
+    oscmsgout('AL','/live/stop/track',{int32(i-1)});
+  end
 end
 
 if strcmp(op,'stop')
   % Turn off everything
-  for channel=1:16
+  oscmsgout('AL','/live/stop',{});
+  for channel=1:length(info.channels)
     oscmsgout('TO',sprintf('/grid/channel/%d/label/color',channel),{'red'});
     oscmsgout('TO',sprintf('/grid/channel/%d/pitch',channel),{''});
+    % Make sure all Ableton channels are off
+    oscmsgout('AL','/live/stop/track',{int32(channel-1)});
   end
 end
 
 if strcmp(op,'plot')
   setfig('grid');
   clf;
-  plotlayout(info.p.layout,0);
+  plotlayout(p.layout,0);
   hold on;
   dx=(info.grid.maxx-info.grid.minx)/info.grid.nx;
   dy=(info.grid.maxy-info.grid.miny)/info.grid.ny;
@@ -81,68 +89,68 @@ for i=1:length(info.updates)
   pos=info.snap.hypo(ids==id).pos;
   dist=sqrt((pos(1)-info.grid.position(:,1)).^2 + (pos(2)-info.grid.position(:,2)).^2);
   [newdist,newcell]=min(dist);
-  last=info.grid.last([info.grid.last.id]==id);
-  if isempty(last)       % Since this is an update, there was already an entry
+  active=info.grid.active([info.grid.active.id]==id);
+  if isempty(active)       % Since this is an update, there was already an entry
     % This could occur if we switched to app_grid in midstream so there were already entries not processed here
-    fprintf('app_grid: len(last.cell)~=1, last.cell=%s\n', sprintf('%d ', last.cell));
-    info.grid.last=[info.grid.last,struct('cell',newcell,'id',id,'triggertime',now,'offtime',now)];
+    fprintf('app_grid: len(active.cell)~=1, active.cell=%s\n', sprintf('%d ', active.cell));
+    info.grid.active=[info.grid.active,struct('cell',newcell,'id',id,'triggertime',now,'offtime',now)];
     % No notes yet, only if they move to a new grid
     continue;
   end
-  if length(last)==1 && last.cell==newcell
+  if length(active)==1 && active.cell==newcell
     % No change
     continue;
   end
   % Check if we've moved cleanly to another grid (to avoid oscillating near boundary)
-  lastdist=norm(info.grid.position(last.cell,:)-pos);
-  if (lastdist-newdist)/2 < info.grid.hysteresis
+  activedist=norm(info.grid.position(active.cell,:)-pos);
+  if (activedist-newdist)/2 < info.grid.hysteresis
     % Not far enough
-    fprintf('Sticking at %d (d=%.2f) instead of %d (%.2f)\n',  last.cell, lastdist, newcell, newdist);
-    newcell=last.cell;
+    fprintf('Sticking at %d (d=%.2f) instead of %d (%.2f)\n',  active.cell, activedist, newcell, newdist);
+    newcell=active.cell;
   end
-  if newcell~=last.cell
-    info.grid.last([info.grid.last.id]==id)=struct('cell',newcell,'id',id,'triggertime',now,'offtime',nan);
+  if newcell~=active.cell
+    info.grid.active([info.grid.active.id]==id)=struct('cell',newcell,'id',id,'triggertime',now,'offtime',nan);
     channel=id2channel(info,id);
-    lastpitch=info.grid.pitch(last.cell);
+    activepitch=info.grid.pitch(active.cell);
     newpitch=info.grid.pitch(newcell);
     if info.max
-      oscmsgout('MAX','/pf/pass/noteoff',{int32(id),int32(lastpitch),int32(channel)});
+      oscmsgout('MAX','/pf/pass/noteoff',{int32(id),int32(activepitch),int32(channel)});
       oscmsgout('MAX','/pf/pass/noteon',{int32(id),int32(newpitch),int32(info.velocity),int32(info.duration),int32(channel)});
     end
     oscmsgout('TO',sprintf('/grid/channel/%d/pitch',channel),{sprintf('%d:%d(%s)',newcell,newpitch,midinotename(newpitch))});
     oscmsgout('TO',sprintf('/grid/channel/%d/label/color',channel),{'green'});
     if info.ableton
-      pan=pos(2)/max(abs(info.p.layout.active(:,2)));
-      cliptrigger(channel-1,newcell,1.0,pan);
+      pan=pos(2)/max(abs(p.layout.active(:,2)));
+      cliptrigger(channel-1,newcell-1,1.0,pan);
     end
     if debug
-      fprintf('ID %d (channel %d) moved from grid %d (%.2f) to grid %d (%.2f)\n', id, channel, last.cell, lastdist, newcell, newdist);
+      fprintf('ID %d (channel %d) moved from grid %d (%.2f) to grid %d (%.2f)\n', id, channel, active.cell, activedist, newcell, newdist);
     end
   end
 end
 
 for i=1:length(info.exits)
   id=info.exits(i);
-  last=info.grid.last([info.grid.last.id]==id);
-  lastpitch=info.grid.pitch(last.cell);
+  active=info.grid.active([info.grid.active.id]==id);
+  activepitch=info.grid.pitch(active.cell);
   channel=id2channel(info,id);
   oscmsgout('TO',sprintf('/grid/channel/%d/pitch',channel),{''});
   oscmsgout('TO',sprintf('/grid/channel/%d/label/color',channel),{'red'});
   if info.max
-    oscmsgout('MAX','/pf/pass/noteoff',{int32(id),int32(lastpitch),int32(channel)});
+    oscmsgout('MAX','/pf/pass/noteoff',{int32(id),int32(activepitch),int32(channel)});
   end
   if info.ableton
     oscmsgout('AL','/live/stop/track',{int32(channel-1)});
   end
-  info.grid.last=info.grid.last([info.grid.last.id]~=id);
+  info.grid.active=info.grid.active([info.grid.active.id]~=id);
   if debug
-    fprintf('ID %d exitted from grid %d\n', id, last.cell);
+    fprintf('ID %d exitted from grid %d\n', id, active.cell-1);
   end
 end
 
 for i=1:length(info.entries)
   id=info.entries(i);
-  if any([info.grid.last.id]==id)
+  if any([info.grid.active.id]==id)
     fprintf('Already have id %d inside\n', id);
     continue;
   end
@@ -158,17 +166,17 @@ for i=1:length(info.entries)
     oscmsgout('MAX','/pf/pass/noteon',{int32(id),int32(newpitch),int32(info.velocity),int32(info.duration),int32(channel)});
   end
   if info.ableton
-    pan=pos(2)/max(abs(info.p.layout.active(:,2)));
-    cliptrigger(channel-1,newcell,1.0,pan);
+    pan=pos(2)/max(abs(p.layout.active(:,2)));
+    cliptrigger(channel-1,newcell-1,1.0,pan);
   end
-  info.grid.last=[info.grid.last,struct('cell',newcell,'id',id,'triggertime',now,'offtime',nan)];
+  info.grid.active=[info.grid.active,struct('cell',newcell,'id',id,'triggertime',now,'offtime',nan)];
   if debug
     fprintf('ID %d entered to grid %d\n', id, newcell);
   end
 end
 
 if length(info.exits)>0 && isempty(info.entries) && isempty(info.updates)
-  % Last person exitted
+  % Active person exitted
   fprintf('Last person exitted grid\n');
   if info.ableton
     oscmsgout('AL','/live/stop',{});
@@ -177,13 +185,13 @@ end
 
 if info.ableton
   % Terminate clips after a certain time
-  for i=1:length(info.grid.last)
-    l=info.grid.last(i);
+  for i=1:length(info.grid.active)
+    l=info.grid.active(i);
     if isnan(l.offtime) && (now-l.triggertime)*24*3600>info.grid.maxcliptime
       channel=id2channel(info,l.id);
       oscmsgout('AL','/live/stop/track',{int32(channel-1)});
       oscmsgout('TO',sprintf('/grid/channel/%d/pitch',channel),{''});
-      info.grid.last(i).offtime=now;
+      info.grid.active(i).offtime=now;
       if debug
         fprintf('Ended clip on track %d\n', channel);
       end
@@ -203,9 +211,10 @@ end
 if nargin<4
   pan=0.0;
 end
-oscmsgout('AL','/live/play/clip',{int32(track),int32(clip)});
 oscmsgout('AL','/live/volume',{int32(track),volume});
 oscmsgout('AL','/live/pan',{int32(track),pan});
+oscmsgout('AL','/live/play/clip',{int32(track),int32(clip)});
+oscmsgout('AL','/live/play/track',{int32(track)});
 
 % Map grid cell to AL scene
 function scene=cell2scene(info,cell)

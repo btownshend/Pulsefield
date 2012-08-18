@@ -1,5 +1,5 @@
 % Hotspots app
-function info=app_hotspots(info,op)
+function info=app_hotspots(p,info,op)
 if ~isfield(info,'hotspots')|| strcmp(op,'start')
   nhotspots=10;
   info.hotspots.radius=1.2;
@@ -9,7 +9,7 @@ end
 if strcmp(op,'plot')
   setfig('hotspots');
   clf;
-  plotlayout(info.p.layout,0);
+  plotlayout(p.layout,0);
   hold on;
   plot(info.hotspots.pos(:,1),info.hotspots.pos(:,2),'*');
 end

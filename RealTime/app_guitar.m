@@ -1,5 +1,5 @@
 % Guitar app
-function info=app_guitar(info,op)
+function info=app_guitar(p,info,op)
 if strcmp(op,'start')
   % Change to guitar sounds
   for i=1:length(info.pgm)
@@ -41,7 +41,7 @@ for i=1:length(info.snap.hypo)
         if info.juststarted
           fprintf('Clearing figure\n');
           clf; 
-          plotlayout(info.p.layout,0);
+          plotlayout(p.layout,0);
           hold on;
           for j=1:length(frety)
             plot([firststringx,laststringx],[frety(j),frety(j)],'k');
@@ -52,7 +52,7 @@ for i=1:length(info.snap.hypo)
           end
           info.juststarted=false;
         end
-        col=id2color(info.snap.hypo(i).id,info.p.colors);
+        col=id2color(info.snap.hypo(i).id,p.colors);
         plot(ppos(1),ppos(2),'o','Color',col);
         plot([ppos(1),pos(1)],[ppos(2),pos(2)],'-','Color',col);
         plot(pos(1),pos(2),'x','Color',col);

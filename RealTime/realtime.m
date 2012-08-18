@@ -53,10 +53,10 @@ fprintf('Ready\n');
 samp=0;
 starttime=now;
 suppressuntil=0;
-flags=struct('needcal',false,'quit',false);
 idlecnt=0;
 prevsnap=[];
-while ~flags.quit
+info=infoinit();
+while ~info.quit
   if idlecnt==0
     timeout=0.0;
   else
@@ -118,36 +118,33 @@ while ~flags.quit
     if ptd
       fprintf(' (%d)\n',samp);
     end
+
+    if ~isempty(prevsnap)
+      % Make sure that if it is called twice without a vis update, that prevsnap==snap
+      % TODO - break out update handling from incoming message handling
+      info=oscupdate(recvis.p,info,samp,snap,prevsnap);
+    else
+      info=oscupdate(recvis.p,info,samp,snap);
+    end
+    prevsnap=snap;
   end
   
-  if samp>1
-    % Make sure that if it is called twice without a vis update, that prevsnap==snap
-    % TODO - break out update handling from incoming message handling
-    flags=oscupdate(recvis.p,samp,snap,prevsnap);
-  else
-    flags=oscupdate(recvis.p,samp,snap);
-  end
-  prevsnap=snap;
-
+  info=oscincoming(recvis.p,info);
+  
   if ~isempty(vis)
     snap.whendone2=now;
     recvis.snap(samp)=snap;
   end
 
-  if flags.needcal
+  if info.needcal
     fprintf('Recalibrating...');
     [~,recvis.p]=getvisible(recvis.p,'init');
-    flags.needcal=false;
+    info.needcal=false;
   end
-
-
-  % LED updates handled by LedServer now
-  % updateleds(recvis.p,snap);
-  % visleds(recvis.p,vis);
 end
 
 % Turn off any remaining notes
-oscupdate(recvis.p,samp);
+oscupdate(recvis.p,info,samp);
 
 % Turn off LEDs (in case LED Server not running)
 setled(s1,-1,[0,0,0],1);show(s1);

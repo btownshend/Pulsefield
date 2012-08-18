@@ -7,10 +7,10 @@
 % log - true to log message using osclog() (default: false)
 function ok=oscmsgout(ident,path,data,debug,log)
 if nargin<4
-  debug=true;
+  debug=false;
 end
 if nargin<5
-  log=false; 
+  log=true; 
 end
 
 global oscclients;

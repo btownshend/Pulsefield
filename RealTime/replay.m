@@ -46,6 +46,7 @@ end
 samp=1;
 starttime=now;
 suppressuntil=0;
+info=infoinit();
 while samp<=min(length(recvis.vis),length(recvis.snap))
   vis=recvis.vis(samp);
   simulskew = now-vis.whenrcvd;     % Delay in simulation from when it really happened
@@ -154,10 +155,12 @@ while samp<=min(length(recvis.vis),length(recvis.snap))
     fprintf('(%d) \n',samp);
   end
   
+  info=oscincoming(recvis.p,info);
+  
   if samp>1
-    flags=oscupdate(recvis.p,samp,snap{samp},snap{samp-1});
+    info=oscupdate(recvis.p,info,samp,snap{samp},snap{samp-1});
   else
-    flags=oscupdate(recvis.p,samp,snap{samp});
+    info=oscupdate(recvis.p,info,samp,snap{samp});
   end
 
   snap{samp}.whendone2=now-simulskew;
@@ -170,7 +173,7 @@ while samp<=min(length(recvis.vis),length(recvis.snap))
 end
 
 % Turn off any remaining notes
-oscupdate(recvis.p,samp);
+oscupdate(recvis.p,info,samp);
 
 % Copy in snap to new version
 fprintf('Copying new analysis into replayrecvis\n');
