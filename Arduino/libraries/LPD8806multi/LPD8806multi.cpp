@@ -13,7 +13,7 @@ static const int nports=3;
 static const uint8_t datapins[nstrips]={49,47,45,43,37,35,33,41};
 static const uint8_t clkpins[nstrips]= {48,46,44,42,36,34,32,40};
 static const uint8_t ports[nstrips]={0,0,0,0,1,1,1,2};
-TODO -- haven't fully modified code to support 8 strips
+TODO -- havent fully modified code to support 8 strips
 #else
 static const int nports=2;
 // Masks for direct control of pins
@@ -98,10 +98,10 @@ void LPD8806multi::writeLatch() {
 	*portAddrs[i] &= ~datapinmaskperport[i]; // Data is held low throughout
 
     for(uint16_t i = 8 * n; i>0; i--) {
-	for (int j=0;j<nports;j++) {
-	    *portAddrs[j] |=  clkpinmaskperport[j];
-	    *portAddrs[j] &= ~clkpinmaskperport[j];
-	}
+	*portAddrs[0] |=  clkpinmaskperport[0];
+	*portAddrs[0] &= ~clkpinmaskperport[0];
+	*portAddrs[1] |=  clkpinmaskperport[1];
+	*portAddrs[1] &= ~clkpinmaskperport[1];
     }
 }
 
@@ -128,9 +128,11 @@ void LPD8806multi::show(void) {
 	    *portAddrs[0] = ((p0&0x80)?datapinmask[0]:0) |
 		((p1 & 0x80)?datapinmask[1]:0) |
 		((p2 & 0x80)?datapinmask[2]:0) |
-		((p3 & 0x80)?datapinmask[3]:0) |
-		clkpinmaskperport[0];
-	    *portAddrs[0] &= ~clkpinmaskperport[0];
+		((p3 & 0x80)?datapinmask[3]:0) ;
+	    // If the clock pin is raised at the same time, then clock skew on long cables can cause bad data latching
+	    //		clkpinmaskperport[0];
+	    *portAddrs[0] |= clkpinmaskperport[0];
+	    //	    *portAddrs[0] &= ~clkpinmaskperport[0];   // Don't need to do this -- will be lowered with next data load
 	    p0<<=1;
 	    p1<<=1;
 	    p2<<=1;
@@ -138,9 +140,10 @@ void LPD8806multi::show(void) {
 
 	    *portAddrs[1]= ((p4 & 0x80)?datapinmask[4]:0) |
 		((p5 & 0x80)?datapinmask[5]:0) |
-		((p6 & 0x80)?datapinmask[6]:0) | 
-		clkpinmaskperport[1];
-	    *portAddrs[1] &= ~clkpinmaskperport[1];
+		((p6 & 0x80)?datapinmask[6]:0)  ;
+	    // clkpinmaskperport[1];
+	    *portAddrs[1] |= clkpinmaskperport[1];
+	    //*portAddrs[1] &= ~clkpinmaskperport[1];   // Don't need to -- will be lowered with next data load
 	    p4<<=1;
 	    p5<<=1;
 	    p6<<=1;

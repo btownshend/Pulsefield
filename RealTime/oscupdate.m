@@ -28,6 +28,9 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
   end
 
   if info.refresh
+    fprintf('Refreshing view of Ableton Live\n');
+    info.al.update();
+    
     fprintf('Sending refresh to OSC listeners\n');
     info.refresh=false;
     active=single(p.layout.active);
@@ -64,8 +67,8 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
       oscmsgout(p.oscdests,'/pf/set/npeople',{int32(length(snap.hypo))});
     end
 
-    for channel=1:length(info.channels)
-      id=info.channels(channel);
+    for channel=1:info.cm.numchannels()
+      id=info.cm.channel2id(channel);
       % fprintf('Channel %d, id=%d\n', channel, id);
       if id>0
         oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{1});
@@ -131,22 +134,13 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     
     for i=info.entries
       oscmsgout(p.oscdests,'/pf/entry',{int32(sampnum),elapsed,int32(i)});
-      if ~isempty(find(info.channels==i))
-        fprintf('Channel already assigned to id %d -- ignoring duplicate entry\n', i);
-        continue;
-      end
-      channel=find(info.channels==0,1);
+      channel=info.cm.newchannel(i);
       if isempty(channel)
         fprintf('No more channels available to allocate to ID %d\n', i);
       else
         oscmsgout('TO',sprintf('/touchosc/loc/%d/color',channel),{col2touchosc(id2color(i,p.colors))});
         oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{1});
         oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{num2str(i)});
-        info.channels(channel)=i;
-        % fprintf('Set id %d to channel %d, channels now = %s\n', i, channel, sprintf('%d ',info.channels));
-        if info.channels(end)>0
-          keyboard;
-        end
       end
     end
 
@@ -161,9 +155,9 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
       sametnum=find(h.tnum==[snap.hypo.tnum]);
       groupid=snap.hypo(min(sametnum)).id;
       % TODO - should send to all destinations except TO
-      oscmsgout('LD','/pf/update',{int32(sampnum), elapsed,int32(h.id),h.pos(1),h.pos(2),h.velocity(1),h.velocity(2),h.majoraxislength,h.minoraxislength,int32(groupid),int32(length(sametnum))});
+      oscmsgout({'LD','OSC'},'/pf/update',{int32(sampnum), elapsed,int32(h.id),h.pos(1),h.pos(2),h.velocity(1),h.velocity(2),h.majoraxislength,h.minoraxislength,int32(groupid),int32(length(sametnum))});
       xypos=h.pos ./max(abs(p.layout.active));
-      channel=id2channel(info,h.id);
+      channel=info.cm.id2channel(h.id);
       oscmsgout('TO',sprintf('/touchosc/loc/%d',channel),{xypos(2),xypos(1)});
     end
 
@@ -190,12 +184,11 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     % Need to handle exits last since app.fn may have needed to know which channel the id was on
     for i=info.exits
       oscmsgout(p.oscdests,'/pf/exit',{int32(sampnum),elapsed,int32(i)});
-      channel=id2channel(info,i);
+      channel=info.cm.id2channel(i);
       %        oscmsgout('TO',sprintf('/touchosc/loc/%d/color',channel),{'red'});
       oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{0});
       oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{''});
-      info.channels(channel)=0;
-      % fprintf('Removed id %d from channel %d, channels now = %s\n', i, channel, sprintf('%d ',info.channels))
+      info.cm.deleteid(i);
     end
   end
   info.juststarted=false;

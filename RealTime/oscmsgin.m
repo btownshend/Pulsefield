@@ -46,16 +46,21 @@ end
 
 if isempty(oscservers(svrind).msgqueue)
   % Get some more messages, timeout after given time
+  tic
   oscservers(svrind).msgqueue=osc_recv(oscservers(svrind).addr,timeout);
+  el=toc;
   if ~iscell(oscservers(svrind).msgqueue)
     % osc_recv returns 1 entry as a struct instead of a cell array
+    if debug
+      fprintf('Restructured message\n');
+    end
     oscservers(svrind).msgqueue={oscservers(svrind).msgqueue};
   end
   % Is it still empty?
   if isempty(oscservers(svrind).msgqueue)
     if debug
       if timeout>0
-        fprintf('No messages available after timeout of %.2f seconds\n', timeout);
+        fprintf('No messages available after timeout of %.2f (%.2f) seconds\n', timeout,el);
       else
         fprintf('No messages available\n');
       end

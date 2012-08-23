@@ -56,6 +56,7 @@ while true
     if args.timeout==0.0
       args.timeout=0.001;  
     end
+    continue;
   end
   if strcmp(m.path,'/vis/beginframe')
     if frame~=-1
@@ -154,7 +155,12 @@ while true
         vis.frame{c}=imread(filename);
       else
         for retry=1:3
-          fd=fopen(filename,'r');
+          [fd,errmsg]=fopen(filename,'r');
+          if fd==-1
+              fprintf('Unable to open %s: %s\n', filename,errmsg);
+              rawimage=[];
+              break;
+          end
           assert(type(1)=='b' || type(1)=='f');
           if type(1)=='b'
             rawimage=fread(fd,'*uint8');

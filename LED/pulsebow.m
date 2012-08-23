@@ -1,5 +1,5 @@
-%s1=arduino_ip(1);
-pperiod=0.3;  % Period of pulsing (in seconds)
+s1=arduino_ip(1);
+pperiod=4;  % Period of pulsing (in seconds)
 cperiod=20;   % Period of color rotation
 pspatial=250;  % Spatial period of pulsing
 cspatial=20000;  % Spatial period of color
@@ -21,7 +21,7 @@ while true
   col=(sin(cphase)+1)/2;
   lev=((amp.*col).^2*.97+.03) * 127;   % Response is nonlinear (approx squared)
   fprintf('t=%.1f, phase=%.0f, amp(1,:)=%.2f %.2f %.2f,lev=%.0f %.0f %.0f\n',t(1,1),phase(1,1)*180/pi,amp(1,:),lev(1,:));
-  setallleds(s1,lev,1);
+  setallleds(s1,lev);
   show(s1,dt);   % Show for dt seconds
   sync(s1);
   t=t+dt;

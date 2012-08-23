@@ -32,7 +32,7 @@ elseif strcmp(op,'start')
   else
     [frontendhost,~]=getsubsysaddr('FE');
     % Start frontend
-    cmd=sprintf('ssh %s mv /tmp/frontend.log /tmp/frontend.log.old; /Users/bst/DropBox/PeopleSensor/src/FrontEnd/frontend %d %d >/tmp/frontend.log 2>&1 & sleep 1; cat /tmp/frontend.log; ', frontendhost, length(p.camera), length(p.led));
+    cmd=sprintf('ssh %s "[ -r /tmp/frontend.log ] && mv /tmp/frontend.log /tmp/frontend.log.old; /Users/bst/DropBox/PeopleSensor/src/FrontEnd/frontend %d %d >/tmp/frontend.log 2>&1 & sleep 1; cat /tmp/frontend.log; "', frontendhost, length(p.camera), length(p.led));
     fprintf('Running cmd: "%s"\n', cmd);
     [s,r]=system(cmd);
     fprintf('System response: %s\n\n', r);
@@ -68,8 +68,13 @@ elseif strcmp(op,'start')
     if isfield(p.camera(i),'viscache') && isfield(p.camera(i).viscache,'refim')
       oscmsgout('FE','/vis/set/updatetc',{ 0.0 });    % Turn off updates of reference image
       refim = im2single(p.camera(i).viscache.refim);
-      filename=sprintf('/tmp/refim_%d.raw',i);
-      fd=fopen(filename,'wb');
+      filename=sprintf('/tmp/setref_%.6f_%d.raw',(now-datenum(1970,1,1)+7/24)*24*3600,i);
+      [fd,errmsg]=fopen(filename,'wb');
+      if fd<0
+        fprintf('Unable to open %s for writing: %s\n', filename,errmsg);
+        ok=false;
+        return;
+      end
       fwrite(fd,permute(refim,[3,2,1]),'single');  % Write it in normal RGB order 
       fclose(fd);
       fprintf('Sending reference image to frontend in %s\n',filename);

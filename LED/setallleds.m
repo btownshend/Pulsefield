@@ -2,16 +2,15 @@
 % setallleds(s1,firstindex,color[],execute,unmapped)
 % s1-descriptor
 % color(N,3) - colors for each of numled() leds
-% execute - true to send to Arduino now (default true)
 % unmapped - true to NOT map to ordered LEDs (default false)
-function cmd=setallleds(s1,color,execute,unmapped)
+function cmd=setallleds(s1,color,unmapped)
 cmd=[];
 if nargin<3
-  execute=1;
+  unmapped=0;
 end
 
 % Map to correct physical led number
-if nargin>=4 && unmapped
+if unmapped
   fprintf('Unmapped\n');
   posmap=0:size(color,1)-1;
 else
@@ -31,6 +30,7 @@ nsent=0;
 while nsent<size(mcolor,1)
   send=min(size(mcolor,1)-nsent,255);
   pcmd=zeros(1,4+3*send,'uint8');
+  [cntr,sscmd]=syncsend(s1,1);
   pcmd(1)='F';
   pcmd(2)=bitand(nsent,255);
   pcmd(3)=bitshift(nsent,-8);
@@ -40,11 +40,16 @@ while nsent<size(mcolor,1)
   pcmd(ind+4)=mcolor(nsent+1:nsent+send,2);
   pcmd(ind+5)=mcolor(nsent+1:nsent+send,1);
   pcmd(ind+6)=mcolor(nsent+1:nsent+send,3);
-  cmd=[cmd,pcmd];
+  awrite(s1,[pcmd]);
+  cmd=[cmd,sscmd,pcmd];
+  % Lot of strange timing things here
+  % Not sending a sync for a few frames results in SLOWER overall speed
+  % Probably overrunning Arduino's WD5100's receive buffer (2048 bytes) (see Arduino.app/../w5100.h)
+  ok=syncwait(s1,cntr);
+  if ~ok
+    error('Failed sync wait');
+  end
   nsent=nsent+send;
 end
 
-if execute
-  awrite(s1,cmd);
-end
   

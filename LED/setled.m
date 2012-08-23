@@ -1,12 +1,16 @@
 % Turn on LEDs
-% setled(s1,index,color,execute)
+% setled(s1,index,color,execute,vgroup)
 % s1-descriptor
 % index-LED number(s) to turn on (-1 for all LEDs), a 2-element vector for a range, otherwise the LED numbers
 % LED number has 0-origin
+% vgroup - virtual LED group (0-normal use for PF, 1-unmapped, 2-entry left, 3-entry right)
 % Remapped to order the strip/leds around the pulsefield methodically (unless arg5 is true, then no mapping is done)
-function cmd=setled(s1,index,color,execute,unmapped)
+function cmd=setled(s1,index,color,execute,vgroup)
 if nargin<4
   execute=1;
+end
+if nargin<5
+  vgroup=0;
 end
 if length(index)==0
   return;
@@ -24,15 +28,29 @@ else
   elseif length(index)==2
     index=index(1):index(2);
   end
-  if nargin<5 || ~unmapped
+  if vgroup==0
     % Map index (clockwise sequential) to correct led number
     posmap=[480+(159:-1:0),320+(0:50),0+(159:-1:0),160+(0:159)];
     if max(index+1)>length(posmap) || min(index+1)<1
       error('Index out of range; should be 0..%d\n', length(posmap)-1);
     end
     index=sort(posmap(index+1));
-  else
+  elseif vgroup==1
     %fprintf('Not mapping IDs\n');
+  elseif vgroup==2
+    % Map index to left entry group (TODO-tune)
+    posmap=[480+(159:-1:100)];
+    if max(index+1)>length(posmap) || min(index+1)<1
+      error('Index out of range; should be 0..%d\n', length(posmap)-1);
+    end
+    index=sort(posmap(index+1));
+  elseif vgroup==3
+    % Map index to right entry group (TODO-tune)
+    posmap=[160+(109:159)];
+    if max(index+1)>length(posmap) || min(index+1)<1
+      error('Index out of range; should be 0..%d\n', length(posmap)-1);
+    end
+    index=sort(posmap(index+1));
   end
 
   i=1;

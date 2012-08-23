@@ -15,7 +15,7 @@ function ledserver(p)
     return;
   end
 
-  debug=1;
+  debug=0;
   ignores={};
 
   if ~oscloopback('LD')
@@ -30,7 +30,7 @@ function ledserver(p)
   oscmsgout('FE','/vis/dest/add/port',{myport},debug);
   oscmsgout('MPL','/pf/dest/add/port',{myport,'LD'},debug);
 
-  period=0.1;   % Update period
+  period=0.1;   % Update period (6 strips of LED's can update at 17.7/sec, so anything longer than this should be ok)
   lastupdate=0;
   apps=struct('name'  ,{'Visible',  'FollowPB',  'FollowWht',' CircSeq','Freeze'  },...
               'fn'    ,{@fg_visible,@fg_follow,  @fg_follow, @fg_cseq   ,@fg_freeze},...
@@ -46,7 +46,8 @@ function ledserver(p)
   latency=[];
   refresh=true;
   msgin=[];
-
+  avglatency=0;
+  
   while true
     % Receive any OSC messages
     maxwait=max(0.0,(lastupdate-now)*24*3600+period);
@@ -102,6 +103,7 @@ function ledserver(p)
       elseif strcmp(m.path,'/led/pause')
         info.running=false;
         fprintf('Stopped by %s\n', m.src);
+        arduino_close();
         refresh=true;
       elseif strcmp(m.path,'/led/resume')
         info.running=true;
@@ -130,9 +132,10 @@ function ledserver(p)
         info.vis(c,blob==2)=nan;
         acquired=(((sec+usec/1e6)/3600-7)/24)+datenum(1970,1,1);   % Convert to matlab datenum (assuming 7 hours offset from GMT)
         latency=(now-acquired)*24*3600;
-        if latency>0.4
-          fprintf('Warning: latency=%.2f seconds\n', latency);
+        if latency>2/15 || mod(frame,100)==0
+          fprintf('Camera %d, frame %d latency=%.0f milliseconds (avg =%.0f ms)\n', c, frame, latency*1000,avglatency*1000);
         end
+        avglatency=avglatency*0.99+latency*.01;
       elseif strcmp(m.path,'/pf/entry')
         fprintf('Entry %d\n', m.data{3});
         if isempty(info.hypo)
@@ -143,7 +146,7 @@ function ledserver(p)
         if ismember(m.data{3},ids)
           fprintf('Got entry for id %d, which was already inside\n',m.data{3});
         else
-          info.hypo=[info.hypo,struct('id',m.data{3},'pos',[nan,nan],'velocity',[nan,nan])];
+          info.hypo=[info.hypo,struct('id',m.data{3},'pos',[nan,nan],'velocity',[nan,nan],'entrytime',now)];
         end
       elseif strcmp(m.path,'/pf/exit')
         fprintf('Exit %d\n', m.data{3});
@@ -217,6 +220,7 @@ function ledserver(p)
     if info.running && (now-lastupdate)*3600*24>=period
       info.prevstate=info.state;
       info.mix=0*info.prevstate;   % Default to all background  (mix=0 -> background, mix=1 -> foreground)
+      info.state=info.mix;
       info=currapp.backfn(info);   % Compute background LED colors
       info=currapp.fn(info);   % Override with foreground effect
       if any(size(info.prevstate)~=size(info.state))
@@ -269,11 +273,15 @@ function ls_updateallleds(info)
   % Mix background and live state
   state=info.back.state.*(1-info.mix)+info.state.*info.mix;
 
-  cmd=setallleds(s1,state,0);
-  cmd=[cmd,'G'];  % Show()
-  awrite(s1,cmd);
-  if debug
-    fprintf('Updated all LEDs using %d bytes after wait of %.3f seconds\n',length(cmd),elapsed);
+  try
+    cmd=setallleds(s1,state,0);
+    cmd=[cmd,show(s1)];
+    if debug
+      fprintf('Updated all LEDs using %d bytes after wait of %.3f seconds\n',length(cmd),elapsed);
+    end
+  catch me
+    fprintf('Error during setallleds: %s\n', me.message);
+    % Ignore, let next update handle it
   end
 end
 
@@ -331,31 +339,48 @@ function info=fg_visible(info)
 end
 
 function info=fg_follow(info)
-  minradius=1;   % min radius where marker is on
-  maxleds=15;    % Number of LEDs in marker when close to edge
+  minradius=0.5;   % min radius where marker is on
+  maxleds=20;    % Number of LEDs in marker when close to edge
   awidthmax=(2*pi*48/50)/sum(~info.layout.outsider) * maxleds;
   meanradius=(max(info.layout.active(:,2))-min(info.layout.active(:,2)))/2;
   
-  info.state=info.mix;
-  
   for i=1:length(info.hypo)
     h=info.hypo(i);
+    % Color of marker lights (track people)
+    col=id2color(h.id,info.colors)*127;
+    % Check for burst on entry
+    dur=(now-h.entrytime)*24*3600;   % Time since entry
+    if  dur < 5
+      timeconst=3;  % Exponential decay of burst with this t/c
+      scale=exp(-dur/timeconst);
+      for j=1:3
+        info.state(:,j)=info.state(:,j)+col(j);
+      end
+      info.mix(:)=info.mix(:)+scale;
+    end
+
     pos=h.pos;
     % Angular width of person's marker
     awidth=awidthmax * min(1,(norm(pos)-minradius)/(meanradius-minradius));
 
-    % Color of marker lights (track people)
-    col=id2color(h.id,info.colors)*127;
     if norm(pos)>0.5   % At least .5m away from enter
       [angle,radius]=cart2pol(pos(:,1),pos(:,2));
       langle=cart2pol(info.layout.lpos(:,1),info.layout.lpos(:,2));
       indices = find(abs(langle-angle)<awidth/2 & ~info.layout.outsider);   % All LEDs inside active area, within awidth angle of person
                                                                             % fprintf('Angle=%.1f, RFrac=%.2f, NLed=%d\n', angle*360/pi, radius/meanradius,length(indices));
       for j=1:length(indices)
-        info.state(indices(j),:)=col;
-        info.mix(indices(j),:)=1;
+        info.state(indices(j),:)=info.state(indices(j),:)+col;
+        info.mix(indices(j),:)=info.mix(indices(j),:)+1;
       end
     end
+  end
+  % Renormalize any with mix > 1
+  mx=max(info.mix,[],2);
+  fmx=find(mx>1);
+  for ii=1:length(fmx)
+    i=fmx(ii);
+    %fprintf('Rescaling %d by %f\n', i, mx(i));
+    info.mix(i,:)=info.mix(i,:)/mx(i);
   end
 
   % Visual feedback of how many people are inside
@@ -370,7 +395,7 @@ function info=fg_follow(info)
     info.state(i,:)=id2color(ids(i),info.colors)*127;
     info.mix(i,:)=1;
   end
-  for i=length(ids)+1:6
+  for i=length(ids)+1:8
     info.state(i,:)=info.colors{1}*127;
     info.mix(i,:)=1;
   end

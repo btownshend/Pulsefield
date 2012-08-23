@@ -16,6 +16,14 @@ long nrcvd;
 void setup() {
     int i;
     
+    strip.init();
+    // Update the strip, to start they are all 'off'
+    show();
+    // Turn on one for power indication
+    strip.setPixelColor(0, strip.Color(0,127,0));
+    show();  
+    
+    
     // Setup serial port
     Serial.begin(115200);
     
@@ -43,22 +51,31 @@ void setup() {
 	}
     }
 
+    strip.setPixelColor(1, strip.Color(0,127,0));
+    show();  
+    
     // Setup ethernet
-    Ethernet.begin(mac);
+    IPAddress ip(192,168,0,154);
+    IPAddress gateway(192,168,0,1);
+    IPAddress subnet(255,255,255,0);
+    
+   Ethernet.begin(mac,ip,gateway,subnet);
+   //Ethernet.begin(mac);
+        strip.setPixelColor(2, strip.Color(0,127,0));
+
     //Ethernet.begin(mac, ip, gateway, subnet); //for manual setup
     server.begin();
+        strip.setPixelColor(3, strip.Color(0,127,0));
+
     Serial.print("Listening at ");
     Serial.print(Ethernet.localIP());
     Serial.print(" port: ");
     Serial.println(port);
   
-  
-    strip.init();
-    // Update the strip, to start they are all 'off'
-    show();
-    // Turn on one for power indication
-    strip.setPixelColor(0, strip.Color(0,127,0));
-    show();
+    strip.setPixelColor(4, strip.Color(0,127,0));
+    strip.setPixelColor(0, strip.Color(127,0,0));
+    show();  
+
 
     nrcvd=0;
 
@@ -91,7 +108,8 @@ void loop() {
 	static unsigned long lasttime=micros(), pause=0;
         uint8_t cmdbuf[20];
 	while (client.available() != 0) {
-	    unsigned int id,r,g,b,index,index2,i1,i1b,i2,i2b;
+	    unsigned int r,g,b,index,index2,i1,i1b,i2,i2b;
+            int id;
 	    // Get a command from host 
 	    int cmd=client.read();
 	    //Serial.print("Got command: ");
@@ -161,11 +179,11 @@ void loop() {
 	    case 'G':  // Go
 		if (pause>0 && micros()<lasttime+pause) {
 		    Serial.print("Pausing for ");
-		    Serial.println(pause-(micros()-lasttime));
+		    Serial.print(pause-(micros()-lasttime));
 		    Serial.print(" usec...");
 		    while (micros()<lasttime+pause)
 			;
-		    //clSerial.println("done");
+		    Serial.println("done");
 		}
 		lasttime=micros();
 		show();
@@ -217,12 +235,22 @@ void loop() {
 		nrcvd=0;
 		break;
 	    case 'V':   // Verify (Ack)
-		while (client.available()<1 && client.connected())
-		    ;
-		id=client.read();
+                {
+                  // Note: checking client.available() sometimes gives a count of 1, but a subsequent client.read() returns -1
+                  // There may be a race in WD ethernet code that causes subsequent arrival of data (was seeing 769 bytes when rechecking)
+                  // to temporarily make it look the queue is empty again
+		while ((id=client.read())< 0) {
+                  if (!client.connected()) {
+                      Serial.println("Client disconnect during V command");
+                      break;
+                  }
+                }
 		nrcvd++;
 		client.write('A');  // ACK
 		client.write(id);
+                //Serial.print('V');
+                //Serial.println(id);
+                }
 		break;
 	    } 
 	}

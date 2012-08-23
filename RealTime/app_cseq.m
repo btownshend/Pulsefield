@@ -69,7 +69,7 @@ function info=app_cseq(p,info,op)
     if isfinite(phase)
       velocity=info.velocity;
       duration=info.duration;
-      channel=id2channel(info,i);
+      channel=info.cm.id2channel(i);
       oscmsgout('MAX','/pf/pass/seqt',{'add','cseq',phase,'playmidinote',int32(i),int32(pitch), int32(velocity), int32(duration),  int32(channel) });
       tsmsg(info,pitchstep,step,1);
     end

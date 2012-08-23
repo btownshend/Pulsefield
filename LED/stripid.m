@@ -1,6 +1,6 @@
 % Check ID's of strips
 s1=arduino_ip(1);
-nstrip=4;
+nstrip=6;
 colnames={'red','green', 'blue','magenta','cyan','yellow','pinkish', 'white'};
 col={[1 0 0],[0 1 0],[0 0 1],[1 0 1],[0 1 1], [1 1 0], [1 0.5 0.5], [1 1 1]};
 clkpins=[48,46,44,42,36,34,32,40];

@@ -2,7 +2,7 @@
 
 function info=infoinit()
   % Setup info structure to pass things into apps
-  info=struct('duration',120,'velocity',127,'multichannel',1,'volume',1,'tempo',120,'scale',1,'key',1,'pgm',ones(1,6),'refresh',true,'channels',zeros(1,16),'preset',0,'starttime',now,'ableton',1,'max',1);
+  info=struct('duration',120,'velocity',127,'multichannel',1,'volume',1,'tempo',120,'scale',1,'key',1,'pgm',ones(1,6),'refresh',true,'cm',ChannelMap(8),'preset',0,'starttime',now,'ableton',1,'max',1,'al',Ableton());
   % Ableton, Max flags indicate whether notes/sounds should be played -- control messages still sent
   % Channel(k) is the id that is on channel k, or 0 if not in use
   [~,us]=getscales();

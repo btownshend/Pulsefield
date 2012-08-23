@@ -1,5 +1,5 @@
 function ok=syncwait(s1,counter,maxwait)
-if nargin<2
+if nargin<3
   maxwait=1;   % Wait 1 second
 end
 nread=0;

@@ -17,7 +17,7 @@ osclog('close');   % Close any old logs open
 oscclose();        % Close any old OSC connections
 
 % Run sanity tests
-if ~oscloopback('MPV') || ~oscloopback('MPO') || ~oscloopback('MPL')
+if ~oscloopback('MPV') || ~oscloopback('MPO') || ~oscloopback('MPL') || ~oscloopback('MPA')
   fprintf('Loopback test failed\n');
   return;
 end

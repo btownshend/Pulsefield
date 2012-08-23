@@ -35,7 +35,7 @@ for i=1:length(info.updates)
           oscmsgout('MAX','/pf/pass/playmidinote',{int32(info.snap.hypo(i).id),int32(pitch),int32(info.velocity),int32(info.duration),10});
         end
         if info.ableton
-          channel=id2channel(info,id);
+          channel=info.cm.id2channel(id);
           oscmsgout('AL','/live/play/clip',{int32(channel-1),int32(j-1)});   % Play clip
         end
       end

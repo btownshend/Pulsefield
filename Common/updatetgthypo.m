@@ -38,7 +38,8 @@ h=prevsnap.hypo;  % Start off by continuing old hypotheses
 snap.nextid=prevsnap.nextid;
 dt=(snap.when-prevsnap.when)*24*3600;
 
-% Extrapolate position using estimate velocity
+if 0
+% Extrapolate position using estimated velocity
 for j=1:length(h)
   speed=norm(h(j).velocity);
   if isfinite(speed)
@@ -50,6 +51,7 @@ for j=1:length(h)
       end
     end
   end
+end
 end
 
 % Calculate probability that each target is multiple people
@@ -72,8 +74,8 @@ for i=1:ntgts
     pixdist=sqrt((tgts(i).pixellist(:,1)-h(j).pos(:,1)).^2+(tgts(i).pixellist(:,2)-h(j).pos(:,2)).^2);
     % Use closest pixel position as new position
     [dist(i,j),closest]=min(pixdist);
-    % But also push towards middle
-    newpos{i,j}=0.8*tgts(i).pixellist(closest,:)+0.2*tgts(i).pos;
+    % But also push towards middle (get 90% of way to center in 3 frames (.5^3=1-0.9)  )
+    newpos{i,j}=0.5*tgts(i).pixellist(closest,:)+0.5*tgts(i).pos;
     % Although setting dist to zero if inside range of target would make sense for the probabilities,
     % it doesn't allow selection between multiple possible overlapping targets
     % So, make it monotonically increasing with distance from tgts(i).pos
