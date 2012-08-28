@@ -1,9 +1,12 @@
 % LED server
 % Receive commands via OSC, update LED's in response
-function ledserver(p)
-  if nargin~=1
+function ledserver(p,doplot)
+  if nargin<1 || nargin>3
     fprintf('Usage: ledserver(p)\n');
     return;
+  end
+  if nargin<2
+    doplot=false;
   end
   pfile='/Users/bst/DropBox/PeopleSensor/src/p.mat';
   try
@@ -32,14 +35,14 @@ function ledserver(p)
 
   period=0.1;   % Update period (6 strips of LED's can update at 17.7/sec, so anything longer than this should be ok)
   lastupdate=0;
-  apps=struct('name'  ,{'Visible',  'FollowPB',  'FollowWht',' CircSeq','Freeze'  },...
-              'fn'    ,{@fg_visible,@fg_follow,  @fg_follow, @fg_cseq   ,@fg_freeze},...
-              'backfn',{@bg_white,  @bg_pulsebow,@bg_white,  @bg_blue ,@bg_freeze},...
-              'pos'   ,{'5/1',      '5/2',       '5/3',      '5/4',      '5/5'     });
+  apps=struct('name'  ,{'Visible',  'FollowPB',  'FollowWht',' CircSeq','Freeze', 'CMerge'  },...
+              'fn'    ,{@fg_visible,@fg_follow,  @fg_follow, @fg_cseq   ,@fg_freeze, @fg_cmerge},...
+              'backfn',{@bg_white,  @bg_pulsebow,@bg_white,  @bg_blue   ,@bg_freeze, @bg_white},...
+              'pos'   ,{'5/1',      '5/2',       '5/3',      '5/4',      '5/5',      '4/1'     });
   for i=1:length(apps)
     apps(i).index=i;
   end
-  currapp=apps(2);
+  currapp=apps(6);
 
   info=struct('state',zeros(numled(),3),'mix',zeros(numled(),3),'prevstate',[],'layout',p.layout,'vis',[],'hypo',[],'running',true,...
               'colors',{p.colors},'back',struct('maxlev',1,'minlev',0.2,'state',zeros(numled(),3)),'maxtransport',{{1,1,1,120,4,4}});
@@ -169,7 +172,7 @@ function ledserver(p)
         index=find(ids==m.data{3});
         if length(index)<1
           fprintf('Missed entry of ID %d\n', m.data{3});
-          info.hypo=[info.hypo,struct('id',m.data{3},'pos',[m.data{4},m.data{5}],'velocity',[m.data{6},m.data{7}])];
+          info.hypo=[info.hypo,struct('id',m.data{3},'pos',[m.data{4},m.data{5}],'velocity',[m.data{6},m.data{7}],'entrytime',now)];
         elseif length(index)>1
           fprintf('Have multiple copies of same ids inside; ids=%s\n', shortlist(ids));
         else
@@ -229,7 +232,7 @@ function ledserver(p)
         info.prevstate=info.state;
         info.prevstate(:)=255;
       end
-      ls_updateallleds(info);
+      ls_updateallleds(info,doplot);
       lastupdate=now;
     end
   end
@@ -264,7 +267,7 @@ function ls_updateleds(info)
   end
 end
 
-function ls_updateallleds(info)
+function ls_updateallleds(info,doplot)
   debug=0;
   s1=arduino_ip(0);
   tic;
@@ -282,6 +285,14 @@ function ls_updateallleds(info)
   catch me
     fprintf('Error during setallleds: %s\n', me.message);
     % Ignore, let next update handle it
+  end
+
+  if doplot
+    setfig('ledplot');
+    pixperled=2;
+    im=zeros(1,size(state,1),3);
+    im(1,:,:)=state/127.0;
+    imshow(im);
   end
 end
 
@@ -377,6 +388,62 @@ function info=fg_follow(info)
   % Renormalize any with mix > 1
   mx=max(info.mix,[],2);
   fmx=find(mx>1);
+  for ii=1:length(fmx)
+    i=fmx(ii);
+    %fprintf('Rescaling %d by %f\n', i, mx(i));
+    info.mix(i,:)=info.mix(i,:)/mx(i);
+  end
+
+  % Visual feedback of how many people are inside
+  % TODO - this could be in background led patterns, and also use channel map to display
+  if ~isempty(info.hypo)
+    ids=sort([info.hypo.id]);
+  else
+    ids=[];
+  end
+
+  for i=1:length(ids)
+    info.state(i,:)=id2color(ids(i),info.colors)*127;
+    info.mix(i,:)=1;
+  end
+  for i=length(ids)+1:8
+    info.state(i,:)=info.colors{1}*127;
+    info.mix(i,:)=1;
+  end
+end
+
+function info=fg_cmerge(info)
+  minradius=0.5;   % min radius where marker is on
+  maxleds=20;    % Number of LEDs in marker when close to edge
+  awidthmax=(2*pi*48/50)/sum(~info.layout.outsider) * maxleds;
+  meanradius=(max(info.layout.active(:,2))-min(info.layout.active(:,2)))/2;
+  
+  for i=1:length(info.hypo)
+    h=info.hypo(i);
+    % Color of marker lights (track people)
+    col=id2color(h.id,info.colors)*127;
+
+    pos=h.pos;
+    fprintf('Hypo %d, radius=%f\n', i, norm(pos));
+    if norm(pos)>0.5   % At least .5m away from enter
+      [angle,radius]=cart2pol(pos(:,1),pos(:,2));
+      langle=cart2pol(info.layout.lpos(:,1),info.layout.lpos(:,2));
+      adiff=mod(langle-angle+2*pi,2*pi);
+      adiff(adiff>pi)=2*pi-adiff(adiff>pi);
+      [~,best]=min(adiff + info.layout.outsider*100);
+      fprintf('Angle=%.1f, RFrac=%.2f, Best=%d\n', angle*360/pi, radius/meanradius,best);
+      ramp=max(0,1-adiff/(pi/2));
+      for j=1:size(info.layout.lpos,1)
+        if ~info.layout.outsider(j)
+          info.state(j,:)=info.state(j,:)+col*ramp(j);
+          info.mix(j,:)=info.mix(j,:)+ramp(j);
+        end
+      end
+    end
+  end
+  % Renormalize any with mix > 0
+  mx=max(info.mix,[],2);
+  fmx=find(mx>0);
   for ii=1:length(fmx)
     i=fmx(ii);
     %fprintf('Rescaling %d by %f\n', i, mx(i));
