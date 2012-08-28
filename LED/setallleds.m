@@ -18,7 +18,8 @@ else
     fprintf('setallleds with %d colors instead of expected %d\n', size(color,1),numled());
     return;
   end
-  posmap=[480+(159:-1:0),320+(0:50),0+(159:-1:0),160+(0:159)];
+    posmap=[800+(29:-1:0),640+(159:-1:0),320+(159:-1:0),480+(0:159),0:159,160+(0:28)];
+%  posmap=[480+(159:-1:0),320+(0:50),0+(159:-1:0),160+(0:159)];
 end
 
 physleds=max(posmap)+1;

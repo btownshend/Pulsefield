@@ -30,7 +30,8 @@ else
   end
   if vgroup==0
     % Map index (clockwise sequential) to correct led number
-    posmap=[480+(159:-1:0),320+(0:50),0+(159:-1:0),160+(0:159)];
+    posmap=[800+(29:-1:0),640+(159:-1:0),320+(159:-1:0),480+(0:159),0:159,160+(0:28)];
+%    posmap=[480+(159:-1:0),320+(0:50),0+(159:-1:0),160+(0:159)];
     if max(index+1)>length(posmap) || min(index+1)<1
       error('Index out of range; should be 0..%d\n', length(posmap)-1);
     end

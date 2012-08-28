@@ -1,5 +1,5 @@
 function n=numled(strip)
-nperstrip=[160,51,160,160];
+nperstrip=[30,160,160,160,160,29];
 if nargin<1
   n=sum(nperstrip);  % Total number
 else
