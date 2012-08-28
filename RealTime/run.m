@@ -8,14 +8,14 @@ if ~exist('p','var')
   p.analysisparams=analysissetup();
   %ctype='av10115';
   ctype='av10115-half';
-  ncamera=5;
+  ncamera=6;
   for i=1:ncamera
     p.camera(i)=setupcamera(ctype,i);
   end
   p.led=struct('id',num2cell(1:numled()));
   p.colors={[1 1 1], [1 0 0], [0 1 0], [0 0 1],[1 1 0],[1 0 1], [0 1 1]};
 
-  p.layout=layoutpolygon(6,ncamera,0);
+  p.layout=layoutpolygon(8,ncamera,0);
   plotlayout(p.layout);
 end
 
