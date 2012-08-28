@@ -15,6 +15,7 @@ for i=1:length(oscclients)
   if strcmp(cl.ident,ident)
     if strcmp(cl.url,url)
       fprintf('Already have OSC client %s@%s\n', ident, url);
+      oscclients(i).downsince=nan;  % Re-enable
       return;
     else
       fprintf('Removing superceded OSC client %s@%s\n', ident, cl.url);
