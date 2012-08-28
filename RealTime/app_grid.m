@@ -89,7 +89,10 @@ end
 
 % Read any Ableton updates
 info.al.refresh();
-
+if (info.al.numtracks() ~= info.cm.numchannels() && info.al.numtracks()>0)
+  fprintf('Ableton has %d tracks, but using a %d channel mapping; changing mapping\n',info.al.numtracks(), info.cm.numchannels());
+  info.cm.setnumchannels(info.al.numtracks());
+end
 for i=1:length(info.updates)
   id=info.updates(i);
   ids=[info.snap.hypo.id];
@@ -222,7 +225,7 @@ end
 if nargin<4
   pan=0.0;
 end
-oscmsgout('AL','/live/volume',{int32(track),volume});
+%oscmsgout('AL','/live/volume',{int32(track),volume});
 oscmsgout('AL','/live/pan',{int32(track),pan});
 nm=al.getclipname(track,clip);
 fprintf('cliptrigger(%d,%d) -> nm=%s\n', track, clip, nm);
