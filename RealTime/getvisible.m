@@ -234,7 +234,7 @@ end
 
 if args.stats
   vis.imspot={};
-  vis.lev=[];
+  vis.lev=nan(0,numled());
   vis.im=imorig;   % Original image, might have been converted to gray for processing
   for i=1:length(im)
     c=p.camera(i).pixcalib;
