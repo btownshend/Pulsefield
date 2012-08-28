@@ -13,7 +13,7 @@ classdef Ableton < handle
     end
 
     function nm=getclipname(obj, track, clip)
-      if track+1>size(obj.clipnames,1) || clip+1>size(obj.clipnames,2)
+      if ((track+1)>size(obj.clipnames,1)) || ((clip+1)>size(obj.clipnames,2))
         fprintf('Ableton:getclipname(obj,%d,%d) with only %d tracks, %d clips\n', track, clip, size(obj.clipnames,1), size(obj.clipnames,2));
         nm=[];
       else
@@ -22,11 +22,11 @@ classdef Ableton < handle
     end
     
     function n=numtracks(obj)
-      n=size(clipnames,1);
+      n=size(obj.clipnames,1);
     end
 
     function n=numclips(obj)
-      n=size(clipnames,2);
+      n=size(obj.clipnames,2);
     end
     
     function update(obj,timeout)
