@@ -2,57 +2,81 @@
 % Uses round-robin allocation
 classdef ChannelMap < handle
   properties
-    channels=zeros(1,8);
+    ids;	% Ids
+    channels;   % Corresponding channels
+    nchannels;
     nextchannel=1;
   end
   methods
     function obj=ChannelMap(nchannels)
-      obj.channels=zeros(1,nchannels);
+      obj.channels=[];
+      obj.ids=[];
+      obj.nchannels=nchannels;
       obj.nextchannel=1;
     end
     
+    function setnumchannels(obj,nchannels)
+      if nchannels==obj.nchannels
+        return;
+      end
+      newmap=ChannelMap(nchannels);
+      for i=1:length(obj.ids)
+          newmap.newchannel(obj.ids(i))
+      end
+      obj.ids=newmap.ids;
+      obj.channels=newmap.channels;
+      obj.nchannels=newmap.nchannels;
+      obj.nextchannel=newmap.nextchannel;
+    end
+      
     function channel=id2channel(obj,id)
-      channel=find(obj.channels==id);
-      if length(channel)~=1
-        fprintf('Error trying to locate channel for id %d, channels=%s\n', id, sprintf('%d ',obj.channels));
+      pos=find(obj.ids==id);
+      if ~isempty(pos)
+        channel=obj.channels(pos);
+      else
+        fprintf('Error trying to locate channel for id %d, ids=%s channels=%s\n', id, sprintf('%d ',obj.ids),sprintf('%d ',obj.channels));
         channel=[];
       end
     end
     
     function channel=newchannel(obj,id)
-      if any(obj.channels==id)
-        channel=find(obj.channels==id,1);
+      if any(obj.ids==id)
+        channel=obj.channels(find(obj.ids==id,1));
         fprintf('channelmap::newchannel - id %d already allocated to channel %d\n', id, channel);
         return;
       end
 
-      for i=1:length(obj.channels)
-        % Round-robin channel allocation
-        c=mod((i-2)+obj.nextchannel,length(obj.channels))+1;
-        if obj.channels(c)==0
-          fprintf('Allocating channel %d to id %d\n', c, id);
-          channel=c;
-          obj.channels(c)=id;
-          obj.nextchannel=mod(c,length(obj.channels))+1;
-          return;
+      for maxuse=1:20
+        for i=1:obj.nchannels
+          % Round-robin channel allocation
+          c=mod((i-2)+obj.nextchannel,obj.nchannels)+1;
+          used=sum(obj.channels==c);
+          if used<maxuse
+            fprintf('Allocating channel %d to id %d with usage %d\n', c, id, used);
+            obj.channels(end+1)=c;
+            obj.ids(end+1)=id;
+            obj.nextchannel=mod(c,obj.nchannels)+1;
+            channel=c;
+            return;
+          end
         end
       end
-      fprintf('No channels available to allocate to id %d, channels=%s\n', id, sprintf('%d ',obj.channels));
+      fprintf('No channels available to allocate to id %d\n',id);
+      channel=[];
     end
 
     function deleteid(obj,id)
-      channel=id2channel(obj,id);
-      if ~isempty(channel)
-        obj.channels(channel)=0;
-      end
+      sel=obj.ids~=id;
+      obj.channels=obj.channels(sel);
+      obj.ids=obj.ids(sel);
     end
     
     function id=channel2id(obj,channel)
-      id=obj.channels(channel);
+      id=obj.ids(obj.channels==channel);
     end
 
     function n=numchannels(obj)
-      n=length(obj.channels);
+      n=obj.nchannels;
     end
   end
 end
