@@ -8,7 +8,7 @@ if ~exist('recvis','var') || isempty(recvis.vis)
   error('Nothing to replay -- need to load recvis');
 end
 
-if length(recvis.vis)>length(recvis.snap)
+if isfield(recvis,'snap') && length(recvis.vis)>length(recvis.snap)
   fprintf('Truncating recvis.vis from %d to %d samples to match recvis.snaps\n', length(recvis.vis), length(recvis.snap));
   recvis.vis=recvis.vis(1:length(recvis.snap));
 end
@@ -47,7 +47,7 @@ samp=1;
 starttime=now;
 suppressuntil=0;
 info=infoinit();
-while samp<=min(length(recvis.vis),length(recvis.snap))
+while samp<=length(recvis.vis)
   vis=recvis.vis(samp);
   simulskew = now-vis.whenrcvd;     % Delay in simulation from when it really happened
   vis.whenrcvd=now;
@@ -177,7 +177,11 @@ oscupdate(recvis.p,info,samp);
 
 % Copy in snap to new version
 fprintf('Copying new analysis into replayrecvis\n');
-replayrecvis=rmfield(recvis,'snap');
+if isfield(recvis,'snap')
+  replayrecvis=rmfield(recvis,'snap');
+else
+  replayrecvis=recvis;
+end
 for i=1:length(snap)
   replayrecvis.snap(i)=snap{i};
 end
