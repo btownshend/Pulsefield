@@ -11,7 +11,9 @@ if nargin<2
   onval=p.colors{1}*127;  % See output from levcheck
 end
 when=now;
+vis={};
 for i=1:5
+  fprintf('Acquiring sample %d\n',i);
   setled(s1,-1,[0,0,0],1);
   if i==1|| i==5
     ;  % Already all off
