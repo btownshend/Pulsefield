@@ -1,12 +1,15 @@
 % layoutoctagon - compute position of LED's and cameras in octagon setup (with 1m entry opening)
 % nlegs - number of sides of polygon
 % doplot - 1 to plot
-function layout=layoutpolygon(nlegs,ncameras,doplot,nled)
+function layout=layoutpolygon(nlegs,ncameras,doplot,nled,firstled)
 if nargin<3
   doplot=0;
 end
 if nargin<4
   nled=numled();
+end
+if nargin<5
+  firstled=1;
 end
 
 % Work in meters
