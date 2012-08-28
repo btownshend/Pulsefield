@@ -42,15 +42,15 @@ end
 
 % Send message
 toremove=[];
-disabletime=30;
+disabletime=15;
 for i=1:length(qi)
   cl=oscclients(qi(i));
   if isfinite(cl.downsince)
-    if (now-cl.downsince)*24*3600<60
+    if (now-cl.downsince)*24*3600<disabletime
       % Disabled
       continue;
     else
-      fprintf('Retrying client %s@%s that was down\n', cl.ident, cl.url);
+      fprintf('Retrying client %s@%s that was down %d seconds ago\n',cl.ident, cl.url, (now-cl.downsince)*24*3600);
     end
   end
   ok=osc_send(cl.addr,struct('path',path,'data',{data}));
@@ -73,6 +73,7 @@ for i=1:length(qi)
       fprintf('Client %s@%s - osc_send succeeded\n', cl.ident,cl.url);
     else
       fprintf('Client %s@%s is still down\n', cl.ident,cl.url);
+      oscclients(qi(i)).downsince = now;
     end
   elseif ~ok
     fprintf('Failed send of message to OSC target %s@%s - disabling for %d seconds\n',cl.ident,cl.url,disabletime);
