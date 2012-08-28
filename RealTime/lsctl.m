@@ -18,10 +18,16 @@ if strcmp(op,'start')
       return;
     end
     fprintf('Waiting for startup...');
-    pause(7);
+    for i=1:10
+      fprintf('%d..',i);
+      running=oscping('LD','MPL');
+      if running
+        break;
+      end
+      pause(1);
+    end
     fprintf('Log file:\n');
     !cat /tmp/ledserver.log
-    running=oscping('LD','MPL');
   end
   if ~running
     fprintf('LedServer failed to start\n');
