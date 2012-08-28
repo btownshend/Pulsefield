@@ -70,10 +70,10 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     for channel=1:info.cm.numchannels()
       id=info.cm.channel2id(channel);
       % fprintf('Channel %d, id=%d\n', channel, id);
-      if id>0
+      if length(id)>0
         oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{1});
-        oscmsgout('TO',sprintf('/touchosc/loc/%d/color',channel),{col2touchosc(id2color(id,p.colors))});
-        oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{num2str(id)});
+        oscmsgout('TO',sprintf('/touchosc/loc/%d/color',channel),{col2touchosc(id2color(id(1),p.colors))});
+        oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{sprintf('%d ',id)});
       else
         oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{0});
         oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{''});
@@ -144,11 +144,6 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
       end
     end
 
-    people=length(ids);
-    prevpeople=length(previds);
-    if people~=prevpeople
-      oscmsgout(p.oscdests,'/pf/set/npeople',{int32(people)});
-    end
     for i=1:length(snap.hypo)
       h=snap.hypo(i);
       % Compute groupid -- lowest id in group, or 0 if not in a group
@@ -189,6 +184,13 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
       oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{0});
       oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{''});
       info.cm.deleteid(i);
+    end
+
+    % Update number of people present after all exits, entries
+    people=length(ids);
+    prevpeople=length(previds);
+    if people~=prevpeople
+      oscmsgout(p.oscdests,'/pf/set/npeople',{int32(people)});
     end
   end
   info.juststarted=false;
