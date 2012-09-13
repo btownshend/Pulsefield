@@ -93,7 +93,7 @@ for i=1:length(stats)
   majoraxislength=(stats(i).MajorAxisLength+2*shrink)/rays.imap.scale;
   % convexhull=pix2m(rays.imap,stats(i).ConvexHull);
   convexhull=nan;
-  pixellist=pix2m(rays.imap,stats(i).PixelList);
+  pixellist=single(pix2m(rays.imap,stats(i).PixelList));
   area=((sqrt(stats(i).Area)+2*shrink)/rays.imap.scale)^2;
   % Due to the masking, regionprops sometimes returns an empty region (no pixels)
   if isempty(pixellist) 
@@ -158,7 +158,14 @@ if length(tgts)>0
     profile=profile(profile~=0);
     if ~isempty(profile) && all(profile==profile(1))
       % Unique object
-      tgts(profile(1)).nunique=tgts(profile(1)).nunique+1;
+      if profile(1)>length(tgts)
+        % TODO: Bug hit at least once here, profile(1)==9, but tgts is 1x8 
+        % Relabelling above might be giving different number of targets
+        % Would also affect cases where the ordering changes, but wouldn't be detected here
+        fprintf('ERROR: profile=%d, but length(tgts)=%d\n', profile(1),length(tgts));
+      else
+        tgts(profile(1)).nunique=tgts(profile(1)).nunique+1;
+      end
     end
   end
 end
@@ -190,7 +197,7 @@ if doplot>0
   end
 end
 
-snap=struct('tgts',tgts,'possible',possible);
+snap=struct('tgts',tgts);
 
 function ndx=fastsub2ind(siz,v1,v2)
 ndx=v1+(v2-1).*siz(1);
