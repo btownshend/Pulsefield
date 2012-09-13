@@ -1,25 +1,31 @@
 % Turn on LEDs
-% setallleds(s1,firstindex,color[],execute,unmapped)
+% setallleds(s1,color,vgroup)
 % s1-descriptor
 % color(N,3) - colors for each of numled() leds
-% unmapped - true to NOT map to ordered LEDs (default false)
-function cmd=setallleds(s1,color,unmapped)
+% vgroup - virtual LED group (0-normal use for PF, 1-unmapped, 2-entry left, 3-entry right)
+function cmd=setallleds(s1,color,vgroup)
 cmd=[];
 if nargin<3
-  unmapped=0;
+  vgroup=0;
 end
 
-% Map to correct physical led number
-if unmapped
-  fprintf('Unmapped\n');
+if vgroup==0
+%  posmap=[800+(29:-1:0),640+(159:-1:0),320+(159:-1:0),480+(0:159),0:159,160+(0:28),800+(159:-1:30),160+(30:159)];
+  posmap=[800+(29:-1:0),640+(159:-1:0),320+(159:-1:0),480+(0:159),0:159,160+(0:28)];
+elseif vgroup==1
   posmap=0:size(color,1)-1;
-else
-  if size(color,1)~=numled()
-    fprintf('setallleds with %d colors instead of expected %d\n', size(color,1),numled());
-    return;
-  end
-    posmap=[800+(29:-1:0),640+(159:-1:0),320+(159:-1:0),480+(0:159),0:159,160+(0:28)];
-%  posmap=[480+(159:-1:0),320+(0:50),0+(159:-1:0),160+(0:159)];
+  %fprintf('Not mapping IDs\n');
+elseif vgroup==2
+  % Map index to left entry group (TODO-tune)
+  posmap=[800+(159:-1:30)];
+elseif vgroup==3
+  % Map index to right entry group (TODO-tune)
+  posmap=[160+(30:159)];
+end
+
+if size(color,1)~=length(posmap)
+  fprintf('setallleds with %d colors instead of expected %d\n', size(color,1),length(posmap));
+  return;
 end
 
 physleds=max(posmap)+1;
@@ -29,7 +35,7 @@ mcolor(posmap+1,:)= bitset(uint8(color),8);
 
 nsent=0;
 while nsent<size(mcolor,1)
-  send=min(size(mcolor,1)-nsent,255);
+  send=min(size(mcolor,1)-nsent,100);
   pcmd=zeros(1,4+3*send,'uint8');
   [cntr,sscmd]=syncsend(s1,1);
   pcmd(1)='F';
