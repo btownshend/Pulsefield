@@ -19,6 +19,7 @@ for i=1:length(p.camera)
     c2ldiravg=(c2ldir+c2ldir2);
     c2ldiravg=c2ldiravg/norm(c2ldiravg);
     ad(i,j)=cart2pol(cdir(1),cdir(2))-cart2pol(c2ldiravg(1),c2ldiravg(2));
+    ad=mod(ad+pi,2*pi)-pi;
     %    ad(i,j)=acos((dot(c2ldiravg,cdir)));
     dangle(i,j)=cart2pol(c2ldir2(1),c2ldir2(2))-cart2pol(c2ldir(1),c2ldir(2));
     %    dangle(i,j)=acos((dot(c2ldir,c2ldir2)));

@@ -1,6 +1,6 @@
 function plotlatency(recvis)
 
-if length(recvis.vis)>length(recvis.snap)
+if isfield(recvis,'snap') && length(recvis.vis)>length(recvis.snap)
   fprintf('Truncating recvis.vis from %d to %d samples to match recvis.snaps\n', length(recvis.vis), length(recvis.snap));
   recvis.vis=recvis.vis(1:length(recvis.snap));
 end
@@ -23,12 +23,14 @@ ylabel('Jitter (s)');
 
 subplot(512);
 rdelay=([recvis.vis.whenrcvd]-acquired)*24*3600;
-% Check for prior frames whose processing time may have delay receipt
-waittime=([recvis.vis.whenrcvd]-[nan,recvis.snap(1:end-1).whendone])*3600*24;
-latefinish=waittime<1e-4;   % Basically, time was determined by prior processing time
-rdelay(latefinish)=nan;
+if isfield(recvis,'snap')
+  % Check for prior frames whose processing time may have delay receipt
+  waittime=([recvis.vis.whenrcvd]-[nan,recvis.snap(1:end-1).whendone])*3600*24;
+  latefinish=waittime<1e-4;   % Basically, time was determined by prior processing time
+  rdelay(latefinish)=nan;
+end
 plot(1:length(recvis.vis),rdelay);
-if sum(latefinish)>0
+if isfield(recvis,'snap') && sum(latefinish)>0
   hold on;
   plot(find(latefinish),0*find(latefinish),'*');
 end
@@ -36,6 +38,7 @@ c=axis;c(3)=0;axis(c);
 ylabel('Delay before receipt (s)');
 title('Reception delay');
 
+if isfield(recvis,'snap')
 subplot(513);
 dur=([recvis.snap.whendone]-[recvis.vis.whenrcvd])*24*3600;
 plot(1:length(recvis.snap),dur,'r');
@@ -59,3 +62,4 @@ plot(2:length(recvis.snap),diff([recvis.vis.frame])-1,'r');
 c=axis;c(3)=0;axis(c);
 title('Frame drops');
 ylabel('Number of dropped VIS frames');
+end

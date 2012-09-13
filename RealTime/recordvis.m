@@ -25,4 +25,4 @@ fprintf('Turning off LEDs\n');
 setled(s1,-1,[0,0,0]);
 show(s1);
 
-saverecvis
+saverecvis(recvis);

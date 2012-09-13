@@ -4,11 +4,11 @@
 % im - optional arg to reuse image data
 function [sainfo,im]=pixcalibrate(sainfo,im)
 ids=[sainfo.camera.id];
-DEBUG=false;
+DEBUG=true;
 nrpt=1;
 nled=numled();
 nbits=ceil(log2(nled));
-minpixels=2;   % Minimum number of active pixels to accept an LED
+minpixels=1;   % Minimum number of active pixels to accept an LED
 if nargin<2 || isempty(im)
   lsctl(sainfo,'pause');
   s1=arduino_ip();

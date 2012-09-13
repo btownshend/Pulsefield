@@ -1,4 +1,9 @@
-recvis.note=input('Enter comment for save file (or return to skip save): ','s');
+function saverecvis(recvis,note)
+if nargin<2
+  recvis.note=input('Enter comment for save file (or return to skip save): ','s');
+else
+  recvis.note=note;
+end
 if ~isempty(recvis.note)
   recname=sprintf('Recordings/%s.mat',datestr(recvis.snap(1).when,30));
   fprintf('Saving recording in %s...', recname);
@@ -7,7 +12,7 @@ if ~isempty(recvis.note)
     recvistmp.vis=rmfield(recvis.vis,'im');
     save(recname,'-struct','recvistmp');
   else
-    save(recname,'-v7.3','-struct','recvis');
+    save(recname,'-struct','recvis');
   end
   fprintf('done\n');
 end

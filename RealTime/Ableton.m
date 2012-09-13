@@ -4,25 +4,37 @@ classdef Ableton < handle
     clipnames={};
     clipcolors=[];
     tracknames={};
+    numscenes=60;
     playing=nan;
     debug=false;
   end
   
   methods
     function obj=Ableton()
+      obj.update();
     end
 
     function nm=getclipname(obj, track, clip)
-      if ((track+1)>size(obj.clipnames,1)) || ((clip+1)>size(obj.clipnames,2))
-        fprintf('Ableton:getclipname(obj,%d,%d) with only %d tracks, %d clips\n', track, clip, size(obj.clipnames,1), size(obj.clipnames,2));
+      if ((track+1)>length(obj.tracknames)) || ((clip+1)>size(obj.clipnames,2))
+        fprintf('Ableton:getclipname(obj,%d,%d) with only %d tracks, %d clips\n', track, clip, length(obj.tracknames), size(obj.clipnames,2));
         nm=[];
       else
         nm=obj.clipnames{track+1,clip+1};
       end
     end
     
+    function nm=gettrackname(obj,track)
+      if ((track+1)>length(obj.tracknames))
+        fprintf('Ableton:gettrackname(obj,%d) with only %d tracks\n', track, length(obj.tracknames));
+        nm=[];
+      else
+        nm=obj.tracknames{track+1};
+      end
+    end
+      
+    
     function n=numtracks(obj)
-      n=size(obj.clipnames,1);
+      n=length(obj.tracknames);
     end
 
     function n=numclips(obj)
@@ -31,13 +43,21 @@ classdef Ableton < handle
     
     function update(obj,timeout)
       if nargin<2
-        timeout=0.05;
+        timeout=0.1;
       end
-      oscmsgout('AL','/live/name/clip',{});
+      obj.refresh(0.0);  % Clean out any old ones and initialize ports
       oscmsgout('AL','/live/name/track',{});
-      
-      % Retrieve replies with a 50ms timeout
+      oscmsgout('AL','/live/scenes',{});   %TODO - this is not working, not seeing reply
+      % Retrieve replies with a timeout
       obj.refresh(timeout);
+      fprintf('Ableton:update:  Numtracks=%d, Numscenes=%d\n', obj.numtracks,obj.numscenes);
+      for track=0:obj.numtracks-1
+        for clip=0:obj.numscenes-1
+          %fprintf('Clip(%d,%d)\n', track,clip);
+          oscmsgout('AL','/live/name/clip',{int32(track),int32(clip)});
+        end
+        obj.refresh(0.0);
+      end
     end
 
     function refresh(obj,timeout)
@@ -45,11 +65,13 @@ classdef Ableton < handle
         timeout=0.0;
       end
       % Refresh AL data from running instance
+      nmsg=0;
       while true
         m=oscmsgin('MPA',timeout);
         if isempty(m)
           break;
         end
+        nmsg=nmsg+1;
         if obj.debug
           fprintf('Got %s\n',formatmsg(m.path,m.data));
         end
@@ -88,6 +110,9 @@ classdef Ableton < handle
         elseif strcmp(m.path,'/live/overdub')
         elseif strcmp(m.path,'/live/tempo')
         elseif strcmp(m.path,'/live/scene')
+        elseif strcmp(m.path,'/live/scenes')
+          obj.numscenes=m.data{1};
+          fprintf('Num scenes=%d\n', obj.numscenes);
         elseif strcmp(m.path,'/live/track')
         elseif strcmp(m.path,'/live/master/meter')
         elseif strcmp(m.path,'/live/return/meter')
@@ -103,6 +128,9 @@ classdef Ableton < handle
         else
           fprintf('Unrecognized reply from AL: %s\n', formatmsg(m.path,m.data));
         end
+      end
+      if nmsg>0
+        fprintf('Received %d messages from AL\n', nmsg);
       end
     end
   end

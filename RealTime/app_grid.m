@@ -23,7 +23,7 @@ if ~isfield(info,'grid')|| strcmp(op,'start')
   end
   cell=1:size(position,1);
   pitch=cell+round(64-mean(cell));
-  info.grid=struct('maxcliptime',5.0, 'hysteresis',hysteresis,'minx',minx,'maxx',maxx,'miny',miny,'maxy',maxy,'nx',nx,'ny',ny,'position',position,'pitch',pitch,'active',struct('cell',{},'id',{},'triggertime',{},'offtime',{}));
+  info.grid=struct('maxcliptime',5.0, 'hysteresis',hysteresis,'minx',minx,'maxx',maxx,'miny',miny,'maxy',maxy,'nx',nx,'ny',ny,'position',position,'pitch',pitch,'active',struct('cell',{},'id',{},'triggertime',{},'offtime',{}),'trackspersong',8,'song',4,'tempos',[100, 108, 72, 120, 111, 93, 93, 108, 120, 120, 120,120]);
   % Initialize interface
   for channel=1:8
     oscmsgout('TO',sprintf('/grid/channel/%d/label/color',channel),{'red'});
@@ -45,9 +45,9 @@ if strcmp(op,'stop')
     oscmsgout('TO',sprintf('/grid/channel/%d/pitch',channel),{''});
     oscmsgout('TO',sprintf('/grid/channel/%d/clip',channel),{''});
   end
-  for channel=1:info.cm.numchannels()
+  for track=1:info.al.numtracks()-1
     % Make sure all Ableton channels are off
-    oscmsgout('AL','/live/stop/track',{int32(channel-1)});
+    oscmsgout('AL','/live/stop/track',{int32(track)});
   end
 end
 
@@ -89,10 +89,19 @@ end
 
 % Read any Ableton updates
 info.al.refresh();
-if (info.al.numtracks() ~= info.cm.numchannels() && info.al.numtracks()>0)
-  fprintf('Ableton has %d tracks, but using a %d channel mapping; changing mapping\n',info.al.numtracks(), info.cm.numchannels());
-  info.cm.setnumchannels(info.al.numtracks());
+info.grid.numsongs=info.al.numtracks()/info.grid.trackspersong;
+alchannels=0;
+for i=(0:7)+(info.grid.song-1)*8;
+  if ~strcmp(info.al.gettrackname(i),'Empty')
+    alchannels=alchannels+1;
+  end
 end
+
+if (alchannels ~= info.cm.numchannels() && alchannels>0)
+  fprintf('Ableton has %d (->%d) tracks, but using a %d channel mapping; changing mapping\n',info.al.numtracks(), alchannels, info.cm.numchannels());
+  info.cm.setnumchannels(alchannels);
+end
+%fprintf('numsongs=%f, trackspersong=%d, song=%d, channels=%d\n',info.grid.numsongs, info.grid.trackspersong, info.grid.song,alchannels);
 for i=1:length(info.updates)
   id=info.updates(i);
   ids=[info.snap.hypo.id];
@@ -132,7 +141,7 @@ for i=1:length(info.updates)
     oscmsgout('TO',sprintf('/grid/channel/%d/label/color',channel),{'green'});
     if info.ableton
       pan=pos(2)/max(abs(p.layout.active(:,2)));
-      cliptrigger(info.al,channel-1,newcell-1,1.0,pan);
+      cliptrigger(info.al,info,channel-1,newcell-1,1.0,pan);
     end
     if debug
       fprintf('ID %d (channel %d) moved from grid %d (%.2f) to grid %d (%.2f)\n', id, channel, active.cell, activedist, newcell, newdist);
@@ -152,7 +161,8 @@ for i=1:length(info.exits)
     oscmsgout('MAX','/pf/pass/noteoff',{int32(id),int32(activepitch),int32(channel)});
   end
   if info.ableton
-    oscmsgout('AL','/live/stop/track',{int32(channel-1)});
+    track=(info.grid.song-1)*info.grid.trackspersong+channel-1;
+    oscmsgout('AL','/live/stop/track',{int32(track)});
   end
   info.grid.active=info.grid.active([info.grid.active.id]~=id);
   if debug
@@ -180,7 +190,7 @@ for i=1:length(info.entries)
   end
   if info.ableton
     pan=pos(2)/max(abs(p.layout.active(:,2)));
-    cliptrigger(info.al,channel-1,newcell-1,1.0,pan);
+    cliptrigger(info.al,info,channel-1,newcell-1,1.0,pan);
   end
   info.grid.active=[info.grid.active,struct('cell',newcell,'id',id,'triggertime',now,'offtime',nan)];
   if debug
@@ -193,7 +203,12 @@ if length(info.exits)>0 && isempty(info.entries) && isempty(info.updates)
   fprintf('Last person exitted grid\n');
   if info.ableton
     oscmsgout('AL','/live/stop',{});
+    for track=1:info.al.numtracks()-1
+      % Make sure all Ableton channels are off
+      oscmsgout('AL','/live/stop/track',{int32(track)});
+    end
   end
+  info.grid.song=mod(info.grid.song,info.grid.numsongs)+1;
 end
 
 if info.ableton
@@ -202,12 +217,13 @@ if info.ableton
     l=info.grid.active(i);
     if isnan(l.offtime) && (now-l.triggertime)*24*3600>info.grid.maxcliptime
       channel=info.cm.id2channel(l.id);
-      oscmsgout('AL','/live/stop/track',{int32(channel-1)});
+      track=(info.grid.song-1)*info.grid.trackspersong+channel-1;
+      oscmsgout('AL','/live/stop/track',{int32(track)});
       oscmsgout('TO',sprintf('/grid/channel/%d/pitch',channel),{''});
       oscmsgout('TO',sprintf('/grid/channel/%d/clip',channel),{''});
       info.grid.active(i).offtime=now;
       if debug
-        fprintf('Ended clip on track %d\n', channel);
+        fprintf('Ended clip on channel %d, track %d\n', channel, track);
       end
     end
   end
@@ -218,23 +234,25 @@ end
 % Track is track number starts with 0
 % Clip is one in the scene number in AL (starts with 0)
 % volume is 0.0-1.0,  pan is -1.0 to 1.0
-function cliptrigger(al,track,clip,volume,pan)
+function cliptrigger(al,info,track,clip,volume,pan)
 if nargin<3
   volume=1.0;
 end
 if nargin<4
   pan=0.0;
 end
+altrack=(info.grid.song-1)*info.grid.trackspersong+track;
+oscmsgout('AL','/live/tempo',{int32(info.grid.tempos(info.grid.song))});
 %oscmsgout('AL','/live/volume',{int32(track),volume});
-oscmsgout('AL','/live/pan',{int32(track),pan});
-nm=al.getclipname(track,clip);
-fprintf('cliptrigger(%d,%d) -> nm=%s\n', track, clip, nm);
+%oscmsgout('AL','/live/pan',{int32(track),pan});
+nm=al.getclipname(altrack,clip);
+fprintf('cliptrigger: song=%d,track=%d,altrack=%d (%s),clip=%d (%s),tempo=%d\n', info.grid.song,track, altrack, al.gettrackname(altrack), clip, nm, info.grid.tempos(info.grid.song));
 if isempty(nm)
-  oscmsgout('AL','/live/stop/track',{int32(track)});
+  oscmsgout('AL','/live/stop/track',{int32(altrack)});
 else  
-  oscmsgout('AL','/live/play/clip',{int32(track),int32(clip)});
+  oscmsgout('AL','/live/play/clip',{int32(altrack),int32(clip)});
 end
-%oscmsgout('AL','/live/play/track',{int32(track)});
+%oscmsgout('AL','/live/play/track',{int32(altrack)});
 
 % Map grid cell to AL scene
 function scene=cell2scene(info,cell)

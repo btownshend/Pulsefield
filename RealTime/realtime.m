@@ -1,5 +1,8 @@
 % Realtime run script
 
+startdiary('realtime');
+dosaves=0;   % 0-no saves, 1-by session, 2-all
+
 % Setup data structure
 global recvis
 if exist('recvis','var') && isfield(recvis,'vis') && ~isempty(recvis.vis) && ~isfield(recvis,'note') && length(recvis.vis)>=5
@@ -8,7 +11,7 @@ if exist('recvis','var') && isfield(recvis,'vis') && ~isempty(recvis.vis) && ~is
         return;
     end
 end
-recvis=struct('p',p,'vis',[],'tgtestimate',[],'possible',{{}},'randseed',rand());
+recvis=struct('p',p,'vis',[],'randseed',rand());
 
 % Save in well known location
 save('/tmp/pulsefield_setup.mat','-struct','recvis');
@@ -54,8 +57,11 @@ samp=0;
 starttime=now;
 suppressuntil=0;
 idlecnt=0;
+maxoccupancy=0;
 prevsnap=[];
 info=infoinit();
+photointerval=10.0;   % Take a photo ever 10 seconds while someone present
+lastphoto=0;
 while ~info.quit
   if idlecnt==0
     timeout=0.0;
@@ -68,12 +74,19 @@ while ~info.quit
   if isempty(vis)
     % fprintf('No vis available\n');
     idlecnt=idlecnt+1;
+    if 0 && length(prevsnap.hypo)>0 && (now-lastphoto)*3600*24>photointerval
+      fprintf('Taking a snapshot photo\n');
+      snapshot(p);
+      lastphoto=now;
+    end
   else
     samp=samp+1;
-    if samp==1
-      recvis.vis=vis;
-    else
-      recvis.vis=[recvis.vis,vis];
+    if dosaves>0
+      if ~isfield(recvis,'vis')
+        recvis.vis=vis;
+      else
+        recvis.vis=[recvis.vis,vis];
+      end
     end
 
     % Check for bad data
@@ -115,6 +128,10 @@ while ~info.quit
       fprintf('H%d:(%.2f,%.2f)@%.2f m/s ',hj.id,hj.pos,norm(hj.velocity));
       ptd=true;
     end
+    if length(snap.hypo)>maxoccupancy
+      maxoccupancy=length(snap.hypo);
+    end
+    
     if ptd
       fprintf(' (%d)\n',samp);
     end
@@ -126,14 +143,36 @@ while ~info.quit
     else
       info=oscupdate(recvis.p,info,samp,snap);
     end
+
+    if dosaves==1 && length(snap.hypo)==0 && ~isempty(prevsnap) && length(prevsnap.hypo)>0
+      % Just emptied out, save data
+      fprintf('All empty - saving %d frames\n', length(recvis.vis));
+      try
+        saverecvis(recvis,sprintf('Auto-save of %d frames at %s with max occupancy of %d',length(recvis.vis),datestr(now),maxoccupancy));
+      catch me
+        fprintf('saverecvis: %s\n',me.message);
+      end
+      maxoccupancy=0;
+      % Clear out data
+      recvis=rmfield(recvis,{'snap','vis'});
+      % New diary
+      startdiary();
+      startdiary('realtime');
+    end
     prevsnap=snap;
   end
-  
   info=oscincoming(recvis.p,info);
   
   if ~isempty(vis)
     snap.whendone2=now;
-%    recvis.snap(samp)=snap;
+    if dosaves==2 || (dosaves==1 &&length(snap.hypo)>0)
+      if isfield(recvis,'snap')
+        recvis.snap(end+1)=snap;
+      else
+        recvis.snap=snap;
+        recvis.vis=vis;
+      end
+    end
   end
 
   if info.needcal

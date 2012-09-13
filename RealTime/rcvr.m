@@ -116,7 +116,7 @@ while true
         if length(blob)~=length(p.led)
           error('/vis/visible message has incorrect number of LEDS: expected %d, got %d\n', length(p.led),length(blob));
         end
-        vis.v(c,:)=double(blob);
+        vis.v(c,:)=single(blob);
         vis.v(c,blob==2)=nan;
         % Turn off indicators for LEDs we're not using
         vis.v(c,~p.camera(c).viscache.inuse)=nan;

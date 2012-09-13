@@ -28,8 +28,8 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
   end
 
   if info.refresh
-    fprintf('Refreshing view of Ableton Live\n');
-    info.al.update();
+    %fprintf('Refreshing view of Ableton Live\n');
+    %info.al.update();
     
     fprintf('Sending refresh to OSC listeners\n');
     info.refresh=false;
