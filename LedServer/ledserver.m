@@ -1,14 +1,18 @@
 % LED server
 % Receive commands via OSC, update LED's in response
-function ledserver(p,doplot)
+function ledserver(p,doplot,simul)
   if nargin<1 || nargin>3
-    fprintf('Usage: ledserver(p)\n');
+    fprintf('Usage: ledserver(p,doplot,simul)\n');
     return;
   end
   if nargin<2
     doplot=false;
   end
+  if nargin<3
+    simul=false;  % Simulate only
+  end
   pfile='/Users/bst/DropBox/PeopleSensor/src/p.mat';
+  if ~simul
   try
     s1=arduino_ip(1);
   catch me
@@ -17,7 +21,8 @@ function ledserver(p,doplot)
     arduino_close();
     return;
   end
-
+  end
+  
   debug=0;
   ignores={};
 
@@ -42,7 +47,7 @@ function ledserver(p,doplot)
   for i=1:length(apps)
     apps(i).index=i;
   end
-  currapp=apps(6);
+  currapp=apps(3);
 
   info=struct('state',zeros(numled(),3),'mix',zeros(numled(),3),'prevstate',[],'layout',p.layout,'vis',[],'hypo',[],'running',true,...
               'colors',{p.colors},'back',struct('maxlev',1,'minlev',0.2,'state',zeros(numled(),3)),'maxtransport',{{1,1,1,120,4,4}});
@@ -226,16 +231,44 @@ function ledserver(p,doplot)
       info.state=info.mix;
       info=currapp.backfn(info);   % Compute background LED colors
       info=currapp.fn(info);   % Override with foreground effect
+      info=ls_updateentry(info);
       if any(size(info.prevstate)~=size(info.state))
         % First time -- initialize to something different from current state
         fprintf('Initializing prevstate\n');
         info.prevstate=info.state;
         info.prevstate(:)=255;
       end
-      ls_updateallleds(info,doplot);
+      % Mix background and live state
+      state=info.back.state.*(1-info.mix)+info.state.*info.mix;
+%      state=[state;info.entrystate;info.entrystate];
+      if ~simul
+        ls_updateallleds(info,state);
+      end
+      if doplot
+        ls_plotleds(info,state);
+      end
       lastupdate=now;
     end
   end
+end
+
+function info=ls_updateentry(info)
+  debug=1;
+  if ~isfield(info,'entry')
+    info.entry=struct('pperiod',4,'cperiod',20,'pspatial',65, 'cspatial',130,'nled',130,'minlev',0,'maxlev',1);
+  end
+
+  % Amplitude overall
+  p0=(0:info.entry.nled-1)*2*pi/info.entry.pspatial;
+  pshift=[p0;p0;p0]';
+  c0=(0:info.entry.nled-1)*2*pi/info.entry.cspatial;
+  cshift=[c0;c0+2*pi/3;c0+4*pi/3]';
+  t=now*24*3600;
+  pphase=mod(t*2*pi/info.entry.pperiod+pshift,2*pi);
+  cphase=mod(t*2*pi/info.entry.cperiod+cshift,2*pi);
+  amp=info.entry.minlev+(info.entry.maxlev-info.entry.minlev)*(sin(pphase)+1)/2;
+  col=(sin(cphase)+1)/2;
+  info.entrystate=((amp.*col).^2*.97+.03) * 127;   % Response is nonlinear (approx squared)
 end
 
 function ls_updateleds(info)
@@ -267,33 +300,36 @@ function ls_updateleds(info)
   end
 end
 
-function ls_updateallleds(info,doplot)
+function ls_updateallleds(info,state)
   debug=0;
   s1=arduino_ip(0);
-  tic;
-  sync(s1);
-  elapsed=toc;
-  % Mix background and live state
-  state=info.back.state.*(1-info.mix)+info.state.*info.mix;
-
+  %sync(s1);
   try
+    if debug
+      tic;
+    end
     cmd=setallleds(s1,state,0);
     cmd=[cmd,show(s1)];
     if debug
-      fprintf('Updated all LEDs using %d bytes after wait of %.3f seconds\n',length(cmd),elapsed);
+      elapsed=toc;
+      fprintf('Updated all LEDs using %d bytes in %.3f seconds\n',length(cmd),elapsed);
     end
   catch me
     fprintf('Error during setallleds: %s\n', me.message);
     % Ignore, let next update handle it
   end
 
-  if doplot
-    setfig('ledplot');
-    pixperled=2;
-    im=zeros(1,size(state,1),3);
-    im(1,:,:)=state/127.0;
-    imshow(im);
+end
+
+function ls_plotleds(info,state)
+  pixperled=5;
+  im=127*ones(pixperled+1,size(state,1),3,'uint8');
+  for i=1:pixperled
+    im(i,:,:)=state;
   end
+  im(pixperled+1,numled(),:)=0;
+  imshow(im*2);
+  pause(0.01);
 end
 
 % Update background colors of LEDs
