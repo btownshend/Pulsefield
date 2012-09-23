@@ -36,7 +36,7 @@ for i=1:length(info.updates)
         end
         if info.ableton
           channel=info.cm.id2channel(id);
-          oscmsgout('AL','/live/play/clip',{int32(channel-1),int32(j-1)});   % Play clip
+          info.al.playclip(channel,j);
         end
       end
     end

@@ -4,7 +4,7 @@ if nargin<2
   fprintf('Move a black CD case around LED struts near each camera blocking LEDs to far camera and view from near camera\n');
   input('Hit return when ready to start (5s pause will follow)','s');
   pause(5);
-  nsamps=150;
+  nsamps=1800;
   fprintf('Acquiring %d samples\n', nsamps);
   recvis=recordvis(p,nsamps);
 end
@@ -50,7 +50,7 @@ for i=1:ncameras
     offleds=find(sum(v(others,:)==0)>=2  & sum(v(others,:)==1)==0);   % Which LEDs are off
 
     fprintf('Off LEDS = %s ',shortlist(offleds));
-    if length(offleds)<2
+    if length(offleds)<1
       fprintf('Skipping, only %d LEDs consistently blocked\n',length(offleds));
       continue;
     end
@@ -94,6 +94,10 @@ for i=1:ncameras
     dist=abs(a*xp(1)+b*xp(2)+c)/norm([a b]);
     fprintf('Err=%.3f\n',dist);
     lines(end+1,:)=[a b c];
+  end
+  if size(lines,1)<2
+    fprintf('Not enough data to calibrate camera %d, skipping\n', i);
+    continue;
   end
   % Set up as matrix equation  a * x + b * y = -c
   ab=lines(:,1:2);

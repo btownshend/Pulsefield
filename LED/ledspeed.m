@@ -12,8 +12,8 @@ color(:,2)=mod((1:size(color,1))*2,127);
 color(:,3)=mod((1:size(color,1))*3,127);
 counter=-1;
 getnumrcvd(s1);   % Clear Arduino receipt count
-nrpt=10000;
-nmeasure=100;
+nrpt=1000000;
+nmeasure=10;
 for rpt=1:nrpt
   if mod(rpt-1,nmeasure)==0
     tic;

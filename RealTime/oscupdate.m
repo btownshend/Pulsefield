@@ -67,18 +67,6 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
       oscmsgout(p.oscdests,'/pf/set/npeople',{int32(length(snap.hypo))});
     end
 
-    for channel=1:info.cm.numchannels()
-      id=info.cm.channel2id(channel);
-      % fprintf('Channel %d, id=%d\n', channel, id);
-      if length(id)>0
-        oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{1});
-        oscmsgout('TO',sprintf('/touchosc/loc/%d/color',channel),{col2touchosc(id2color(id(1),p.colors))});
-        oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{sprintf('%d ',id)});
-      else
-        oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{0});
-        oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{''});
-      end
-    end
 
     for i=1:length(info.pgm)
       oscmsgout('TO',sprintf('/midi/pgm/%d/value',i),{info.pgms{info.pgm(i)}});
@@ -102,9 +90,10 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     oscmsgout('TO','/midi/velocity/value',{info.velocity});
     oscmsgout('TO','/tempo',{info.tempo});
     oscmsgout('MAX','/pf/pass/transport',{'tempo',info.tempo});
-    oscmsgout('AL','/live/tempo',{'tempo',info.tempo});
     oscmsgout('TO','/tempo/value',{info.tempo});
+    fprintf('Updating TO with volume=%f\n',info.volume);
     oscmsgout('TO','/volume',{info.volume});
+    oscmsgout('TO','/volume/value',{sprintf('%.1f',Ableton.slider2db(info.volume))});
     oscmsgout('TO','/midi/multichannel',{int32(info.multichannel)});
     oscmsgout('TO','/enable/ableton',{int32(info.ableton)});
     oscmsgout('TO','/enable/max',{int32(info.max)});
@@ -133,15 +122,8 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     end
     
     for i=info.entries
-      oscmsgout(p.oscdests,'/pf/entry',{int32(sampnum),elapsed,int32(i)});
-      channel=info.cm.newchannel(i);
-      if isempty(channel)
-        fprintf('No more channels available to allocate to ID %d\n', i);
-      else
-        oscmsgout('TO',sprintf('/touchosc/loc/%d/color',channel),{col2touchosc(id2color(i,p.colors))});
-        oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{1});
-        oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{num2str(i)});
-      end
+      channel=info.cm.newchannel(i);   % Allocate a channel
+      oscmsgout(p.oscdests,'/pf/entry',{int32(sampnum),elapsed,int32(i),int32(channel)});
     end
 
     for i=1:length(snap.hypo)
@@ -150,10 +132,7 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
       sametnum=find(h.tnum==[snap.hypo.tnum]);
       groupid=snap.hypo(min(sametnum)).id;
       % TODO - should send to all destinations except TO
-      oscmsgout({'LD','OSC'},'/pf/update',{int32(sampnum), elapsed,int32(h.id),h.pos(1),h.pos(2),h.velocity(1),h.velocity(2),h.majoraxislength,h.minoraxislength,int32(groupid),int32(length(sametnum))});
-      xypos=h.pos ./max(abs(p.layout.active));
-      channel=info.cm.id2channel(h.id);
-      oscmsgout('TO',sprintf('/touchosc/loc/%d',channel),{xypos(2),xypos(1)});
+      oscmsgout({'LD','OSC'},'/pf/update',{int32(sampnum), elapsed,int32(h.id),h.pos(1),h.pos(2),h.velocity(1),h.velocity(2),h.majoraxislength,h.minoraxislength,int32(groupid),int32(length(sametnum)),int32(info.cm.id2channel(h.id))});
     end
 
     % Update LCD
@@ -179,19 +158,70 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     % Need to handle exits last since app.fn may have needed to know which channel the id was on
     for i=info.exits
       oscmsgout(p.oscdests,'/pf/exit',{int32(sampnum),elapsed,int32(i)});
-      channel=info.cm.id2channel(i);
-      %        oscmsgout('TO',sprintf('/touchosc/loc/%d/color',channel),{'red'});
-      oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{0});
-      oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{''});
       info.cm.deleteid(i);
     end
 
+    % Update XY display in TouchOSC
+    if strcmp(info.touchpage,'positions')
+      for channel=1:8
+        xyids=info.cm.channel2id(channel);
+        if mod(sampnum,15)==0  % Reduce number of packets -- send these messages 1/sec
+          if isempty(xyids)
+            oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{0});
+            oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{''});
+          else
+            oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{1});
+            oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{sprintf('%d ',xyids)});
+            oscmsgout('TO',sprintf('/touchosc/loc/%d/color',channel),{col2touchosc(id2color(xyids(1),p.colors))});
+          end
+        end
+        if ~isempty(xyids)
+          % Update these every frame for active channels
+          hnum=find([snap.hypo.id]==xyids(1));
+          h=snap.hypo(hnum);   % Only show 1 person even though there may be multiple on same channel
+          xypos=h.pos ./max(abs(p.layout.active));
+          oscmsgout('TO',sprintf('/touchosc/loc/%d',channel),{xypos(2),xypos(1)});
+        end
+      end
+    end
+    
     % Update number of people present after all exits, entries
     people=length(ids);
     prevpeople=length(previds);
     if people~=prevpeople
       oscmsgout(p.oscdests,'/pf/set/npeople',{int32(people)});
     end
+
+    if info.ableton
+      % Read any Ableton updates
+      nmsg=info.al.refresh();
+      if nmsg>0
+        info.health.gotmsg('AL');
+      end
+
+      info.volume=info.al.getvolume();
+      info.tempo=info.al.gettempo();
+    end
+    
+    if (now-info.lastping)*24*3600 > info.pinginterval
+      % Ping everyone that can respond
+      fprintf('Pinging\n');
+      oscmsgout('LD','/ping',{int32(1)});
+      oscmsgout('MAX','/ping',{int32(3)});
+      info.lastping=now;
+    end
+    
+    % Check if channel map needs adjustment due to change in song/num channels
+    alchannels=info.al.numsongtracks(info.grid.song);
+    if (alchannels ~= info.cm.numchannels() && alchannels>0)
+      fprintf('Ableton has %d (->%d) tracks, but using a %d channel mapping; changing mapping\n',info.al.numtracks(), alchannels, info.cm.numchannels());
+      info.cm.setnumchannels(alchannels);
+    end
+    %fprintf('numsongs=%f, trackspersong=%d, song=%d, channels=%d\n',info.al.numsongs(), info.al.trackspersong, info.grid.song,alchannels);
+
   end
+  
+  info.health.updateleds();
+  
   info.juststarted=false;
 end

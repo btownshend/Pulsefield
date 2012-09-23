@@ -1,5 +1,5 @@
 % Run the entire calibration/analysis chain
-doplot=2;
+doplot=0;
 dolevcheck=false;
 
 if ~exist('p','var')
@@ -32,13 +32,14 @@ if ~isfield(p.camera(1),'pixcalib')
     plotdistortion(p);
   end
 end
+plotvalid(p);
 
 if ~isfield(p.camera(1),'viscache')
   disp('Visible calibration');
   [allvis,p]=getvisible(p,'init',true,'usefrontend',false);
 end
 
-if ~isfield(p,'crosstalk')
+if 0 && ~isfield(p,'crosstalk')
   % Only really needed 
   disp('Crosstalk calculation');
   p=crosstalk(p);
@@ -47,11 +48,22 @@ end
 % Refine position of cameras
 % Need to physically block cameras for this...
 % Instead use prior calibration
-cposcalib=[ 1.0417   -2.2688
-            -1.3200   -2.1270
-            -2.5115   -0.0019
-            -1.3293    2.1081
-            1.0517    2.2646];
+if length(p.camera)==5
+  cposcalib=[ 1.0417   -2.2688
+              -1.3200   -2.1270
+              -2.5115   -0.0019
+              -1.3293    2.1081
+              1.0517    2.2646];
+elseif length(p.camera)==6
+  cposcalib=[    2.1031   -2.5357
+                 -0.1724   -3.2904
+                 -2.3925   -2.2642
+                 -2.3779    2.2734
+                 -0.0969    3.2689
+                 2.1195    2.5154];
+else
+  cposcalib=[];
+end
 if length(p.layout.cpos)==length(cposcalib) && max(max(abs(cposcalib-p.layout.cpos)))<0.15
   fprintf('Forcing camera positions to previously calibrated values\n')
   p.layout.cpos=cposcalib;

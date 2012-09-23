@@ -28,31 +28,11 @@ else
   elseif length(index)==2
     index=index(1):index(2);
   end
-  if vgroup==0
-    % Map index (clockwise sequential) to correct led number
-    posmap=[800+(29:-1:0),640+(159:-1:0),320+(159:-1:0),480+(0:159),0:159,160+(0:28)];
-%    posmap=[480+(159:-1:0),320+(0:50),0+(159:-1:0),160+(0:159)];
-    if max(index+1)>length(posmap) || min(index+1)<1
-      error('Index out of range; should be 0..%d\n', length(posmap)-1);
-    end
-    index=sort(posmap(index+1));
-  elseif vgroup==1
-    %fprintf('Not mapping IDs\n');
-  elseif vgroup==2
-    % Map index to left entry group (TODO-tune)
-    posmap=[800+(159:-1:30)];
-    if max(index+1)>length(posmap) || min(index+1)<1
-      error('Index out of range; should be 0..%d\n', length(posmap)-1);
-    end
-    index=sort(posmap(index+1));
-  elseif vgroup==3
-    % Map index to right entry group (TODO-tune)
-    posmap=[160+(29:159)];
-    if max(index+1)>length(posmap) || min(index+1)<1
-      error('Index out of range; should be 0..%d\n', length(posmap)-1);
-    end
-    index=sort(posmap(index+1));
+  posmap=getposmap(vgroup);
+  if max(index+1)>length(posmap) || min(index+1)<1
+    error('Index out of range; should be 0..%d\n', length(posmap)-1);
   end
+  index=sort(posmap(index+1));
 
   i=1;
   cmd=[];

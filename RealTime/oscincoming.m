@@ -1,7 +1,6 @@
 % oscincoming - process incoming OSC messages
 function info=oscincoming(p,info)
   debug=false;
-  log=true;
   
   % Check for incoming messages to server
   while true
@@ -10,9 +9,7 @@ function info=oscincoming(p,info)
     if isempty(rcvdmsg)
       break;
     end
-    if log
-      osclog('msg',rcvdmsg,'server','MPO');
-    end
+    
     if debug
       fprintf('%s->%s\n', rcvdmsg.src, formatmsg(rcvdmsg.path,rcvdmsg.data));
     end
@@ -56,8 +53,14 @@ function info=oscincoming(p,info)
     elseif strcmp(rcvdmsg.path,'/pf/calibrate')
       if length(rcvdmsg.data)<1 || rcvdmsg.data{1}>0.5
         % Don't respond to button up event (with data=0.0), only button down (1.0)
-        info.needcal=true;
+        info.needcal=1;
         fprintf('Request for calibration received from %s\n',rcvdmsg.src);
+      end
+    elseif strcmp(rcvdmsg.path,'/pf/reset')
+      if length(rcvdmsg.data)<1 || rcvdmsg.data{1}>0.5
+        % Don't respond to button up event (with data=0.0), only button down (1.0)
+        info.needcal=2;
+        fprintf('Request for reset received from %s\n',rcvdmsg.src);
       end
     elseif strcmp(rcvdmsg.path,'/sound/setapp')
       found=false;
@@ -131,6 +134,22 @@ function info=oscincoming(p,info)
     elseif strcmp(rcvdmsg.path,'/touchosc/seq/key/decr') && rcvdmsg.data{1}==1
       info.key=mod(info.key-2,length(info.keys))+1;
       info.refresh=true;
+    elseif strcmp(rcvdmsg.path,'/touchosc/song/incr')  && rcvdmsg.data{1}==1
+      info.grid.song=mod(info.grid.song,info.al.numsongs())+1;
+      info.al.stopalltracks();
+      info.al.settempo(info.al.getsongtempo(info.grid.song));
+      fprintf('Switched to song %d\n', info.grid.song);
+    elseif strncmp(rcvdmsg.path,'/touchosc/newtrack/',19)
+      slashes=find(rcvdmsg.path=='/');
+      channel=str2double(rcvdmsg.path(slashes(3)+1:end));
+      % Reassign ID to another channel
+      id=info.cm.channel2id(channel);  
+      if ~isempty(id)
+        info.cm.deleteid(id);
+        newchannel=info.cm.newchannel(id);
+        fprintf('Reassigning ID %d on channel %d to a channel %d\n', id, channel,newchannel);
+        info.al.stopalltracks();
+      end
     elseif strcmp(rcvdmsg.path,'/max/transport')
       % Received bars,beats,ticks,res,tempo,time sig1, time sig2
       info.maxtransport=rcvdmsg.data;
@@ -168,7 +187,7 @@ function info=oscincoming(p,info)
       info.ableton=rcvdmsg.data{1};
       fprintf('Ableton Enable = %d\n',info.max);
       if ~info.ableton
-        oscmsgout('AL','/live/stop',{});
+        info.al.stop();
       end
       info.refresh=true;
     elseif strcmp(rcvdmsg.path,'/enable/max')
@@ -177,14 +196,48 @@ function info=oscincoming(p,info)
       info.refresh=true;
     elseif strcmp(rcvdmsg.path,'/tempo')
       info.tempo=round(rcvdmsg.data{1});  % Speed in BPM
+      info.al.settempo(info.tempo);
       info.refresh=true;
     elseif strcmp(rcvdmsg.path,'/volume')
-      info.volume=rcvdmsg.data{1};  % Volume 0-1.0
+      % Volume 0-1.0
+      vol=rcvdmsg.data{1};
+      info.volume=vol;
+      if info.ableton
+        fprintf('Setting AL volume to %f\n', vol);
+        info.al.setvolume(vol);
+      end
       info.refresh=true;
+    elseif strncmp(rcvdmsg.path,'/page/',6)
+      info.health.gotmsg('TO');
+      info.touchpage=rcvdmsg.path(7:end);
     elseif strcmp(rcvdmsg.path,'/ping')
+      % ignore
+    elseif strcmp(rcvdmsg.path,'/ack')
+      if rcvdmsg.data{1}==1
+        % Should actually come in on MPL port
+        info.health.gotmsg('LD');
+      elseif rcvdmsg.data{1}==2
+        info.health.gotmsg('FE');
+      elseif rcvdmsg.data{1}==3
+        info.health.gotmsg('MX');
+      end
       % ignore
     elseif ~handled
       fprintf('Unknown OSC message: %s\n', rcvdmsg.path);
     end
   end
+
+  % Check for incoming messages to server from LedServer
+  while true
+    % Non-blocking receive
+    rcvdmsg=oscmsgin('MPL',0.0);
+    if isempty(rcvdmsg)
+      break;
+    end
+    info.health.gotmsg('LD');
+    if debug
+      fprintf('%s->%s\n', rcvdmsg.src, formatmsg(rcvdmsg.path,rcvdmsg.data));
+    end
+  end
+
 end

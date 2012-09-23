@@ -19,10 +19,17 @@ classdef ChannelMap < handle
       if nchannels==obj.nchannels
         return;
       end
+      % Create new mapping
       newmap=ChannelMap(nchannels);
-      for i=1:length(obj.ids)
-          newmap.newchannel(obj.ids(i))
+      keep=obj.channels<=nchannels;
+      % TODO - if increasing number of channels, could remove some overloaded channels
+      % Keep channel mappings that are still valid
+      newmap.ids=obj.ids(keep);
+      newmap.channels=obj.channels(keep);
+      for i=obj.ids(~keep)
+          newmap.newchannel(i);
       end
+      % Copy in new structure
       obj.ids=newmap.ids;
       obj.channels=newmap.channels;
       obj.nchannels=newmap.nchannels;

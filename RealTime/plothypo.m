@@ -8,9 +8,6 @@ subplot(221);
 plotlayout(recvis.p.layout,0);
 hold on;
 for samp=1:length(snap)
-  if isempty(snap(samp).hypo)
-    continue;
-  end
   foundk=zeros(length(snap(samp).hypo),1);
 
   if samp>1
@@ -41,9 +38,6 @@ end
 subplot(222);
 hold on;
 for samp=2:length(snap)
-  if isempty(snap(samp).hypo)
-    continue;
-  end
   [ids,pid,cid]=intersect([snap(samp-1).hypo.id],[snap(samp).hypo.id]);
   for j=1:length(snap(samp).tgts)
     tj=snap(samp).tgts(j);
@@ -60,9 +54,6 @@ end
 subplot(224);
 hold on;
 for samp=2:length(snap)
-  if isempty(snap(samp).hypo)
-    continue;
-  end
   [ids,pid,cid]=intersect([snap(samp-1).hypo.id],[snap(samp).hypo.id]);
   for j=1:length(snap(samp).tgts)
     tj=snap(samp).tgts(j);

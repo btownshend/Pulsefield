@@ -5,6 +5,7 @@
 function msg=oscmsgin(ident,timeout,peek)
 global oscservers;
 debug=0;
+log=0;
 
 if nargin<2
   timeout=0.0;
@@ -70,6 +71,9 @@ if isempty(oscservers(svrind).msgqueue)
 end
 
 msg=oscservers(svrind).msgqueue{1};
+if log
+  osclog('msg',msg,'server',ident);
+end
 oscservers(svrind).msgqueue=oscservers(svrind).msgqueue(2:end);
 
 if debug

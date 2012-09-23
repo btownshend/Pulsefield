@@ -1,11 +1,12 @@
 % Realtime run script
 
 startdiary('realtime');
-dosaves=0;   % 0-no saves, 1-by session, 2-all
+dosaves=1;   % 0-no saves, 1-by session, 2-all
+extraframes=10;  % Number of frames to store before/after exit
 
 % Setup data structure
 global recvis
-if exist('recvis','var') && isfield(recvis,'vis') && ~isempty(recvis.vis) && ~isfield(recvis,'note') && length(recvis.vis)>=5
+if exist('recvis','var') && isfield(recvis,'vis') && ~isempty(recvis.vis) && ~isfield(recvis,'note') && length(recvis.vis)>extraframes
     z=input(sprintf('Are you sure you want to overwrite existing recvis with %d samples? [Y/N]: ',length(recvis.vis)),'s');
     if isempty(z) || upper(z)~='Y'
         return;
@@ -62,6 +63,8 @@ prevsnap=[];
 info=infoinit();
 photointerval=10.0;   % Take a photo ever 10 seconds while someone present
 lastphoto=0;
+postbuffering=0;   % Number of frames PF has been empty
+
 while ~info.quit
   if idlecnt==0
     timeout=0.0;
@@ -80,15 +83,8 @@ while ~info.quit
       lastphoto=now;
     end
   else
+    info.health.gotmsg('FE');
     samp=samp+1;
-    if dosaves>0
-      if ~isfield(recvis,'vis')
-        recvis.vis=vis;
-      else
-        recvis.vis=[recvis.vis,vis];
-      end
-    end
-
     % Check for bad data
     transitions=sum(abs(diff(vis.v'))==1);
     if any(transitions>20) && samp>=suppressuntil
@@ -144,41 +140,67 @@ while ~info.quit
       info=oscupdate(recvis.p,info,samp,snap);
     end
 
-    if dosaves==1 && length(snap.hypo)==0 && ~isempty(prevsnap) && length(prevsnap.hypo)>0
+    if length(snap.hypo)==0
+      % Keep count of how many frames its been empty to know when to save recording
+      postbuffering=postbuffering+1;
+    else
+      % Occupied
+      postbuffering=0;
+    end
+    
+    if dosaves==1 && postbuffering==extraframes && maxoccupancy>0
       % Just emptied out, save data
-      fprintf('All empty - saving %d frames\n', length(recvis.vis));
+      tic;
+      fprintf('All empty for %d frames after max occupancy of %d - saving %d frames\n', postbuffering, maxoccupancy, length(recvis.vis));
       try
         saverecvis(recvis,sprintf('Auto-save of %d frames at %s with max occupancy of %d',length(recvis.vis),datestr(now),maxoccupancy));
       catch me
         fprintf('saverecvis: %s\n',me.message);
       end
       maxoccupancy=0;
-      % Clear out data
-      recvis=rmfield(recvis,{'snap','vis'});
+      
       % New diary
       startdiary();
       startdiary('realtime');
+      savetime=toc;
+      fprintf('Save took %.2f seconds\n',savetime);
     end
+
+    if dosaves>0
+      if ~isfield(recvis,'snap')
+        % Start saving frames
+        recvis.snap=snap;
+        recvis.vis=vis;
+      elseif maxoccupancy>0 || dosaves==2 || length(recvis.snap)<extraframes
+        % Save new frame
+        recvis.snap(end+1)=snap;
+        recvis.vis(end+1)=vis;
+      else
+        % Just keep most recent extraframes to have prebuffering
+        recvis.snap=[recvis.snap((end-extraframes+2):end),snap];
+        recvis.vis=[recvis.vis((end-extraframes+2):end),vis];
+      end
+    end
+    %    fprintf('Retaining %d frames\n',length(recvis.snap));
+
     prevsnap=snap;
   end
   info=oscincoming(recvis.p,info);
   
   if ~isempty(vis)
     snap.whendone2=now;
-    if dosaves==2 || (dosaves==1 &&length(snap.hypo)>0)
-      if isfield(recvis,'snap')
-        recvis.snap(end+1)=snap;
-      else
-        recvis.snap=snap;
-        recvis.vis=vis;
-      end
-    end
   end
 
-  if info.needcal
-    fprintf('Recalibrating...');
+  if info.needcal>0
+    if info.needcal>1
+      fprintf('Full calibration.  LED localization...');
+      recvis.p=pixcalibrate(recvis.p);
+      fprintf('done ');
+    end
+    fprintf('Correlations...');
     [~,recvis.p]=getvisible(recvis.p,'init');
-    info.needcal=false;
+    fprintf('done\n');
+    info.needcal=0;
   end
 end
 

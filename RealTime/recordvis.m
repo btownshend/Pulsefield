@@ -1,5 +1,6 @@
 % recordvis - record LED states 
 function recvis=recordvis(p,nsamps)
+lsctl(p,'pause');
 s1=arduino_ip();
 % Turn on all LED's
 fprintf('Turning on LEDs\n');
@@ -11,9 +12,11 @@ sync(s1);
 pause(0.3);
 
 recvis=struct('p',p,'vis',[]);
+% Flush old data
+vis=getvisible(p,'setleds',false);
 
 for i=1:nsamps
-  vis=getvisible(p);
+  vis=getvisible(p,'setleds',false);
   fprintf('Got recording %d at %s\n',length(recvis.vis)+1,datestr(vis.when));
   recvis.vis=[recvis.vis,vis];
 end
@@ -24,5 +27,7 @@ fprintf('Captured %d samples in %.2f seconds/sample\n', nsamps,...
 fprintf('Turning off LEDs\n');
 setled(s1,-1,[0,0,0]);
 show(s1);
+pause(1);
+lsctl(p,'resume');
 
 saverecvis(recvis);

@@ -9,19 +9,7 @@ if nargin<3
   vgroup=0;
 end
 
-if vgroup==0
-%  posmap=[800+(29:-1:0),640+(159:-1:0),320+(159:-1:0),480+(0:159),0:159,160+(0:28),800+(159:-1:30),160+(30:159)];
-  posmap=[800+(29:-1:0),640+(159:-1:0),320+(159:-1:0),480+(0:159),0:159,160+(0:28)];
-elseif vgroup==1
-  posmap=0:size(color,1)-1;
-  %fprintf('Not mapping IDs\n');
-elseif vgroup==2
-  % Map index to left entry group (TODO-tune)
-  posmap=[800+(159:-1:30)];
-elseif vgroup==3
-  % Map index to right entry group (TODO-tune)
-  posmap=[160+(30:159)];
-end
+posmap=getposmap(vgroup);
 
 if size(color,1)~=length(posmap)
   fprintf('setallleds with %d colors instead of expected %d\n', size(color,1),length(posmap));
@@ -35,7 +23,7 @@ mcolor(posmap+1,:)= bitset(uint8(color),8);
 
 nsent=0;
 while nsent<size(mcolor,1)
-  send=min(size(mcolor,1)-nsent,100);
+  send=min(size(mcolor,1)-nsent,255);
   pcmd=zeros(1,4+3*send,'uint8');
   [cntr,sscmd]=syncsend(s1,1);
   pcmd(1)='F';

@@ -68,7 +68,9 @@ while true
     end
     filled=false(1,length(p.camera));
   elseif frame==-1
-    fprintf('Skipping message %s while looking for /vis/beginframe\n', m.path);
+    if ~strcmp(m.path,'/ack')
+      fprintf('Skipping message %s while looking for /vis/beginframe\n', m.path);
+    end
   else
     if strcmp(m.path,'/vis/endframe')
       if frame ~= m.data{1}

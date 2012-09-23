@@ -10,7 +10,7 @@ if nargin<4
   debug=false;
 end
 if nargin<5
-  log=true; 
+  log=false; 
 end
 
 global oscclients;

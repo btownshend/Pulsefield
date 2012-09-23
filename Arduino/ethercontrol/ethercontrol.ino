@@ -55,8 +55,8 @@ void setup() {
     show();  
     
     // Setup ethernet
-    IPAddress ip(192,168,0,154);
-    IPAddress gateway(192,168,0,1);
+    IPAddress ip(192,168,3,70);
+    IPAddress gateway(192,168,3,1);
     IPAddress subnet(255,255,255,0);
     
    Ethernet.begin(mac,ip,gateway,subnet);
@@ -82,6 +82,10 @@ void setup() {
     Serial.print("Have ");
     Serial.print((int)strip.numPixels());
     Serial.println(" leds");
+
+    EthernetClient tmp;
+    Serial.print("socket offset: ");
+    Serial.println(&tmp.getSocket() - (uint8_t *)&tmp);
 }
 
 
@@ -101,10 +105,17 @@ int getcmd(EthernetClient *client, uint8_t *cmdbuf,int cmdlen) {
     return 0;   // OK
 }
 
+uint8_t ecSocket(EthernetClient *client)
+{
+   // KLUDGE-Read value of sock from private data in EthernetClient
+    return ((uint8_t *)client)[2];
+}
+
 void loop() {
     EthernetClient client = server.available();
 
     if (client) {
+	Serial.print(client.getSocket());
 	static unsigned long lasttime=micros(), pause=0;
         uint8_t cmdbuf[20];
 	while (client.available() != 0) {
@@ -112,8 +123,7 @@ void loop() {
             int id;
 	    // Get a command from host 
 	    int cmd=client.read();
-	    //Serial.print("Got command: ");
-	    //Serial.println(cmd);
+	    Serial.print((char)cmd);
 	    nrcvd++;
 	    switch(cmd) {
 	    case 'S':  // Set
@@ -239,21 +249,30 @@ void loop() {
                   // Note: checking client.available() sometimes gives a count of 1, but a subsequent client.read() returns -1
                   // There may be a race in WD ethernet code that causes subsequent arrival of data (was seeing 769 bytes when rechecking)
                   // to temporarily make it look the queue is empty again
+		  int cnt=1;
 		while ((id=client.read())< 0) {
                   if (!client.connected()) {
                       Serial.println("Client disconnect during V command");
                       break;
                   }
+		  cnt=cnt+1;
+		  if (cnt>=10000) {
+		    Serial.print('#');
+		    cnt=0;
+		   }
                 }
+		Serial.print('+');
 		nrcvd++;
 		client.write('A');  // ACK
 		client.write(id);
+		Serial.print('@');
                 //Serial.print('V');
                 //Serial.println(id);
                 }
 		break;
 	    } 
 	}
+	Serial.println(".");
     }
 }
 
