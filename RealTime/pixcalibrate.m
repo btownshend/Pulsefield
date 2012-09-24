@@ -2,9 +2,10 @@
 % Usage: [sainfo,im]=pixcalibrate(sainfo,im)
 % sainfo - structure holding configuration/calibration information
 % im - optional arg to reuse image data
-function [sainfo,im]=pixcalibrate(sainfo,im)
+function [sainfo,im]=pixcalibrate(sainfo,im,varargin)
+defaults=struct('debug',false);
+args=processargs(defaults,varargin);
 ids=[sainfo.camera.id];
-DEBUG=true;
 nrpt=1;
 nled=numled();
 nbits=ceil(log2(nled));
@@ -92,7 +93,7 @@ end
 for iid=1:length(ids)
   id=ids(iid);
   fprintf('\n*** Processing data for camera %d\n',id);
-  if DEBUG
+  if args.debug
     setfig(sprintf('pixcompare%d',id));
     clf;
   end
@@ -110,7 +111,7 @@ for iid=1:length(ids)
         z{k,j}=z{k,j}+rgb2gray(im2single(im{k,j,p,iid}));
       end
       z{k,j}=z{k,j}/size(im,3);
-      if DEBUG
+      if args.debug
         subplot(nbits,3,k*3+j-3);
         imshow(z{k,j});
       end
@@ -127,13 +128,13 @@ for iid=1:length(ids)
       imat=(bw)*2^(k-1)+imat;
       tmat=min(tmat,abs(zd{k}));
     end
-    if DEBUG
+    if args.debug
       subplot(nbits,3,k*3)
       imshow(zdiff/max(zdiff(:))+0.5);
       pause(0);
     end
   end
-  if DEBUG
+  if args.debug
     % Add main title
     suptitle(sprintf('Camera %d images',id));
   end
@@ -146,7 +147,7 @@ for iid=1:length(ids)
 
   % Unlabel invalid points
   imat(~selmat)=0;
-  if DEBUG
+  if args.debug
     % Plot count of pixels per led
     pcnt=zeros(1,nled);
     for i=1:nled
@@ -162,7 +163,7 @@ for iid=1:length(ids)
   % Unlabel points that refer to non-existent LED's
   imat(~ismember(imat,[sainfo.led.id]))=0;
   % Display as an RGB image
-  if DEBUG
+  if args.debug
     setfig(sprintf('indexmat%d',id));
     imshow(label2rgb(imat));
     title(sprintf('Index image for camera %d',id));
@@ -178,7 +179,7 @@ for iid=1:length(ids)
   for i=1:length(sainfo.led)
     ledid=sainfo.led(i).id;
     lpos=imatroi==ledid;
-    stats=regionprops(bwconncomp(lpos),'all');
+    stats=fastregionprops(bwconncomp(lpos),'Centroid','Area','PixelList','EquivDiameter');
     for j=1:length(stats)
       stats(j).Centroid=stats(j).Centroid+roi([1,3])-1;
     end

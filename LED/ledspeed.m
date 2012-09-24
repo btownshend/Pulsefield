@@ -1,15 +1,15 @@
 % Check speed of full changes of LEDS
 s1=arduino_ip;
 sync(s1);
-nled=160*6;
+nled=699;
 level=127;
 nsent=0;
 delay=0.0;
 color=zeros(nled,3);
 % Pattern
-color(:,1)=mod((1:size(color,1))*1,127);
-color(:,2)=mod((1:size(color,1))*2,127);
-color(:,3)=mod((1:size(color,1))*3,127);
+color(:,1)=mod((1:size(color,1))*1,2);
+color(:,2)=mod((1:size(color,1))*2,2);
+color(:,3)=mod((1:size(color,1))*3,2);
 counter=-1;
 getnumrcvd(s1);   % Clear Arduino receipt count
 nrpt=1000000;

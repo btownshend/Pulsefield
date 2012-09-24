@@ -205,7 +205,6 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     
     if (now-info.lastping)*24*3600 > info.pinginterval
       % Ping everyone that can respond
-      fprintf('Pinging\n');
       oscmsgout('LD','/ping',{int32(1)});
       oscmsgout('MAX','/ping',{int32(3)});
       info.lastping=now;

@@ -421,7 +421,7 @@ function info=fg_follow(info,usemeter)
   
   minradius=0.5;   % min radius where marker is on
   maxleds=20;    % Number of LEDs in marker when close to edge
-  awidthmax=(2*pi*48/50)/sum(~info.layout.outsider) * maxleds;
+  awidthmax=(2*pi*48/50)/sum(~info.layout.outsider) * maxleds/2;
   meanradius=(max(info.layout.active(:,2))-min(info.layout.active(:,2)))/2;
   
   for i=1:length(info.hypo)
@@ -440,25 +440,32 @@ function info=fg_follow(info,usemeter)
     end
 
     pos=h.pos;
-    % Angular width of person's marker
-    awidth=awidthmax * min(1,(norm(pos)-minradius)/(meanradius-minradius));
+    % Angular width of person's marker (left and right)
+    awidth(1)=awidthmax * min(1,(norm(pos)-minradius)/(meanradius-minradius));
+    awidth(2)=awidth(1);
+
     if usemeter
       % Increase width using VU (amount above -14dB = 0.5)
-      awidth=awidth + awidthmax * 10 * max(info.meter(h.channel,:))^2;  % Will span about 100 LEDs for 0.0-1.0 -> 2* 2.5 LED/dB at top
-      fprintf('Meter=%.2f %.2f Width = %.1f LEDs\n', info.meter(h.channel,:),awidth*maxleds/awidthmax);
+      awidth=awidth + awidthmax * 10 * info.meter(h.channel,:).^2;  % Will span about 100 LEDs for 0.0-1.0 -> 2* 2.5 LED/dB at top
+      fprintf('Meter=%.2f %.2f Width = %.1f %.1f LEDs\n', info.meter(h.channel,:),awidth*maxleds/awidthmax);
     end
 
     if norm(pos)>0.5   % At least .5m away from center
       [angle,radius]=cart2pol(pos(:,1),pos(:,2));
       langle=cart2pol(info.layout.lpos(:,1),info.layout.lpos(:,2));
-      indices = find(abs(langle-angle)<awidth/2 & ~info.layout.outsider);   % All LEDs inside active area, within awidth angle of person
-                                                                            % fprintf('Angle=%.1f, RFrac=%.2f, NLed=%d\n', angle*360/pi, radius/meanradius,length(indices));
+      adiff=mod(angle-langle+pi,2*pi)-pi;
+      % All LEDs inside active area, within awidth angle of person
+      indices = find(((adiff<0 & adiff>=-awidth(1)) | (adiff>0 & adiff<=awidth(2))) & ~info.layout.outsider);   
+      [~,center] = min(abs(adiff));
+      % fprintf('Angle=%.1f, RFrac=%.2f, NLed=%d\n', angle*360/pi, radius/meanradius,length(indices));
       for j=1:length(indices)
         info.state(indices(j),:)=info.state(indices(j),:)+col;
         info.mix(indices(j),:)=info.mix(indices(j),:)+1;
       end
+      info.state(center,:)=127;
     end
   end
+
   % Renormalize any with mix > 1
   mx=max(info.mix,[],2);
   fmx=find(mx>1);
@@ -470,19 +477,14 @@ function info=fg_follow(info,usemeter)
 
   % Visual feedback of how many people are inside
   % TODO - this could be in background led patterns, and also use channel map to display
-  if ~isempty(info.hypo)
-    ids=sort([info.hypo.id]);
-  else
-    ids=[];
-  end
-
-  for i=1:length(ids)
-    info.state(i,:)=id2color(ids(i),info.colors)*127;
-    info.mix(i,:)=1;
-  end
-  for i=length(ids)+1:8
+  for i=1:8
     info.state(i,:)=info.colors{1}*127;
     info.mix(i,:)=1;
+  end
+  for i=1:length(info.hypo)
+    channel=info.hypo(i).channel;
+    id=info.hypo(i).id;
+    info.state(channel,:)=id2color(id,info.colors)*127;
   end
 end
 

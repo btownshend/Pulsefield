@@ -61,6 +61,7 @@ idlecnt=0;
 maxoccupancy=0;
 prevsnap=[];
 info=infoinit();
+
 photointerval=10.0;   % Take a photo ever 10 seconds while someone present
 lastphoto=0;
 postbuffering=0;   % Number of frames PF has been empty
@@ -159,11 +160,16 @@ while ~info.quit
       end
       maxoccupancy=0;
       
+      savetime=toc;
+      fprintf('Save took %.2f seconds\n',savetime);
+
       % New diary
       startdiary();
       startdiary('realtime');
-      savetime=toc;
-      fprintf('Save took %.2f seconds\n',savetime);
+    end
+
+    if ~isempty(vis)
+      snap.whendone2=now;
     end
 
     if dosaves>0
@@ -187,18 +193,19 @@ while ~info.quit
   end
   info=oscincoming(recvis.p,info);
   
-  if ~isempty(vis)
-    snap.whendone2=now;
-  end
 
   if info.needcal>0
     if info.needcal>1
       fprintf('Full calibration.  LED localization...');
+      oscmsgout('TO','/pf/reset/color',{'yellow'});
       recvis.p=pixcalibrate(recvis.p);
+      oscmsgout('TO','/pf/reset/color',{'red'});
       fprintf('done ');
     end
     fprintf('Correlations...');
+      oscmsgout('TO','/pf/calibrate/color',{'yellow'});
     [~,recvis.p]=getvisible(recvis.p,'init');
+    oscmsgout('TO','/pf/calibrate/color',{'red'});
     fprintf('done\n');
     info.needcal=0;
   end

@@ -105,7 +105,11 @@ classdef Ableton < handle
     end
 
     function n=numsongtracks(obj,song)
-      n=diff(obj.songs{song})+1;
+      if song>length(obj.songs)
+        n=0;
+      else
+        n=diff(obj.songs{song})+1;
+      end
     end
 
     function n=numclips(obj)
@@ -124,7 +128,16 @@ classdef Ableton < handle
         getclips=1;
       end
       
-      obj.refresh(0.0);  % Clean out any old ones and initialize ports
+      % Clean out any old ones and initialize ports
+      obj.clipnames={};
+      obj.clipcolors=[];
+      obj.allstatus=[];
+      obj.tracknames={};
+      obj.songs={};  % Start/stop track
+      obj.songnames={}; % Names
+      obj.songtempo=[];  % Tempo of each song in BPM
+
+      obj.refresh(0.0);  
       oscmsgout('AL','/live/name/track',{});
       oscmsgout('AL','/live/scenes',{});   %TODO - this is not working, not seeing reply
                                            % Retrieve replies with a timeout
@@ -155,7 +168,15 @@ classdef Ableton < handle
       % Verify that they match the current tracknames
       obj.update(0.5,0);
       mismatch=0;
-      if length(obj.tracknames)~=length(newobj.tracknames)
+      if length(obj.tracknames)==0
+        fprintf('No tracks retrieved from Ableton Live.\n');
+        [alhost,alport]=getsubsysaddr('AL');
+        fprintf('- is AL running on host %s\n',alhost);
+        fprintf('- is OSCulator running on host %s\n',alhost);
+        [mpahost,mpaport]=getsubsysaddr('MPA');
+        fprintf('- is OSCulator setup to forward OSC messages incoming on port 9001 to this host (%s) port %d?\n', mpahost, mpaport);
+        fprintf('- is there a network connection between this host and %s?\n', alhost);
+      elseif length(obj.tracknames)~=length(newobj.tracknames)
         fprintf('Ableton setup loaded from %s has %d tracks, but AL currently has %d tracks\n', filename,length(newobj.tracknames),length(obj.tracknames));
         mismatch=1;
       else
@@ -344,7 +365,8 @@ classdef Ableton < handle
     function assignsongs(obj)
     % Additional info not visible from AL
     % Each song is {ID,name,tempo}
-      songmap={{'DB','Deep Blue',100},
+      songmap={{'NG','New Gamelan',120},
+               {'DB','Deep Blue',100},
                {'FI','Firebell',108},
                {'FO','Forski',72},
                {'GA','Garage Revisited',120},

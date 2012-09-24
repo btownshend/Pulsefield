@@ -122,23 +122,38 @@ function info=oscincoming(p,info)
       else
         fprintf('Invalid preset %d (msg=%s)\n',newpreset, rcvdmsg.path);
       end
-    elseif strcmp(rcvdmsg.path,'/touchosc/seq/scale/incr') && rcvdmsg.data{1}==1
-      info.scale=mod(info.scale,length(info.scales))+1;
-      info.refresh=true;
-    elseif strcmp(rcvdmsg.path,'/touchosc/seq/scale/decr') && rcvdmsg.data{1}==1
-      info.scale=mod(info.scale-2,length(info.scales))+1;
-      info.refresh=true;
-    elseif strcmp(rcvdmsg.path,'/touchosc/seq/key/incr') && rcvdmsg.data{1}==1
-      info.key=mod(info.key,length(info.keys))+1;
-      info.refresh=true;
-    elseif strcmp(rcvdmsg.path,'/touchosc/seq/key/decr') && rcvdmsg.data{1}==1
-      info.key=mod(info.key-2,length(info.keys))+1;
-      info.refresh=true;
-    elseif strcmp(rcvdmsg.path,'/touchosc/song/incr')  && rcvdmsg.data{1}==1
-      info.grid.song=mod(info.grid.song,info.al.numsongs())+1;
-      info.al.stopalltracks();
-      info.al.settempo(info.al.getsongtempo(info.grid.song));
-      fprintf('Switched to song %d\n', info.grid.song);
+    elseif strcmp(rcvdmsg.path,'/touchosc/seq/scale/incr')
+      if rcvdmsg.data{1}==1
+        info.scale=mod(info.scale,length(info.scales))+1;
+        info.refresh=true;
+      end
+    elseif strcmp(rcvdmsg.path,'/touchosc/seq/scale/decr')
+      if rcvdmsg.data{1}==1
+        info.scale=mod(info.scale-2,length(info.scales))+1;
+        info.refresh=true;
+      end
+    elseif strcmp(rcvdmsg.path,'/touchosc/seq/key/incr')
+      if rcvdmsg.data{1}==1
+        info.key=mod(info.key,length(info.keys))+1;
+        info.refresh=true;
+      end
+    elseif strcmp(rcvdmsg.path,'/touchosc/seq/key/decr')
+      if rcvdmsg.data{1}==1
+        info.key=mod(info.key-2,length(info.keys))+1;
+        info.refresh=true;
+      end
+    elseif strcmp(rcvdmsg.path,'/touchosc/song/incr')
+      if rcvdmsg.data{1}==1
+        info.grid.song=mod(info.grid.song,info.al.numsongs())+1;
+        info.al.stopalltracks();
+        info.al.settempo(info.al.getsongtempo(info.grid.song));
+        fprintf('Switched to song %d\n', info.grid.song);
+      end
+    elseif strcmp(rcvdmsg.path,'/touchosc/ableton/reload')
+      % Reload track/clip data from AL -- may take a while
+      oscmsgout('TO','/touchosc/ableton/reload/color',{'red'});
+      info.al.update();
+      oscmsgout('TO','/touchosc/ableton/reload/color',{'green'});
     elseif strncmp(rcvdmsg.path,'/touchosc/newtrack/',19)
       slashes=find(rcvdmsg.path=='/');
       channel=str2double(rcvdmsg.path(slashes(3)+1:end));
