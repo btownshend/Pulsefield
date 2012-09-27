@@ -186,6 +186,17 @@ void loop() {
 		} else
 		     Serial.println("getcmd failed\n");
 		break;
+  	    case 'E': // Echo (for testing)  - E [bytes to arduino] [ bytes from arduino] data...
+		{
+		    uint8_t ebuf[256];
+		    uint8_t n[2];   
+		    if (getcmd(&client,n,2) < 0)
+			Serial.println("Echo read cmd failure");
+		    if (getcmd(&client, ebuf,n[0]) <0)
+			Serial.println("Echo read data failure");
+		    if (client.write(ebuf,n[1]) != n[1]) 
+			Serial.println("Echo write failure");
+		}
 	    case 'G':  // Go
 		if (pause>0 && micros()<lasttime+pause) {
 		    Serial.print("Pausing for ");
@@ -261,11 +272,11 @@ void loop() {
 		    cnt=0;
 		   }
                 }
-		Serial.print('+');
+		//Serial.print('+');
 		nrcvd++;
 		client.write('A');  // ACK
 		client.write(id);
-		Serial.print('@');
+		//Serial.print('@');
                 //Serial.print('V');
                 //Serial.println(id);
                 }

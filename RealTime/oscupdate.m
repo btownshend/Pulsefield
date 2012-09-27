@@ -18,11 +18,11 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
   % Just began
   running=true;
   if info.juststarted
-    info=info.currapp.fn(p,info,'start');
+    info=info.currapp.start(p,info);
     oscmsgout(p.oscdests,'/pf/started',{});
     info.refresh=true;   % First call - do a dump
   elseif nargin<4
-    info=info.currapp.fn(p,info,'stop');
+    info.currapp.stop(p,info);
     oscmsgout(p.oscdests,'/pf/stopped',{});
     running=false;
   end
@@ -40,9 +40,9 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     oscmsgout(p.oscdests,'/pf/set/maxy',{max(active(:,2))});
 
     % Refresh UI
-    oscmsgout('TO','/sound/app/name',{info.currapp.name});
+    oscmsgout('TO','/sound/app/name',{info.currapp.getname()});
     for i=1:length(info.apps)
-      oscmsgout('TO',sprintf('/sound/app/buttons/%s',info.apps(i).pos),{i==info.currapp.index});
+      oscmsgout('TO',sprintf('/sound/app/buttons/%s',info.apps{i}.uiposition),{info.apps{i}==info.currapp});
     end
 
     oscmsgout('TO','/sample/app/name',{info.currsample.name});
@@ -153,7 +153,7 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
       oscmsgout('MAX','/pf/pass/lcd',{'paintoval',lp(1),lp(2),le(1),le(2)});
     end
 
-    info=info.currapp.fn(p, info,'update');
+    info=info.currapp.update(p, info);
 
     % Need to handle exits last since app.fn may have needed to know which channel the id was on
     for i=info.exits
@@ -207,16 +207,19 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
       % Ping everyone that can respond
       oscmsgout('LD','/ping',{int32(1)});
       oscmsgout('MAX','/ping',{int32(3)});
+      oscmsgout('AL','/live/master/volume',{});
       info.lastping=now;
     end
     
     % Check if channel map needs adjustment due to change in song/num channels
-    alchannels=info.al.numsongtracks(info.grid.song);
-    if (alchannels ~= info.cm.numchannels() && alchannels>0)
-      fprintf('Ableton has %d (->%d) tracks, but using a %d channel mapping; changing mapping\n',info.al.numtracks(), alchannels, info.cm.numchannels());
-      info.cm.setnumchannels(alchannels);
+    if info.ableton
+      alchannels=info.al.numsongtracks(info.song);
+      if (alchannels ~= info.cm.numchannels() && alchannels>0)
+        fprintf('Ableton has %d (->%d) tracks, but using a %d channel mapping; changing mapping\n',info.al.numtracks(), alchannels, info.cm.numchannels());
+        info.cm.setnumchannels(alchannels);
+      end
+      %fprintf('numsongs=%f, trackspersong=%d, song=%d, channels=%d\n',info.al.numsongs(), info.al.trackspersong, info.song,alchannels);
     end
-    %fprintf('numsongs=%f, trackspersong=%d, song=%d, channels=%d\n',info.al.numsongs(), info.al.trackspersong, info.grid.song,alchannels);
 
   end
   

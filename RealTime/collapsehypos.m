@@ -1,5 +1,5 @@
 % Collapse snap shots into hypos organized by ID
-function h=collapsehypos(recvis);
+function h=collapsehypos(recvis)
 snap=recvis.snap;
 h={};
 for i=1:length(snap)

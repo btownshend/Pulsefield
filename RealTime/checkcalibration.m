@@ -39,7 +39,6 @@ end
 for c=1:nc
   pixcalib=p.camera(c).pixcalib;
   vc=p.camera(c).viscache;
-  wsize=vc.wsize;
 
   fvalid=find([pixcalib.valid]);
   fprintf('Camera %d, LEDs = %s\n',c,shortlist(fvalid));

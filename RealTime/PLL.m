@@ -36,7 +36,6 @@ classdef PLL < handle
         obj.clkbeat=beat;
         obj.clktime=when;
         obj.pdlpf=0;
-        pd=0;
       else
         % Low-pass filtered phase difference
         obj.pdlpf=(1-obj.tc)*obj.pdlpf+obj.tc*pd;

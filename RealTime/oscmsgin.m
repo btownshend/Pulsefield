@@ -47,9 +47,7 @@ end
 
 if isempty(oscservers(svrind).msgqueue)
   % Get some more messages, timeout after given time
-  tic
   oscservers(svrind).msgqueue=osc_recv(oscservers(svrind).addr,timeout);
-  el=toc;
   if ~iscell(oscservers(svrind).msgqueue)
     % osc_recv returns 1 entry as a struct instead of a cell array
     if debug

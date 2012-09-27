@@ -1,11 +1,20 @@
 % Realtime run script
-
 startdiary('realtime');
 dosaves=1;   % 0-no saves, 1-by session, 2-all
 extraframes=10;  % Number of frames to store before/after exit
 
 % Setup data structure
 global recvis
+if ~exist('p','var')
+  if exist('recvis','var') && isfield(recvis,'p')
+    fprintf('Loading p from recvis\n');
+    p=recvis.p;
+  else
+    fprintf('Loading p from Calibration/current.mat\n');
+    p=load('Calibration/current.mat');
+  end
+end
+
 if exist('recvis','var') && isfield(recvis,'vis') && ~isempty(recvis.vis) && ~isfield(recvis,'note') && length(recvis.vis)>extraframes
     z=input(sprintf('Are you sure you want to overwrite existing recvis with %d samples? [Y/N]: ',length(recvis.vis)),'s');
     if isempty(z) || upper(z)~='Y'
@@ -208,6 +217,7 @@ while ~info.quit
     oscmsgout('TO','/pf/calibrate/color',{'red'});
     fprintf('done\n');
     info.needcal=0;
+    savecalib(p);
   end
 end
 

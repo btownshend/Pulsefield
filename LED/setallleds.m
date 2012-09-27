@@ -22,6 +22,7 @@ mcolor=zeros(physleds,3,'uint8');
 mcolor(posmap+1,:)= bitset(uint8(color),8);
 
 nsent=0;
+cntr=[];
 while nsent<size(mcolor,1)
   send=min(size(mcolor,1)-nsent,255);
   pcmd=zeros(1,4+3*send,'uint8');

@@ -65,12 +65,12 @@ function info=oscincoming(p,info)
     elseif strcmp(rcvdmsg.path,'/sound/setapp')
       found=false;
       for i=1:length(info.apps)
-        if strcmp(rcvdmsg.data{1},info.apps(i).name)
-          info=info.currapp.fn(p,info,'stop');
-          info.currapp=info.apps(i);
+        if strcmp(rcvdmsg.data{1},info.apps{i}.name)
+          info.currapp.stop(p,info);
+          info.currapp=info.apps{i};
           found=true;
-          fprintf('Setting PF to app %s\n', info.currapp.name);
-          info=info.currapp.fn(p,info,'start');
+          fprintf('Setting PF to app %s\n', info.currapp.getname());
+          info=info.currapp.start(p,info);
         end
       end
       if ~found
@@ -82,13 +82,20 @@ function info=oscincoming(p,info)
       fprintf('Got message: %s\n', formatmsg(rcvdmsg.path,rcvdmsg.data));
       if rcvdmsg.data{1}==1
         pos=rcvdmsg.path(20:end);
-        appnum=find(strcmp(pos,{info.apps.pos}));
+        appnum=[];
+        for j=1:length(info.apps)
+          if strcmp(pos,info.apps{j}.uiposition)
+            appnum=j;
+            break;
+          end
+        end
+
         if ~isempty(appnum)
           % Turn off old block
-          info=info.currapp.fn(p,info,'stop');
-          info.currapp=info.apps(appnum);
-          fprintf('Switching to app %d: %s\n',appnum,info.currapp.name);
-          info=info.currapp.fn(p,info,'start');
+          info.currapp.stop(p,info);
+          info.currapp=info.apps{appnum};
+          fprintf('Switching to app %d: %s\n',appnum,info.currapp.getname());
+          info=info.currapp.start(p,info);
           info.refresh=true;
         else
           fprintf('Attempt to switch to unsupported app %s\n', pos);
@@ -144,10 +151,10 @@ function info=oscincoming(p,info)
       end
     elseif strcmp(rcvdmsg.path,'/touchosc/song/incr')
       if rcvdmsg.data{1}==1
-        info.grid.song=mod(info.grid.song,info.al.numsongs())+1;
+        info.song=mod(info.song,info.al.numsongs())+1;
         info.al.stopalltracks();
-        info.al.settempo(info.al.getsongtempo(info.grid.song));
-        fprintf('Switched to song %d\n', info.grid.song);
+        info.al.settempo(info.al.getsongtempo(info.song));
+        fprintf('Switched to song %d\n', info.song);
       end
     elseif strcmp(rcvdmsg.path,'/touchosc/ableton/reload')
       % Reload track/clip data from AL -- may take a while
@@ -163,18 +170,22 @@ function info=oscincoming(p,info)
         info.cm.deleteid(id);
         newchannel=info.cm.newchannel(id);
         fprintf('Reassigning ID %d on channel %d to a channel %d\n', id, channel,newchannel);
-        info.al.stopalltracks();
+        if info.ableton
+          info.al.stopalltracks();
+        end
       end
     elseif strcmp(rcvdmsg.path,'/max/transport')
       % Received bars,beats,ticks,res,tempo,time sig1, time sig2
       info.maxtransport=rcvdmsg.data;
       % fprintf('Max transport: %s (%.2f)\n', formatmsg('',rcvdmsg.data),relpos);
-      if strcmp(info.currapp.name,'CircSeq')
+      if info.max
         % Pass update to LED server
         oscmsgout('LD',rcvdmsg.path,rcvdmsg.data);
-        % Update pointer in TouchOSC display
-        relpos=(info.maxtransport{2}-1+info.maxtransport{3}/480)/info.maxtransport{6};
-        oscmsgout('TO','/touchosc/seq/pos',{relpos*15+0.5/16});
+        if strcmp(info.currapp.getname(),'CSeq')
+          % Update pointer in TouchOSC display
+          relpos=(info.maxtransport{2}-1+info.maxtransport{3}/480)/info.maxtransport{6};
+          oscmsgout('TO','/touchosc/seq/pos',{relpos*15+0.5/16});
+        end
       end
     elseif strncmp(rcvdmsg.path,'/midi/pgm/',10)
       slashes=find(rcvdmsg.path=='/');

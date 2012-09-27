@@ -16,7 +16,7 @@ for i=1:5
   fprintf('Acquiring sample %d\n',i);
   setled(s1,-1,[0,0,0],1);
   if i==1|| i==5
-    ;  % Already all off
+    % Already all off
   elseif i==2
     setled(s1,0:2:length(p.led)-1,onval,1);
   elseif i==3

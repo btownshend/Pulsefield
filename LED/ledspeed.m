@@ -1,4 +1,5 @@
 % Check speed of full changes of LEDS
+noshow=0;   % Don't actually update display -- allows for faster stressing of ethernet
 s1=arduino_ip;
 sync(s1);
 nled=699;
@@ -22,7 +23,11 @@ for rpt=1:nrpt
   n1=now;
   c1=setallleds(s1,color,1);
   n2=now;
-  c2=show(s1,delay);
+  if noshow
+    c2=0;
+  else
+    c2=show(s1,delay);
+  end
   n3=now;
   nsent=nsent+length(c1)+length(c2);
   fprintf('sent %d bytes, wait...',length(c1)+length(c2));
@@ -35,7 +40,7 @@ for rpt=1:nrpt
   if mod(rpt,nmeasure)==0
     elapsed=toc;
     fprintf('Changed LEDs %d times in %.2f seconds = %.2f changes/second\n', nmeasure, elapsed, nmeasure/elapsed);
-    pause(1);
+    %    pause(1);
   end
 end
 

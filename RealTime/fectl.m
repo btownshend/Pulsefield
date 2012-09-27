@@ -2,7 +2,7 @@
 % Usage: fectl(p,op)
 % Op is 'start', 'quit','ping'
 % Results is true for success, false for failure
-function ok=fectl(p,op);
+function ok=fectl(p,op)
 ok=true;   %Default as ok
 
 % Handle list of ops in order recursively
