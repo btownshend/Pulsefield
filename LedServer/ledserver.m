@@ -59,6 +59,7 @@ function ledserver(p,doplot,simul)
   avglatency=0;
   refreshtime=0;
   refreshcnt=0;
+  lastvcnts=[];
   
   while true
     % Receive any OSC messages
@@ -151,6 +152,21 @@ function ledserver(p,doplot,simul)
           fprintf('Camera %d, frame %d latency=%.0f milliseconds (avg =%.0f ms)\n', c, frame, latency*1000,avglatency*1000);
         end
         avglatency=avglatency*0.99+latency*.01;
+        vcnts=[sum(info.vis(c,:)==1),sum(info.vis(c,:)==0),sum(isnan(info.vis(c,:)))];
+        if isempty(lastvcnts) || size(lastvcnts,1)<c
+          % Initialize
+          lastvcnts(c,:)=-1*vcnts;
+        end
+        if vcnts(1)~=lastvcnts(c,1)
+          oscmsgout('TO',sprintf('/rays/visible/%d',c),{int32(vcnts(1))});
+        end
+        if vcnts(1)~=lastvcnts(c,1)
+          oscmsgout('TO',sprintf('/rays/blocked/%d',c),{int32(vcnts(2))});
+        end
+        if vcnts(1)~=lastvcnts(c,1)
+          oscmsgout('TO',sprintf('/rays/unknown/%d',c),{int32(vcnts(3))});
+        end
+        lastvcnts(c,:)=vcnts;
       elseif strcmp(m.path,'/pf/entry')
         fprintf('Entry %d\n', m.data{3});
         if isempty(info.hypo)
@@ -239,6 +255,8 @@ function ledserver(p,doplot,simul)
         oscmsgout('TO','/led/pulsebow/pperiod/value',{sprintf('%.1f',info.pulsebow.pperiod)});
         oscmsgout('TO','/led/pulsebow/cperiod/value',{sprintf('%.1f',info.pulsebow.cperiod)});
       end
+
+      lastvcnts(:)=-1;   % Force update of visibility counts
       refresh=false;
     end
     if info.running && (now-lastupdate)*3600*24>=period
