@@ -239,7 +239,7 @@ elseif action == CLOSE
 end % if
 
 if nargout > 0
-    if ismember(action,[REQUEST ACCEPT CLOSE])
+    if action==REQUEST || action==ACCEPT || action==CLOSE
         varargout{1} = jTcpObj;
     elseif action == WRITE
         varargout{1} = [];
