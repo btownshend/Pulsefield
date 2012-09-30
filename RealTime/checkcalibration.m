@@ -1,11 +1,12 @@
 % Display each given LEDs current snapshot along with reference images, correlations
 % Useful for debugging odd behaviours of particular LEDs
-% Usage: checkcalibration(p,vis,leds,figname)
+% Usage: checkcalibration(p,vis,leds,cameras,figname)
 %  p - pstruct
 %  vis - vis struct as returned by getvisible() or rcvr()
 %  leds - list of LED numbers to display (1 or 2 best)
+%  camera - list of camera numbers (default: all)
 %  figname - arg to setfig to keep a separate figure
-function checkcalibration(p,vis,leds,figname)
+function checkcalibration(p,vis,leds,cameras,figname)
 if nargin<3
   nl=4;
   leds=round(1:(numled()-1)/(nl-1):numled());
@@ -19,12 +20,18 @@ if nargin<2 || isempty(vis)
 end
 
 if nargin<4
+  nc=length(p.camera);
+  cameras=1:nc;
+else
+  nc=length(cameras);
+end
+
+if nargin<5
   setfig('checkcalibration');
 else
   setfig(figname);
 end
 clf;
-nc=length(p.camera);
 nstack=1;
 if isfield(vis,'refim')
   nstack=nstack+1;
@@ -36,7 +43,8 @@ if isfield(p.camera(1).viscache,'refimspot')
   nstack=nstack+1;
 end
 
-for c=1:nc
+for ci=1:length(cameras)
+  c=cameras(ci);
   pixcalib=p.camera(c).pixcalib;
   vc=p.camera(c).viscache;
 
@@ -50,7 +58,7 @@ for c=1:nc
     end
     stack=1;
     if isfield(vis,'im')
-      subplot(nc,nl*nstack,(c-1)*nl*nstack+(i-1)*nstack+stack);
+      subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
       stack=stack+1;
       im=vis.im{c}(vc.tlpos(l,2):vc.brpos(l,2),vc.tlpos(l,1):vc.brpos(l,1),:);
       imshow(im);
@@ -77,7 +85,7 @@ for c=1:nc
       end
     end
     if isfield(vis,'refim')
-      subplot(nc,nl*nstack,(c-1)*nl*nstack+(i-1)*nstack+stack);
+      subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
       stack=stack+1;
       refim=vis.refim{c}(vc.tlpos(l,2):vc.brpos(l,2),vc.tlpos(l,1):vc.brpos(l,1),:);
       imshow(refim);
@@ -94,13 +102,13 @@ for c=1:nc
       ylabel(sprintf('(%d:%d, %d:%d)',vc.tlpos(l,2),vc.brpos(l,2),vc.tlpos(l,1),vc.brpos(l,1)));
     end
     if isfield(vis,'imspot')
-      subplot(nc,nl*nstack,(c-1)*nl*nstack+(i-1)*nstack+stack);
+      subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
       stack=stack+1;
       imshow(vis.imspot{c,l});
       title(sprintf('vis.imspot %d',l));
     end
     if isfield(p.camera(c).viscache,'refimspot')
-      subplot(nc,nl*nstack,(c-1)*nl*nstack+(i-1)*nstack+stack);
+      subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
       stack=stack+1;
       imshow(p.camera(c).viscache.refimspot{l});
       title(sprintf('vc.refimspot %d',l));
