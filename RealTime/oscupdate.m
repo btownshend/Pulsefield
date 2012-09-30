@@ -94,7 +94,6 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     fprintf('Updating TO with volume=%f\n',info.volume);
     oscmsgout('TO','/volume',{info.volume});
     oscmsgout('TO','/volume/value',{sprintf('%.1f',Ableton.slider2db(info.volume))});
-    oscmsgout('TO','/midi/multichannel',{int32(info.multichannel)});
     oscmsgout('TO','/enable/ableton',{int32(info.ableton)});
     oscmsgout('TO','/enable/max',{int32(info.max)});
 

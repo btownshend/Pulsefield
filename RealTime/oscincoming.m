@@ -206,9 +206,6 @@ function info=oscincoming(p,info)
     elseif strcmp(rcvdmsg.path,'/midi/duration')
       info.duration=round(rcvdmsg.data{1});  % Duration in ticks
       info.refresh=true;
-    elseif strcmp(rcvdmsg.path,'/midi/multichannel')
-      info.multichannel=rcvdmsg.data{1};  % Duration in ticks
-      info.refresh=true;
     elseif strcmp(rcvdmsg.path,'/enable/ableton')
       info.ableton=rcvdmsg.data{1};
       fprintf('Ableton Enable = %d\n',info.max);
