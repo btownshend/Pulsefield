@@ -107,7 +107,7 @@ if args.init
     vis{i}=getvisible(p,'calccorr',false,'stats',true,'onval',onval{i},'usefrontend',false);
   end
 
-  % Take average to set template (in ref{} as individual images, and in refvec(l,:) as a matrix of vectors, 1 row per LED
+  % Take average to set template in ref{} as individual images
   for c=1:length(p.camera)
     % Compute total reference image
     refim=single(vis{1}.im{c});
@@ -118,21 +118,8 @@ if args.init
     p.camera(c).viscache.refim=refim;
     
     pc=p.camera(c).pixcalib;
-    p.camera(c).viscache.refimspot=cell(1,length(p.led));
     fvalid=find([pc.valid]);
     p.camera(c).viscache.ledmap=fvalid;
-    for j=1:length(fvalid)
-      l=fvalid(j);
-      s=single(vis{1}.imspot{c,l});
-      for i=2:length(vis)
-        s=s+single(vis{i}.imspot{c,l});
-      end
-      s=s/length(vis);
-      p.camera(c).viscache.refimspot{l}=uint8(round(s));
-      s=s-mean(s(:));s=s/std(s(:));
-
-      p.camera(c).viscache.refvec(j,:)=s(:);
-    end
   end
   % Check correlation of each image with avg
   for i=1:length(vis)
@@ -233,7 +220,6 @@ if args.setleds
 end
 
 if args.stats
-  vis.imspot={};
   vis.lev=nan(0,numled());
   vis.im=imorig;   % Original image, might have been converted to gray for processing
   for i=1:length(im)
@@ -257,7 +243,6 @@ if args.stats
     w=reshape(im{i}(ind(:)),size(ind,1),size(ind,2));
     for vj=1:length(fvalid)
       j=fvalid(vj);
-      vis.imspot{i,fvalid(vj)}=reshape(w(vj,:),wsize);
       % Compute level as max over pixcalib.pixelList (using cached linear indices)
       if size(im{i},3)==3
         vis.lev(i,j)=max(im{i}(c(j).rgbindices));
@@ -277,17 +262,6 @@ if args.calccorr
     % Linear indices into images organized by LEDs listed in ledmap (rows), and window position (col)
     ind=vc.indices;
     
-    oldway=0;
-    if oldway
-      % Compute cross-correlation with ref image
-      % Pack all the LEDs into matrix (to speed up correlation computation) using linear index in vc.indices
-      w=single(reshape(im{i}(ind(:)),size(ind,1),size(ind,2)));
-      % Calc cross-correlation
-      sww=sum(w.*w,2)+0.1;   % Add a little fuzz in case the image is a constant value, which would otherwise result in a NaN for the correlation
-      sw=sum(w,2);
-      swr=sum(w.*vc.refvec,2);
-      vis.corr(i,vc.ledmap)=swr./sqrt(sww*size(ind,2)-sw.*sw);
-    else
       % Same way as frontend, max(corr) with each color plan
       corrplane=[];
       N=size(ind,2);
@@ -308,7 +282,6 @@ if args.calccorr
         corrplane(plane,:)=(swr-sw.*sr/N)./denom;
       end
       vis.corr(i,vc.ledmap)=max(corrplane,[],1);
-    end
   end
 
   
