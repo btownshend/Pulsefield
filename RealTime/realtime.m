@@ -36,7 +36,7 @@ if ~oscloopback('MPV') || ~oscloopback('MPO') || ~oscloopback('MPL') || ~oscloop
 end
 
 % Setup destination for outgoing OSC messages
-recvis.p.oscdests={'MAX','LD','TO'};
+p.oscdests={'MAX','LD','TO'};
 
 % Turn on LEDS directly (in case LED server is not running)
 s1=arduino_ip(1);
@@ -82,7 +82,7 @@ while ~info.quit
     % Use a finite timeout if we've already done a refresh of other processes, so as not to hog all the CPU
     timeout=1/30;
   end
-  vis=getvisible(recvis.p,'setleds',false,'timeout',timeout);
+  vis=getvisible(p,'setleds',false,'timeout',timeout);
 
   if isempty(vis)
     % fprintf('No vis available\n');
@@ -103,7 +103,7 @@ while ~info.quit
     end
 
     % Analyze data to estimate position of targets using layout
-    snap=analyze(recvis.p,vis.v,false);
+    snap=analyze(p,vis.v,false);
     snap.when=vis.when;
     snap.samp=samp;
     snap.idlecnt=idlecnt;
@@ -112,7 +112,7 @@ while ~info.quit
     if samp==1
       snap=inittgthypo(snap);
     else
-      snap=updatetgthypo(recvis.p.layout,prevsnap,snap,samp);
+      snap=updatetgthypo(p.layout,prevsnap,snap,samp);
     end
 
     snap.whendone=now;
@@ -145,9 +145,9 @@ while ~info.quit
     if ~isempty(prevsnap)
       % Make sure that if it is called twice without a vis update, that prevsnap==snap
       % TODO - break out update handling from incoming message handling
-      info=oscupdate(recvis.p,info,samp,snap,prevsnap);
+      info=oscupdate(p,info,samp,snap,prevsnap);
     else
-      info=oscupdate(recvis.p,info,samp,snap);
+      info=oscupdate(p,info,samp,snap);
     end
 
     if length(snap.hypo)==0
@@ -179,6 +179,7 @@ while ~info.quit
 
     if ~isempty(vis)
       snap.whendone2=now;
+      info.latency=0.9*info.latency + .1*(now-mean(vis.acquired))*24*3600;
     end
 
     if dosaves>0
@@ -200,29 +201,30 @@ while ~info.quit
 
     prevsnap=snap;
   end
-  info=oscincoming(recvis.p,info);
+  info=oscincoming(p,info);
   
 
   if info.needcal>0
     if info.needcal>1
       fprintf('Full calibration.  LED localization...');
       oscmsgout('TO','/pf/reset/color',{'yellow'});
-      recvis.p=pixcalibrate(recvis.p);
+      p=pixcalibrate(p);
       oscmsgout('TO','/pf/reset/color',{'red'});
       fprintf('done ');
     end
     fprintf('Correlations...');
       oscmsgout('TO','/pf/calibrate/color',{'yellow'});
-    [~,recvis.p]=getvisible(recvis.p,'init');
+    [~,p]=getvisible(p,'init');
     oscmsgout('TO','/pf/calibrate/color',{'red'});
     fprintf('done\n');
     info.needcal=0;
     savecalib(p);
+    recvis.p=p;
   end
 end
 
 % Turn off any remaining notes
-oscupdate(recvis.p,info,samp);
+oscupdate(p,info,samp);
 
 % Turn off LEDs (in case LED Server not running)
 setled(s1,-1,[0,0,0],1);show(s1);
