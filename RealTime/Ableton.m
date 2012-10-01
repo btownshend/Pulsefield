@@ -11,7 +11,7 @@ classdef Ableton < handle
     songtempo=[];  % Tempo of each song in BPM
     numscenes=60;
     playing=nan;
-    debug=true;
+    debug=false;
     pll=PLL();
     volume=0.5;
   end
