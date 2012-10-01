@@ -100,8 +100,7 @@ for iid=1:length(ids)
   % Form imat which indexes each pixel with the LED number there
   % Initial will contain 0..nled-1
   imat=[];
-  % In parallel, form tmat, which indicates where signal is strong enough to id a pixel
-  se=strel('disk',2,0);
+
   % Loop over the bits of the LED numbers
   z=cell(nbits,2);
   for k=1:nbits
@@ -141,7 +140,9 @@ for iid=1:length(ids)
   % Change indexing to 1..nled (so we can 0 to mean unlabelled)
   imat=(imat+1);
   % Only label points that have a minimum signal value
-  tmatthresh=max(tmat(:))/6;
+  stmat=sort(tmat(:),'descend');
+  tmatthresh=stmat(5000);
+  %  tmatthresh=max(tmat(:))/12;
   selmat=tmat>=tmatthresh;
   fprintf('Thresh(%d)=%f with %d points>thresh\n',iid, tmatthresh, sum(selmat(:)));
 
@@ -188,6 +189,7 @@ for iid=1:length(ids)
       calib(i).pos=[nan,nan];
       calib(i).diameter=nan;
       calib(i).valid=false;
+      %fprintf('LED %3d, camera %d not found; ignoring.\n',ledid,id);
     else
       [maxarea,mpos]=max([stats.Area]);
       if size(stats(mpos).PixelList,1)<minpixels
@@ -215,32 +217,64 @@ for iid=1:length(ids)
       calib(i).pixelList(:,2)=calib(i).pixelList(:,2)+roi(3)-1;
     end
   end
+  % Remove ones more than maxroi/2 pixels from the median y of all the points (to keep the ROI low and remove outliers)
+  maxroi=192;
+  ally=arrayfun(@(z) z.pos(2),calib);
+  medy=median(ally([calib.valid]));
+  for i=1:length(sainfo.led)
+    dist=abs(calib(i).pos(2)-medy);
+    if calib(i).valid && dist>maxroi/2
+      fprintf('LED %d is %.1f pixels away from median y value of %.1f -- rejecting it\n', i, dist, medy);
+      calib(i).valid=false;
+    end
+  end
+  
   % Check for stray points
-  maxpixelsep=50;
+  maxpixelsep=10;
   for i=1:length(sainfo.led)
     if calib(i).valid 
       closest=2e10;
-      nledsep=0;
+      left=nan;
+      right=nan;
       for j=i-1:-1:1
         if calib(j).valid
-          closest=norm(calib(i).pos-calib(j).pos);
-          nledsep=i-j;
+          closest=norm(calib(i).pos-calib(j).pos)/(i-j);
+          left=j;
           break;
         end
       end
       for j=i+1:length(sainfo.led)
         if calib(j).valid
-          closest=min(closest,norm(calib(i).pos-calib(j).pos));
-          nledsep=min(nledsep,j-i);
+          closest=min(closest,norm(calib(i).pos-calib(j).pos)/(j-i));
+          right=j;
           break;
         end
       end
 
-      if nledsep>0 && closest>maxpixelsep*nledsep
-        fprintf('LED %d is at least %d pixels from its neighbor (%d LEDs away) -- rejecting it\n',i,closest, nledsep);
+      if closest>maxpixelsep
+        fprintf('LED %d is at least %.1f pixels/led from its neighbors (%d,%d) -- rejecting it\n',i,closest, left,right);
         calib(i).valid=false;  
+      elseif i==3
+        fprintf('LED %d is at least %.1f pixels/led from its neighbors (%d,%d) -- keeping it\n',i,closest, left,right);
       end
       calib(i).closest=closest;
+    end
+  end
+  
+  % Interpolate missing points
+  for i=2:length(sainfo.led)-1
+    if ~calib(i).valid
+      prevvalid=find([calib(1:i-1).valid],1,'last');
+      nextvalid=find([calib(i+1:end).valid],1)+i;
+      if ~isempty(prevvalid) && ~isempty(nextvalid) && all(sainfo.layout.ldir(i)==sainfo.layout.ldir(prevvalid)) && all(sainfo.layout.ldir(i)==sainfo.layout.ldir(nextvalid))
+        % Interpolate
+        calib(i).pos=(calib(prevvalid).pos*(nextvalid-i)+calib(nextvalid).pos*(i-prevvalid))/(nextvalid-prevvalid);
+        calib(i).diameter=nan;
+        % Kludge the pixel list (in full imagespace coords)
+        calib(i).pixelList=round(calib(i).pos);
+        calib(i).valid=true;
+        fprintf('Interpolating position of missing LED %d using %d,%d as (%.1f,%.1f)\n', i, prevvalid, nextvalid, calib(i).pos);
+      end
     end
   end
 
@@ -269,7 +303,7 @@ for iid=1:length(ids)
   sainfo.camera(iid).pixcalibtime=now;
   % Setup ROI for each camera
   cp=reshape([calib([calib.valid]).pos],2,[]);
-  border=min(6,max([calib([calib.valid]).diameter]));
+  border=5;   % min(6,max([calib([calib.valid]).diameter]));
   sainfo.camera(iid).roi=[
       max(1,floor(min(cp(1,:))-border)),min(size(imat,2),ceil(max(cp(1,:))+border)),...
       max(1,floor(min(cp(2,:))-border)),min(size(imat,1),ceil(max(cp(2,:))+border))];
@@ -277,7 +311,7 @@ for iid=1:length(ids)
   sainfo.camera(iid).roi([1,3])=floor((sainfo.camera(iid).roi([1,3])-1)/32)*32+1;
   sainfo.camera(iid).roi([2,4])=ceil((sainfo.camera(iid).roi([2,4])-1)/32)*32+1;
   roi=sainfo.camera(iid).roi;
-  fprintf('Camera %d: ROI size = %d x %d\n', iid, (roi(2)-roi(1)),(roi(4)-roi(3)));
+  fprintf('Camera %d: Using %d LEDS, ROI size = %d x %d\n', iid, sum([calib.valid]), (roi(2)-roi(1)),(roi(4)-roi(3)));
   if (roi(4)-roi(3))>200
     fprintf('**WARNING** Camera %d has excessive ROI size = %d x %d\n', iid, (roi(2)-roi(1)),(roi(4)-roi(3)));
   end
