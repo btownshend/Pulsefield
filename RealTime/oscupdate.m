@@ -65,6 +65,7 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     % Page 2, channel displays
     if nargin>=4
       oscmsgout(p.oscdests,'/pf/set/npeople',{int32(length(snap.hypo))});
+      oscmsgout('SN','/pf/set/npeople',{int32(length(snap.hypo))});
     end
 
 
@@ -189,8 +190,10 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     prevpeople=length(previds);
     if people~=prevpeople
       oscmsgout(p.oscdests,'/pf/set/npeople',{int32(people)});
+      oscmsgout('SN','/pf/set/npeople',{int32(people)});
     end
 
+    
     if info.ableton
       % Read any Ableton updates
       nmsg=info.al.refresh();
@@ -207,6 +210,8 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
       oscmsgout('LD','/ping',{int32(1)});
       oscmsgout('MAX','/ping',{int32(3)});
       oscmsgout('AL','/live/master/volume',{});
+      % Update latency display
+      oscmsgout('TO','/touchosc/latency',{round(info.latency*1000)});
       info.lastping=now;
     end
     
