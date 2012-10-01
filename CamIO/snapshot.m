@@ -1,22 +1,30 @@
 % Take a snapshot from the cameras
-function snapshot(p)
+function snapshot(p,doplot)
+if nargin<2
+  doplot=false;
+end
 ids=1:6
 if nargin==1
   % Turn off any sensor cropping
   sensorcrop(p,true);
+  pause(0.1);
 end
 im=aremulti(ids,'av10115-half');
 
 if nargin==1
-  % Turn sensor corpping back on
+  % Turn sensor cropping back on
   sensorcrop(p);
 end
 fname=sprintf('/Users/bst/Dropbox/PeopleSensor/Snapshots/%s.mat',datestr(now,30));
 fprintf('Saving snapshot in %s\n', fname);
 snapshot=struct('when',now,'im',im);
 save(fname,'snapshot');
-setfig('snapshot');
-for i=1:length(ids)
-  subplot(2,ceil(length(ids)/2),i)
-  imshow(im{i});
+if doplot
+  %  setfig('snapshot');
+  figure;
+  for i=1:length(ids)
+    subplot(2,ceil(length(ids)/2),i)
+    imshow(im{i});
+  end
+  pause(0.1);
 end
