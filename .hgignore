@@ -10,3 +10,6 @@ Makefile.bak
 \.mat
 \.class
 .DS_Store
+ableton.csv
+.project
+regionpropsmex.mexmaci64
