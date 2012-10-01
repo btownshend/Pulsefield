@@ -52,7 +52,7 @@ ylabel('Processing time (s)');
 title('Processing Latency (r=analyze, b=all incl/osc)');
 
 subplot(514);
-plot(1:length(recvis.snap),([recvis.snap.whendone]-(acquired-jitter/2))*24*3600,'r');
+plot(1:length(recvis.snap),([recvis.snap.whendone2]-(acquired-jitter/2))*24*3600,'r');
 c=axis;c(3)=0;axis(c);
 title('Mean latency (from middle frame to processing done)');
 ylabel('Total latency (s)');
