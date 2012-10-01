@@ -7,6 +7,8 @@
 %  camera - list of camera numbers (default: all)
 %  figname - arg to setfig to keep a separate figure
 function checkcalibration(p,vis,leds,cameras,figname)
+rescale=false;  % Rescale images so maximum pixel=1.0
+bigwindow=50;   % If set, also show big window
 if nargin<3
   nl=4;
   leds=round(1:(numled()-1)/(nl-1):numled());
@@ -36,10 +38,7 @@ nstack=1;
 if isfield(vis,'refim')
   nstack=nstack+1;
 end
-if isfield(vis,'imspot')
-  nstack=nstack+1;
-end
-if isfield(p.camera(1).viscache,'refimspot')
+if exist('bigwindow','var')
   nstack=nstack+1;
 end
 
@@ -61,16 +60,26 @@ for ci=1:length(cameras)
       subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
       stack=stack+1;
       im=vis.im{c}(vc.tlpos(l,2):vc.brpos(l,2),vc.tlpos(l,1):vc.brpos(l,1),:);
-      imshow(im);
+      if exist('bigwindow','var')
+        bigwin=[max(1,vc.tlpos(l,2)-bigwindow),min(size(vis.im{c},1),vc.brpos(l,2)+bigwindow),max(1,vc.tlpos(l,1)-bigwindow),min(size(vis.im{c},2),vc.brpos(l,1)+bigwindow)];
+        bigim=vis.im{c}(bigwin(1):bigwin(2),bigwin(3):bigwin(4),:);
+      end
+      if rescale
+        imsc=im2double(im);
+        imsc=imsc/max(imsc(:));
+        imshow(imsc);
+      else
+        imshow(im);
+      end
       hold on;
       if first
         ylabel(sprintf('Camera %d',c));
         first=0;
       end
       if pixcalib(l).valid
-        title(sprintf('vis.im %d\n', l));
+        title(sprintf('vis.im %d (max=%d)\n', l,max(im(:))));
       else
-        title(sprintf('*vis.im %d\n', l));
+        title(sprintf('*vis.im %d (max=%d)\n', l, max(im(:))));
       end
       xlabel(sprintf('p=%.3f',vis.corr(c,l)));
 
@@ -88,7 +97,12 @@ for ci=1:length(cameras)
       subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
       stack=stack+1;
       refim=vis.refim{c}(vc.tlpos(l,2):vc.brpos(l,2),vc.tlpos(l,1):vc.brpos(l,1),:);
-      imshow(refim);
+      if rescale
+        refimsc=refim/max(refim(:));
+        imshow(refimsc);
+      else
+        imshow(refim);
+      end
       rrgb=corr2(im(:),refim(:));
       imgray=rgb2graywithweight(im);
       refimgray=rgb2graywithweight(refim);
@@ -97,21 +111,16 @@ for ci=1:length(cameras)
       for j=1:3
         r(j)=corr2(im(:,:,j),refim(:,:,min(size(refim,3),j)));
       end
-      title(sprintf('vis.refim %d',l));
+      title(sprintf('vis.refim %d (max=%.1f)',l,255*max(refim(:))));
       xlabel(sprintf('r=(%.3f,%.3f,%.3f),RGB=%.3f,Gray=%.3f',r,rrgb,rgray));
       ylabel(sprintf('(%d:%d, %d:%d)',vc.tlpos(l,2),vc.brpos(l,2),vc.tlpos(l,1),vc.brpos(l,1)));
     end
-    if isfield(vis,'imspot')
+    if exist('bigwindow','var')
       subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
       stack=stack+1;
-      imshow(vis.imspot{c,l});
-      title(sprintf('vis.imspot %d',l));
-    end
-    if isfield(p.camera(c).viscache,'refimspot')
-      subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
-      stack=stack+1;
-      imshow(p.camera(c).viscache.refimspot{l});
-      title(sprintf('vc.refimspot %d',l));
+      imshow(bigim);
+      title(sprintf('vis.bigim %d',l));
+      ylabel(sprintf('(%d:%d, %d:%d)',bigwin));
     end
   end
 end
