@@ -7,7 +7,7 @@
 %  camera - list of camera numbers (default: all)
 %  figname - arg to setfig to keep a separate figure
 function checkcalibration(p,vis,leds,cameras,figname)
-rescale=false;  % Rescale images so maximum pixel=1.0
+rescale=true;  % Rescale images so maximum pixel=1.0
 bigwindow=50;   % If set, also show big window
 if nargin<3
   nl=4;
