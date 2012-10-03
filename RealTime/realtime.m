@@ -179,7 +179,8 @@ while ~info.quit
 
     if ~isempty(vis)
       snap.whendone2=now;
-      info.latency=0.9*info.latency + .1*(now-mean(vis.acquired))*24*3600;
+      tc=1;
+      info.latency=(1-tc)*info.latency + tc*(now-mean(vis.acquired))*24*3600;
     end
 
     if dosaves>0
