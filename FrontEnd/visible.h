@@ -18,7 +18,7 @@ class Visible {
  public:
     Visible(int nleds);
     ~Visible();
-    void processImage(const Frame *frame, float fps);   // Process an image frame to determine corr, visibility; update reference
+    int processImage(const Frame *frame, float fps);   // Process an image frame to determine corr, visibility; update reference.  Return 0 if success, -1 if failed (bad image?)
 
     void setPosition(int led, int xpos, int ypos, int tgtWidth,int tgtHeight);   // Set position (center point) of an LED target within frame images  (0,0) origin; use -1 if unused
     void setRefImage(int width, int height, int depth, const float *image=0);   // Set expected image -- should match size of received frames

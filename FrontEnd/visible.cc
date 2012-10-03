@@ -63,11 +63,12 @@ void Visible::setRefImage(int width, int height, int depth, const float *image) 
 }
 
 // Process an image frame to determine visibility; fills visiblity array
-void Visible::processImage(const Frame *frame, float fps) {
+int Visible::processImage(const Frame *frame, float fps) {
     assert(frame->getWidth() == refWidth);
     assert(frame->getHeight() == refHeight);
     assert(frame->isColor());
     const byte *fimg=frame->getImage();
+    int totalvis=0;   // Count of number of visible pixels
     for (int i=0;i<nleds;i++) {
 	int N=tgtWidth[i]*tgtHeight[i];
 	if (xpos[i]<0 || ypos[i]<0) {
@@ -145,11 +146,16 @@ void Visible::processImage(const Frame *frame, float fps) {
 	if(corr[i]<-1.01 || corr[i]>1.01)
 	    fprintf(stderr,"Warning: corr[%d]=%f\n", i, corr[i]);
 	visible[i]=corr[i]>=corrThreshold;
-
+	totalvis=totalvis+(visible[i]?1:0);
+    }
+    if (totalvis < 10) {
+	fprintf(stderr,"Warning: Only %d visible pixels for frame; skipping\n",totalvis);
+	return -1;
     }
     updateTarget(frame,fps);
 
     timestamp=frame->getStartTime();
+    return 0;
 }
 
 // Update target by adding weight*currImage to (1-weight)*currTarget

@@ -282,7 +282,12 @@ void FrontEnd::processFrames() {
 	    struct timeval tstart, tend;
 	    if (debug)
 		gettimeofday(&tstart,NULL);
-	    vis[i]->processImage(frame,cameras[i]->getFPS());
+	    if (vis[i]->processImage(frame,cameras[i]->getFPS())) {
+		// Failed.  Skip processing this frame
+		fprintf(stderr,"Processing of frame %d from camera %d failed; skipping\n", this->frame, i);
+		cameras[i]->getFrame()->clearValid();
+		return;
+	    }
 
 	    if (debug) {
 		gettimeofday(&tend,NULL);
@@ -420,6 +425,7 @@ void FrontEnd::setPos(int camera, int led, int xpos, int ypos, int twidth, int t
 }
 
 void FrontEnd::setFPS(int fps) {
+    printf("Setting all cameras to %d FPS\n", fps);
     for (int i=0;i<ncamera;i++)
 	cameras[i]->setFPS(fps);
 }
