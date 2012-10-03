@@ -104,6 +104,10 @@ classdef Ableton < handle
       n=length(obj.tracknames);
     end
 
+    function track=findtrack(obj,name)
+      track=find(strcmp(name,obj.tracknames));
+    end
+    
     function n=numsongtracks(obj,song)
       if song>length(obj.songs)
         n=0;
@@ -345,7 +349,8 @@ classdef Ableton < handle
           %fprintf('Track%d meter(%d)=%.3f\n', m.data{1},m.data{2},m.data{3});
           [song,songtrack]=obj.getsong(m.data{1}+1);
           if isempty(song)
-            fprintf('Bad song: Track%d meter(%d)=%.3f\n', m.data{1},m.data{2},m.data{3});
+            % This often happens since there is a meter for a group which is not in the list
+            %fprintf('Bad song: Track%d meter(%d)=%.3f\n', m.data{1},m.data{2},m.data{3});
           else
             db=obj.slider2db(m.data{3});
             oscmsgout('LD','/live/songtrack/meter',{song,songtrack,m.data{2}+1,m.data{3},db});
