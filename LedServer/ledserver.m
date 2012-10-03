@@ -179,7 +179,7 @@ function ledserver(p,doplot,simul)
         if ismember(m.data{3},ids)
           fprintf('Got entry for id %d, which was already inside\n',m.data{3});
         else
-          info.hypo=[info.hypo,struct('id',m.data{3},'pos',[nan,nan],'velocity',[nan,nan],'entrytime',now,'channel',m.data{4})];
+          info.hypo=[info.hypo,struct('id',m.data{3},'pos',[nan,nan],'velocity',[nan,nan],'entrytime',now,'channel',m.data{4},'groupid',0,'groupsize',1)];
         end
       elseif strcmp(m.path,'/pf/exit')
         fprintf('Exit %d\n', m.data{3});
@@ -202,13 +202,18 @@ function ledserver(p,doplot,simul)
         index=find(ids==m.data{3});
         if length(index)<1
           fprintf('Missed entry of ID %d\n', m.data{3});
-          info.hypo=[info.hypo,struct('id',m.data{3},'pos',[m.data{4},m.data{5}],'velocity',[m.data{6},m.data{7}],'entrytime',now,'channel',m.data{12})];
+          info.hypo=[info.hypo,struct('id',m.data{3},'pos',[m.data{4},m.data{5}],'velocity',[m.data{6},m.data{7}],'entrytime',now,'channel',m.data{12},'groupid',m.data{3},'groupsize',1)];
         elseif length(index)>1
           fprintf('Have multiple copies of same ids inside; ids=%s\n', shortlist(ids));
         else
           info.hypo(index).pos=[m.data{4},m.data{5}];
           info.hypo(index).velocity=[m.data{6},m.data{7}];
+          info.hypo(index).groupid=m.data{10};
+          info.hypo(index).groupsize=m.data{11};
           info.hypo(index).channel=m.data{12};   % In case the channel was switched to TOsc
+          if info.hypo(index).groupsize>1
+            fprintf('ID %d is in group %d with a total of %d people\n', info.hypo(index).id, info.hypo(index).groupid, info.hypo(index).groupsize);
+          end
         end
       elseif strcmp(m.path,'/pf/set/npeople')
         info.npeople=m.data{1};
@@ -415,7 +420,7 @@ function info=fg_visible(info)
     blocked=(info.vis(i,:)==0);
     nblocked=sum(blocked);
     if nblocked>0
-      info.state(blocked,:)=repmat(uint8(127*info.colors{i}),nblocked,1);
+      info.state(blocked,:)=repmat(uint8(127*info.colors{i+1}),nblocked,1);
       info.mix(blocked,:)=1;
     end
   end
