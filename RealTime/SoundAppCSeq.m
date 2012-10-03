@@ -34,31 +34,33 @@ classdef SoundAppCSeq < SoundApp
       oscmsgout('MAX','/pf/pass/seqt',{'play',int32(0)});
     end
 
-    function info=update(obj,p,info)
-      if info.refresh
-        oscmsgout('MAX','/pf/pass/seqt/tempo',{info.tempo});
-        
-        obj.pitches=makescale(info.scales{info.scale},info.keys{info.key},obj.npitchsteps);
+    function refresh(obj,p,info)
+      fprintf('%s.refresh\n', obj.name);
+      
+      oscmsgout('TO','/touchosc/seq/scale/value',{[num2str(info.scale),': ',info.scales{info.scale}]});
+      oscmsgout('TO','/touchosc/seq/key/value',{info.keys{info.key}});
+      oscmsgout('MAX','/pf/pass/seqt/tempo',{info.tempo});
+      
+      obj.pitches=makescale(info.scales{info.scale},info.keys{info.key},obj.npitchsteps);
 
-        oscmsgout('TO','/touchosc/seq/scale/val',{ info.scales{info.scale} });
-        oscmsgout('TO','/touchosc/seq/key/val',{ info.keys{info.key} });
-        y=sort(obj.pstep2y(1:length(obj.pitches)),'descend');
-        for i=1:obj.touchpitches
-          midinote=obj.pitches(y==i);
-          if isempty(midinote)
-            label='';
-          elseif length(midinote)==1
-            label=midinotename(midinote);
-          elseif i==1
-            label=['<= ',midinotename(max(midinote))];
-          else
-            label=['<= ',midinotename(min(midinote))];
-          end
-          oscmsgout('TO',sprintf('/touchosc/seq/note/%d',i),{label});
+      y=sort(obj.pstep2y(1:length(obj.pitches)),'descend');
+      for i=1:obj.touchpitches
+        midinote=obj.pitches(y==i);
+        if isempty(midinote)
+          label='';
+        elseif length(midinote)==1
+          label=midinotename(midinote);
+        elseif i==1
+          label=['<= ',midinotename(max(midinote))];
+        else
+          label=['<= ',midinotename(min(midinote))];
         end
+        oscmsgout('TO',sprintf('/touchosc/seq/note/%d',i),{label});
       end
+    end
+      
+    function info=update(obj,p,info)
       %fprintf('cseq: start=%s, stop=%s, cont=%s\n',shortlist(info.entries), shortlist(info.exits), shortlist(info.updates));
-
       if isempty(info.snap)
         ids=[];
       else

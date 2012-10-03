@@ -17,6 +17,10 @@ classdef (Abstract) SoundApp < handle
     function plot(obj,p,info)
     % Default to no-op
     end
+
+    function refresh(obj,p,info)
+    % Perform a refresh of TO interface, default to no-op
+    end
   end
   
   methods (Abstract)
