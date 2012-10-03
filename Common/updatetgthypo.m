@@ -171,7 +171,7 @@ if samp==-1
 end
 
 % Assign by highest likelihood
-hf=struct('id',{},'pos',{},'tnum',{},'like',{},'entrytime',{},'lasttime',{},'area',{},'velocity',{},'heading',{},'orientation',{},'minoraxislength',{},'majoraxislength',{});
+hf=struct('id',{},'pos',{},'tnum',{},'like',{},'entrytime',{},'lasttime',{},'area',{},'velocity',{},'heading',{},'orientation',{},'minoraxislength',{},'majoraxislength',{},'groupid',{},'groupsize',{});
 
 matched=0*[tgts.nunique];
 while ~isempty(like)
@@ -192,7 +192,7 @@ while ~isempty(like)
     velocity=(newpos{mi,mj}-prevsnap.hypo(mj).pos)/interval;
     heading=atan2d(velocity(2),velocity(1));
   end
-  hf=[hf,struct('id',id,'pos',newpos{mi,mj},'tnum',mi,'like',like(mi,mj),'entrytime',entrytime,'lasttime',snap.when,'area',tgts(mi).area,'velocity',velocity,'heading',heading,'orientation',tgts(mi).orientation,'minoraxislength',tgts(mi).minoraxislength,'majoraxislength',tgts(mi).majoraxislength)];
+  hf=[hf,struct('id',id,'pos',newpos{mi,mj},'tnum',mi,'like',like(mi,mj),'entrytime',entrytime,'lasttime',snap.when,'area',tgts(mi).area,'velocity',velocity,'heading',heading,'orientation',tgts(mi).orientation,'minoraxislength',tgts(mi).minoraxislength,'majoraxislength',tgts(mi).majoraxislength,'groupid',id,'groupsize',1)];
   if debug
     fprintf('Assigned target %d (%6.3f,%6.3f) to hypo %d with dist=%.2f, like=%.3f\n', mi, newpos{mi,mj}, id, dist(mi,mj), like(mi,mj));
   end
@@ -220,6 +220,7 @@ for i=1:length(h)
     else
       hf=[hf,h(i)];
       hf(end).area=nan;
+      hf(end).tnum=nan;
     end
   end
 end
@@ -253,7 +254,7 @@ for i=1:length(missed)
     snap.nextid=snap.nextid+1;
     entrytime=snap.when;
     velocity=[nan,nan];heading=nan;
-    hf=[hf,struct('id',id,'pos',t.pos,'tnum',mi,'like',entrylike(mi),'entrytime',entrytime,'lasttime',snap.when,'area',tgts(mi).area,'velocity',velocity,'heading',heading,'orientation',tgts(mi).orientation,'minoraxislength',tgts(mi).minoraxislength,'majoraxislength',tgts(mi).majoraxislength)];
+    hf=[hf,struct('id',id,'pos',t.pos,'tnum',mi,'like',entrylike(mi),'entrytime',entrytime,'lasttime',snap.when,'area',tgts(mi).area,'velocity',velocity,'heading',heading,'orientation',tgts(mi).orientation,'minoraxislength',tgts(mi).minoraxislength,'majoraxislength',tgts(mi).majoraxislength,'groupid',id,'groupsize',1)];
     if debug
       fprintf('Assigned target %d (%6.3f,%6.3f) to NEW hypo %d with dist=%.2f, like=%.3f\n', mi, t.pos, id, entrydist(mi), entrylike(mi));
     end
