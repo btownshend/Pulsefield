@@ -143,15 +143,23 @@ classdef Ableton < handle
                                            % Retrieve replies with a timeout
       obj.refresh(timeout);
       fprintf('Ableton:update:  Numtracks=%d, Numscenes=%d\n', obj.numtracks,obj.numscenes);
-
+      if obj.numtracks==0
+        fprintf('Failed to get any tracks -- retry with longer timeout\');
+        obj.refresh(2.0);
+        fprintf('Ableton:refresh2:  Numtracks=%d, Numscenes=%d\n', obj.numtracks,obj.numscenes);
+      end
+        
       if getclips
+        fprintf('Loading track ');
         for track=1:obj.numtracks
+          fprintf('%d..',track);
           for clip=1:obj.numscenes
             %fprintf('Clip(%d,%d)\n', track,clip);
             oscmsgout('AL','/live/name/clip',{int32(track-1),int32(clip-1)});
             obj.refresh(0.01);
           end
         end
+        fprintf('done\n');
         obj.assignsongs();
       end
     end
@@ -252,8 +260,8 @@ classdef Ableton < handle
           status=m.data{3};   % 1=stopped, 2=playing, 3=triggered
           [song,songtrack]=obj.getsong(track);
           obj.allstatus(songtrack,clip)=status;
-          statuses={'stopped','playing','triggered'};
-          fprintf('Song %d, Songtrack %d, Clip %d %s\n',song, songtrack, clip,statuses{status});
+          statuses={'zero','stopped','playing','triggered'};
+          fprintf('Song %d, Songtrack %d, Clip %d %s\n',song, songtrack, clip,statuses{status+1});
           playingclip=find(obj.allstatus(songtrack,:)==2);
           triggeredclip=find(obj.allstatus(songtrack,:)==3);
           if isempty(playingclip)
