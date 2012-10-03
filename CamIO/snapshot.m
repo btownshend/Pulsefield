@@ -4,14 +4,14 @@ if nargin<2
   doplot=false;
 end
 ids=1:6
-if nargin==1
+if nargin>=1
   % Turn off any sensor cropping
   sensorcrop(p,true);
   pause(0.1);
 end
 im=aremulti(ids,'av10115-half');
 
-if nargin==1
+if nargin>=1
   % Turn sensor cropping back on
   sensorcrop(p);
 end
@@ -20,11 +20,6 @@ fprintf('Saving snapshot in %s\n', fname);
 snapshot=struct('when',now,'im',im);
 save(fname,'snapshot');
 if doplot
-  %  setfig('snapshot');
-  figure;
-  for i=1:length(ids)
-    subplot(2,ceil(length(ids)/2),i)
-    imshow(im{i});
-  end
+  snapshow(snapshot);
   pause(0.1);
 end
