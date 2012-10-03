@@ -2,7 +2,7 @@
 noshow=0;   % Don't actually update display -- allows for faster stressing of ethernet
 s1=arduino_ip;
 sync(s1);
-nled=699;
+nled=960;
 level=127;
 nsent=0;
 delay=0.0;
