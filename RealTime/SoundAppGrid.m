@@ -48,6 +48,7 @@ classdef SoundAppGrid < SoundApp
     % Turn off everything
       info.al.stop();
       info.al.stopalltracks();
+      obj.actives=obj.actives([]);   % Turn off all active cells
       obj.updategriddisplay(p,info);
     end
 
@@ -173,6 +174,30 @@ classdef SoundAppGrid < SoundApp
         end
       end
 
+      if info.ableton
+        for i=1:length(info.groupsformed)
+          gtrackname=sprintf('MV%d',i);
+          gtrack=info.al.findtrack(gtrackname);
+          if ~isempty(gtrack)
+            active=obj.actives([obj.actives.id]==info.groupsformed(i));
+            rscene=active.cell;
+            fprintf('Triggering clip (%d,%d) due to group %d formation\n', gtrack,rscene, info.groupsformed(i));
+            info.al.playclip(gtrack,rscene);
+          else
+            fprintf('Group clip track %s not found in AL\n', gtrackname);
+          end
+        end
+
+        for i=1:length(info.groupsbroken)
+          gtrackname=sprintf('MV%d',i);
+          gtrack=info.al.findtrack(gtrackname);
+          if ~isempty(gtrack)
+            fprintf('Stopping track %d due to group %d breakup\n', gtrack,info.groupsbroken(i));
+            info.al.stoptrack(gtrack);
+          end
+        end
+      end
+          
       if ~isempty(info.exits) && isempty(info.entries) && isempty(info.updates)
         % Active person exitted
         fprintf('Last person exitted grid\n');
