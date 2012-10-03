@@ -38,7 +38,7 @@ function ledserver(p,doplot,simul)
   oscmsgout('FE','/vis/dest/add/port',{myport},debug);
   oscmsgout('MPL','/pf/dest/add/port',{myport,'LD'},debug);
 
-  period=0.02;   % Update period (6 strips of LED's can update at 17.7/sec), but this also affects how much time incoming msg service gets
+  period=1/15;   % Update period (6 strips of LED's can update at 17.7/sec), but this also affects how much time incoming msg service gets
                  % Setting it to 0.06 gives mean rate of 10/sec, .02 gives 17/sec, 0.00 starves incoming messages
   lastupdate=0;
   apps=struct('name'  ,{'Visible',  'FollowPB',  'FollowWht',' CircSeq', 'Freeze',   'CMerge',   'MtrFollow'  },...
@@ -51,19 +51,20 @@ function ledserver(p,doplot,simul)
   currapp=apps(3);
 
   info=struct('state',zeros(numled(),3),'mix',zeros(numled(),3),'prevstate',[],'layout',p.layout,'vis',[],'hypo',[],'running',true,...
-              'colors',{p.colors},'back',struct('maxlev',1,'minlev',0.2,'state',zeros(numled(),3)),'maxtransport',{{1,1,1,120,4,4}},...
-              'maxpll',PLL,'alpll',PLL,'meter',zeros(8,2),'health',Health({'MP'}));
+              'colors',{p.colors},'back',struct('maxlev',1,'minlev',0.3,'state',zeros(numled(),3)),'maxtransport',{{1,1,1,120,4,4}},...
+              'maxpll',PLL,'alpll',PLL,'meter',zeros(16,2),'health',Health({'MP'}),'pulsebow',struct('pperiod',2,'cperiod',5,'pspatial',32,'cspatial',33));
   latency=[];
   refresh=true;
   msgin=[];
   avglatency=0;
-  refreshtime=0;
+  refreshtime=now;
   refreshcnt=0;
   lastvcnts=[];
+  offset1970=datenum(1970,1,1);
   
   while true
     % Receive any OSC messages
-    maxwait=max(0.0,(lastupdate-now)*24*3600+period);
+    maxwait=max(0.0,(lastupdate-datenummx(clock))*24*3600+period);
     m=oscmsgin('LD',maxwait);
     if ~isempty(m)
       if ~strncmp(m.path,'/vis',4) && ~strcmp(m.path,'/pf/update') && ~strcmp(m.path,'/max/transport') && ~strcmp(m.path,'/pf/frame') && ~strcmp(m.path,'/live/songtrack/meter') && ~strcmp(m.path,'/ack') && ~strcmp(m.path,'/ping')
@@ -101,6 +102,7 @@ function ledserver(p,doplot,simul)
             fprintf('Attempt to switch to unsupported app %s\n', pos);
           end
         end
+        refresh=true;
       elseif strcmp(m.path,'/led/pulsebow/pperiod')
         info.pulsebow.pperiod=expcontrol(m.data{1},0.1,20);
         refresh=true;
@@ -146,8 +148,8 @@ function ledserver(p,doplot,simul)
         blob=m.data{6};
         info.vis(c,:)=double(blob);
         info.vis(c,blob==2)=nan;
-        acquired=(((sec+usec/1e6)/3600-7)/24)+datenum(1970,1,1);   % Convert to matlab datenum (assuming 7 hours offset from GMT)
-        latency=(now-acquired)*24*3600;
+        acquired=(((sec+usec/1e6)/3600-7)/24)+offset1970;   % Convert to matlab datenum (assuming 7 hours offset from GMT)
+        latency=(datenummx(clock)-acquired)*24*3600;
         if latency>2/15 || mod(frame,1000)==0
           fprintf('Camera %d, frame %d latency=%.0f milliseconds (avg =%.0f ms)\n', c, frame, latency*1000,avglatency*1000);
         end
@@ -259,12 +261,15 @@ function ledserver(p,doplot,simul)
       lastvcnts(:)=-1;   % Force update of visibility counts
       refresh=false;
     end
-    if info.running && (now-lastupdate)*3600*24>=period
+    newnow=datenummx(clock);
+    if info.running && (newnow-lastupdate)*3600*24>=period
+      lastupdate=newnow;
       info.prevstate=info.state;
       info.mix=0*info.prevstate;   % Default to all background  (mix=0 -> background, mix=1 -> foreground)
       info.state=info.mix;
       info=currapp.backfn(info);   % Compute background LED colors
       info=currapp.fn(info);   % Override with foreground effect
+      info=ls_channeldisplay(info);   % Channel display
       info=ls_updateentry(info);
       if any(size(info.prevstate)~=size(info.state))
         % First time -- initialize to something different from current state
@@ -274,73 +279,59 @@ function ledserver(p,doplot,simul)
       end
       % Mix background and live state
       state=info.back.state.*(1-info.mix)+info.state.*info.mix;
-%      state=[state;info.entrystate;info.entrystate];
+
       if ~simul
         ls_updateallleds(info,state);
       end
       if doplot
         ls_plotleds(info,state);
       end
-      refreshtime=refreshtime+(now-lastupdate);
       refreshcnt=refreshcnt+1;
       if refreshcnt>50
-        fprintf('Mean update rate %.2f/second\n', refreshcnt/(refreshtime*24*3600));
+        fprintf('Mean update rate %.2f/second\n', refreshcnt/((newnow-refreshtime)*24*3600));
         refreshcnt=0;
-        refreshtime=0;
+        refreshtime=newnow;
       end
-      lastupdate=now;
+      info.health.updateleds();
     end
+  end
+end
 
-    info.health.updateleds();
+function info=ls_channeldisplay(info)
+% Visual feedback of how many people are inside
+  if ~isempty(info.hypo)
+    nchannel=max(8,max([info.hypo.channel]));
+  else
+    nchannel=8;
+  end
+  for i=1:nchannel
+    info.state(i,:)=info.colors{1}*127;
+    info.mix(i,:)=1;
+  end
+  for i=1:length(info.hypo)
+    channel=info.hypo(i).channel;
+    id=info.hypo(i).id;
+    info.state(channel,:)=id2color(id,info.colors)*127;
   end
 end
 
 function info=ls_updateentry(info)
   debug=1;
   if ~isfield(info,'entry')
-    info.entry=struct('pperiod',4,'cperiod',20,'pspatial',65, 'cspatial',130,'nled',130,'minlev',0,'maxlev',1);
+    info.entry=struct('nled',numled(0),'minlev',0,'maxlev',1);
   end
 
   % Amplitude overall
-  p0=(0:info.entry.nled-1)*2*pi/info.entry.pspatial;
+  p0=(0:info.entry.nled-1)*2*pi/info.pulsebow.pspatial;
   pshift=[p0;p0;p0]';
-  c0=(0:info.entry.nled-1)*2*pi/info.entry.cspatial;
+  c0=(0:info.entry.nled-1)*2*pi/info.pulsebow.cspatial;
   cshift=[c0;c0+2*pi/3;c0+4*pi/3]';
   t=now*24*3600;
-  pphase=mod(t*2*pi/info.entry.pperiod+pshift,2*pi);
-  cphase=mod(t*2*pi/info.entry.cperiod+cshift,2*pi);
+  pphase=mod(t*2*pi/info.pulsebow.pperiod+pshift,2*pi);
+  cphase=mod(t*2*pi/info.pulsebow.cperiod+cshift,2*pi);
   amp=info.entry.minlev+(info.entry.maxlev-info.entry.minlev)*(sin(pphase)+1)/2;
   col=(sin(cphase)+1)/2;
   info.entrystate=((amp.*col).^2*.97+.03) * 127;   % Response is nonlinear (approx squared)
-end
-
-function ls_updateleds(info)
-  debug=0;
-  s1=arduino_ip(0);
-  cmd=[];
-  for i=1:size(info.state,1)
-    if any(info.state(i,:)~=info.prevstate(i,:))
-      % Find next LED that is a different color
-      j=find(info.state(i+1:end,1)~=info.state(i,1) | info.state(i+1:end,2)~=info.state(i,2) | info.state(i+1:end,3)~=info.state(i,3),1);
-      if isempty(j)
-        j=size(info.state,1)-i;
-      else
-        j=j-1;
-      end
-      cmd=[cmd,setled(s1,(i:i+j)-1,info.state(i,:),0)];
-      if debug
-        fprintf('%s->[%d,%d,%d]; ', shortlist(i:i+j), info.state(i,:));
-      end
-      info.prevstate(i:i+j,:)=info.state(i:i+j,:);  % Prevent it from being done again
-    end
-  end
-  if ~isempty(cmd)
-    if debug
-      fprintf('Updated LEDs using %d bytes\n',length(cmd));
-    end
-    cmd=[cmd,'G'];  % Show()
-    awrite(s1,cmd);
-  end
 end
 
 function ls_updateallleds(info,state)
@@ -351,7 +342,7 @@ function ls_updateallleds(info,state)
     if debug
       tic;
     end
-    cmd=setallleds(s1,state,0);
+    cmd=setallleds(s1,{state,info.entrystate,info.entrystate});
     cmd=[cmd,show(s1)];
     if debug
       elapsed=toc;
@@ -420,11 +411,12 @@ function info=fg_visible(info)
     return;
   end
 
-  for i=1:size(info.vis,2)
-    blocked=find(info.vis(:,i)==0);
-    if ~isempty(blocked)
-      info.state(i,:)=uint8(127*info.colors{min(blocked)+1});
-      info.mix(i,:)=1;
+  for i=1:size(info.vis,1)
+    blocked=(info.vis(i,:)==0);
+    nblocked=sum(blocked);
+    if nblocked>0
+      info.state(blocked,:)=repmat(uint8(127*info.colors{i}),nblocked,1);
+      info.mix(blocked,:)=1;
     end
   end
 end
@@ -432,6 +424,7 @@ end
 function info=fg_meterfollow(info)
   info=fg_follow(info,1);
 end
+
 function info=fg_follow(info,usemeter)
   if nargin<2
     usemeter=0;
@@ -446,23 +439,21 @@ function info=fg_follow(info,usemeter)
     h=info.hypo(i);
     % Color of marker lights (track people)
     col=id2color(h.id,info.colors)*127;
+
     % Check for burst on entry
     dur=(now-h.entrytime)*24*3600;   % Time since entry
     if  dur < 5
-      timeconst=3;  % Exponential decay of burst with this t/c
-      scale=exp(-dur/timeconst);
-      for j=1:3
-        info.state(:,j)=info.state(:,j)+col(j);
-      end
-      info.mix(:)=info.mix(:)+scale;
+      awidthscale=1+(5-dur);
+    else
+      awidthscale=1;
     end
 
     pos=h.pos;
     % Angular width of person's marker (left and right)
-    awidth(1)=awidthmax * min(1,(norm(pos)-minradius)/(meanradius-minradius));
+    awidth(1)=awidthscale*awidthmax * min(1,(norm(pos)-minradius)/(meanradius-minradius));
     awidth(2)=awidth(1);
 
-    if usemeter
+    if usemeter && h.channel<=size(info.meter,1)  % Was hitting error where channel was beyond end of meter -- not sure why
       % Increase width using VU (amount above -14dB = 0.5)
       awidth=awidth + awidthmax * 10 * info.meter(h.channel,:).^2;  % Will span about 100 LEDs for 0.0-1.0 -> 2* 2.5 LED/dB at top
       fprintf('Meter=%.2f %.2f Width = %.1f %.1f LEDs\n', info.meter(h.channel,:),awidth*maxleds/awidthmax);
@@ -491,18 +482,6 @@ function info=fg_follow(info,usemeter)
     i=fmx(ii);
     %fprintf('Rescaling %d by %f\n', i, mx(i));
     info.mix(i,:)=info.mix(i,:)/mx(i);
-  end
-
-  % Visual feedback of how many people are inside
-  % TODO - this could be in background led patterns, and also use channel map to display
-  for i=1:8
-    info.state(i,:)=info.colors{1}*127;
-    info.mix(i,:)=1;
-  end
-  for i=1:length(info.hypo)
-    channel=info.hypo(i).channel;
-    id=info.hypo(i).id;
-    info.state(channel,:)=id2color(id,info.colors)*127;
   end
 end
 
@@ -536,23 +515,6 @@ function info=fg_cmerge(info)
   info.state=cols(best,:);	     % Color of closest person
   info.mix(minangle<pi/2,:)=1;      % Only on if within 90 degs of closest
   info.mix(info.layout.outsider)=0;  % Outside LEDs not affected
-
-  % Visual feedback of how many people are inside
-  % TODO - this could be in background led patterns, and also use channel map to display
-  if ~isempty(info.hypo)
-    ids=sort([info.hypo.id]);
-  else
-    ids=[];
-  end
-
-  for i=1:length(ids)
-    info.state(i,:)=id2color(ids(i),info.colors)*127;
-    info.mix(i,:)=1;
-  end
-  for i=length(ids)+1:8
-    info.state(i,:)=info.colors{1}*127;
-    info.mix(i,:)=1;
-  end
 end
 
 function info=fg_freeze(info)
