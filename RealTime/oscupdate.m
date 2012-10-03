@@ -98,8 +98,7 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     oscmsgout('TO','/enable/ableton',{int32(info.ableton)});
     oscmsgout('TO','/enable/max',{int32(info.max)});
 
-    oscmsgout('TO','/touchosc/seq/scale/value',{[num2str(info.scale),': ',info.scales{info.scale}]});
-    oscmsgout('TO','/touchosc/seq/key/value',{info.keys{info.key}});
+    info.currapp.refresh(p,info);
   end
 
   if running
