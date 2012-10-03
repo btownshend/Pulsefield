@@ -161,6 +161,15 @@ function info=oscincoming(p,info)
         info.al.settempo(info.al.getsongtempo(info.song));
         fprintf('Switched to song %d\n', info.song);
       end
+    elseif strncmp(rcvdmsg.path,'/touchosc/seq/',14)
+      if rcvdmsg.data{1}==1
+        % Use this as a signal to clear that square
+        slashes=find(rcvdmsg.path=='/');
+        sx=str2num(rcvdmsg.path(slashes(3)+1:slashes(4)-1));
+        sy=str2num(rcvdmsg.path(slashes(4)+1:end));
+        fprintf('Clearing %s (%d,%d)\n', rcvdmsg.path(1:13),sx,sy);
+        oscmsgout('TO',rcvdmsg.path(1:13),{int32(sx),int32(sy),int32(0)});
+      end
     elseif strcmp(rcvdmsg.path,'/touchosc/ableton/reload')
       % Reload track/clip data from AL -- may take a while
       oscmsgout('TO','/touchosc/ableton/reload/color',{'red'});
