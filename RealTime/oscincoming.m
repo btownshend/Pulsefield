@@ -22,6 +22,11 @@ function info=oscincoming(p,info)
       handled=true;
     end
     
+    if strcmp(rcvdmsg.path,'/snapshot/trigger')
+      oscmsgout('SN',rcvdmsg.path,rcvdmsg.data);
+      handled=true;
+    end
+
     if strncmp(rcvdmsg.path,'/midi/',6) || strcmp(rcvdmsg.path,'/tempo')
       % Relay message to MAX
       oscmsgout('MAX',rcvdmsg.path,rcvdmsg.data);
