@@ -115,6 +115,21 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     info.entries=setdiff(ids,previds);
     info.exits=setdiff(previds,ids);
     info.updates=intersect(ids,previds);
+
+    % Compute formation, breakage of groups
+    if nargin>=5
+      info.groupsformed=setdiff([snap.hypo.groupid],[0,prevsnap.hypo.groupid]);
+      info.groupsbroken=setdiff([prevsnap.hypo.groupid],[0,snap.hypo.groupid]);
+      if ~isempty(info.groupsformed)
+        fprintf('Groups formed: %s\n', sprintf('%d ',info.groupsformed));
+      end
+      if ~isempty(info.groupsbroken)
+        fprintf('Groups broken: %s\n', sprintf('%d ',info.groupsbroken));
+      end
+    else
+      info.groupsformed=[];
+      info.groupsbroken=[];
+    end
     
     if mod(sampnum,20)==0
       oscmsgout(p.oscdests,'/pf/frame',{int32(sampnum) });
@@ -127,13 +142,11 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
 
     for i=1:length(snap.hypo)
       h=snap.hypo(i);
-      % Compute groupid -- lowest id in group, or 0 if not in a group
-      sametnum=find(h.tnum==[snap.hypo.tnum]);
-      groupid=snap.hypo(min(sametnum)).id;
       % TODO - should send to all destinations except TO
-      oscmsgout({'LD','OSC'},'/pf/update',{int32(sampnum), elapsed,int32(h.id),h.pos(1),h.pos(2),h.velocity(1),h.velocity(2),h.majoraxislength,h.minoraxislength,int32(groupid),int32(length(sametnum)),int32(info.cm.id2channel(h.id))});
+      oscmsgout({'LD','OSC'},'/pf/update',{int32(sampnum), elapsed,int32(h.id),h.pos(1),h.pos(2),h.velocity(1),h.velocity(2),h.majoraxislength,h.minoraxislength,int32(h.groupid),int32(h.groupsize),int32(info.cm.id2channel(h.id))});
     end
 
+    
     % Update LCD
     lcdsize=400;
     for i=1:length(snap.hypo)
@@ -170,7 +183,18 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
             oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{''});
           else
             oscmsgout('TO',sprintf('/touchosc/loc/%d/visible',channel),{1});
-            oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{sprintf('%d ',xyids)});
+            idlabel='';
+            for k=1:length(xyids)
+              idlabel=[idlabel,sprintf('%d',xyids(k))];
+              hnum=find([snap.hypo.id]==xyids(k));
+              if snap.hypo(hnum).groupid~=0
+                idlabel=[idlabel,sprintf('G%d',snap.hypo(hnum).groupid)];
+              end
+              if k<length(xyids)
+                idlabel(end+1)=',';
+              end
+            end
+            oscmsgout('TO',sprintf('/touchosc/id/%d',channel),{idlabel});
             oscmsgout('TO',sprintf('/touchosc/loc/%d/color',channel),{col2touchosc(id2color(xyids(1),p.colors))});
           end
         end
