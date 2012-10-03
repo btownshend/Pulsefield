@@ -115,6 +115,8 @@ while ~info.quit
       snap=updatetgthypo(p.layout,prevsnap,snap,samp);
     end
 
+    snap=findgroups(snap);
+    
     snap.whendone=now;
 
     % Display coords
@@ -131,7 +133,7 @@ while ~info.quit
       if samp>1 && length(prevsnap.hypo)>=j && prevsnap.hypo(j).id==hj.id
         hk=prevsnap.hypo(j);
       end
-      fprintf('H%d:(%.2f,%.2f)@%.2f m/s ',hj.id,hj.pos,norm(hj.velocity));
+      fprintf('H%d[%d]:(%.2f,%.2f)@%.2f m/s ',hj.id,hj.tnum,hj.pos,norm(hj.velocity));
       ptd=true;
     end
     if length(snap.hypo)>maxoccupancy

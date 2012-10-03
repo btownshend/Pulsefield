@@ -79,6 +79,8 @@ while samp<=length(recvis.vis)
     snap{samp}=updatetgthypo(recvis.p.layout,snap{samp-1},snap{samp},samp);
   end
 
+  snap{samp}=findgroups(snap{samp});
+    
   snap{samp}.whendone=now-simulskew;
 
   if args.plothypo && ~isempty(snap{samp}.hypo)
@@ -148,7 +150,7 @@ while samp<=length(recvis.vis)
     if samp>1 && length(snap{samp-1}.hypo)>=j && snap{samp-1}.hypo(j).id==hj.id
       hk=snap{samp-1}.hypo(j);
     end
-    fprintf('H%d:(%.2f,%.2f)@%.2f m/s ',hj.id,hj.pos,norm(hj.velocity));
+    fprintf('H%d[%d]:(%.2f,%.2f)@%.2f m/s ',hj.id,hj.tnum,hj.pos,norm(hj.velocity));
     ptd=true;
   end
   if ptd
