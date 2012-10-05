@@ -79,7 +79,7 @@ while samp<=length(recvis.vis)
     snap{samp}=updatetgthypo(recvis.p.layout,snap{samp-1},snap{samp},samp);
   end
 
-  snap{samp}=findgroups(snap{samp});
+  [info,snap{samp}]=findgroups(info,snap{samp});
     
   snap{samp}.whendone=now-simulskew;
 

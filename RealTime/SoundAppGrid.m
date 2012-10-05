@@ -176,23 +176,25 @@ classdef SoundAppGrid < SoundApp
 
       if info.ableton
         for i=1:length(info.groupsformed)
-          gtrackname=sprintf('MV%d',i);
+          gid=info.groupsformed(i);
+          idset=info.groupmap.gid2idset(gid);
+          gtrackname=sprintf('MV%d',length(idset)-1);
           gtrack=info.al.findtrack(gtrackname);
           if ~isempty(gtrack)
-            active=obj.actives([obj.actives.id]==info.groupsformed(i));
-            rscene=active.cell;
-            fprintf('Triggering clip (%d,%d) due to group %d formation\n', gtrack,rscene, info.groupsformed(i));
-            info.al.playclip(gtrack,rscene);
+            fprintf('Triggering clip (%d,%d) due to group %d formation\n', gtrack,gid, gid);
+            info.al.playclip(gtrack,gid);
           else
             fprintf('Group clip track %s not found in AL\n', gtrackname);
           end
         end
 
         for i=1:length(info.groupsbroken)
-          gtrackname=sprintf('MV%d',i);
+          gid=info.groupsbroken(i);
+          idset=info.groupmap.gid2idset(gid);
+          gtrackname=sprintf('MV%d',length(idset)-1);
           gtrack=info.al.findtrack(gtrackname);
           if ~isempty(gtrack)
-            fprintf('Stopping track %d due to group %d breakup\n', gtrack,info.groupsbroken(i));
+            fprintf('Stopping track %d due to group %d breakup\n', gtrack,gid);
             info.al.stoptrack(gtrack);
           end
         end

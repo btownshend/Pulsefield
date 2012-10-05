@@ -171,6 +171,7 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     for i=info.exits
       oscmsgout(p.oscdests,'/pf/exit',{int32(sampnum),elapsed,int32(i)});
       info.cm.deleteid(i);
+      info.groupmap.deleteuid(i);
     end
 
     % Update XY display in TouchOSC

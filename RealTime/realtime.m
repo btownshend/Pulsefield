@@ -115,7 +115,7 @@ while ~info.quit
       snap=updatetgthypo(p.layout,prevsnap,snap,samp);
     end
 
-    snap=findgroups(snap);
+    [info,snap]=findgroups(info,snap);
     
     snap.whendone=now;
 
