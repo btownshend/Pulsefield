@@ -1,7 +1,7 @@
 % Guitar app
 classdef SoundAppGuitar < SoundApp
   properties
-    plotguitar=true;
+    plotguitar=false;
     nfrets=10;
     fretpitches=[64,59,55,50,45,40];  % E4,B3,G3,D3,A2,E2
     stringx=[];
