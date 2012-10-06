@@ -75,6 +75,7 @@ photointerval=10.0;   % Take a photo ever 10 seconds while someone present
 lastphoto=0;
 postbuffering=0;   % Number of frames PF has been empty
 
+try 
 while ~info.quit
   if idlecnt==0
     timeout=0.0;
@@ -115,7 +116,9 @@ while ~info.quit
       snap=updatetgthypo(p.layout,prevsnap,snap,samp);
     end
 
-    [info,snap]=findgroups(info,snap);
+    if samp>1
+      [info,snap]=findgroups(info,snap,prevsnap);
+    end
     
     snap.whendone=now;
 
@@ -130,10 +133,18 @@ while ~info.quit
     end
     for j=1:length(snap.hypo)
       hj=snap.hypo(j);
-      if samp>1 && length(prevsnap.hypo)>=j && prevsnap.hypo(j).id==hj.id
-        hk=prevsnap.hypo(j);
+      gstr='';
+      if isfinite(hj.tnum)
+        gstr=sprintf('T%d',hj.tnum);
       end
-      fprintf('H%d[%d]:(%.2f,%.2f)@%.2f m/s ',hj.id,hj.tnum,hj.pos,norm(hj.velocity));
+      if hj.groupid~=0
+        if length(gstr)>0
+          gstr=[gstr,sprintf(',G%d',hj.groupid)];
+        else
+          gstr=sprintf('G%d',hj.groupid);
+        end
+      end
+      fprintf('H%d[%s]:(%.2f,%.2f)@%.2f m/s ',hj.id,gstr,hj.pos,norm(hj.velocity));
       ptd=true;
     end
     if length(snap.hypo)>maxoccupancy
@@ -225,9 +236,28 @@ while ~info.quit
     recvis.p=p;
   end
 end
+catch me
+  fprintf('Exception: %s\n',me.message);
+  
+  % Turn off health LEDs
+  info.health.alloff();
+  
+  % Turn off any remaining notes
+  oscupdate(p,info,samp);
 
-% Turn off any remaining notes
-oscupdate(p,info,samp);
+  % Turn off LEDs (in case LED Server not running)
+  setled(s1,-1,[0,0,0],1);show(s1);
+  
+  try
+    saverecvis(recvis,sprintf('Crash-save of %d frames at %s with max occupancy of %d',length(recvis.vis),datestr(now),maxoccupancy));
+  catch me2
+    fprintf('saverecvis: %s\n',me2.message);
+  end
 
-% Turn off LEDs (in case LED Server not running)
-setled(s1,-1,[0,0,0],1);show(s1);
+  % End diary
+  startdiary();
+
+  % Save data
+  fprintf('Rethrowing exception\n');
+  rethrow(me);
+end
