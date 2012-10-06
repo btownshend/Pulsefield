@@ -156,10 +156,16 @@ function info=oscincoming(p,info)
       end
     elseif strcmp(rcvdmsg.path,'/touchosc/song/incr')
       if rcvdmsg.data{1}==1
-        info.song=mod(info.song,info.al.numsongs())+1;
         info.al.stopalltracks();
-        info.al.settempo(info.al.getsongtempo(info.song));
-        fprintf('Switched to song %d\n', info.song);
+        if info.al.numsongs()>0
+          info.song=mod(info.song,info.al.numsongs())+1;
+          info.cm.setnumchannels(info.al.numsongtracks(info.song));
+          info.al.settempo(info.al.getsongtempo(info.song));
+          fprintf('Switched to song %d\n', info.song);
+        else
+          fprintf('No songs available!\n');
+          info.song=[];
+        end
       end
     elseif strncmp(rcvdmsg.path,'/touchosc/seq/',14)
       if rcvdmsg.data{1}==1
@@ -183,7 +189,7 @@ function info=oscincoming(p,info)
       if ~isempty(id)
         info.cm.deleteid(id);
         newchannel=info.cm.newchannel(id);
-        fprintf('Reassigning ID %d on channel %d to a channel %d\n', id, channel,newchannel);
+        fprintf('Reassigning ID %d on channel %d to channel %d\n', id, channel,newchannel);
         if info.ableton
           info.al.stopalltracks();
         end
