@@ -239,16 +239,6 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
       info.lastping=now;
     end
     
-    % Check if channel map needs adjustment due to change in song/num channels
-    if info.ableton
-      alchannels=info.al.numsongtracks(info.song);
-      if (alchannels ~= info.cm.numchannels() && alchannels>0)
-        fprintf('Ableton has %d (->%d) tracks, but using a %d channel mapping; changing mapping\n',info.al.numtracks(), alchannels, info.cm.numchannels());
-        info.cm.setnumchannels(alchannels);
-      end
-      %fprintf('numsongs=%f, trackspersong=%d, song=%d, channels=%d\n',info.al.numsongs(), info.al.trackspersong, info.song,alchannels);
-    end
-
   end
   
   info.health.updateleds();
