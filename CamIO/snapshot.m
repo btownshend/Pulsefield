@@ -3,7 +3,7 @@ function snapshot(p,doplot)
 if nargin<2
   doplot=false;
 end
-ids=1:6
+ids=1:6;
 if nargin>=1
   % Turn off any sensor cropping
   sensorcrop(p,true);
