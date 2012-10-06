@@ -12,6 +12,8 @@ classdef SoundAppGrid < SoundApp
     position=[];
     pitch=[];
     actives=struct('cell',{},'id',{},'triggertime',{},'offtime',{});
+    lastgroupfired=0;   % Last time a group clip was fired
+    lastgrouptrack=0;
   end
   
   methods
@@ -40,7 +42,10 @@ classdef SoundAppGrid < SoundApp
       end
       cell=1:size(obj.position,1);
       obj.pitch=cell+round(64-mean(cell));
-      info.al.settempo(info.al.getsongtempo(info.song));   % Set song tempo
+      if ~isempty(info.song)
+        info.cm.setnumchannels(info.al.numsongtracks(info.song));
+        info.al.settempo(info.al.getsongtempo(info.song));   % Set song tempo
+      end
       obj.updategriddisplay(p,info);
     end
 
@@ -122,9 +127,9 @@ classdef SoundAppGrid < SoundApp
             oscmsgout('MAX','/pf/pass/noteoff',{int32(id),int32(activepitch),int32(channel)});
             oscmsgout('MAX','/pf/pass/noteon',{int32(id),int32(newpitch),int32(info.velocity),int32(info.duration),int32(channel)});
           end
-          if info.ableton
+          if info.ableton && ~isempty(info.song)
             %pan=pos(2)/max(abs(p.layout.active(:,2)));
-            info.al.cliptrigger(info,channel,newcell);
+            info.al.cliptrigger(info.song,channel,newcell);
           end
           if obj.debug
             fprintf('ID %d (channel %d) moved from grid %d (%.2f) to grid %d (%.2f)\n', id, channel, active.cell, activedist, newcell, newdist);
@@ -140,7 +145,7 @@ classdef SoundAppGrid < SoundApp
         if info.max
           oscmsgout('MAX','/pf/pass/noteoff',{int32(id),int32(activepitch),int32(channel)});
         end
-        if info.ableton
+        if info.ableton && ~isempty(info.song)
           info.al.stopsongtrack(info.song,channel);
         end
         obj.actives=obj.actives([obj.actives.id]~=id);
@@ -164,9 +169,9 @@ classdef SoundAppGrid < SoundApp
         if info.max
           oscmsgout('MAX','/pf/pass/noteon',{int32(id),int32(newpitch),int32(info.velocity),int32(info.duration),int32(channel)});
         end
-        if info.ableton
+        if info.ableton && ~isempty(info.song)
           %pan=pos(2)/max(abs(p.layout.active(:,2)));
-          info.al.cliptrigger(info,channel,newcell);
+          info.al.cliptrigger(info.song,channel,newcell);
         end
         obj.actives=[obj.actives,struct('cell',newcell,'id',id,'triggertime',now,'offtime',nan)];
         if obj.debug
@@ -178,25 +183,33 @@ classdef SoundAppGrid < SoundApp
         for i=1:length(info.groupsformed)
           gid=info.groupsformed(i);
           idset=info.groupmap.gid2idset(gid);
-          gtrackname=sprintf('MV%d',length(idset)-1);
-          gtrack=info.al.findtrack(gtrackname);
+          gtracknum=length(idset)-1;
+          gtrack=[];
+          while gtracknum>=1
+            gtrackname=sprintf('MV%d',length(idset)-1);
+            gtrack=info.al.findtrack(gtrackname);
+            if ~isempty(gtrack)
+              break;
+            end
+            fprintf('%s not found, trying prior track\n', gtrackname);
+            gtracknum=gtracknum-1;
+          end
           if ~isempty(gtrack)
-            fprintf('Triggering clip (%d,%d) due to group %d formation\n', gtrack,gid, gid);
-            info.al.playclip(gtrack,gid);
+            if ~info.al.isplaying(gtrack) % Don't interfere with clip that is playing
+              fprintf('Triggering clip (%d,%d) due to group %d formation\n', gtrack,gid, gid);
+              info.al.playclip(gtrack,gid);
+              obj.lastgroupfired=now;
+              obj.lastgrouptrack=gtrack;
+            else
+              fprintf('Not triggering group track %d since something is already playing\n');
+            end
           else
             fprintf('Group clip track %s not found in AL\n', gtrackname);
           end
         end
 
         for i=1:length(info.groupsbroken)
-          gid=info.groupsbroken(i);
-          idset=info.groupmap.gid2idset(gid);
-          gtrackname=sprintf('MV%d',length(idset)-1);
-          gtrack=info.al.findtrack(gtrackname);
-          if ~isempty(gtrack)
-            fprintf('Stopping track %d due to group %d breakup\n', gtrack,gid);
-            info.al.stoptrack(gtrack);
-          end
+          % Nothing to do
         end
       end
           
@@ -214,7 +227,7 @@ classdef SoundAppGrid < SoundApp
         obj.updategriddisplay(p,info, prioractive);
       end
 
-      if info.ableton && obj.maxcliptime>0  % Disabled
+      if info.ableton && ~isempty(info.song) && obj.maxcliptime>0  % Disabled
                             % Terminate clips after a certain time
         for i=1:length(obj.actives)
           l=obj.actives(i);
@@ -250,7 +263,7 @@ classdef SoundAppGrid < SoundApp
           col='gray';
           for j=1:length(ids)
             channel=info.cm.id2channel(ids(j));
-            if info.al.haveclip(info.song,channel,i)
+            if ~isempty(info.song) && info.al.haveclip(info.song,channel,i)
               txt=[txt,sprintf('T%d ',channel)];
               col=col2touchosc(id2color(ids(j),p.colors));
             else
@@ -264,7 +277,11 @@ classdef SoundAppGrid < SoundApp
           pause(0.01);   % Don't overrun when setting up the entire grid
         end
       end
-      oscmsgout('TO','/grid/song',{info.al.getsongname(info.song)});
+      if ~isempty(info.song)
+        oscmsgout('TO','/grid/song',{info.al.getsongname(info.song)});
+      else
+        oscmsgout('TO','/grid/song',{''});
+      end
     end
     
   end
