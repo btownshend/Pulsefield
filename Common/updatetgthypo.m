@@ -221,6 +221,10 @@ for i=1:length(h)
       hf=[hf,h(i)];
       hf(end).area=nan;
       hf(end).tnum=nan;
+      hf(end).velocity=[nan nan];
+      hf(end).heading=nan;
+      hf(end).minoraxislength=nan;
+      hf(end).majoraxislength=nan;
     end
   end
 end
