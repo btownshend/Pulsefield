@@ -56,5 +56,12 @@ classdef Health <handle
       end
       obj.lastphase=phase;
     end
+    
+    function alloff(obj)
+    % Turn off all health LEDs
+      for i=1:length(obj.remotestatus)
+        oscmsgout('TO',sprintf('/health/%s',obj.remotestatus(i).id),{int32(0)});
+      end
+    end
   end
 end
