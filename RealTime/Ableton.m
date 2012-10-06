@@ -5,8 +5,10 @@ classdef Ableton < handle
     clipnames={};
     clipcolors=[];
     allstatus=[];
+    trackstatus=[];
     tracknames={};
-    songs={};  % Start/stop track
+    songs={};  % songtrack->track mappings
+    songids={}; % IDS
     songnames={}; % Names
     songtempo=[];  % Tempo of each song in BPM
     numscenes=60;
@@ -31,11 +33,36 @@ classdef Ableton < handle
       obj.stopalltracks();
       obj.initgui();
     end
+    
+    function checksong(obj,song)
+      if isempty(song) || song<1 || song>length(obj.songs)
+        throw(MException('Ableton:checksong','Song value %d out of bounds',song));
+      end
+    end
 
+    function checksongtrack(obj,song,songtrack)
+      obj.checksong(song);
+      if isempty(songtrack) || songtrack<1 || songtrack>length(obj.songs{song})
+        throw(MException('Ableton:gettrack','Bad song,songtrack: (%d,%d)',song,songtrack));
+      end
+    end
+    
+    function checktrack(obj,track)
+      if isempty(track) || track<1 || track>length(obj.tracknames)
+        throw(MException('Ableton:checktrack','Track value %d out of bounds',track));
+      end
+    end
+
+    function checkclip(obj,clip)
+      if isempty(clip) || clip<1 || clip>length(obj.clipnames)
+        throw(MException('Ableton:checkclip','Clip value %d out of bounds',clip));
+      end
+    end
+          
     function [song,songtrack]=getsong(obj,track)
       for song=1:length(obj.songs)
-        if track>=obj.songs{song}(1) && track<=obj.songs{song}(2)
-          songtrack=track-obj.songs{song}(1)+1;
+        songtrack=find(obj.songs{song}==track,1);
+        if ~isempty(songtrack)
           return;
         end
       end
@@ -43,6 +70,7 @@ classdef Ableton < handle
     end
     
     function tempo=getsongtempo(obj,song)
+      obj.checksong(song);
       tempo=obj.songtempo(song);
     end
     
@@ -55,28 +83,20 @@ classdef Ableton < handle
     end
     
     function name=getsongname(obj,song)
+      obj.checksong(song);
       name=obj.songnames{song};
     end
     
     function nm=getclipname(obj, track, clip)
-      if (track>length(obj.tracknames)) || (clip>size(obj.clipnames,2))
-        fprintf('Ableton:getclipname(obj,%d,%d) with only %d tracks, %d clips\n', track, clip, length(obj.tracknames), size(obj.clipnames,2));
-        nm=[];
-      else
-        nm=obj.clipnames{track,clip};
-      end
+      obj.checktrack(track);
+      obj.checkclip(clip);
+      nm=obj.clipnames{track,clip};
     end
     
     function track=gettrack(obj,song,songtrack)
     % Map from (song,songtrack) to absolute track
-      if song<1 || song>length(obj.songs)
-        fprintf('AL: gettrack(%d,%d): Bad song number\n',song,songtrack);
-      end
-      track=obj.songs{song}(1)+songtrack-1;
-      if track>obj.songs{song}(2)
-        fprintf('AL: gettrack(%d,%d): Bad songtrack\n',song,songtrack);
-        track=obj.songs{song}(2);
-      end
+      obj.checksongtrack(song,songtrack);
+      track=obj.songs{song}(songtrack);
     end
     
     function nm=getsongclipname(obj,song,songtrack,clip)
@@ -88,12 +108,8 @@ classdef Ableton < handle
     end
     
     function nm=gettrackname(obj,track)
-      if (track>length(obj.tracknames))
-        fprintf('Ableton:gettrackname(obj,%d) with only %d tracks\n', track, length(obj.tracknames));
-        nm=[];
-      else
-        nm=obj.tracknames{track};
-      end
+      obj.checktrack(track);
+      nm=obj.tracknames{track};
     end
     
     function nm=getsongtrackname(obj,song,songtrack)
@@ -108,12 +124,13 @@ classdef Ableton < handle
       track=find(strcmp(name,obj.tracknames));
     end
     
+    function song=findsongid(obj,id)
+      song=find(strcmp(id,obj.songids));
+    end
+    
     function n=numsongtracks(obj,song)
-      if song>length(obj.songs)
-        n=0;
-      else
-        n=diff(obj.songs{song})+1;
-      end
+      obj.checksong(song);
+      n=length(obj.songs{song});
     end
 
     function n=numclips(obj)
@@ -148,7 +165,7 @@ classdef Ableton < handle
       obj.refresh(timeout);
       fprintf('Ableton:update:  Numtracks=%d, Numscenes=%d\n', obj.numtracks,obj.numscenes);
       if obj.numtracks==0
-        fprintf('Failed to get any tracks -- retry with longer timeout\');
+        fprintf('Failed to get any tracks -- retry with longer timeout\n');
         obj.refresh(2.0);
         fprintf('Ableton:refresh2:  Numtracks=%d, Numscenes=%d\n', obj.numtracks,obj.numscenes);
       end
@@ -194,7 +211,7 @@ classdef Ableton < handle
       else
         for i=1:length(obj.tracknames)
           if ~strcmp(obj.tracknames{i},newobj.tracknames{i})
-            fprintf('Ableton setup loaded from %s has %s as track %d, but AL currently has %s\n', filename,newobj.tracknames{i},i,obj.tracknames{i});
+            fprintf('Ableton setup loaded from %s has %s as track %d, but AL currently has "%s" as this track\n', filename,newobj.tracknames{i},i,obj.tracknames{i});
             mismatch=1;
             break;
           end
@@ -262,30 +279,45 @@ classdef Ableton < handle
           track=m.data{1}+1;
           clip=m.data{2}+1;
           status=m.data{3};   % 1=stopped, 2=playing, 3=triggered
-          [song,songtrack]=obj.getsong(track);
-          obj.allstatus(songtrack,clip)=status;
-          statuses={'zero','stopped','playing','triggered'};
-          fprintf('Song %d, Songtrack %d, Clip %d %s\n',song, songtrack, clip,statuses{status+1});
-          playingclip=find(obj.allstatus(songtrack,:)==2);
-          triggeredclip=find(obj.allstatus(songtrack,:)==3);
-          if isempty(playingclip)
-            sc='';
-            cl='';
-          else
-            sc=sprintf('%d ',playingclip);
-            cl=obj.getclipname(track,playingclip(1));
+          obj.trackstatus(track)=status;
+          
+          try 
+            [song,songtrack]=obj.getsong(track);
+          catch me
+            % Already indicated error, ignore it
+            song=[];
           end
-          if ~isempty(triggeredclip)
-            sc=[sc,' -> ',sprintf('%d ',triggeredclip)];
-            cl=[cl,' -> ',obj.getclipname(track,triggeredclip(1))];
-          end
-          oscmsgout('TO',sprintf('/grid/table/%d/scene',songtrack),{sc});
-          oscmsgout('TO',sprintf('/grid/table/%d/clip',songtrack),{cl});
-          if isempty(playingclip) && isempty(triggeredclip)
-            oscmsgout('TO',sprintf('/grid/table/%d/track',songtrack),{''});
-            oscmsgout('TO',sprintf('/grid/table/%d/pos',songtrack),{''});
-          else
-            oscmsgout('TO',sprintf('/grid/table/%d/track',songtrack),{obj.gettrackname(track)});
+          if ~isempty(song)
+            obj.allstatus(songtrack,clip)=status;
+            statuses={'zero','stopped','playing','triggered'};
+            fprintf('Song %d, Songtrack %d, Clip %d %s\n',song, songtrack, clip,statuses{status+1});
+            playingclip=find(obj.allstatus(songtrack,:)==2);
+            triggeredclip=find(obj.allstatus(songtrack,:)==3);
+            if isempty(playingclip)
+              sc='';
+              cl='';
+              % Nothing playing, so clear any leftover triggered clips that never played
+              if ~isempty(triggeredclip)
+                fprintf('Clearing leftover triggered clips on songtrack %d: %s\n', songtrack, shortlist(triggeredclip));
+                obj.allstatus(songtrack,triggeredclip)=1;
+                triggerclip=[];
+              end
+            else
+              sc=sprintf('%d ',playingclip);
+              cl=obj.getclipname(track,playingclip(1));
+            end
+            if ~isempty(triggeredclip)
+              sc=[sc,' -> ',sprintf('%d ',triggeredclip)];
+              cl=[cl,' -> ',obj.getclipname(track,triggeredclip(1))];
+            end
+            oscmsgout('TO',sprintf('/grid/table/%d/scene',songtrack),{sc});
+            oscmsgout('TO',sprintf('/grid/table/%d/clip',songtrack),{cl});
+            if isempty(playingclip) && isempty(triggeredclip)
+              oscmsgout('TO',sprintf('/grid/table/%d/track',songtrack),{''});
+              oscmsgout('TO',sprintf('/grid/table/%d/pos',songtrack),{''});
+            else
+              oscmsgout('TO',sprintf('/grid/table/%d/track',songtrack),{obj.gettrackname(track)});
+            end
           end
         elseif strcmp(m.path,'/live/clip/position')
           track=m.data{1}+1;
@@ -294,22 +326,35 @@ classdef Ableton < handle
           %length=m.data{4};
           loop_start=m.data{5};
           loop_end=m.data{6};
-          [~,songtrack]=obj.getsong(track);
-          oscmsgout('TO',sprintf('/grid/table/%d/pos',songtrack),{sprintf('[%.0f-%.0f]@%.0f',loop_start,loop_end,position)});
-          obj.allstatus(songtrack,clip)=2;  % In case info was missed
+          try 
+            [~,songtrack]=obj.getsong(track);
+          catch me
+            songtrack=[];
+          end
+          if ~isempty(songtrack)
+            oscmsgout('TO',sprintf('/grid/table/%d/pos',songtrack),{sprintf('[%.0f-%.0f]@%.0f',loop_start,loop_end,position)});
+            obj.allstatus(songtrack,clip)=2;  % In case info was missed
+          end
         elseif strcmp(m.path,'/live/name/return')
         elseif strcmp(m.path,'/live/name/track')
           track=m.data{1};
           nm=m.data{2};
-          obj.tracknames{track+1}=nm;
+          if ~isempty(track)
+            obj.tracknames{track+1}=nm;
+            obj.trackstatus(track+1)=1;   % Assume stopped
+          end
         elseif strcmp(m.path,'/live/name/clip')
           %fprintf('Got reply: %s\n',formatmsg(m.path,m.data));
           track=m.data{1};
           clip=m.data{2};
           nm=m.data{3};
           color=m.data{4};
-          obj.clipnames{track+1,clip+1}=nm;
-          obj.clipcolors(track+1,clip+1)=color;
+          if track<0 || clip<0
+            fprintf('/live/name/clip: Bad track or clip (%d,%d)\n', track, clip);
+          else
+            obj.clipnames{track+1,clip+1}=nm;
+            obj.clipcolors(track+1,clip+1)=color;
+          end
         elseif strcmp(m.path,'/live/arm')
         elseif strcmp(m.path,'/live/mute')
         elseif strcmp(m.path,'/live/solo')
@@ -391,51 +436,57 @@ classdef Ableton < handle
                {'AN','Animals',120}
                {'MV','Movies',120}};
                     
-    % Assign songs based on track names - song tracks are of the form %2c%d - ignore all others
-      prevsongid='';
-      prevsongtrack=0;
+      % Assign songs based on track names - song tracks are of the form %2c%d - ignore all others
+      obj.songs={};
+      obj.songids={};
+      obj.songs=[];
+      
       for i=1:length(obj.tracknames)
         nm=obj.tracknames{i};
-        if length(nm)>=3 && nm(1)>='A' && nm(1)<='Z' && nm(2)>='A' && nm(2)<='Z' && nm(3)>='0' && nm(3)<='9'
+        if length(nm)>=3 && nm(1)>='A' && nm(1)<='Z' && nm(2)>='A' && nm(2)<='Z' && ((nm(3)>='0' && nm(3)<='9') || (length(nm)>=4 && nm(3)==' ' && nm(4)>='0' && nm(4)<='9'))
           songid=nm(1:2);
           songtrack=str2double(nm(3:end));
-          if strcmp(songid,prevsongid)
-            if songtrack==prevsongtrack+1
-              obj.songs{end}(2)=i;   % Advance end of current song
-              prevsongtrack=songtrack;
-            else
-              fprintf('AL: Track %d: song track out of order: %s instead of expected %s%d\n', i, nm, songid, prevsongtrack+1);
-            end
-          else
-            if songtrack==1
-              obj.songs{end+1}=[i,i];   % New song;
-              prevsongid=songid;
-              prevsongtrack=songtrack;
-              songmapentry=[];
-              for j=1:length(songmap)
-                if strcmp(songmap{j}{1},songid)
-                  songmapentry=j;
-                  break;
-                end
+          song=obj.findsongid(songid);
+          if isempty(song)
+            obj.songs{end+1}=[];   % New song;
+            obj.songids{end+1}=songid;
+            songmapentry=[];
+            for j=1:length(songmap)
+              if strcmp(songmap{j}{1},songid)
+                songmapentry=j;
+                break;
               end
-              if isempty(songmapentry)
-                fprintf('No entry for name or tempo of song with ID %s;   assuming 120bpm\n', songid);
-                obj.songtempo(end+1)=120;
-                obj.songnames{end+1}=[songid,' (missing name/tempo entry in Ableton.m)'];
-              else
-                obj.songnames{end+1}=songmap{songmapentry}{2};
-                obj.songtempo(end+1)=songmap{songmapentry}{3};
-              end
-            else
-              fprintf('AL: Track %d: song track started at wrong subtrack: %s instead of expected %s1\n', i, nm, songid);
             end
+            if isempty(songmapentry)
+              fprintf('No entry for name or tempo of song with ID %s;   assuming 120bpm\n', songid);
+              obj.songtempo(end+1)=120;
+              obj.songnames{end+1}=[songid,' (missing name/tempo entry in Ableton.m)'];
+            else
+              obj.songnames{end+1}=songmap{songmapentry}{2};
+              obj.songtempo(end+1)=songmap{songmapentry}{3};
+            end
+            song=length(obj.songs);
           end
+          
+          % Set mapping
+          obj.songs{song}(songtrack)=i;
         else
           if ~strcmp(nm,'Empty')
             fprintf('AL: Skipping track %d: %s that is not a song track\n', i, nm);
           end
         end
       end
+
+      % Check that there are no missing songtracks
+      for i=1:length(obj.songs)
+        if any(obj.songs{i}==0)
+          for k=find(obj.songs{i}==0)
+            fprintf('AL: Warning: missing track in AL for %s%d\n', obj.songids{i}, k);
+          end
+          obj.songs{i}=obj.songs{i}(obj.songs{i}>0);   % Compact list
+        end
+      end
+      
       fprintf('AL: Assigned %d songs\n', length(obj.songs));
     end
     
@@ -476,19 +527,19 @@ classdef Ableton < handle
       obj.playclip(obj.gettrack(song,songtrack),scene);
     end
 
-    function cliptrigger(obj,info,track,clip)
+    function cliptrigger(obj,song,track,clip)
     % Trigger a clip on given track in Ableton Live (via LiveOSC)
     % Track is track number starts with 1
     % Clip is one in the scene number in AL (starts with 1)
-      nm=obj.getsongclipname(info.song,track,clip);
+      nm=obj.getsongclipname(song,track,clip);
       if obj.debug
         fprintf('cliptrigger: song=%d,track=%d (%s),clip=%d (%s),tempo=%d\n', ...
-                info.song,track, obj.getsongtrackname(info.song,track), clip, nm, obj.getsongtempo(info.song));
+                song,track, obj.getsongtrackname(song,track), clip, nm, obj.getsongtempo(song));
       end
       if isempty(nm)
-        obj.stopsongtrack(info.song,track);
+        obj.stopsongtrack(song,track);
       else
-        obj.playsongclip(info.song,track,clip);
+        obj.playsongclip(song,track,clip);
       end
     end
 
@@ -504,6 +555,15 @@ classdef Ableton < handle
     function beat=getbeat(obj)
       beat=obj.pll.getbeat;
     end
+
+    function status=isplaying(obj,track)
+      if obj.trackstatus(track)~=1
+        status=true;
+      else
+        status=false;
+      end
+    end
+        
   end
 
   methods(Static)
