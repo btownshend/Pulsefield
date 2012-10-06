@@ -15,6 +15,9 @@ if ~exist(dir,'dir')
   end
 end
 fname=sprintf('%s/%s.diary', dir, datestr(now,30));
+cmd=sprintf('mv -f %s/current.diary %s/prev.diary; ln -s %s %s/current.diary',dir, dir, fname, dir);
+fprintf('Executing: "%s"\n', cmd);
+system(cmd);
 diary off
 diary(fname)
 fprintf('Diary for %s started at %s\n', component, datestr(now));
