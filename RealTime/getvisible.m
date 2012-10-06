@@ -12,7 +12,7 @@
 %	usefrontend: use frontend to acquire high-speed stream (default true)
 %	timeout:  timeout in seconds to wait for frame (default 1.0)
 % When 'init' is used, additional options are available:
-%	wsize:    2x1 size of window, in pixels, which will be centered on centroid of LED (default: [11 11], for init only)
+%	wsize:    2x1 size of window [height width], in pixels, which will be centered on centroid of LED (default: [11 7], for init only)
 %	navg:	  number of samples to average over (default=number of colors in p.colors; which are used as onval)
 % Returns vis with fields:
 % 	v(ncam,nled) - 1 if LED is visible, 0 if not
@@ -24,7 +24,7 @@
 % 	im{ncam} - full images
 %	tgt{ncam,nled} - images of each target
 function [vis,p]=getvisible(p,varargin)
-defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[11 7],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5,...
+defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[5 7],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5,...
             'usefrontend',true,'timeout',1.0);
 args=processargs(defaults,varargin);
 
