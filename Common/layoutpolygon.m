@@ -25,7 +25,7 @@ opening=2/feetpermeter;   % 24" opening
 ledspacing=1/32*ones(1,nled());   % May be overridden later by setting of nleds
 % Extra gaps at end of each strip
 firstleds=cumsum(numled(1:5));
-ledspacing(firstleds)=[4.9,5.0,4.0,6.4,5.8]/100;  
+ledspacing(firstleds)=[2,5,5.2,5,5]/100;  
 ledspacing(1)=-0.5/100;  % First LED outside end of 4' member by 0.5cm
 ledspacing(end+1)=-2.0/100;  % Last LED outside end of 4' member by 2.0cm
 
