@@ -1,6 +1,6 @@
 % Set all cameras to controlled settings
 function setupcameras(p,varargin)
-defaults=struct('mode','highspeed','exptime',10,'daynight','day');
+defaults=struct('mode','highspeed','exptime',2,'daynight','day');
 args=processargs(defaults,varargin);
 
 if ~any(strcmp(args.mode,{'highspeed','quality','moonlight'}))
