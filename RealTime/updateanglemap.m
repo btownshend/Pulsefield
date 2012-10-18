@@ -1,18 +1,23 @@
 % Update angle map using observed LED->pixel mapping
-function p=updateanglemap(p)
-usepoly=0;
+function p=updateanglemap(p,usepoly)
+if nargin<2
+  usepoly=0;
+end
 for i=1:length(p.camera)
   c=p.camera(i);
   for j=1:length(c.pixcalib)
     c2ldir=p.layout.lpos(j,:)-p.layout.cpos(i,:);
+    % ad is the angle to the target from the center point of the camera
     ad(j)=cart2pol(p.layout.cdir(i,1),p.layout.cdir(i,2))-cart2pol(c2ldir(1),c2ldir(2));
-    pix(j)=c.pixcalib(j).pos(1);
+    % pix is the number of pixels from the camera center where the target is imaged
+    pix(j)=norm(c.pixcalib(j).pos);
   end
   sel=isfinite(pix)&(pix>350)&(pix<c.hpixels-350);
   if usepoly
     % Fit points to a polynomial
     fit=polyfit(2*pix(sel)/c.hpixels-0.5,ad(sel),6);
     p.camera(i).anglemap=polyval(fit,2*(0:c.hpixels-1)/c.hpixels-0.5);
+    p.camera(i).fit=fit;
   else
     pix=pix(sel);
     ad=ad(sel);
