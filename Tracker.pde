@@ -7,23 +7,18 @@
 float attractionForce=1;
 int birthrate=5;
 float tick=0;
-PulsefieldPS pf;
+Pulsefield pf;
 
 
 void setup() {
-  size(1280, 800, OPENGL);
-  frameRate(60);
-  pf = new PulsefieldPS();
+  size(400,400, OPENGL);
+  frameRate(30);
+  pf = new PulsefieldNavier();
 }
 
 
 void draw() {
   tick+=1/frameRate;
-  PGL pgl=((PGraphicsOpenGL)g).pgl;
-  pgl.blendFunc(pgl.SRC_ALPHA, pgl.DST_ALPHA);
-  pgl.blendEquation(pgl.FUNC_ADD);  
-  background(0, 0, 0);  
-  colorMode(RGB, 255);
 
   if (mousePressed)
     pf.pfupdate(tick,98, mouseX, mouseY);

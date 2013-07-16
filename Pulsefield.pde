@@ -2,11 +2,16 @@ import oscP5.*;
 import netP5.*;
 import java.util.Map;
 
+class Position {
+  int x=0, y=0;
+  float vx=0, vy=0;
+}
 
 class Pulsefield {
   OscP5 oscP5;
   NetAddress myRemoteLocation;
   float minx=-3.2, maxx=3.2, miny=-3.2, maxy=3.2;
+  HashMap<Integer, Position> positions;
 
 
   Pulsefield() {
@@ -23,6 +28,7 @@ class Pulsefield {
     oscP5.plug(this, "pfsetmaxy", "/pf/set/maxy");
     oscP5.plug(this, "pfstarted", "/pf/started");
     oscP5.plug(this, "pfstopped", "/pf/stopped");
+    positions = new HashMap<Integer,Position>();
   }
 
 
@@ -38,6 +44,8 @@ class Pulsefield {
     return new PVector(int((x-minx)/(maxx-minx)*width), int((y-miny)/(maxy-miny)*height) );
   }
 
+  void draw() {
+  }
 
   void pfstarted() {
     println("PF started");
@@ -62,6 +70,16 @@ class Pulsefield {
       print(",axislength=("+majoraxis+","+minoraxis+")");
       println(",channel="+channel);
     }
+
+    Position ps=positions.get(id);
+    if (ps==null) {
+      println("Unable to locate user "+id+", creating it.");
+      pfentry(sampnum, elapsed, id, channel);
+      ps=positions.get(id);
+    }
+
+    ps.x = (int) (( ypos-miny)*width/(maxy-miny) );
+    ps.y = (int) (( xpos-minx)*height/(maxx-minx) );
   }
 
   // Version for simplified access (primarily for testing)
@@ -88,10 +106,14 @@ class Pulsefield {
 
   synchronized void pfexit(int sampnum, float elapsed, int id) {
     println("exit: sampnum="+sampnum+", elapsed="+elapsed+", id="+id);
+    if (positions.containsKey(id)) {
+      positions.remove(id);
+    } 
   }
 
   synchronized void pfentry(int sampnum, float elapsed, int id, int channel) {
     println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel);
+    positions.put(id, new Position());
   }
 }
 

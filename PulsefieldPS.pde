@@ -8,6 +8,12 @@ class PulsefieldPS extends Pulsefield {
   }
 
   synchronized void draw() {
+    PGL pgl=((PGraphicsOpenGL)g).pgl;
+    pgl.blendFunc(pgl.SRC_ALPHA, pgl.DST_ALPHA);
+    pgl.blendEquation(pgl.FUNC_ADD);  
+    background(0, 0, 0);  
+    colorMode(RGB, 255);
+
     int toRemove=-1;
     for (Map.Entry me: systems.entrySet()) {
       ParticleSystem ps=(ParticleSystem)me.getValue();
@@ -57,7 +63,7 @@ class PulsefieldPS extends Pulsefield {
       ps=systems.get(id);
     }
 
-    ps.move(mapposition(xpos, ypos),elapsed);
+    ps.move(mapposition(xpos, ypos), elapsed);
     ps.enable(true);
   }
 
