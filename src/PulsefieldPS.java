@@ -9,6 +9,9 @@ import processing.opengl.PGL;
 
 class PulsefieldPS extends Pulsefield {
 	PImage img;
+	float attractionForce=1;
+	int birthrate=5;
+
 	PulsefieldPS(PApplet parent) {
 		super(parent);
 		img = parent.loadImage("texture.png");
@@ -69,39 +72,7 @@ class PulsefieldPS extends Pulsefield {
 	}
 
 
-	synchronized void pfstopped() {
-		super.pfstopped();
-		systems.clear();
-	}
 
-	synchronized void pfupdate(int sampnum, float elapsed, int id, float ypos, float xpos, float yvelocity, float xvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
-		super.pfupdate(sampnum, elapsed, id, ypos, xpos, yvelocity, xvelocity, majoraxis, minoraxis, groupid, groupsize, channel);
-		ParticleSystem ps=systems.get(id);
-		if (ps==null) {
-			println("Unable to locate particle system "+id+", creating it.");
-			pfentry(sampnum, elapsed, id, channel);
-			ps=systems.get(id);
-		}
 
-		ps.move(mapposition(xpos, ypos), elapsed);
-		ps.enable(true);
-	}
-
-	synchronized void pfexit(int sampnum, float elapsed, int id) {
-		super.pfexit(sampnum, elapsed, id);
-		if (systems.containsKey(id)) {
-			systems.get(id).enable(false);
-		} 
-		else
-			println("Unable to locate particle system "+id);
-	}
-
-	synchronized void pfentry(int sampnum, float elapsed, int id, int channel) {
-		super.pfentry(sampnum, elapsed, id, channel);
-		color col=color((channel*37)%255, (channel*91)%255, (channel*211)%255);
-		// col=color(255,255,255);
-		println("Color="+col);
-		systems.put(id, new ParticleSystem(0, mapposition(maxx, 0), col, img));
-	}
 }
 

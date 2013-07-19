@@ -1,20 +1,30 @@
-/**
- * oscP5message by andreas schlegel
- * example shows how to create osc messages.
- * oscP5 website at http://www.sojamo.de/oscP5
- */
+import processing.core.PApplet;
 
-float attractionForce=1;
-int birthrate=5;
-float tick=0;
-
+public class Tracker extends PApplet {
+	/**
+	 * 
+	 */
+	private static boolean present = false;
 
 	size(400,400, OPENGL);
-	pf = new PulsefieldNavier();
+	private static final long serialVersionUID = 1L;
+	int tick=0;
 	Pulsefield pf;
+	private float avgFrameRate=0;
+	
 	public void setup() {
 		frameRate(30);
+		pf = new PulsefieldPS(this);
+	}
+
 	public void draw() {
+		background(0);
+		tick++;
+		avgFrameRate=avgFrameRate*(1f-1f/200f)+frameRate/200f;
+		if (tick%200 == 0)
+			println("Average frame rate = "+avgFrameRate);
+			
+				
 		if (mousePressed)
 			pf.pfupdate(tick/avgFrameRate,98, mouseX, mouseY);
 
@@ -34,7 +44,4 @@ float tick=0;
 		
 	}
 }
-
-
-	tick+=1/frameRate;
 

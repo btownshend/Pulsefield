@@ -33,6 +33,7 @@ class PulsefieldNavier extends Pulsefield {
 	}
 
 	synchronized void draw() {
+		updateSimulation();
 		double dt = 1 / parent.frameRate;
 		fluidSolver.tick(dt, visc, diff);
 		fluidCanvasStep();
@@ -58,16 +59,12 @@ class PulsefieldNavier extends Pulsefield {
 			int id=(int)me.getKey();
 			int c=getcolor(id);
 			parent.fill(c);
+			parent.stroke(c);;
 			parent.ellipse(ps.origin.x, ps.origin.y, 10, 10);
 		}
 	}
 
-	synchronized void pfstopped() {
-		super.pfstopped();
-	}
 
-	synchronized void pfupdate(int sampnum, float elapsed, int id, float ypos, float xpos, float yvelocity, float xvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
-		super.pfupdate(sampnum, elapsed, id, ypos, xpos, yvelocity, xvelocity, majoraxis, minoraxis, groupid, groupsize, channel);
 	void updateSimulation() {
 		int n = NavierStokesSolver.N;
 
@@ -90,21 +87,12 @@ class PulsefieldNavier extends Pulsefield {
 		}
 	}
 
-	synchronized void pfexit(int sampnum, float elapsed, int id) {
-		super.pfexit(sampnum, elapsed, id);
-	}
-
-	synchronized void pfentry(int sampnum, float elapsed, int id, int channel) {
-		super.pfentry(sampnum, elapsed, id, channel);
-	}
-
 	int getcolor(int channel) {
 		int col=parent.color((channel*37)%255, (channel*91)%255, (channel*211)%255);
 		return col;
 	}
 
 	private void fluidCanvasStep() {
-		int n = NavierStokesSolver.N;
 		double widthInverse = 1.0 / parent.width;
 		double heightInverse = 1.0 / parent.height;
 
