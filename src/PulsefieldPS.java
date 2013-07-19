@@ -1,21 +1,30 @@
+import java.util.Map;
+
+import processing.opengl.*;
+import processing.core.PApplet;
+import processing.core.PConstants;
+import processing.core.PImage;
+import processing.core.PVector;
+import processing.opengl.PGL;
+
 class PulsefieldPS extends Pulsefield {
 	HashMap<Integer, ParticleSystem> systems;
 	PImage img;
+	PulsefieldPS(PApplet parent) {
 
-	PulsefieldPS() {
 		systems = new HashMap<Integer, ParticleSystem>();
 		img = loadImage("texture.png");
 	}
 
 	synchronized void draw() {
-		PGL pgl=((PGraphicsOpenGL)g).pgl;
-		pgl.blendFunc(pgl.SRC_ALPHA, pgl.DST_ALPHA);
-		pgl.blendEquation(pgl.FUNC_ADD);  
-		background(0, 0, 0);  
-		colorMode(RGB, 255);
+		PGL pgl=PGraphicsOpenGL.pgl;
+		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
+		pgl.blendEquation(PGL.FUNC_ADD);  
+		parent.background(0, 0, 0);  
+		parent.colorMode(PConstants.RGB, 255);
 
 		int toRemove=-1;
-		for (Map.Entry me: systems.entrySet()) {
+		for (Map.Entry<Integer,Position> me: positions.entrySet()) {
 			ParticleSystem ps=(ParticleSystem)me.getValue();
 
 			// Add gravitional attraction to all other systems
@@ -32,19 +41,19 @@ class PulsefieldPS extends Pulsefield {
 					ps.addParticle();
 			}
 			else if (ps.dead()) {
-				println("ID "+me.getKey()+" is dead.");
-				toRemove=(int)(Integer)me.getKey();
+				PApplet.println("ID "+id+" is dead.");
+				toRemove=id;
 			}
 		}
 		if (toRemove!=-1) {
-			systems.remove(toRemove);
-			println("Removed system for ID "+toRemove);
+			positions.remove(toRemove);
+			PApplet.println("Removed system for ID "+toRemove);
 		}
-		if (systems.isEmpty()) {
-			fill(50, 255, 255);
-			textAlign(CENTER);
-			textSize(32);
-			text("Waiting for users...", width/2, height/2);
+		if (positions.isEmpty()) {
+			parent.fill(50, 255, 255);
+			parent.textAlign(PConstants.CENTER);
+			parent.textSize(32);
+			parent.text("Waiting for users...", parent.width/2, parent.height/2);
 		}
 	}
 

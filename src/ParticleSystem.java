@@ -1,29 +1,40 @@
-// An ArrayList is used to manage the list of Particles
+import java.util.ArrayList;
+
+import processing.core.PApplet;
+import processing.core.PImage;
+import processing.core.PVector;
 
 class ParticleSystem {
 
+// An ArrayList is used to manage the list of Particles
+
+	PApplet parent;
 	ArrayList<Particle> particles;    // An arraylist for all the particles
 	PVector origin;                   // An origin point for where particles are birthed
-	color col;
+	int col;
 	PImage img;
 	boolean enabled;
 	PVector avgspeed; // Average speed in pixels/second
 	float lastmovetime;   // Last moved time in seconds
 	float averagingTime;   // Averaging time in seconds
 
-	ParticleSystem(int num, PVector v, color col, PImage img) {
+
+	ParticleSystem(PApplet parent, int num, PVector v, int col, PImage img) {
+		super(v);
+		this.parent=parent;
 		particles = new ArrayList<Particle>();   // Initialize the arraylist
 		origin = v.get();                        // Store the origin point
 		this.col=col;
 		this.img=img;
 		this.enabled=false;
 		this.lastmovetime=0;
-		this.averagingTime=1;  
-		avgspeed=new PVector(0.0, 0.0);
+		averagingTime=1;  
+		avgspeed=new PVector(0.0f, 0.0f);
 		for (int i = 0; i < num; i++) {
 			addParticle();
 		}
 	}
+	
 
 	void attractor(PVector c, float force) {
 		// Add a gravitional force that acts on all particles
@@ -83,7 +94,7 @@ class ParticleSystem {
 		else
 			id=particles.get(particles.size()-1).id+1;
 		//println("Add "+id);
-		p = new Particle(origin, new PVector(0,0), col, img, id);
+		p = new Particle(parent, origin, new PVector(0f,0f), col, img, id);
 		particles.add(p);
 	}
 

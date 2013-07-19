@@ -1,20 +1,25 @@
 import oscP5.*;
 import netP5.*;
-import java.util.Map;
 
 class Position {
 	int x=0, y=0;
 	float vx=0, vy=0;
 }
+import java.util.HashMap;
 
-class Pulsefield {
+import processing.core.PApplet;
+import processing.core.PVector;
+
+public class Pulsefield {
 	OscP5 oscP5;
 	NetAddress myRemoteLocation;
-	float minx=-3.2, maxx=3.2, miny=-3.2, maxy=3.2;
+	float minx=-3.2f, maxx=3.2f, miny=-3.2f, maxy=3.2f;
 	HashMap<Integer, Position> positions;
+	PApplet parent;
 
 
-	Pulsefield() {
+	Pulsefield(PApplet parent) {
+		this.parent=parent;
 		/* start oscP5, listening for incoming messages from Pulsefield RealTime.m */
 		oscP5 = new OscP5(this, 7002);
 		oscP5.plug(this, "pfframe", "/pf/frame");
@@ -35,47 +40,47 @@ class Pulsefield {
 	/* incoming osc message are forwarded to the oscEvent method. */
 	void oscEvent(OscMessage theOscMessage) {
 		if (theOscMessage.isPlugged() == false) {
-			print("### Received an unhandled message: ");
+			PApplet.print("### Received an unhandled message: ");
 			theOscMessage.print();
 		}  /* print the address pattern and the typetag of the received OscMessage */
 	}
 
 	PVector mapposition(float x, float y) {
-		return new PVector(int((x-minx)/(maxx-minx)*width), int((y-miny)/(maxy-miny)*height) );
+		return new PVector((int)((x-minx)/(maxx-minx)*parent.width), (int)((y-miny)/(maxy-miny)*parent.height) );
 	}
 
 	void draw() {
 	}
 
-	void pfstarted() {
-		println("PF started");
+	public void pfstarted() {
+		PApplet.println("PF started");
 	}
 
-	void pfstopped() {
-		println("PF stopped");
+	public void pfstopped() {
+		PApplet.println("PF stopped");
+		positions.clear();
 	}
 
 	void frame(int frame) {
-		println("Got frame "+frame);
+		PApplet.println("Got frame "+frame);
 	}
 
-	synchronized void pfupdate(int sampnum, float elapsed, int id, float ypos, float xpos, float yvelocity, float xvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
+	synchronized public void pfupdate(int sampnum, float elapsed, int id, float ypos, float xpos, float yvelocity, float xvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
 		if (channel!=99) {
-			print("update: ");
-			print("samp="+sampnum);
-			print(",elapsed="+elapsed);
-			print(",id="+id);
-			print(",pos=("+xpos+","+ypos+")");
-			print(",vel=("+xvelocity+","+yvelocity+")");
-			print(",axislength=("+majoraxis+","+minoraxis+")");
-			println(",channel="+channel);
+			PApplet.print("update: ");
+			PApplet.print("samp="+sampnum);
+			PApplet.print(",elapsed="+elapsed);
+			PApplet.print(",id="+id);
+			PApplet.print(",vel=("+xvelocity+","+yvelocity+")");
+			PApplet.print(",axislength=("+majoraxis+","+minoraxis+")");
+			PApplet.println(",channel="+channel);
 		}
 
 		Position ps=positions.get(id);
 		if (ps==null) {
-			println("Unable to locate user "+id+", creating it.");
 			pfentry(sampnum, elapsed, id, channel);
 			ps=positions.get(id);
+			PApplet.println("Unable to locate user "+id+", creating it.");
 		}
 
 		ps.x = (int) (( ypos-miny)*width/(maxy-miny) );
@@ -83,37 +88,38 @@ class Pulsefield {
 	}
 
 	// Version for simplified access (primarily for testing)
-	void pfupdate(float elapsed, int id, float xpos, float ypos) {
-		pf.pfupdate(0, elapsed, id, ypos*1.0/height*(maxy-miny)+miny, xpos*1.0/width*(maxx-minx)+minx, 0, 0, 0, 0, 1, 1, id);
+	public void pfupdate(float elapsed, int id, float xpos, float ypos) {
+		pfupdate(0, elapsed, id, ypos*1.0f/parent.height*(maxy-miny)+miny, xpos*1.0f/parent.width*(maxx-minx)+minx, 0, 0, 0, 0, 1, 1, id);
 	}
 
-	void pfsetminx(float minx) {  
+	public void pfsetminx(float minx) {  
 		this.minx=minx;
 	}
-	void pfsetminy(float miny) {  
+	public void pfsetminy(float miny) {  
 		this.miny=miny;
 	}
-	void pfsetmaxx(float maxx) {  
+	public void pfsetmaxx(float maxx) {  
 		this.maxx=maxx;
 	}
-	void pfsetmaxy(float maxy) {  
+	public void pfsetmaxy(float maxy) {  
 		this.maxy=maxy;
 	}
 
-	void pfsetnpeople(int n) {
-		println("/pf/set/npeople: now have "+n+" people");
+	public void pfsetnpeople(int n) {
+		PApplet.println("/pf/set/npeople: now have "+n+" people");
 	}
 
-	synchronized void pfexit(int sampnum, float elapsed, int id) {
-		println("exit: sampnum="+sampnum+", elapsed="+elapsed+", id="+id);
+	synchronized public void pfexit(int sampnum, float elapsed, int id) {
+		PApplet.println("exit: sampnum="+sampnum+", elapsed="+elapsed+", id="+id);
 		if (positions.containsKey(id)) {
 			positions.remove(id);
 		} 
 	}
 
-	synchronized void pfentry(int sampnum, float elapsed, int id, int channel) {
-		println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel);
-		positions.put(id, new Position());
+
+	synchronized public void pfentry(int sampnum, float elapsed, int id, int channel) {
+		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel);
+		add(id,channel);
 	}
 }
 

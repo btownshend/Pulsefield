@@ -7,27 +7,34 @@
 float attractionForce=1;
 int birthrate=5;
 float tick=0;
-Pulsefield pf;
 
 
-void setup() {
 	size(400,400, OPENGL);
-	frameRate(30);
 	pf = new PulsefieldNavier();
+	Pulsefield pf;
+	public void setup() {
+		frameRate(30);
+	public void draw() {
+		if (mousePressed)
+			pf.pfupdate(tick/avgFrameRate,98, mouseX, mouseY);
+
+		pf.draw();
+		
+	}
+
+	public void mouseReleased() {
+		pf.pfexit(0, 0, 98);
+	}
+	
+	public static void main(String args[]) {
+		if (present)
+		PApplet.main(new String[] { "--present","Tracker" });
+		else
+			PApplet.main(new String[] { "Tracker" });
+		
+	}
 }
 
 
-void draw() {
 	tick+=1/frameRate;
-
-	if (mousePressed)
-		pf.pfupdate(tick,98, mouseX, mouseY);
-
-	pf.draw();
-}
-
-void mouseReleased() {
-	pf.pfexit(0, 0, 98);
-}
-
 
