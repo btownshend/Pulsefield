@@ -6,13 +6,13 @@ public class Tracker extends PApplet {
 	 */
 	private static boolean present = false;
 
-	size(400,400, OPENGL);
 	private static final long serialVersionUID = 1L;
 	int tick=0;
 	Pulsefield pf;
 	private float avgFrameRate=0;
 	
 	public void setup() {
+		size(1280,800, OPENGL);
 		frameRate(30);
 		pf = new PulsefieldPS(this);
 	}
