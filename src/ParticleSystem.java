@@ -4,19 +4,14 @@ import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
 
-class ParticleSystem {
 
 // An ArrayList is used to manage the list of Particles
 
+class ParticleSystem extends Position {
 	PApplet parent;
 	ArrayList<Particle> particles;    // An arraylist for all the particles
-	PVector origin;                   // An origin point for where particles are birthed
 	int col;
 	PImage img;
-	boolean enabled;
-	PVector avgspeed; // Average speed in pixels/second
-	float lastmovetime;   // Last moved time in seconds
-	float averagingTime;   // Averaging time in seconds
 
 
 	ParticleSystem(PApplet parent, int num, PVector v, int col, PImage img) {
@@ -51,22 +46,6 @@ class ParticleSystem {
 	}
 
 
-	void move(PVector newpos, float elapsed) {
-		println("move("+newpos+","+elapsed+"), lastmovetime="+lastmovetime);
-		if (lastmovetime!=0.0 && elapsed>lastmovetime) {
-			PVector moved=newpos.get();
-			moved.sub(origin);
-			moved.mult(1.0/(elapsed-lastmovetime)/frameRate);  // Convert to pixels/tick
-			// Running average using exponential decay
-			float k=averagingTime/frameRate;
-			avgspeed.mult(1-k);
-			moved.mult(k);
-			avgspeed.add(moved);
-			println("Speed="+avgspeed);
-		}
-		origin=newpos;
-		lastmovetime=elapsed;
-	}
 
 	void run() {
 		// Cycle through the ArrayList backwards, because we are deleting while iterating
@@ -79,12 +58,6 @@ class ParticleSystem {
 		}
 	}
 
-	void enable(boolean en) {
-		if (en!=enabled) {
-			enabled=en;
-			lastmovetime=0;
-		}
-	}
 
 	void addParticle() {
 		Particle p;

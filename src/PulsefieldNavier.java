@@ -68,8 +68,11 @@ class PulsefieldNavier extends Pulsefield {
 
 	synchronized void pfupdate(int sampnum, float elapsed, int id, float ypos, float xpos, float yvelocity, float xvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
 		super.pfupdate(sampnum, elapsed, id, ypos, xpos, yvelocity, xvelocity, majoraxis, minoraxis, groupid, groupsize, channel);
+	void updateSimulation() {
 		int n = NavierStokesSolver.N;
 
+		for (Position p: positions.values()) {
+			if (p.enabled) {
 				int cellX = (int)( p.origin.x*n / parent.width);
 				int cellY = (int) (p.origin.y*n/parent.height);
 				if (cellX<0 || cellX>=n)
@@ -83,6 +86,7 @@ class PulsefieldNavier extends Pulsefield {
 				dy = (Math.abs(dy) > limitVelocity) ? Math.signum(dy) * limitVelocity : dy;
 
 				fluidSolver.applyForce(cellX, cellY, dx, dy);
+			}
 		}
 	}
 

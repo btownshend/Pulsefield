@@ -1,10 +1,6 @@
 import oscP5.*;
 import netP5.*;
 
-class Position {
-	int x=0, y=0;
-	float vx=0, vy=0;
-}
 import java.util.HashMap;
 
 import processing.core.PApplet;
@@ -65,12 +61,19 @@ public class Pulsefield {
 		PApplet.println("Got frame "+frame);
 	}
 
+	synchronized Position add(int id, int channel) {
+		Position ps=new Position();
+		positions.put(id,ps);
+		return ps;
+	}
+
 	synchronized public void pfupdate(int sampnum, float elapsed, int id, float ypos, float xpos, float yvelocity, float xvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
 		if (channel!=99) {
 			PApplet.print("update: ");
 			PApplet.print("samp="+sampnum);
 			PApplet.print(",elapsed="+elapsed);
 			PApplet.print(",id="+id);
+			PApplet.print(",pos=("+xpos+","+ypos+")");
 			PApplet.print(",vel=("+xvelocity+","+yvelocity+")");
 			PApplet.print(",axislength=("+majoraxis+","+minoraxis+")");
 			PApplet.println(",channel="+channel);
@@ -78,13 +81,13 @@ public class Pulsefield {
 
 		Position ps=positions.get(id);
 		if (ps==null) {
-			pfentry(sampnum, elapsed, id, channel);
-			ps=positions.get(id);
 			PApplet.println("Unable to locate user "+id+", creating it.");
+			ps=add(id,channel);
 		}
 
-		ps.x = (int) (( ypos-miny)*width/(maxy-miny) );
-		ps.y = (int) (( xpos-minx)*height/(maxx-minx) );
+		ps.move(mapposition(xpos, ypos), elapsed);
+		ps.enable(true);
+
 	}
 
 	// Version for simplified access (primarily for testing)
@@ -112,8 +115,10 @@ public class Pulsefield {
 	synchronized public void pfexit(int sampnum, float elapsed, int id) {
 		PApplet.println("exit: sampnum="+sampnum+", elapsed="+elapsed+", id="+id);
 		if (positions.containsKey(id)) {
-			positions.remove(id);
+			positions.get(id).enable(false);
 		} 
+		else
+			PApplet.println("Unable to locate particle system "+id);
 	}
 
 

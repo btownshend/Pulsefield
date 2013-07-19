@@ -8,13 +8,24 @@ import processing.core.PVector;
 import processing.opengl.PGL;
 
 class PulsefieldPS extends Pulsefield {
-	HashMap<Integer, ParticleSystem> systems;
 	PImage img;
 	PulsefieldPS(PApplet parent) {
-
-		systems = new HashMap<Integer, ParticleSystem>();
-		img = loadImage("texture.png");
+		super(parent);
+		img = parent.loadImage("texture.png");
 	}
+	
+	synchronized Position add(int id, int channel) {
+		int col=parent.color((channel*37)%255, (channel*91)%255, (channel*211)%255);
+		// col=color(255,255,255);
+		PApplet.println("Color="+col);
+
+		
+		Position ps=new ParticleSystem(parent, 0, mapposition(maxx, 0), col, img);
+		positions.put(id,ps);
+
+		return ps;
+	}
+
 
 	synchronized void draw() {
 		PGL pgl=PGraphicsOpenGL.pgl;
@@ -26,13 +37,13 @@ class PulsefieldPS extends Pulsefield {
 		int toRemove=-1;
 		for (Map.Entry<Integer,Position> me: positions.entrySet()) {
 			ParticleSystem ps=(ParticleSystem)me.getValue();
-
-			// Add gravitional attraction to all other systems
-			for (Map.Entry m2: systems.entrySet()) {
-				ParticleSystem ps2=(ParticleSystem)m2.getValue();
+			int id = me.getKey();
+					
+			// Push the other systems with each positions velocity
+			for (Position ps2: positions.values()) {
 				// if (ps!=ps2) 
 				//ps.attractor(ps2.origin, attractionForce);
-				ps.push(ps2.origin, ps2.avgspeed);
+				ps.push(ps2.origin, PVector.div(ps2.avgspeed,parent.frameRate));   // Convert velocity into pixels/frame
 			}
 
 			ps.run();
