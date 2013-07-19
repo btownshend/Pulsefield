@@ -11,23 +11,23 @@ Pulsefield pf;
 
 
 void setup() {
-  size(400,400, OPENGL);
-  frameRate(30);
-  pf = new PulsefieldNavier();
+	size(400,400, OPENGL);
+	frameRate(30);
+	pf = new PulsefieldNavier();
 }
 
 
 void draw() {
-  tick+=1/frameRate;
+	tick+=1/frameRate;
 
-  if (mousePressed)
-    pf.pfupdate(tick,98, mouseX, mouseY);
+	if (mousePressed)
+		pf.pfupdate(tick,98, mouseX, mouseY);
 
-  pf.draw();
+	pf.draw();
 }
 
 void mouseReleased() {
-  pf.pfexit(0, 0, 98);
+	pf.pfexit(0, 0, 98);
 }
 
 
