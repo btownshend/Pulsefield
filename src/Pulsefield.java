@@ -34,7 +34,7 @@ public class Pulsefield {
 
 
 	/* incoming osc message are forwarded to the oscEvent method. */
-	void oscEvent(OscMessage theOscMessage) {
+	public void oscEvent(OscMessage theOscMessage) {
 		if (theOscMessage.isPlugged() == false) {
 			PApplet.print("### Received an unhandled message: ");
 			theOscMessage.print();
