@@ -1,11 +1,11 @@
-import java.util.Map;
-
+import java.util.HashMap;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
+import processing.core.PVector;
 
 
-class PulsefieldNavier extends Pulsefield {
+class VisualizerNavier extends Visualizer {
 	NavierStokesSolver fluidSolver;
 	double visc, diff, limitVelocity;
 	int oldMouseX = 1, oldMouseY = 1;
@@ -14,9 +14,14 @@ class PulsefieldNavier extends Pulsefield {
 	PImage buffer;
 	PImage iao;
 	int rainbow = 0;
-
-	PulsefieldNavier(PApplet parent) {
-		super(parent);
+	HashMap<Integer, Position> positions;
+	long statsLast = 0;
+	long statsTick = 0;
+	long statsStep = 0;
+	long statsUpdate = 0;
+	
+	VisualizerNavier(PApplet parent) {
+		super();
 		fluidSolver = new NavierStokesSolver();
 		buffer = new PImage(parent.width, parent.height);
 
@@ -30,23 +35,65 @@ class PulsefieldNavier extends Pulsefield {
 		parent.colorMode(PApplet.HSB, 255);
 		bordercolor = parent.color(0, 255, 255);
 		parent.strokeWeight(7);
+		positions=new HashMap<Integer,Position>();
+	}
+	
+	public void stats() {
+		long elapsed=System.nanoTime()-statsLast;
+		PApplet.println("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
+		statsLast = System.nanoTime();
+		statsTick=0;
+		statsStep=0;
+		statsUpdate=0;
+	}
+	
+	public void add(int id, int channel) {
+		Position ps=new Position(channel);
+		positions.put(id,ps);
 	}
 
-	synchronized void draw() {
-		updateSimulation();
+	public void move(int id, int channel, PVector newpos, float elapsed) {
+		Position ps=positions.get(id);
+		if (ps==null) {
+			PApplet.println("Unable to locate user "+id+", creating it.");
+			add(id,channel);
+			ps=positions.get(id);
+		}
+		ps.move(newpos,elapsed);
+		ps.enable(true);
+	}
+
+	public void draw(PApplet parent) {
 		double dt = 1 / parent.frameRate;
+		long t1 = System.nanoTime();
 		fluidSolver.tick(dt, visc, diff);
-		fluidCanvasStep();
+		long t2 = System.nanoTime();
+		fluidCanvasStep(parent);
+		long t3 = System.nanoTime();
+		statsTick += t2-t1;
+		statsStep += t3-t2;
 
 		parent.colorMode(PConstants.HSB, 255);
 		bordercolor = parent.color(rainbow, 255, 255);
 		rainbow++;
 		rainbow = (rainbow > 255) ? 0 : rainbow;
 
-		drawBorders();
+		drawBorders(parent);
+		parent.ellipseMode(PConstants.CENTER);
+		for (Position ps: positions.values()) {  
+			int c=getcolor(parent,ps.channel);
+			parent.fill(c,100);
+			parent.stroke(c,100);
+			//parent.ellipse(ps.origin.x, ps.origin.y, 3, 3);
+		}
 	}
 
-	private void drawBorders() {
+	int getcolor(PApplet parent, int channel) {
+		int col=parent.color((channel*37)%255, (channel*91)%255, (channel*211)%255);
+		return col;
+	}
+
+	private void drawBorders(PApplet parent) {
 		parent.stroke(bordercolor);
 		parent.line(0, 0, parent.width-1, 0);
 		parent.line(0, 0, 0, parent.height-1);
@@ -54,45 +101,40 @@ class PulsefieldNavier extends Pulsefield {
 		parent.line(0, parent.height-1, parent.width-1, parent.height-1);
 
 		parent.fill(bordercolor);
-		for (Map.Entry<Integer,Position> me: positions.entrySet()) {
-			Position ps=me.getValue();  
-			int id=(int)me.getKey();
-			int c=getcolor(id);
-			parent.fill(c);
-			parent.stroke(c);;
-			parent.ellipse(ps.origin.x, ps.origin.y, 10, 10);
-		}
+
 	}
 
 
-	void updateSimulation() {
+	public void update(PApplet parent) {
+		long t1=System.nanoTime();
 		int n = NavierStokesSolver.N;
-
 		for (Position p: positions.values()) {
+			//PApplet.println("update("+p.channel+"), enabled="+p.enabled);
 			if (p.enabled) {
 				int cellX = (int)( p.origin.x*n / parent.width);
+				cellX=Math.max(0,Math.min(cellX,n));
 				int cellY = (int) (p.origin.y*n/parent.height);
-				if (cellX<0 || cellX>=n)
-					assert(false);
-				if (cellY<0 || cellY>=n)
-					assert(false);			
-				double dx=p.avgspeed.x/parent.width*20;
-				double dy=p.avgspeed.y/parent.height*20;
+				cellY=Math.max(0,Math.min(cellY,n));
+				double dx=p.avgspeed.x/parent.frameRate/parent.width*500;
+				double dy=p.avgspeed.y/parent.frameRate/parent.height*500;
+				//PApplet.println("Cell="+cellX+","+cellY+", dx="+dx+", dy="+dy);
 
 				dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
 				dy = (Math.abs(dy) > limitVelocity) ? Math.signum(dy) * limitVelocity : dy;
-
 				fluidSolver.applyForce(cellX, cellY, dx, dy);
 			}
 		}
+		statsUpdate += System.nanoTime()-t1;
 	}
 
-	int getcolor(int channel) {
-		int col=parent.color((channel*37)%255, (channel*91)%255, (channel*211)%255);
-		return col;
+	public void exit(int id) {
+		positions.remove(id);
 	}
+	 public void clear() {
+		 positions.clear();
+	 }
 
-	private void fluidCanvasStep() {
+	private void fluidCanvasStep(PApplet parent) {
 		double widthInverse = 1.0 / parent.width;
 		double heightInverse = 1.0 / parent.height;
 
@@ -111,7 +153,7 @@ class PulsefieldNavier extends Pulsefield {
 				warpX *= parent.width;
 				warpY *= parent.height;
 
-				int collor = getSubPixel(warpX, warpY);
+				int collor = getSubPixel(parent,warpX, warpY);
 
 				buffer.set(x, y, collor);
 			}
@@ -119,7 +161,7 @@ class PulsefieldNavier extends Pulsefield {
 		parent.background(buffer);
 	}
 
-	public int getSubPixel(double warpX, double warpY) {
+	public int getSubPixel(PApplet parent, double warpX, double warpY) {
 		if (warpX < 0 || warpY < 0 || warpX > parent.width - 1 || warpY > parent.height - 1) {
 			return bordercolor;
 		}
@@ -137,8 +179,8 @@ class PulsefieldNavier extends Pulsefield {
 		int indexBottomRight = x + 1 + (y + 1) * parent.width;
 
 		try {
-			return lerpColor(lerpColor(parent.pixels[indexTopLeft], parent.pixels[indexTopRight], 
-					(float) u), lerpColor(parent.pixels[indexBottomLeft], 
+			return lerpColor(parent, lerpColor(parent, parent.pixels[indexTopLeft], parent.pixels[indexTopRight], 
+					(float) u), lerpColor(parent, parent.pixels[indexBottomLeft], 
 							parent.pixels[indexBottomRight], (float) u), (float) v);
 		} 
 		catch (Exception e) {
@@ -148,7 +190,7 @@ class PulsefieldNavier extends Pulsefield {
 		}
 	}
 
-	public int lerpColor(int c1, int c2, float l) {
+	public int lerpColor(PApplet parent, int c1, int c2, float l) {
 		parent.colorMode(PConstants.RGB, 255);
 		float r1 = parent.red(c1)+0.5f;
 		float g1 = parent.green(c1)+0.5f;

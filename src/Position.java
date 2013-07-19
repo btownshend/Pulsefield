@@ -1,23 +1,26 @@
 import processing.core.PVector;
-
+import processing.core.PApplet;
 
 public class Position {
 	PVector origin;
 	PVector avgspeed; // Average speed in pixels/second
 	float lastmovetime;   // Last moved time in seconds
 	static float averagingTime =1.0f;   // Averaging time in seconds
+	int channel;
 	boolean enabled;
 
-	public Position(PVector origin) {
+	public Position(PVector origin, int channel) {
 		this.origin=origin;
 		this.avgspeed=new PVector(0f,0f);
 		this.lastmovetime= 0f;
+		this.channel = channel;
 	}
 	
-	public Position() {
+	public Position(int channel) {
 		this.origin = new PVector(0f,0f);
 		this.avgspeed=new PVector(0f,0f);
 		this.lastmovetime = 0f;
+		this.channel = channel;
 	}
 
 	void move(PVector newpos, float elapsed) {

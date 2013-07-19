@@ -8,6 +8,6 @@
 	<classpathentry kind="lib" path="/Volumes/Adams/Users/bst/Dropbox/Processing/Processing.app/Contents/Resources/Java/core/library/gluegen-rt.jar"/>
 	<classpathentry kind="lib" path="/Volumes/Adams/Users/bst/Dropbox/Processing/Processing.app/Contents/Resources/Java/core/library/jogl-all-natives-macosx-universal.jar"/>
 	<classpathentry kind="lib" path="/Volumes/Adams/Users/bst/Dropbox/Processing/Processing.app/Contents/Resources/Java/core/library/jogl-all.jar"/>
-	<classpathentry kind="lib" path="/Volumes/Adams/Users/bst/Dropbox/Processing/libraries/oscP5/library/oscP5.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Adams/Users/bst/Dropbox/Processing/libraries/oscP5/library/oscP5.jar" sourcepath="/Volumes/Adams/Users/bst/Dropbox/Processing/libraries/oscP5/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,34 +1,32 @@
 import processing.core.*;
 
+import java.util.Random;
 
 // A simple Particle class
 
 class Particle {
-	PApplet parent;
+	static Random rng = new Random();
 	PVector location;
 	PVector velocity;
 	PVector acceleration;
 	float lifespan, maxlifespan;
-	int col;
-	int id;
+	int channel;
 	PImage img;
 
 
-	Particle(PApplet parent, PVector l, PVector v, int col, PImage img, int id) {
-		this.parent=parent;
+	Particle(PVector l, PVector v, int channel, PImage img) {
 		this.img=img;
-		this.col=col;
-		this.id=id;
+		this.channel=channel;
 		acceleration = new PVector(0f, -0.03f);
-		velocity = new PVector(parent.randomGaussian()*0.3f+v.x, parent.randomGaussian()*0.3f + v.y);
+		velocity = new PVector((float)rng.nextGaussian()*0.3f+v.x, (float)rng.nextGaussian()*0.3f + v.y);
 		location = l.get();
 		maxlifespan = 500.0f;
 		lifespan = maxlifespan;
 	}
 
-	void run() {
-		display();
-		update();
+	int getcolor(PApplet parent) {
+		int col=parent.color((channel*37)%255, (channel*91)%255, (channel*211)%255);
+		return col;
 	}
 
 	void attractor(PVector c, float force) {
@@ -62,10 +60,11 @@ class Particle {
 	}
 
 	// Method to display
-	void display() {
+	void draw(PApplet parent) {
 		//println("display(): location="+location);
 		parent.imageMode(PConstants.CENTER);
-		parent.tint(col, (float)(lifespan/maxlifespan*255.0/20));
+		int col=getcolor(parent);
+		parent.tint(col, (float)(lifespan/maxlifespan*255.0/5));
 		parent.image(img, location.x, location.y);
 
 		//stroke(col, lifespan);
