@@ -1,5 +1,4 @@
 import processing.core.PVector;
-import processing.core.PApplet;
 
 public class Position {
 	PVector origin;
@@ -22,6 +21,7 @@ public class Position {
 		this.lastmovetime = 0f;
 		this.channel = channel;
 	}
+
 
 	void move(PVector newpos, float elapsed) {
 		//PApplet.println("move("+newpos+","+elapsed+"), lastmovetime="+lastmovetime);
