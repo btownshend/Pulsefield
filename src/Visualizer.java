@@ -7,7 +7,7 @@ public abstract class Visualizer {
 
 	abstract public void draw(PApplet parent);
 
-	abstract public void update(PApplet parent);
+	public void update(PApplet parent) { }
 	
 	abstract public void add(int id, int channel);
 	abstract public void move(int id, int channel, PVector newpos, float elapsed);
