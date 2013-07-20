@@ -1,14 +1,15 @@
+import java.awt.Color;
+
 import processing.core.PApplet;
 import oscP5.*;
 import netP5.*;
-
 import processing.core.PVector;
 
 public class Tracker extends PApplet {
 	/**
 	 * 
 	 */
-	private static boolean present = false;
+	private static boolean present = true;
 
 	private static final long serialVersionUID = 1L;
 	int tick=0;
@@ -21,6 +22,7 @@ public class Tracker extends PApplet {
 	public void setup() {
 		size(640,400, OPENGL);
 		frameRate(60);
+		frame.setBackground(new Color(0,0,0));
 		oscP5 = new OscP5(this, 7002);
 		oscP5.plug(this, "pfframe", "/pf/frame");
 		oscP5.plug(this, "pfupdate", "/pf/update");
@@ -33,7 +35,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "pfsetmaxy", "/pf/set/maxy");
 		oscP5.plug(this, "pfstarted", "/pf/started");
 		oscP5.plug(this, "pfstopped", "/pf/stopped");
-		vis=new VisualizerNavier(this);
+		vis=new VisualizerPS(this);
 	}
 
 	synchronized public void draw() {
