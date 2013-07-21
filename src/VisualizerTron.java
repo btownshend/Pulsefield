@@ -14,8 +14,8 @@ class GridData {
 }
 
 public class VisualizerTron extends Visualizer {
-	final int gridWidth = 30;
-	final int gridHeight = 30;
+	final int gridWidth = 20;
+	final int gridHeight = 20;
 	HashMap<Integer, Position> systems;
 	int width, height;
 	GridData grid[];
