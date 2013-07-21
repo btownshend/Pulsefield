@@ -9,7 +9,7 @@ public class Tracker extends PApplet {
 	/**
 	 * 
 	 */
-	private static boolean present = false;
+	private static boolean present = true;
 
 	private static final long serialVersionUID = 1L;
 	int tick=0;
@@ -18,8 +18,9 @@ public class Tracker extends PApplet {
 	NetAddress myRemoteLocation;
 	float minx=-3.2f, maxx=3.2f, miny=-3.2f, maxy=3.2f;
 	Visualizer vis[];
-	String visnames[]={"Smoke","Navier","Tron"};
-	String vispos[]={"5/1","5/2","5/3"};
+	VisualizerAbleton visAbleton;
+	String visnames[]={"Smoke","Navier","Tron","Ableton"};
+	String vispos[]={"5/1","5/2","5/3","5/4"};
 	int currentvis;
 	NetAddress touchOSC;
 
@@ -42,12 +43,15 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "vsetapp51", "/video/app/buttons/5/1");
 		oscP5.plug(this, "vsetapp52", "/video/app/buttons/5/2");
 		oscP5.plug(this, "vsetapp53", "/video/app/buttons/5/3");
+		oscP5.plug(this, "vsetapp54", "/video/app/buttons/5/4");
 		touchOSC = new NetAddress("192.168.0.148",9998);
 
-		vis=new Visualizer[3];
+		vis=new Visualizer[4];
 		vis[0]=new VisualizerPS(this);
 		vis[1]=new VisualizerNavier(this);
 		vis[2]=new VisualizerTron(this);
+		visAbleton=new VisualizerAbleton(this);
+		vis[3]=visAbleton;
 		currentvis=2;
 		setapp(currentvis);
 	}
@@ -64,7 +68,11 @@ public class Tracker extends PApplet {
 	public void vsetapp53(float onoff) {
 		setapp(2);
 	}
-		
+
+	public void vsetapp54(float onoff) {
+		setapp(3);
+	}
+
 	public void setapp(int appNum) {
 		if (appNum <0 || appNum > vis.length) {
 			println("Bad video app number: "+appNum);
@@ -82,7 +90,7 @@ public class Tracker extends PApplet {
 		msg = new OscMessage("/video/app/buttons/"+vispos[currentvis]);
 		msg.add(1.0);
 		oscP5.send(msg,touchOSC);
-		
+
 		msg = new OscMessage("/video/app/name");
 		msg.add(visnames[currentvis]);
 		oscP5.send(msg,touchOSC);
@@ -118,10 +126,11 @@ public class Tracker extends PApplet {
 
 	/* incoming osc message are forwarded to the oscEvent method. */
 	public void oscEvent(OscMessage theOscMessage) {
-		if (theOscMessage.checkAddrPattern("/video/app/buttons") == true)
+		if (theOscMessage.addrPattern().startsWith("/video/app/buttons") == true)
 			vsetapp(theOscMessage);
-		
-		if (theOscMessage.isPlugged() == false) {
+		else if (theOscMessage.addrPattern().startsWith("/grid")) {
+			visAbleton.handleMessage(theOscMessage);
+		} else if (theOscMessage.isPlugged() == false) {
 			PApplet.print("### Received an unhandled message: ");
 			theOscMessage.print();
 		}  /* print the address pattern and the typetag of the received OscMessage */
@@ -150,7 +159,7 @@ public class Tracker extends PApplet {
 	}
 
 	synchronized public void pfupdate(int sampnum, float elapsed, int id, float ypos, float xpos, float yvelocity, float xvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
-	/*	if (channel!=99) {
+		/*	if (channel!=99) {
 			PApplet.print("update: ");
 			PApplet.print("samp="+sampnum);
 			PApplet.print(",elapsed="+elapsed);
