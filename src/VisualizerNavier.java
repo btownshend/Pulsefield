@@ -19,7 +19,7 @@ class VisualizerNavier extends Visualizer {
 	long statsTick = 0;
 	long statsStep = 0;
 	long statsUpdate = 0;
-	
+
 	VisualizerNavier(PApplet parent) {
 		super();
 		fluidSolver = new NavierStokesSolver();
@@ -37,7 +37,7 @@ class VisualizerNavier extends Visualizer {
 		parent.strokeWeight(7);
 		positions=new HashMap<Integer,Position>();
 	}
-	
+
 	public void stats() {
 		long elapsed=System.nanoTime()-statsLast;
 		PApplet.println("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
@@ -46,7 +46,7 @@ class VisualizerNavier extends Visualizer {
 		statsStep=0;
 		statsUpdate=0;
 	}
-	
+
 	public void add(int id, int channel) {
 		Position ps=new Position(channel);
 		positions.put(id,ps);
@@ -78,7 +78,8 @@ class VisualizerNavier extends Visualizer {
 		rainbow++;
 		rainbow = (rainbow > 255) ? 0 : rainbow;
 
-		drawBorders(parent);
+		parent.stroke(bordercolor);
+		drawBorders(parent, false);
 		parent.ellipseMode(PConstants.CENTER);
 		for (Position ps: positions.values()) {  
 			int c=getcolor(parent,ps.channel);
@@ -93,18 +94,7 @@ class VisualizerNavier extends Visualizer {
 		return col;
 	}
 
-	private void drawBorders(PApplet parent) {
-		parent.stroke(bordercolor);
-		parent.line(0, 0, parent.width-1, 0);
-		parent.line(0, 0, 0, parent.height-1);
-		parent.line(parent.width-1, 0, parent.width-1, parent.height-1);
-		parent.line(0, parent.height-1, parent.width-1, parent.height-1);
-
-		parent.fill(bordercolor);
-
-	}
-
-
+	
 	public void update(PApplet parent) {
 		long t1=System.nanoTime();
 		int n = NavierStokesSolver.N;
@@ -130,9 +120,9 @@ class VisualizerNavier extends Visualizer {
 	public void exit(int id) {
 		positions.remove(id);
 	}
-	 public void clear() {
-		 positions.clear();
-	 }
+	public void clear() {
+		positions.clear();
+	}
 
 	private void fluidCanvasStep(PApplet parent) {
 		double widthInverse = 1.0 / parent.width;
