@@ -10,6 +10,7 @@ class GridData {
 	int channel;
 	int prevgrid;
 	boolean current;
+	int exploding;
 	GridData() { id=-1; prevgrid=0; }
 }
 
@@ -61,8 +62,9 @@ public class VisualizerTron extends Visualizer {
 	}
 	void clear(int id) {
 		for (int i=0;i<grid.length;i++)
-			if (grid[i].id==id || id==-1)
-				grid[i].id=-1;	
+			if (grid[i].id==id || id==-1  && grid[i].exploding==-1) {
+				grid[i].exploding=1;
+			}
 	}
 
 	int findstep(int oldgpos,int gpos) {
@@ -101,11 +103,12 @@ public class VisualizerTron extends Visualizer {
 					int stepgpos=findstep(oldgpos,gpos);
 					PApplet.println("findstep("+oldgpos+","+gpos+") -> "+stepgpos);
 					GridData g=grid[stepgpos];
-					if (g.id==-1) {
+					if (g.id==-1 || g.exploding>0) {
 						PApplet.println("Set grid "+gdisp(stepgpos)+" to "+id+" prev="+gdisp(oldgpos));
 						grid[stepgpos].id=id;
 						grid[stepgpos].prevgrid=oldgpos;
 						grid[stepgpos].channel=channel;
+						grid[stepgpos].exploding=-1;
 						grid[stepgpos].current=true;
 						grid[oldgpos].current=false;
 					} else {
@@ -142,13 +145,31 @@ public class VisualizerTron extends Visualizer {
 				GridData g=grid[i*gridHeight+j];
 				int gid=g.id;
 				if (gid!=-1) {
-					if (g.current) {
-						parent.fill(parent.color(255,0,0));
-						parent.rect(i*parent.width/gridWidth, j*parent.height/gridHeight, parent.width/gridWidth, parent.height/gridHeight);
+					if (g.exploding>0) {
+						final int explosionFrames = 400;
+						parent.fill(getcolor(parent,g.channel));
+						int w = parent.width*(explosionFrames-g.exploding)/explosionFrames/gridWidth;
+						int h =parent.height*(explosionFrames-g.exploding)/explosionFrames/gridHeight;
+						parent.rect(i*parent.width/gridWidth, j*parent.height/gridHeight+g.exploding,w,h);
+						parent.rect(i*parent.width/gridWidth, j*parent.height/gridHeight-g.exploding, w,h);
+						parent.rect(i*parent.width/gridWidth+g.exploding, j*parent.height/gridHeight, w,h);
+						parent.rect(i*parent.width/gridWidth-g.exploding, j*parent.height/gridHeight, w,h);
+						if (g.exploding<explosionFrames)
+							grid[i*gridHeight+j].exploding+=10;
+						else {
+							grid[i*gridHeight+j].exploding=-1;
+							grid[i*gridHeight+j].id=-1;
+						}
+					} else {
+						int inset=1;
+						if (g.current) {
+							parent.fill(parent.color(255,0,0));
+							parent.rect(i*parent.width/gridWidth, j*parent.height/gridHeight, parent.width/gridWidth, parent.height/gridHeight);
+							inset=2;
+						}
+						parent.fill(getcolor(parent,g.channel));
+						parent.rect(i*parent.width/gridWidth+inset, j*parent.height/gridHeight+inset, parent.width/gridWidth-2*inset, parent.height/gridHeight-2*inset);
 					}
-					parent.fill(getcolor(parent,g.channel));
-					parent.rect(i*parent.width/gridWidth+1, j*parent.height/gridHeight+1, parent.width/gridWidth-2, parent.height/gridHeight-2);
-
 				}
 			}	
 		if (systems.isEmpty()) {
