@@ -139,7 +139,11 @@ public class VisualizerTron extends Visualizer {
 		pgl.blendEquation(PGL.FUNC_ADD);  
 		parent.background(0, 0, 0);  
 		parent.colorMode(PConstants.RGB, 255);
-
+		parent.stroke(127);
+		parent.strokeWeight(1);
+		parent.fill(0,32,0);
+		drawBorders(parent,true);
+		parent.stroke(0);
 		for (int i=0;i<gridWidth;i++)
 			for (int j=0;j<gridHeight;j++) {
 				GridData g=grid[i*gridHeight+j];
