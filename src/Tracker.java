@@ -22,7 +22,7 @@ public class Tracker extends PApplet {
 	String visnames[]={"Smoke","Navier","Tron","Ableton"};
 	String vispos[]={"5/1","5/2","5/3","5/4"};
 	int currentvis;
-	NetAddress touchOSC;
+	NetAddress touchOSC, MPO;
 
 	public void setup() {
 		size(640,400, OPENGL);
@@ -44,8 +44,9 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "vsetapp52", "/video/app/buttons/5/2");
 		oscP5.plug(this, "vsetapp53", "/video/app/buttons/5/3");
 		oscP5.plug(this, "vsetapp54", "/video/app/buttons/5/4");
+		oscP5.plug(this, "ping", "/ping");
 		touchOSC = new NetAddress("192.168.0.148",9998);
-
+		MPO = new NetAddress("192.168.0.29",7000);
 		vis=new Visualizer[4];
 		vis[0]=new VisualizerPS(this);
 		vis[1]=new VisualizerNavier(this);
@@ -56,6 +57,13 @@ public class Tracker extends PApplet {
 		setapp(currentvis);
 	}
 
+	public void ping(int code) {
+		OscMessage msg = new OscMessage("/ack");
+		PApplet.println("Got ping "+code);
+		msg.add(code);
+		oscP5.send(msg,MPO);
+	}
+	
 	public void vsetapp(OscMessage msg) {
 		println("vsetup("+msg+")");
 	}
