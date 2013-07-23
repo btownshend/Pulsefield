@@ -47,6 +47,10 @@ classdef ChannelMap < handle
     end
     
     function channel=newchannel(obj,id)
+      if length(id)>1
+        fprintf('ERROR: ChannelMap.newchannel: id should not be a vector: %s\n', sprintf('%d ',id));
+        id=id(1);
+      end
       if any(obj.ids==id)
         channel=obj.channels(find(obj.ids==id,1));
         fprintf('channelmap::newchannel - id %d already allocated to channel %d\n', id, channel);
