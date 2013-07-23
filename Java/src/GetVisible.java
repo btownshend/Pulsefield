@@ -1,15 +1,12 @@
-import javax.imageio.*;
-import javax.imageio.stream.MemoryCacheImageInputStream;
-
-import java.awt.image.*;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
+import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.InputStream;
-import java.io.*;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import java.util.Map.Entry;
+
+import javax.imageio.ImageIO;
 
 /**
  * 
