@@ -15,7 +15,7 @@ if nargin>=1
   % Turn sensor cropping back on
   sensorcrop(p);
 end
-fname=sprintf('/Users/bst/Dropbox/PeopleSensor/Snapshots/%s.mat',datestr(now,30));
+fname=sprintf('%s/Snapshots/%s.mat',pfroot(),datestr(now,30));
 fprintf('Saving snapshot in %s\n', fname);
 snapshot=struct('when',now,'im',im);
 save(fname,'snapshot');
