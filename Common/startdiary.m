@@ -6,7 +6,7 @@ if nargin<1
   diary off
   return;
 end
-dir=sprintf('/Users/bst/Dropbox/PeopleSensor/LOGS/%s', component);
+dir=sprintf('%s/LOGS/%s', pfroot(), component);
 if ~exist(dir,'dir')
   [success,msg]=mkdir(dir);
   if ~success
