@@ -1,5 +1,5 @@
 function [host,port]=getsubsysaddr(id,varargin)
-defaults=struct('reload',true,'configfile','/Users/bst/DropBox/Pulsefield/config/urlconfig.txt','debug',false);
+defaults=struct('reload',true,'configfile',[pfroot(),'/config/urlconfig.txt'],'debug',false);
 args=processargs(defaults,varargin);
 global subsystems;
 

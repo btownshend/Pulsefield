@@ -32,7 +32,7 @@ elseif strcmp(op,'start')
   else
     [frontendhost,~]=getsubsysaddr('FE');
     % Start frontend
-    cmd=sprintf('ssh %s "[ -r /tmp/frontend.log ] && mv /tmp/frontend.log /tmp/frontend.log.old; /Users/bst/DropBox/Pulsefield/src/FrontEnd/frontend %d %d >/tmp/frontend.log 2>&1 & sleep 1; cat /tmp/frontend.log; "', frontendhost, length(p.camera), length(p.led));
+    cmd=sprintf('ssh %s "[ -r /tmp/frontend.log ] && mv /tmp/frontend.log /tmp/frontend.log.old; %s/frontend %d %d >/tmp/frontend.log 2>&1 & sleep 1; cat /tmp/frontend.log; "', frontendhost, pfroot(), length(p.camera), length(p.led));
     fprintf('Running cmd: "%s"\n', cmd);
     [s,r]=system(cmd);
     fprintf('System response: %s\n\n', r);
