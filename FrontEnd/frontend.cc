@@ -79,7 +79,7 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     vis = new Visible*[ncamera];
 
 
-    URLConfig urls("/Users/bst/DropBox/PeopleSensor/config/urlconfig.txt");
+    URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
 
     serverPort=urls.getPort("FE");
     if (serverPort<0) {
