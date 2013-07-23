@@ -22,6 +22,12 @@ function info=oscincoming(p,info)
       handled=true;
     end
     
+    if strncmp(rcvdmsg.path,'/video/',7)
+      % Relay message to Video Server
+      oscmsgout('VD',rcvdmsg.path,rcvdmsg.data);
+      handled=true;
+    end
+    
     if strcmp(rcvdmsg.path,'/snapshot/trigger')
       oscmsgout('SN',rcvdmsg.path,rcvdmsg.data);
       handled=true;
