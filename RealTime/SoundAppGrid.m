@@ -255,9 +255,9 @@ classdef SoundAppGrid < SoundApp
       for i=scenes
         ids=[obj.actives([obj.actives.cell]==i).id];
         if isempty(ids)
-          %      oscmsgout('TO',sprintf('/grid/cell/%d',i),{sprintf('%d',i)});
-          oscmsgout('TO',sprintf('/grid/cell/%d',i),{''});
-          oscmsgout('TO',sprintf('/grid/cell/%d/color',i),{'gray'});
+          %      oscmsgout({'TO','VD'},sprintf('/grid/cell/%d',i),{sprintf('%d',i)});
+          oscmsgout({'TO','VD'},sprintf('/grid/cell/%d',i),{''});
+          oscmsgout({'TO','VD'},sprintf('/grid/cell/%d/color',i),{'gray'});
         else
           txt='';
           col='gray';
@@ -270,17 +270,17 @@ classdef SoundAppGrid < SoundApp
               txt=[txt,sprintf('Stop%d ',channel)];
             end
           end
-          oscmsgout('TO',sprintf('/grid/cell/%d',i),{txt});
-          oscmsgout('TO',sprintf('/grid/cell/%d/color',i),{col});
+          oscmsgout({'TO','VD'},sprintf('/grid/cell/%d',i),{txt});
+          oscmsgout({'TO','VD'},sprintf('/grid/cell/%d/color',i),{col});
         end
         if nargin==2
           pause(0.01);   % Don't overrun when setting up the entire grid
         end
       end
       if ~isempty(info.song)
-        oscmsgout('TO','/grid/song',{info.al.getsongname(info.song)});
+        oscmsgout({'TO','VD'},'/grid/song',{info.al.getsongname(info.song)});
       else
-        oscmsgout('TO','/grid/song',{''});
+        oscmsgout({'TO','VD'},'/grid/song',{''});
       end
     end
     
