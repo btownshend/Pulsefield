@@ -10,8 +10,8 @@ if ~exist('p','var')
     fprintf('Loading p from recvis\n');
     p=recvis.p;
   else
-    fprintf('Loading p from Calibration/current.mat\n');
-    p=load('Calibration/current.mat');
+    fprintf('Loading p from %s/Calibration/current.mat\n',pfroot());
+    p=load([pfroot(),'/Calibration/current.mat']);
   end
 end
 
@@ -36,7 +36,7 @@ if ~oscloopback('MPV') || ~oscloopback('MPO') || ~oscloopback('MPL') || ~oscloop
 end
 
 % Setup destination for outgoing OSC messages
-p.oscdests={'MAX','LD','TO'};
+p.oscdests={'MAX','LD','TO','VD'};
 
 % Turn on LEDS directly (in case LED server is not running)
 s1=arduino_ip(1);
