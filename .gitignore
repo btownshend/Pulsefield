@@ -1,3 +1,21 @@
 
 .DS_Store
 /bin
+
+*.o
+
+RealTime/AL_pulsefield1C.mat
+
+RealTime/ableton.csv
+
+RealTime/ableton.mat
+
+RealTime/p.mat
+frontend.dSYM
+
+FrontEnd/frontend
+
+Arduino/libraries/Adafruit_NeoPixel/
+
+Arduino/libraries/LPD8806
+Video
