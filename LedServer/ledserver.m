@@ -11,7 +11,6 @@ function ledserver(p,doplot,simul)
   if nargin<3
     simul=false;  % Simulate only
   end
-  pfile='/Users/bst/DropBox/PeopleSensor/src/p.mat';
   if ~simul
   try
     s1=arduino_ip(1);
