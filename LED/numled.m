@@ -2,8 +2,10 @@
 % with no arg, get total active LEDS (not including outer ones)
 % with strip==0, get number in outer area (outside entry)
 function n=numled(strip)
-nouter=129;  % Number in outer parts
-nperstrip=[30,160,160,160,160,29];
+%nouter=129;  % Number in outer parts
+%nperstrip=[30,160,160,160,160,29];
+nouter=0;
+nperstrip=[160,160,160,160];
 if nargin<1
   n=sum(nperstrip);  % Total number
 elseif strip==0
