@@ -1,6 +1,7 @@
 LED Strip Voltage Drops.numbers
 RealTime/Recordings
 Obsolete
+Video
 Arduino/libraries/LPD8806/examples
 Arduino/libraries/LPD8806/README.md
 \.o
@@ -13,3 +14,4 @@ Makefile.bak
 ableton.csv
 .project
 regionpropsmex.mexmaci64
+.git
