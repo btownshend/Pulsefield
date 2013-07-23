@@ -24,10 +24,15 @@ opening=2/feetpermeter;   % 24" opening
 % Spacing between LED and prior one (including post-space after last one)
 ledspacing=1/32*ones(1,nled());   % May be overridden later by setting of nleds
 % Extra gaps at end of each strip
-firstleds=cumsum(numled(1:5));
-ledspacing(firstleds)=[2,5,5.2,5,5]/100;  
-ledspacing(1)=-0.5/100;  % First LED outside end of 4' member by 0.5cm
-ledspacing(end+1)=-2.0/100;  % Last LED outside end of 4' member by 2.0cm
+numstrips=4;   % TODO - should be a global parameter
+firstleds=cumsum(numled(1:numstrips-1));
+%ledspacing(firstleds)=[2,5,5.2,5,5]/100;  
+%ledspacing(1)=-0.5/100;  % First LED outside end of 4' member by 0.5cm
+%ledspacing(end+1)=-2.0/100;  % Last LED outside end of 4' member by 2.0cm
+% Settings for 4 strips
+ledspacing(firstleds)=[5,5,5]/100;  
+ledspacing(1)=36.125/39.37;  % First LED inside end of 4' member by 36.125in
+ledspacing(end+1)=35.5/39.37;  % Last LED inside end of 4' member by 35.5in
 
 % Angle subtended by each 8' leg
 legtheta=2*pi*(leglen*nlegs)/(leglen*nlegs+opening)/nlegs;
