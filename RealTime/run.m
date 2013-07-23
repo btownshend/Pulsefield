@@ -20,7 +20,7 @@ if ~exist('p','var')
 end
 
 % Set camera exposures
-setupcameras(p);
+setupcameras(p,'exptime',4);
 
 if ~isfield(p.camera(1),'pixcalib')
   disp('Pixel calibration');
