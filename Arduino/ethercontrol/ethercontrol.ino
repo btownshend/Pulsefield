@@ -55,8 +55,9 @@ void setup() {
     show();  
     
     // Setup ethernet
-    IPAddress ip(192,168,3,70);
-    IPAddress gateway(192,168,3,1);
+    // NOTE: 3/11/13 - these were set to 192.168.3.* for use with switch, etc
+    IPAddress ip(192,168,0,70);
+    IPAddress gateway(192,168,0,1);
     IPAddress subnet(255,255,255,0);
     
    Ethernet.begin(mac,ip,gateway,subnet);
