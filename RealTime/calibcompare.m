@@ -1,7 +1,7 @@
 % Compare multiple calibrations
 function c=calibcompare(dirname,paths)
 if nargin<1
-  dirname='Calibration';
+  dirname=[pfroot(),'/Calibration'];
 end
 if nargin<2
   paths={'*.mat'};
