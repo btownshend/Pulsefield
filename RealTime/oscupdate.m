@@ -142,8 +142,7 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
 
     for i=1:length(snap.hypo)
       h=snap.hypo(i);
-      % TODO - should send to all destinations except TO
-      oscmsgout({'LD','OSC'},'/pf/update',{int32(sampnum), elapsed,int32(h.id),h.pos(1),h.pos(2),h.velocity(1),h.velocity(2),h.majoraxislength,h.minoraxislength,int32(h.groupid),int32(h.groupsize),int32(info.cm.id2channel(h.id))});
+      oscmsgout(setdiff(p.oscdests,{'TO'}),'/pf/update',{int32(sampnum), elapsed,int32(h.id),h.pos(1),h.pos(2),h.velocity(1),h.velocity(2),h.majoraxislength,h.minoraxislength,int32(h.groupid),int32(h.groupsize),int32(info.cm.id2channel(h.id))});
     end
 
     
@@ -231,9 +230,11 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     
     if (now-info.lastping)*24*3600 > info.pinginterval
       % Ping everyone that can respond
+      fprintf('Pinging everyone\n');
       oscmsgout('LD','/ping',{int32(1)});
       oscmsgout('MAX','/ping',{int32(3)});
       oscmsgout('AL','/live/master/volume',{});
+      oscmsgout('VD','/ping',{int32(4)});
       % Update latency display
       oscmsgout('TO','/touchosc/latency',{round(info.latency*1000)});
       info.lastping=now;
