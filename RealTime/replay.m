@@ -1,6 +1,6 @@
 % Replay a recorded set of movements stored in recvis
 function replayrecvis=replay(varargin)
-defaults=struct('timed',false,'plots',{{}},'oscdests',{{'MAX','LD','TO'}},'frames',[nan,nan],'plothypo',false,'plotvis',false, 'plotanalyze',0);
+defaults=struct('timed',false,'plots',{{}},'oscdests',{{'MAX','LD','TO','VD'}},'frames',[nan,nan],'plothypo',false,'plotvis',false, 'plotanalyze',0);
 args=processargs(defaults,varargin);
 
 global recvis
@@ -47,6 +47,7 @@ samp=1;
 starttime=now;
 suppressuntil=0;
 info=infoinit();
+info.starttime=recvis.vis(1).whenrcvd;
 while samp<=length(recvis.vis)
   vis=recvis.vis(samp);
   simulskew = now-vis.whenrcvd;     % Delay in simulation from when it really happened
@@ -191,6 +192,7 @@ end
 % Turn off any remaining notes
 oscupdate(recvis.p,info,samp);
 
+if (nargout>0)
 % Copy in snap to new version
 fprintf('Copying new analysis into replayrecvis\n');
 if isfield(recvis,'snap')
@@ -208,3 +210,4 @@ end
 plotlatency(replayrecvis);
 plotstats(replayrecvis);
 % Can run analyze(recvis.p,recvis.vis(nnn).v,2) to plot
+end
