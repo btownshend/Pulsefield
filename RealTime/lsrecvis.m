@@ -1,10 +1,10 @@
 % List recordings
-files=dir('Recordings/*.mat');
+files=dir([pfroot(),'/Recordings/*.mat']);
 for i=1:length(files)
   f=files(i);
-  zz=load(['Recordings/',f.name],'note');
+  zz=load([pfroot(),'/Recordings/',f.name],'note');
   if ~isfield(zz,'note')
-    system(sprintf('mv Recordings/%s Recordings/BAD',f.name));
+    system(sprintf('mv %s/Recordings/%s %s/Recordings/BAD',pfroot(),f.name,pfroot()));
     fprintf('Moved %s to BAD\n', f.name);
   end
   if ~isfield(zz,'note')

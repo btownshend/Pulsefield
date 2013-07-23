@@ -8,7 +8,7 @@ else
   recvis.note=note;
 end
 if ~isempty(recvis.note)
-  recname=sprintf('Recordings/%s.mat',datestr(recvis.vis(1).when,30));
+  recname=sprintf('%s/Recordings/%s.mat',pfroot(),datestr(recvis.vis(1).when,30));
   fprintf('Saving recording in %s...', recname);
   if isfield(recvis.vis,'im')
     recvistmp=rmfield(recvis,'vis');

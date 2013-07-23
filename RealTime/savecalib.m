@@ -1,6 +1,6 @@
 % Save calibration
 function savecalib(p)
-dirname='Calibration';
+dirname=[pfroot(),'/Calibration'];
 filename=sprintf('calib-%s.mat',datestr(now,30));
 fullname=[dirname,'/',filename];
 fprintf('Saving calibration in %s...',fullname);

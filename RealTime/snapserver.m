@@ -1,7 +1,7 @@
 % Snapshot server
 % Receive commands via OSC, take regular snapshots when PF is occupied
 function snapserver
-  pfile='/Users/bst/Dropbox/PeopleSensor/src/Realtime/Calibration/current.mat';
+  pfile=[pfroot(),'/Calibration/current.mat'];
   p=load(pfile);
   
   debug=0;
