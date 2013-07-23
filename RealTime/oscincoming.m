@@ -1,6 +1,6 @@
 % oscincoming - process incoming OSC messages
 function info=oscincoming(p,info)
-  debug=false;
+  debug=true;
   
   % Check for incoming messages to server
   while true
@@ -194,6 +194,10 @@ function info=oscincoming(p,info)
       id=info.cm.channel2id(channel);  
       if ~isempty(id)
         info.cm.deleteid(id);
+        if length(id)>1
+          % Was an error once that could've resulted from a vector id check here until its debugged
+          fprintf('ERROR: ID should not be a vector, but was [%s], channel=[%s], rcvdmsg=%s\n', sprintf('%d ',id),sprintf('%d ',channel), rcvdmsg.path);
+        end
         newchannel=info.cm.newchannel(id);
         fprintf('Reassigning ID %d on channel %d to channel %d\n', id, channel,newchannel);
         if info.ableton
@@ -262,6 +266,7 @@ function info=oscincoming(p,info)
     elseif strcmp(rcvdmsg.path,'/ping')
       % ignore
     elseif strcmp(rcvdmsg.path,'/ack')
+      fprintf('Got ack with data{1}=%d\n', rcvdmsg.data{1});
       if rcvdmsg.data{1}==1
         % Should actually come in on MPL port
         info.health.gotmsg('LD');
@@ -274,6 +279,7 @@ function info=oscincoming(p,info)
     elseif ~handled
       fprintf('Unknown OSC message: %s\n', rcvdmsg.path);
     end
+    fprintf('EOL: %s,handled=%d\n',rcvdmsg.path,handled);
   end
 
   % Check for incoming messages to server from LedServer
