@@ -16,6 +16,7 @@ classdef Ableton < handle
     debug=false;
     pll=PLL();
     volume=0.5;
+    oscdests={'TO'};
   end
   
   methods
@@ -249,10 +250,10 @@ classdef Ableton < handle
 
     function initgui(obj)
       for songtrack=1:length(obj.songs)
-        oscmsgout('TO',sprintf('/grid/table/%d/scene',songtrack),{''});
-        oscmsgout('TO',sprintf('/grid/table/%d/clip',songtrack),{''});
-        oscmsgout('TO',sprintf('/grid/table/%d/track',songtrack),{''});
-        oscmsgout('TO',sprintf('/grid/table/%d/pos',songtrack),{''});
+        oscmsgout(obj.oscdests,sprintf('/grid/table/%d/scene',songtrack),{''});
+        oscmsgout(obj.oscdests,sprintf('/grid/table/%d/clip',songtrack),{''});
+        oscmsgout(obj.oscdests,sprintf('/grid/table/%d/track',songtrack),{''});
+        oscmsgout(obj.oscdests,sprintf('/grid/table/%d/pos',songtrack),{''});
       end
     end
 
@@ -310,13 +311,13 @@ classdef Ableton < handle
               sc=[sc,' -> ',sprintf('%d ',triggeredclip)];
               cl=[cl,' -> ',obj.getclipname(track,triggeredclip(1))];
             end
-            oscmsgout('TO',sprintf('/grid/table/%d/scene',songtrack),{sc});
-            oscmsgout('TO',sprintf('/grid/table/%d/clip',songtrack),{cl});
+            oscmsgout(obj.oscdests,sprintf('/grid/table/%d/scene',songtrack),{sc});
+            oscmsgout(obj.oscdests,sprintf('/grid/table/%d/clip',songtrack),{cl});
             if isempty(playingclip) && isempty(triggeredclip)
-              oscmsgout('TO',sprintf('/grid/table/%d/track',songtrack),{''});
-              oscmsgout('TO',sprintf('/grid/table/%d/pos',songtrack),{''});
+              oscmsgout(obj.oscdests,sprintf('/grid/table/%d/track',songtrack),{''});
+              oscmsgout(obj.oscdests,sprintf('/grid/table/%d/pos',songtrack),{''});
             else
-              oscmsgout('TO',sprintf('/grid/table/%d/track',songtrack),{obj.gettrackname(track)});
+              oscmsgout(obj.oscdests,sprintf('/grid/table/%d/track',songtrack),{obj.gettrackname(track)});
             end
           end
         elseif strcmp(m.path,'/live/clip/position')
@@ -332,7 +333,7 @@ classdef Ableton < handle
             songtrack=[];
           end
           if ~isempty(songtrack)
-            oscmsgout('TO',sprintf('/grid/table/%d/pos',songtrack),{sprintf('[%.0f-%.0f]@%.0f',loop_start,loop_end,position)});
+            oscmsgout(obj.oscdests,sprintf('/grid/table/%d/pos',songtrack),{sprintf('[%.0f-%.0f]@%.0f',loop_start,loop_end,position)});
             obj.allstatus(songtrack,clip)=2;  % In case info was missed
           end
         elseif strcmp(m.path,'/live/name/return')
@@ -366,8 +367,8 @@ classdef Ableton < handle
             fprintf('Got %s\n',formatmsg(m.path,m.data));
           end
           obj.volume=m.data{1};
-          oscmsgout('TO','/volume',{obj.volume});
-          oscmsgout('TO','/volume/value',{sprintf('%.1f',obj.slider2db(obj.volume))});
+          oscmsgout(obj.oscdests,'/volume',{obj.volume});
+          oscmsgout(obj.oscdests,'/volume/value',{sprintf('%.1f',obj.slider2db(obj.volume))});
         elseif strcmp(m.path,'/live/master/pan')
         elseif strcmp(m.path,'/live/master/crossfader')
         elseif strcmp(m.path,'/live/return/mute')
@@ -379,8 +380,8 @@ classdef Ableton < handle
         elseif strcmp(m.path,'/live/tempo')
           obj.pll.settempo(m.data{1});
           oscmsgout('LD','/live/tempo',{int32(m.data{1})});
-          oscmsgout('TO','/tempo',{int32(m.data{1})});
-          oscmsgout('TO','/tempo/value',{int32(m.data{1})});
+          oscmsgout(obj.oscdests,'/tempo',{int32(m.data{1})});
+          oscmsgout(obj.oscdests,'/tempo/value',{int32(m.data{1})});
         elseif strcmp(m.path,'/live/scene')
         elseif strcmp(m.path,'/live/scenes')
           obj.numscenes=m.data{1};
@@ -388,7 +389,7 @@ classdef Ableton < handle
         elseif strcmp(m.path,'/live/track')
         elseif strcmp(m.path,'/live/master/meter')
           %fprintf('Master meter(%d)=%.3f\n', m.data{1},m.data{2});
-          oscmsgout('TO',sprintf('/meter/%d',m.data{1}+1),{m.data{2}});
+          oscmsgout(obj.oscdests,sprintf('/meter/%d',m.data{1}+1),{m.data{2}});
         elseif strcmp(m.path,'/live/return/meter')
         elseif strcmp(m.path,'/live/track/meter')
           %fprintf('Track%d meter(%d)=%.3f\n', m.data{1},m.data{2},m.data{3});
@@ -545,10 +546,10 @@ classdef Ableton < handle
 
     function clearui(obj)
       for channel=1:8
-        oscmsgout('TO',sprintf('/grid/table/%d/scene',channel),{''});
-        oscmsgout('TO',sprintf('/grid/table/%d/clip',channel),{''});
-        oscmsgout('TO',sprintf('/grid/table/%d/track',channel),{''});
-        oscmsgout('TO',sprintf('/grid/table/%d/pos',channel),{''});
+        oscmsgout(obj.oscdests,sprintf('/grid/table/%d/scene',channel),{''});
+        oscmsgout(obj.oscdests,sprintf('/grid/table/%d/clip',channel),{''});
+        oscmsgout(obj.oscdests,sprintf('/grid/table/%d/track',channel),{''});
+        oscmsgout(obj.oscdests,sprintf('/grid/table/%d/pos',channel),{''});
       end
     end
     
