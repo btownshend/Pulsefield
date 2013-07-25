@@ -196,6 +196,7 @@ public class Tracker extends PApplet {
 
 	public void pfsetnpeople(int n) {
 		PApplet.println("/pf/set/npeople: now have "+n+" people");
+		vis[currentvis].setnpeople(n);
 	}
 
 	synchronized public void pfexit(int sampnum, float elapsed, int id) {

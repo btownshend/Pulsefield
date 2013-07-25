@@ -47,6 +47,13 @@ class VisualizerNavier extends Visualizer {
 		statsUpdate=0;
 	}
 
+	public void setnpeople(int n) {
+		if (n!=positions.size()) {
+			PApplet.println("Have "+positions.size()+" people, but got message that there are "+n+" .. clearing.");
+			positions.clear();
+		}
+	}
+	
 	public void add(int id, int channel) {
 		Position ps=new Position(channel);
 		positions.put(id,ps);

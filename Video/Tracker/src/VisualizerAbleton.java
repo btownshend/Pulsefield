@@ -20,7 +20,11 @@ public class VisualizerAbleton extends VisualizerPS {
 			PApplet.println("grid "+cell+" = "+gridValues.get(cell)+" "+gridColors.get(cell));
 		}
 	}
-
+	
+	public void setnpeople(int n) {
+		// Ignored for now
+	}
+	
 	public void handleMessage(OscMessage theOscMessage) {
 		PApplet.println("Ableton message: "+theOscMessage.toString());
 		boolean handled=false;

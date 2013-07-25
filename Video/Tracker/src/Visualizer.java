@@ -33,5 +33,5 @@ public abstract class Visualizer {
 		}
 	}
 
-
+	abstract public void setnpeople(int n);
 }

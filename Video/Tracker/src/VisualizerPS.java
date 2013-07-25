@@ -25,6 +25,13 @@ public class VisualizerPS extends Visualizer {
 		systems.put(id,ps);
 	}
 
+	public void setnpeople(int n) {
+		if (n!=systems.size()) {
+			PApplet.println("Have "+systems.size()+" people, but got message that there are "+n+" .. clearing.");
+			systems.clear();
+		}
+	}
+	
 	public void move(int id, int channel, PVector newpos, float elapsed) {
 		ParticleSystem ps=systems.get(id);
 		if (ps==null) {

@@ -67,6 +67,13 @@ public class VisualizerTron extends Visualizer {
 			}
 	}
 
+	public void setnpeople(int n) {
+		if (n!=systems.size()) {
+			PApplet.println("Have "+systems.size()+" people, but got message that there are "+n+" .. clearing.");
+			systems.clear();
+		}
+	}
+	
 	int findstep(int oldgpos,int gpos) {
 		int dx=(int)(gpos/gridHeight)-(int)(oldgpos/gridHeight);
 		int dy=gpos-oldgpos-dx*gridHeight;
