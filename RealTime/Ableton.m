@@ -558,6 +558,11 @@ classdef Ableton < handle
     end
 
     function status=isplaying(obj,track)
+      if track<1 || track>length(obj.trackstatus)
+        fprintf('isplaying: Bad track %d, len(obj.trackstatus)=%d\n', track, length(obj.trackstatus));
+        status=false;
+        return;
+      end
       if obj.trackstatus(track)~=1
         status=true;
       else
