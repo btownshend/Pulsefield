@@ -9,7 +9,7 @@ public class Tracker extends PApplet {
 	/**
 	 * 
 	 */
-	private static boolean present = true;
+	private static boolean present = false;
 
 	private static final long serialVersionUID = 1L;
 	int tick=0;
@@ -23,6 +23,8 @@ public class Tracker extends PApplet {
 	String vispos[]={"5/1","5/2","5/3","5/4"};
 	int currentvis;
 	NetAddress touchOSC, MPO;
+	boolean gotbeat;
+	long lasttime=0;
 
 	public void setup() {
 		size(640,400, OPENGL);
@@ -40,6 +42,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "pfsetmaxy", "/pf/set/maxy");
 		oscP5.plug(this, "pfstarted", "/pf/started");
 		oscP5.plug(this, "pfstopped", "/pf/stopped");
+		oscP5.plug(this, "beat", "/live/beat");
 		oscP5.plug(this, "vsetapp51", "/video/app/buttons/5/1");
 		oscP5.plug(this, "vsetapp52", "/video/app/buttons/5/2");
 		oscP5.plug(this, "vsetapp53", "/video/app/buttons/5/3");
@@ -55,6 +58,7 @@ public class Tracker extends PApplet {
 		vis[3]=visAbleton;
 		currentvis=2;
 		setapp(currentvis);
+		gotbeat=false;
 	}
 
 	public void ping(int code) {
@@ -63,7 +67,7 @@ public class Tracker extends PApplet {
 		msg.add(code);
 		oscP5.send(msg,MPO);
 	}
-	
+
 	public void vsetapp(OscMessage msg) {
 		println("vsetup("+msg+")");
 	}
@@ -118,6 +122,11 @@ public class Tracker extends PApplet {
 
 		vis[currentvis].update(this);
 		vis[currentvis].draw(this);
+		if (System.currentTimeMillis()-lasttime < 250) {
+			fill(255,0,0);
+			ellipse(10,10,10,10);
+			gotbeat=false;
+		}
 	}
 
 	public void mouseReleased() {
@@ -207,6 +216,12 @@ public class Tracker extends PApplet {
 	synchronized public void pfentry(int sampnum, float elapsed, int id, int channel) {
 		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel);
 		add(id,channel);
+	}
+
+	public void beat(int b) {
+		gotbeat=true;
+		println("Got beat "+b+" after "+(System.currentTimeMillis()-lasttime));
+		lasttime=System.currentTimeMillis();
 	}
 
 }
