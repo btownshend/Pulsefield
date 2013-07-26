@@ -8,18 +8,15 @@ import processing.core.PVector;
 
 // An ArrayList is used to manage the list of Particles
 
-class ParticleSystem extends Position {
+class ParticleSystem {
 	ArrayList<Particle> particles;    // An arraylist for all the particles
 	PImage img;
 
-
-	ParticleSystem(PVector v, int channel, PImage img) {
-		super(v, channel);
+	ParticleSystem(PImage img) {
 		particles = new ArrayList<Particle>();   // Initialize the arraylist
 		this.img=img;
-		this.enabled=true;
 	}
-	
+
 
 	void attractor(PVector c, float force) {
 		// Add a gravitional force that acts on all particles
@@ -36,7 +33,6 @@ class ParticleSystem extends Position {
 	}
 
 	void update() {
-		// Cycle through the ArrayList backwards, because we are deleting while iterating
 		Iterator<Particle> i = particles.iterator();
 		while (i.hasNext()) {
 			Particle p=i.next();
@@ -52,8 +48,8 @@ class ParticleSystem extends Position {
 			p.draw(parent);
 		}
 	}
-	
-	void addParticle() {
+
+	void addParticle(PVector origin, int channel) {
 		Particle p = new Particle(origin, new PVector(0f,0f), channel, img);
 		particles.add(p);
 	}
@@ -62,5 +58,6 @@ class ParticleSystem extends Position {
 	boolean dead() {
 		return particles.isEmpty();
 	}
+
 }
 

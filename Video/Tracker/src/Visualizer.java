@@ -1,20 +1,20 @@
 import processing.core.PApplet;
 import processing.core.PConstants;
-import processing.core.PVector;
 
 public abstract class Visualizer {
 	Visualizer() {
 	}
 
-	abstract public void draw(PApplet parent);
+	public void draw(PApplet parent, Positions p) {
+		if (p.positions.isEmpty()) {
+			parent.fill(50, 255, 255);
+			parent.textAlign(PConstants.CENTER);
+			parent.textSize(32);
+			parent.text("Waiting for users...", parent.width/2, parent.height/2);
+		}
+	}
 
-	public void update(PApplet parent) { }
-
-	abstract public void add(int id, int channel);
-	abstract public void move(int id, int channel, PVector newpos, float elapsed);
-
-	abstract public void exit(int id);
-	abstract public void clear();
+	abstract public void update(PApplet parent, Positions p);
 
 	public void stats() { }
 
@@ -33,5 +33,4 @@ public abstract class Visualizer {
 		}
 	}
 
-	abstract public void setnpeople(int n);
 }

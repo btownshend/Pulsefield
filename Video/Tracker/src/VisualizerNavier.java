@@ -1,8 +1,6 @@
-import java.util.HashMap;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
-import processing.core.PVector;
 
 
 class VisualizerNavier extends Visualizer {
@@ -14,7 +12,6 @@ class VisualizerNavier extends Visualizer {
 	PImage buffer;
 	PImage iao;
 	int rainbow = 0;
-	HashMap<Integer, Position> positions;
 	long statsLast = 0;
 	long statsTick = 0;
 	long statsStep = 0;
@@ -35,7 +32,6 @@ class VisualizerNavier extends Visualizer {
 		parent.colorMode(PApplet.HSB, 255);
 		bordercolor = parent.color(0, 255, 255);
 		parent.strokeWeight(7);
-		positions=new HashMap<Integer,Position>();
 	}
 
 	public void stats() {
@@ -47,30 +43,7 @@ class VisualizerNavier extends Visualizer {
 		statsUpdate=0;
 	}
 
-	public void setnpeople(int n) {
-		if (n!=positions.size()) {
-			PApplet.println("Have "+positions.size()+" people, but got message that there are "+n+" .. clearing.");
-			positions.clear();
-		}
-	}
-	
-	public void add(int id, int channel) {
-		Position ps=new Position(channel);
-		positions.put(id,ps);
-	}
-
-	public void move(int id, int channel, PVector newpos, float elapsed) {
-		Position ps=positions.get(id);
-		if (ps==null) {
-			PApplet.println("Unable to locate user "+id+", creating it.");
-			add(id,channel);
-			ps=positions.get(id);
-		}
-		ps.move(newpos,elapsed);
-		ps.enable(true);
-	}
-
-	public void draw(PApplet parent) {
+	public void draw(PApplet parent, Positions p) {
 		double dt = 1 / parent.frameRate;
 		long t1 = System.nanoTime();
 		fluidSolver.tick(dt, visc, diff);
@@ -88,7 +61,7 @@ class VisualizerNavier extends Visualizer {
 		parent.stroke(bordercolor);
 		drawBorders(parent, false);
 		parent.ellipseMode(PConstants.CENTER);
-		for (Position ps: positions.values()) {  
+		for (Position ps: p.positions.values()) {  
 			int c=getcolor(parent,ps.channel);
 			parent.fill(c,100);
 			parent.stroke(c,100);
@@ -101,34 +74,25 @@ class VisualizerNavier extends Visualizer {
 		return col;
 	}
 
-	
-	public void update(PApplet parent) {
+
+	public void update(PApplet parent, Positions p) {
 		long t1=System.nanoTime();
 		int n = NavierStokesSolver.N;
-		for (Position p: positions.values()) {
+		for (Position pos: p.positions.values()) {
 			//PApplet.println("update("+p.channel+"), enabled="+p.enabled);
-			if (p.enabled) {
-				int cellX = (int)( p.origin.x*n / parent.width);
-				cellX=Math.max(0,Math.min(cellX,n));
-				int cellY = (int) (p.origin.y*n/parent.height);
-				cellY=Math.max(0,Math.min(cellY,n));
-				double dx=p.avgspeed.x/parent.frameRate/parent.width*500;
-				double dy=p.avgspeed.y/parent.frameRate/parent.height*500;
-				//PApplet.println("Cell="+cellX+","+cellY+", dx="+dx+", dy="+dy);
+			int cellX = (int)( pos.origin.x*n / parent.width);
+			cellX=Math.max(0,Math.min(cellX,n));
+			int cellY = (int) (pos.origin.y*n/parent.height);
+			cellY=Math.max(0,Math.min(cellY,n));
+			double dx=pos.avgspeed.x/parent.frameRate/parent.width*500;
+			double dy=pos.avgspeed.y/parent.frameRate/parent.height*500;
+			//PApplet.println("Cell="+cellX+","+cellY+", dx="+dx+", dy="+dy);
 
-				dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
-				dy = (Math.abs(dy) > limitVelocity) ? Math.signum(dy) * limitVelocity : dy;
-				fluidSolver.applyForce(cellX, cellY, dx, dy);
-			}
+			dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
+			dy = (Math.abs(dy) > limitVelocity) ? Math.signum(dy) * limitVelocity : dy;
+			fluidSolver.applyForce(cellX, cellY, dx, dy);
 		}
 		statsUpdate += System.nanoTime()-t1;
-	}
-
-	public void exit(int id) {
-		positions.remove(id);
-	}
-	public void clear() {
-		positions.clear();
 	}
 
 	private void fluidCanvasStep(PApplet parent) {

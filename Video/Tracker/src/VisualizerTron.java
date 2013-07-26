@@ -1,4 +1,6 @@
 import java.util.HashMap;
+import java.util.Iterator;
+
 import processing.opengl.*;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -9,31 +11,32 @@ class GridData {
 	int id;
 	int channel;
 	int prevgrid;
-	boolean current;
 	int exploding;
-	GridData() { id=-1; prevgrid=0; }
+	GridData() { id=-1; prevgrid=-1; exploding=-1; }
+	void set(int id, int prevgrid, int channel) {
+		assert(this.id==-1 || this.exploding>0);
+		this.id=id;
+		this.channel=channel;
+		this.prevgrid=prevgrid;
+		this.exploding=-1;
+	}
 }
 
 public class VisualizerTron extends Visualizer {
 	final int gridWidth = 20;
 	final int gridHeight = 20;
-	HashMap<Integer, Position> systems;
 	int width, height;
 	GridData grid[];
+	HashMap<Integer,Integer> currentgrid;
 
 	VisualizerTron(PApplet parent) {
 		super();
-		systems = new HashMap<Integer,Position>();
 		grid=new GridData[gridWidth*gridHeight];
 		for (int i=0;i<grid.length;i++)
 			grid[i]=new GridData();
 		width=parent.width;
 		height=parent.height;
-	}
-
-	public void add(int id, int channel) {
-		Position ps=new Position(new PVector(0f,0f),channel);
-		systems.put(id,ps);
+		currentgrid=new HashMap<Integer,Integer>();
 	}
 
 	int postogrid(PVector p) {
@@ -60,6 +63,7 @@ public class VisualizerTron extends Visualizer {
 		int gy=grid-gx*gridHeight;
 		return "("+gx+","+gy+")";
 	}
+
 	void clear(int id) {
 		for (int i=0;i<grid.length;i++)
 			if (grid[i].id==id || id==-1  && grid[i].exploding==-1) {
@@ -67,13 +71,7 @@ public class VisualizerTron extends Visualizer {
 			}
 	}
 
-	public void setnpeople(int n) {
-		if (n!=systems.size()) {
-			PApplet.println("Have "+systems.size()+" people, but got message that there are "+n+" .. clearing.");
-			systems.clear();
-		}
-	}
-	
+
 	int findstep(int oldgpos,int gpos) {
 		int dx=(int)(gpos/gridHeight)-(int)(oldgpos/gridHeight);
 		int dy=gpos-oldgpos-dx*gridHeight;
@@ -84,54 +82,58 @@ public class VisualizerTron extends Visualizer {
 			return oldgpos+((dy>0)?1:-1);
 	}
 
-	public void move(int id, int channel, PVector newpos, float elapsed) {
-		Position ps=systems.get(id);
-		if (ps==null) {
-			PApplet.println("Unable to locate user "+id+", creating it.");
-			add(id,channel);
-			ps=systems.get(id);
-		}
-		if (ps.enabled) {
-			int oldgpos=postogrid(ps.origin);
-			int priorgpos=grid[oldgpos].prevgrid;
+	public void update(PApplet parent, Positions positions) {
+		for (int id: positions.positions.keySet()) {
+			Position ps=positions.get(id);
+			PVector newpos=ps.origin;
 			int gpos=postogrid(newpos);
-			if (gpos==priorgpos) {
-				// Retracing prior step, undo last step
-				grid[oldgpos].id=-1;
-				grid[gpos].current=true;
-			} else if (gpos==grid[priorgpos].prevgrid) {
-				// Back up 2 steps, probably a diagonal
-				grid[oldgpos].id=-1;
-				grid[priorgpos].id=-1;
-				grid[gpos].current=true;
-			} else
-				while (oldgpos!=gpos) {
-					// Move 1 grid step at a time, always manhattan type move (no diagonals)
-					int stepgpos=findstep(oldgpos,gpos);
-					PApplet.println("findstep("+oldgpos+","+gpos+") -> "+stepgpos);
-					GridData g=grid[stepgpos];
-					if (g.id==-1 || g.exploding>0) {
-						PApplet.println("Set grid "+gdisp(stepgpos)+" to "+id+" prev="+gdisp(oldgpos));
-						grid[stepgpos].id=id;
-						grid[stepgpos].prevgrid=oldgpos;
-						grid[stepgpos].channel=channel;
-						grid[stepgpos].exploding=-1;
-						grid[stepgpos].current=true;
-						grid[oldgpos].current=false;
-					} else {
-						// Collision, clear out this ID
-						PApplet.println("Collision of ID "+id+" with "+g.id+" at pos="+gdisp(stepgpos)+", prev="+gdisp(g.prevgrid));						
-						clear(id);
-						ps.enable(false);
-						break;
+			if (currentgrid.containsKey(id)) {
+				int oldgpos=currentgrid.get(id);
+				assert(grid[oldgpos].id == id);
+				int priorgpos=grid[oldgpos].prevgrid;
+				if (gpos==priorgpos && grid[oldgpos].id==id) {
+					// Retracing prior step, undo last step
+					grid[oldgpos].id=-1;
+					currentgrid.put(id, gpos);
+				} else if (priorgpos!=-1 && gpos==grid[priorgpos].prevgrid) {
+					// Back up 2 steps, probably a diagonal
+					grid[oldgpos].id=-1;
+					grid[priorgpos].id=-1;
+					currentgrid.put(id, gpos);
+				} else
+					while (oldgpos!=gpos) {
+						// Move 1 grid step at a time, always manhattan type move (no diagonals)
+						int stepgpos=findstep(oldgpos,gpos);
+						//PApplet.println("findstep("+oldgpos+","+gpos+") -> "+stepgpos);
+						GridData g=grid[stepgpos];
+						if (g.id==-1 || g.exploding>0) {
+							//PApplet.println("Set grid "+gdisp(stepgpos)+" to "+id+" prev="+gdisp(oldgpos));
+							grid[stepgpos].set(id,oldgpos,ps.channel);
+							currentgrid.put(id, stepgpos);
+						} else {
+							// Collision, clear out this ID
+							PApplet.println("Collision of ID "+id+" with "+g.id+" at pos="+gdisp(stepgpos)+", prev="+gdisp(g.prevgrid));						
+							clear(id);
+							currentgrid.remove(id);
+							break;
+						}
+						oldgpos=stepgpos;
 					}
-					oldgpos=stepgpos;
-				}
+			} else if (grid[gpos].id==-1 || grid[gpos].exploding>0) {
+				// Not on map, just put us there
+				grid[gpos].set(id,-1,ps.channel);
+				currentgrid.put(id, gpos);
+			} else {
+				// On top of someone
+				//PApplet.println("ID "+id+" is on top of "+grid[gpos].id);
+			}
 		}
-		ps.move(newpos,elapsed);
-		if (!ps.enabled) {
-			PApplet.println("Enabling ID "+id);
-			ps.enable(true);
+		for (Iterator<Integer> iter = currentgrid.keySet().iterator();iter.hasNext();) {
+			int id=iter.next().intValue();
+			if (!positions.positions.containsKey(id)) {
+				clear(id);
+				iter.remove();
+			}
 		}
 	}
 
@@ -140,7 +142,7 @@ public class VisualizerTron extends Visualizer {
 		return col;
 	}
 
-	public void draw(PApplet parent) {
+	public void draw(PApplet parent, Positions p) {
 		PGL pgl=PGraphicsOpenGL.pgl;
 		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
 		pgl.blendEquation(PGL.FUNC_ADD);  
@@ -173,7 +175,7 @@ public class VisualizerTron extends Visualizer {
 						}
 					} else {
 						int inset=1;
-						if (g.current) {
+						if (currentgrid.containsKey(gid) && currentgrid.get(gid)==i*gridHeight+j) {
 							parent.fill(parent.color(255,0,0));
 							parent.rect(i*parent.width/gridWidth, j*parent.height/gridHeight, parent.width/gridWidth, parent.height/gridHeight);
 							inset=2;
@@ -183,26 +185,7 @@ public class VisualizerTron extends Visualizer {
 					}
 				}
 			}	
-		if (systems.isEmpty()) {
-			parent.fill(50, 255, 255);
-			parent.textAlign(PConstants.CENTER);
-			parent.textSize(32);
-			parent.text("Waiting for users...", parent.width/2, parent.height/2);
-		}
-	}
-
-	public void exit(int id) {
-		if (systems.containsKey(id)) {
-			systems.get(id).enable(false);
-			clear(id);
-		} 
-		else
-			PApplet.println("Unable to locate id "+id);
-	}
-
-	public void clear() {
-		systems.clear();
-		clear(-1);
+		super.draw(parent, p);
 	}
 }
 

@@ -6,6 +6,10 @@ import processing.core.*;
 
 public class OscPlugTest extends PApplet {
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	/**
 	 * oscP5plug by andreas schlegel
 	 * example shows how to use the plug service with oscP5.
 	 * the concept of the plug service is, that you can

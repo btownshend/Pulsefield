@@ -20,52 +20,36 @@ public class VisualizerPS extends Visualizer {
 		img = parent.loadImage("texture.png");
 	}
 
-	public void add(int id, int channel) {
-		ParticleSystem ps=new ParticleSystem(new PVector(0f,0f),channel, img);
-		systems.put(id,ps);
-	}
+	public void update(PApplet parent, Positions p) {
+		for (int id: p.positions.keySet()) {
+			Position pos=p.positions.get(id);
+			ParticleSystem ps=systems.get(id);
+			if (ps==null) {
+				PApplet.println("Added new particle system for ID "+id);
+				ps=new ParticleSystem(img);
+				systems.put(id,ps);
+			}
 
-	public void setnpeople(int n) {
-		if (n!=systems.size()) {
-			PApplet.println("Have "+systems.size()+" people, but got message that there are "+n+" .. clearing.");
-			systems.clear();
-		}
-	}
-	
-	public void move(int id, int channel, PVector newpos, float elapsed) {
-		ParticleSystem ps=systems.get(id);
-		if (ps==null) {
-			PApplet.println("Unable to locate user "+id+", creating it.");
-			add(id,channel);
-			ps=systems.get(id);
-		}
-		ps.move(newpos,elapsed);
-		if (!ps.enabled) {
-			PApplet.println("Enabling ID "+id);
-			ps.enable(true);
-		}
-	}
+			// Push the other systems with each positions velocity
+			for (ParticleSystem ps2: systems.values()) {
+				// if (ps!=ps2) 
+				//ps.attractor(ps2.origin, attractionForce);
+				ps2.push(pos.origin, PVector.div(pos.avgspeed,parent.frameRate));   // Convert velocity into pixels/frame
+			}
 
-	public void update(PApplet parent) {
+			for (int k=0;k<birthrate;k++)
+				ps.addParticle(pos.origin,pos.channel);
+		}
 		int toRemove=-1;
 
 		for (Map.Entry<Integer,ParticleSystem> me: systems.entrySet()) {
 			ParticleSystem ps=me.getValue();
-			int id = me.getKey();
 			ps.update();
-			if (ps.enabled) {
-				for (int k=0;k<birthrate;k++)
-					ps.addParticle();
-			}
-			else if (ps.dead()) {
+
+			int id = me.getKey();
+			if (ps.dead()) {
 				PApplet.println("ID "+id+" is dead.");
 				toRemove=id;
-			}
-			// Push the other systems with each positions velocity
-			for (Position ps2: systems.values()) {
-				// if (ps!=ps2) 
-				//ps.attractor(ps2.origin, attractionForce);
-				ps.push(ps2.origin, PVector.div(ps2.avgspeed,parent.frameRate));   // Convert velocity into pixels/frame
 			}
 		}
 		if (toRemove!=-1) {
@@ -74,7 +58,7 @@ public class VisualizerPS extends Visualizer {
 		}
 	}
 
-	public void draw(PApplet parent) {
+	public void draw(PApplet parent, Positions p) {
 		PGL pgl=PGraphicsOpenGL.pgl;
 		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
 		pgl.blendEquation(PGL.FUNC_ADD);  
@@ -86,24 +70,8 @@ public class VisualizerPS extends Visualizer {
 			ps.draw(parent);
 		}
 
-		if (systems.isEmpty()) {
-			parent.fill(50, 255, 255);
-			parent.textAlign(PConstants.CENTER);
-			parent.textSize(32);
-			parent.text("Waiting for users...", parent.width/2, parent.height/2);
-		}
+		super.draw(parent, p);
 	}
 
-	public void exit(int id) {
-		if (systems.containsKey(id)) {
-			systems.get(id).enable(false);
-		} 
-		else
-			PApplet.println("Unable to locate particle system "+id);
-	}
-
-	public void clear() {
-		systems.clear();
-	}
 }
 

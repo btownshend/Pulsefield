@@ -14,8 +14,8 @@ public class VisualizerAbleton extends VisualizerPS {
 	}
 
 
-	public void draw(PApplet parent) {
-		super.draw(parent);
+	public void draw(PApplet parent, Positions p) {
+		super.draw(parent,p);
 		for (int cell: gridValues.keySet()) {
 			PApplet.println("grid "+cell+" = "+gridValues.get(cell)+" "+gridColors.get(cell));
 		}
@@ -26,7 +26,7 @@ public class VisualizerAbleton extends VisualizerPS {
 	}
 	
 	public void handleMessage(OscMessage theOscMessage) {
-		PApplet.println("Ableton message: "+theOscMessage.toString());
+		//PApplet.println("Ableton message: "+theOscMessage.toString());
 		boolean handled=false;
 		String pattern=theOscMessage.addrPattern();
 		String components[]=pattern.split("/");
@@ -35,7 +35,7 @@ public class VisualizerAbleton extends VisualizerPS {
 			int cell=Integer.parseInt(components[3]);
 			if (components.length == 4) {
 				String value=theOscMessage.get(0).stringValue();
-				PApplet.println("cell "+cell+" = "+value);
+				//PApplet.println("cell "+cell+" = "+value);
 				if (value.isEmpty()) {
 					gridValues.remove(cell);
 					gridColors.remove(cell);
@@ -47,7 +47,8 @@ public class VisualizerAbleton extends VisualizerPS {
 				gridColors.put(cell,color);
 				handled=true;
 			}
-		}
+		} else if (components[1].equals("grid") && components[2].equals("song"))
+			handled=true;
 		if (!handled)
 			PApplet.println("Unhandled Ableton Message: "+pattern);
 	}

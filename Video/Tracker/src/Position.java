@@ -6,7 +6,6 @@ public class Position {
 	float lastmovetime;   // Last moved time in seconds
 	static float averagingTime =1.0f;   // Averaging time in seconds
 	int channel;
-	boolean enabled;
 
 	public Position(PVector origin, int channel) {
 		this.origin=origin;
@@ -42,11 +41,5 @@ public class Position {
 		lastmovetime=elapsed;
 	}
 	
-	void enable(boolean en) {
-		if (en!=enabled) {
-			enabled=en;
-			lastmovetime=0;
-		}
-	}
 
 }

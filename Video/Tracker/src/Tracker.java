@@ -25,12 +25,31 @@ public class Tracker extends PApplet {
 	NetAddress touchOSC, MPO;
 	boolean gotbeat;
 	long lasttime=0;
+	Positions positions;
 
 	public void setup() {
 		size(640,400, OPENGL);
 		frameRate(60);
 		frame.setBackground(new Color(0,0,0));
+		positions=new Positions();
+		gotbeat=false;
+		
+		// OSC Setup (but do plugs later so everything is setup for them)
 		oscP5 = new OscP5(this, 7002);
+		touchOSC = new NetAddress("192.168.0.148",9998);
+		MPO = new NetAddress("192.168.0.29",7000);
+		
+		// Visualizers
+		vis=new Visualizer[4];
+		vis[0]=new VisualizerPS(this);
+		vis[1]=new VisualizerNavier(this);
+		vis[2]=new VisualizerTron(this);
+		visAbleton=new VisualizerAbleton(this);
+		vis[3]=visAbleton;
+		currentvis=2;
+		setapp(currentvis);
+		
+		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
 		oscP5.plug(this, "pfupdate", "/pf/update");
 		oscP5.plug(this, "pfsetnpeople", "/pf/set/npeople");
@@ -48,22 +67,11 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "vsetapp53", "/video/app/buttons/5/3");
 		oscP5.plug(this, "vsetapp54", "/video/app/buttons/5/4");
 		oscP5.plug(this, "ping", "/ping");
-		touchOSC = new NetAddress("192.168.0.148",9998);
-		MPO = new NetAddress("192.168.0.29",7000);
-		vis=new Visualizer[4];
-		vis[0]=new VisualizerPS(this);
-		vis[1]=new VisualizerNavier(this);
-		vis[2]=new VisualizerTron(this);
-		visAbleton=new VisualizerAbleton(this);
-		vis[3]=visAbleton;
-		currentvis=2;
-		setapp(currentvis);
-		gotbeat=false;
 	}
 
 	public void ping(int code) {
 		OscMessage msg = new OscMessage("/ack");
-		PApplet.println("Got ping "+code);
+		//PApplet.println("Got ping "+code);
 		msg.add(code);
 		oscP5.send(msg,MPO);
 	}
@@ -85,21 +93,24 @@ public class Tracker extends PApplet {
 		setapp(3);
 	}
 
-	public void setapp(int appNum) {
+	synchronized public void setapp(int appNum) {
 		if (appNum <0 || appNum > vis.length) {
 			println("Bad video app number: "+appNum);
 			return;
 		}
 		// Turn off old block
-		OscMessage msg = new OscMessage("/video/app/buttons/"+vispos[currentvis]);
-		msg.add(0);
-		oscP5.send(msg,touchOSC);
+		for (int k=0; k<vispos.length;k++)
+			if (k!=appNum) {
+				OscMessage msg = new OscMessage("/video/app/buttons/"+vispos[k]);
+				msg.add(0);
+				oscP5.send(msg,touchOSC);
+			}
 
 
 		currentvis=appNum;
 		println("Switching to app "+currentvis+": "+visnames[currentvis]);
 		// Turn on block for current app
-		msg = new OscMessage("/video/app/buttons/"+vispos[currentvis]);
+		OscMessage msg = new OscMessage("/video/app/buttons/"+vispos[currentvis]);
 		msg.add(1.0);
 		oscP5.send(msg,touchOSC);
 
@@ -117,11 +128,11 @@ public class Tracker extends PApplet {
 		}
 
 		if (mousePressed)
-			vis[currentvis].move(98, 98, new PVector(mouseX*1f, mouseY*1f), tick/avgFrameRate);
+			positions.move(98, 98, new PVector(mouseX*1f, mouseY*1f), tick/avgFrameRate);
 
 
-		vis[currentvis].update(this);
-		vis[currentvis].draw(this);
+		vis[currentvis].update(this, positions);
+		vis[currentvis].draw(this,positions);
 		if (System.currentTimeMillis()-lasttime < 250) {
 			fill(255,0,0);
 			ellipse(10,10,10,10);
@@ -142,7 +153,7 @@ public class Tracker extends PApplet {
 	}
 
 	/* incoming osc message are forwarded to the oscEvent method. */
-	public void oscEvent(OscMessage theOscMessage) {
+	synchronized public void oscEvent(OscMessage theOscMessage) {
 		if (theOscMessage.addrPattern().startsWith("/video/app/buttons") == true)
 			vsetapp(theOscMessage);
 		else if (theOscMessage.addrPattern().startsWith("/grid")) {
@@ -157,14 +168,13 @@ public class Tracker extends PApplet {
 		return new PVector((int)((x-minx)/(maxx-minx)*width), (int)((y-miny)/(maxy-miny)*height) );
 	}
 
-	public void pfstarted() {
+	synchronized public void pfstarted() {
 		PApplet.println("PF started");
 	}
 
-	public void pfstopped() {
+	synchronized public void pfstopped() {
 		PApplet.println("PF stopped");
-		vis[currentvis].clear();
-
+		positions.clear();
 	}
 
 	void pfframe(int frame) {
@@ -172,7 +182,7 @@ public class Tracker extends PApplet {
 	}
 
 	synchronized void add(int id, int channel) {
-		vis[currentvis].add(id, channel);
+		positions.add(id, channel);
 	}
 
 	synchronized public void pfupdate(int sampnum, float elapsed, int id, float ypos, float xpos, float yvelocity, float xvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
@@ -187,7 +197,7 @@ public class Tracker extends PApplet {
 			PApplet.println(",channel="+channel);
 		} */
 		ypos=-ypos;
-		vis[currentvis].move(id, channel, mapposition(xpos, ypos), elapsed);
+		positions.move(id, channel, mapposition(xpos, ypos), elapsed);
 	}
 
 	public void pfsetminx(float minx) {  
@@ -203,14 +213,14 @@ public class Tracker extends PApplet {
 		this.maxy=maxy;
 	}
 
-	public void pfsetnpeople(int n) {
+	synchronized public void pfsetnpeople(int n) {
 		PApplet.println("/pf/set/npeople: now have "+n+" people");
-		vis[currentvis].setnpeople(n);
+		positions.setnpeople(n);
 	}
 
 	synchronized public void pfexit(int sampnum, float elapsed, int id) {
 		PApplet.println("exit: sampnum="+sampnum+", elapsed="+elapsed+", id="+id);
-		vis[currentvis].exit(id);
+		positions.exit(id);
 	}
 
 	synchronized public void pfentry(int sampnum, float elapsed, int id, int channel) {
