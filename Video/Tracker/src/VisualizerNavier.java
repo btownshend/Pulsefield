@@ -65,7 +65,7 @@ class VisualizerNavier extends Visualizer {
 			int c=ps.getcolor(parent);
 			parent.fill(c,100);
 			parent.stroke(c,100);
-			//parent.ellipse(ps.origin.x, ps.origin.y, 3, 3);
+			parent.ellipse(ps.origin.x, ps.origin.y, 3, 3);
 		}
 	}
 
