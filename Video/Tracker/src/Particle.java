@@ -10,23 +10,18 @@ class Particle {
 	PVector velocity;
 	PVector acceleration;
 	float lifespan, maxlifespan;
-	int channel;
+	int color;
 	PImage img;
 
 
-	Particle(PVector l, PVector v, int channel, PImage img) {
+	Particle(PVector l, PVector v, int color, PImage img) {
 		this.img=img;
-		this.channel=channel;
+		this.color=color;
 		acceleration = new PVector(0f, -0.03f);
 		velocity = new PVector((float)rng.nextGaussian()*0.3f+v.x, (float)rng.nextGaussian()*0.3f + v.y);
 		location = l.get();
 		maxlifespan = 500.0f;
 		lifespan = maxlifespan;
-	}
-
-	int getcolor(PApplet parent) {
-		int col=parent.color((channel*37)%255, (channel*91)%255, (channel*211)%255);
-		return col;
 	}
 
 	void attractor(PVector c, float force) {
@@ -63,8 +58,7 @@ class Particle {
 	void draw(PApplet parent) {
 		//println("display(): location="+location);
 		parent.imageMode(PConstants.CENTER);
-		int col=getcolor(parent);
-		parent.tint(col, (float)(lifespan/maxlifespan*255.0/5));
+		parent.tint(color, (float)(lifespan/maxlifespan*255.0/5));
 		parent.image(img, location.x, location.y);
 
 		//stroke(col, lifespan);

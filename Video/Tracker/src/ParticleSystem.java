@@ -49,8 +49,8 @@ class ParticleSystem {
 		}
 	}
 
-	void addParticle(PVector origin, int channel) {
-		Particle p = new Particle(origin, new PVector(0f,0f), channel, img);
+	void addParticle(PVector origin, int color) {
+		Particle p = new Particle(origin, new PVector(0f,0f), color, img);
 		particles.add(p);
 	}
 

@@ -12,7 +12,7 @@ public class Positions {
 	}
 
 	public void add(int id, int channel) {
-		Position ps=new Position(new PVector(0f,0f),channel);
+		Position ps=new Position(new PVector(0f,0f),channel, id);
 		positions.put(id,ps);
 	}
 

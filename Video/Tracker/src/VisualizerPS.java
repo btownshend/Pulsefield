@@ -38,7 +38,7 @@ public class VisualizerPS extends Visualizer {
 			}
 
 			for (int k=0;k<birthrate;k++)
-				ps.addParticle(pos.origin,pos.channel);
+				ps.addParticle(pos.origin,pos.getcolor(parent));
 		}
 		int toRemove=-1;
 

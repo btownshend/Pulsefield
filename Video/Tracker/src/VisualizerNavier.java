@@ -62,18 +62,12 @@ class VisualizerNavier extends Visualizer {
 		drawBorders(parent, false);
 		parent.ellipseMode(PConstants.CENTER);
 		for (Position ps: p.positions.values()) {  
-			int c=getcolor(parent,ps.channel);
+			int c=ps.getcolor(parent);
 			parent.fill(c,100);
 			parent.stroke(c,100);
 			//parent.ellipse(ps.origin.x, ps.origin.y, 3, 3);
 		}
 	}
-
-	int getcolor(PApplet parent, int channel) {
-		int col=parent.color((channel*37)%255, (channel*91)%255, (channel*211)%255);
-		return col;
-	}
-
 
 	public void update(PApplet parent, Positions p) {
 		long t1=System.nanoTime();
