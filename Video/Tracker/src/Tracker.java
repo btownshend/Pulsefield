@@ -178,7 +178,7 @@ public class Tracker extends PApplet {
 	}
 
 	void pfframe(int frame) {
-		PApplet.println("Got frame "+frame);
+		//PApplet.println("Got frame "+frame);
 	}
 
 	synchronized void add(int id, int channel) {
