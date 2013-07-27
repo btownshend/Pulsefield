@@ -16,6 +16,9 @@ class Particle {
 
 	Particle(PVector l, PVector v, int color, PImage img) {
 		this.img=img;
+		float kscale=0.5f;
+		//this.color=((int)((color&0xff)*kscale)) | ((int)(((color>>8)&0xff)*kscale)<<8) | ((int)(((color>>16)&0xff)*kscale)<<16) | 0xff000000;
+		//PApplet.println("color = "+Integer.toHexString(color)+" -> "+Integer.toHexString(this.color));
 		this.color=color;
 		acceleration = new PVector(0f, -0.03f);
 		velocity = new PVector((float)rng.nextGaussian()*0.3f+v.x, (float)rng.nextGaussian()*0.3f + v.y);
@@ -58,7 +61,9 @@ class Particle {
 	void draw(PApplet parent) {
 		//println("display(): location="+location);
 		parent.imageMode(PConstants.CENTER);
-		parent.tint(color, (float)(lifespan/maxlifespan*255.0/5));
+		//float kscale= 0.05f;//lifespan/maxlifespan/10;
+		float kscale=(float)Math.pow(1.0-lifespan/maxlifespan,0.25)/10;
+		parent.tint(color,(int)(kscale*255.0));
 		parent.image(img, location.x, location.y);
 
 		//stroke(col, lifespan);
