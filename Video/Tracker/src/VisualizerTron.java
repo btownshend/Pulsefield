@@ -137,7 +137,7 @@ public class VisualizerTron extends Visualizer {
 
 	public void draw(PApplet parent, Positions p) {
 		PGL pgl=PGraphicsOpenGL.pgl;
-		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
+		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA);
 		pgl.blendEquation(PGL.FUNC_ADD);  
 		parent.background(0, 0, 0);  
 		parent.colorMode(PConstants.RGB, 255);
