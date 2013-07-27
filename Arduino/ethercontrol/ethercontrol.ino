@@ -28,6 +28,13 @@ void setup() {
     Serial.begin(115200);
     
     if (1) {
+        // If using external memory, adjust heap end up
+	Serial.print("Heap start = 0x");
+	Serial.print((int)__malloc_heap_start,HEX);
+	Serial.print(", heap end = 0x");
+	Serial.println((int)__malloc_heap_end,HEX);
+	__malloc_heap_start = (char *)0x1100;
+
 	// Check max malloc size
 	for (i=1;i<50000;i+=10) {
 	    int *x=(int *)malloc(i);
