@@ -138,9 +138,9 @@ public class Tracker extends PApplet {
 
 
 		vis[currentvis].update(this, positions);
-		translate((width-height)/2f,0);
+//		translate((width-height)/2f,0);
 		
-		vis[currentvis].draw(this,positions,new PVector(height,height));
+		vis[currentvis].draw(this,positions,new PVector(width,height));
 		if (System.currentTimeMillis()-lasttime < 250) {
 			fill(255,0,0);
 			ellipse(10,10,10,10);
