@@ -64,6 +64,12 @@ public class VisualizerPS extends Visualizer {
 		pgl.blendEquation(PGL.FUNC_ADD);  
 		parent.background(0, 0, 0);  
 		parent.colorMode(PConstants.RGB, 255);
+		
+		parent.stroke(127);
+		parent.strokeWeight(1);
+		parent.fill(0);
+		drawBorders(parent,true,wsize);
+
 
 		for (Map.Entry<Integer,ParticleSystem> me: systems.entrySet()) {
 			ParticleSystem ps=me.getValue();
