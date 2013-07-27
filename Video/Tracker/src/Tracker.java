@@ -46,7 +46,7 @@ public class Tracker extends PApplet {
 		vis[2]=new VisualizerTron(this);
 		visAbleton=new VisualizerAbleton(this);
 		vis[3]=visAbleton;
-		currentvis=2;
+		currentvis=0;
 		setapp(currentvis);
 		
 		// Setup OSC handlers
