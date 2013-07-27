@@ -19,8 +19,8 @@ public class Tracker extends PApplet {
 	float minx=-3.2f, maxx=3.2f, miny=-3.2f, maxy=3.2f;
 	Visualizer vis[];
 	VisualizerAbleton visAbleton;
-	String visnames[]={"Smoke","Navier","Tron","Ableton"};
-	String vispos[]={"5/1","5/2","5/3","5/4"};
+	String visnames[]={"Smoke","Navier","Tron","Ableton","DDR"};
+	String vispos[]={"5/1","5/2","5/3","5/4","5/5"};
 	int currentvis;
 	NetAddress touchOSC, MPO;
 	boolean gotbeat;
@@ -40,12 +40,13 @@ public class Tracker extends PApplet {
 		MPO = new NetAddress("192.168.0.29",7000);
 		
 		// Visualizers
-		vis=new Visualizer[4];
+		vis=new Visualizer[5];
 		vis[0]=new VisualizerPS(this);
 		vis[1]=new VisualizerNavier(this);
 		vis[2]=new VisualizerTron(this);
 		visAbleton=new VisualizerAbleton(this);
 		vis[3]=visAbleton;
+		vis[4]=new VisualizerDDR(this);
 		currentvis=0;
 		setapp(currentvis);
 		
@@ -66,6 +67,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "vsetapp52", "/video/app/buttons/5/2");
 		oscP5.plug(this, "vsetapp53", "/video/app/buttons/5/3");
 		oscP5.plug(this, "vsetapp54", "/video/app/buttons/5/4");
+		oscP5.plug(this, "vsetapp55", "/video/app/buttons/5/5");		
 		oscP5.plug(this, "ping", "/ping");
 	}
 
@@ -91,6 +93,9 @@ public class Tracker extends PApplet {
 
 	public void vsetapp54(float onoff) {
 		setapp(3);
+	}
+	public void vsetapp55(float onoff) {
+		setapp(4);
 	}
 
 	synchronized public void setapp(int appNum) {
