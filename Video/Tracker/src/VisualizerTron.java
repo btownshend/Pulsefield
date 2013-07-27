@@ -62,10 +62,17 @@ public class VisualizerTron extends Visualizer {
 		return "("+gx+","+gy+")";
 	}
 
+	void explode(int id) {
+		for (int i=0;i<grid.length;i++)
+			if ((grid[i].id==id || id==-1)  && grid[i].exploding==-1) {
+				grid[i].exploding=1;
+			}
+	}
+
 	void clear(int id) {
 		for (int i=0;i<grid.length;i++)
-			if (grid[i].id==id || id==-1  && grid[i].exploding==-1) {
-				grid[i].exploding=1;
+			if (grid[i].id==id || id==-1) {
+				grid[i].id=-1;
 			}
 	}
 
@@ -111,7 +118,7 @@ public class VisualizerTron extends Visualizer {
 						} else {
 							// Collision, clear out this ID
 							PApplet.println("Collision of ID "+id+" with "+g.id+" at pos="+gdisp(stepgpos)+", prev="+gdisp(g.prevgrid));						
-							clear(id);
+							explode(id);
 							currentgrid.put(id,-1);
 							break;
 						}
@@ -130,6 +137,7 @@ public class VisualizerTron extends Visualizer {
 		for (Iterator<Integer> iter = currentgrid.keySet().iterator();iter.hasNext();) {
 			int id=iter.next().intValue();
 			if (!positions.positions.containsKey(id)) {
+				PApplet.println("Removing ID "+id);
 				clear(id);
 				iter.remove();
 			}
@@ -152,8 +160,15 @@ public class VisualizerTron extends Visualizer {
 				GridData g=grid[i*gridHeight+j];
 				int gid=g.id;
 				if (gid!=-1) {
+					if (p.get(gid)== null) {
+						// Person deleted
+						PApplet.println("draw: missing person in grid: id= "+gid);
+						grid[i*gridHeight+j].id=-1;
+						continue;
+					}
 					if (g.exploding>0) {
 						final int explosionFrames = 400;
+						assert(p.get(gid)!=null);
 						parent.fill(p.get(gid).getcolor(parent));
 						int w = parent.width*(explosionFrames-g.exploding)/explosionFrames/gridWidth;
 						int h =parent.height*(explosionFrames-g.exploding)/explosionFrames/gridHeight;
