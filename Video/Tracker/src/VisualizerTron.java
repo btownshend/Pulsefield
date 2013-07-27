@@ -85,7 +85,7 @@ public class VisualizerTron extends Visualizer {
 			Position ps=positions.get(id);
 			PVector newpos=ps.origin;
 			int gpos=postogrid(newpos);
-			if (currentgrid.containsKey(id)) {
+			if (currentgrid.containsKey(id)  && currentgrid.get(id)!=-1) {
 				int oldgpos=currentgrid.get(id);
 				assert(grid[oldgpos].id == id);
 				int priorgpos=grid[oldgpos].prevgrid;
@@ -112,7 +112,7 @@ public class VisualizerTron extends Visualizer {
 							// Collision, clear out this ID
 							PApplet.println("Collision of ID "+id+" with "+g.id+" at pos="+gdisp(stepgpos)+", prev="+gdisp(g.prevgrid));						
 							clear(id);
-							currentgrid.remove(id);
+							currentgrid.put(id,-1);
 							break;
 						}
 						oldgpos=stepgpos;
@@ -124,6 +124,7 @@ public class VisualizerTron extends Visualizer {
 			} else {
 				// On top of someone
 				//PApplet.println("ID "+id+" is on top of "+grid[gpos].id);
+				currentgrid.put(id,-1);
 			}
 		}
 		for (Iterator<Integer> iter = currentgrid.keySet().iterator();iter.hasNext();) {
