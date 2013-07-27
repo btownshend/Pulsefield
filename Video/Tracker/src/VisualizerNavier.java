@@ -110,8 +110,8 @@ class VisualizerNavier extends Visualizer {
 				warpX *= parent.width;
 				warpY *= parent.height;
 
-				//int collor = getSubPixel(parent,warpX, warpY);
-				int collor=parent.pixels[((int)warpX)+((int)warpY)*parent.width];
+				int collor = getSubPixel(parent,warpX, warpY);
+				//int collor=parent.pixels[((int)warpX)+((int)warpY)*parent.width];
 				buffer.set(x, y, collor);
 			}
 		}
