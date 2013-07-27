@@ -169,7 +169,7 @@ public class VisualizerTron extends Visualizer {
 					} else {
 						int inset=1;
 						if (currentgrid.containsKey(gid) && currentgrid.get(gid)==i*gridHeight+j) {
-							parent.fill(parent.color(255,0,0));
+							parent.fill(parent.color(255,255,255));
 							parent.rect(i*parent.width/gridWidth, j*parent.height/gridHeight, parent.width/gridWidth, parent.height/gridHeight);
 							inset=2;
 						}
