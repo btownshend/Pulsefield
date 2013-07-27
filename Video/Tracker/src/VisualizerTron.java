@@ -23,7 +23,6 @@ class GridData {
 public class VisualizerTron extends Visualizer {
 	final int gridWidth = 20;
 	final int gridHeight = 20;
-	int width, height;
 	GridData grid[];
 	HashMap<Integer,Integer> currentgrid;
 
@@ -32,8 +31,6 @@ public class VisualizerTron extends Visualizer {
 		grid=new GridData[gridWidth*gridHeight];
 		for (int i=0;i<grid.length;i++)
 			grid[i]=new GridData();
-		width=parent.width;
-		height=parent.height;
 		currentgrid=new HashMap<Integer,Integer>();
 	}
 
@@ -43,13 +40,13 @@ public class VisualizerTron extends Visualizer {
 	}
 
 	int postogridx(float x) {
-		int gx=(int)(x*gridWidth/width);
+		int gx=(int)((x+1)/2*gridWidth);
 		if (gx<0) gx=0;
 		if (gx>=gridWidth) gx=gridWidth-1;
 		return gx;
 	}
 	int postogridy(float y) {
-		int gy=(int)(y*gridHeight/height);
+		int gy=(int)((y+1)/2*gridHeight);
 		if (gy<0) gy=0;
 		if (gy>=gridHeight) gy=gridHeight-1;
 		return gy;
@@ -144,7 +141,7 @@ public class VisualizerTron extends Visualizer {
 		}
 	}
 
-	public void draw(PApplet parent, Positions p) {
+	public void draw(PApplet parent, Positions p, PVector wsize) {
 		PGL pgl=PGraphicsOpenGL.pgl;
 		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA);
 		pgl.blendEquation(PGL.FUNC_ADD);  
@@ -153,7 +150,7 @@ public class VisualizerTron extends Visualizer {
 		parent.stroke(127);
 		parent.strokeWeight(1);
 		parent.fill(0,32,0);
-		drawBorders(parent,true);
+		drawBorders(parent,true,wsize);
 		parent.stroke(0);
 		for (int i=0;i<gridWidth;i++)
 			for (int j=0;j<gridHeight;j++) {
@@ -170,12 +167,13 @@ public class VisualizerTron extends Visualizer {
 						final int explosionFrames = 400;
 						assert(p.get(gid)!=null);
 						parent.fill(p.get(gid).getcolor(parent));
-						int w = parent.width*(explosionFrames-g.exploding)/explosionFrames/gridWidth;
-						int h =parent.height*(explosionFrames-g.exploding)/explosionFrames/gridHeight;
-						parent.rect(i*parent.width/gridWidth, j*parent.height/gridHeight+g.exploding,w,h);
-						parent.rect(i*parent.width/gridWidth, j*parent.height/gridHeight-g.exploding, w,h);
-						parent.rect(i*parent.width/gridWidth+g.exploding, j*parent.height/gridHeight, w,h);
-						parent.rect(i*parent.width/gridWidth-g.exploding, j*parent.height/gridHeight, w,h);
+						float w = wsize.x*(explosionFrames-g.exploding)/explosionFrames/gridWidth;
+						float h = wsize.y*(explosionFrames-g.exploding)/explosionFrames/gridHeight;
+						float disp=wsize.x*g.exploding/explosionFrames;
+						parent.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight+disp,w,h);
+						parent.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight-disp, w,h);
+						parent.rect(wsize.x*i/gridWidth+disp, wsize.y*j/gridHeight, w,h);
+						parent.rect(wsize.x*i/gridWidth-disp, wsize.y*j/gridHeight, w,h);
 						if (g.exploding<explosionFrames)
 							grid[i*gridHeight+j].exploding+=10;
 						else {
@@ -183,18 +181,18 @@ public class VisualizerTron extends Visualizer {
 							grid[i*gridHeight+j].id=-1;
 						}
 					} else {
-						int inset=1;
+						float inset=1;
 						if (currentgrid.containsKey(gid) && currentgrid.get(gid)==i*gridHeight+j) {
 							parent.fill(parent.color(255,255,255));
-							parent.rect(i*parent.width/gridWidth, j*parent.height/gridHeight, parent.width/gridWidth, parent.height/gridHeight);
+							parent.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight, wsize.x/gridWidth, wsize.y/gridHeight);
 							inset=2;
 						}
 						parent.fill(p.get(g.id).getcolor(parent));
-						parent.rect(i*parent.width/gridWidth+inset, j*parent.height/gridHeight+inset, parent.width/gridWidth-2*inset, parent.height/gridHeight-2*inset);
+						parent.rect(wsize.x*i/gridWidth+inset, wsize.y*j/gridHeight+inset, wsize.x/gridWidth-2*inset, wsize.y/gridHeight-2*inset);
 					}
 				}
 			}	
-		super.draw(parent, p);
+		super.draw(parent, p, wsize);
 	}
 }
 

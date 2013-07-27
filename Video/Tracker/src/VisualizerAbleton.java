@@ -3,20 +3,21 @@ import java.util.HashMap;
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PVector;
 
 public class VisualizerAbleton extends VisualizerPS {
 	HashMap<Integer,String> gridValues;
 	HashMap<Integer,String> gridColors;
-	int gposx[], gposy[];
-	int gridwidth, gridheight;
+	float gposx[], gposy[];
+	float gridwidth, gridheight;
 	String song;
 	
 	VisualizerAbleton(PApplet parent) {
 		super(parent);
 		gridValues = new HashMap<Integer,String>();
 		gridColors = new HashMap<Integer,String>();
-		gposx=new int[60];
-		gposy=new int[60];
+		gposx=new float[60];
+		gposy=new float[60];
 		for (int i=0;i<60;i++) {
 			int row,col;
 			if (i<5) {
@@ -36,28 +37,29 @@ public class VisualizerAbleton extends VisualizerPS {
 				col=i-55+2;
 			}
 			//PApplet.println("Grid "+i+" at row="+row+", col="+col);
-			gposx[i]=parent.width*(1+2*col)/18;
-			gposy[i]=parent.height*(1+2*row)/16;
+			gposx[i]=(1+2*col)/18f;
+			gposy[i]=(1+2*row)/16f;
 		}
-		gridwidth=parent.width/9;
-		gridheight=parent.height/8;
+		gridwidth=1f/9;
+		gridheight=1f/8;
 	}
 
-	public void draw(PApplet parent, Positions p) {
-		super.draw(parent,p);
+	public void draw(PApplet parent, Positions p, PVector wsize) {
+		super.draw(parent,p, wsize);
 		parent.fill(0);
 		parent.stroke(255);
-		super.drawBorders(parent, true);
+		parent.strokeWeight(1);
+		super.drawBorders(parent, true, wsize);
 
 		parent.textSize(16);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
 		for (int cell: gridValues.keySet()) {
-			//PApplet.println("grid "+cell+" = "+gridValues.get(cell)+" "+gridColors.get(cell)+" pos=("+gposx[cell]+","+gposy[cell]+")");
+			PApplet.println("grid "+cell+" = "+gridValues.get(cell)+" "+gridColors.get(cell)+" pos=("+gposx[cell]+","+gposy[cell]+")");
 			parent.fill(0);
 			parent.stroke(127,0,0);
-			parent.rect(gposx[cell]-gridwidth/2,gposy[cell]-gridheight/2,gridwidth,gridheight);
+			parent.rect(wsize.x*(gposx[cell]-gridwidth/2),wsize.y*(gposy[cell]-gridheight/2),wsize.x*gridwidth,wsize.y*gridheight);
 			parent.fill(255);
-			parent.text(gridValues.get(cell),gposx[cell]-gridwidth/2,gposy[cell]-gridheight/2,gridwidth,gridheight);
+			parent.text(gridValues.get(cell),wsize.x*(gposx[cell]-gridwidth/2),wsize.y*(gposy[cell]-gridheight/2),wsize.x*gridwidth,wsize.y*gridheight);
 		}
 		parent.fill(127);
 		parent.textAlign(PConstants.LEFT, PConstants.TOP);

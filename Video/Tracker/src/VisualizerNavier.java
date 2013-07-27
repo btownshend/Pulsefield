@@ -1,6 +1,7 @@
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
+import processing.core.PVector;
 
 
 class VisualizerNavier extends Visualizer {
@@ -43,7 +44,7 @@ class VisualizerNavier extends Visualizer {
 		statsUpdate=0;
 	}
 
-	public void draw(PApplet parent, Positions p) {
+	public void draw(PApplet parent, Positions p, PVector wsize) {
 		double dt = 1 / parent.frameRate;
 		long t1 = System.nanoTime();
 		fluidSolver.tick(dt, visc, diff);
@@ -59,7 +60,8 @@ class VisualizerNavier extends Visualizer {
 		rainbow = (rainbow > 255) ? 0 : rainbow;
 
 		parent.stroke(bordercolor);
-		drawBorders(parent, false);
+		parent.fill(0,0,0,0);
+		drawBorders(parent, true, wsize);
 		parent.ellipseMode(PConstants.CENTER);
 		for (Position ps: p.positions.values()) {  
 			int c=ps.getcolor(parent);
@@ -74,12 +76,12 @@ class VisualizerNavier extends Visualizer {
 		int n = NavierStokesSolver.N;
 		for (Position pos: p.positions.values()) {
 			//PApplet.println("update("+p.channel+"), enabled="+p.enabled);
-			int cellX = (int)( pos.origin.x*n / parent.width);
+			int cellX = (int)( (pos.origin.x+1)*n / 2);
 			cellX=Math.max(0,Math.min(cellX,n));
-			int cellY = (int) (pos.origin.y*n/parent.height);
+			int cellY = (int) ((pos.origin.y+1)*n/ 2);
 			cellY=Math.max(0,Math.min(cellY,n));
-			double dx=pos.avgspeed.x/parent.frameRate/parent.width*500;
-			double dy=pos.avgspeed.y/parent.frameRate/parent.height*500;
+			double dx=pos.avgspeed.x/parent.frameRate*100;
+			double dy=pos.avgspeed.y/parent.frameRate*100;
 			//PApplet.println("Cell="+cellX+","+cellY+", dx="+dx+", dy="+dy);
 
 			dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
@@ -108,8 +110,8 @@ class VisualizerNavier extends Visualizer {
 				warpX *= parent.width;
 				warpY *= parent.height;
 
-				int collor = getSubPixel(parent,warpX, warpY);
-
+				//int collor = getSubPixel(parent,warpX, warpY);
+				int collor=parent.pixels[((int)warpX)+((int)warpY)*parent.width];
 				buffer.set(x, y, collor);
 			}
 		}

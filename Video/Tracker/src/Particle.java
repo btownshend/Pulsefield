@@ -20,8 +20,8 @@ class Particle {
 		//this.color=((int)((color&0xff)*kscale)) | ((int)(((color>>8)&0xff)*kscale)<<8) | ((int)(((color>>16)&0xff)*kscale)<<16) | 0xff000000;
 		//PApplet.println("color = "+Integer.toHexString(color)+" -> "+Integer.toHexString(this.color));
 		this.color=color;
-		acceleration = new PVector(0f, -0.03f);
-		velocity = new PVector((float)rng.nextGaussian()*0.3f+v.x, (float)rng.nextGaussian()*0.3f + v.y);
+		acceleration = new PVector(0f, -0.03f/300);
+		velocity = new PVector((float)rng.nextGaussian()*0.3f/300+v.x, (float)rng.nextGaussian()*0.3f/300 + v.y);
 		location = l.get();
 		maxlifespan = 500.0f;
 		lifespan = maxlifespan;
@@ -32,7 +32,7 @@ class Particle {
 		PVector dir=PVector.sub(c, location);
 		float dist2=dir.magSq();
 		dir.normalize();
-		dir.mult(100*force/PApplet.max(100.0f, dist2));
+		dir.mult(100f/300*force/PApplet.max(100.0f/300, dist2));
 		dir.rotate(90);  
 		velocity.add(dir);
 	}
@@ -42,7 +42,7 @@ class Particle {
 		// Scales with distance
 		float dist=PVector.sub(c, location).mag();
 		PVector dir=pushvel.get(); 
-		float releffect = PApplet.max(0.0f,1.0f-dist/100f);
+		float releffect = PApplet.max(0.0f,1.0f-dist*3f);
 		dir.mult(releffect);
 		location.add(dir);
 	}
@@ -58,13 +58,13 @@ class Particle {
 	}
 
 	// Method to display
-	void draw(PApplet parent) {
+	void draw(PApplet parent, PVector wsize) {
 		//println("display(): location="+location);
 		parent.imageMode(PConstants.CENTER);
 		//float kscale= 0.05f;//lifespan/maxlifespan/10;
 		float kscale=(float)Math.pow(1.0-lifespan/maxlifespan,0.25)/10;
 		parent.tint(color,(int)(kscale*255.0));
-		parent.image(img, location.x, location.y);
+		parent.image(img, (location.x+1)*wsize.x/2, (location.y+1)*wsize.y/2);
 
 		//stroke(col, lifespan);
 		//fill(col, lifespan);

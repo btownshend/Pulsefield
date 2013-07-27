@@ -43,9 +43,9 @@ class ParticleSystem {
 		}
 	}
 
-	void draw(PApplet parent) {
+	void draw(PApplet parent, PVector wsize) {
 		for (Particle p: particles) {
-			p.draw(parent);
+			p.draw(parent, wsize);
 		}
 	}
 

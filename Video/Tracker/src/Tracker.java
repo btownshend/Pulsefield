@@ -104,6 +104,7 @@ public class Tracker extends PApplet {
 				OscMessage msg = new OscMessage("/video/app/buttons/"+vispos[k]);
 				msg.add(0);
 				oscP5.send(msg,touchOSC);
+				PApplet.println("Sent "+msg.toString());
 			}
 
 
@@ -128,11 +129,13 @@ public class Tracker extends PApplet {
 		}
 
 		if (mousePressed)
-			positions.move(98, 98, new PVector(mouseX*1f, mouseY*1f), tick/avgFrameRate);
+			positions.move(98, 98, new PVector(mouseX*2f/width-1, mouseY*2f/height-1), tick/avgFrameRate);
 
 
 		vis[currentvis].update(this, positions);
-		vis[currentvis].draw(this,positions);
+		translate((width-height)/2f,0);
+		
+		vis[currentvis].draw(this,positions,new PVector(height,height));
 		if (System.currentTimeMillis()-lasttime < 250) {
 			fill(255,0,0);
 			ellipse(10,10,10,10);
@@ -165,7 +168,7 @@ public class Tracker extends PApplet {
 	}
 
 	PVector mapposition(float x, float y) {
-		return new PVector((int)((x-minx)/(maxx-minx)*width), (int)((y-miny)/(maxy-miny)*height) );
+		return new PVector((x-minx)/(maxx-minx)*2f-1, (y-miny)/(maxy-miny)*2f-1 );
 	}
 
 	synchronized public void pfstarted() {
