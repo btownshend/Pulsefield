@@ -5,14 +5,14 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PVector;
 
-public class VisualizerAbleton extends VisualizerPS {
+public class VisualizerGrid extends VisualizerPS {
 	HashMap<Integer,String> gridValues;
 	HashMap<Integer,String> gridColors;
 	float gposx[], gposy[];
 	float gridwidth, gridheight;
 	String song;
 	
-	VisualizerAbleton(PApplet parent) {
+	VisualizerGrid(PApplet parent) {
 		super(parent);
 		gridValues = new HashMap<Integer,String>();
 		gridColors = new HashMap<Integer,String>();

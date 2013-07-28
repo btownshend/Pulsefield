@@ -18,7 +18,7 @@ public class Tracker extends PApplet {
 	NetAddress myRemoteLocation;
 	float minx=-3.2f, maxx=3.2f, miny=-3.2f, maxy=3.2f;
 	Visualizer vis[];
-	VisualizerAbleton visAbleton;
+	VisualizerGrid visAbleton;
 	String visnames[]={"Smoke","Navier","Tron","Ableton","DDR"};
 	String vispos[]={"5/1","5/2","5/3","5/4","5/5"};
 	int currentvis=-1;
@@ -45,7 +45,7 @@ public class Tracker extends PApplet {
 		vis[0]=new VisualizerPS(this);
 		vis[1]=new VisualizerNavier(this);
 		vis[2]=new VisualizerTron(this);
-		visAbleton=new VisualizerAbleton(this);
+		visAbleton=new VisualizerGrid(this);
 		vis[3]=visAbleton;
 		vis[4]=new VisualizerDDR(this);
 		currentvis=4;
