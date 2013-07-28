@@ -124,7 +124,8 @@ public class Tracker extends PApplet {
 				PApplet.println("Sent "+msg.toString());
 			}
 
-
+		if (currentvis!=-1)
+			vis[currentvis].stop(this);
 		currentvis=appNum;
 		println("Switching to app "+currentvis+": "+visnames[currentvis]);
 		// Turn on block for current app
@@ -135,6 +136,8 @@ public class Tracker extends PApplet {
 		msg = new OscMessage("/video/app/name");
 		msg.add(visnames[currentvis]);
 		sendOSC("TO",msg);
+
+		vis[currentvis].start(this);
 	}
 
 	synchronized public void draw() {

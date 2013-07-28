@@ -16,7 +16,9 @@ public abstract class Visualizer {
 	}
 
 	abstract public void update(PApplet parent, Positions p);
-
+	public void start(Tracker parent) {;}
+	public void stop(Tracker parent) {;}
+	
 	public void stats() { }
 
 	public void drawBorders(PApplet parent, boolean octagon, PVector wsize) {
