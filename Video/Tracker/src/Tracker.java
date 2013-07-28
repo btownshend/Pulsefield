@@ -48,7 +48,7 @@ public class Tracker extends PApplet {
 		visAbleton=new VisualizerAbleton(this);
 		vis[3]=visAbleton;
 		vis[4]=new VisualizerDDR(this);
-		currentvis=0;
+		currentvis=4;
 		setapp(currentvis);
 
 		// Setup OSC handlers
@@ -153,8 +153,8 @@ public class Tracker extends PApplet {
 
 
 		vis[currentvis].update(this, positions);
-//		translate((width-height)/2f,0);
-		
+		//		translate((width-height)/2f,0);
+
 		vis[currentvis].draw(this,positions,new PVector(width,height));
 		if (System.currentTimeMillis()-lasttime < 250) {
 			fill(255,0,0);

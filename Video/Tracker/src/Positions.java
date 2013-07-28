@@ -25,7 +25,7 @@ public class Positions {
 			ps=positions.get(id);
 		}
 		ps.move(newpos,elapsed);
-
+		//PApplet.println("ID "+id+" moved to "+newpos);
 	}
 	public void exit(int id) {
 		Position ps=positions.get(id);
