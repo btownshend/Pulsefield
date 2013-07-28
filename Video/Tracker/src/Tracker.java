@@ -21,8 +21,8 @@ public class Tracker extends PApplet {
 	VisualizerAbleton visAbleton;
 	String visnames[]={"Smoke","Navier","Tron","Ableton","DDR"};
 	String vispos[]={"5/1","5/2","5/3","5/4","5/5"};
-	int currentvis;
-	NetAddress touchOSC, MPO;
+	int currentvis=-1;
+	NetAddress TO, MPO, AL;
 	boolean gotbeat;
 	long lasttime=0;
 	Positions positions;
@@ -33,12 +33,13 @@ public class Tracker extends PApplet {
 		frame.setBackground(new Color(0,0,0));
 		positions=new Positions();
 		gotbeat=false;
-		
+
 		// OSC Setup (but do plugs later so everything is setup for them)
 		oscP5 = new OscP5(this, 7002);
-		touchOSC = new NetAddress("192.168.0.148",9998);
+		TO = new NetAddress("192.168.0.148",9998);
 		MPO = new NetAddress("192.168.0.29",7000);
-		
+		AL = new NetAddress("192.168.0.162",9000);
+
 		// Visualizers
 		vis=new Visualizer[5];
 		vis[0]=new VisualizerPS(this);
@@ -49,7 +50,7 @@ public class Tracker extends PApplet {
 		vis[4]=new VisualizerDDR(this);
 		currentvis=0;
 		setapp(currentvis);
-		
+
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
 		oscP5.plug(this, "pfupdate", "/pf/update");
@@ -98,6 +99,17 @@ public class Tracker extends PApplet {
 		setapp(4);
 	}
 
+	public void sendOSC(String dest, OscMessage msg) {
+		if (dest.equals("AL"))
+			oscP5.send(msg,AL);
+		else if (dest.equals("TO"))
+			oscP5.send(msg,TO);
+		else if (dest.equals("MPO"))
+			oscP5.send(msg,MPO);
+		else
+			System.err.println("sendOSC: Bad destination: "+dest);
+	}
+
 	synchronized public void setapp(int appNum) {
 		if (appNum <0 || appNum > vis.length) {
 			println("Bad video app number: "+appNum);
@@ -108,7 +120,7 @@ public class Tracker extends PApplet {
 			if (k!=appNum) {
 				OscMessage msg = new OscMessage("/video/app/buttons/"+vispos[k]);
 				msg.add(0);
-				oscP5.send(msg,touchOSC);
+				sendOSC("TO",msg);
 				PApplet.println("Sent "+msg.toString());
 			}
 
@@ -118,11 +130,11 @@ public class Tracker extends PApplet {
 		// Turn on block for current app
 		OscMessage msg = new OscMessage("/video/app/buttons/"+vispos[currentvis]);
 		msg.add(1.0);
-		oscP5.send(msg,touchOSC);
+		sendOSC("TO",msg);
 
 		msg = new OscMessage("/video/app/name");
 		msg.add(visnames[currentvis]);
-		oscP5.send(msg,touchOSC);
+		sendOSC("TO",msg);
 	}
 
 	synchronized public void draw() {
