@@ -64,7 +64,8 @@ public class VisualizerGrid extends VisualizerPS {
 		parent.fill(127);
 		parent.textAlign(PConstants.LEFT, PConstants.TOP);
 		parent.textSize(24);
-		parent.text(song,5,5);
+		if (song!=null)
+			parent.text(song,5,5);
 	}
 
 	public void setnpeople(int n) {
