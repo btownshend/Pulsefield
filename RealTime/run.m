@@ -19,8 +19,8 @@ if ~exist('p','var')
   plotlayout(p.layout);
 end
 
-% Set camera exposures
-setupcameras(p,'exptime',4);
+% Set camera exposures to defaults
+setupcameras(p);
 
 if ~isfield(p.camera(1),'pixcalib')
   disp('Pixel calibration');
