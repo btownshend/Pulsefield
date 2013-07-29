@@ -8,17 +8,33 @@ import processing.core.PApplet;
 class Clip {
 	float position;
 	float length;
+	int state;
+	
 	Clip() {
 		this.position=0f;
 		this.length=0f;
+		this.state=-1;
 	}
 }
 
 class Track {
 	HashMap<Integer,Clip> clips;
+	float meter[] = new float[2];
+	
 	Track() {
 		clips=new HashMap<Integer,Clip>();
 	}
+	
+	Clip getClip(int clip) {
+		Clip c=clips.get(clip);
+		if (c==null) {
+			c=new Clip();
+			clips.put(clip,c);
+		}
+		
+		return c;
+	}
+
 }
 
 public class Ableton {
@@ -28,6 +44,7 @@ public class Ableton {
 	NetAddress AL;
 	HashMap<Integer,Track> tracks;
 	float tempo;
+	float meter[] = new float[2];
 	
 	Ableton(OscP5 oscP5, NetAddress ALaddr) {
 		this.oscP5=oscP5;
@@ -51,15 +68,24 @@ public class Ableton {
 		else if (components.length==3 && components[2].equals("beat")) {
 			int b=msg.get(0).intValue();
 			beat(b);
-		} else if (components.length==3 && components[2].equals("tempo")) {
+		} else if (components.length==3 && components[2].equals("tempo")) 
 			tempo=msg.get(0).floatValue();	
-		} else if (components.length==4 && components[2].equals("clip") && components[3].equals("position")) {
+		else if (components.length==4 && components[2].equals("master") && components[3].equals("meter"))
+			setMeter(msg.get(0).intValue(),msg.get(1).floatValue());
+		else if (components.length==4 && components[2].equals("track") && components[3].equals("meter"))
+			setMeter(msg.get(0).intValue(),msg.get(1).intValue(), msg.get(2).floatValue());
+		else if (components.length==4 && components[2].equals("clip") && components[3].equals("position")) 
 			setClipPosition(msg.get(0).intValue(),msg.get(1).intValue(),msg.get(2).floatValue(),msg.get(3).floatValue(),msg.get(4).floatValue(),msg.get(5).floatValue());
-		} else 
+		else if (components.length==4 && components[2].equals("clip") && components[3].equals("info")) 
+			setClipInfo(msg.get(0).intValue(),msg.get(1).intValue(),msg.get(2).intValue());
+		else if (components.length==4 && components[2].equals("master") && components[3].equals("volume"))
+			// Track-meter
+			;
+		else 
 			PApplet.println("Unknown Ableton Message: "+msg.toString());
 	}
 
-	public void beat(int b) {
+	public void beat(float b) {
 		PApplet.println("Got beat "+b+" after "+(System.currentTimeMillis()-lasttime));
 		lasttime=System.currentTimeMillis();
 	}
@@ -69,18 +95,41 @@ public class Ableton {
 		return tempo;
 	}
 	
-	public void setClipPosition(int track, int clip, float position, float length, float loop_start, float loop_end) {
-		//PApplet.println("clipposition("+track+","+clip+") = "+position+"/"+length);
+	void setClipInfo(int track, int clip, int state) {
+		Track t=getTrack(track);
+		Clip c = t.getClip(clip);
+		PApplet.println("Track "+track+" clip "+clip+" state changed from "+c.state+" to "+state);
+		c.state = state;
+	}
+	
+	void setMeter(int lr, float value ) {
+		if (lr==0 || lr==1)
+			meter[lr]=value;
+		else
+			PApplet.println("Bad meter L/R"+lr);
+	}
+
+	Track getTrack(int track) {
 		Track t=tracks.get(track);
 		if (t==null) {
 			t=new Track();
 			tracks.put(track,t);
 		}
-		Clip c=t.clips.get(clip);
-		if (c==null) {
-			c=new Clip();
-			t.clips.put(clip,c);
-		}
+
+		return t;
+	}
+
+	void setMeter(int track, int lr, float value ) {
+		if (lr==0 || lr==1)
+			getTrack(track).meter[lr]=value;
+		else
+			PApplet.println("Bad meter L/R"+lr);
+	}
+
+	public void setClipPosition(int track, int clip, float position, float length, float loop_start, float loop_end) {
+		//PApplet.println("clipposition("+track+","+clip+") = "+position+"/"+length);
+		Track t=getTrack(track);
+		Clip c=t.getClip(clip);
 		c.position=position;
 		c.length=length;
 	}
