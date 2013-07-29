@@ -1,3 +1,4 @@
+import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PVector;
@@ -18,7 +19,7 @@ public abstract class Visualizer {
 	abstract public void update(PApplet parent, Positions p);
 	public void start() {;}
 	public void stop() {;}
-	
+
 	public void stats() { }
 
 	public void drawBorders(PApplet parent, boolean octagon, PVector wsize) {
@@ -34,6 +35,10 @@ public abstract class Visualizer {
 			parent.line(wsize.x-1, 0, wsize.x-1, wsize.y-1);
 			parent.line(0, wsize.y-1, wsize.x-1, wsize.y-1);
 		}
+	}
+
+	public void handleMessage(OscMessage theOscMessage) {
+		PApplet.println("Unhanled OSC Message: "+theOscMessage.toString());
 	}
 
 }

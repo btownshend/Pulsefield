@@ -19,6 +19,8 @@ public class Tracker extends PApplet {
 	float minx=-3.2f, maxx=3.2f, miny=-3.2f, maxy=3.2f;
 	Visualizer vis[];
 	VisualizerGrid visAbleton;
+	VisualizerNavier visNavier;
+	VisualizerDDR visDDR;
 	String visnames[]={"Smoke","Navier","Tron","Ableton","DDR"};
 	String vispos[]={"5/1","5/2","5/3","5/4","5/5"};
 	int currentvis=-1;
@@ -43,13 +45,11 @@ public class Tracker extends PApplet {
 		// Visualizers
 		vis=new Visualizer[5];
 		vis[0]=new VisualizerPS(this);
-		vis[1]=new VisualizerNavier(this);
+		visNavier=new VisualizerNavier(this); vis[1]=visNavier;
 		vis[2]=new VisualizerTron(this);
-		visAbleton=new VisualizerGrid(this);
-		vis[3]=visAbleton;
-		vis[4]=new VisualizerDDR(this);
-		currentvis=4;
-		setapp(currentvis);
+		visAbleton=new VisualizerGrid(this);vis[3]=visAbleton;
+		visDDR=new VisualizerDDR(this);vis[4]=visDDR;
+		setapp(1);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
@@ -177,6 +177,10 @@ public class Tracker extends PApplet {
 			visAbleton.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/live")) {
 			ableton.handleMessage(theOscMessage);
+		} else if (theOscMessage.addrPattern().startsWith("/navier")) {
+			visNavier.handleMessage(theOscMessage);
+		} else if (theOscMessage.addrPattern().startsWith("/ddr")) {
+			visDDR.handleMessage(theOscMessage);
 		} else if (theOscMessage.isPlugged() == false) {
 			PApplet.print("### Received an unhandled message: ");
 			theOscMessage.print();

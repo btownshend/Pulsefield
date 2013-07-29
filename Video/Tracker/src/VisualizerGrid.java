@@ -98,7 +98,7 @@ public class VisualizerGrid extends VisualizerPS {
 			handled=true;
 		}
 		if (!handled)
-			PApplet.println("Unknown Ableton Message: "+theOscMessage.toString());
+			super.handleMessage(theOscMessage);
 	}
 }
 

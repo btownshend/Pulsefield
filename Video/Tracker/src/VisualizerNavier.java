@@ -35,6 +35,23 @@ class VisualizerNavier extends Visualizer {
 		parent.strokeWeight(7);
 	}
 
+	public void handleMessage(OscMessage msg) {
+		PApplet.println("Navier message: "+msg.toString());
+		String pattern=msg.addrPattern();
+		String components[]=pattern.split("/");
+		if (!components[1].equals("navier")) 
+			PApplet.println("Navier: Expected /navier messages, got "+msg.toString());
+		else if (components.length==3 && components[2].equals("viscosity")) {
+			visc=msg.get(0).floatValue();
+		} else if (components.length==3 && components[2].equals("diffusion")) {
+			diff=msg.get(0).floatValue();
+		} else if (components.length==3 && components[2].equals("scale")) {
+			scale=msg.get(0).floatValue();
+		} else 
+			PApplet.println("Unknown Navier Message: "+msg.toString());
+		PApplet.println("visc="+visc+", diff="+diff+", scale="+scale);
+	}
+
 	public void stats() {
 		long elapsed=System.nanoTime()-statsLast;
 		PApplet.println("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
