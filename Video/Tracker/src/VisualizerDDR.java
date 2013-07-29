@@ -34,7 +34,6 @@ enum Direction {
 
 // Dance revolution visualizer
 public class VisualizerDDR extends Visualizer {
-	final float ARROWDIST=30f;
 	final float MINMOVEDIST=.01f;
 	Simfile sf;
 	PImage banner;
@@ -95,7 +94,9 @@ public class VisualizerDDR extends Visualizer {
 	}
 	
 	public void draw(PApplet parent, Positions p, PVector wsize) {
-		final float sidesize=150;
+		final float leftwidth=150;
+		final float rightwidth=250;
+		final float rightmargin=50;
 		PGL pgl=PGraphicsOpenGL.pgl;
 		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
 		pgl.blendEquation(PGL.FUNC_ADD);  
@@ -106,22 +107,28 @@ public class VisualizerDDR extends Visualizer {
 		super.draw(parent, p, wsize);
 
 
-		drawScores(parent,new PVector(sidesize,wsize.y));
-		parent.translate(sidesize,0);
-		drawPF(parent,p,new PVector(wsize.x-2*sidesize,wsize.y));
-		parent.translate(wsize.x-2*sidesize,0);
+		drawScores(parent,new PVector(leftwidth,wsize.y));
+		parent.translate(leftwidth,0);
+		drawPF(parent,p,new PVector(wsize.x-leftwidth-rightwidth,wsize.y));
+		parent.translate(wsize.x-leftwidth-rightwidth,0);
 		Clip clip=Ableton.getInstance().getClip(91, 1);
 		if (clip!=null)
-			drawTicker(parent,new PVector(sidesize,wsize.y),clip.position/Ableton.getInstance().getTempo()*60f);
+			drawTicker(parent,new PVector(rightwidth-rightmargin,wsize.y),clip.position/Ableton.getInstance().getTempo()*60f);
 	}
 
 	public void drawPF(PApplet parent, Positions allpos, PVector wsize) {
-		parent.stroke(127);
+		final float DOTSIZE=50f;
+		final float ARROWSIZE=DOTSIZE;
+		final float ARROWDIST=(ARROWSIZE+DOTSIZE)/2;
+
+	
+		parent.stroke(255);
 		parent.strokeWeight(1);
 		parent.fill(0);
 		drawBorders(parent,true,wsize);
 		parent.imageMode(PConstants.CENTER);
-
+		parent.tint(255);
+		
 		// Add drawing code here
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
@@ -134,11 +141,11 @@ public class VisualizerDDR extends Visualizer {
 			parent.pushMatrix();
 			parent.translate((d.neutral.x+1)*wsize.x/2,(d.neutral.y+1)*wsize.y/2);
 			parent.fill(p.getcolor(parent));
-			parent.ellipse(0,0,20,20);
+			parent.ellipse(0,0,DOTSIZE,DOTSIZE);
 			parent.rotate((float)(quad*Math.PI/2+Math.PI));
 			parent.translate(-ARROWDIST, 0);
 			if (dist >= MINMOVEDIST)
-				parent.image(arrow, 0, 0, 30, 30);
+				parent.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
 			parent.popMatrix();
 		}
 	}
@@ -146,7 +153,8 @@ public class VisualizerDDR extends Visualizer {
 	public void drawScores(PApplet parent, PVector wsize) {
 		parent.textAlign(PConstants.LEFT,PConstants.CENTER);
 		parent.textSize(16);
-		parent.stroke(0,255,0);
+		parent.stroke(255);
+		parent.fill(255);
 		parent.tint(255);
 		String names[]={"Camille","Brent","Gideon","Natalie","Gabe"};
 		int score[]={47,23450,-3,3200,19000};
@@ -164,12 +172,13 @@ public class VisualizerDDR extends Visualizer {
 		final float DURATION=2.0f;  // Duration of display top to bottom
 		final float HISTORY=0.5f;    // Amount of past showing
 		ArrayList<NoteData> notes=sf.getNotes(0, now-HISTORY, now-HISTORY+DURATION);
-		parent.fill(255,0,0);
 		//parent.ellipse(wsize.x/2,wsize.y/2,100,100);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
 		parent.textSize(16);
-		parent.stroke(0,255,0);
 		parent.tint(255);
+		parent.stroke(255);
+		parent.fill(255);
+
 		float arrowsize=wsize.x/4f/1.2f;
 		for (NoteData n: notes) {
 			final float angles[]={0f,(float)(Math.PI/2),(float)(3*Math.PI/2),(float)Math.PI};
@@ -188,6 +197,7 @@ public class VisualizerDDR extends Visualizer {
 				}
 			}
 		}
+		parent.strokeWeight(5);
 		parent.line(0,HISTORY*wsize.y/DURATION,0,wsize.x,HISTORY*wsize.y/DURATION,0);
 		parent.text(String.format("%.2f", now), 5, wsize.y-10);
 	}
