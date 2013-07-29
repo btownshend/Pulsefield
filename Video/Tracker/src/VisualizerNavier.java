@@ -22,7 +22,7 @@ class VisualizerNavier extends Visualizer {
 	VisualizerNavier(PApplet parent) {
 		super();
 		fluidSolver = new NavierStokesSolver();
-		buffer = new PImage(parent.width, parent.height);
+		buffer = new PImage(parent.width/2, parent.height/2);
 
 		visc = 0.001;
 		diff = 3.0e-4;
@@ -133,10 +133,10 @@ class VisualizerNavier extends Visualizer {
 		double heightInverse = 1.0 / parent.height;
 
 		parent.loadPixels();
-		for (int y = 0; y < parent.height; y++) {
-			for (int x = 0; x < parent.width; x++) {
-				double u = x * widthInverse;
-				double v = y * heightInverse;
+		for (int y = 0; y < parent.height; y+=2) {
+			for (int x = 0; x < parent.width; x+=2) {
+				double u = (x+0.5) * widthInverse;
+				double v = (y+0.5) * heightInverse;
 
 				double warpedPosition[] = fluidSolver.getInverseWarpPosition(u, v, 
 						scale);
@@ -149,10 +149,10 @@ class VisualizerNavier extends Visualizer {
 
 				int collor = getSubPixel(parent,warpX, warpY);
 				//int collor=parent.pixels[((int)warpX)+((int)warpY)*parent.width];
-				buffer.set(x, y, collor);
+				buffer.set(x/2, y/2, collor);
 			}
 		}
-		parent.background(buffer);
+		parent.image(buffer,0,0,parent.width,parent.height);
 	}
 
 	public int getSubPixel(PApplet parent, double warpX, double warpY) {
