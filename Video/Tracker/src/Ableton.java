@@ -45,6 +45,7 @@ public class Ableton {
 	HashMap<Integer,Track> tracks;
 	float tempo;
 	float meter[] = new float[2];
+	int playstate = -1;
 	
 	Ableton(OscP5 oscP5, NetAddress ALaddr) {
 		this.oscP5=oscP5;
@@ -70,7 +71,10 @@ public class Ableton {
 			beat(b);
 		} else if (components.length==3 && components[2].equals("tempo")) 
 			tempo=msg.get(0).floatValue();	
-		else if (components.length==4 && components[2].equals("master") && components[3].equals("meter"))
+		else if (components.length==3 && components[2].equals("play")) {
+			playstate=msg.get(0).intValue();	
+			PApplet.println("Play state changed to "+playstate);
+		} else if (components.length==4 && components[2].equals("master") && components[3].equals("meter"))
 			setMeter(msg.get(0).intValue(),msg.get(1).floatValue());
 		else if (components.length==4 && components[2].equals("track") && components[3].equals("meter"))
 			setMeter(msg.get(0).intValue(),msg.get(1).intValue(), msg.get(2).floatValue());
@@ -86,7 +90,7 @@ public class Ableton {
 	}
 
 	public void beat(float b) {
-		PApplet.println("Got beat "+b+" after "+(System.currentTimeMillis()-lasttime));
+		//PApplet.println("Got beat "+b+" after "+(System.currentTimeMillis()-lasttime));
 		lasttime=System.currentTimeMillis();
 	}
 
