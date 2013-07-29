@@ -3,13 +3,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import oscP5.OscMessage;
-import processing.opengl.*;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PVector;
 import processing.opengl.PGL;
+import processing.opengl.PGraphicsOpenGL;
 
 class Dancer {
 	final float DAMPING=.02f;
@@ -84,21 +83,15 @@ public class VisualizerDDR extends Visualizer {
 		// Called each time a beat passes by
 	}
 
-	public void start(Tracker parent) {
+	public void start() {
 		startTime=System.currentTimeMillis();
 		PApplet.println("Starting DDR at "+startTime);
-		OscMessage msg=new OscMessage("/live/play/clip");
-		msg.add(90);
-		msg.add(1);
-		parent.sendOSC("AL",msg);
+		Ableton.getInstance().playClip(91,1);
 	}
 	
-	public void stop(Tracker parent) {
+	public void stop() {
 		PApplet.println("Stopping DDR at "+System.currentTimeMillis());
-		OscMessage msg=new OscMessage("/live/stop/clip");
-		msg.add(90);
-		msg.add(1);
-		parent.sendOSC("AL",msg);
+		Ableton.getInstance().stopClip(91,1);
 	}
 	
 	public void draw(PApplet parent, Positions p, PVector wsize) {
@@ -117,7 +110,9 @@ public class VisualizerDDR extends Visualizer {
 		parent.translate(sidesize,0);
 		drawPF(parent,p,new PVector(wsize.x-2*sidesize,wsize.y));
 		parent.translate(wsize.x-2*sidesize,0);
-		drawTicker(parent,new PVector(sidesize,wsize.y),(System.currentTimeMillis()-startTime)/1000f);
+		Clip clip=Ableton.getInstance().getClip(91, 1);
+		if (clip!=null)
+			drawTicker(parent,new PVector(sidesize,wsize.y),clip.position/Ableton.getInstance().getTempo()*60f);
 	}
 
 	public void drawPF(PApplet parent, Positions allpos, PVector wsize) {

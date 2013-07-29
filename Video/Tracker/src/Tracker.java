@@ -23,23 +23,23 @@ public class Tracker extends PApplet {
 	String vispos[]={"5/1","5/2","5/3","5/4","5/5"};
 	int currentvis=-1;
 	NetAddress TO, MPO, AL;
-	boolean gotbeat;
-	long lasttime=0;
 	Positions positions;
-
+	Ableton ableton;
+	
 	public void setup() {
 		size(640,400, OPENGL);
 		frameRate(60);
 		frame.setBackground(new Color(0,0,0));
 		positions=new Positions();
-		gotbeat=false;
+
 
 		// OSC Setup (but do plugs later so everything is setup for them)
 		oscP5 = new OscP5(this, 7002);
 		TO = new NetAddress("192.168.0.148",9998);
 		MPO = new NetAddress("192.168.0.29",7000);
 		AL = new NetAddress("192.168.0.162",9000);
-
+		ableton = new Ableton(oscP5, AL);
+		
 		// Visualizers
 		vis=new Visualizer[5];
 		vis[0]=new VisualizerPS(this);
@@ -63,7 +63,6 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "pfsetmaxy", "/pf/set/maxy");
 		oscP5.plug(this, "pfstarted", "/pf/started");
 		oscP5.plug(this, "pfstopped", "/pf/stopped");
-		oscP5.plug(this, "beat", "/live/beat");
 		oscP5.plug(this, "vsetapp51", "/video/app/buttons/5/1");
 		oscP5.plug(this, "vsetapp52", "/video/app/buttons/5/2");
 		oscP5.plug(this, "vsetapp53", "/video/app/buttons/5/3");
@@ -125,7 +124,7 @@ public class Tracker extends PApplet {
 			}
 
 		if (currentvis!=-1)
-			vis[currentvis].stop(this);
+			vis[currentvis].stop();
 		currentvis=appNum;
 		println("Switching to app "+currentvis+": "+visnames[currentvis]);
 		// Turn on block for current app
@@ -137,7 +136,7 @@ public class Tracker extends PApplet {
 		msg.add(visnames[currentvis]);
 		sendOSC("TO",msg);
 
-		vis[currentvis].start(this);
+		vis[currentvis].start();
 	}
 
 	synchronized public void draw() {
@@ -156,11 +155,6 @@ public class Tracker extends PApplet {
 		//		translate((width-height)/2f,0);
 
 		vis[currentvis].draw(this,positions,new PVector(width,height));
-		if (System.currentTimeMillis()-lasttime < 250) {
-			fill(255,0,0);
-			ellipse(10,10,10,10);
-			gotbeat=false;
-		}
 	}
 
 	public void mouseReleased() {
@@ -181,6 +175,8 @@ public class Tracker extends PApplet {
 			vsetapp(theOscMessage);
 		else if (theOscMessage.addrPattern().startsWith("/grid")) {
 			visAbleton.handleMessage(theOscMessage);
+		} else if (theOscMessage.addrPattern().startsWith("/live")) {
+			ableton.handleMessage(theOscMessage);
 		} else if (theOscMessage.isPlugged() == false) {
 			PApplet.print("### Received an unhandled message: ");
 			theOscMessage.print();
@@ -249,12 +245,6 @@ public class Tracker extends PApplet {
 	synchronized public void pfentry(int sampnum, float elapsed, int id, int channel) {
 		add(id,channel);
 		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel+", color="+positions.get(id).getcolor(this));
-	}
-
-	public void beat(int b) {
-		gotbeat=true;
-		println("Got beat "+b+" after "+(System.currentTimeMillis()-lasttime));
-		lasttime=System.currentTimeMillis();
 	}
 
 }
