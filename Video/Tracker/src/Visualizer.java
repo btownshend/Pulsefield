@@ -12,6 +12,7 @@ public abstract class Visualizer {
 			parent.fill(50, 255, 255);
 			parent.textAlign(PConstants.CENTER,PConstants.CENTER);
 			parent.textSize(32);
+			parent.stroke(255);
 			parent.text("Waiting for users...", wsize.x/2,wsize.y/2);
 		}
 	}

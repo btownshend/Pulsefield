@@ -9,7 +9,7 @@ public class Tracker extends PApplet {
 	/**
 	 * 
 	 */
-	private static boolean present = false;
+	private static boolean present = true;
 
 	private static final long serialVersionUID = 1L;
 	int tick=0;
@@ -29,8 +29,8 @@ public class Tracker extends PApplet {
 	Ableton ableton;
 	
 	public void setup() {
-		size(640,400, OPENGL);
-		frameRate(60);
+		size(1280,800, OPENGL);
+		frameRate(30);
 		frame.setBackground(new Color(0,0,0));
 		positions=new Positions();
 
