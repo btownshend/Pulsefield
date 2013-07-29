@@ -409,7 +409,7 @@ classdef Ableton < handle
         elseif strcmp(m.path,'/live/master/device/selected')
         elseif strcmp(m.path,'/live/beat')
           obj.pll.setref(m.data{1});
-          oscmsgout({'LD','VD'},'/live/beat',m.data);
+          oscmsgout({'LD'},'/live/beat',m.data);
         elseif strcmp(m.path,'/live/name/trackblock')
         elseif strcmp(m.path,'/remix/error')
         else
