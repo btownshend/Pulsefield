@@ -27,6 +27,7 @@ public class Tracker extends PApplet {
 	NetAddress TO, MPO, AL;
 	Positions positions;
 	Ableton ableton;
+	TouchOSC touchOSC;
 	
 	public void setup() {
 		size(1280,800, OPENGL);
@@ -41,6 +42,7 @@ public class Tracker extends PApplet {
 		MPO = new NetAddress("192.168.0.29",7000);
 		AL = new NetAddress("192.168.0.162",9000);
 		ableton = new Ableton(oscP5, AL);
+		touchOSC = new TouchOSC(oscP5, TO);
 		
 		// Visualizers
 		vis=new Visualizer[5];
@@ -177,9 +179,9 @@ public class Tracker extends PApplet {
 			visAbleton.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/live")) {
 			ableton.handleMessage(theOscMessage);
-		} else if (theOscMessage.addrPattern().startsWith("/navier")) {
+		} else if (theOscMessage.addrPattern().startsWith("/video/navier")) {
 			visNavier.handleMessage(theOscMessage);
-		} else if (theOscMessage.addrPattern().startsWith("/ddr")) {
+		} else if (theOscMessage.addrPattern().startsWith("/video/ddr")) {
 			visDDR.handleMessage(theOscMessage);
 		} else if (theOscMessage.isPlugged() == false) {
 			PApplet.print("### Received an unhandled message: ");
