@@ -11,7 +11,7 @@ import processing.opengl.PGL;
 import processing.opengl.PGraphicsOpenGL;
 
 class Dancer {
-	final float DAMPING=.02f;
+	final float DAMPING=.05f;
 	PVector neutral;
 	PVector current;
 	Dancer(PVector pos) {
@@ -34,7 +34,7 @@ enum Direction {
 
 // Dance revolution visualizer
 public class VisualizerDDR extends Visualizer {
-	final float ARROWDIST=20f;
+	final float ARROWDIST=30f;
 	final float MINMOVEDIST=.01f;
 	Simfile sf;
 	PImage banner;
@@ -95,7 +95,7 @@ public class VisualizerDDR extends Visualizer {
 	}
 	
 	public void draw(PApplet parent, Positions p, PVector wsize) {
-		final float sidesize=(wsize.x-wsize.y)/2;
+		final float sidesize=150;
 		PGL pgl=PGraphicsOpenGL.pgl;
 		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
 		pgl.blendEquation(PGL.FUNC_ADD);  
@@ -134,16 +134,30 @@ public class VisualizerDDR extends Visualizer {
 			parent.pushMatrix();
 			parent.translate((d.neutral.x+1)*wsize.x/2,(d.neutral.y+1)*wsize.y/2);
 			parent.fill(p.getcolor(parent));
-			parent.ellipse(0,0,10,10);
+			parent.ellipse(0,0,20,20);
 			parent.rotate((float)(quad*Math.PI/2+Math.PI));
 			parent.translate(-ARROWDIST, 0);
 			if (dist >= MINMOVEDIST)
-				parent.image(arrow, 0, 0, 20, 20);
+				parent.image(arrow, 0, 0, 30, 30);
 			parent.popMatrix();
 		}
 	}
 
 	public void drawScores(PApplet parent, PVector wsize) {
+		parent.textAlign(PConstants.LEFT,PConstants.CENTER);
+		parent.textSize(16);
+		parent.stroke(0,255,0);
+		parent.tint(255);
+		String names[]={"Camille","Brent","Gideon","Natalie","Gabe"};
+		int score[]={47,23450,-3,3200,19000};
+		float lineHeight=wsize.y/12;
+		for (int i=0;i<names.length;i++) {
+			parent.text(names[i],10f,lineHeight*(i+3));
+			parent.text(""+score[i],wsize.x/2,lineHeight*(i+3));
+		}
+		parent.textSize(24);
+		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
+		parent.text("SCORES",wsize.x/2,lineHeight);
 	}
 
 	public void drawTicker(PApplet parent, PVector wsize, float now) {
@@ -156,7 +170,7 @@ public class VisualizerDDR extends Visualizer {
 		parent.textSize(16);
 		parent.stroke(0,255,0);
 		parent.tint(255);
-		float arrowsize=wsize.x/4f/1.5f;
+		float arrowsize=wsize.x/4f/1.2f;
 		for (NoteData n: notes) {
 			final float angles[]={0f,(float)(Math.PI/2),(float)(3*Math.PI/2),(float)Math.PI};
 			float ypos=(n.timestamp-(now-HISTORY))/DURATION*wsize.y;
