@@ -25,34 +25,52 @@ class VisualizerNavier extends Visualizer {
 		buffer = new PImage(parent.width, parent.height);
 
 		visc = 0.001;
-		diff = 3.0;
+		diff = 3.0e-4;
 		scale = 0.3;
 
 		limitVelocity = 200;
 		// iao = loadImage("IAO.jpg");
 		//background(iao);
-		parent.colorMode(PApplet.HSB, 255);
-		bordercolor = parent.color(0, 255, 255);
-		parent.strokeWeight(7);
+
+		setTO();
+		stats();
 	}
 
 	public void handleMessage(OscMessage msg) {
 		PApplet.println("Navier message: "+msg.toString());
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
-		if (!components[1].equals("navier")) 
-			PApplet.println("Navier: Expected /navier messages, got "+msg.toString());
-		else if (components.length==3 && components[2].equals("viscosity")) {
+		
+		if (components.length<3 || !components[2].equals("navier")) 
+			PApplet.println("Navier: Expected /video/navier messages, got "+msg.toString());
+		else if (components.length==4 && components[3].equals("viscosity")) {
 			visc=msg.get(0).floatValue();
-		} else if (components.length==3 && components[2].equals("diffusion")) {
-			diff=msg.get(0).floatValue();
-		} else if (components.length==3 && components[2].equals("scale")) {
+		} else if (components.length==4 && components[3].equals("diffusion")) {
+			diff=Math.pow(10f,msg.get(0).floatValue());
+		} else if (components.length==4 && components[3].equals("scale")) {
 			scale=msg.get(0).floatValue();
 		} else 
 			PApplet.println("Unknown Navier Message: "+msg.toString());
 		PApplet.println("visc="+visc+", diff="+diff+", scale="+scale);
+		setTO();
 	}
 
+	private void setTOValue(String name, double value, String fmt) {
+		TouchOSC to=TouchOSC.getInstance();
+		OscMessage set = new OscMessage("/video/navier/"+name);
+		set.add(value);
+		to.sendMessage(set);
+		set=new OscMessage("/video/navier/"+name+"/value");
+		set.add(String.format(fmt, value));
+		to.sendMessage(set);
+	}
+	
+	public void setTO() {
+		setTOValue("scale",scale,"%.2f");
+		setTOValue("diffusion",Math.log10(diff),"%.2f");
+		setTOValue("viscosity",visc,"%.4f");
+	}
+	
 	public void stats() {
 		long elapsed=System.nanoTime()-statsLast;
 		PApplet.println("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
@@ -72,6 +90,7 @@ class VisualizerNavier extends Visualizer {
 		statsTick += t2-t1;
 		statsStep += t3-t2;
 
+		parent.strokeWeight(7);
 		parent.colorMode(PConstants.HSB, 255);
 		bordercolor = parent.color(rainbow, 255, 255);
 		rainbow++;
@@ -148,21 +167,33 @@ class VisualizerNavier extends Visualizer {
 		y = PApplet.constrain(y, 0, parent.height - 2);
 		x = PApplet.constrain(x, 0, parent.width - 2);
 
-		int indexTopLeft = x + y * parent.width;
-		int indexTopRight = x + 1 + y * parent.width;
-		int indexBottomLeft = x + (y + 1) * parent.width;
-		int indexBottomRight = x + 1 + (y + 1) * parent.width;
+//		int indexTopLeft = x + y * parent.width;
+//		int indexTopRight = x + 1 + y * parent.width;
+//		int indexBottomLeft = x + (y + 1) * parent.width;
+//		int indexBottomRight = x + 1 + (y + 1) * parent.width;
 
-		try {
-			return lerpColor(parent, lerpColor(parent, parent.pixels[indexTopLeft], parent.pixels[indexTopRight], 
-					(float) u), lerpColor(parent, parent.pixels[indexBottomLeft], 
-							parent.pixels[indexBottomRight], (float) u), (float) v);
-		} 
-		catch (Exception e) {
-			System.out.println("error caught trying to get color for pixel position "
-					+ x + ", " + y);
-			return bordercolor;
-		}
+		int cTL = parent.pixels[x + y * parent.width];
+		int cTR = parent.pixels[x + 1 + y * parent.width];
+		int cBL = parent.pixels[x + (y + 1) * parent.width];
+		int cBR = parent.pixels[x + 1 + (y + 1) * parent.width];
+		int color=0xff000000;
+		for (int bit=0;bit<24;bit+=8)
+			color|=((int)(((cTL>>bit)&0xff)*(1-u)*(1-v)+((cTR>>bit)&0xff)*u*(1-v)+((cBL>>bit)&0xff)*(1-u)*v+((cBR>>bit)&0xff)*u*v+0.5))<<bit;
+		return color;
+//		try {
+//			int lc= lerpColor(parent, lerpColor(parent, parent.pixels[indexTopLeft], parent.pixels[indexTopRight], 
+//					(float) u), lerpColor(parent, parent.pixels[indexBottomLeft], 
+//							parent.pixels[indexBottomRight], (float) u), (float) v);
+//			if (lc!=color) {
+//				PApplet.println(String.format("old way=0x%x,  new way=0x%x\n", lc, color));
+//			}
+//		} 
+//		catch (Exception e) {
+//			System.out.println("error caught trying to get color for pixel position "
+//					+ x + ", " + y);
+//			return bordercolor;
+//		}
+
 	}
 
 	public int lerpColor(PApplet parent, int c1, int c2, float l) {
