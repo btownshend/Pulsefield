@@ -41,7 +41,7 @@ class PolyState {
 		if (mybeat==0)
 			mybeat=1;
 
-		if (!playing && ((int)(beat*4))%mybeat==0 && (int)(beat*4) != (int)(startBeat*4)) {
+		if (!playing && (((int)(beat*4)-(int)(startBeat*4))>=mybeat || pos.groupsize>1 ) && (int)(beat*4) != (int)(startBeat*4)) {
 			if (isDrummer) {
 				int pitch=(int)((pos.origin.heading()+Math.PI)/(2*Math.PI)*46+35);
 				Max.play(pos.id, pitch, 127, (int)(noteDuration*480), 10);

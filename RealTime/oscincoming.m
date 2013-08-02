@@ -288,7 +288,6 @@ function info=oscincoming(p,info)
     elseif ~handled
       fprintf('Unknown OSC message: %s\n', rcvdmsg.path);
     end
-    fprintf('EOL: %s,handled=%d\n',rcvdmsg.path,handled);
   end
 
   % Check for incoming messages to server from LedServer
