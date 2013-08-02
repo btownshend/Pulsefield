@@ -68,12 +68,6 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "pfsetmaxx", "/pf/set/maxx");
 		oscP5.plug(this, "pfsetmaxy", "/pf/set/maxy");
 		oscP5.plug(this, "pfstarted", "/pf/started");
-		oscP5.plug(this, "pfstopped", "/pf/stopped");
-		oscP5.plug(this, "vsetapp51", "/video/app/buttons/5/1");
-		oscP5.plug(this, "vsetapp52", "/video/app/buttons/5/2");
-		oscP5.plug(this, "vsetapp53", "/video/app/buttons/5/3");
-		oscP5.plug(this, "vsetapp54", "/video/app/buttons/5/4");
-		oscP5.plug(this, "vsetapp55", "/video/app/buttons/5/5");		
 		oscP5.plug(this, "pfstopped", "/pf/stopped");	
 		oscP5.plug(this, "tempo", "/tempo");
 		oscP5.plug(this, "ping", "/ping");
@@ -91,23 +85,13 @@ public class Tracker extends PApplet {
 	}
 
 	public void vsetapp(OscMessage msg) {
-		println("vsetup("+msg+")");
-	}
-	public void vsetapp51(float onoff) {
-		setapp(0);
-	}
-	public void vsetapp52(float onoff) {
-		setapp(1);
-	}
-	public void vsetapp53(float onoff) {
-		setapp(2);
-	}
-
-	public void vsetapp54(float onoff) {
-		setapp(3);
-	}
-	public void vsetapp55(float onoff) {
-		setapp(4);
+		for (int i=0;i<vispos.length;i++) {
+			if (msg.checkAddrPattern("/video/app/buttons/"+vispos[i]) ) {
+				setapp(i);
+				return;
+			}		
+		}
+		println("Bad vsetup message: "+msg);
 	}
 
 	public void sendOSC(String dest, OscMessage msg) {
