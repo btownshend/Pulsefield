@@ -14,7 +14,7 @@ public class Tracker extends PApplet {
 	private static final long serialVersionUID = 1L;
 	int tick=0;
 	private float avgFrameRate=0;
-	OscP5 oscP5;
+	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
 	float minx=-3.2f, maxx=3.2f, miny=-3.2f, maxy=3.2f;
 	Visualizer vis[];
@@ -93,8 +93,8 @@ public class Tracker extends PApplet {
 		}
 		println("Bad vsetup message: "+msg);
 	}
-
-	public void sendOSC(String dest, OscMessage msg) {
+	
+	public static void sendOSC(String dest, OscMessage msg) {
 		if (dest.equals("AL"))
 			oscP5.send(msg,AL);
 		else if (dest.equals("TO"))
