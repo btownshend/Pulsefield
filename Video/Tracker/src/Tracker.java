@@ -144,7 +144,7 @@ public class Tracker extends PApplet {
 		}
 
 		if (mousePressed)
-			positions.move(98, 98, new PVector(mouseX*2f/width-1, mouseY*2f/height-1), tick/avgFrameRate);
+			positions.move(98, 98, new PVector(mouseX*2f/width-1, mouseY*2f/height-1), 98, 1, tick/avgFrameRate);
 
 
 		vis[currentvis].update(this, positions);
@@ -216,7 +216,7 @@ public class Tracker extends PApplet {
 			PApplet.println(",channel="+channel);
 		} */
 		ypos=-ypos;
-		positions.move(id, channel, mapposition(xpos, ypos), elapsed);
+		positions.move(id, channel, mapposition(xpos, ypos), groupid, groupsize, elapsed);
 	}
 
 	public void pfsetminx(float minx) {  

@@ -17,14 +17,14 @@ public class Positions {
 	}
 
 
-	public void move(int id, int channel, PVector newpos, float elapsed) {
+	public void move(int id, int channel, PVector newpos, int groupid, int groupsize, float elapsed) {
 		Position ps=positions.get(id);
 		if (ps==null) {
 			PApplet.println("Unable to locate user "+id+", creating it.");
 			add(id,channel);
 			ps=positions.get(id);
 		}
-		ps.move(newpos,elapsed);
+		ps.move(newpos,groupid, groupsize, elapsed);
 		//PApplet.println("ID "+id+" moved to "+newpos);
 	}
 	public void exit(int id) {

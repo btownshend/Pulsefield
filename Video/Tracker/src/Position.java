@@ -8,6 +8,8 @@ public class Position {
 	static float averagingTime =1.0f;   // Averaging time in seconds
 	int channel;
 	int id;
+	int groupid;
+	int groupsize;
 
 	public Position(PVector origin, int channel, int id) {
 		this.origin=origin;
@@ -15,6 +17,8 @@ public class Position {
 		this.lastmovetime= 0f;
 		this.channel = channel;
 		this.id = id;
+		this.groupid = id;
+		this.groupsize = 1;
 	}
 	
 	public Position(int channel) {
@@ -33,7 +37,7 @@ public class Position {
 	}
 
 
-	void move(PVector newpos, float elapsed) {
+	void move(PVector newpos, int groupid, int groupsize, float elapsed) {
 		//PApplet.println("move("+newpos+","+elapsed+"), lastmovetime="+lastmovetime);
 		if (lastmovetime!=0.0 && elapsed>lastmovetime) {
 			PVector moved=newpos.get();
@@ -50,6 +54,8 @@ public class Position {
 		}
 		origin=newpos;
 		lastmovetime=elapsed;
+		this.groupid=groupid;
+		this.groupsize=groupsize;
 	}
 	
 
