@@ -228,6 +228,17 @@ function info=oscincoming(p,info)
         info.preset=0;
         info.refresh=true;
       end
+    elseif strncmp(rcvdmsg.path,'/midi/setpgm/',10)
+      slashes=find(rcvdmsg.path=='/');
+      index=str2double(rcvdmsg.path(slashes(3)+1:end));
+      %fprintf('info.pgm(%d)=%d\n', index, rcvdmsg.data{1});
+      if index>=1 && index<=length(info.pgm)
+        if rcvdmsg.data{1}>0 && rcvdmsg.data{1}<=length(info.pgms)
+          info.pgm(index)=rcvdmsg.data{1};
+        end
+        info.preset=0;
+        info.refresh=true;
+      end
     elseif strcmp(rcvdmsg.path,'/midi/velocity')
       info.velocity=round(rcvdmsg.data{1});
       info.refresh=true;
