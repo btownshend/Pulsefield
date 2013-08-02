@@ -70,9 +70,15 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "vsetapp53", "/video/app/buttons/5/3");
 		oscP5.plug(this, "vsetapp54", "/video/app/buttons/5/4");
 		oscP5.plug(this, "vsetapp55", "/video/app/buttons/5/5");		
+		oscP5.plug(this, "pfstopped", "/pf/stopped");	
+		oscP5.plug(this, "tempo", "/tempo");
 		oscP5.plug(this, "ping", "/ping");
 	}
 
+	public void tempo(float t) {
+		MasterClock.settempo(t);
+	}
+	
 	public void ping(int code) {
 		OscMessage msg = new OscMessage("/ack");
 		//PApplet.println("Got ping "+code);

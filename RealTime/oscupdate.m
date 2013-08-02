@@ -71,6 +71,7 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
 
     for i=1:length(info.pgm)
       oscmsgout('TO',sprintf('/midi/pgm/%d/value',i),{info.pgms{info.pgm(i)}});
+      oscmsgout('VD','/midi/pgm',{int32(i), int32(info.pgm(i)), info.pgms{info.pgm(i)}});
       oscmsgout('MAX','/pf/pass/pgmout',{int32(i),int32(info.pgm(i))});
     end
     for i=1:15
@@ -89,7 +90,7 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     oscmsgout('TO','/midi/duration/value',{info.duration});
     oscmsgout('TO','/midi/velocity',{info.velocity});
     oscmsgout('TO','/midi/velocity/value',{info.velocity});
-    oscmsgout('TO','/tempo',{info.tempo});
+    oscmsgout({'TO','VD'},'/tempo',{info.tempo});
     oscmsgout('MAX','/pf/pass/transport',{'tempo',info.tempo});
     oscmsgout('TO','/tempo/value',{info.tempo});
     fprintf('Updating TO with volume=%f\n',info.volume);
