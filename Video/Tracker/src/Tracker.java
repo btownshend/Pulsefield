@@ -21,12 +21,13 @@ public class Tracker extends PApplet {
 	VisualizerGrid visAbleton;
 	VisualizerNavier visNavier;
 	VisualizerDDR visDDR;
-	String visnames[]={"Smoke","Navier","Tron","Ableton","DDR"};
-	String vispos[]={"5/1","5/2","5/3","5/4","5/5"};
+	String visnames[]={"Smoke","Navier","Tron","Ableton","DDR","Poly"};
+	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1"};
 	int currentvis=-1;
-	NetAddress TO, MPO, AL;
+	static NetAddress TO, MPO, AL, MAX;
 	Positions positions;
 	Ableton ableton;
+	Max max;
 	TouchOSC touchOSC;
 	
 	public void setup() {
@@ -41,17 +42,20 @@ public class Tracker extends PApplet {
 		TO = new NetAddress("192.168.0.148",9998);
 		MPO = new NetAddress("192.168.0.29",7000);
 		AL = new NetAddress("192.168.0.162",9000);
+		MAX = new NetAddress("192.168.0.162",7001);
 		ableton = new Ableton(oscP5, AL);
 		touchOSC = new TouchOSC(oscP5, TO);
+		max = new Max(oscP5, MAX);
 		
 		// Visualizers
-		vis=new Visualizer[5];
+		vis=new Visualizer[visnames.length];
 		vis[0]=new VisualizerPS(this);
 		visNavier=new VisualizerNavier(this); vis[1]=visNavier;
 		vis[2]=new VisualizerTron(this);
 		visAbleton=new VisualizerGrid(this);vis[3]=visAbleton;
 		visDDR=new VisualizerDDR(this);vis[4]=visDDR;
-		setapp(1);
+		vis[5]=new VisualizerPoly(this,new Scale("Major","C"));
+		setapp(5);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
