@@ -193,13 +193,11 @@ function info=oscincoming(p,info)
       % Reassign ID to another channel
       id=info.cm.channel2id(channel);  
       if ~isempty(id)
-        info.cm.deleteid(id);
-        if length(id)>1
-          % Was an error once that could've resulted from a vector id check here until its debugged
-          fprintf('ERROR: ID should not be a vector, but was [%s], channel=[%s], rcvdmsg=%s\n', sprintf('%d ',id),sprintf('%d ',channel), rcvdmsg.path);
+        for i=1:length(id)
+          info.cm.deleteid(id(i));
+          newchannel=info.cm.newchannel(id(i));
+          fprintf('Reassigning ID %d on channel %d to channel %d\n', id(i), channel,newchannel);
         end
-        newchannel=info.cm.newchannel(id);
-        fprintf('Reassigning ID %d on channel %d to channel %d\n', id, channel,newchannel);
         if info.ableton
           info.al.stopalltracks();
         end
