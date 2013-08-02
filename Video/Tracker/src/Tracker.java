@@ -9,7 +9,7 @@ public class Tracker extends PApplet {
 	/**
 	 * 
 	 */
-	private static boolean present = true;
+	private static boolean present = false;
 
 	private static final long serialVersionUID = 1L;
 	int tick=0;
@@ -177,6 +177,8 @@ public class Tracker extends PApplet {
 			visNavier.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/video/ddr")) {
 			visDDR.handleMessage(theOscMessage);
+		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
+			max.handleMessage(theOscMessage);
 		} else if (theOscMessage.isPlugged() == false) {
 			PApplet.print("### Received an unhandled message: ");
 			theOscMessage.print();
