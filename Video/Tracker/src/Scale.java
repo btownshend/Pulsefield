@@ -62,7 +62,7 @@ public class Scale {
 	public int map2note(float val, float minval, float maxval, int offset, int noctave) {
 		int notenum=(int)((val-minval)/(maxval-minval)*notes.length*noctave)+offset;
 		int pitch=notes[notenum%notes.length];
-		pitch=pitch+12*(notenum/12);
+		pitch=pitch+12*(notenum/12-(int)(noctave/2));
 		return pitch;
 	}
 	
