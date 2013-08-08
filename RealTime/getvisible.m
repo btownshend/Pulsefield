@@ -30,7 +30,7 @@ args=processargs(defaults,varargin);
 
 if args.init
   if nargout~=2
-    error('Usage:  [vis,p]=getvisible(p,''init'')');
+    error('Usage:  [vis,p]=getvisible(p,''init'',''true'',options)');
   end
 else
   if nargout~=1
@@ -43,7 +43,7 @@ end
 
 if args.init
   % Initialize data in p.camera(:).viscache needed by getvisible
-  fprintf('Stopping LEDServer\n');
+  fprintf('Pausing LEDServer\n');
   lsctl(p,'pause');
   fprintf('Initializing viscache...\n');
   for i=1:length(p.camera)
@@ -198,6 +198,7 @@ if ~isempty(args.im)
 else
   im=aremulti([p.camera.id],p.camera(1).type,{p.camera.roi});
 end
+
 
 % Convert to gray if needed, check size
 imorig=im;
