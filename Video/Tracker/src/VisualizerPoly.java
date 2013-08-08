@@ -48,6 +48,7 @@ class PolyState {
 				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), 10);
 			} else {	
 				// Play note
+				curnote=0;   // Override multiple pitches/person
 				int pitch=scale.map2note(pos.origin.heading(), (float) -Math.PI, (float)Math.PI,curnote,3);
 				curnote=curnote+2;
 				if (curnote>=6)
