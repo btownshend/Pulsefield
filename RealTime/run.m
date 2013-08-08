@@ -20,7 +20,8 @@ if ~exist('p','var')
 end
 
 % Set camera exposures to defaults
-setupcameras(p);
+daymode;
+
 
 if ~isfield(p.camera(1),'pixcalib')
   disp('Pixel calibration');
