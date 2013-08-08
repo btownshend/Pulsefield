@@ -24,8 +24,8 @@ public class Tracker extends PApplet {
 	VisualizerGrid visAbleton;
 	VisualizerNavier visNavier;
 	VisualizerDDR visDDR;
-	String visnames[]={"Smoke","Navier","Tron","Ableton","DDR","Poly"};
-	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1"};
+	String visnames[]={"Smoke","Navier","Tron","Ableton","DDR","Poly","Voronoi"};
+	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2"};
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX;
 	Positions positions;
@@ -39,8 +39,7 @@ public class Tracker extends PApplet {
 		frameRate(30);
 		frame.setBackground(new Color(0,0,0));
 		positions=new Positions();
-
-
+		
 		// OSC Setup (but do plugs later so everything is setup for them)
 		oscP5 = new OscP5(this, 7002);
 		TO = new NetAddress("192.168.0.148",9998);
@@ -63,8 +62,9 @@ public class Tracker extends PApplet {
 		vis[2]=new VisualizerTron(this);
 		visAbleton=new VisualizerGrid(this);vis[3]=visAbleton;
 		visDDR=new VisualizerDDR(this);vis[4]=visDDR;
-		setapp(5);
 		vis[5]=new VisualizerPoly(this,new Scale("Major","C"),synth);
+		vis[6]=new VisualizerVoronoi(this);
+		setapp(6);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
