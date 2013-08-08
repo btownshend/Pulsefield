@@ -55,7 +55,7 @@ public class VisualizerDDR extends Visualizer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(sf.toString());
+//		System.out.println(sf.toString());
 		banner=sf.getBanner(parent);
 	}
 
