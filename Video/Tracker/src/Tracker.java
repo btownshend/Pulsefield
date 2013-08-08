@@ -4,6 +4,9 @@ import processing.core.PApplet;
 import oscP5.*;
 import netP5.*;
 import processing.core.PVector;
+import promidi.Controller;
+import promidi.Note;
+import promidi.ProgramChange;
 
 public class Tracker extends PApplet {
 	/**

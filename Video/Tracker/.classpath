@@ -9,5 +9,10 @@
 	<classpathentry kind="lib" path="/Volumes/Adams/Users/bst/Dropbox/Processing/Processing.app/Contents/Resources/Java/core/library/jogl-all-natives-macosx-universal.jar"/>
 	<classpathentry kind="lib" path="/Volumes/Adams/Users/bst/Dropbox/Processing/Processing.app/Contents/Resources/Java/core/library/jogl-all.jar"/>
 	<classpathentry kind="lib" path="/Volumes/Adams/Users/bst/Dropbox/Processing/libraries/oscP5/library/oscP5.jar" sourcepath="/Volumes/Adams/Users/bst/Dropbox/Processing/libraries/oscP5/src"/>
+	<classpathentry kind="lib" path="/Volumes/Adams/Users/bst/Dropbox/Processing/libraries/promidi/library/promidi.jar" sourcepath="/Users/bst/Dropbox/Processing/libraries/promidi">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/Users/bst/Dropbox/Processing/libraries/promidi/documentation/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
