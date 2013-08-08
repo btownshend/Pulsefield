@@ -163,6 +163,9 @@ if ~isempty(args.im)
 end
 
 if args.setleds
+  % Pause server
+  fprintf('Pausing LEDServer\n');
+  lsctl(p,'pause');
   s1=arduino_ip();
   % Turn on all LED's
   %  fprintf('Turning on LEDs\n');
@@ -179,15 +182,21 @@ if args.usefrontend
     % Call frontend to get next frame
     vis=rcvr(p,'timeout',args.timeout,'stats',args.stats);
     if isempty(vis)
-      return;
+      break;
     end
     vis.whenrcvd=now;
     age=(vis.whenrcvd-max(vis.acquired))*24*3600;
     if mod(vis.frame(1),50)==0 || age>0.3
       fprintf('Got visframe %d that is %.3f seconds old\n',vis.frame(1),age);
     end
-    return;
+    break;
   end
+  if args.setleds
+    % Restart LED Server
+    fprintf('Resuming LED server\n');
+    lsctl(p,'resume');
+  end
+  return;
 end
 
 % Initialize result struct
@@ -218,6 +227,10 @@ if args.setleds
   % Turn off LEDs
   setled(s1,-1,[0,0,0]);
   show(s1);
+
+  % Restart LED Server
+  fprintf('Resuming LED server\n');
+  lsctl(p,'resume');
 end
 
 if args.stats
