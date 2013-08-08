@@ -528,7 +528,7 @@ function info=bg_freeze(info)
 end
 
 function info=bg_white(info)
-  info.back.state(:)=4;
+  info.back.state(:)=16;
 end
 
 function info=bg_blue(info)
