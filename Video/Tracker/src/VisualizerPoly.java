@@ -10,6 +10,7 @@ import processing.opengl.PGL;
 
 // Visualizer based on iPad app "Poly" by James Milton
 class PolyState {
+	final float DRUMMERPROB=0.1f;
 	boolean playing;
 	float startBeat;
 	float noteDuration;
@@ -28,7 +29,7 @@ class PolyState {
 		playing=false;
 		curnote=0;
 		lastGrouping=0;
-		isDrummer=(Math.random() <0.5);
+		isDrummer=(Math.random() <DRUMMERPROB);
 	}
 
 	void Update(float beat, int totalBeats, Scale scale, Synth synth) {
@@ -61,7 +62,7 @@ class PolyState {
 		}
 		lastbeat=beat;
 		if (pos.groupsize>1 && beat-lastGrouping>2) {
-			isDrummer=(Math.random() <0.5);
+			isDrummer=(Math.random() <DRUMMERPROB);
 			int newInstrument=(int)(Math.random()*127+1);
 			PApplet.println("ID "+pos.id+" is in group ("+pos.groupid+","+pos.groupsize+"), changing to GM instrument "+newInstrument);
 			OscMessage msg=new OscMessage("/midi/setpgm/"+pos.channel);
