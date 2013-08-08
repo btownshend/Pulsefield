@@ -27,7 +27,8 @@ public class Tracker extends PApplet {
 	static NetAddress TO, MPO, AL, MAX;
 	Positions positions;
 	Ableton ableton;
-	Max max;
+	boolean useMAX;
+	Synth synth;
 	TouchOSC touchOSC;
 	
 	public void setup() {
@@ -45,7 +46,12 @@ public class Tracker extends PApplet {
 		MAX = new NetAddress("192.168.0.162",7001);
 		ableton = new Ableton(oscP5, AL);
 		touchOSC = new TouchOSC(oscP5, TO);
-		max = new Max(oscP5, MAX);
+		useMAX=false;
+		
+		if (useMAX)
+			synth = new Max(this,oscP5, MAX);
+		else
+			synth = new Synth(this);
 		
 		// Visualizers
 		vis=new Visualizer[visnames.length];
@@ -54,8 +60,8 @@ public class Tracker extends PApplet {
 		vis[2]=new VisualizerTron(this);
 		visAbleton=new VisualizerGrid(this);vis[3]=visAbleton;
 		visDDR=new VisualizerDDR(this);vis[4]=visDDR;
-		vis[5]=new VisualizerPoly(this,new Scale("Major","C"));
 		setapp(5);
+		vis[5]=new VisualizerPoly(this,new Scale("Major","C"),synth);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
@@ -178,7 +184,7 @@ public class Tracker extends PApplet {
 		} else if (theOscMessage.addrPattern().startsWith("/video/ddr")) {
 			visDDR.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
-			max.handleMessage(theOscMessage);
+			synth.handleMessage(theOscMessage);
 		} else if (theOscMessage.isPlugged() == false) {
 			PApplet.print("### Received an unhandled message: ");
 			theOscMessage.print();
@@ -248,6 +254,22 @@ public class Tracker extends PApplet {
 		add(id,channel);
 		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel+", color="+positions.get(id).getcolor(this));
 	}
+
+	public void noteOn(Note n, int device, int channel) {
+		System.out.println("Got note on: "+n.getPitch()+", vel="+n.getVelocity()+", channel="+channel+", device="+device);
+	}
+	
+	public void noteOff(Note n, int device, int channel) {
+		System.out.println("Got note off: "+n.getPitch()+", vel="+n.getVelocity()+", channel="+channel+", device="+device);
+	}
+	
+	public void controllerIn(Controller c, int device, int channel) {
+		System.out.println("Got controller: "+c.getNumber()+" = "+c.getValue()+", channel="+channel+", device="+device);
+	}
+	public void programChange(ProgramChange p, int device, int channel) {
+		System.out.println("Got program change: "+p.toString()+", channel="+channel+", device="+device);
+	}
+
 
 }
 

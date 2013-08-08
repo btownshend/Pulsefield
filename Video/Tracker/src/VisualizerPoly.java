@@ -20,7 +20,7 @@ class PolyState {
 	int curnote;
 	float lastGrouping;
 	boolean isDrummer;
-
+	
 	PolyState(Position pos, float noteDuration, int color) {
 		this.noteDuration=noteDuration;
 		this.color=color;
@@ -31,7 +31,7 @@ class PolyState {
 		isDrummer=(Math.random() <0.5);
 	}
 
-	void Update(float beat, int totalBeats, Scale scale) {
+	void Update(float beat, int totalBeats, Scale scale, Synth synth) {
 		if (playing && startBeat+noteDuration <= beat) {
 			//PApplet.println("Stopped channel "+pos.channel+" at beat "+beat);
 			playing=false;
@@ -44,7 +44,7 @@ class PolyState {
 		if (!playing && (((int)(beat*4)-(int)(startBeat*4))>=mybeat || pos.groupsize>1 ) && (int)(beat*4) != (int)(startBeat*4)) {
 			if (isDrummer) {
 				int pitch=(int)((pos.origin.heading()+Math.PI)/(2*Math.PI)*46+35);
-				Max.play(pos.id, pitch, 127, (int)(noteDuration*480), 10);
+				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), 10);
 			} else {	
 				// Play note
 				int pitch=scale.map2note(pos.origin.heading(), (float) -Math.PI, (float)Math.PI,curnote,3);
@@ -54,7 +54,7 @@ class PolyState {
 
 				//PApplet.println("Play note "+pitch+" on channel "+pos.channel+" from beat "+beat+" to "+(startBeat+noteDuration));
 				// Send MIDI
-				Max.play(pos.id, pitch, 127, (int)(noteDuration*480), pos.channel);
+				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), pos.channel);
 			}
 			playing=true;
 			startBeat=beat;
@@ -71,7 +71,7 @@ class PolyState {
 		}
 	}
 
-	void draw(PApplet parent,PVector wsize, int totalBeats, int row) {
+	void draw(PApplet parent,PVector wsize, int totalBeats, int row, Synth synth) {
 		final int NUMROWS=20;
 		float rowheight=wsize.y/2/NUMROWS;
 
@@ -111,7 +111,7 @@ class PolyState {
 			if (isDrummer)
 				parent.text("DRUMMER",2+dotsize,rowpos);
 			else {
-				MidiProgram mp=Max.getMidiProgam(pos.channel);
+				MidiProgram mp=synth.getMidiProgam(pos.channel);
 				if (mp!=null)
 					parent.text(mp.name,2+dotsize,rowpos);
 			}
@@ -126,11 +126,13 @@ public class VisualizerPoly extends Visualizer {
 	float playTime;
 	float noteDuration=0.25f ;   // in beats
 	Scale scale;
-
-	VisualizerPoly(PApplet parent, Scale scale) {
+	Synth synth;
+	
+	VisualizerPoly(PApplet parent, Scale scale, Synth synth) {
 		super();
 		poly=new HashMap<Integer,PolyState>();
 		this.scale=scale;
+		this.synth=synth;
 	}
 
 	public void update(PApplet parent, Positions allpos) {
@@ -144,7 +146,7 @@ public class VisualizerPoly extends Visualizer {
 				ps=new PolyState(p,noteDuration,p.getcolor(parent));
 				poly.put(id, ps);
 			}
-			ps.Update(beat,totalBeats,scale);
+			ps.Update(beat,totalBeats,scale,synth);
 		}
 		// Remove polys for which we no longer have a position (exitted)
 		for (Iterator<Integer> iter = poly.keySet().iterator();iter.hasNext();) {
@@ -184,7 +186,7 @@ public class VisualizerPoly extends Visualizer {
 		// Draw each position and fired rings
 		int pos=0;
 		for (PolyState ps: poly.values()) {
-			ps.draw(parent,wsize,totalBeats,pos);
+			ps.draw(parent,wsize,totalBeats,pos,synth);
 			pos++;
 		}
 	}
