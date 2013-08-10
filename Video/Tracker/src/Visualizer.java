@@ -42,4 +42,7 @@ public abstract class Visualizer {
 		PApplet.println("Unhanled OSC Message: "+theOscMessage.toString());
 	}
 
+	public PVector convertToScreen(PVector p, PVector wsize) {
+		return new PVector((p.x+1)*wsize.x/2,(p.y+1)*wsize.y/2);
+	}
 }
