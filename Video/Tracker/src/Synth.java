@@ -13,9 +13,10 @@ class MidiProgram {
 
 public class Synth {
 	MidiIO midiIO;
-	MidiOut midiOut;
+	MidiOut midiOut[];
 	HashMap<Integer,MidiProgram> channelmap;
 
+	@SuppressWarnings("unused")
 	Synth(PApplet parent) {
 		channelmap=new HashMap<Integer,MidiProgram>();
 		//get an instance of MidiIO
@@ -25,7 +26,9 @@ public class Synth {
 		midiIO.printDevices();
 
 		//open an midiout using the first device and the first channel
-		midiOut = midiIO.getMidiOut(0, "From Tracker");
+		midiOut=new MidiOut[16];
+		for (int ch=0;ch<16;ch++)
+			midiOut[ch] = midiIO.getMidiOut(ch, "From Tracker");
 
 		// Figure out input device number
 		int midiInDevNum=-1;
@@ -50,8 +53,9 @@ public class Synth {
 
 	public void play(int id, int pitch, int velocity, int duration, int channel) {
 		Note note = new Note(pitch,velocity,(int)(duration*1000*60/MasterClock.gettempo()/480));
-		midiOut.sendNote(note);
-		System.out.println("Sent note "+pitch+", vel="+velocity);
+		assert(channel>=0 && channel<16);
+		midiOut[channel].sendNote(note);
+		System.out.println("Sent note "+pitch+", vel="+velocity+" , to channel "+channel);
 	}
 
 	public MidiProgram getMidiProgam(int ch) {
