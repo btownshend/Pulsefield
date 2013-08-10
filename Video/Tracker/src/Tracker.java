@@ -33,15 +33,19 @@ public class Tracker extends PApplet {
 	boolean useMAX;
 	Synth synth;
 	TouchOSC touchOSC;
+	int mouseID;
 	
 	public void setup() {
 		size(1280,800, OPENGL);
 		frameRate(30);
+		mouseID=90;
+		
 		frame.setBackground(new Color(0,0,0));
 		positions=new Positions();
 		
 		// OSC Setup (but do plugs later so everything is setup for them)
 		oscP5 = new OscP5(this, 7002);
+
 		TO = new NetAddress("192.168.0.148",9998);
 		MPO = new NetAddress("192.168.0.29",7000);
 		AL = new NetAddress("192.168.0.162",9000);
@@ -62,9 +66,10 @@ public class Tracker extends PApplet {
 		vis[2]=new VisualizerTron(this);
 		visAbleton=new VisualizerGrid(this);vis[3]=visAbleton;
 		visDDR=new VisualizerDDR(this);vis[4]=visDDR;
-		vis[5]=new VisualizerPoly(this,new Scale("Major","C"),synth);
-		vis[6]=new VisualizerVoronoi(this);
-		setapp(6);
+		Scale scale=new Scale("Major","C");
+		vis[5]=new VisualizerPoly(this,scale,synth);
+		vis[6]=new VisualizerVoronoi(this,scale,synth);
+		setapp(5);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
@@ -152,8 +157,8 @@ public class Tracker extends PApplet {
 			vis[currentvis].stats();
 		}
 
-		if (mousePressed)
-			positions.move(98, 98, new PVector(mouseX*2f/width-1, mouseY*2f/height-1), 98, 1, tick/avgFrameRate);
+		if (mousePressed) 
+			positions.move(mouseID, mouseID%16, new PVector(mouseX*2f/width-1, mouseY*2f/height-1), mouseID, 1, tick/avgFrameRate);
 
 
 		vis[currentvis].update(this, positions);
@@ -163,7 +168,8 @@ public class Tracker extends PApplet {
 	}
 
 	public void mouseReleased() {
-		pfexit(0, 0, 98);
+		//pfexit(0, 0, 98);
+		mouseID=(mouseID-90+1)%8+90;
 	}
 
 	public static void main(String args[]) {
