@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+import processing.core.PApplet;
+
 /**
  * A 2D Delaunay Triangulation (DT) with incremental site insertion.
  *
@@ -61,6 +63,11 @@ public class Triangulation extends AbstractSet<Triangle> {
         triGraph = new Graph<Triangle>();
         triGraph.add(triangle);
         mostRecent = triangle;
+    }
+    
+    public void addTriangle(Triangle triangle) {
+    	triGraph.add(triangle);
+    	mostRecent=triangle;
     }
 
     /* The following two methods are required by AbstractSet */
@@ -187,6 +194,12 @@ public class Triangulation extends AbstractSet<Triangle> {
 
         // Determine the cavity and update the triangulation
         Set<Triangle> cavity = getCavity(site, triangle);
+        if (cavity.size()==0) {
+        	Triangle.moreInfo=true;
+        	PApplet.println("site = "+site);
+        	PApplet.println("triangle = "+triangle);
+        	throw new IllegalArgumentException("No cavity");
+        }
         mostRecent = update(site, cavity);
     }
 
