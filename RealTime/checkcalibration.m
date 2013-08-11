@@ -115,7 +115,7 @@ for ci=1:length(cameras)
       xlabel(sprintf('r=(%.3f,%.3f,%.3f),RGB=%.3f,Gray=%.3f',r,rrgb,rgray));
       ylabel(sprintf('(%d:%d, %d:%d)',vc.tlpos(l,2),vc.brpos(l,2),vc.tlpos(l,1),vc.brpos(l,1)));
     end
-    if exist('bigwindow','var')
+    if exist('bigwindow','var') && exist('bigim','var')
       subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
       stack=stack+1;
       imshow(bigim);
