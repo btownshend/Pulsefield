@@ -95,10 +95,18 @@ public class Ableton {
 	}
 
 	// Get tempo in BPM
+	/**
+	 * @return
+	 */
 	public float getTempo() {
 		return tempo;
 	}
 	
+	/** Handle Ableton clip info message
+	 * @param track Track number
+	 * @param clip Clip number
+	 * @param state New state (from Ableton OSC message)
+	 */
 	void setClipInfo(int track, int clip, int state) {
 		Track t=getTrack(track);
 		Clip c = t.getClip(clip);
@@ -138,6 +146,11 @@ public class Ableton {
 		c.length=length;
 	}
 
+	/** Retrieve a clip structure for a particular track/clip
+	 * @param track Ableton track number (0-origin)
+	 * @param clip Ableton clip number (0-origin)
+	 * @return clip structure
+	 */
 	public Clip getClip(int track, int clip) {
 		Track t=tracks.get(track);
 		if (t==null)
