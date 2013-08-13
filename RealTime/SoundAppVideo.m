@@ -11,5 +11,14 @@ classdef SoundAppVideo < SoundApp
       obj.name='Video';
     end
 
+    function info=start(obj,p,info)
+    end
+    
+    function stop(obj,p,info)
+    end
+    
+    function info=update(obj,p,info)
+    end
+    
   end
 end

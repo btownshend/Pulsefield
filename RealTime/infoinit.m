@@ -17,7 +17,7 @@ function info=infoinit()
   end
   
   % Table of apps
-  info.apps={ SoundAppGuitar('5/1'), SoundAppCSeq('5/2'), SoundAppHotspots('5/3'), SoundAppGrid('5/4') };
+  info.apps={ SoundAppGuitar('5/1'), SoundAppCSeq('5/2'), SoundAppHotspots('5/3'), SoundAppGrid('5/4'), SoundAppVideo('5/5') };
   info.currapp=info.apps{end};
 
   % Table of sample sets
