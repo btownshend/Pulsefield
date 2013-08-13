@@ -50,7 +50,7 @@ function ledserver(p,doplot,simul)
   currapp=apps(3);
 
   info=struct('state',zeros(numled(),3),'mix',zeros(numled(),3),'prevstate',[],'layout',p.layout,'vis',[],'hypo',[],'running',true,...
-              'colors',{p.colors},'back',struct('maxlev',1,'minlev',0.3,'state',zeros(numled(),3)),'maxtransport',{{1,1,1,120,4,4}},...
+              'colors',{p.colors},'back',struct('whitelev',16,'maxlev',1,'minlev',0.3,'state',zeros(numled(),3)),'maxtransport',{{1,1,1,120,4,4}},...
               'maxpll',PLL,'alpll',PLL,'meter',zeros(16,2),'health',Health({'MP'}),'pulsebow',struct('pperiod',2,'cperiod',5,'pspatial',32,'cspatial',33));
   latency=[];
   refresh=true;
@@ -102,6 +102,10 @@ function ledserver(p,doplot,simul)
           end
         end
         refresh=true;
+      elseif strcmp(m.path,'/led/back/whitelev')
+        info.back.whitelev=round(m.data{1});
+        refresh=true;
+        fprintf('Setting background level to %d\n',info.back.whitelev);
       elseif strcmp(m.path,'/led/pulsebow/pperiod')
         info.pulsebow.pperiod=expcontrol(m.data{1},0.1,20);
         refresh=true;
@@ -261,6 +265,7 @@ function ledserver(p,doplot,simul)
         oscmsgout('TO','/led/pulsebow/pperiod/value',{sprintf('%.1f',info.pulsebow.pperiod)});
         oscmsgout('TO','/led/pulsebow/cperiod/value',{sprintf('%.1f',info.pulsebow.cperiod)});
       end
+      oscmsgout('TO','/led/back/whitelev/value',{sprintf('%.0f',info.back.whitelev)});
 
       lastvcnts(:)=-1;   % Force update of visibility counts
       refresh=false;
@@ -528,7 +533,7 @@ function info=bg_freeze(info)
 end
 
 function info=bg_white(info)
-  info.back.state(:)=16;
+  info.back.state(:)=info.back.whitelev;
 end
 
 function info=bg_blue(info)
