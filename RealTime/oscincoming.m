@@ -283,6 +283,8 @@ function info=oscincoming(p,info)
         info.health.gotmsg('FE');
       elseif rcvdmsg.data{1}==3
         info.health.gotmsg('MX');
+      elseif rcvdmsg.data{1}==4
+        info.health.gotmsg('VD');
       end
       % ignore
     elseif ~handled
