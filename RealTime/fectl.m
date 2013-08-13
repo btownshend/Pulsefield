@@ -66,7 +66,8 @@ elseif strcmp(op,'start')
     end
     oscmsgout('FE','/vis/set/res',{int32(i-1),res});
     if isfield(p.camera(i),'viscache') && isfield(p.camera(i).viscache,'refim')
-      oscmsgout('FE','/vis/set/updatetc',{ 0.0 });    % Turn off updates of reference image
+      oscmsgout('FE','/vis/set/updatetc',{ p.analysisparams.updatetc });    % Turn on updates of reference image
+      fprintf('Frontend is automatically updating reference with a time constant of %f seconds\n', p.analysisparams.updatetc);
       refim = im2single(p.camera(i).viscache.refim);
       filename=sprintf('/tmp/setref_%.6f_%d.raw',(now-datenum(1970,1,1)+7/24)*24*3600,i);
       [fd,errmsg]=fopen(filename,'wb');
