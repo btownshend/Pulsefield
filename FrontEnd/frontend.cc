@@ -170,7 +170,8 @@ void FrontEnd::run() {
 	perror("");
 	exit(1);
     }
-    struct timeval ts1,ts2;
+    struct timeval ts1,ts2,lastprocess;
+    gettimeofday(&lastprocess,0);   // Keep track of time of last successful frame
     while (true) {  /* Forever */
 	fd_set rfds;
 
@@ -205,6 +206,7 @@ void FrontEnd::run() {
 	    printf("Select done after %.2f msec. rfds=0x%lx\n", (ts2.tv_usec-ts1.tv_usec)/1000.0+(ts2.tv_sec-ts1.tv_sec)*1000,*(unsigned long*)&rfds);
 	    fflush(stdout);
 	}
+	float elapsed=(ts2.tv_usec-lastprocess.tv_usec)/1e6 + (ts2.tv_sec-lastprocess.tv_sec);
 	if (retval == -1) {
 	    perror("select() error: ");
 	    exit(1);
@@ -233,13 +235,20 @@ void FrontEnd::run() {
 	    }
 
 	    int haveAllFrames=1;
+	    char missing[100];
+	    missing[0]=0;
 	    for (int i=0;i<ncamera;i++) {
 		haveAllFrames=haveAllFrames && cameras[i]->getFrame()->isValid();
+		if (!cameras[i]->getFrame()->isValid())
+		    sprintf(missing,"%s %d",missing,cameras[i]->getID());
 	    }
 
 	    // Process if all the cameras have new frames
 	    if (haveAllFrames) {
 		processFrames();
+		gettimeofday(&lastprocess,0);
+	    } else if (elapsed > 2) {
+		fprintf(stderr,"No complete frames processed in %.2f seconds, missing data from cameras: %s\n",elapsed,missing);
 	    } else {
 		// Read any other queued cameras
 		for (int i=0;i<ncamera;i++) {
