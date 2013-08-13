@@ -86,7 +86,7 @@ for i=1:size(vis.v,1)
     ax=axis;
     ax(3)=min(ax(3),0);ax(4)=1.0;
     axis(ax);
-    legend('Correlation','Threshold');
+    %    legend('Correlation','Threshold');
   elseif isfield(vis,'v')   % .v only, no .corr
     subplot(size(vis.v,1),ncol,(i-1)*ncol+col);
     col=col+1;
