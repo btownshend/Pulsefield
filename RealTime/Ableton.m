@@ -219,13 +219,12 @@ classdef Ableton < handle
         end
       end
       if mismatch
-        fprintf('Ableton file is mismatched -- not using it;  loading from AL directly\nUse ableton_query.m to update file\n');
-        obj.update;
-      else
-        fn=fieldnames(newobj);
-        for i=1:length(fn)
-          obj.(fn{i})=newobj.(fn{i});
-        end
+        fprintf('Ableton file is mismatched -- Use ableton_query.m to update file if GRID app tracks have changed\n');
+        % obj.update;   % Update is too slow when retrieving clips to do here
+      end
+      fn=fieldnames(newobj);
+      for i=1:length(fn)
+        obj.(fn{i})=newobj.(fn{i});
       end
     end
 
