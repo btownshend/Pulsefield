@@ -5,9 +5,9 @@
  #include <pins_arduino.h>
 #endif
 
-class LPD8806multi {
+class LPD8806multiTXRX {
  public:
-  LPD8806multi();
+  LPD8806multiTXRX();
   void init(void);
   void show(void);
   void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b);
