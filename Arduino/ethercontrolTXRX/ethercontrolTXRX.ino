@@ -4,7 +4,7 @@
 #include "SPI.h"
 
 // Multi strip uses multiple clock and data pins in a fixed time (see LPD8806Multi.cpp)
-LPD8806multi strip = LPD8806multi();
+LPD8806multiTXRX strip = LPD8806multiTXRX();
 
 // Ethernet config
 byte mac[] = {  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -16,6 +16,9 @@ long nrcvd;
 void setup() {
     int i;
     
+    // Setup serial port
+    Serial.begin(115200);
+
     strip.init();
     // Update the strip, to start they are all 'off'
     show();
@@ -24,10 +27,8 @@ void setup() {
     show();  
     
     
-    // Setup serial port
-    Serial.begin(115200);
     
-    if (1) {
+    if (0) {
         // If using external memory, adjust heap end up
 	Serial.print("Heap start = 0x");
 	Serial.print((int)__malloc_heap_start,HEX);

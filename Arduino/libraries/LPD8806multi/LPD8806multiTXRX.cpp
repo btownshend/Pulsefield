@@ -4,14 +4,18 @@
 // Arduino library to control LPD8806multiTXRX-based RGB LED Strips
 // (c) Adafruit industries
 // MIT license
-#define NSTRIPS 8
+#define NSTRIPS 6
 static const int nstrips=NSTRIPS;
 
-static const int nports=3;
 // Masks for direct control of pins
 // Use PL0..PL7 for data, PB0..3 (shared for each group of 4) for clocks
-static const uint8_t datapins[nstrips]={35,36,37,38,39,40,41,42};
-static const uint8_t clkpins[nstrips]= {19,20,21,22,19,20,21,22};
+#if NSTRIPS==8
+static const uint8_t datapins[nstrips]={49,48,47,46,45,44,43,42};
+static const uint8_t clkpins[nstrips]= {53,52,51,50,53,52,51,50};
+#else
+static const uint8_t datapins[nstrips]={49,48,47,46,45,44};
+static const uint8_t clkpins[nstrips]= {53,52,51,50,53,52};
+#endif
 
 // I/O register address
 static volatile uint8_t *dataPortAddr, *clkPortAddr;
@@ -34,9 +38,9 @@ void LPD8806multiTXRX::init() {
     writeLatch();
 
     Serial.print("data port address: ");
-    Serial.println(dataPortAddr,HEX);
+    Serial.println((int)dataPortAddr,HEX);
     Serial.print("clk port address: ");
-    Serial.println(clkPortAddr,HEX);
+    Serial.println((int)clkPortAddr,HEX);
 }
 
 // Allocate 3 bytes per pixel, init to RGB 'off' state:
@@ -45,8 +49,13 @@ void LPD8806multiTXRX::alloc(uint16_t n) {
     if (NULL != (pixels = (uint8_t *)malloc(n * 3))) {
 	memset(pixels, 0x80, n * 3); // Init to RGB 'off' state
 	numLEDs = n;
-    } else
+	Serial.print("Allocated ");
+    } else {
+	Serial.print("Failed to allocate ");
 	numLEDs = 0;
+    }
+    Serial.print(n*3);
+    Serial.println(" bytes.");
     begun =  false;
     pause = 0;
 }
@@ -62,13 +71,15 @@ void LPD8806multiTXRX::writeLatch() {
     const uint16_t n=((nled + 63) / 64) * 3;
     
     // Set all the data low
-    for (int i=0;i<nports;i++)
-	*dataPortAddr = 0; // Data is held low throughout
+    *dataPortAddr = 0; // Data is held low throughout
 
     for(uint16_t i = 8 * n; i>0; i--) {
-	*clkPortAddrs |=  0xf;
-	*clkPortAddrs &= ~0xf;
+	*clkPortAddr |=  0xf;
+	*clkPortAddr &= ~0xf;
     }
+
+    // Set data high (to turn off coupled LEDs)
+    *dataPortAddr = 0xff;
 }
 
 // This is how data is pushed to the strip.  Unfortunately, the company
@@ -92,7 +103,7 @@ void LPD8806multiTXRX::show(void) {
 	uint8_t p6=pptr[160*18];
 	uint8_t p7=pptr[160*21];
 	for (uint8_t bit=0x80; bit; bit >>= 1) {
-	    *dataPortAddrs = ((p0&0x80)?1:0) |
+	    *dataPortAddr = ((p0&0x80)?1:0) |
 		((p1 & 0x80)?2:0) |
 		((p2 & 0x80)?4:0) |
 		((p3 & 0x80)?8:0) |
