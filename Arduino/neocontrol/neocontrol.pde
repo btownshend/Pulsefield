@@ -5,7 +5,7 @@
 
 // Multi strip uses multiple clock and data pins in a fixed time (see LPD8806Multi.cpp)
 // Changed from pin 48 to pin 30 to test board
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(68*5,49,NEO_GRB+NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(68*5,53,NEO_GRB+NEO_KHZ800);
 
 // Ethernet config
 byte mac[] = {  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
