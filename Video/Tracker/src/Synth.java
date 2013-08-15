@@ -12,6 +12,7 @@ class MidiProgram {
 }
 
 public class Synth {
+	final String midiPortName="From Tracker";
 	MidiIO midiIO;
 	MidiOut midiOut[];
 	HashMap<Integer,MidiProgram> channelmap;
@@ -27,8 +28,14 @@ public class Synth {
 
 		//open an midiout using the first device and the first channel
 		midiOut=new MidiOut[16];
-		for (int ch=0;ch<16;ch++)
-			midiOut[ch] = midiIO.getMidiOut(ch, "From Tracker");
+		for (int ch=0;ch<16;ch++) {
+			try {
+				midiOut[ch] = midiIO.getMidiOut(ch, midiPortName);
+			} catch (promidi.UnavailablePortException e) {
+				System.err.println("MIDI port '"+midiPortName+"' not found, use Audio/MIDI setup to create;  using '"+midiIO.getOutputDeviceName(0)+"' instead.");
+				midiOut[ch] = midiIO.getMidiOut(ch,  0);
+			}
+		}
 
 		// Figure out input device number
 		int midiInDevNum=-1;
@@ -39,9 +46,10 @@ public class Synth {
 				break;
 			}
 		}
-		if (midiInDevNum == -1)
-			throw new RuntimeException("There is no input device with the name " + inputDeviceName + ".");
-		System.out.println("Input device = "+midiInDevNum);
+		if (midiInDevNum == -1) {
+			System.err.println("There is no input device with the name '" + inputDeviceName + "' using "+midiIO.getInputDeviceName(0)+"' instead.");
+			midiInDevNum = 0;
+		}
 		if (false) {
 			midiIO.plug(this, "gotNote", midiInDevNum, 0);
 			midiIO.plug(this, "gotController", midiInDevNum, 0);
