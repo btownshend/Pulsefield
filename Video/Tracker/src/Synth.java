@@ -62,6 +62,10 @@ public class Synth {
 		return channelmap.get(ch);
 	}
 
+	public void setCC(int channel, int cc, int value) {
+		midiOut[channel].sendController(new Controller(cc, value));
+	}
+	
 	public boolean handleMessage(OscMessage msg) {
 		//PApplet.println("Synth message: "+msg.toString());
 		String pattern=msg.addrPattern();
