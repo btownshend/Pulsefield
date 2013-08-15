@@ -22,3 +22,5 @@ Arduino/libraries/LPD8806
 *.class
 
 *.applet
+
+Video/Tracker/bin/arrow.png

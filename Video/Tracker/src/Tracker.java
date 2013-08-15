@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.io.IOException;
 
 import processing.core.PApplet;
 import oscP5.*;
@@ -34,31 +35,42 @@ public class Tracker extends PApplet {
 	Synth synth;
 	TouchOSC touchOSC;
 	int mouseID;
-	
+	String configFile;
+	URLConfig config;
+
 	public void setup() {
+		configFile="/Users/bst/DropBox/Pulsefield/config/urlconfig.txt";
+
+		try {
+			config=new URLConfig(configFile);
+		} catch (IOException e) {
+			System.err.println("Failed to open config: "+configFile+": "+e.getLocalizedMessage());
+			System.exit(1);
+		}
+
 		size(1280,800, OPENGL);
 		frameRate(30);
 		mouseID=90;
-		
+
 		frame.setBackground(new Color(0,0,0));
 		positions=new Positions();
-		
+
 		// OSC Setup (but do plugs later so everything is setup for them)
 		oscP5 = new OscP5(this, 7002);
 
-		TO = new NetAddress("192.168.0.148",9998);
-		MPO = new NetAddress("192.168.0.29",7000);
-		AL = new NetAddress("192.168.0.162",9000);
-		MAX = new NetAddress("192.168.0.162",7001);
+		TO = new NetAddress(config.getHost("TO"), config.getPort("TO"));
+		MPO = new NetAddress(config.getHost("MPO"), config.getPort("MPO"));
+		AL = new NetAddress(config.getHost("AL"), config.getPort("AL"));
+		MAX = new NetAddress(config.getHost("MAX"), config.getPort("MAX"));
 		ableton = new Ableton(oscP5, AL);
 		touchOSC = new TouchOSC(oscP5, TO);
 		useMAX=false;
-		
+
 		if (useMAX)
 			synth = new Max(this,oscP5, MAX);
 		else
 			synth = new Synth(this);
-		
+
 		// Visualizers
 		vis=new Visualizer[visnames.length];
 		vis[0]=new VisualizerPS(this);
@@ -92,10 +104,10 @@ public class Tracker extends PApplet {
 	public void tempo(float t) {
 		MasterClock.settempo(t);
 	}
-	
+
 	public void ping(int code) {
 		OscMessage msg = new OscMessage("/ack");
-		//PApplet.println("Got ping "+code);
+		PApplet.println("Got ping "+code);
 		msg.add(code);
 		oscP5.send(msg,MPO);
 	}
@@ -109,7 +121,7 @@ public class Tracker extends PApplet {
 		}
 		println("Bad vsetup message: "+msg);
 	}
-	
+
 	public static void sendOSC(String dest, OscMessage msg) {
 		if (dest.equals("AL"))
 			oscP5.send(msg,AL);
@@ -269,11 +281,11 @@ public class Tracker extends PApplet {
 	public void noteOn(Note n, int device, int channel) {
 		System.out.println("Got note on: "+n.getPitch()+", vel="+n.getVelocity()+", channel="+channel+", device="+device);
 	}
-	
+
 	public void noteOff(Note n, int device, int channel) {
 		System.out.println("Got note off: "+n.getPitch()+", vel="+n.getVelocity()+", channel="+channel+", device="+device);
 	}
-	
+
 	public void controllerIn(Controller c, int device, int channel) {
 		System.out.println("Got controller: "+c.getNumber()+" = "+c.getValue()+", channel="+channel+", device="+device);
 	}
