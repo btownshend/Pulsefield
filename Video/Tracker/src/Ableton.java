@@ -182,8 +182,8 @@ public class Ableton {
 	 * @param onOff true to arm, false to disarm
 	 */
 	public void arm(int track, boolean onOff) {
-		if (onOff && armedTrack!=-1) 
-			arm(armedTrack,false);
+		//if (onOff && armedTrack!=-1) 
+		//	arm(armedTrack,false);
 		OscMessage msg=new OscMessage("/live/arm");
 		msg.add(track);
 		msg.add(onOff?1:0);
@@ -192,5 +192,18 @@ public class Ableton {
 			armedTrack=track;
 		else
 			armedTrack=-1;
+	}
+	
+	/** Set a control for a track
+	 * 
+	 */
+	public void setControl(int track, int device, int parameter, int value) {
+		OscMessage msg=new OscMessage("/live/device");
+		msg.add(track);
+		msg.add(device);
+		msg.add(parameter);
+		msg.add(value);
+		sendMessage(msg);
+
 	}
 }
