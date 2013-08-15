@@ -46,6 +46,7 @@ public class Ableton {
 	float tempo;
 	float meter[] = new float[2];
 	int playstate = -1;
+	int armedTrack = -1;
 	
 	Ableton(OscP5 oscP5, NetAddress ALaddr) {
 		this.oscP5=oscP5;
@@ -174,5 +175,22 @@ public class Ableton {
 		msg.add(track);
 		msg.add(clip);
 		sendMessage(msg);
+	}
+	
+	/** Arm a track for MIDI (and disarm all previously armed tracks)
+	 * @param track 
+	 * @param onOff true to arm, false to disarm
+	 */
+	public void arm(int track, boolean onOff) {
+		if (onOff && armedTrack!=-1) 
+			arm(armedTrack,false);
+		OscMessage msg=new OscMessage("/live/arm");
+		msg.add(track);
+		msg.add(onOff?1:0);
+		sendMessage(msg);
+		if (onOff) 
+			armedTrack=track;
+		else
+			armedTrack=-1;
 	}
 }
