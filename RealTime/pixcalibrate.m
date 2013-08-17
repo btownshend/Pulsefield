@@ -276,6 +276,7 @@ for iid=1:length(ids)
         % Kludge the pixel list (in full imagespace coords)
         calib(i).pixelList=round(calib(i).pos);
         calib(i).valid=true;
+        calib(i).interpolated=[prevvalid,nextvalid];
         fprintf('Interpolating position of missing LED %d using %d,%d as (%.1f,%.1f)\n', i, prevvalid, nextvalid, calib(i).pos);
       end
     end
