@@ -1,5 +1,9 @@
 % Turn on LEDs on each corner
 function lightcorners(layout)
+if nargin<1
+  fprintf('No layout specified: creating default one\n');
+  layout=layoutpolygon(8,6,0);
+end
 s1=arduino_ip();
 setled(s1,[0,length(layout.ldir)-1],[0,10,0],1);
 setled(s1,0,[127,0,0],1);
