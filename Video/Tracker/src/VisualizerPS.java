@@ -11,7 +11,7 @@ import processing.opengl.PGL;
 public class VisualizerPS extends Visualizer {
 	PImage img;
 	float attractionForce=1;
-	int birthrate=5;
+	int birthrate=20;
 	HashMap<Integer, ParticleSystem> systems;
 
 	VisualizerPS(PApplet parent) {
