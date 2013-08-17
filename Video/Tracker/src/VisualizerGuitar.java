@@ -1,14 +1,19 @@
 import java.util.HashMap;
 
 import processing.core.PApplet;
+import processing.core.PConstants;
+import processing.core.PImage;
 import processing.core.PVector;
+import processing.opengl.PGL;
+import processing.opengl.PGraphicsOpenGL;
 
 class GString {
-	final static int nfrets=10;
-	final static float minfret=-0.8f;
-	final static float maxfret=0.8f;
-	final static float minstring=-0.6f;
-	final static float maxstring=0.6f;
+	final static int nfrets=22;
+	static float frets[];
+	final static float nut=-0.8f;
+	final static float bridge=1.1f;
+	final static float minstring=-0.48f;
+	final static float maxstring=0.49f;
 	final static int vibrateTime=500;   // Milliseconds
 
 	int fretpitch;
@@ -21,6 +26,10 @@ class GString {
 	GString(int fretpitch) {
 		this.fretpitch=fretpitch;
 		vibrating=false;
+		frets=new float[nfrets];
+		frets[0]=nut;
+		for (int i=1;i<frets.length;i++)
+			frets[i]=(float) ((bridge-frets[i-1])/10+frets[i-1]);
 	}
 
 	public void setPosition(float position) {
@@ -29,10 +38,15 @@ class GString {
 
 	public void strike(Synth synth, Position p, int color) {
 		PApplet.println("Strike ("+p.origin.x+","+p.origin.y+") Color="+color);
-		fret=(int)((p.origin.x-minfret)/(maxfret-minfret)*(nfrets-1));
-		if (fret < 0 || fret>= nfrets)
+		int i;
+		for (i=0;i<frets.length;i++)
+			if (p.origin.x<frets[i])
+				break;
+		//PApplet.println("x="+p.origin.x+", i="+i);
+		if (i==0 || i>=frets.length)
 			return;
-		PApplet.println("Fret="+fret);
+		fret=i-1;
+		//PApplet.println("Fret="+fret);
 		vibrating=true;
 		this.color=color;
 		strikeTime=System.currentTimeMillis();
@@ -51,44 +65,66 @@ class GString {
 }
 
 public class VisualizerGuitar extends VisualizerPS {
-	final GString strings[]={new GString(64),new GString(59), new GString(55),new GString(50),new GString(45),new GString(40)};
+	final GString strings[]={new GString(40),new GString(45), new GString(50),new GString(55),new GString(59),new GString(64)};
 	Synth synth;
 	HashMap<Integer, PVector> lastpos;
-
+	PImage guitar;
+	TrackSet trackSet;
+	
 	public VisualizerGuitar(PApplet parent, Synth synth) {
 		super(parent);
 		this.synth=synth;
 		lastpos=new HashMap<Integer,PVector>();
-		
+		guitar = parent.loadImage("guitar-center.png");
+
 		for (int i=0;i<strings.length;i++)
 			strings[i].setPosition(i*(GString.maxstring-GString.minstring)/(strings.length-1)+GString.minstring);
 	}
 
+	@Override
+	public void start() {
+		trackSet=Ableton.getInstance().setTrackSet("Guitar");
+	}
+
+	@Override
+	public void stop() {
+		Ableton.getInstance().setTrackSet(null);
+	}
+
+
 	public void draw(PApplet parent, Positions p, PVector wsize) {
+		PGL pgl=PGraphicsOpenGL.pgl;
+		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA);
+		pgl.blendEquation(PGL.FUNC_ADD);  
+
 		super.draw(parent,p,wsize);
-		parent.stroke(255);
-		parent.strokeWeight(5);
+		parent.tint(127);
+		parent.imageMode(PConstants.CENTER);
+		parent.image(guitar, wsize.x/2, wsize.y/2, wsize.x, wsize.y);
+		parent.stroke(100);
+		parent.strokeWeight(2);
 		for (int i=0;i<GString.nfrets;i++) {
-			float xpos=i*(GString.maxfret-GString.minfret)/(GString.nfrets-1)+GString.minfret;
-			PVector p1=this.convertToScreen(new PVector(xpos,GString.minstring), wsize);
-			PVector p2=this.convertToScreen(new PVector(xpos,GString.maxstring), wsize);		
+			float xpos=GString.frets[i];
+			PVector p1=this.convertToScreen(new PVector(xpos,GString.minstring-.05f), wsize);
+			PVector p2=this.convertToScreen(new PVector(xpos,GString.maxstring+.05f), wsize);		
 			parent.line(p1.x,p1.y,p2.x,p2.y);
 		}
-		parent.strokeWeight(2);
+		parent.strokeWeight(5);
 		for (int i=0;i<strings.length;i++) {
 			GString s=strings[i];
 			float ypos=s.position;
-			PVector p1=this.convertToScreen(new PVector(GString.minfret,ypos), wsize);
-			PVector p2=this.convertToScreen(new PVector(GString.maxfret,ypos), wsize);	
-			PVector pf=this.convertToScreen(new PVector(s.fret*(GString.maxfret-GString.minfret)/(GString.nfrets-1)+GString.minfret,ypos), wsize);	
+			PVector p1=this.convertToScreen(new PVector(GString.nut,ypos), wsize);
+			PVector p2=this.convertToScreen(new PVector(GString.bridge,ypos), wsize);	
 			if (s.isVibrating()) {
+				PVector pf=this.convertToScreen(new PVector(GString.frets[s.fret],ypos), wsize);	
+
 				parent.stroke(s.color);
 				parent.line(p1.x,p1.y,pf.x,pf.y);
 				PVector mid=new PVector((p2.x+pf.x)/2,(p2.y+pf.y)/2+parent.randomGaussian()*5);
 				parent.line(pf.x,pf.y,mid.x,mid.y);
 				parent.line(mid.x,mid.y,p2.x,p2.y);
 			} else {
-				parent.stroke(255);
+				parent.stroke(127);
 				parent.line(p1.x,p1.y,p2.x,p2.y);
 			}
 		}
