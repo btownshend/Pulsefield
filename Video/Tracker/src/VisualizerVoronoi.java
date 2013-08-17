@@ -32,6 +32,7 @@ class Voice {
 		int velocity=127;
 		synth.play(id, pitch, velocity, duration, channel);
 	}
+	
 	boolean set(PVector p1, PVector p2) {
 		final float maxval=0.9f;
 		PVector mainline[]=new PVector[2];
@@ -78,6 +79,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 	Voice curVoice;
 	Synth synth;
 	Scale scale;
+	TrackSet trackSet;
 	
 	VisualizerVoronoi(PApplet parent, Scale scale, Synth synth) {
 		super(parent);
@@ -92,6 +94,17 @@ public class VisualizerVoronoi extends VisualizerPS {
 		dt=new Triangulation(initialTriangle);
 		this.scale=scale;
 	}
+
+	@Override
+	public void start() {
+		trackSet=Ableton.getInstance().setTrackSet("Harp");
+	}
+
+	@Override
+	public void stop() {
+		Ableton.getInstance().setTrackSet(null);
+	}
+
 
 	@SuppressWarnings("unused")
 	@Override
