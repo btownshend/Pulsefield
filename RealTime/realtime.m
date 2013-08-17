@@ -74,7 +74,8 @@ info=infoinit();
 photointerval=10.0;   % Take a photo ever 10 seconds while someone present
 lastphoto=0;
 postbuffering=0;   % Number of frames PF has been empty
-
+lastvis=0;
+novismsg=0;
 try 
 while ~info.quit
   if idlecnt==0
@@ -86,7 +87,10 @@ while ~info.quit
   vis=getvisible(p,'setleds',false,'timeout',timeout);
 
   if isempty(vis)
-    % fprintf('No vis available\n');
+    if (now-lastvis)*3600*24>5 && (now-novismsg)*3600*24>5
+      fprintf('No vis received in %.0f seconds\n',(now-lastvis)*3600*24);
+      novismsg=now;
+    end
     idlecnt=idlecnt+1;
     if 0 && length(prevsnap.hypo)>0 && (now-lastphoto)*3600*24>photointerval
       fprintf('Taking a snapshot photo\n');
@@ -94,6 +98,8 @@ while ~info.quit
       lastphoto=now;
     end
   else
+    lastvis=now;
+    novismsg=now;
     info.health.gotmsg('FE');
     samp=samp+1;
     % Check for bad data
