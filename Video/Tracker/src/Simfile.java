@@ -57,7 +57,7 @@ class Notes  {
 					noteNum=0;
 				} else {
 					notes.add(new NoteData(measure,noteNum,nsplit.length,n));
-					//System.out.println("Added <"+n+"> -> "+notes.get(notes.size()-1));
+					System.out.println("Added <"+n+"> -> "+notes.get(notes.size()-1));
 					noteNum++;
 				}
 			}
@@ -240,11 +240,23 @@ public class Simfile {
 		return notes.size();
 	}
 	
-	public ArrayList<NoteData> getNotes(int pattern, int measure, int nmeasure) {
+	public int findClosestDifficulty(int difficulty) {
+		int best=0;
+		for (int i=1;i<notes.size();i++) {
+			Notes n=notes.get(i);
+			if (Math.abs(n.difficultyMeter-difficulty)< Math.abs(notes.get(best).difficultyMeter-difficulty))
+				best=i;
+		}
+		return best;
+	}
+	
+	public ArrayList<NoteData> getNotes(int difficulty, int measure, int nmeasure) {
+		int pattern=findClosestDifficulty(difficulty);
 		return notes.get(pattern).getNotes(measure,nmeasure);
 	}
 
-	public ArrayList<NoteData> getNotes(int pattern, float ts1, float ts2) {
+	public ArrayList<NoteData> getNotes(int difficulty, float ts1, float ts2) {
+		int pattern=findClosestDifficulty(difficulty);
 		return notes.get(pattern).getNotes(ts1,ts2);
 	}
 
