@@ -83,7 +83,7 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
 
     serverPort=urls.getPort("FE");
     if (serverPort<0) {
-	fprintf(stderr,"Invalid server port retrieved from %s when looking for FE\n", urls.getFilename());
+	fprintf(stderr,"Invalid server port retrieved from %s when looking for FE: %d\n", urls.getFilename(),serverPort);
 	exit(1);
     }
 
@@ -534,6 +534,8 @@ void FrontEnd::rmAllDest() {
 }
 
 void FrontEnd::ping(lo_message msg, int seqnum) {
+    char *host=lo_url_get_hostname(lo_address_get_url(lo_message_get_source(msg)));
+    printf("Got ping from %s\n",host);
     for (int i=0;i<dests.count();i++) {
 	char cbuf[10];
 	sprintf(cbuf,"%d",dests.getPort(i));
