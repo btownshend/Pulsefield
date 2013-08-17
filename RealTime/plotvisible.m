@@ -28,6 +28,8 @@ for i=1:size(vis.v,1)
         else
           plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,'or');
         end
+      else
+        plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,'oy');
       end
     end
   end
@@ -46,6 +48,8 @@ for i=1:size(vis.v,1)
         else
           plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,'or');
         end
+      else
+          plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,'oy');
       end
     end
   end
