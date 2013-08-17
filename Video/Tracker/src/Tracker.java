@@ -187,6 +187,12 @@ public class Tracker extends PApplet {
 		//pfexit(0, 0, 98);
 		mouseID=(mouseID-90+1)%8+90;
 	}
+	
+	@Override
+	public void keyPressed() {
+		if (key=='C' || key=='c')
+			pfsetnpeople(0);
+	}
 
 	public static void main(String args[]) {
 		if (present)
