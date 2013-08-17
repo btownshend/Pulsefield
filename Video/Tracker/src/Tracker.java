@@ -135,6 +135,12 @@ public class Tracker extends PApplet {
 			System.err.println("sendOSC: Bad destination: "+dest);
 	}
 
+	public static void sendOSC(String dest, String path, int data) {
+		OscMessage msg=new OscMessage(path);
+		msg.add(data);
+		sendOSC(dest,msg);
+	}
+
 	synchronized public void setapp(int appNum) {
 		if (appNum <0 || appNum > vis.length) {
 			println("Bad video app number: "+appNum);
