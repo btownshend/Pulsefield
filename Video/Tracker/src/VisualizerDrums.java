@@ -5,7 +5,7 @@ import processing.core.PVector;
 
 class ControlValues {
 	PVector pos;
-	int ccx, ccy;
+	int ccx, ccy, ccdx, ccdy, ccspeed;
 	boolean moving;
 
 	ControlValues(PVector pos) {
@@ -18,7 +18,7 @@ class ControlValues {
 public class VisualizerDrums extends VisualizerPS {
 	Synth synth;
 	HashMap<Integer,ControlValues> lastpos;
-	final int AbletonTrack=95;
+	TrackSet trackSet;
 
 	VisualizerDrums(PApplet parent, Synth synth) {
 		super(parent);
@@ -28,14 +28,12 @@ public class VisualizerDrums extends VisualizerPS {
 
 	@Override
 	public void start() {
-		for (int i=0;i<2;i++)
-			Ableton.getInstance().arm(AbletonTrack+i,true);
+		trackSet=Ableton.getInstance().setTrackSet("Drums");
 	}
 
 	@Override
 	public void stop() {
-		for (int i=0;i<2;i++)
-			Ableton.getInstance().arm(AbletonTrack+i,false);
+		Ableton.getInstance().setTrackSet(null);
 	}
 
 	@Override
@@ -52,15 +50,31 @@ public class VisualizerDrums extends VisualizerPS {
 
 			int ccx=(int)((p.origin.x+1)/2*127);
 			int ccy=(int)((p.origin.y+1)/2*127);
-			//System.out.println("OLD="+c.ccx+","+c.ccy+", new="+ccx+","+ccy);
+			int ccdx=(int)((p.avgspeed.x*3+1)/2*127); ccdx=(ccdx<0)? 0:(ccdx>127?127:ccdx);
+			int ccdy=(int)((p.avgspeed.y*3+1)/2*127);ccdy=(ccdy<0)? 0:(ccdy>127?127:ccdy);
+			int ccspeed=(int)(p.avgspeed.mag()*2*127);ccspeed=(ccspeed<0)? 0:(ccspeed>127?127:ccspeed);
+			System.out.println("OLD="+c.ccx+","+c.ccy+", new="+ccx+","+ccy);
+
+			boolean moving = PVector.sub(c.pos,p.origin).mag() > 0.01;
+			int track=trackSet.getTrack(p.channel);
+			int cnum=trackSet.getMIDIChannel(p.channel);
+			if (ccx!=c.ccx)
+				Ableton.getInstance().setControl(track, 0, 1, ccx);
+			if (ccy!=c.ccy)
+				Ableton.getInstance().setControl(track, 0, 2, ccy);
+			if (ccdx!=c.ccdx)
+				Ableton.getInstance().setControl(track, 0, 3, ccdx);
+			if (ccdy!=c.ccdy)
+				Ableton.getInstance().setControl(track, 0, 4, ccdy);
+			if (ccspeed!=c.ccspeed)
+				Ableton.getInstance().setControl(track, 0, 5, ccspeed);
 			c.ccx=ccx;
 			c.ccy=ccy;
-			boolean moving = PVector.sub(c.pos,p.origin).mag() > 0.01;
+			c.ccdx=ccdx;
+			c.ccdy=ccdy;
+			c.ccspeed=ccspeed;
 			if (c.moving != moving) {
-				int cnum=p.channel%2;
-				Ableton.getInstance().setControl(AbletonTrack+cnum, 0, 1, ccx);
-				Ableton.getInstance().setControl(AbletonTrack+cnum, 0, 2, ccy);
-				synth.play(p.id,p.channel+35,127,1,cnum);
+				synth.play(p.id,cnum+35,127,1,cnum);
 				c.moving=moving;
 			}
 
