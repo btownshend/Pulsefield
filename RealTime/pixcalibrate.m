@@ -231,19 +231,21 @@ for iid=1:length(ids)
   
   % Check for stray points
   maxpixelsep=10;
+  for retry=1:2
+    fprintf('Checking for stray points: %d\n', retry);
   for i=1:length(sainfo.led)
     if calib(i).valid 
       closest=2e10;
       left=nan;
       right=nan;
-      for j=i-1:-1:1
+      for j=i-1:-1:max(1,i-5)
         if calib(j).valid
           closest=norm(calib(i).pos-calib(j).pos)/(i-j);
           left=j;
           break;
         end
       end
-      for j=i+1:length(sainfo.led)
+      for j=i+1:min(i+5,length(sainfo.led))
         if calib(j).valid
           closest=min(closest,norm(calib(i).pos-calib(j).pos)/(j-i));
           right=j;
@@ -259,6 +261,7 @@ for iid=1:length(ids)
       end
       calib(i).closest=closest;
     end
+  end
   end
   
   % Interpolate missing points
