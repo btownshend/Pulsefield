@@ -247,7 +247,7 @@ public class Tracker extends PApplet {
 			PApplet.print(",axislength=("+majoraxis+","+minoraxis+")");
 			PApplet.println(",channel="+channel);
 		} */
-		ypos=-ypos;
+		//ypos=-ypos;
 		positions.move(id, channel, mapposition(xpos, ypos), groupid, groupsize, elapsed);
 	}
 
