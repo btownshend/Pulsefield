@@ -18,9 +18,11 @@ public class URLConfig {
 		String line;
 		while ((line=fd.readLine()) != null) {
 			String parts[]=line.split(",");
-			if (parts.length!=3)
+			if (parts[0].charAt(0) == '-') 
+				;
+			else if (parts.length!=3)
 				System.out.println("Bad line in "+configFile+": "+line);
-			else if (parts[0].charAt(0) != '-') {
+			else {
 				hosts.put(parts[0], parts[1]);
 				ports.put(parts[0], Integer.parseInt(parts[2].trim()));
 			}
