@@ -4,7 +4,7 @@ if nargin<2
   fprintf('Move a black CD case around LED struts near each camera blocking LEDs to far camera and view from near camera\n');
   input('Hit return when ready to start (5s pause will follow)','s');
   pause(5);
-  nsamps=1800;
+  nsamps=2400;
   fprintf('Acquiring %d samples\n', nsamps);
   recvis=recordvis(p,nsamps);
 end
