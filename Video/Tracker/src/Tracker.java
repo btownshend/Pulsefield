@@ -1,6 +1,6 @@
 import java.awt.Color;
 import java.io.IOException;
-
+import java.util.Calendar;
 import processing.core.PApplet;
 import oscP5.*;
 import netP5.*;
@@ -37,6 +37,7 @@ public class Tracker extends PApplet {
 	int mouseID;
 	String configFile;
 	URLConfig config;
+	AutoCycler cycler;
 
 	public void setup() {
 		configFile="/Users/bst/DropBox/Pulsefield/config/urlconfig.txt";
@@ -51,7 +52,8 @@ public class Tracker extends PApplet {
 		size(1280,800, OPENGL);
 		frameRate(30);
 		mouseID=90;
-
+		cycler=new AutoCycler();
+		
 		frame.setBackground(new Color(0,0,0));
 		positions=new Positions();
 
@@ -191,7 +193,6 @@ public class Tracker extends PApplet {
 			PApplet.main(new String[] { "--present","Tracker" });
 		else
 			PApplet.main(new String[] { "Tracker" });
-
 	}
 
 	/* incoming osc message are forwarded to the oscEvent method. */
@@ -265,6 +266,12 @@ public class Tracker extends PApplet {
 
 	synchronized public void pfsetnpeople(int n) {
 		PApplet.println("/pf/set/npeople: now have "+n+" people");
+		if (n==0 && positions.positions.size()>0) {
+			Calendar cal=Calendar.getInstance();
+			int hour=cal.get(Calendar.HOUR_OF_DAY);
+			cycler.change(hour<7 || hour > 19);
+		}
+			
 		positions.setnpeople(n);
 	}
 
