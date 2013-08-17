@@ -59,15 +59,17 @@ public class AutoCycler {
 		led.put("MtrFollow", "/led/app/buttons/4/2");
 
 		sound.put("Guitar", "/sound/app/buttons/5/1");
-		sound.put("CSeq", "/sound/app/buttons/5/1");
-		sound.put("HotSpots", "/sound/app/buttons/5/1");
-		sound.put("Grid", "/sound/app/buttons/5/1");
-		sound.put("Video", "/sound/app/buttons/5/1");
+		sound.put("CSeq", "/sound/app/buttons/5/2");
+		sound.put("HotSpots", "/sound/app/buttons/5/3");
+		sound.put("Grid", "/sound/app/buttons/5/4");
+		sound.put("Video", "/sound/app/buttons/5/5");
 
 		day=new ArrayList<Setup>();
 		night=new ArrayList<Setup>();
 		day.add(new Setup("Grid","Smoke","MtrFollow",1f));
 		day.add(new Setup("Grid","Smoke","Visible",1f));
+		day.add(new Setup("Grid","Smoke","FollowPB",1f));
+
 
 		night.add(new Setup("Video","Smoke","FollowWht",1f));
 		night.add(new Setup("Video","Navier","FollowWht",1f));
@@ -95,8 +97,8 @@ public class AutoCycler {
 		ArrayList<Setup> setup=daytime?day:night;
 		double rpick=Math.random()*(daytime?daytotal:nighttotal);
 		for (Setup s:setup) {
-			if (s.weight<rpick) {
-				System.out.println("Autocycled to "+s.toString());
+			if (s.weight>rpick) {
+				System.out.println("Autocycled "+(daytime?"day":"night")+" to "+s.toString()+" (rpick="+rpick+", weight="+s.weight+")");
 				Tracker.sendOSC("MPO",video.get(s.videomode),1);
 				Tracker.sendOSC("MPO",sound.get(s.soundappmode),1);
 				Tracker.sendOSC("MPO",led.get(s.ledmode),1);

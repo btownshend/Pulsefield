@@ -85,7 +85,7 @@ public class Tracker extends PApplet {
 		vis[6]=new VisualizerVoronoi(this,scale,synth);
 		vis[7]=new VisualizerGuitar(this,synth);
 		vis[8]=new VisualizerDrums(this,synth);
-		setapp(8);
+		setapp(2);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
@@ -109,7 +109,7 @@ public class Tracker extends PApplet {
 
 	public void ping(int code) {
 		OscMessage msg = new OscMessage("/ack");
-		PApplet.println("Got ping "+code);
+		//PApplet.println("Got ping "+code);
 		msg.add(code);
 		oscP5.send(msg,MPO);
 	}
@@ -284,7 +284,8 @@ public class Tracker extends PApplet {
 		if (n==0 && positions.positions.size()>0) {
 			Calendar cal=Calendar.getInstance();
 			int hour=cal.get(Calendar.HOUR_OF_DAY);
-			cycler.change(hour<7 || hour > 19);
+			PApplet.println("Autocycling hour = "+hour);
+			cycler.change(hour>=7 && hour <= 19);
 		}
 			
 		positions.setnpeople(n);

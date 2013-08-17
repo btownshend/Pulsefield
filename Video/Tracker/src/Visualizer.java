@@ -39,7 +39,7 @@ public abstract class Visualizer {
 	}
 
 	public void handleMessage(OscMessage theOscMessage) {
-		PApplet.println("Unhanled OSC Message: "+theOscMessage.toString());
+		PApplet.println("Unhandled OSC Message: "+theOscMessage.toString());
 	}
 
 	public PVector convertToScreen(PVector p, PVector wsize) {
