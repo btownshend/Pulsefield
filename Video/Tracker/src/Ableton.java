@@ -9,7 +9,7 @@ class Clip {
 	float position;
 	float length;
 	int state;
-	
+
 	Clip() {
 		this.position=0f;
 		this.length=0f;
@@ -20,21 +20,40 @@ class Clip {
 class Track {
 	HashMap<Integer,Clip> clips;
 	float meter[] = new float[2];
-	
+
 	Track() {
 		clips=new HashMap<Integer,Clip>();
 	}
-	
+
 	Clip getClip(int clip) {
 		Clip c=clips.get(clip);
 		if (c==null) {
 			c=new Clip();
 			clips.put(clip,c);
 		}
-		
+
 		return c;
 	}
 
+}
+
+class TrackSet {
+	String name;
+	int firstTrack;
+	int numTracks;
+	boolean armed;
+	TrackSet(String name, int firstTrack, int numTracks) {
+		this.name=name;
+		this.firstTrack=firstTrack;
+		this.numTracks=numTracks;
+		armed=false;
+	}
+	int getMIDIChannel(int channel) {
+		return channel%numTracks;
+	}
+	int getTrack(int channel) {
+		return (channel%numTracks)+firstTrack;
+	}
 }
 
 public class Ableton {
@@ -43,11 +62,11 @@ public class Ableton {
 	OscP5 oscP5;
 	NetAddress AL;
 	HashMap<Integer,Track> tracks;
+	HashMap<String,TrackSet> tracksets;
 	float tempo;
 	float meter[] = new float[2];
 	int playstate = -1;
-	int armedTrack = -1;
-	
+
 	Ableton(OscP5 oscP5, NetAddress ALaddr) {
 		this.oscP5=oscP5;
 		lasttime=System.currentTimeMillis();
@@ -55,6 +74,10 @@ public class Ableton {
 		theAbleton=this;
 		tracks = new HashMap<Integer,Track>();
 		tempo=120;
+		tracksets=new HashMap<String,TrackSet>();
+		tracksets.put("Drums", new TrackSet("Drums",95,2));
+		tracksets.put("Harp", new TrackSet("Harp",92,1));
+		tracksets.put("Guitar", new TrackSet("Guitar",93,1));
 	}
 
 	public void sendMessage(OscMessage msg) {
@@ -102,7 +125,7 @@ public class Ableton {
 	public float getTempo() {
 		return tempo;
 	}
-	
+
 	/** Handle Ableton clip info message
 	 * @param track Track number
 	 * @param clip Clip number
@@ -114,7 +137,7 @@ public class Ableton {
 		PApplet.println("Track "+track+" clip "+clip+" state changed from "+c.state+" to "+state);
 		c.state = state;
 	}
-	
+
 	void setMeter(int lr, float value ) {
 		if (lr==0 || lr==1)
 			meter[lr]=value;
@@ -176,22 +199,45 @@ public class Ableton {
 		msg.add(clip);
 		sendMessage(msg);
 	}
-	
+
 	/** Arm a track for MIDI (and disarm all previously armed tracks)
 	 * @param track 
 	 * @param onOff true to arm, false to disarm
 	 */
 	public void arm(int track, boolean onOff) {
-		//if (onOff && armedTrack!=-1) 
-		//	arm(armedTrack,false);
 		OscMessage msg=new OscMessage("/live/arm");
 		msg.add(track);
 		msg.add(onOff?1:0);
 		sendMessage(msg);
-		if (onOff) 
-			armedTrack=track;
-		else
-			armedTrack=-1;
+	}
+
+	/** Set a MIDI track set
+	 * @param name of track set as defined in constructor
+	 */
+	public TrackSet setTrackSet(String name) {
+		TrackSet ts = null;
+		if (name!=null) {
+			ts=tracksets.get(name);
+			if (ts==null) {
+				System.err.println("No track set called: "+name);
+			}
+
+		}
+		// Disarm all other tracksets
+		for (TrackSet others: tracksets.values()) {
+			if (others!=ts) {
+				for (int i=others.firstTrack;i<others.firstTrack+others.numTracks;i++)
+					arm(i,false);
+				others.armed=false;
+			}
+		}
+		if (ts!=null) {
+			// Arm this trackset
+			for (int i=ts.firstTrack;i<ts.firstTrack+ts.numTracks;i++)
+				arm(i,true);
+			ts.armed=true;
+		} 
+		return ts;
 	}
 	
 	/** Set a control for a track
