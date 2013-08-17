@@ -448,8 +448,6 @@ classdef Ableton < handle
           songtrack=str2double(nm(3:end));
           song=obj.findsongid(songid);
           if isempty(song)
-            obj.songs{end+1}=[];   % New song;
-            obj.songids{end+1}=songid;
             songmapentry=[];
             for j=1:length(songmap)
               if strcmp(songmap{j}{1},songid)
@@ -458,14 +456,15 @@ classdef Ableton < handle
               end
             end
             if isempty(songmapentry)
-              fprintf('No entry for name or tempo of song with ID %s;   assuming 120bpm\n', songid);
-              obj.songtempo(end+1)=120;
-              obj.songnames{end+1}=[songid,' (missing name/tempo entry in Ableton.m)'];
-            else
-              obj.songnames{end+1}=songmap{songmapentry}{2};
-              obj.songtempo(end+1)=songmap{songmapentry}{3};
+              fprintf('No entry for name or tempo of song with ID %s; ignoring\n', songid);
+              continue;
             end
+            obj.songs{end+1}=[];   % New song;
+            obj.songnames{end+1}=songmap{songmapentry}{2};
+            obj.songtempo(end+1)=songmap{songmapentry}{3};
+            obj.songids{end+1}=songid;
             song=length(obj.songs);
+            fprintf('AL: Added song %d: %s with ID %s, tempo %d\n', song, obj.songnames{end},obj.songids{end},obj.songtempo(end));
           end
           
           % Set mapping
