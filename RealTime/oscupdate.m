@@ -224,17 +224,23 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
       if nmsg>0
         info.health.gotmsg('AL');
       end
-
       info.volume=info.al.getvolume();
       info.tempo=info.al.gettempo();
+    else
+      % Just poll for health check,ignore result
+      msg=oscmsgin('MPA',0);
+      if ~isempty(msg)
+        info.health.gotmsg('AL');
+      end
     end
+
     
     if (now-info.lastping)*24*3600 > info.pinginterval
       % Ping everyone that can respond
-      fprintf('Pinging everyone\n');
+      fprintf('Pinging LD, MAX, AL, VD\n');
       oscmsgout('LD','/ping',{int32(1)});
       oscmsgout('MAX','/ping',{int32(3)});
-      oscmsgout('AL','/live/master/volume',{});
+      oscmsgout('AL','/live/master/volume',{});  % Force a response
       oscmsgout('VD','/ping',{int32(4)});
       % Update latency display
       oscmsgout('TO','/touchosc/latency',{round(info.latency*1000)});
