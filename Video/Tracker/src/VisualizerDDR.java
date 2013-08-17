@@ -2,6 +2,8 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
@@ -84,11 +86,31 @@ public class VisualizerDDR extends Visualizer {
 		chooseSong();
 	}
 
+	public void handleMessage(OscMessage msg) {
+		PApplet.println("DDR message: "+msg.toString());
+		String pattern=msg.addrPattern();
+		String components[]=pattern.split("/");
+		
+		if (components.length<3 || !components[2].equals("ddr")) 
+			PApplet.println("DDR: Expected /video/ddr messages, got "+msg.toString());
+		else if (components.length==4 && components[3].equals("songnum")) {
+			chooseSong((int)(msg.get(0).floatValue()*songs.size()));
+		} else 
+			PApplet.println("Unknown Navier Message: "+msg.toString());
+	}
+	
 	/* Randomly choose a song */
 	void chooseSong() {
 		int songIndex = (int)(Math.random()*songs.size());
+		chooseSong(songIndex);
+	}
+	
+	void chooseSong(int songIndex) {
 		cursong=songs.get(songIndex);
 		PApplet.println("Chose song "+songIndex+": "+cursong.getSimfile().toString());
+		OscMessage msg=new OscMessage("/video/ddr/song");
+		msg.add(cursong.sf.getTag("TITLE"));
+		TouchOSC.getInstance().sendMessage(msg);
 	}
 	
 	public void update(PApplet parent, Positions allpos) {
