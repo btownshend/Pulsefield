@@ -25,7 +25,7 @@ daymode;
 
 if ~isfield(p.camera(1),'pixcalib')
   disp('Pixel calibration');
-  p=pixcalibrate(p);
+  [p,pcim]=pixcalibrate(p);
   if doplot
     for i=1:length(p.camera)
       plotpixcalib(p.camera(i));
@@ -56,12 +56,12 @@ if length(p.camera)==5
               -1.3293    2.1081
               1.0517    2.2646];
 elseif length(p.camera)==6
-  cposcalib=[    2.1031   -2.5357
-                 -0.1724   -3.2904
-                 -2.3925   -2.2642
-                 -2.3779    2.2734
-                 -0.0969    3.2689
-                 2.1195    2.5154];
+  cposcalib=[      2.0838   -2.5066
+   -0.0987   -3.2321
+   -2.3154   -2.2883
+   -2.4100    2.1878
+   -0.1048    3.2607
+    2.0975    2.5106];
 else
   cposcalib=[];
 end
