@@ -16,9 +16,10 @@ end
 inchpermeter=39.3700787;
 feetpermeter=inchpermeter/12;
 conlen=(1+1/16)/inchpermeter;   % Length that connectors add to legs
-leglen=96.5/inchpermeter+2*conlen;
+entryconlen=(1+5/8)/inchpermeter;   % Length that reversed connectors at entry add to legs
+leglen=96/inchpermeter+2*conlen;
 strutlength=4/feetpermeter;
-entrylength=conlen+4/feetpermeter;  % First LED is ledspacing(1) in from the end of 4' member
+entrylength=entryconlen+4/feetpermeter;  % First LED is ledspacing(1) in from the end of 4' member
 opening=2/feetpermeter;   % 24" opening
 
 % Spacing between LED and prior one (including post-space after last one)
@@ -30,9 +31,10 @@ firstleds=cumsum(numled(1:numstrips-1));
 %ledspacing(1)=-0.5/100;  % First LED outside end of 4' member by 0.5cm
 %ledspacing(end+1)=-2.0/100;  % Last LED outside end of 4' member by 2.0cm
 % Settings for 4 strips
-ledspacing(firstleds)=[5,5,5]/100;  
-ledspacing(1)=36.125/39.37;  % First LED inside end of 4' member by 36.125in
-ledspacing(end+1)=35.5/39.37;  % Last LED inside end of 4' member by 35.5in
+%ledspacing(firstleds)=[9,9,8]/100;  
+ledspacing(firstleds)=[2.2,2.25,2]/39.37;  % In inches
+ledspacing(1)=35/39.37;  % First LED inside end of 4' member by 36.125in
+ledspacing(end+1)=36.25/39.37;  % Last LED inside end of 4' member by 35.5in
 
 % Angle subtended by each 8' leg
 legtheta=2*pi*(leglen*nlegs)/(leglen*nlegs+opening)/nlegs;
