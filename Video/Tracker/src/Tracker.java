@@ -162,6 +162,9 @@ public class Tracker extends PApplet {
 		msg.add(visnames[currentvis]);
 		sendOSC("TO",msg);
 
+		// All notes off
+		for (int ch=0;ch<16;ch++)
+			synth.setCC(ch, 123, 1);
 		vis[currentvis].start();
 	}
 
