@@ -72,15 +72,15 @@ public class Tracker extends PApplet {
 			synth = new Max(this,oscP5, MAX);
 		else
 			synth = new Synth(this);
-
+		Scale scale=new Scale("Major","C");
+		
 		// Visualizers
 		vis=new Visualizer[visnames.length];
 		vis[0]=new VisualizerPS(this);
 		visNavier=new VisualizerNavier(this); vis[1]=visNavier;
-		vis[2]=new VisualizerTron(this);
+		vis[2]=new VisualizerTron(this,scale,synth);
 		visAbleton=new VisualizerGrid(this);vis[3]=visAbleton;
 		visDDR=new VisualizerDDR(this);vis[4]=visDDR;
-		Scale scale=new Scale("Major","C");
 		vis[5]=new VisualizerPoly(this,scale,synth);
 		vis[6]=new VisualizerVoronoi(this,scale,synth);
 		vis[7]=new VisualizerGuitar(this,synth);
