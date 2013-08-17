@@ -3,6 +3,8 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PVector;
+import processing.opengl.PGL;
+import processing.opengl.PGraphicsOpenGL;
 
 
 class VisualizerNavier extends Visualizer {
@@ -81,6 +83,12 @@ class VisualizerNavier extends Visualizer {
 	}
 
 	public void draw(PApplet parent, Positions p, PVector wsize) {
+		parent.resetShader();
+		
+		PGL pgl=PGraphicsOpenGL.pgl;
+		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA);
+		pgl.blendEquation(PGL.FUNC_ADD);  
+
 		double dt = 1 / parent.frameRate;
 		long t1 = System.nanoTime();
 		fluidSolver.tick(dt, visc, diff);
@@ -152,6 +160,8 @@ class VisualizerNavier extends Visualizer {
 				buffer.set(x/2, y/2, collor);
 			}
 		}
+		parent.imageMode(PConstants.CORNERS);
+		parent.tint(255);
 		parent.image(buffer,0,0,parent.width,parent.height);
 	}
 
