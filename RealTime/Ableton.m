@@ -202,9 +202,9 @@ classdef Ableton < handle
         fprintf('No tracks retrieved from Ableton Live.\n');
         [alhost,~]=getsubsysaddr('AL');
         fprintf('- is AL running on host %s\n',alhost);
-        fprintf('- is OSCulator running on host %s\n',alhost);
+        fprintf('- is abletonRelay.sh running on host %s\n',alhost);
         [mpahost,mpaport]=getsubsysaddr('MPA');
-        fprintf('- is OSCulator setup to forward OSC messages incoming on port 9001 to this host (%s) port %d?\n', mpahost, mpaport);
+        fprintf('- is abletonRelay.sh setup to forward OSC messages incoming on port 9001 to this host (%s) port %d?\n', mpahost, mpaport);
         fprintf('- is there a network connection between this host and %s?\n', alhost);
       elseif length(obj.tracknames)~=length(newobj.tracknames)
         fprintf('Ableton setup loaded from %s has %d tracks, but AL currently has %d tracks\n', filename,length(newobj.tracknames),length(obj.tracknames));
