@@ -71,9 +71,10 @@ public class VisualizerDDR extends Visualizer {
 	Simfile sf;
 	long startTime;
 	PImage arrow;
-	Song cursong;
+	Song cursong=null;
 	final float DOTSIZE=50f;
-
+	boolean active=false;
+	
 	HashMap<Integer, Dancer> dancers;
 
 	VisualizerDDR(PApplet parent) {
@@ -83,7 +84,6 @@ public class VisualizerDDR extends Visualizer {
 		songs=new ArrayList<Song>();
 		songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/StepMix 1.0/Impossible Fidelity/","impossible.sm",0));
 		songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/Plaguemix Series/Super Trouper","supertrouper.sm",1));
-		chooseSong();
 	}
 
 	public void handleMessage(OscMessage msg) {
@@ -106,11 +106,17 @@ public class VisualizerDDR extends Visualizer {
 	}
 	
 	void chooseSong(int songIndex) {
+		if (songs.get(songIndex)==cursong)
+			return;
+		if (cursong!=null)
+			Ableton.getInstance().stopClip(cursong.track,cursong.clipNumber);
 		cursong=songs.get(songIndex);
 		PApplet.println("Chose song "+songIndex+": "+cursong.getSimfile().toString());
 		OscMessage msg=new OscMessage("/video/ddr/song");
 		msg.add(cursong.sf.getTag("TITLE"));
 		TouchOSC.getInstance().sendMessage(msg);
+		if (active)
+			Ableton.getInstance().playClip(cursong.track,cursong.clipNumber);
 	}
 	
 	public void update(PApplet parent, Positions allpos) {
@@ -139,13 +145,15 @@ public class VisualizerDDR extends Visualizer {
 	public void start() {
 		startTime=System.currentTimeMillis();
 		PApplet.println("Starting DDR at "+startTime);
+		active=true;
 		chooseSong();
-		Ableton.getInstance().playClip(cursong.track,cursong.clipNumber);
 	}
 
 	public void stop() {
 		PApplet.println("Stopping DDR at "+System.currentTimeMillis());
 		Ableton.getInstance().stopClip(cursong.track,cursong.clipNumber);
+		active=false;
+		cursong=null;
 	}
 
 	public void draw(PApplet parent, Positions p, PVector wsize) {
@@ -240,9 +248,18 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 	public void drawTicker(PApplet parent, PVector wsize, float now) {
-		final float DURATION=10.0f;  // Duration of display top to bottom
+		final float DURATION=6.0f;  // Duration of display top to bottom
 		final float HISTORY=2f;    // Amount of past showing
-		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(0, now-HISTORY, now-HISTORY+DURATION);
+		int pattern=cursong.getSimfile().findClosestDifficulty(0);
+		float songdur=cursong.getSimfile().getduration(pattern);
+		if (now>songdur) {
+			PApplet.println("Song duration "+songdur+" ended");
+			((Tracker)parent).cycle();
+		}
+	
+
+		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, now-HISTORY, now-HISTORY+DURATION);
+		
 		//parent.ellipse(wsize.x/2,wsize.y/2,100,100);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
 		parent.textSize(16);
