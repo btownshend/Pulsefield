@@ -23,6 +23,8 @@ classdef SoundAppGrid < SoundApp
     end
     
     function info=start(obj,p,info)
+      info.max=0;
+      info.ableton=1;
       obj.minx=min(p.layout.active(:,1))+0.1;
       obj.maxx=max(p.layout.active(:,1))-0.5;
       obj.miny=min(p.layout.active(:,2))+0.1;

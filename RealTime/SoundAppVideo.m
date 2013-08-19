@@ -12,6 +12,8 @@ classdef SoundAppVideo < SoundApp
     end
 
     function info=start(obj,p,info)
+      info.max=0;
+      info.ableton=1;
     end
     
     function stop(obj,p,info)
