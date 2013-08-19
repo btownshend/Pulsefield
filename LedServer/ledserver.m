@@ -298,6 +298,9 @@ function ledserver(p,doplot,simul)
       refreshcnt=refreshcnt+1;
       if refreshcnt>50
         fprintf('Mean update rate %.2f/second\n', refreshcnt/((newnow-refreshtime)*24*3600));
+        % Refresh port mappings in case frontend or realtime restarted
+        oscmsgout('FE','/vis/dest/add/port',{myport},debug);
+        oscmsgout('MPL','/pf/dest/add/port',{myport,'LD'},debug);
         refreshcnt=0;
         refreshtime=newnow;
       end
