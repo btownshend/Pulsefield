@@ -2,7 +2,7 @@
 
 function info=infoinit()
   % Setup info structure to pass things into apps
-  info=struct('duration',120,'velocity',127,'volume',0.5,'tempo',120,'scale',1,'key',1,'pgm',ones(1,8),'refresh',true,'cm',ChannelMap(8),'preset',0,'starttime',now,'ableton',0,'max',0,'al',Ableton('ableton.mat'),'song',[],'touchpage','','health',Health({'FE','LD','AL','MX','TO','VD'}),'lastping',0,'pinginterval',1.0,'latency',0.0,'groupmap',GroupMap(60));
+  info=struct('duration',120,'velocity',127,'volume',0.5,'tempo',120,'scale',1,'key',1,'pgm',ones(1,8),'refresh',true,'cm',ChannelMap(8),'preset',0,'starttime',now,'ableton',1,'max',0,'al',Ableton('ableton.mat'),'song',[],'touchpage','','health',Health({'FE','LD','AL','MX','TO','VD'}),'lastping',0,'pinginterval',1.0,'latency',0.0,'groupmap',GroupMap(60));
 
   % Ableton, Max flags indicate whether notes/sounds should be played -- control messages still sent
   % Channel(k) is the id that is on channel k, or 0 if not in use
@@ -18,7 +18,7 @@ function info=infoinit()
   
   % Table of apps
   info.apps={ SoundAppGuitar('5/1'), SoundAppCSeq('5/2'), SoundAppHotspots('5/3'), SoundAppGrid('5/4'), SoundAppVideo('5/5') };
-  info.currapp=info.apps{end};
+  info.currapp=info.apps{4};
 
   % Table of sample sets
   info.samples=struct('name',{'MIDI',   'A','B',   'C'},...
