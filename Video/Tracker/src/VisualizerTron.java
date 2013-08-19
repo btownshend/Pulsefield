@@ -136,7 +136,7 @@ public class VisualizerTron extends Visualizer {
 					int delta;
 					if (grid[p].nextgrid!=-1 && grid[p].prevgrid!=-1) {
 						delta=(grid[p].nextgrid-grid[p].prevgrid);
-						if (n<p) delta=-delta;
+						if (!fwd) delta=-delta;
 					} else
 						delta=fwd?1:-1;  // Opposite signs at ends
 					
