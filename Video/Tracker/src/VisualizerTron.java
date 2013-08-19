@@ -42,6 +42,7 @@ public class VisualizerTron extends Visualizer {
 	HashMap<Integer,Cursor> playgrid;  // Current playing grid;  -ve is backing up
 	Scale scale;
 	Synth synth;
+	TrackSet trackSet;
 	
 	VisualizerTron(PApplet parent, Scale scale, Synth synth) {
 		super();
@@ -53,6 +54,18 @@ public class VisualizerTron extends Visualizer {
 		this.scale=scale;
 		this.synth=synth;
 	}
+
+	@Override
+	public void start() {
+		trackSet=Ableton.getInstance().setTrackSet("Tron");
+	}
+
+	@Override
+	public void stop() {
+		Ableton.getInstance().setTrackSet(null);
+	}
+
+
 
 	int postogrid(PVector p) {
 		int gpos=postogridx(p.x)*gridHeight+postogridy(p.y);
