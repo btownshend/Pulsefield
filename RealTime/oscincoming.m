@@ -1,6 +1,6 @@
 % oscincoming - process incoming OSC messages
 function info=oscincoming(p,info)
-  debug=true;
+  debug=false;
   
   % Check for incoming messages to server
   while true
@@ -275,7 +275,7 @@ function info=oscincoming(p,info)
     elseif strcmp(rcvdmsg.path,'/ping')
       % ignore
     elseif strcmp(rcvdmsg.path,'/ack')
-      fprintf('Got ack with data{1}=%d\n', rcvdmsg.data{1});
+      % fprintf('Got ack with data{1}=%d\n', rcvdmsg.data{1});
       if rcvdmsg.data{1}==1
         % Should actually come in on MPL port
         info.health.gotmsg('LD');
