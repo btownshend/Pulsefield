@@ -31,7 +31,7 @@ public class Position {
 	int getcolor(PApplet parent) {
 		final int colors[] = {0xffff0000, 0xff00ff00, 0xff0000ff, 0xffFFFF00, 0xffFF00FF, 0xff00ffff};
 		
-		int col=colors[id%colors.length];
+		int col=colors[(id-1)%colors.length];
 		//PApplet.println("Color="+String.format("%x", col));
 		return col;
 	}
