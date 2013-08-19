@@ -57,7 +57,7 @@ class Notes  {
 					noteNum=0;
 				} else {
 					notes.add(new NoteData(measure,noteNum,nsplit.length,n));
-					System.out.println("Added <"+n+"> -> "+notes.get(notes.size()-1));
+					//System.out.println("Added <"+n+"> -> "+notes.get(notes.size()-1));
 					noteNum++;
 				}
 			}
@@ -227,7 +227,7 @@ public class Simfile {
 			result.append(tag+": "+tags.get(tag)+"\n");
 		}
 		for (Notes n: notes) {
-			result.append(n.toString(true)+"\n");
+			result.append(n.toString(false)+"\n");
 		}
 		return result.toString();
 	}
@@ -250,20 +250,26 @@ public class Simfile {
 		return best;
 	}
 	
-	public ArrayList<NoteData> getNotes(int difficulty, int measure, int nmeasure) {
-		int pattern=findClosestDifficulty(difficulty);
+	public int measures(int pattern) {
+		return notes.get(pattern).measures();
+	}
+	
+	public float getduration(int pattern) {
+		Notes n=notes.get(pattern);
+		return n.notes.get(n.notes.size()-1).timestamp+1.0f;
+	}
+	public ArrayList<NoteData> getNotes(int pattern, int measure, int nmeasure) {
 		return notes.get(pattern).getNotes(measure,nmeasure);
 	}
 
-	public ArrayList<NoteData> getNotes(int difficulty, float ts1, float ts2) {
-		int pattern=findClosestDifficulty(difficulty);
+	public ArrayList<NoteData> getNotes(int pattern, float ts1, float ts2) {
 		return notes.get(pattern).getNotes(ts1,ts2);
 	}
 
 	public static void main(String args[]) {
 		try {
 			Simfile sf = new Simfile();
-			sf.loadSM("/Users/bst/Dropbox/Pulsefield/Songs/StepMix 1.0/Impossible Fidelity/","impossible.sm");
+			sf.loadSM("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/StepMix 1.0/Impossible Fidelity/","impossible.sm");
 			System.out.println(sf.toString());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
