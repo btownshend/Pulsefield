@@ -1,9 +1,10 @@
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import oscP5.OscMessage;
-
 import processing.core.PApplet;
-import promidi.*;
+import themidibus.MidiBus;
 
 class MidiProgram {
 	int instrument;
@@ -11,59 +12,49 @@ class MidiProgram {
 	MidiProgram(int i, String s) { instrument=i; name=s; }
 }
 
+class NoteOff extends TimerTask {
+	int pitch;
+	int channel;
+	int velocity;
+	MidiBus bus;
+	
+	NoteOff(MidiBus bus, int pitch, int velocity, int channel) {
+		this.bus=bus;
+		this.pitch=pitch;
+		this.velocity=velocity;
+		this.channel=channel;
+	}
+	public void run() {
+		bus.sendNoteOff(channel, pitch, velocity);
+		//System.out.println("Sent note off "+pitch+", vel="+velocity+" , to channel "+channel);
+	}
+}
+
 public class Synth {
 	final String midiPortName="From Tracker";
-	MidiIO midiIO;
-	MidiOut midiOut[];
+	MidiBus myBus;
+	Timer timer;
+	
 	HashMap<Integer,MidiProgram> channelmap;
 
-	@SuppressWarnings("unused")
 	Synth(PApplet parent) {
 		channelmap=new HashMap<Integer,MidiProgram>();
-		//get an instance of MidiIO
-		midiIO = MidiIO.getInstance(parent);
 
 		//print a list with all available devices
-		midiIO.printDevices();
+		for (String s:MidiBus.availableOutputs())
+			PApplet.println(s);
 
-		//open an midiout using the first device and the first channel
-		midiOut=new MidiOut[16];
-		for (int ch=0;ch<16;ch++) {
-			try {
-				midiOut[ch] = midiIO.getMidiOut(ch, midiPortName);
-			} catch (promidi.UnavailablePortException e) {
-				System.err.println("MIDI port '"+midiPortName+"' not found, use Audio/MIDI setup to create;  using '"+midiIO.getOutputDeviceName(0)+"' instead.");
-				midiOut[ch] = midiIO.getMidiOut(ch,  0);
-			}
-		}
-
-		// Figure out input device number
-		int midiInDevNum=-1;
-		final String inputDeviceName="From Noatikl";
-		for (int i = 0; i < midiIO.numberOfInputDevices(); i++){
-			if (midiIO.getInputDeviceName(i).equals(inputDeviceName)){
-				midiInDevNum=i;
-				break;
-			}
-		}
-		if (midiInDevNum == -1) {
-			System.err.println("There is no input device with the name '" + inputDeviceName + "' using "+midiIO.getInputDeviceName(0)+"' instead.");
-			midiInDevNum = 0;
-		}
-		if (false) {
-			midiIO.plug(this, "gotNote", midiInDevNum, 0);
-			midiIO.plug(this, "gotController", midiInDevNum, 0);
-			midiIO.plug(this, "gotProgramChange", midiInDevNum, 0);
-		}
-		for (int i=0;i<16;i++)
-			midiIO.openInput(midiInDevNum, i);
+		myBus = new MidiBus(parent, -1, "From Tracker");
+		timer = new Timer();
+		play(0,64,100,100,1);
 	}
 
 	public void play(int id, int pitch, int velocity, int duration, int channel) {
-		Note note = new Note(pitch,velocity,(int)(duration*1000*60/MasterClock.gettempo()/480));
 		assert(channel>=0 && channel<16);
-		midiOut[channel].sendNote(note);
-		System.out.println("Sent note "+pitch+", vel="+velocity+" , to channel "+channel);
+		myBus.sendNoteOn(channel,pitch,velocity);
+		long delay=duration*1000/480/4;
+		timer.schedule(new NoteOff(myBus, pitch,0,channel), delay);
+		//System.out.println("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to channel "+channel);
 	}
 
 	public MidiProgram getMidiProgam(int ch) {
@@ -71,7 +62,7 @@ public class Synth {
 	}
 
 	public void setCC(int channel, int cc, int value) {
-		midiOut[channel].sendController(new Controller(cc, value));
+		myBus.sendControllerChange(channel, cc, value);
 	}
 	
 	public boolean handleMessage(OscMessage msg) {
