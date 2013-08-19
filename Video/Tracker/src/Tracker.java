@@ -278,21 +278,25 @@ public class Tracker extends PApplet {
 		this.maxy=maxy;
 	}
 
+	public void cycle() {
+		Calendar cal=Calendar.getInstance();
+		int hour=cal.get(Calendar.HOUR_OF_DAY);
+		PApplet.println("Autocycling hour = "+hour);
+		cycler.change(hour>=7 && hour <= 19);
+	}
+	
 	synchronized public void pfsetnpeople(int n) {
-		PApplet.println("/pf/set/npeople: now have "+n+" people");
-		if (n==0 && positions.positions.size()>0) {
-			Calendar cal=Calendar.getInstance();
-			int hour=cal.get(Calendar.HOUR_OF_DAY);
-			PApplet.println("Autocycling hour = "+hour);
-			cycler.change(hour>=7 && hour <= 19);
-		}
-			
+		PApplet.println("/pf/set/npeople: now have "+n+" people, size="+positions.positions.size());
+		if (n==0 && positions.positions.size()>0)
+			cycle();
 		positions.setnpeople(n);
 	}
 
 	synchronized public void pfexit(int sampnum, float elapsed, int id) {
 		PApplet.println("exit: sampnum="+sampnum+", elapsed="+elapsed+", id="+id);
 		positions.exit(id);
+		if (positions.positions.size()==0)
+			cycle();
 	}
 
 	synchronized public void pfentry(int sampnum, float elapsed, int id, int channel) {
