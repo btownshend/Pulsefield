@@ -82,6 +82,7 @@ public class Ableton {
 	}
 
 	public void sendMessage(OscMessage msg) {
+		System.out.println("AL<-"+msg.addrPattern());
 		oscP5.send(msg,AL);
 	}
 
@@ -216,6 +217,7 @@ public class Ableton {
 	 * @param name of track set as defined in constructor
 	 */
 	public TrackSet setTrackSet(String name) {
+		PApplet.println("Setting Ableton track set to "+name);
 		TrackSet ts = null;
 		if (name!=null) {
 			ts=tracksets.get(name);
