@@ -5,9 +5,7 @@ import processing.core.PApplet;
 import oscP5.*;
 import netP5.*;
 import processing.core.PVector;
-import promidi.Controller;
-import promidi.Note;
-import promidi.ProgramChange;
+
 
 public class Tracker extends PApplet {
 	/**
@@ -58,11 +56,12 @@ public class Tracker extends PApplet {
 		positions=new Positions();
 
 		// OSC Setup (but do plugs later so everything is setup for them)
-		oscP5 = new OscP5(this, 7002);
+		oscP5 = new OscP5(this, config.getPort("VD"));
 
 		TO = new NetAddress(config.getHost("TO"), config.getPort("TO"));
 		MPO = new NetAddress(config.getHost("MPO"), config.getPort("MPO"));
 		AL = new NetAddress(config.getHost("AL"), config.getPort("AL"));
+		PApplet.println("AL at "+config.getHost("AL")+":"+config.getPort("AL"));
 		MAX = new NetAddress(config.getHost("MAX"), config.getPort("MAX"));
 		ableton = new Ableton(oscP5, AL);
 		touchOSC = new TouchOSC(oscP5, TO);
@@ -301,21 +300,18 @@ public class Tracker extends PApplet {
 		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel+", color="+positions.get(id).getcolor(this));
 	}
 
-	public void noteOn(Note n, int device, int channel) {
-		System.out.println("Got note on: "+n.getPitch()+", vel="+n.getVelocity()+", channel="+channel+", device="+device);
+	public void noteOn(int channel, int pitch, int velocity) {
+		System.out.println("Got note on: channel="+channel+", pitch="+pitch+", velocity="+velocity);
 	}
 
-	public void noteOff(Note n, int device, int channel) {
-		System.out.println("Got note off: "+n.getPitch()+", vel="+n.getVelocity()+", channel="+channel+", device="+device);
+	public void noteOff(int channel, int pitch, int velocity) {
+		System.out.println("Got note off: channel="+channel+", pitch="+pitch+", velocity="+velocity);
 	}
 
-	public void controllerIn(Controller c, int device, int channel) {
-		System.out.println("Got controller: "+c.getNumber()+" = "+c.getValue()+", channel="+channel+", device="+device);
+	void controllerChange(int channel, int number, int value) {
+		// Receive a controllerChange
+		System.out.println("Got CC: channel="+channel+", CC="+number+", value="+value);
 	}
-	public void programChange(ProgramChange p, int device, int channel) {
-		System.out.println("Got program change: "+p.toString()+", channel="+channel+", device="+device);
-	}
-
 
 }
 
