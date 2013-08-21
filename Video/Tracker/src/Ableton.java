@@ -82,7 +82,7 @@ public class Ableton {
 	}
 
 	public void sendMessage(OscMessage msg) {
-		System.out.println("AL<-"+msg.addrPattern());
+		//System.out.println("AL<-"+msg.addrPattern());
 		oscP5.send(msg,AL);
 	}
 
@@ -111,6 +111,8 @@ public class Ableton {
 		else if (components.length==4 && components[2].equals("master") && components[3].equals("volume"))
 			// Track-meter
 			;
+		else if (components.length==4 && components[2].equals("device") && components[3].equals("param"))
+			deviceParam(msg.get(0).intValue(),msg.get(1).intValue(),msg.get(2).intValue(),msg.get(3).floatValue(),msg.get(4).stringValue());
 		else 
 			PApplet.println("Unknown Ableton Message: "+msg.toString());
 	}
@@ -128,6 +130,9 @@ public class Ableton {
 		return tempo;
 	}
 
+	void deviceParam(int track, int device, int parameter, float value, String name) {
+		PApplet.println("Track "+track+" device "+device+" parameter "+parameter+"("+name+"): "+value);
+	}
 	/** Handle Ableton clip info message
 	 * @param track Track number
 	 * @param clip Clip number
