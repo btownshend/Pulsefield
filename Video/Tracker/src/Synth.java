@@ -54,7 +54,7 @@ public class Synth {
 		myBus.sendNoteOn(channel,pitch,velocity);
 		long delay=duration*1000/480/4;
 		timer.schedule(new NoteOff(myBus, pitch,0,channel), delay);
-		//System.out.println("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to channel "+channel);
+		System.out.println("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to channel "+channel);
 	}
 
 	public MidiProgram getMidiProgam(int ch) {

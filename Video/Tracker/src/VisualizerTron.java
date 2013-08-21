@@ -140,11 +140,11 @@ public class VisualizerTron extends Visualizer {
 					} else
 						delta=fwd?1:-1;  // Opposite signs at ends
 					
-					PApplet.println("delta="+delta+"("+grid[p].nextgrid+"-"+grid[p].prevgrid+") @"+p);
+					//PApplet.println("delta="+delta+"("+grid[p].nextgrid+"-"+grid[p].prevgrid+") @"+p);
 					if (delta!=2 && delta!=-2 && delta!=gridHeight*2 && delta!=-gridHeight*2) {
 						// Corner
 						pg.pitch+=(delta>0)?1:-1;
-						PApplet.println("ID "+id+": "+pg.pitch);
+						//PApplet.println("ID "+id+": "+pg.pitch);
 						if (positions.get(id)!=null)
 							synth.play(id, pg.pitch, 127, (int)(notedur*480*2), positions.get(id).channel);
 					}
