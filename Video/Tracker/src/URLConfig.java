@@ -17,6 +17,8 @@ public class URLConfig {
 
 		String line;
 		while ((line=fd.readLine()) != null) {
+			if (line.length() < 2)
+				continue;
 			String parts[]=line.split(",");
 			if (parts[0].charAt(0) == '-') 
 				;
