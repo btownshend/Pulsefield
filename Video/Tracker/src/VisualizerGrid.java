@@ -38,7 +38,7 @@ public class VisualizerGrid extends VisualizerPS {
 			}
 			//PApplet.println("Grid "+i+" at row="+row+", col="+col);
 			gposx[i]=(1+2*col)/18f;
-			gposy[i]=(1+2*row)/16f;
+			gposy[i]=1-(1+2*row)/16f;
 		}
 		gridwidth=1f/9;
 		gridheight=1f/8;
@@ -54,8 +54,9 @@ public class VisualizerGrid extends VisualizerPS {
 		parent.textSize(16);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
 		for (int cell: gridValues.keySet()) {
-			PApplet.println("grid "+cell+" = "+gridValues.get(cell)+" "+gridColors.get(cell)+" pos=("+gposx[cell]+","+gposy[cell]+")");
-			parent.fill(0);
+			//PApplet.println("grid "+cell+" = "+gridValues.get(cell)+" "+gridColors.get(cell)+" pos=("+gposx[cell]+","+gposy[cell]+")");
+			parent.fill(127,0,0,127);
+			parent.strokeWeight(5);
 			parent.stroke(127,0,0);
 			parent.rect(wsize.x*(gposx[cell]-gridwidth/2),wsize.y*(gposy[cell]-gridheight/2),wsize.x*gridwidth,wsize.y*gridheight);
 			parent.fill(255);
