@@ -10,7 +10,7 @@ public class VisualizerDrums extends VisualizerPS {
 
 	@Override
 	public void start() {
-		trackSet=Ableton.getInstance().setTrackSet("Drums");
+		Ableton.getInstance().setTrackSet("Pads");
 	}
 
 	@Override

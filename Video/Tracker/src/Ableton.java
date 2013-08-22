@@ -93,7 +93,7 @@ public class Ableton {
 		tracksets=new HashMap<String,TrackSet>();
 		tracksets.put("Harp", new TrackSet("Harp",92,1));
 		tracksets.put("Guitar", new TrackSet("Guitar",93,1));
-		tracksets.put("Drums", new TrackSet("Drums",95,2));
+		tracksets.put("Pads", new TrackSet("Pads",95,2));
 		tracksets.put("Tron", new TrackSet("Tron",97,1));
 		tracksets.put("Poly",new TrackSet("Poly",98,1));
 		lastpos=new HashMap<Integer,ControlValues>();
