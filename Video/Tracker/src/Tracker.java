@@ -11,7 +11,7 @@ public class Tracker extends PApplet {
 	/**
 	 * 
 	 */
-	private static boolean present = false;
+	private static boolean present = true;
 
 	private static final long serialVersionUID = 1L;
 	int tick=0;
