@@ -4,6 +4,7 @@ import netP5.NetAddress;
 import oscP5.OscMessage;
 import oscP5.OscP5;
 import processing.core.PApplet;
+import processing.core.PVector;
 
 class Clip {
 	float position;
@@ -56,6 +57,19 @@ class TrackSet {
 	}
 }
 
+
+class ControlValues {
+	PVector pos;
+	int ccx, ccy, ccdx, ccdy, ccspeed;
+	boolean moving;
+
+	ControlValues(PVector pos) {
+		this.pos=pos;
+		this.ccx=-1;
+		this.ccy=-1;
+	}
+}
+
 public class Ableton {
 	static Ableton theAbleton;
 	long lasttime;
@@ -63,6 +77,8 @@ public class Ableton {
 	NetAddress AL;
 	HashMap<Integer,Track> tracks;
 	HashMap<String,TrackSet> tracksets;
+	TrackSet trackSet;
+	HashMap<Integer,ControlValues> lastpos;
 	float tempo;
 	float meter[] = new float[2];
 	int playstate = -1;
@@ -80,6 +96,8 @@ public class Ableton {
 		tracksets.put("Drums", new TrackSet("Drums",95,2));
 		tracksets.put("Tron", new TrackSet("Tron",97,1));
 		tracksets.put("Poly",new TrackSet("Poly",98,1));
+		lastpos=new HashMap<Integer,ControlValues>();
+		trackSet=null;
 	}
 
 	public void sendMessage(OscMessage msg) {
@@ -245,6 +263,7 @@ public class Ableton {
 				arm(i,true);
 			ts.armed=true;
 		} 
+		trackSet=ts;
 		return ts;
 	}
 	
@@ -260,4 +279,46 @@ public class Ableton {
 		sendMessage(msg);
 
 	}
+
+	public void updateMacros(Positions allpos) {
+		if (trackSet==null)
+			return;
+		// Update internal state
+		HashMap<Integer,ControlValues> curpos=new HashMap<Integer,ControlValues>();
+
+		for (Position p: allpos.positions.values()) {	
+			ControlValues c=lastpos.get(p.id);
+			if (c==null) {
+				c=new ControlValues(p.origin);
+			}
+
+			int ccx=(int)((p.origin.x+1)/2*127);
+			int ccy=(int)((p.origin.y+1)/2*127);
+			int ccdx=(int)((p.avgspeed.x*3+1)/2*127); ccdx=(ccdx<0)? 0:(ccdx>127?127:ccdx);
+			int ccdy=(int)((p.avgspeed.y*3+1)/2*127);ccdy=(ccdy<0)? 0:(ccdy>127?127:ccdy);
+			int ccspeed=(int)(p.avgspeed.mag()*2*127);ccspeed=(ccspeed<0)? 0:(ccspeed>127?127:ccspeed);
+			//System.out.println("OLD="+c.ccx+","+c.ccy+", new="+ccx+","+ccy);
+
+			int track=trackSet.getTrack(p.channel);
+			if (ccx!=c.ccx)
+				setControl(track, 0, 1, ccx);
+			if (ccy!=c.ccy)
+				setControl(track, 0, 2, ccy);
+			if (ccdx!=c.ccdx)
+				setControl(track, 0, 3, ccdx);
+			if (ccdy!=c.ccdy)
+				setControl(track, 0, 4, ccdy);
+			if (ccspeed!=c.ccspeed)
+				setControl(track, 0, 5, ccspeed);
+			c.ccx=ccx;
+			c.ccy=ccy;
+			c.ccdx=ccdx;
+			c.ccdy=ccdy;
+			c.ccspeed=ccspeed;
+			c.pos=p.origin;
+			curpos.put(p.id, c);
+		}
+		lastpos=curpos;
+	}
+
 }
