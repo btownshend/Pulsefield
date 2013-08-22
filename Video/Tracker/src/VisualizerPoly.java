@@ -136,6 +136,17 @@ public class VisualizerPoly extends Visualizer {
 		this.scale=scale;
 		this.synth=synth;
 	}
+	
+	@Override
+	public void start() {
+		Ableton.getInstance().setTrackSet("Poly");
+	}
+
+	@Override
+	public void stop() {
+		Ableton.getInstance().setTrackSet(null);
+	}
+
 
 	public void update(PApplet parent, Positions allpos) {
 		Ableton.getInstance().updateMacros(allpos);
