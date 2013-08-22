@@ -38,6 +38,17 @@ class VisualizerNavier extends Visualizer {
 		stats();
 	}
 
+	@Override
+	public void start() {
+		Ableton.getInstance().setTrackSet("Pads");
+	}
+
+	@Override
+	public void stop() {
+		Ableton.getInstance().setTrackSet(null);
+	}
+
+
 	public void handleMessage(OscMessage msg) {
 		PApplet.println("Navier message: "+msg.toString());
 		String pattern=msg.addrPattern();
@@ -117,6 +128,7 @@ class VisualizerNavier extends Visualizer {
 	}
 
 	public void update(PApplet parent, Positions p) {
+		Ableton.getInstance().updateMacros(p);
 		long t1=System.nanoTime();
 		int n = NavierStokesSolver.N;
 		for (Position pos: p.positions.values()) {
@@ -134,6 +146,7 @@ class VisualizerNavier extends Visualizer {
 			fluidSolver.applyForce(cellX, cellY, dx, dy);
 		}
 		statsUpdate += System.nanoTime()-t1;
+		
 	}
 
 	private void fluidCanvasStep(PApplet parent) {

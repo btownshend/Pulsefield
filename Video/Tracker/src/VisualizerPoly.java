@@ -138,6 +138,8 @@ public class VisualizerPoly extends Visualizer {
 	}
 
 	public void update(PApplet parent, Positions allpos) {
+		Ableton.getInstance().updateMacros(allpos);
+
 		// Update current radius of all players
 		float beat=MasterClock.getBeat();
 		//PApplet.println("Beat "+beat);
