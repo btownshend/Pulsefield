@@ -1,9 +1,9 @@
 import processing.core.PApplet;
 
-public class VisualizerDrums extends VisualizerPS {
+public class VisualizerPads extends VisualizerPS {
 	Synth synth;
 
-	VisualizerDrums(PApplet parent, Synth synth) {
+	VisualizerPads(PApplet parent, Synth synth) {
 		super(parent);
 		this.synth=synth;
 	}
