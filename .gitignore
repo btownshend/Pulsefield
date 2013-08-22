@@ -24,6 +24,6 @@ Arduino/libraries/LPD8806
 *.applet
 
 Video/Tracker/bin/arrow.png
-Video/Tracker/lib/themidibus
+Video/Tracker/lib/
 Video/Tracker/src/themidibus
 Video/Tracker/bin/runTracker.jar
