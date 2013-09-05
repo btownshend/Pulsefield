@@ -222,7 +222,7 @@ classdef SoundAppGrid < SoundApp
           info.al.stop();
           info.al.stopalltracks();
         end
-        %  info.song=mod(info.song,info.al.numsongs())+1;
+        info.song=mod(info.song,info.al.numsongs())+1;
       end
 
       if ~isempty(info.exits) || ~isempty(info.entries) || ~isempty(info.updates)
