@@ -32,9 +32,9 @@ firstleds=cumsum(numled(1:numstrips-1));
 %ledspacing(end+1)=-2.0/100;  % Last LED outside end of 4' member by 2.0cm
 % Settings for 4 strips
 %ledspacing(firstleds)=[9,9,8]/100;  
-ledspacing(firstleds)=[2.2,2.25,2]/39.37;  % In inches
-ledspacing(1)=35/39.37;  % First LED inside end of 4' member by 36.125in
-ledspacing(end+1)=36.25/39.37;  % Last LED inside end of 4' member by 35.5in
+ledspacing(firstleds)=[1.75,2.0,2.12]/39.37;  % In inches
+ledspacing(1)=37.5/39.37;  % First LED inside end of 4' member
+ledspacing(end+1)=37.5/39.37;  % Last LED inside end of 4' member
 
 % Angle subtended by each 8' leg
 legtheta=2*pi*(leglen*nlegs)/(leglen*nlegs+opening)/nlegs;
