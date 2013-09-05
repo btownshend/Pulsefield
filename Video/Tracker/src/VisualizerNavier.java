@@ -20,8 +20,9 @@ class VisualizerNavier extends Visualizer {
 	long statsTick = 0;
 	long statsStep = 0;
 	long statsUpdate = 0;
+	Synth synth;
 
-	VisualizerNavier(PApplet parent) {
+	VisualizerNavier(PApplet parent, Synth synth) {
 		super();
 		fluidSolver = new NavierStokesSolver();
 		buffer = new PImage(parent.width/2, parent.height/2);
@@ -36,11 +37,13 @@ class VisualizerNavier extends Visualizer {
 
 		setTO();
 		stats();
+		
+		this.synth=synth;
 	}
 
 	@Override
 	public void start() {
-		Ableton.getInstance().setTrackSet("Pads");
+		Ableton.getInstance().setTrackSet("Navier");
 	}
 
 	@Override
@@ -94,6 +97,8 @@ class VisualizerNavier extends Visualizer {
 	}
 
 	public void draw(PApplet parent, Positions p, PVector wsize) {
+		super.draw(parent, p, wsize);
+
 		parent.resetShader();
 		
 		PGL pgl=PGraphicsOpenGL.pgl;
@@ -115,20 +120,38 @@ class VisualizerNavier extends Visualizer {
 		rainbow++;
 		rainbow = (rainbow > 255) ? 0 : rainbow;
 
-		parent.stroke(bordercolor);
+		final boolean drawBorder=true;
+		if (drawBorder) {
+		parent.stroke(bordercolor,127);
 		parent.fill(0,0,0,0);
 		drawBorders(parent, true, wsize);
+		}
 		parent.ellipseMode(PConstants.CENTER);
 		for (Position ps: p.positions.values()) {  
 			int c=ps.getcolor(parent);
-			parent.fill(c,100);
-			parent.stroke(c,100);
-			parent.ellipse(ps.origin.x, ps.origin.y, 5, 5);
+			parent.fill(c,255);
+			parent.stroke(c,255);
+			PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
+			
+			float sz=5;
+			if (ps.groupsize > 1)
+				sz=20*ps.groupsize;
+			parent.ellipse((ps.origin.x+1)*wsize.x/2, (ps.origin.y+1)*wsize.y/2, sz, sz);
 		}
 	}
 
 	public void update(PApplet parent, Positions p) {
 		Ableton.getInstance().updateMacros(p);
+		TrackSet ts=Ableton.getInstance().trackSet;
+		if (ts==null)
+			return;
+		for (Position pos: p.positions.values()) {
+			//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
+			if (pos.avgspeed.mag() > 0.1) {
+				int cnum=ts.getMIDIChannel(pos.channel);
+				synth.play(pos.id,cnum+35,127,480,cnum);
+			}
+		}
 		long t1=System.nanoTime();
 		int n = NavierStokesSolver.N;
 		for (Position pos: p.positions.values()) {
