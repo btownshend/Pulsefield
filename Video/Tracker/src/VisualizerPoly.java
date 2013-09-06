@@ -73,6 +73,7 @@ class PolyState {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	void draw(PApplet parent,PVector wsize, int totalBeats, int row, Synth synth) {
 		final int NUMROWS=20;
 		float rowheight=wsize.y/2/NUMROWS;
@@ -110,12 +111,14 @@ class PolyState {
 			parent.fill(255);
 			parent.textAlign(PConstants.LEFT,PConstants.CENTER);
 			parent.textSize(0.8f*rowheight);
+			if (false) {
 			if (isDrummer)
 				parent.text("DRUMMER",2+dotsize,rowpos);
 			else {
 				MidiProgram mp=synth.getMidiProgam(pos.channel);
 				if (mp!=null)
 					parent.text(mp.name,2+dotsize,rowpos);
+			}
 			}
 		}
 	}
