@@ -265,7 +265,7 @@ public class VisualizerTron extends Visualizer {
 							inset=2;
 						}
 						if (playgrid.get(g.id).grid == i*gridHeight+j)
-							parent.fill(255);
+							parent.fill(p.get(g.id).getcolor(parent),200);
 						else
 							parent.fill(p.get(g.id).getcolor(parent));
 						parent.rect(wsize.x*i/gridWidth+inset, wsize.y*j/gridHeight+inset, wsize.x/gridWidth-2*inset, wsize.y/gridHeight-2*inset);
