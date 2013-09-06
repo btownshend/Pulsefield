@@ -76,7 +76,7 @@ public class Tracker extends PApplet {
 		// Visualizers
 		vis=new Visualizer[visnames.length];
 		vis[0]=new VisualizerPads(this, synth);
-		visNavier=new VisualizerNavier(this); vis[1]=visNavier;
+		visNavier=new VisualizerNavier(this,synth); vis[1]=visNavier;
 		vis[2]=new VisualizerTron(this,scale,synth);
 		visAbleton=new VisualizerGrid(this);vis[3]=visAbleton;
 		visDDR=new VisualizerDDR(this);vis[4]=visDDR;
@@ -157,6 +157,7 @@ public class Tracker extends PApplet {
 			vis[currentvis].stop();
 		currentvis=appNum;
 		println("Switching to app "+currentvis+": "+visnames[currentvis]);
+		vis[currentvis].setName(visnames[currentvis]);
 		// Turn on block for current app
 		OscMessage msg = new OscMessage("/video/app/buttons/"+vispos[currentvis]);
 		msg.add(1.0);
