@@ -22,11 +22,11 @@ class Setup {
 		this.videomode=videomode;
 		this.weight=weight;
 	}
-	
+
 	public String toString() {
 		return soundappmode+"-"+videomode+"-"+ledmode;
 	}
-	
+
 }
 
 public class AutoCycler {
@@ -34,6 +34,7 @@ public class AutoCycler {
 	HashMap<String,String> sound,led,video;
 
 	float daytotal, nighttotal;
+	int curpick;
 
 	AutoCycler() {
 		sound=new HashMap<String,String>();
@@ -72,12 +73,14 @@ public class AutoCycler {
 
 
 		night.add(new Setup("Video","Smoke","FollowWht",1f));
-		night.add(new Setup("Video","Navier","FollowWht",1f));
-		night.add(new Setup("Video","Tron","FollowWht",1f));
+		night.add(new Setup("Video","Navier","FollowPB",1f));
 		night.add(new Setup("Grid","Ableton","FollowWht",1f));
+		night.add(new Setup("Video","Tron","FollowWht",1f));
 		night.add(new Setup("Video","DDR","FollowWht",1f));
+		night.add(new Setup("Grid","Ableton","FollowWht",1f));
 		night.add(new Setup("Video","Poly","FollowWht",1f));
-		night.add(new Setup("Video","Voronoi","FollowWht",2f));
+		night.add(new Setup("Video","Voronoi","FollowPB",2f));
+		night.add(new Setup("Grid","Ableton","FollowWht",1f));
 		night.add(new Setup("Video","Guitar","FollowWht",2f));
 
 		daytotal=0;
@@ -88,24 +91,36 @@ public class AutoCycler {
 		for (Setup d: night) {
 			nighttotal+=d.weight;
 		}
+		curpick=0;
 	}
-	
+
 	/** Change to a new setup
 	 * @param daytime - true if running during daytime (no video)
 	 */
 	public void change(boolean daytime) {
+		final boolean randomPick=false;
 		ArrayList<Setup> setup=daytime?day:night;
-		double rpick=Math.random()*(daytime?daytotal:nighttotal);
-		for (Setup s:setup) {
-			if (s.weight>rpick) {
-				System.out.println("Autocycled "+(daytime?"day":"night")+" to "+s.toString()+" (rpick="+rpick+", weight="+s.weight+")");
-				Tracker.sendOSC("MPO",video.get(s.videomode),1);
-				Tracker.sendOSC("MPO",sound.get(s.soundappmode),1);
-				Tracker.sendOSC("MPO",led.get(s.ledmode),1);
-				break;
-			}
-			rpick-=s.weight;	
+		Setup curSetup;
+		if (randomPick) {
+			double rpick=Math.random()*(daytime?daytotal:nighttotal);
+			int i=0;
+			for (Setup s:setup) {
+				if (s.weight>rpick) {
+					curpick=i;
+					curSetup=s;
+					break;
+				}
+				rpick-=s.weight;
+				i++;
+			} 
+		} else {
+			curpick=(curpick+1)%setup.size();
+			curSetup=setup.get(curpick);
 		}
+		System.out.println("Autocycled "+(daytime?"day":"night")+" to "+curSetup.toString());
+		Tracker.sendOSC("MPO",video.get(curSetup.videomode),1);
+		Tracker.sendOSC("MPO",sound.get(curSetup.soundappmode),1);
+		Tracker.sendOSC("MPO",led.get(curSetup.ledmode),1);
 	}
 
 }
