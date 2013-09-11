@@ -30,7 +30,7 @@ class Visible {
     const struct timeval &getTimestamp() const { return timestamp; }
 
     const float *getRefImage() const { return refImage; }
-    const char* saveRef() const;
+    const char* saveRef(int c) const;
     
     static void setUpdateTimeConstant(float t) { updateTimeConstant=t; }
     static void setCorrThresh(float t) { corrThreshold=t; }

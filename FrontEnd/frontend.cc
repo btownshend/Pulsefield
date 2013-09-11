@@ -361,7 +361,7 @@ void FrontEnd::sendMessages() {
 	    if (sendOnce & REFIMAGE) {
 		if (debug)
 		    printf("Sending REFIMAGE to %s:%d\n", dests.getHost(i),dests.getPort(i));
-		const char *filename=vis[c]->saveRef();    // Save frame in file, retrieve filename (as float)
+		const char *filename=vis[c]->saveRef(c);    // Save frame in file, retrieve filename (as float)
 		if (filename!=0) {
 		    printf("Saved image in %s\n", filename);
 		    int width=vis[c]->getRefWidth();

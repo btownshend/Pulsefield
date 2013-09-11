@@ -191,10 +191,10 @@ void Visible::updateTarget(const Frame *frame, float fps) {
 }
 
 // Save reference image in a file
-const char* Visible::saveRef() const {
+const char* Visible::saveRef(int c) const {
     static char filename[1000];
     
-    sprintf(filename,"/tmp/refimage.%ld.%06ld.raw",(long int)timestamp.tv_sec,(long int)timestamp.tv_usec);
+    sprintf(filename,"/tmp/refimage.%d,%ld.%06ld.raw",c,(long int)timestamp.tv_sec,(long int)timestamp.tv_usec);
     int fd=open(filename,O_CREAT|O_TRUNC|O_WRONLY,0644);
     int nbytes=refHeight*refWidth*refDepth*sizeof(*refImage);
     if (write(fd,refImage,nbytes)!=nbytes)  {
