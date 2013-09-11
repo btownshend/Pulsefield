@@ -150,7 +150,7 @@ int Visible::processImage(const Frame *frame, float fps) {
     }
     if (totalvis < 10) {
 	fprintf(stderr,"Warning: Only %d visible pixels for frame; skipping\n",totalvis);
-	return -1;
+	//	return -1;
     }
     updateTarget(frame,fps);
 
