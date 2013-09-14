@@ -30,6 +30,7 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
   if info.refresh
     %fprintf('Refreshing view of Ableton Live\n');
     %info.al.update();
+    info.lastvcnts(:)=-1;   % Force update of visibility counts
     
     fprintf('Sending refresh to OSC listeners\n');
     info.refresh=false;
@@ -207,6 +208,29 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
           oscmsgout('TO',sprintf('/touchosc/loc/%d',channel),{xypos(2),xypos(1)});
         end
       end
+    end
+   
+    % Update visibility count in TouchOSC
+    if isfield(info,'vis')
+      for c=1:size(info.vis.v,1)
+        vcnts=[sum(info.vis.v(c,:)==1),sum(info.vis.v(c,:)==0),sum(isnan(info.vis.v(c,:)))];
+        if ~isfield(info,'lastvcnts') || size(info.lastvcnts,1)<c
+          % Initialize
+          info.lastvcnts(c,:)=-1*vcnts;
+        end
+        if vcnts(1)~=info.lastvcnts(c,1)
+          oscmsgout('TO',sprintf('/rays/visible/%d',c),{int32(vcnts(1))});
+        end
+        if vcnts(1)~=info.lastvcnts(c,1)
+          oscmsgout('TO',sprintf('/rays/blocked/%d',c),{int32(vcnts(2))});
+        end
+        if vcnts(1)~=info.lastvcnts(c,1)
+          oscmsgout('TO',sprintf('/rays/unknown/%d',c),{int32(vcnts(3))});
+        end
+        info.lastvcnts(c,:)=vcnts;
+      end
+    else
+      fprintf('Info does not have a .vis field\n');
     end
     
     % Update number of people present after all exits, entries

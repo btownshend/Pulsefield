@@ -85,7 +85,8 @@ while ~info.quit
     timeout=1/30;
   end
   vis=getvisible(p,'setleds',false,'timeout',timeout);
-
+  info.vis=vis;   % Save for updating TO rays display
+  
   if isempty(vis)
     if (now-lastvis)*3600*24>5 && (now-novismsg)*3600*24>5
       fprintf('No vis received in %.0f seconds\n',(now-lastvis)*3600*24);
