@@ -27,7 +27,6 @@ function [vis,p]=getvisible(p,varargin)
 defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[5 7],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5,...
             'usefrontend',true,'timeout',1.0);
 args=processargs(defaults,varargin);
-
 if args.init
   if nargout~=2
     error('Usage:  [vis,p]=getvisible(p,''init'',''true'',options)');
@@ -39,6 +38,9 @@ else
   if ~isfield(p.camera(1),'viscache')
     error('"viscache" data structure not initialized; use "init" option first');
   end
+end
+if isfield(p,'noleds')
+  args.setleds=false;
 end
 
 if args.init
@@ -104,7 +106,7 @@ if args.init
     end
     % Recursive call without init, full stats, no corr (since viscache not setup)
     % For now, don't use frontend since it doesn't give imspot{} data back, would need to reformat full images
-    vis{i}=getvisible(p,'calccorr',false,'stats',true,'onval',onval{i},'usefrontend',false);
+    vis{i}=getvisible(p,'calccorr',false,'stats',true,'onval',onval{i},'usefrontend',false,'setleds',args.setleds);
   end
 
   % Take average to set template in ref{} as individual images

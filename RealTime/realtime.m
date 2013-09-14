@@ -39,19 +39,23 @@ end
 p.oscdests={'MAX','LD','TO','VD'};
 
 % Turn on LEDS directly (in case LED server is not running)
-s1=arduino_ip(1);
-setled(s1,-1,127*p.colors{1},1); show(s1); sync(s1);
+if ~isfield(p,'noleds')
+  s1=arduino_ip(1);
+  setled(s1,-1,127*p.colors{1},1); show(s1); sync(s1);
 
-% Turn on LED server if it is not already running
-if ~lsctl(p,'start')
-  error('Failed to start LED server');
+  % Turn on LED server if it is not already running
+  if ~lsctl(p,'start')
+    error('Failed to start LED server');
+  end
 end
 
 % Make sure sensor cropping is OK
 sensorcrop(p);
 
-% Turn on LED Server
-lsctl(p,'resume');
+if ~isfield(p,'noleds')
+  % Turn on LED Server
+  lsctl(p,'resume');
+end
 
 % Start front end if needed
 if ~fectl(p,'ping') && ~fectl(p,'start')
