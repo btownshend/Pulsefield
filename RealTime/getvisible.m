@@ -294,8 +294,11 @@ if args.calccorr
         swr=sum(w.*r,2);
         srr=sum(r.*r,2);
         sr=sum(r,2);
-        denom=sqrt((sww-sw.*sw/N).*(srr-sr.*sr/N));
+        denom=sqrt((sww-sw.*sw/N).*max(0,srr-sr.*sr/N));
         corrplane(plane,:)=(swr-sw.*sr/N)./denom;
+        if any(abs(imag(corrplane(:)))>0)
+          keyboard
+        end
       end
       vis.corr(i,vc.ledmap)=max(corrplane,[],1);
   end
