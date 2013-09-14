@@ -105,7 +105,9 @@ for i=1:size(vis.v,1)
     ax(3)=-0.1;ax(4)=1.1;
     axis(ax);
   end
+  title(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(i,:)==1),sum(vis.v(i,:)==0),sum(isnan(vis.v(i,:)))));
   xlabel('LED');
   ylabel('Signal');
 end
+suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(:)==1),sum(vis.v(:)==0),sum(isnan(vis.v(:)))));
 fprintf('Can use: checkcalibration(p,vis,[led list]) to check particular leds\n');
