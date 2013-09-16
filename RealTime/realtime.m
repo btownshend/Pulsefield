@@ -257,7 +257,9 @@ catch me
   oscupdate(p,info,samp);
 
   % Turn off LEDs (in case LED Server not running)
-  setled(s1,-1,[0,0,0],1);show(s1);
+  if ~isfield(p,'noleds')
+    setled(s1,-1,[0,0,0],1);show(s1);
+  end
   
   try
     saverecvis(recvis,sprintf('Crash-save of %d frames at %s with max occupancy of %d',length(recvis.vis),datestr(now),maxoccupancy));
