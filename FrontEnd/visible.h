@@ -8,6 +8,8 @@ class Visible {
     int *ypos;
     int *tgtWidth, *tgtHeight; // Width(x) and Height
     byte *visible;
+    int *blockedframes, *visframes;   // Count of how many frames a particular pixel has been blocked
+    byte *enabled;
     float *corr;
     // Reference image (full size) - subparts used for targets
     int refHeight, refWidth, refDepth;  

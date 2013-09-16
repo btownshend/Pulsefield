@@ -16,6 +16,9 @@ Visible::Visible(int _nleds, int _camid) {
     xpos=new int[nleds];
     ypos=new int[nleds];
     visible=new byte[nleds];
+    blockedframes=new int[nleds];
+    visframes=new int[nleds];
+    enabled=new byte[nleds];
     corr = new float[nleds];
     tgtWidth=new int[nleds];
     tgtHeight=new int[nleds];
@@ -25,6 +28,9 @@ Visible::Visible(int _nleds, int _camid) {
     for (int i=0;i<nleds;i++) {
 	xpos[i]=0;
 	ypos[i]=0;
+	blockedframes[i]=0;
+	visframes[i]=0;
+	enabled[i]=1;
     }
 }
 
@@ -147,6 +153,29 @@ int Visible::processImage(const Frame *frame, float fps) {
 	if(corr[i]<-1.01 || corr[i]>1.01)
 	    fprintf(stderr,"Warning: corr[%d]=%f\n", i, corr[i]);
 	visible[i]=corr[i]>=corrThreshold;
+	// Need 10 visible frames in a row to enable, 100 blocked (not necessarily in a row) since last enable to disable
+	if (visible[i]) {
+	    visframes[i]++;
+	    if (visframes[i]>400) {
+		if (!enabled[i])
+		    printf("Enabling ray %d.%d (had been blocked for %d frames)\n",camid,i,blockedframes[i]);
+		enabled[i]=1;
+		blockedframes[i]=0;
+		visframes[i]=0;
+	    }
+	} else  {
+	    blockedframes[i]++;
+	    visframes[i]=0;
+	    if (blockedframes[i]>50 && enabled[i]) {
+		enabled[i]=0;
+		printf("Disabling ray %d.%d\n",camid,i);
+	    }
+	}
+	if (!enabled[i]) {
+	    visible[i]=2;
+	    continue;
+	}
+
 	totalvis=totalvis+(visible[i]?1:0);
     }
     if (totalvis < 10) {
