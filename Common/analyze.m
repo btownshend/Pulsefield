@@ -111,10 +111,11 @@ if doplot>1
   setfig('analyze.rays');clf;
   for k=1:2
     subplot(1,2,k);
+    hold on;
     if k==1
-      imshowmapped(rays.imap,imc(:,:,[1 4 3]));
+      imshowmapped(rays.imap,imc(:,:,[1 4 3]).*repmat(rays.activemask,[1,1,3]));
     else
-      imshowmapped(rays.imap,imc(:,:,[4 2 3]));
+      imshowmapped(rays.imap,imc(:,:,[4 2 3]).*repmat(rays.activemask,[1,1,3]));
     end
     if k==1
       title('Blocked rays');
@@ -148,7 +149,7 @@ if length(tgts)>0
   for i=1:length(cind)
     c=cind(i);
     l=lind(i);
-    if layout.outsider(l)
+    if ~isempty(layout.outsider) && layout.outsider(l)
       % fprintf('Skipping outsider %d\n', l);
       continue;
     end
