@@ -8,8 +8,19 @@ for c=1:length(p.camera)
   setfig(sprintf('Horizon',c));clf;
   imshow(adapthisteq(rgb2gray(im{c}),'ClipLimit',.1));
   hold on;
-  fprintf('Click on horizon; press return when done: ');
   p.camera(c).horizon=[];
+  p.camera(c).othercams=[];
+  fprintf('Click on other visible cameras; press return when done: ');
+  while true
+    [x,y]=ginput(1);
+    if isempty(x)
+      break;
+    end
+    p.camera(c).othercams(end+1,:)=[x,y];
+    p.camera(c).horizon(end+1,:)=[x,y];
+    plot(x,y,'og');
+  end
+  fprintf('Click on other horizon points; press return when done: ');
   while true
     [x,y]=ginput(1);
     if isempty(x)
