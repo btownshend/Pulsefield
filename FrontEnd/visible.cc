@@ -10,8 +10,9 @@
 float Visible::updateTimeConstant=60;  // Default is 60sec time constant for updating reference
 float Visible::corrThreshold = 0.7;
 
-Visible::Visible(int _nleds) {
+Visible::Visible(int _nleds, int _camid) {
     nleds=_nleds;
+    camid=_camid;
     xpos=new int[nleds];
     ypos=new int[nleds];
     visible=new byte[nleds];

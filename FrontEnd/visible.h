@@ -13,10 +13,10 @@ class Visible {
     int refHeight, refWidth, refDepth;  
     float *refImage;
     struct timeval timestamp;  // Timestamp of image
-
+    int camid;   // For debug messages
     void updateTarget(const Frame *frame,float fps);
  public:
-    Visible(int nleds);
+    Visible(int nleds, int camid);
     ~Visible();
     int processImage(const Frame *frame, float fps);   // Process an image frame to determine corr, visibility; update reference.  Return 0 if success, -1 if failed (bad image?)
 

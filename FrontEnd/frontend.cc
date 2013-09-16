@@ -111,7 +111,7 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
 	}
 	const char *host=urls.getHost(ident);
 	cameras[i]=new CamIO(i+1,host,port);
-	vis[i] = new Visible(nled);
+	vis[i] = new Visible(nled,i);
     }
     printf("done\n");fflush(stdout);
 
