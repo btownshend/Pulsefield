@@ -8,23 +8,25 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
     info.snap=snap;
   else
     info.snap=[];
+    snap=[];
   end
   if nargin>=5
     info.prevsnap=prevsnap;
   else
     info.prevsnap=[];
+    prevsnap=[];
   end
   
   % Just began
   running=true;
-  if info.juststarted
-    info=info.currapp.start(p,info);
-    oscmsgout(p.oscdests,'/pf/started',{});
-    info.refresh=true;   % First call - do a dump
-  elseif nargin<4
+  if nargin<4
     info.currapp.stop(p,info);
     oscmsgout(p.oscdests,'/pf/stopped',{});
     running=false;
+  elseif info.juststarted
+    info=info.currapp.start(p,info);
+    oscmsgout(p.oscdests,'/pf/started',{});
+    info.refresh=true;   % First call - do a dump
   end
 
   if info.refresh
