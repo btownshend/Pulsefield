@@ -4,7 +4,10 @@
 % Returns
 %   r.rays{c}(x,y) - image of region with each pixel indicating LED# that ray from this camera hits after passing through this pixel, or 0 for none
 %   r.raylines{c,l} - path (in integer pixel coordinates) of ray from camera c to led l, stepping by 1 pixel in fastest changing direction
-function r=createrays(p)
+function r=createrays(p,useanglemap)
+if nargin<2
+  useanglemap=false;
+end
 pixels=p.analysisparams.npixels;
 imap=setupimap(p.layout,pixels);   % Setup mapping between pixel and physical coords
 cpos=m2pix(imap,p.layout.cpos);
@@ -19,7 +22,16 @@ for c=1:size(p.layout.cpos,1)
   for l=1:size(lpos,1)
     raylines{c,l}=zeros(0,2);
     cp=cpos(c,:);
-    lp=lpos(l,:);
+    if useanglemap
+      ppos=p.camera(c).pixcalib(l).pos;
+      angle=-p.camera(c).anglemap(ppos(1));   % Note that the anglemap angles increase in CW direction, but pol2cart works in reverse
+      dir=[];
+      [dir(1),dir(2)]=pol2cart(cart2pol(p.layout.cdir(c,1),p.layout.cdir(c,2))+angle,1);
+      lp=cp+dir*pixels*2;
+      r.raydir(c,l,:)=dir;
+    else
+      lp=lpos(l,:);
+    end
     delta=lp-cp;
     maxd=max(abs(delta));
     delta=delta/maxd;
