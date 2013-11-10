@@ -153,7 +153,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 					voices.remove(curVoice);
 					curVoice=null;
 				} else {
-					curVoice.play(scale, synth, (int)noteDuration*480, pos.channel);
+					curVoice.play(scale, synth, (int)(noteDuration*480), pos.channel);
 					curVoice.playing=true;
 				}
 			}
