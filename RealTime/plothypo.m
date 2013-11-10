@@ -1,6 +1,8 @@
 % plot the trail of people
 function plothypo(recvis)
 snap=recvis.snap;
+t=(arrayfun(@(z) z.when, snap)-snap(1).when)*24*3600;
+occ=arrayfun(@(z) length(z.hypo), snap);
 
 setfig('plothypo');
 clf;
@@ -41,15 +43,17 @@ for samp=2:length(snap)
   [ids,pid,cid]=intersect([snap(samp-1).hypo.id],[snap(samp).hypo.id]);
   for j=1:length(snap(samp).tgts)
     tj=snap(samp).tgts(j);
-    plot([samp,samp],[min(tj.pixellist(:,1)),max(tj.pixellist(:,1))],'k'); 
-    plot(samp,tj.pos(1),'.k');
+    plot(([samp,samp]),[min(tj.pixellist(:,1)),max(tj.pixellist(:,1))],'k'); 
+    plot((samp),tj.pos(1),'.k');
   end
   for j=1:length(ids)
     hj=snap(samp-1).hypo(pid(j));
     hk=snap(samp).hypo(cid(j));
-    plot([samp-1,samp],[hj.pos(1),hk.pos(1)],'Color',id2color(hj.id,recvis.p.colors));
+    plot(([samp-1,samp]),[hj.pos(1),hk.pos(1)],'Color',id2color(hj.id,recvis.p.colors));
   end
 end
+xlabel('Sample');
+ylabel('Y Position (m)');
 
 subplot(224);
 hold on;
@@ -57,12 +61,22 @@ for samp=2:length(snap)
   [ids,pid,cid]=intersect([snap(samp-1).hypo.id],[snap(samp).hypo.id]);
   for j=1:length(snap(samp).tgts)
     tj=snap(samp).tgts(j);
-    plot([samp,samp],[min(tj.pixellist(:,2)),max(tj.pixellist(:,2))],'k');
-    plot(samp,tj.pos(2),'.k');
+    plot(([samp,samp]),[min(tj.pixellist(:,2)),max(tj.pixellist(:,2))],'k');
+    plot((samp),tj.pos(2),'.k');
   end
   for j=1:length(ids)
     hj=snap(samp-1).hypo(pid(j));
     hk=snap(samp).hypo(cid(j));
-    plot([samp-1,samp],[hj.pos(2),hk.pos(2)],'Color',id2color(hj.id,recvis.p.colors));
+    plot(([samp-1,samp]),[hj.pos(2),hk.pos(2)],'Color',id2color(hj.id,recvis.p.colors));
   end
 end
+xlabel('Sample');
+ylabel('Y Position (m)');
+
+subplot(223)
+plot(t,occ);
+xlabel('Time (sec)');
+ylabel('Occupancy');
+title(sprintf('%.1f fps', length(snap)/t(end)));
+
+suptitle(recvis.note);
