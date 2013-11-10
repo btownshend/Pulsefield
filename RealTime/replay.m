@@ -1,6 +1,6 @@
 % Replay a recorded set of movements stored in recvis
 function replayrecvis=replay(varargin)
-defaults=struct('timed',false,'plots',{{}},'oscdests',{{'MAX','LD','TO','VD'}},'frames',[nan,nan],'plothypo',false,'plotvis',false, 'plotanalyze',0);
+defaults=struct('timed',false,'plots',{{}},'oscdests',{{'MAX','LD','TO','VD'}},'frames',[nan,nan],'plothypo',false,'plotvis',false, 'plotanalyze',0,'reanalyze',true,'nreplay',1);
 args=processargs(defaults,varargin);
 
 global recvis
@@ -43,10 +43,13 @@ if args.plothypo
   subplot(224);
   hold on;
 end
+nreplay=args.nreplay;
+info=infoinit();
+while nreplay>0
+  nreplay=nreplay-1;
 samp=1;
 starttime=now;
 suppressuntil=0;
-info=infoinit();
 info.starttime=recvis.vis(1).whenrcvd;
 while samp<=length(recvis.vis)
   vis=recvis.vis(samp);
@@ -59,6 +62,8 @@ while samp<=length(recvis.vis)
     elseif sleeptime<-1
       fprintf('Running behind by %.1f seconds\n', -sleeptime);
     end
+  else
+    pause(0.01);   % Give time for figures to refresh
   end
   if args.plotvis
     plotvisible(recvis.p,vis);
@@ -71,7 +76,12 @@ while samp<=length(recvis.vis)
   end
 
   % Analyze data to estimate position of targets using layout
-  snap{samp}=analyze(recvis.p,vis.v,args.plotanalyze);
+  if args.reanalyze
+    snap{samp}=analyze(recvis.p,vis.v,args.plotanalyze);
+  else
+    snap{samp}=recvis.snap(samp);
+  end
+  
   snap{samp}.when=vis.when;
   snap{samp}.samp=samp;
   if samp==1
@@ -185,10 +195,10 @@ while samp<=length(recvis.vis)
   % loopend=toc;
   % fprintf('Loop time = %.2f seconds\n', loopend);
   % tic
-  pause(0.01);   % Give time for figures to refresh
   samp=samp+1;
 end
-
+pause(20);
+end
 % Turn off any remaining notes
 oscupdate(recvis.p,info,samp);
 
