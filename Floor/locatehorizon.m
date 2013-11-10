@@ -20,7 +20,7 @@ for c=1:length(p.camera)
     p.camera(c).horizon(end+1,:)=[x,y];
     plot(x,y,'og');
   end
-  fprintf('Click on other horizon points; press return when done: ');
+  fprintf('\nClick on other horizon points; press return when done: ');
   while true
     [x,y]=ginput(1);
     if isempty(x)
