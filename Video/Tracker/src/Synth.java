@@ -63,7 +63,7 @@ public class Synth {
 		} else {
 			myBus.sendNoteOn(channel,pitch,velocity);
 		}
-		NoteOff noteOff=new NoteOff(this, pitch,0,channel);
+		NoteOff noteOff=new NoteOff(this, pitch,64,channel);
 		playing.get(channel).put(pitch, noteOff);
 		timer.schedule(noteOff, delay);
 		System.out.println("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to channel "+channel);
