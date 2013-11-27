@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Matlab RADOCC Toolbox</title>
+  <meta name="keywords" content="calibration, cameara, matlab, toolbox">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="./m2html.css">
+</head>
+
+<body>
+<a name="_top"></a> 
+
+<h1>Description and Usage Instructions</h1>
+
+<h2>DESCRIPTION<a href="#_top"><img alt="^" src="up.png" border="0"></a></h2>
+
+<div class="box">
+<p><strong>This toolbox represents the Robust Automatic Detection Of
+Calibration Chessboards (RADOCC) toolbox. The toolbox is a modified version of
+Bouget's <a href="http://www.vision.caltech.edu/bouguetj/calib_doc/"
+target="_blank">Camera Calibration Toolbox for Matlab</a>. The toolbox appends
+an automatic corner extraction algorithm to the existing Camera Calibration
+Toolbox. The algorithm is based on a bachelor of engineering honours thesis
+[1].</strong></p>
+</div>
+
+<h2>CONTENTS<a href="#_top"><img alt="^" src="up.png" border="0"></a></h2>
+
+<div class="box">
+<p><strong>The code of the automatic corner detection algorithm is located in
+the directory CornerFinder inside the main directory of the toolbox. The main
+function for the corner detection algorithm is <a
+href="CornerFinder/findcorners.html">findcorners</a>. The function is called by
+the calibration toolbox GUI so there is no need to manually call it. Please
+read the INSTALL and RUN sections below before using the toolbox.</strong></p>
+</div>
+
+<h2>REQUIREMENTS<a href="#_top"><img alt="^" src="up.png" border="0"></a></h2>
+
+<div class="box">
+<p><strong>This toolbox has the following requirements:
+<ol>
+<li>
+The toolbox calibrates by using a set of images of a planar chessboard. The size of the chessboard squares is assumed to be known with accuracy.
+</li>
+<li>
+The chessboard should not be rotated more than 45 degrees about its orthogonal angle.
+</li>
+</ol>
+</strong></p>
+</div>
+
+<h2>INSTALL<a href="#_top"><img alt="^" src="up.png" border="0"></a></h2>
+
+<div class="box">
+<p><strong>After unzipping to folder <i>installfolder</i>, add two directories
+to the Matlab path:</strong></p>
+
+<p><strong>&gt;&gt;addpath('<i>installfolder</i>');</strong></p>
+
+<p><strong>&gt;&gt;addpath('<i>installfolder</i>\CornerFinder');
+savepath;</strong></p>
+</div>
+
+<h2>RUN<a href="#_top"><img alt="^" src="up.png" border="0"></a></h2>
+
+<div class="box">
+<p><strong>To run the calibration, set the Matlab path to the path containing
+the image dataset then run <em>calib</em>.</strong><strong></strong></p>
+
+<p><strong>Load the images by pressing <em>Read images</em> and following the
+prompts.</strong></p>
+
+<p></p>
+
+<p><img alt="" src="calibdiag.jpg" width="465" height="105"></p>
+
+<p></p>
+
+<p><strong>The following steps of the RADOCC toolbox differ from the original
+toolbox. Once the images are read, press Extract grid corners. The program will
+ask you for the image numbers to process. Press enter for all. It will then ask
+for the dx and dy dimensions of the chessboard squares. Once these are entered,
+the automatic corner detection program will start running. The corner detector
+requires about 10 seconds for a 1.3 megapixel image. Therefore, if you have a
+large dataset, it is advised that you allow enough time for the program to
+finish.</strong></p>
+
+<p></p>
+
+<p><img alt="" src="detcorners.jpg" width="568" height="366"></p>
+
+<p></p>
+
+<p><strong>Once the corner detection is done, the program will ask for the
+verification of images which may not have been extracted properly. In most
+cases, the extraction should have gone well. Nevertheless, if it did not, you
+will have to suppress the image using the &lsquo;Add/Suppress images&rsquo;
+button. Important conditions requiring attention are the colours of the
+markers. Corners lying on the same row should have the same colour markers
+(colours are reused).</strong></p>
+
+<p></p>
+
+<p><img alt="" src="susp.jpg" width="562" height="706"></p>
+
+<p></p>
+
+<p><strong>After the corners are detected, you may now calibrate. Important
+aspects to notice are:</strong></p>
+
+<p><strong>1. The corner finder algorithm automatically counts the number of
+corners along each dimension.</strong></p>
+
+<p><strong>2. The size of the grid extracted may differ from an image to
+another. This should not alter the calibration process.</strong></p>
+
+<p><strong>3. The corner finder returns an appropriate window size for the
+subpixel finder offered by Bouget's toolbox, this can be changed if necessary.
+</strong></p>
+
+<p><strong>To calibrate, press the <em>calibrate</em> button. Further steps for
+improving the calibration results are described in Bouget's
+documentaion.</strong></p>
+</div>
+
+<h2>CONTACT<a href="#_top"><img alt="^" src="up.png" border="0"></a></h2>
+
+<div class="box">
+If you have a question or a suggestion, or if you find a bug, please email <a
+href="mailto:akas9185@uni.sydney.edu.au">Abdallah Kassir</a>. </div>
+
+<p></p>
+
+<p>References:</p>
+
+<p>1. Kassir, A., <!-- Start of Google Analytics Code --><script
+type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-4884268-1");
+pageTracker._initData();
+pageTracker._trackPageview();</script>
+<!-- end of Google Analytics Code --> <em>Automation of Sensor Calibration for
+Unmanned Ground Vehicles</em>, B.E. Honours Thesis, 2009.</p>
+</body>
+</html>

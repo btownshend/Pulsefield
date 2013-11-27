@@ -1,0 +1,297 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of subpixcrnr</title>
+  <meta name="keywords" content="subpixcrnr">
+  <meta name="description" content="SUBPIXCRNR gets the subpixel position of the chessboard corners.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- # RADOCCToolbox --><!-- menu.html CornerFinder -->
+<h1>subpixcrnr
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>SUBPIXCRNR gets the subpixel position of the chessboard corners.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [xc,good,bad,type] = subpixcrnr(xt,I,wintx,winty,wx2,wy2) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> SUBPIXCRNR gets the subpixel position of the chessboard corners.
+ 
+ SUBPIXCRNR Finds the sub-pixel corners on the image I with initial guess xt
+ xt and xc are 2xN matrices. The first component is the x coordinate
+ (horizontal) and the second component is the y coordinate (vertical).
+ 
+ USAGE:
+     [xc] = subpixcrnr(xt,I);
+ 
+ Based on Harris corner finder method.
+ 
+ Finds corners to a precision below .1 pixel!
+ Oct. 14th, 1997 - UPDATED to work with vertical and horizontal edges as well!!!
+ Sept 1998 - UPDATED to handle diverged points: we keep the original points
+ good is a binary vector indicating wether a feature point has been properly
+ found.
+ 
+ Add a zero zone of size wx2,wy2
+ July 15th, 1999 - Bug on the mask building... fixed + change to Gaussian mask with higher
+ resolution and larger number of iterations.
+ 
+ California Institute of Technology
+ (c) Jean-Yves Bouguet -- Oct. 14th, 1997</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="getsubpixcrnrs.html" class="code" title="function [gridout,win,nobadpts]=getsubpixcrnrs(img,crnrpts,grid)">getsubpixcrnrs</a>	GETSUBPIXCRNRS retruns the subpixel positions of the chessboard corners.</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [xc,good,bad,type] = subpixcrnr(xt,I,wintx,winty,wx2,wy2)</a>
+0002 <span class="comment">% SUBPIXCRNR gets the subpixel position of the chessboard corners.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% SUBPIXCRNR Finds the sub-pixel corners on the image I with initial guess xt</span>
+0005 <span class="comment">% xt and xc are 2xN matrices. The first component is the x coordinate</span>
+0006 <span class="comment">% (horizontal) and the second component is the y coordinate (vertical).</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% USAGE:</span>
+0009 <span class="comment">%     [xc] = subpixcrnr(xt,I);</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Based on Harris corner finder method.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Finds corners to a precision below .1 pixel!</span>
+0014 <span class="comment">% Oct. 14th, 1997 - UPDATED to work with vertical and horizontal edges as well!!!</span>
+0015 <span class="comment">% Sept 1998 - UPDATED to handle diverged points: we keep the original points</span>
+0016 <span class="comment">% good is a binary vector indicating wether a feature point has been properly</span>
+0017 <span class="comment">% found.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Add a zero zone of size wx2,wy2</span>
+0020 <span class="comment">% July 15th, 1999 - Bug on the mask building... fixed + change to Gaussian mask with higher</span>
+0021 <span class="comment">% resolution and larger number of iterations.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% California Institute of Technology</span>
+0024 <span class="comment">% (c) Jean-Yves Bouguet -- Oct. 14th, 1997</span>
+0025 
+0026 <span class="comment">% double precision</span>
+0027 <span class="comment">% I=double(I);</span>
+0028 
+0029 line_feat = 1; <span class="comment">% set to 1 to allow for extraction of line features.</span>
+0030 
+0031 xt = xt';
+0032 <span class="comment">% xt = fliplr(xt);</span>
+0033 
+0034 
+0035 <span class="keyword">if</span> nargin &lt; 4,
+0036    winty = 5;
+0037    <span class="keyword">if</span> nargin &lt; 3,
+0038       wintx = 5;
+0039    <span class="keyword">end</span>;
+0040 <span class="keyword">end</span>;
+0041 
+0042 
+0043 <span class="keyword">if</span> nargin &lt; 6,
+0044    wx2 = -1;
+0045    wy2 = -1;
+0046 <span class="keyword">end</span>;
+0047 
+0048 
+0049 <span class="comment">%mask = ones(2*wintx+1,2*winty+1);</span>
+0050 mask = exp(-((-wintx:wintx)'/(wintx)).^2) * exp(-((-winty:winty)/(winty)).^2);
+0051 
+0052 
+0053 <span class="comment">% another mask:</span>
+0054 [X,Y] = meshgrid(-winty:winty,-wintx:wintx);
+0055 mask2 = X.^2 + Y.^2;
+0056 mask2(wintx+1,winty+1) = 1;
+0057 mask2 = 1./mask2;
+0058 <span class="comment">%mask - mask2;</span>
+0059 
+0060 
+0061 <span class="keyword">if</span> (wx2&gt;0) &amp; (wy2&gt;0),
+0062    <span class="keyword">if</span> ((wintx - wx2)&gt;=2)&amp;((winty - wy2)&gt;=2),
+0063       mask(wintx+1-wx2:wintx+1+wx2,winty+1-wy2:winty+1+wy2)= zeros(2*wx2+1,2*wy2+1);
+0064    <span class="keyword">end</span>;
+0065 <span class="keyword">end</span>;
+0066 
+0067 offx = [-wintx:wintx]'*ones(1,2*winty+1);
+0068 offy = ones(2*wintx+1,1)*[-winty:winty];
+0069 
+0070 resolution = 0.005;
+0071 
+0072 MaxIter = 10;
+0073 
+0074 [nx,ny] = size(I);
+0075 N = size(xt,1);
+0076 
+0077 xc = xt; <span class="comment">% first guess... they don't move !!!</span>
+0078 
+0079 type = zeros(1,N);
+0080 
+0081 
+0082 <span class="keyword">for</span> i=1:N,
+0083 
+0084     v_extra = resolution + 1;         <span class="comment">% just larger than resolution</span>
+0085 
+0086     compt = 0;                 <span class="comment">% no iteration yet</span>
+0087 
+0088     <span class="keyword">while</span> (norm(v_extra) &gt; resolution) &amp; (compt&lt;MaxIter),
+0089 
+0090         cIx = xc(i,1);             <span class="comment">%</span>
+0091         cIy = xc(i,2);             <span class="comment">% Coords. of the point</span>
+0092         crIx = round(cIx);         <span class="comment">% on the initial image</span>
+0093         crIy = round(cIy);         <span class="comment">%</span>
+0094         itIx = cIx - crIx;         <span class="comment">% Coefficients</span>
+0095         itIy = cIy - crIy;         <span class="comment">% to compute</span>
+0096         <span class="keyword">if</span> itIx &gt; 0,             <span class="comment">% the sub pixel</span>
+0097             vIx = [itIx 1-itIx 0]';     <span class="comment">% accuracy.</span>
+0098         <span class="keyword">else</span>
+0099             vIx = [0 1+itIx -itIx]';
+0100         <span class="keyword">end</span>;
+0101         <span class="keyword">if</span> itIy &gt; 0,
+0102             vIy = [itIy 1-itIy 0];
+0103         <span class="keyword">else</span>
+0104             vIy = [0 1+itIy -itIy];
+0105         <span class="keyword">end</span>;
+0106 
+0107 
+0108         <span class="comment">% What if the sub image is not in?</span>
+0109 
+0110         <span class="keyword">if</span> (crIx-wintx-2 &lt; 1), xmin=1; xmax = 2*wintx+5;
+0111         <span class="keyword">elseif</span> (crIx+wintx+2 &gt; nx), xmax = nx; xmin = nx-2*wintx-4;
+0112         <span class="keyword">else</span>
+0113             xmin = crIx-wintx-2; xmax = crIx+wintx+2;
+0114         <span class="keyword">end</span>;
+0115 
+0116         <span class="keyword">if</span> (crIy-winty-2 &lt; 1), ymin=1; ymax = 2*winty+5;
+0117         <span class="keyword">elseif</span> (crIy+winty+2 &gt; ny), ymax = ny; ymin = ny-2*winty-4;
+0118         <span class="keyword">else</span>
+0119             ymin = crIy-winty-2; ymax = crIy+winty+2;
+0120         <span class="keyword">end</span>;
+0121 
+0122 
+0123         SI = I(xmin:xmax,ymin:ymax); <span class="comment">% The necessary neighborhood</span>
+0124         SI = conv2(conv2(SI,vIx,<span class="string">'same'</span>),vIy,<span class="string">'same'</span>);
+0125         SI = SI(2:2*wintx+4,2:2*winty+4); <span class="comment">% The subpixel interpolated neighborhood</span>
+0126         [gy,gx] = gradient(SI);         <span class="comment">% The gradient image</span>
+0127         gx = gx(2:2*wintx+2,2:2*winty+2); <span class="comment">% extraction of the useful parts only</span>
+0128         gy = gy(2:2*wintx+2,2:2*winty+2); <span class="comment">% of the gradients</span>
+0129 
+0130         px = cIx + offx;
+0131         py = cIy + offy;
+0132 
+0133         gxx = gx .* gx .* mask;
+0134         gyy = gy .* gy .* mask;
+0135         gxy = gx .* gy .* mask;
+0136 
+0137 
+0138         bb = [sum(sum(gxx .* px + gxy .* py)); sum(sum(gxy .* px + gyy .* py))];
+0139 
+0140         a = sum(sum(gxx));
+0141         b = sum(sum(gxy));
+0142         c = sum(sum(gyy));
+0143 
+0144         dt = a*c - b^2;
+0145 
+0146         xc2 = [c*bb(1)-b*bb(2) a*bb(2)-b*bb(1)]/dt;
+0147 
+0148 
+0149         <span class="comment">%keyboard;</span>
+0150 
+0151         <span class="keyword">if</span> line_feat,
+0152 
+0153             G = [a b;b c];
+0154             [U,S,V]  = svd(G);
+0155 
+0156             <span class="comment">%keyboard;</span>
+0157 
+0158             <span class="comment">% If non-invertible, then project the point onto the edge orthogonal:</span>
+0159 
+0160             <span class="keyword">if</span> (S(1,1)/S(2,2) &gt; 50),
+0161                 <span class="comment">% projection operation:</span>
+0162                 xc2 = xc2 + sum((xc(i,:)-xc2).*(V(:,2)'))*V(:,2)';
+0163                 type(i) = 1;
+0164             <span class="keyword">end</span>;
+0165 
+0166         <span class="keyword">end</span>;
+0167 
+0168 
+0169         <span class="comment">%keyboard;</span>
+0170 
+0171         <span class="comment">%      G = [a b;b c];</span>
+0172         <span class="comment">%      [U,S,V]  = svd(G);</span>
+0173 
+0174 
+0175         <span class="comment">%      if S(1,1)/S(2,2) &gt; 150,</span>
+0176         <span class="comment">%     bb2 = U'*bb;</span>
+0177         <span class="comment">%     xc2 = (V*[bb2(1)/S(1,1) ;0])';</span>
+0178         <span class="comment">%      else</span>
+0179         <span class="comment">%     xc2 = [c*bb(1)-b*bb(2) a*bb(2)-b*bb(1)]/dt;</span>
+0180         <span class="comment">%      end;</span>
+0181 
+0182 
+0183         <span class="comment">%if (abs(a)&gt; 50*abs(c)),</span>
+0184         <span class="comment">%     xc2 = [(c*bb(1)-b*bb(2))/dt xc(i,2)];</span>
+0185         <span class="comment">%      elseif (abs(c)&gt; 50*abs(a))</span>
+0186         <span class="comment">%     xc2 = [xc(i,1) (a*bb(2)-b*bb(1))/dt];</span>
+0187         <span class="comment">%      else</span>
+0188         <span class="comment">%     xc2 = [c*bb(1)-b*bb(2) a*bb(2)-b*bb(1)]/dt;</span>
+0189         <span class="comment">%      end;</span>
+0190 
+0191         <span class="comment">%keyboard;</span>
+0192 
+0193         <span class="keyword">if</span> (isnan(xc2(1)) || isnan(xc2(2))),
+0194             xc2 = [0 0];
+0195         <span class="keyword">end</span>;
+0196         
+0197         v_extra = xc(i,:) - xc2;
+0198 
+0199         xc(i,:) = xc2;
+0200 
+0201         <span class="comment">%      keyboard;</span>
+0202 
+0203         compt = compt + 1;
+0204 
+0205     <span class="keyword">end</span>
+0206 <span class="keyword">end</span>;
+0207 
+0208 
+0209 <span class="comment">% check for points that diverge:</span>
+0210 
+0211 delta_x = xc(:,1) - xt(:,1);
+0212 delta_y = xc(:,2) - xt(:,2);
+0213 
+0214 <span class="comment">%keyboard;</span>
+0215 
+0216 
+0217 bad = (abs(delta_x) &gt; wintx) | (abs(delta_y) &gt; winty);
+0218 good = ~bad;
+0219 in_bad = find(bad);
+0220 
+0221 <span class="comment">% For the diverged points, keep the original guesses:</span>
+0222 
+0223 xc(in_bad,:) = xt(in_bad,:);
+0224 
+0225 <span class="comment">% xc = fliplr(xc);</span>
+0226 xc = xc';
+0227 
+0228 bad = bad';
+0229 good = good';</pre></div>
+<hr><address>Generated on Sun 04-Apr-2010 17:13:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

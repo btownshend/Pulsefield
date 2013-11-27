@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of sweepmatrix</title>
+  <meta name="keywords" content="sweepmatrix">
+  <meta name="description" content="SWEEPMATRIX precalulates the x and y coordinates for the ray pixels used in CIRCSWEEP.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- # RADOCCToolbox --><!-- menu.html CornerFinder -->
+<h1>sweepmatrix
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>SWEEPMATRIX precalulates the x and y coordinates for the ray pixels used in CIRCSWEEP.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [sweepmatx,sweepmaty]=sweepmatrix(img) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> SWEEPMATRIX precalulates the x and y coordinates for the ray pixels used in CIRCSWEEP.
+ 
+ SWEEPMATRIX sets up the matrices which when cropped properly can be
+ directly used by CIRCSWEEP to find the ray sum results. The main use for
+ this function is to improve computational efficiency.
+ 
+ USAGE:
+     [sweepmatx,sweepmaty]=sweepmatrix(img)
+ 
+ INPUTS:
+     img: image (the main concern is the size of the image
+ 
+ OUTPUTS:
+     sweepmatx: x coordinate sweep matrix, each column corresponds to the
+     x coordinates of the pixels that lie under a ray of a certain angle.
+     Angles increase progressively from 0 to 360 along dimension 2 of the
+     array.
+ 
+     sweepmaty: y coordinate sweep matrix, each column corresponds to the
+     y coordinates of the pixels that lie under a ray of a certain angle.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="chesscornerfilter.html" class="code" title="function [crnrs,nocrnrs,peaklocs]=chesscornerfilter(img,imgedge,crnrpts,debug)">chesscornerfilter</a>	CHESSCORNERFILTER filters Harris corners for chessboard corners.</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [sweepmatx,sweepmaty]=sweepmatrix(img)</a>
+0002 <span class="comment">% SWEEPMATRIX precalulates the x and y coordinates for the ray pixels used in CIRCSWEEP.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% SWEEPMATRIX sets up the matrices which when cropped properly can be</span>
+0005 <span class="comment">% directly used by CIRCSWEEP to find the ray sum results. The main use for</span>
+0006 <span class="comment">% this function is to improve computational efficiency.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% USAGE:</span>
+0009 <span class="comment">%     [sweepmatx,sweepmaty]=sweepmatrix(img)</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% INPUTS:</span>
+0012 <span class="comment">%     img: image (the main concern is the size of the image</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% OUTPUTS:</span>
+0015 <span class="comment">%     sweepmatx: x coordinate sweep matrix, each column corresponds to the</span>
+0016 <span class="comment">%     x coordinates of the pixels that lie under a ray of a certain angle.</span>
+0017 <span class="comment">%     Angles increase progressively from 0 to 360 along dimension 2 of the</span>
+0018 <span class="comment">%     array.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">%     sweepmaty: y coordinate sweep matrix, each column corresponds to the</span>
+0021 <span class="comment">%     y coordinates of the pixels that lie under a ray of a certain angle.</span>
+0022 
+0023 theta=pi()/90:pi()/90:2*pi();
+0024 win=min(size(img));
+0025 r=1:win;
+0026 <span class="comment">% get grids</span>
+0027 [thetag,rg]=meshgrid(theta,r);
+0028 sweepmatx=round(rg.*cos(thetag));
+0029 sweepmaty=round(rg.*sin(thetag));</pre></div>
+<hr><address>Generated on Sun 04-Apr-2010 17:13:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

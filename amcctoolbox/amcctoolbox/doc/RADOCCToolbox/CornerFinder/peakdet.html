@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of peakdet</title>
+  <meta name="keywords" content="peakdet">
+  <meta name="description" content="PEAKDET Detect peaks in a vector">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- # RADOCCToolbox --><!-- menu.html CornerFinder -->
+<h1>peakdet
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>PEAKDET Detect peaks in a vector</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function maxtab=peakdet(v) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> PEAKDET Detect peaks in a vector
+ 
+ [MAXTAB, MINTAB] = PEAKDET(V, DELTA) finds the local
+ maxima and minima (&quot;peaks&quot;) in the vector V.
+ MAXTAB and MINTAB consists of two columns. Column 1
+ contains indices in V, and column 2 the found values.
+ 
+ With [MAXTAB, MINTAB] = PEAKDET(V, DELTA, X) the indices
+ in MAXTAB and MINTAB are replaced with the corresponding
+ X-values.
+ 
+ A point is considered a maximum peak if it has the maximal
+ value, and was preceded (to the left) by a value lower by
+ DELTA.
+ 
+ Eli Billauer, 3.4.05 (Explicitly not copyrighted).
+ This function is released to the public domain; Any use is allowed.
+ 
+ Modified by Abdallah Kassir 13/12/2009</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="cadj.html" class="code" title="function [vout,xout]=cadj(vin,xin)">cadj</a>	CADJ shifts a vector so that the starting value is always the smallest value.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="validcorner.html" class="code" title="function [valid,peaklocs]=validcorner(img,imgedge,sweepmatx,sweepmaty,debug)">validcorner</a>	VALIDCORNER checks if the input corner belongs to a chessboard.</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function maxtab=peakdet(v)</a>
+0002 <span class="comment">% PEAKDET Detect peaks in a vector</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% [MAXTAB, MINTAB] = PEAKDET(V, DELTA) finds the local</span>
+0005 <span class="comment">% maxima and minima (&quot;peaks&quot;) in the vector V.</span>
+0006 <span class="comment">% MAXTAB and MINTAB consists of two columns. Column 1</span>
+0007 <span class="comment">% contains indices in V, and column 2 the found values.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% With [MAXTAB, MINTAB] = PEAKDET(V, DELTA, X) the indices</span>
+0010 <span class="comment">% in MAXTAB and MINTAB are replaced with the corresponding</span>
+0011 <span class="comment">% X-values.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% A point is considered a maximum peak if it has the maximal</span>
+0014 <span class="comment">% value, and was preceded (to the left) by a value lower by</span>
+0015 <span class="comment">% DELTA.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Eli Billauer, 3.4.05 (Explicitly not copyrighted).</span>
+0018 <span class="comment">% This function is released to the public domain; Any use is allowed.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Modified by Abdallah Kassir 13/12/2009</span>
+0021 
+0022 
+0023 x=1:length(v);
+0024 [v,x]=<a href="cadj.html" class="code" title="function [vout,xout]=cadj(vin,xin)">cadj</a>(v,x);
+0025 delta=(max(v)-min(v))/4;
+0026 
+0027 maxtab = [];
+0028 
+0029 <span class="keyword">if</span> delta==0
+0030     <span class="keyword">return</span>;
+0031 <span class="keyword">end</span>
+0032 
+0033 mn = Inf; mx = -Inf;
+0034 mxpos = NaN;
+0035 
+0036 lookformax = 0;  <span class="comment">%modified</span>
+0037 
+0038 <span class="keyword">for</span> i=1:length(v)
+0039   this = v(i);
+0040   <span class="keyword">if</span> this &gt; mx, mx = this; mxpos = x(i); <span class="keyword">end</span>
+0041   <span class="keyword">if</span> this &lt; mn, mn = this; <span class="keyword">end</span>
+0042   
+0043   <span class="keyword">if</span> lookformax
+0044     <span class="keyword">if</span> this &lt; mx-delta
+0045       maxtab = [maxtab ; mxpos mx];
+0046       mn = this;
+0047       lookformax = 0;
+0048     <span class="keyword">end</span>  
+0049   <span class="keyword">else</span>
+0050     <span class="keyword">if</span> this &gt; mn+delta
+0051       mx = this; mxpos = x(i);
+0052       lookformax = 1;
+0053     <span class="keyword">end</span>
+0054   <span class="keyword">end</span>
+0055 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Sun 04-Apr-2010 17:13:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,2 @@
+% Run the auto mono calibrator efficient
+[active_images] = auto_mono_calibrator_efficient(calib_name, save_name, input_dir, output_dir, format_image, dX, dY, nx_crnrs, ny_crnrs, proj_tol, rot_flag, fisheye, k3_enable);

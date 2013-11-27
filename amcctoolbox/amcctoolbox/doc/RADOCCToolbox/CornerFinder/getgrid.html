@@ -1,0 +1,296 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getgrid</title>
+  <meta name="keywords" content="getgrid">
+  <meta name="description" content="GETGRID arranges the points that pass the chessboard filter into a grid.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- # RADOCCToolbox --><!-- menu.html CornerFinder -->
+<h1>getgrid
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>GETGRID arranges the points that pass the chessboard filter into a grid.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function crnrsgridout=getgrid(crnrs,pixs,peaklocs,ix,iy,debug) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> GETGRID arranges the points that pass the chessboard filter into a grid.
+ 
+ GETGRID returns the arranged grid of the set of candidate chessboard
+ corners. 
+ 
+ USAGE:
+     crnrsgridout=getgrid(crnrs,pixs,peaklocs,ix,iy);
+ 
+ INPUTS:
+     crnrs: 2xN matrix of the N candidate corners.
+ 
+     pixs: 2xM matrix of the M Harris corners
+ 
+     peaklocs: edge peak locations at each point (necesary for
+     arrangement)
+ 
+     ix: the x component of the gradient image
+ 
+     iy: the y component of the gradient image
+ 
+ OUTPUTS:
+     crnrsgridout: MxNx2 dimensional matrix contianing arranged points</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="findnearest.html" class="code" title="function [nxpts,ixs]=findnearest(p,pts,num,same)">findnearest</a>	FINDNEAREST finds from a array of points the nearest to a certain point.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="findcorners.html" class="code" title="function imgcout=findcorners(img,debug)">findcorners</a>	FINDCORNERS is the main function called by the calibration GUI.</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function prox=angprox(ang1,ang2,th)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function crnrsgridout=getgrid(crnrs,pixs,peaklocs,ix,iy,debug)</a>
+0002 <span class="comment">% GETGRID arranges the points that pass the chessboard filter into a grid.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% GETGRID returns the arranged grid of the set of candidate chessboard</span>
+0005 <span class="comment">% corners.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% USAGE:</span>
+0008 <span class="comment">%     crnrsgridout=getgrid(crnrs,pixs,peaklocs,ix,iy);</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% INPUTS:</span>
+0011 <span class="comment">%     crnrs: 2xN matrix of the N candidate corners.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%     pixs: 2xM matrix of the M Harris corners</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%     peaklocs: edge peak locations at each point (necesary for</span>
+0016 <span class="comment">%     arrangement)</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%     ix: the x component of the gradient image</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">%     iy: the y component of the gradient image</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% OUTPUTS:</span>
+0023 <span class="comment">%     crnrsgridout: MxNx2 dimensional matrix contianing arranged points</span>
+0024 
+0025 
+0026 
+0027 <span class="comment">% check input</span>
+0028 <span class="keyword">if</span> ~exist(<span class="string">'debug'</span>,<span class="string">'var'</span>) || isempty(debug)
+0029     debug=0;
+0030 <span class="keyword">end</span>
+0031 
+0032 <span class="comment">%adjust array direction</span>
+0033 <span class="keyword">if</span> size(crnrs,1)&gt;2
+0034     crnrs=crnrs';
+0035 <span class="keyword">end</span>
+0036 
+0037 nocrnrs=size(crnrs,2);
+0038 
+0039 <span class="comment">% get mean point</span>
+0040 centerpt=mean(crnrs,2);
+0041 [currentpt,ctindx]=<a href="findnearest.html" class="code" title="function [nxpts,ixs]=findnearest(p,pts,num,same)">findnearest</a>(centerpt,crnrs,1,0);
+0042 
+0043 <span class="comment">% parameters</span>
+0044 angth=deg2rad(15);
+0045 
+0046 <span class="comment">% always store first point</span>
+0047 valid=1;
+0048 
+0049 <span class="comment">% inititalise matrices</span>
+0050 crnrsgrid=zeros(nocrnrs,nocrnrs);
+0051 crnrsgriddone=zeros(nocrnrs,nocrnrs);
+0052 
+0053 <span class="comment">% place first point in the middle of the grid</span>
+0054 xg=round(nocrnrs/2);
+0055 yg=round(nocrnrs/2);
+0056 
+0057 <span class="comment">% enumerate different directions</span>
+0058 right=1;
+0059 top=2;
+0060 left=3;
+0061 bottom=4;
+0062 
+0063 <span class="comment">% setup position matrix</span>
+0064 posmat=[0,top,0;left,0,right;0,bottom,0];
+0065 
+0066 <span class="comment">% set while loop flag</span>
+0067 notdone=1;
+0068 
+0069 <span class="comment">% set loop counter</span>
+0070 <span class="comment">% just to ensure safe performance, prevent loop from going on forever</span>
+0071 loopcntr=0;
+0072 looplimit=1e6;
+0073 
+0074 <span class="keyword">while</span> notdone &amp;&amp; loopcntr&lt;looplimit
+0075     
+0076     loopcntr=loopcntr+1;
+0077     <span class="comment">% get current point coords</span>
+0078     currentpt=crnrs(:,ctindx);
+0079     xc=currentpt(1);
+0080     yc=currentpt(2);
+0081     
+0082     <span class="comment">% get surrounding chessboard corner properties (sorted by distance)</span>
+0083     [surcrnrs,surindx]=<a href="findnearest.html" class="code" title="function [nxpts,ixs]=findnearest(p,pts,num,same)">findnearest</a>(currentpt,crnrs,8);
+0084     vecs(1,:)=surcrnrs(1,:)-xc;
+0085     vecs(2,:)=surcrnrs(2,:)-yc;
+0086     angles=cart2pol(vecs(1,:),vecs(2,:));
+0087     angles(angles&lt;=0)=angles(angles&lt;=0)+2*pi();
+0088     
+0089     <span class="comment">% setup the segment vectors to the corners in order to check for</span>
+0090     <span class="comment">% validity of segment between points by summing ix and iy along segment</span>
+0091     
+0092     vecsnrm=zeros(size(vecs)); <span class="comment">% normal vectors</span>
+0093     vecslen=zeros(1,size(vecs,2)); <span class="comment">% vector lengths</span>
+0094     <span class="keyword">for</span> veccnr=1:size(vecs,2)
+0095         vecslen(veccnr)=norm(vecs(:,veccnr));
+0096         vecsnrm(:,veccnr)=vecs(:,veccnr)/vecslen(veccnr);
+0097     <span class="keyword">end</span>
+0098     
+0099     ixvalue=zeros(size(vecslen)); <span class="comment">% ix values</span>
+0100     iyvalue=ixvalue; <span class="comment">% iy values</span>
+0101     segedgevalue=iyvalue;
+0102     
+0103     <span class="keyword">for</span> crnrcnr=1:size(vecs,2)
+0104         <span class="keyword">for</span> evcnr=1:round(vecslen(crnrcnr))
+0105             xev=round(xc+vecsnrm(1,crnrcnr)*evcnr);
+0106             yev=round(yc+vecsnrm(2,crnrcnr)*evcnr);
+0107             ixvalue(crnrcnr)=ixvalue(crnrcnr)+ix(xev,yev);
+0108             iyvalue(crnrcnr)=iyvalue(crnrcnr)+iy(xev,yev);
+0109         <span class="keyword">end</span>
+0110         segedgevalue(crnrcnr)=norm([ixvalue(crnrcnr),iyvalue(crnrcnr)]/evcnr);
+0111     <span class="keyword">end</span>
+0112     segedgemean=mean(segedgevalue);
+0113     
+0114     
+0115     <span class="comment">% get surrounding Harris point properties (sorted by distance)</span>
+0116     surpixs=<a href="findnearest.html" class="code" title="function [nxpts,ixs]=findnearest(p,pts,num,same)">findnearest</a>(currentpt,pixs,8);
+0117     vecspixs(1,:)=surpixs(1,:)-currentpt(1);
+0118     vecspixs(2,:)=surpixs(2,:)-currentpt(2);
+0119     anglespixs=cart2pol(vecspixs(1,:),vecspixs(2,:));
+0120     anglespixs(anglespixs&lt;=0)=anglespixs(anglespixs&lt;=0)+2*pi();
+0121     
+0122     theta=pi()/90:pi()/90:2*pi();
+0123 
+0124     
+0125     locs=peaklocs(:,ctindx);
+0126     
+0127     locs=locs';
+0128     <span class="keyword">if</span> length(locs)~=4
+0129         error(<span class="string">'There should be 4 and only 4 peaks'</span>);
+0130     <span class="keyword">end</span>
+0131     lineangles=theta(locs);
+0132 
+0133     <span class="comment">% get cross corners</span>
+0134 
+0135     <span class="comment">% reset crosspixs</span>
+0136     crosspixs=zeros(1,4);
+0137     
+0138     <span class="keyword">for</span> pk=1:4
+0139         <span class="keyword">for</span> crnr=1:length(surindx)
+0140             <span class="comment">% check for angle proximity and segment edge projection</span>
+0141             <span class="keyword">if</span> <a href="#_sub1" class="code" title="subfunction prox=angprox(ang1,ang2,th)">angprox</a>(angles(crnr),lineangles(pk),angth) &amp;&amp; segedgevalue(crnr)&gt;segedgemean
+0142                 <span class="keyword">for</span> pix=1:size(surpixs,2)
+0143                     <span class="comment">% check if a Harris corner lies in between</span>
+0144                     <span class="keyword">if</span> <a href="#_sub1" class="code" title="subfunction prox=angprox(ang1,ang2,th)">angprox</a>(anglespixs(pix),lineangles(pk),angth)
+0145                         <span class="keyword">if</span> isequal(surpixs(:,pix),surcrnrs(:,crnr))
+0146                             <span class="comment">% store</span>
+0147                             crosspixs(pk)=surindx(crnr);
+0148                             <span class="keyword">break</span>;
+0149                         <span class="keyword">else</span>
+0150                             <span class="keyword">break</span>;
+0151                         <span class="keyword">end</span>
+0152                     <span class="keyword">end</span>
+0153                 <span class="keyword">end</span>
+0154             <span class="keyword">end</span>
+0155         <span class="keyword">end</span>
+0156     <span class="keyword">end</span>
+0157 
+0158     
+0159     <span class="comment">%Adjust cross</span>
+0160     <span class="keyword">for</span> i=1:size(crosspixs,2)
+0161         <span class="keyword">for</span> u=xg-1:xg+1
+0162             <span class="keyword">for</span> v=yg-1:yg+1
+0163                 <span class="keyword">if</span> crosspixs(i)==crnrsgrid(u,v) &amp;&amp; crnrsgriddone(u,v)&gt;0 <span class="comment">% check for valid corner, check for non zero value as well</span>
+0164                     valid=1; <span class="comment">% a cross is valid if a match is found</span>
+0165                     k=posmat(u-xg+2,v-yg+2)-i;
+0166                     crosspixs=crosspixs(mod((1:end)-k-1, end)+1 );
+0167                 <span class="keyword">end</span>
+0168             <span class="keyword">end</span>
+0169         <span class="keyword">end</span>
+0170     <span class="keyword">end</span>
+0171     
+0172 
+0173     
+0174     <span class="keyword">if</span> valid <span class="comment">% if connection found store</span>
+0175     
+0176         <span class="comment">%draw cross matrix</span>
+0177         cmat=zeros(3,3);
+0178         cmat(2,2)=ctindx;
+0179         cmat(2,3)=crosspixs(1);
+0180         cmat(1,2)=crosspixs(2);
+0181         cmat(2,1)=crosspixs(3);
+0182         cmat(3,2)=crosspixs(4);
+0183 
+0184         <span class="comment">%store changes</span>
+0185         crnrsgrid(xg-1:xg+1,yg-1:yg+1)=crnrsgrid(xg-1:xg+1,yg-1:yg+1)+cmat.*(~crnrsgrid(xg-1:xg+1,yg-1:yg+1));
+0186         cmatdone=[0,1,0;1,2,1;0,1,0];
+0187         cmatdone=cmatdone.*(cmatdone&amp;cmat)-crnrsgriddone(xg-1:xg+1,yg-1:yg+1);
+0188         cmatdone(cmatdone&lt;0)=0;
+0189         crnrsgriddone(xg-1:xg+1,yg-1:yg+1)=cmatdone+crnrsgriddone(xg-1:xg+1,yg-1:yg+1);
+0190 <span class="comment">%         if debug</span>
+0191 <span class="comment">%             close all;</span>
+0192 <span class="comment">%             figure; imshow(img);</span>
+0193 <span class="comment">%             hold on; plot(crnrsgrid(:,:,2),crnrsgrid(:,:,1),'o');</span>
+0194 <span class="comment">%         end</span>
+0195     <span class="comment">% reset valid</span>
+0196     valid=0;
+0197     <span class="keyword">else</span> <span class="comment">% ignore and reset</span>
+0198         crnrsgriddone(xg,yg)=0;
+0199     <span class="keyword">end</span>
+0200     
+0201     <span class="comment">%get new point</span>
+0202     [xg,yg]=find(crnrsgriddone==1,1);
+0203     
+0204     <span class="comment">% if no new point found end</span>
+0205     <span class="keyword">if</span> isempty(xg)
+0206         notdone=0;
+0207     <span class="keyword">else</span>
+0208         ctindx=crnrsgrid(xg,yg);
+0209     <span class="keyword">end</span>
+0210 <span class="keyword">end</span>
+0211 
+0212 <span class="comment">% store x and y coords into matrix</span>
+0213 crnrsgridout=zeros([size(crnrsgrid),2]);
+0214 
+0215 <span class="keyword">for</span> x=1:size(crnrsgrid,1)
+0216     <span class="keyword">for</span> y=1:size(crnrsgrid,2)
+0217         <span class="keyword">if</span> crnrsgrid(x,y)
+0218             crnrsgridout(x,y,:)=crnrs(:,crnrsgrid(x,y));
+0219         <span class="keyword">end</span>
+0220     <span class="keyword">end</span>
+0221 <span class="keyword">end</span>
+0222 
+0223 <a name="_sub1" href="#_subfunctions" class="code">function prox=angprox(ang1,ang2,th)</a>
+0224 <span class="comment">% ANGPROX checks if the two angles are within a certain threshold.</span>
+0225 <span class="comment">%</span>
+0226 
+0227 prox=abs(ang1-ang2)&lt;th || abs(ang1-ang2)&gt;(2*pi-th);</pre></div>
+<hr><address>Generated on Sun 04-Apr-2010 17:13:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

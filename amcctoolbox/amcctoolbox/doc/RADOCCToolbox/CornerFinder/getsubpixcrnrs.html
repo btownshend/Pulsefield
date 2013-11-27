@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getsubpixcrnrs</title>
+  <meta name="keywords" content="getsubpixcrnrs">
+  <meta name="description" content="GETSUBPIXCRNRS retruns the subpixel positions of the chessboard corners.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- # RADOCCToolbox --><!-- menu.html CornerFinder -->
+<h1>getsubpixcrnrs
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>GETSUBPIXCRNRS retruns the subpixel positions of the chessboard corners.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [gridout,win,nobadpts]=getsubpixcrnrs(img,crnrpts,grid) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">GETSUBPIXCRNRS retruns the subpixel positions of the chessboard corners.
+ 
+ GETSUBPIXCRNRS relies on the subpixel corner finder by 
+ Jean-Yves Bouguet. The addition it introduces is the adaptive selection
+ of the window size.
+ 
+ GETSUBPIXCRNRS also chooses a subset of the grid if certain corners do 
+ converge using Bouget's code.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="getgoodsubrect.html" class="code" title="function gridout=getgoodsubrect(grid,badptsx,badptsy)">getgoodsubrect</a>	GETGOODSUBRECT extracts a grid subset of the input grid such that the output grid does not contain any bad points.</li><li><a href="getwin.html" class="code" title="function win=getwin(img,pt,crnrpts)">getwin</a>	GETWIN chooses an appropriate window size for the chessboard corner filter</li><li><a href="subpixcrnr.html" class="code" title="function [xc,good,bad,type] = subpixcrnr(xt,I,wintx,winty,wx2,wy2)">subpixcrnr</a>	SUBPIXCRNR gets the subpixel position of the chessboard corners.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="findcorners.html" class="code" title="function imgcout=findcorners(img,debug)">findcorners</a>	FINDCORNERS is the main function called by the calibration GUI.</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [gridout,win,nobadpts]=getsubpixcrnrs(img,crnrpts,grid)</a>
+0002 <span class="comment">%GETSUBPIXCRNRS retruns the subpixel positions of the chessboard corners.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% GETSUBPIXCRNRS relies on the subpixel corner finder by</span>
+0005 <span class="comment">% Jean-Yves Bouguet. The addition it introduces is the adaptive selection</span>
+0006 <span class="comment">% of the window size.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% GETSUBPIXCRNRS also chooses a subset of the grid if certain corners do</span>
+0009 <span class="comment">% converge using Bouget's code.</span>
+0010 
+0011 <span class="comment">% reshape into row vector</span>
+0012 gridx=grid(:,:,1);
+0013 gridy=grid(:,:,2);
+0014 indcs=find(gridx)';
+0015 
+0016 gridpts=gridx(indcs);
+0017 gridpts=[gridpts;gridy(indcs)];
+0018 
+0019 gridout=zeros(size(grid));
+0020 bad=false(size(grid,1),size(grid,2));
+0021 
+0022 win=Inf;
+0023 
+0024 <span class="comment">% get smallest window size first</span>
+0025 <span class="keyword">for</span> cntr=1:size(gridpts,2)
+0026     ctwin=round(<a href="getwin.html" class="code" title="function win=getwin(img,pt,crnrpts)">getwin</a>(img,gridpts(:,cntr),crnrpts)/2);
+0027     <span class="comment">% get smallest win size</span>
+0028     <span class="keyword">if</span> ctwin&lt;win &amp;&amp; ctwin&gt;2
+0029         win=ctwin;
+0030     <span class="keyword">end</span>
+0031 <span class="keyword">end</span>
+0032 
+0033 
+0034 <span class="keyword">for</span> x=1:size(grid,1)
+0035     <span class="keyword">for</span> y=1:size(grid,2)
+0036         currentpt=squeeze(grid(x,y,:));
+0037         [subpxpt,goodpt,badpt]=<a href="subpixcrnr.html" class="code" title="function [xc,good,bad,type] = subpixcrnr(xt,I,wintx,winty,wx2,wy2)">subpixcrnr</a>(currentpt,img,win,win); <span class="comment">% adjust for x and y</span>
+0038         gridout(x,y,:)=subpxpt;
+0039         bad(x,y)=badpt;
+0040     <span class="keyword">end</span>
+0041 <span class="keyword">end</span>
+0042 
+0043 
+0044 [badptsx,badptsy]=find(bad);
+0045 nobadpts=length(badptsx);
+0046 gridout=<a href="getgoodsubrect.html" class="code" title="function gridout=getgoodsubrect(grid,badptsx,badptsy)">getgoodsubrect</a>(gridout,badptsx,badptsy);
+0047</pre></div>
+<hr><address>Generated on Sun 04-Apr-2010 17:13:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

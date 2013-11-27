@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of adjgriddir</title>
+  <meta name="keywords" content="adjgriddir">
+  <meta name="description" content="ADJGRIDDIR adjusts the direction of the extracted grid to ensure consistency across all images.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- # RADOCCToolbox --><!-- menu.html CornerFinder -->
+<h1>adjgriddir
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>ADJGRIDDIR adjusts the direction of the extracted grid to ensure consistency across all images.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function gridout=adjgriddir(grid) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> ADJGRIDDIR adjusts the direction of the extracted grid to ensure consistency across all images.
+ 
+ ADJGRIDDIR examines the direction of the grid rows and columns. It then
+ consequently adjusts the grid to a consistent direction.
+ 
+ USAGE:
+     gridout=adjgriddir(grid);
+ 
+ INPUTS:
+     grid: MxNx2 array, output of FILTERGRID
+
+ OUTPUTS:
+     gridout: adjusted MxNx2 or NxMx2 array</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="findcorners.html" class="code" title="function imgcout=findcorners(img,debug)">findcorners</a>	FINDCORNERS is the main function called by the calibration GUI.</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function gridout=adjgriddir(grid)</a>
+0002 <span class="comment">% ADJGRIDDIR adjusts the direction of the extracted grid to ensure consistency across all images.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% ADJGRIDDIR examines the direction of the grid rows and columns. It then</span>
+0005 <span class="comment">% consequently adjusts the grid to a consistent direction.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% USAGE:</span>
+0008 <span class="comment">%     gridout=adjgriddir(grid);</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% INPUTS:</span>
+0011 <span class="comment">%     grid: MxNx2 array, output of FILTERGRID</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% OUTPUTS:</span>
+0014 <span class="comment">%     gridout: adjusted MxNx2 or NxMx2 array</span>
+0015 
+0016 <span class="comment">% turn off unwanted warnings</span>
+0017 warning(<span class="string">'off'</span>,<span class="string">'MATLAB:polyfit:PolyNotUnique'</span>);
+0018 warning(<span class="string">'off'</span>,<span class="string">'MATLAB:polyfit:RepeatedPointsOrRescale'</span>);
+0019 
+0020 rowslope=zeros(1,size(grid,1));
+0021 colslope=zeros(1,size(grid,2));
+0022 
+0023 <span class="comment">% get slopes of rows</span>
+0024 <span class="keyword">for</span> rowindx=1:size(grid,1)
+0025     currentrowx=grid(rowindx,:,1);
+0026     currentrowy=grid(rowindx,:,2);
+0027     currentrowx=currentrowx(currentrowx&gt;0);
+0028     currentrowy=currentrowy(currentrowy&gt;0);
+0029     P=polyfit(currentrowx,currentrowy,1);
+0030     rowslope(rowindx)=abs(P(1));
+0031 <span class="keyword">end</span>
+0032 
+0033 <span class="comment">% get slopes of columns</span>
+0034 <span class="keyword">for</span> colindx=1:size(grid,2)
+0035     currentcolx=grid(:,colindx,1);
+0036     currentcoly=grid(:,colindx,2);
+0037     currentcolx=currentcolx(currentcolx&gt;0);
+0038     currentcoly=currentcoly(currentcoly&gt;0);
+0039     P=polyfit(currentcolx,currentcoly,1);
+0040     colslope(colindx)=abs(P(1));
+0041 <span class="keyword">end</span>
+0042 
+0043 <span class="comment">% reset warnings</span>
+0044 warning(<span class="string">'on'</span>,<span class="string">'MATLAB:polyfit:PolyNotUnique'</span>);
+0045 warning(<span class="string">'on'</span>,<span class="string">'MATLAB:polyfit:RepeatedPointsOrRescale'</span>);
+0046 
+0047 rowslope=mean(rowslope);
+0048 colslope=mean(colslope);
+0049 
+0050 <span class="comment">% adjust for the higher slope</span>
+0051 <span class="keyword">if</span> colslope&gt;rowslope
+0052     gridtemp(:,:,1)=rot90(grid(:,:,1));
+0053     gridtemp(:,:,2)=rot90(grid(:,:,2));
+0054     gridout=gridtemp;
+0055 <span class="keyword">else</span>
+0056     gridout=grid;
+0057 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Sun 04-Apr-2010 17:13:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

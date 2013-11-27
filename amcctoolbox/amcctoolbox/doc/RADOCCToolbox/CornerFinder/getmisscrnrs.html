@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getmisscrnrs</title>
+  <meta name="keywords" content="getmisscrnrs">
+  <meta name="description" content="GETMISSCRNRS fills in the gaps in the grid by linear interpolation.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- # RADOCCToolbox --><!-- menu.html CornerFinder -->
+<h1>getmisscrnrs
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>GETMISSCRNRS fills in the gaps in the grid by linear interpolation.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [gridout,nointerpolations]=getmisscrnrs(grid,debug) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> GETMISSCRNRS fills in the gaps in the grid by linear interpolation.
+ 
+ GETMISSCRNRS successively inerpolates missing points by fitting a least
+ square line of the row and column the missing point belongs to and then
+ storing the point as the intersection of the two lines.
+ 
+ USAGE:
+     [gridout,nointerpolations]=getmisscrnrs(grid);
+ 
+ INPUTS:
+     grid: output of FILTERGRID
+ 
+ OUTPUTS:
+     gridout: grid with the missing corners interpolated
+ 
+     nointerpolations: the number of interpolations is used to detect the
+     quality of the chessboard detection by FINDCORNERS</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="findcorners.html" class="code" title="function imgcout=findcorners(img,debug)">findcorners</a>	FINDCORNERS is the main function called by the calibration GUI.</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [gridout,nointerpolations]=getmisscrnrs(grid,debug)</a>
+0002 <span class="comment">% GETMISSCRNRS fills in the gaps in the grid by linear interpolation.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% GETMISSCRNRS successively inerpolates missing points by fitting a least</span>
+0005 <span class="comment">% square line of the row and column the missing point belongs to and then</span>
+0006 <span class="comment">% storing the point as the intersection of the two lines.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% USAGE:</span>
+0009 <span class="comment">%     [gridout,nointerpolations]=getmisscrnrs(grid);</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% INPUTS:</span>
+0012 <span class="comment">%     grid: output of FILTERGRID</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% OUTPUTS:</span>
+0015 <span class="comment">%     gridout: grid with the missing corners interpolated</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%     nointerpolations: the number of interpolations is used to detect the</span>
+0018 <span class="comment">%     quality of the chessboard detection by FINDCORNERS</span>
+0019 
+0020 <span class="comment">%Function that interpolates the positions of missing corners</span>
+0021 <span class="keyword">if</span> ~exist(<span class="string">'debug'</span>,<span class="string">'var'</span>) || isempty(debug)
+0022     debug=0;
+0023 <span class="keyword">end</span>
+0024 
+0025 <span class="comment">% comment the line to allow debugging</span>
+0026 debug=0;
+0027 
+0028 gridout=grid;
+0029 nointerpolations=0;
+0030 
+0031 <span class="keyword">for</span> x=1:size(gridout,1)
+0032     <span class="keyword">for</span> y=1:size(gridout,2)
+0033         <span class="keyword">if</span> gridout(x,y,1)==0
+0034             nzerrowx=gridout(x,:,1);
+0035             nzerrowx=nzerrowx(nzerrowx&gt;0);
+0036             nzerrowy=gridout(x,:,2);
+0037             nzerrowy=nzerrowy(nzerrowy&gt;0);
+0038             nzercolx=gridout(:,y,1);
+0039             nzercolx=nzercolx(nzercolx&gt;0);
+0040             nzercoly=gridout(:,y,2);
+0041             nzercoly=nzercoly(nzercoly&gt;0);
+0042             <span class="keyword">if</span> length(nzerrowx)&lt;2 || length(nzercolx)&lt;2
+0043                 <span class="comment">% cannot process grid</span>
+0044                 gridout=[];
+0045                 <span class="keyword">return</span>;
+0046             <span class="keyword">end</span>
+0047             nointerpolations=nointerpolations+1;
+0048             P1=polyfit(nzerrowy,nzerrowx,1);
+0049             P2=polyfit(nzercolx,nzercoly,1);
+0050             eqnsmat=[1,-P1(1);-P2(1),1];
+0051             bmat=[P1(2);P2(2)];
+0052             gridout(x,y,:)=eqnsmat\bmat;
+0053             <span class="keyword">if</span> debug
+0054                 close all;
+0055                 figure;
+0056                 hold on;
+0057                 plot(nzerrowy,polyval(P1,nzerrowy));
+0058                 plot(polyval(P2,nzercolx),nzercolx);
+0059                 plot(gridout(:,:,2),gridout(:,:,1),<span class="string">'+'</span>);
+0060             <span class="keyword">end</span>
+0061         <span class="keyword">end</span>
+0062     <span class="keyword">end</span>
+0063 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Sun 04-Apr-2010 17:13:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

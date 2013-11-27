@@ -1,0 +1,283 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of findcorners</title>
+  <meta name="keywords" content="findcorners">
+  <meta name="description" content="FINDCORNERS is the main function called by the calibration GUI.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- # RADOCCToolbox --><!-- menu.html CornerFinder -->
+<h1>findcorners
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>FINDCORNERS is the main function called by the calibration GUI.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function imgcout=findcorners(img,debug) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> FINDCORNERS is the main function called by the calibration GUI.
+
+ FINDCORNERS takes a grayscale image return a structure variable imgcout 
+ containing the extracted chessboard grid.
+ 
+ USAGE:
+     imgcout=findcorners(img);
+ 
+ INPUTS:
+     img: grayscale image (any class)
+     debug: for debugging
+ 
+ OUTPUTS:
+     imgcout: structure containing the following elements:
+ 
+         grid: NxDx2 array containing the x and y coordinates of the
+         chessboard corners detected
+         
+         win: the minimum distance between chessboard corners in pixels
+         
+         suspicious: flag indicating wether the output requires user
+         confirmation
+         
+         fail: flag indicationg the failure of detection</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="adaptimadj.html" class="code" title="function imgout=adaptimadj(img,win,th)">adaptimadj</a>	ADAPTIMADJ adaptively adjusts the intensity of an image</li><li><a href="adaptstats.html" class="code" title="function [mimg,stdv]=adaptstats(img,win)">adaptstats</a>	ADAPTSTATS gets the local mean and standard deviations for each pixel in the image within a region.</li><li><a href="adjgriddir.html" class="code" title="function gridout=adjgriddir(grid)">adjgriddir</a>	ADJGRIDDIR adjusts the direction of the extracted grid to ensure consistency across all images.</li><li><a href="adjgridorigin.html" class="code" title="function gridout=adjgridorigin(grid)">adjgridorigin</a>	ADJGRIDORIGIN adjusts the input grid's origin to ensure consistency among images.</li><li><a href="chesscornerfilter.html" class="code" title="function [crnrs,nocrnrs,peaklocs]=chesscornerfilter(img,imgedge,crnrpts,debug)">chesscornerfilter</a>	CHESSCORNERFILTER filters Harris corners for chessboard corners.</li><li><a href="filtergrid.html" class="code" title="function gridout=filtergrid(grid)">filtergrid</a>	FILTERGRID removes spur rows and columns existing after the grid arrangement process.</li><li><a href="getcrnrpts.html" class="code" title="function crnrpts=getcrnrpts(imgh,mimg,stdv,th,debug)">getcrnrpts</a>	GETCRNRPTS is a function that uses the mean and standard deviation images to adaptively obtain local maxima in an image.</li><li><a href="getedges.html" class="code" title="function [imge,ix,iy]=getedges(img)">getedges</a>	GETEDGES gets the Sobel edge image.</li><li><a href="getgrid.html" class="code" title="function crnrsgridout=getgrid(crnrs,pixs,peaklocs,ix,iy,debug)">getgrid</a>	GETGRID arranges the points that pass the chessboard filter into a grid.</li><li><a href="getmisscrnrs.html" class="code" title="function [gridout,nointerpolations]=getmisscrnrs(grid,debug)">getmisscrnrs</a>	GETMISSCRNRS fills in the gaps in the grid by linear interpolation.</li><li><a href="getsubpixcrnrs.html" class="code" title="function [gridout,win,nobadpts]=getsubpixcrnrs(img,crnrpts,grid)">getsubpixcrnrs</a>	GETSUBPIXCRNRS retruns the subpixel positions of the chessboard corners.</li><li><a href="gscale.html" class="code" title="function g=gscale(f,method,low,high)">gscale</a>	GSCALE adjusts the scale of an image.</li><li><a href="harris.html" class="code" title="function imgout=harris(img,win)">harris</a>	HARRIS obtains the Harris transform of image.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function imgcout=failmode</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function imgcout=findcorners(img,debug)</a>
+0002 <span class="comment">% FINDCORNERS is the main function called by the calibration GUI.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% FINDCORNERS takes a grayscale image return a structure variable imgcout</span>
+0005 <span class="comment">% containing the extracted chessboard grid.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% USAGE:</span>
+0008 <span class="comment">%     imgcout=findcorners(img);</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% INPUTS:</span>
+0011 <span class="comment">%     img: grayscale image (any class)</span>
+0012 <span class="comment">%     debug: for debugging</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% OUTPUTS:</span>
+0015 <span class="comment">%     imgcout: structure containing the following elements:</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%         grid: NxDx2 array containing the x and y coordinates of the</span>
+0018 <span class="comment">%         chessboard corners detected</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">%         win: the minimum distance between chessboard corners in pixels</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">%         suspicious: flag indicating wether the output requires user</span>
+0023 <span class="comment">%         confirmation</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">%         fail: flag indicationg the failure of detection</span>
+0026 
+0027 <span class="comment">%</span>
+0028 <span class="comment">% Input Checking</span>
+0029 <span class="comment">%</span>
+0030 
+0031 <span class="comment">% check image</span>
+0032 <span class="keyword">if</span> size(img,3)&gt;1
+0033     error(<span class="string">'Input image is required to be grayscale'</span>);
+0034 <span class="keyword">end</span>
+0035 
+0036 <span class="keyword">if</span> min(size(img))&lt;50
+0037     error(<span class="string">'Image too small'</span>);
+0038 <span class="keyword">end</span>
+0039 
+0040 <span class="comment">% check debug flag</span>
+0041 <span class="keyword">if</span> ~exist(<span class="string">'debug'</span>,<span class="string">'var'</span>) || isempty(debug)
+0042     debug=0;
+0043 <span class="keyword">end</span>
+0044 
+0045 <span class="comment">% change image into double</span>
+0046 img=double(img);
+0047 img=<a href="gscale.html" class="code" title="function g=gscale(f,method,low,high)">gscale</a>(img,<span class="string">'minmax'</span>);
+0048 
+0049 
+0050 <span class="comment">%</span>
+0051 <span class="comment">% Parameters</span>
+0052 <span class="comment">%</span>
+0053 
+0054 hwin=3; <span class="comment">% Harris window size</span>
+0055 th=0.5; <span class="comment">% Parameter to adjust adaptive thresholding</span>
+0056 
+0057 <span class="comment">%</span>
+0058 <span class="comment">% Make Pyramid</span>
+0059 <span class="comment">%</span>
+0060 <span class="comment">% Each level in pyramid consists of:</span>
+0061 <span class="comment">% im: image</span>
+0062 <span class="comment">% imadj: adjusted image</span>
+0063 <span class="comment">% ime: sobel edge image</span>
+0064 <span class="comment">% ix: x component of edge image</span>
+0065 <span class="comment">% iy: y component of edge image</span>
+0066 
+0067 nolevels=3; <span class="comment">% no of levels</span>
+0068 pyr=cell(1,3); <span class="comment">% initialise pyr</span>
+0069 
+0070 <span class="keyword">for</span> cntr=1:nolevels
+0071     <span class="comment">% downsize image</span>
+0072     im=imresize(img,1/(2^(cntr-1)));
+0073     pyr{cntr}.im=im;
+0074     
+0075     <span class="comment">% adaptively adjust</span>
+0076     pyr{cntr}.imadj=<a href="adaptimadj.html" class="code" title="function imgout=adaptimadj(img,win,th)">adaptimadj</a>(im,[]);
+0077     
+0078     <span class="comment">% get sobel edge image</span>
+0079     [imgedge,ix,iy]=<a href="getedges.html" class="code" title="function [imge,ix,iy]=getedges(img)">getedges</a>(im);
+0080     pyr{cntr}.ime=imgedge;
+0081     pyr{cntr}.ix=ix;
+0082     pyr{cntr}.iy=iy;
+0083 <span class="keyword">end</span>
+0084 
+0085 <span class="comment">% set nocrnrs and level</span>
+0086 nocrnrs=-1;
+0087 level=1;
+0088 
+0089 <span class="keyword">for</span> cntr=1:length(pyr)
+0090     imgh=<a href="harris.html" class="code" title="function imgout=harris(img,win)">harris</a>(pyr{cntr}.imadj,hwin);
+0091 
+0092     [mimg,stdv]=<a href="adaptstats.html" class="code" title="function [mimg,stdv]=adaptstats(img,win)">adaptstats</a>(imgh);
+0093     ctcrnrpts=<a href="getcrnrpts.html" class="code" title="function crnrpts=getcrnrpts(imgh,mimg,stdv,th,debug)">getcrnrpts</a>(imgh,mimg,stdv,th);
+0094     
+0095     <span class="comment">% check</span>
+0096     <span class="keyword">if</span> isempty(ctcrnrpts)
+0097         <span class="keyword">continue</span>;
+0098     <span class="keyword">end</span>
+0099     
+0100     [ctcrnrs,ctnocrnrs,ctpeaklocs]=<a href="chesscornerfilter.html" class="code" title="function [crnrs,nocrnrs,peaklocs]=chesscornerfilter(img,imgedge,crnrpts,debug)">chesscornerfilter</a>(pyr{cntr}.im,pyr{cntr}.ime,ctcrnrpts,debug);
+0101     <span class="keyword">if</span> ctnocrnrs&gt;nocrnrs
+0102         nocrnrs=ctnocrnrs;
+0103         crnrs=ctcrnrs;
+0104         crnrpts=ctcrnrpts;
+0105         peaklocs=ctpeaklocs;
+0106         level=cntr;
+0107     <span class="keyword">end</span>
+0108     
+0109     <span class="comment">% debugging</span>
+0110     <span class="keyword">if</span> debug
+0111         close all;
+0112         figure;imshow(pyr{cntr}.imadj);
+0113         hold on;plot(ctcrnrpts(2,:),ctcrnrpts(1,:),<span class="string">'+'</span>);
+0114         <span class="keyword">if</span> ~isempty(ctcrnrs)
+0115             plot(ctcrnrs(2,:),ctcrnrs(1,:),<span class="string">'square'</span>,<span class="string">'color'</span>,<span class="string">'r'</span>);
+0116         <span class="keyword">end</span>
+0117         pause;
+0118     <span class="keyword">end</span>
+0119 <span class="keyword">end</span>
+0120 
+0121 
+0122 <span class="comment">%   Check for enough no of corners</span>
+0123 <span class="keyword">if</span> nocrnrs&lt;10
+0124     imgcout=<a href="#_sub1" class="code" title="subfunction imgcout=failmode">failmode</a>;
+0125     <span class="keyword">return</span>;
+0126 <span class="keyword">end</span>
+0127 
+0128 <span class="comment">% debugging</span>
+0129 <span class="keyword">if</span> debug
+0130     close all;
+0131     figure;imshow(pyr{level}.im);
+0132     hold on;plot(crnrpts(2,:),crnrpts(1,:),<span class="string">'+'</span>);
+0133     <span class="keyword">if</span> ~isempty(crnrs)
+0134         plot(crnrs(2,:),crnrs(1,:),<span class="string">'square'</span>,<span class="string">'color'</span>,<span class="string">'r'</span>);
+0135         pause;
+0136     <span class="keyword">end</span>
+0137 <span class="keyword">end</span>
+0138 
+0139 
+0140 <span class="comment">%</span>
+0141 <span class="comment">% Extract Grid</span>
+0142 <span class="comment">%</span>
+0143 
+0144 crnrsgrid=<a href="getgrid.html" class="code" title="function crnrsgridout=getgrid(crnrs,pixs,peaklocs,ix,iy,debug)">getgrid</a>(crnrs,crnrpts,peaklocs,pyr{level}.ix,pyr{level}.iy,debug);
+0145 
+0146 crnrsgridfil=<a href="filtergrid.html" class="code" title="function gridout=filtergrid(grid)">filtergrid</a>(crnrsgrid);
+0147 
+0148 <span class="comment">% check grid size</span>
+0149 <span class="keyword">if</span> min(size(crnrsgridfil(:,:,1)))&lt;3
+0150     imgcout=<a href="#_sub1" class="code" title="subfunction imgcout=failmode">failmode</a>;
+0151     <span class="keyword">return</span>;
+0152 <span class="keyword">end</span>
+0153 
+0154 crnrsgridfil=<a href="adjgriddir.html" class="code" title="function gridout=adjgriddir(grid)">adjgriddir</a>(crnrsgridfil);
+0155 [gridfullrect,nointerpolations]=<a href="getmisscrnrs.html" class="code" title="function [gridout,nointerpolations]=getmisscrnrs(grid,debug)">getmisscrnrs</a>(crnrsgridfil);
+0156 <span class="keyword">if</span> isempty(gridfullrect)
+0157     imgcout=<a href="#_sub1" class="code" title="subfunction imgcout=failmode">failmode</a>;
+0158     <span class="keyword">return</span>;
+0159 <span class="keyword">end</span>
+0160 gridfullrect=<a href="adjgridorigin.html" class="code" title="function gridout=adjgridorigin(grid)">adjgridorigin</a>(gridfullrect);
+0161 
+0162 <span class="comment">% adjust grid back to full scale</span>
+0163 gridfullrect=gridfullrect*(2^(level-1));
+0164 crnrpts=crnrpts*(2^(level-1));
+0165 
+0166 [grid,win,nobadpts]=<a href="getsubpixcrnrs.html" class="code" title="function [gridout,win,nobadpts]=getsubpixcrnrs(img,crnrpts,grid)">getsubpixcrnrs</a>(img,crnrpts,gridfullrect);
+0167 
+0168 <span class="keyword">if</span> min(size(grid(:,:,1)))&lt;3
+0169     imgcout=<a href="#_sub1" class="code" title="subfunction imgcout=failmode">failmode</a>;
+0170     <span class="keyword">return</span>;
+0171 <span class="keyword">end</span>
+0172 
+0173 susth=4;
+0174 
+0175 suspicious=0;
+0176 <span class="keyword">if</span> nobadpts&gt;susth || nointerpolations&gt;susth
+0177     suspicious=1;
+0178 <span class="keyword">end</span>
+0179 
+0180 <span class="keyword">if</span> debug
+0181     close all;
+0182     figure;
+0183     imshow(pyr{level}.im);
+0184     hold on;   
+0185     plot(crnrsgrid(:,:,2),crnrsgrid(:,:,1),<span class="string">'+'</span>);
+0186     figure;
+0187     imshow(pyr{level}.im);
+0188     hold on;
+0189     plot(crnrsgridfil(:,:,2),crnrsgridfil(:,:,1),<span class="string">'o'</span>);
+0190     figure;
+0191     imshow(img);
+0192     hold on;
+0193     plot(gridfullrect(:,:,2),gridfullrect(:,:,1),<span class="string">'square'</span>);
+0194     figure;imshow(img);hold on;
+0195     plot(grid(:,:,2),grid(:,:,1),<span class="string">'o'</span>);
+0196     imgcptrd=getframe(gcf);
+0197     imgcout.img=imgcptrd.cdata;
+0198 <span class="keyword">end</span>
+0199 
+0200 <span class="comment">%Output Results</span>
+0201 imgcout.grid=grid;
+0202 imgcout.suspicious=suspicious;
+0203 imgcout.win=win;
+0204 imgcout.fail=false;
+0205 
+0206 
+0207 <span class="comment">%fail mode</span>
+0208 <a name="_sub1" href="#_subfunctions" class="code">function imgcout=failmode</a>
+0209 imgcout.grid=[];
+0210 imgcout.suspicious=[];
+0211 imgcout.win=[];
+0212 imgcout.fail=true;</pre></div>
+<hr><address>Generated on Sun 04-Apr-2010 17:13:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

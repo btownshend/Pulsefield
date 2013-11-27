@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getgoodsubrect</title>
+  <meta name="keywords" content="getgoodsubrect">
+  <meta name="description" content="GETGOODSUBRECT extracts a grid subset of the input grid such that the output grid does not contain any bad points.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- # RADOCCToolbox --><!-- menu.html CornerFinder -->
+<h1>getgoodsubrect
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>GETGOODSUBRECT extracts a grid subset of the input grid such that the output grid does not contain any bad points.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function gridout=getgoodsubrect(grid,badptsx,badptsy) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">GETGOODSUBRECT extracts a grid subset of the input grid such that the output grid does not contain any bad points.
+ 
+ GETGOODSUBRECT takes as input a MxNx2 matrix acting a chessboard grid.
+ It also takes two vectors containing the x and y coordinates of the bad
+ points. The two vectors must be the same size.
+ 
+ The result returned is suboptimal. Optimal algorithms introduce
+ complexity beyond our basic requirements.
+ 
+ USAGE:
+     gridout=getgoodsubrect(grid,badptsx,badptsy);
+ 
+ INPUTS:
+     grid: MxNx2 chessboard grid
+ 
+     badptsx: x coordinates of the bad points
+ 
+     badptsy: y coordinates of the bad points
+ 
+ OUTPUTS:
+     gridout: a subset of the input grid without any bad points</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="getsubpixcrnrs.html" class="code" title="function [gridout,win,nobadpts]=getsubpixcrnrs(img,crnrpts,grid)">getsubpixcrnrs</a>	GETSUBPIXCRNRS retruns the subpixel positions of the chessboard corners.</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function gridout=getgoodsubrect(grid,badptsx,badptsy)</a>
+0002 <span class="comment">%GETGOODSUBRECT extracts a grid subset of the input grid such that the output grid does not contain any bad points.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% GETGOODSUBRECT takes as input a MxNx2 matrix acting a chessboard grid.</span>
+0005 <span class="comment">% It also takes two vectors containing the x and y coordinates of the bad</span>
+0006 <span class="comment">% points. The two vectors must be the same size.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% The result returned is suboptimal. Optimal algorithms introduce</span>
+0009 <span class="comment">% complexity beyond our basic requirements.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% USAGE:</span>
+0012 <span class="comment">%     gridout=getgoodsubrect(grid,badptsx,badptsy);</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% INPUTS:</span>
+0015 <span class="comment">%     grid: MxNx2 chessboard grid</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%     badptsx: x coordinates of the bad points</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">%     badptsy: y coordinates of the bad points</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% OUTPUTS:</span>
+0022 <span class="comment">%     gridout: a subset of the input grid without any bad points</span>
+0023 
+0024 
+0025 xmin=1;
+0026 xmax=size(grid,1);
+0027 ymin=1;
+0028 ymax=size(grid,2);
+0029 
+0030 <span class="keyword">for</span> i=1:length(badptsx)
+0031     dist=[badptsx(i)-1,badptsy(i)-1,size(grid,1)-badptsx(i),size(grid,2)-badptsy(i)];
+0032     [minval,minindx]=min(dist);
+0033     <span class="keyword">switch</span> minindx
+0034         <span class="keyword">case</span> 1
+0035             <span class="keyword">if</span> badptsx(i)&gt;=xmin
+0036                 xmin=badptsx(i)+1;
+0037             <span class="keyword">end</span>
+0038         <span class="keyword">case</span> 2
+0039             <span class="keyword">if</span> badptsy(i)&gt;=ymin
+0040                 ymin=badptsy(i)+1;
+0041             <span class="keyword">end</span>
+0042         <span class="keyword">case</span> 3
+0043             <span class="keyword">if</span> badptsx(i)&lt;=xmax
+0044                 xmax=badptsx(i)-1;
+0045             <span class="keyword">end</span>
+0046         <span class="keyword">case</span> 4
+0047             <span class="keyword">if</span> badptsy(i)&lt;=ymax
+0048                 ymax=badptsy(i)-1;
+0049             <span class="keyword">end</span>
+0050     <span class="keyword">end</span>
+0051 <span class="keyword">end</span>
+0052 
+0053 gridout=grid(xmin:xmax,ymin:ymax,:);</pre></div>
+<hr><address>Generated on Sun 04-Apr-2010 17:13:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

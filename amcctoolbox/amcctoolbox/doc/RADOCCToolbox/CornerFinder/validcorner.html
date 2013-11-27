@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of validcorner</title>
+  <meta name="keywords" content="validcorner">
+  <meta name="description" content="VALIDCORNER checks if the input corner belongs to a chessboard.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- # RADOCCToolbox --><!-- menu.html CornerFinder -->
+<h1>validcorner
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>VALIDCORNER checks if the input corner belongs to a chessboard.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [valid,peaklocs]=validcorner(img,imgedge,sweepmatx,sweepmaty,debug) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> VALIDCORNER checks if the input corner belongs to a chessboard.
+ 
+ VALIDCORNER is used to indicate if a corner is a chessboard corner. It
+ takes as input the cropped image and cropped edge image around the 
+ corner. To ensure fast program execution sweepmatx and sweepmaty have
+ been used. They are necessary input to this function.
+ 
+ USAGE:
+     [valid,peaklocs]=validcorner(img,imgedge,sweepmatx,sweepmaty);
+ 
+ INPUTS:
+     img: cropped grayscale image
+ 
+     imgedge: cropped Sobel edge image
+ 
+     sweepmatx: cropped sweepmatrix x, this is used for fast radial summation
+ 
+     sweepmatx: cropped sweepmatrix y, this is used for fast radial summation
+ 
+ 
+ OUTPUTS
+     valid: scalar indicating wether the point is a chessboard corner of not, 1: yes, 0: no
+ 
+     peaklocs: required by GETGRID</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="adjimg.html" class="code" title="function imgout=adjimg(img,th)">adjimg</a>	ADJIMG adjusts the intensity of the input image.</li><li><a href="circsweep.html" class="code" title="function [theta,values,thetasmd,valuessmd]=circsweep(img,x,y)">circsweep</a>	CIRCSWEEP sums the intensity of the input image along rays at all angles.</li><li><a href="peakdet.html" class="code" title="function maxtab=peakdet(v)">peakdet</a>	PEAKDET Detect peaks in a vector</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="chesscornerfilter.html" class="code" title="function [crnrs,nocrnrs,peaklocs]=chesscornerfilter(img,imgedge,crnrpts,debug)">chesscornerfilter</a>	CHESSCORNERFILTER filters Harris corners for chessboard corners.</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [valid,peaklocs]=validcorner(img,imgedge,sweepmatx,sweepmaty,debug)</a>
+0002 <span class="comment">% VALIDCORNER checks if the input corner belongs to a chessboard.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% VALIDCORNER is used to indicate if a corner is a chessboard corner. It</span>
+0005 <span class="comment">% takes as input the cropped image and cropped edge image around the</span>
+0006 <span class="comment">% corner. To ensure fast program execution sweepmatx and sweepmaty have</span>
+0007 <span class="comment">% been used. They are necessary input to this function.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% USAGE:</span>
+0010 <span class="comment">%     [valid,peaklocs]=validcorner(img,imgedge,sweepmatx,sweepmaty);</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% INPUTS:</span>
+0013 <span class="comment">%     img: cropped grayscale image</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%     imgedge: cropped Sobel edge image</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%     sweepmatx: cropped sweepmatrix x, this is used for fast radial summation</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">%     sweepmatx: cropped sweepmatrix y, this is used for fast radial summation</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% OUTPUTS</span>
+0023 <span class="comment">%     valid: scalar indicating wether the point is a chessboard corner of not, 1: yes, 0: no</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">%     peaklocs: required by GETGRID</span>
+0026 
+0027 <span class="comment">% validcorner parameters</span>
+0028 imadjsca=0.8; <span class="comment">% larger adjust scalars corresponds to less adjustment</span>
+0029 imeadjsca=1.8;
+0030 intth=0.5;
+0031 
+0032 
+0033 <span class="keyword">if</span> ~exist(<span class="string">'debug'</span>,<span class="string">'var'</span>) || isempty(debug)
+0034     debug=0;
+0035 <span class="keyword">end</span>
+0036 
+0037 peaklocs=[];
+0038 
+0039 <span class="keyword">if</span> debug
+0040     close all;
+0041 <span class="keyword">end</span>
+0042 
+0043 <span class="comment">%Adjust windowed image</span>
+0044 imgedge=<a href="adjimg.html" class="code" title="function imgout=adjimg(img,th)">adjimg</a>(imgedge,imeadjsca); <span class="comment">%edge images need less adjustment than imgn</span>
+0045 
+0046 <span class="keyword">if</span> debug
+0047     figure;imshow(imgedge);
+0048 <span class="keyword">end</span>
+0049 
+0050 [theta,edgevalue,thetasmd,edgevaluesmd]=<a href="circsweep.html" class="code" title="function [theta,values,thetasmd,valuessmd]=circsweep(img,x,y)">circsweep</a>(imgedge,sweepmatx,sweepmaty);
+0051 
+0052 
+0053 
+0054 maxtab=<a href="peakdet.html" class="code" title="function maxtab=peakdet(v)">peakdet</a>(edgevalue);
+0055 
+0056 
+0057 <span class="keyword">if</span> size(maxtab,1)~=4      <span class="comment">%Check if peaks equal 4</span>
+0058     valid=0;
+0059     <span class="keyword">return</span>;
+0060 <span class="keyword">end</span>
+0061 
+0062 peaklocs=maxtab(:,1);
+0063 
+0064 maxtabsmd=<a href="peakdet.html" class="code" title="function maxtab=peakdet(v)">peakdet</a>(edgevaluesmd);
+0065 <span class="keyword">if</span> size(maxtabsmd,1)~=2      <span class="comment">%Check if peaks equal 2</span>
+0066     valid=0;
+0067     <span class="keyword">return</span>;
+0068 <span class="keyword">end</span>
+0069 
+0070 
+0071 img=<a href="adjimg.html" class="code" title="function imgout=adjimg(img,th)">adjimg</a>(img,imadjsca);
+0072 [theta,intvalue,thetasmd,intvaluesmd]=<a href="circsweep.html" class="code" title="function [theta,values,thetasmd,valuessmd]=circsweep(img,x,y)">circsweep</a>(img,sweepmatx,sweepmaty);
+0073 <span class="comment">% intth=(max(intvaluesmd)-min(intvaluesmd))/2;</span>
+0074 
+0075 <span class="comment">%Work with summed arrays</span>
+0076 peaks=maxtabsmd(:,2);
+0077 locs=maxtabsmd(:,1);
+0078 
+0079 
+0080 peaks=peaks';
+0081 locs=locs';
+0082 
+0083 <span class="comment">% sort peak locations</span>
+0084 locs=sort(locs);
+0085 
+0086 
+0087 crn1=mean(intvaluesmd([1:locs(1),locs(2):length(intvaluesmd)]));
+0088 crn2=mean(intvaluesmd(locs(1):locs(2)));
+0089 
+0090 
+0091 <span class="comment">%Check if squares have enough intensity difference</span>
+0092 <span class="keyword">if</span> abs(crn1-crn2)&gt;intth
+0093     valid=1;
+0094 <span class="keyword">else</span>
+0095     valid=0;
+0096 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Sun 04-Apr-2010 17:13:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

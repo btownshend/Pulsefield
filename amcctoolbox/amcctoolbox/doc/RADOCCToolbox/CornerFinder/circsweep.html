@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of circsweep</title>
+  <meta name="keywords" content="circsweep">
+  <meta name="description" content="CIRCSWEEP sums the intensity of the input image along rays at all angles.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- # RADOCCToolbox --><!-- menu.html CornerFinder -->
+<h1>circsweep
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>CIRCSWEEP sums the intensity of the input image along rays at all angles.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [theta,values,thetasmd,valuessmd]=circsweep(img,x,y) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> CIRCSWEEP sums the intensity of the input image along rays at all angles.
+ 
+ CIRCSWEEP sums the intensity pixels lying along a ray at a certain angle.
+ This is done for all angles. The outputs theta and values correspond to
+ the summation with the rays going from 0 to 360 degrees from the centre
+ of the image to the border. The other two outputs correspond to the 
+ summation along the entire ray passing through the centre with the angles
+ going from 0 to 180.
+ 
+ USAGE:
+     [theta,values,thetasmd,valuessmd]=circsweep(img,x,y);
+ 
+ INPUTS:
+     img: input grayscale image of class double
+ 
+     x: the x coordinates of the pixels, this is fed from the output of
+     SWEEPMATRIX
+ 
+     y: the y coordinates of the pixels, this is fed from the output of
+     SWEEPMATRIX
+ 
+ OUTPUTS:
+     theta: angles from 0 to 360
+ 
+     values: the sum of intensity values from centre to border
+ 
+     thetasmd: angles from 0 to 180
+ 
+     valuessmd: the sum of intensity values from border to border along
+     the centre of the image</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="validcorner.html" class="code" title="function [valid,peaklocs]=validcorner(img,imgedge,sweepmatx,sweepmaty,debug)">validcorner</a>	VALIDCORNER checks if the input corner belongs to a chessboard.</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [theta,values,thetasmd,valuessmd]=circsweep(img,x,y)</a>
+0002 <span class="comment">% CIRCSWEEP sums the intensity of the input image along rays at all angles.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% CIRCSWEEP sums the intensity pixels lying along a ray at a certain angle.</span>
+0005 <span class="comment">% This is done for all angles. The outputs theta and values correspond to</span>
+0006 <span class="comment">% the summation with the rays going from 0 to 360 degrees from the centre</span>
+0007 <span class="comment">% of the image to the border. The other two outputs correspond to the</span>
+0008 <span class="comment">% summation along the entire ray passing through the centre with the angles</span>
+0009 <span class="comment">% going from 0 to 180.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% USAGE:</span>
+0012 <span class="comment">%     [theta,values,thetasmd,valuessmd]=circsweep(img,x,y);</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% INPUTS:</span>
+0015 <span class="comment">%     img: input grayscale image of class double</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%     x: the x coordinates of the pixels, this is fed from the output of</span>
+0018 <span class="comment">%     SWEEPMATRIX</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">%     y: the y coordinates of the pixels, this is fed from the output of</span>
+0021 <span class="comment">%     SWEEPMATRIX</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% OUTPUTS:</span>
+0024 <span class="comment">%     theta: angles from 0 to 360</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">%     values: the sum of intensity values from centre to border</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">%     thetasmd: angles from 0 to 180</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">%     valuessmd: the sum of intensity values from border to border along</span>
+0031 <span class="comment">%     the centre of the image</span>
+0032 
+0033 
+0034 win=floor(size(img,1)/2);
+0035 cen=win+1;
+0036 
+0037 theta=pi()/90:pi()/90:2*pi();
+0038 
+0039 
+0040 x=x+cen;
+0041 y=y+cen;
+0042 xn=find(x&lt;1 | x&gt;size(img,1));
+0043 yn=find(y&lt;1 | y&gt;size(img,2));
+0044 xn=xn';
+0045 yn=yn';
+0046 
+0047 x(xn)=1;
+0048 y(yn)=1;
+0049 
+0050 indcs=sub2ind(size(img),x,y);
+0051 values=img(indcs);
+0052 values([xn,yn])=0;
+0053 values=mean(values);
+0054 n180=length(theta)/2;
+0055 thetasmd=theta(1:n180);
+0056 valuessmd=(values(1:n180)+values(n180+1:length(theta)))/2;</pre></div>
+<hr><address>Generated on Sun 04-Apr-2010 17:13:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
