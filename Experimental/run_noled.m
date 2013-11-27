@@ -17,17 +17,16 @@ if ~exist('p','var')
   p.led=struct('id',num2cell(1:numled()));
   p.colors={[1 1 1], [1 0 0], [0 1 0], [0 0 1],[1 1 0],[1 0 1], [0 1 1]};
 
-  p.layout=layoutpolygon(4,ncamera,0);
+  p.layout=layoutroom(7,14,ncamera,101);
   plotlayout(p.layout);
 end
 
 % Set camera exposures to defaults
-daymode;
-
+setupcameras(p,'mode','quality','daynight','day','analoggain',25,'illum','indoor');
 
 if ~isfield(p.camera(1),'pixcalib')
   disp('Pixel calibration');
-  [p,pcim]=pixcalibrate(p);
+  p=pixcalibrate_noled(p);
   if doplot
     for i=1:length(p.camera)
       plotpixcalib(p.camera(i));
@@ -47,39 +46,6 @@ if 0 && ~isfield(p,'crosstalk')
   disp('Crosstalk calculation');
   p=crosstalk(p);
 end
-
-% Refine position of cameras
-% Need to physically block cameras for this...
-% Instead use prior calibration
-if length(p.camera)==5
-  cposcalib=[ 1.0417   -2.2688
-              -1.3200   -2.1270
-              -2.5115   -0.0019
-              -1.3293    2.1081
-              1.0517    2.2646];
-elseif length(p.camera)==6
-  cposcalib=[      2.0838   -2.5066
-   -0.0987   -3.2321
-   -2.3154   -2.2883
-   -2.4100    2.1878
-   -0.1048    3.2607
-    2.0975    2.5106];
-else
-  cposcalib=[];
-end
-if length(p.layout.cpos)==length(cposcalib) && max(max(abs(cposcalib-p.layout.cpos)))<0.15
-  fprintf('Forcing camera positions to previously calibrated values\n')
-  p.layout.cpos=cposcalib;
-else
-  %layout.cpos=locatecameras();
-  fprintf('*** Should run locatecameras()\n');
-end
-
-% Use the layout and the pixcalibration to update the anglemaps and the camera cdir
-p=updateanglemap(p);
-
-% Could also adjust positions of LEDs based on pixel calibration, but this doesn't work yet
-%adjpos(p)
 
 % Add ray image to structure (rays from each camera to each LED) to speed up target blocking calculation (uses true coords)
 if ~isfield(p,'rays')

@@ -45,7 +45,7 @@ if dorectify
   end
 end
 fprintf('Finding corners...');
-corners=findcorners(im,1);
+corners=findcorners(im,debug);
 
 if corners.fail
   error('Failed corner detection');

@@ -3,7 +3,7 @@
 %    cam - camera structure containing a distortion field
 %    pos - pos(:,1) - horizontal position on sensor (0..sensorwdith-1)
 %          pos(:,2) - veritcal position on sensor (0..sensorwdith-1)
-%    dir(:,3) - unit vector direction in cameras frame of reference
+%    dir(:,3) - unit vector direction in cameras frame of reference (right-hand convention)
 %	   x is to right of camera
 %          y is in direction camera is pointing
 %          z is up
