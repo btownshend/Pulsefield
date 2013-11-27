@@ -47,7 +47,7 @@ if ~isempty(l.entry)
 end
 labels{4}='Entry';
 
-if ~isempty(p) && ~isempty(p.rays)
+if ~isempty(p) && isfield(p,'rays') && ~isempty(p.rays)
   r=p.rays;
   for i=1:size(r.raylines,1)
     rr=pix2m(r.imap,r.raylines{i,1}(1:20,:));
