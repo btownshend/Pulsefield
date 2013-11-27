@@ -10,7 +10,9 @@ if ~exist('p','var')
   ctype='av10115-half';
   ncamera=6;
   for i=1:ncamera
-    p.camera(i)=setupcamera(ctype,i);
+    h=getsubsysaddr(sprintf('CA%d',i));
+    physid=sscanf(h,'%*d.%*d.%*d.%d')-70;
+    p.camera(i)=setupcamera(ctype,i,physid);
   end
   p.led=struct('id',num2cell(1:numled()));
   p.colors={[1 1 1], [1 0 0], [0 1 0], [0 0 1],[1 1 0],[1 0 1], [0 1 1]};
