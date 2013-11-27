@@ -2,7 +2,7 @@ p={recvis.p};
 p{1}.camera(5).pixcalib(2)=p{1}.camera(5).pixcalib(1);   % Bad pix data here
 for i=1:3
   if i>1
-    summary{i}=camdistcheck(p{1});
+    summary{i}=camdistcheck(p{i});
   end
   avglpos=summary{i}(1).ledpos;
   avglpos(:)=nanmean([[summary{i}(1).ledpos(:)],[summary{i}(2).ledpos(:)],[summary{i}(3).ledpos(:)],[summary{i}(4).ledpos(:)],[summary{i}(5).ledpos(:)],[summary{i}(6).ledpos(:)]],2);
@@ -37,4 +37,7 @@ for i=1:3
   % Corrected positions
   p{i+1}=p{i};
   p{i+1}.layout.lpos=avglpos(:,1:2);
+  for j=1:6
+    p{i+1}.layout.cpos(j,:)=summary{i}(j).campos(1:2);
+  end
 end
