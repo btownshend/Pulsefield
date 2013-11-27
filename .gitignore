@@ -16,7 +16,8 @@ frontend.dSYM
 FrontEnd/frontend
 
 Arduino/libraries/Adafruit_NeoPixel/
-
+Arduino/libraries/AccelStepper
+Arduino/libraries/Adafruit_Motor_Shield_V2_Library
 Arduino/libraries/LPD8806
 
 *.class
@@ -24,7 +25,10 @@ Arduino/libraries/LPD8806
 *.applet
 
 Video/Tracker/bin/arrow.png
-Video/Tracker/lib/
+Video/Tracker/lib/oscP5
+Video/Tracker/lib/promidi
+Video/Tracker/lib/themidibus
+Video/Tracker/lib/processing
 Video/Tracker/src/themidibus
 Video/Tracker/bin/runTracker.jar
 .svn
@@ -32,3 +36,9 @@ Video/Tracker/bin/runTracker.jar
 Experimental/data.mat
 .#*
 
+
+Floor/im1.mat
+
+Floor/im2a.mat
+
+Floor/im3alternating.mat
