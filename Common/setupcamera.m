@@ -1,5 +1,5 @@
 % setup - setup all parameters
-function cam=setupcamera(type,id)
+function cam=setupcamera(type,id,physid)
 cam.id=id;
 cam.type=type;
 cam.fisheye=0;
@@ -66,4 +66,8 @@ if cam.fisheye
   cam.anglemap=(((1:cam.hpixels)-0.5)/cam.hpixels-0.5)*cam.fov;
 else
   cam.anglemap=atan(2*(((1:cam.hpixels)-0.5)/cam.hpixels-0.5))*cam.fov*(4/pi)/2;
+end
+
+if nargin>=3
+  cam.physid=id;
 end
