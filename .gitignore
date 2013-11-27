@@ -28,3 +28,7 @@ Video/Tracker/lib/
 Video/Tracker/src/themidibus
 Video/Tracker/bin/runTracker.jar
 .svn
+
+Experimental/data.mat
+.#*
+
