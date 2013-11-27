@@ -32,7 +32,7 @@ end
 labels{1}='LEDs';
 for i=1:size(l.cpos,1)
   h(2)=plot(l.cpos(i,1),l.cpos(i,2),'ko');
-  plot(0.1*[0,l.cdir(i,1)]+l.cpos(i,1),0.1*[0,l.cdir(i,2)]+l.cpos(i,2),'r-');
+  plot(0.5*[0,l.cdir(i,1)]+l.cpos(i,1),0.5*[0,l.cdir(i,2)]+l.cpos(i,2),'r-');
   text(l.cpos(i,1)-l.cdir(i,1)*0.2,l.cpos(i,2)-l.cdir(i,2)*0.2,sprintf('C%d',i),'HorizontalAlignment','center','VerticalAlignment','middle');
 end
 labels{2}='Cameras';
