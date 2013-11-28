@@ -236,7 +236,7 @@ if args.setleds
 end
 
 if args.stats
-  vis.lev=nan(0,numled());
+  vis.lev=nan(0,length(p.led));
   vis.im=imorig;   % Original image, might have been converted to gray for processing
   for i=1:length(im)
     c=p.camera(i).pixcalib;
