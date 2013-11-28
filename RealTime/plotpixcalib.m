@@ -22,14 +22,16 @@ clf;
 hold on;
 axis ij;
 axis equal
-for i=1:length(cam.pixcalib)
-  stats=cam.pixcalib(i).stats;
-  for j=1:length(stats)
-    c=stats(j).Centroid;
-    d=stats(j).EquivDiameter;
-    rectangle('Position',[c-d/2,d,d],'Curvature',[1,1],'FaceColor','r');
-%    scatter(c(1),c(2),stats(j).Area);
-    text(c(1),c(2),sprintf('%d',i),'HorizontalAlignment','center');
+if isfield('cam.pixcalib','stats')
+  for i=1:length(cam.pixcalib)
+    stats=cam.pixcalib(i).stats;
+    for j=1:length(stats)
+      c=stats(j).Centroid;
+      d=stats(j).EquivDiameter;
+      rectangle('Position',[c-d/2,d,d],'Curvature',[1,1],'FaceColor','r');
+      %    scatter(c(1),c(2),stats(j).Area);
+      text(c(1),c(2),sprintf('%d',i),'HorizontalAlignment','center');
+    end
   end
 end
 plot(cam.roi(1:2),cam.roi([3,3]),':');
