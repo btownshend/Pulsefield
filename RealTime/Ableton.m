@@ -55,7 +55,7 @@ classdef Ableton < handle
     end
 
     function checkclip(obj,clip)
-      if isempty(clip) || clip<1 || clip>length(obj.clipnames)
+      if isempty(clip) || clip<1 || clip>size(obj.clipnames,2)
         throw(MException('Ableton:checkclip','Clip value %d out of bounds',clip));
       end
     end
