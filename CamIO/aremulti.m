@@ -26,7 +26,7 @@ for i=1:length(id)
     end
     url=[url,sprintf('&x0=%d&x1=%d&y0=%d&y1=%d',roi{i}-1)];
   end
-  cmd=[cmd,sprintf('curl -s ''%s'' >/tmp/im%d.jpg &', url,id(i))];
+  cmd=[cmd,sprintf('DYLD_LIBRARY_PATH=/opt/local/lib;curl -s ''%s'' >/tmp/im%d.jpg &', url,id(i))];
 end
 cmd=[cmd,' wait'];
 system(cmd);
