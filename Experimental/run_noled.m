@@ -1,5 +1,5 @@
 % Run the entire calibration/analysis chain
-doplot=0;
+doplot=3;
 dolevcheck=false;
 
 if ~exist('p','var')
@@ -14,21 +14,23 @@ if ~exist('p','var')
     physid=sscanf(h,'%*d.%*d.%*d.%d')-70;
     p.camera(i)=setupcamera(ctype,i,physid);
   end
-  nled=10;
+  nled=200;
   p.led=struct('id',num2cell(1:nled));
   p.colors={[1 1 1], [1 0 0], [0 1 0], [0 0 1],[1 1 0],[1 0 1], [0 1 1]};
 
-  p.layout=layoutroom(7,14,ncamera,nled);
+  p.layout=layoutroom(130/39.37,140/39.37,ncamera,nled);
   p.noleds=true;
   plotlayout(p.layout);
 end
+% Make sure front end is stopped
+fectl(p,'quit');
 
 % Set camera exposures to defaults
 setupcameras(p,'mode','quality','daynight','day','analoggain',25,'illum','indoor');
 
 if ~isfield(p.camera(1),'pixcalib')
   disp('Pixel calibration');
-  p=pixcalibrate_noled(p);
+  p=pixcalibrate_noled(p,'doplot',doplot);
   if doplot
     for i=1:length(p.camera)
       plotpixcalib(p.camera(i));
