@@ -14,10 +14,12 @@ if ~exist('p','var')
     physid=sscanf(h,'%*d.%*d.%*d.%d')-70;
     p.camera(i)=setupcamera(ctype,i,physid);
   end
-  p.led=struct('id',num2cell(1:numled()));
+  nled=10;
+  p.led=struct('id',num2cell(1:nled));
   p.colors={[1 1 1], [1 0 0], [0 1 0], [0 0 1],[1 1 0],[1 0 1], [0 1 1]};
 
-  p.layout=layoutroom(7,14,ncamera,101);
+  p.layout=layoutroom(7,14,ncamera,nled);
+  p.noleds=true;
   plotlayout(p.layout);
 end
 

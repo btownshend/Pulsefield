@@ -94,7 +94,7 @@ entrywidth=0.5;
 entry=[0 width/2];
 
 % Flag LEDs outside of active region (so we don't assume that blockage of them is due to something inside active region)
-outsider=false(1,nled); % None
+outsider=false(nled,1); % None
 
 % Setup return variables
 layout=struct('cpos',cpos,'cdir',cdir,'croll',croll,'cposz',cposz,'cdirz',cdirz,'lpos',lpos,'ldir',ldir,'active',active,'pos',pos,'entry',entry,'outsider',outsider);

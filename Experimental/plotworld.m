@@ -1,13 +1,14 @@
 function plotworld(p,world)
 if nargin<2
   if isfield(p,'calibration')
-    world=struct('R',p.calibration.Rgw,'T',p.calibration.Tgw)
+    world=struct('R',p.calibration.Rgw,'T',p.calibration.Tgw);
     fprintf('Displaying world coordinates based on last extrinsic calibration\n');
   else
     world=struct('R',eye(3),'T',zeros(3,1));
     fprintf('Displaying chessboard coordinates\n');
   end
 end
+
 plot3([0,0],[0,0],[0,1],'r-');
 hold on;
 text(0,0,1,'Z');
@@ -16,18 +17,19 @@ text(0,1,0,'Y');
 plot3([0,1],[0,0],[0,0],'r-');
 text(1,0,0,'X');
 
+r=p.camera(1).extcal.extrinsic;  
+grid=tw(world,r.Xgrid);
+plot3(grid(1,:),grid(2,:),grid(3,:),'.');
+for i=[1,p.calibration.target.nX+1,size(grid,2)-p.calibration.target.nY,size(grid,2)]
+  fprintf('Grid Corner: [%.4f,%.4f,%.4f] in grid, [%.4f, %.4f, %.4f] in world\n', r.Xgrid(:,i), grid(:,i));
+end
+
 for c=1:length(p.camera)
   cam=p.camera(c);
   r=cam.extcal.extrinsic;
   position=cam2grid(r,[0;0;0]);
   campos=tw(world,position);
   fprintf('Camera Position: [%.4f,%.4f,%.4f] in grid, [%.4f, %.4f, %.4f] in world\n', position, campos);
-  grid=tw(world,r.Xgrid);
-  plot3(grid(1,:),grid(2,:),grid(3,:),'.');
-  
-  for i=[1,p.calibration.target.nX+1,size(grid,2)-p.calibration.target.nY,size(grid,2)]
-    fprintf('Grid Corner: [%.4f,%.4f,%.4f] in grid, [%.4f, %.4f, %.4f] in world\n', r.Xgrid(:,i), grid(:,i));
-  end
   plot3(campos(1),campos(2),campos(3),'gx');
   plot3([campos(1),campos(1)],[campos(2),campos(2)],[campos(3),0],'b');
   plot3([campos(1),campos(1)],[campos(2),0],[0,0],'g');

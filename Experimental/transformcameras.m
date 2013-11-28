@@ -17,7 +17,8 @@ for i=1:length(p.camera)
 end
 
 % Find tranform that minimizes distance between R*gpos+T and cpos
-xinit=[0,0,0,0,0,0];
+xinit=[0,pi/2,0,3,3,0];   % Initial conditions are such that global viewpoint is approx. a 90º rotation around y axis (help avoid flipped over solution)
+                          % Also, assume that chessboard is in middle of left part of room
 options=optimset('display','final','MaxFunEvals',5000,'MaxIter',5000,'TolX',1e-10,'TolFun',1e-10);
 xfinal=fminsearch(@(z) calcdist(z,gpos,cpos)+targetheight(z,p.calibration.target.floor), xinit,options);
 e1=calcdist(xfinal,gpos,cpos);
@@ -71,5 +72,8 @@ e=sum((v(:)-cpos(:)).^2);
 function e=targetheight(x,floorpos)
 T=x(1:3);
 R=rodrigues(x(4:6));
-v=(R*floorpos')'+T;
-e=v(3)^2;
+v=(R*floorpos')';
+for i=1:size(v,1)
+  v(i,:)=v(i,:)+T;
+end
+e=sum(v(:,3).^2);
