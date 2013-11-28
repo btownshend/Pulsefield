@@ -28,11 +28,17 @@ for c=1:length(p.camera)
   cam=p.camera(c);
   if args.newimages || ~isfield(cam,'extcal') || isempty(cam.extcal)
     cam.distortion=load(sprintf('c%d-Results_left',cam.physid));
-    I=arecont(cam.id);
-    setfig('interactive');clf;
-    imshow(I.im);
-    title('Click on top left, bottom right corners');
-    [cx,cy]=ginput(2);
+    while true
+      I=arecont(cam.id);
+      setfig('interactive');clf;
+      imshow(I.im);
+      title('Click on top left, bottom right corners, return to retry');
+      [cx,cy]=ginput(2);
+      if length(cx)==2
+        break;
+      end
+      fprintf('Only got %d points -- grabbing a new image\n', length(cx));
+    end
     I.bounds=round([cx,cy]);
     plot(I.bounds(:,1),I.bounds(:,2),'x');
     extrinsic=extrinsic_auto(I,target,cam.distortion,0,0);
