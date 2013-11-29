@@ -107,7 +107,7 @@ for c=1:length(p.camera)
       end
     end
 
-    fprintf('LED %d global position: [%.3f,%.3f,%.3f], camera frame of reference: [%.3f,%.3f,%.3f], dir=%.1f deg, pixel=[%.0f,%.0f]\n',l,lpos,lposCF,offaxis*180/pi,pc(l).pos);
+    %fprintf('LED %d global position: [%.3f,%.3f,%.3f], camera frame of reference: [%.3f,%.3f,%.3f], dir=%.1f deg, pixel=[%.0f,%.0f]\n',l,lpos,lposCF,offaxis*180/pi,pc(l).pos);
   end
   pcy=arrayfun(@(z) z.pos(2),pc);
   pcx=arrayfun(@(z) z.pos(1),pc);
@@ -136,6 +136,17 @@ for c=1:length(p.camera)
     imshow(imresize(cam.extcal.image.im,scale));
     hold on;
     plot(pcx,pcy,'.');
+    % Plot all the other cameras
+    for c2=1:length(p.camera)
+      cpos=[p.layout.cpos(c2,:),p.layout.cposz(c2)];
+      cposCF=Rwc*cpos'+Twc;
+      pixelpos=round(scale*distort(cam.distortion,(cposCF(1:2)/cposCF(3))')');
+      if pixelpos(1)<0||pixelpos(1)>=cam.hpixels||pixelpos(2)<0||pixelpos(2)>=cam.vpixels
+        fprintf('Camera %d is not visible to camera %d [%d,%d]\n',c2,c,pixelpos);
+      else
+        plot(pixelpos(1),pixelpos(2),'xr');
+      end
+    end
   end
 end
 
