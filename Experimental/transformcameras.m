@@ -15,6 +15,10 @@ cpos(:,3)=p.layout.cposz;
 for i=1:length(p.camera)
   gpos(i,1:3)=p.camera(i).extcal.gridposition;
 end
+% Ignore x,y positions of all but 2 cameras
+sel=true(1,size(cpos,1));
+sel(3:4)=false;
+cpos(sel,1:2)=nan;
 
 % Find tranform that minimizes distance between R*gpos+T and cpos
 xinit=[0,pi/2,0,3,3,0];   % Initial conditions are such that global viewpoint is approx. a 90º rotation around y axis (help avoid flipped over solution)
@@ -66,7 +70,7 @@ v=(R*gpos')';   % The rotation matrix multiplies a column vector giving a column
 for i=1:size(v,1)
   v(i,:)=v(i,:)+T;
 end
-e=sum((v(:)-cpos(:)).^2);
+e=nansum((v(:)-cpos(:)).^2);
 
 % Compute an error in the height of the part of the target that should be on the floor
 function e=targetheight(x,floorpos)
