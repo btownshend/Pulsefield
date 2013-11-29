@@ -286,8 +286,8 @@ if args.calccorr
         % Pack all the LEDs into matrix (to speed up correlation computation) using linear index in vc.indices
         implane=imorig{i}(:,:,plane);
         refimplane=vc.refim(:,:,plane);
-        w=single(reshape(implane(ind(:)),size(ind,1),size(ind,2)));
-        r=single(reshape(refimplane(ind(:)),size(ind,1),size(ind,2)));
+        w=single(reshape(implane(ind(:)),size(ind,1),size(ind,2)))-127;   % Offset to reduce eps of floating point calcs
+        r=single(reshape(refimplane(ind(:)),size(ind,1),size(ind,2)))-0.5;
         % Calc cross-correlation
         sww=sum(w.*w,2);
         sw=sum(w,2);
