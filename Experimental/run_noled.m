@@ -8,7 +8,7 @@ if ~exist('p','var')
   p.analysisparams=analysissetup();
   %ctype='av10115';
   ctype='av10115-half';
-  ncamera=2;
+  ncamera=6;
   for i=1:ncamera
     h=getsubsysaddr(sprintf('CA%d',i));
     physid=sscanf(h,'%*d.%*d.%*d.%d')-70;
