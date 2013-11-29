@@ -278,7 +278,7 @@ if args.calccorr
     % Linear indices into images organized by LEDs listed in ledmap (rows), and window position (col)
     ind=vc.indices;
     
-      % Same way as frontend, max(corr) with each color plan
+      % Same way as frontend, max(corr) with each color plane
       corrplane=[];
       N=size(ind,2);
       for plane=1:3
@@ -294,10 +294,20 @@ if args.calccorr
         swr=sum(w.*r,2);
         srr=sum(r.*r,2);
         sr=sum(r,2);
-        denom=sqrt((sww-sw.*sw/N).*max(0,srr-sr.*sr/N));
+        % in some cases if all the w are equal, sww ends up < sw*sw/N due to eps of single point numbers, so do the maxs below to clip
+        denom2=(sww-sw.*sw/N).*(srr-sr.*sr/N);
+        if any(denom2<0)
+          fprintf('Camera %d has negative value (%f) for denom^2 in corrplane(%d,[%s])\n',i,min(denom2),plane,shortlist(find(denom2<0)));
+          denom2(denom2<0)=0;
+        end
+        denom=sqrt(denom2);
         corrplane(plane,:)=(swr-sw.*sr/N)./denom;
+        corrplane(plane,denom==0)=0;
         if any(abs(imag(corrplane(:)))>0)
-          keyboard
+          fprintf('Camera %d has imaginary value in corrplane(%d,[%s])\n',i,plane,shortlist(find(abs(imag(corrplane(:)))>0)));
+        end
+        if any(corrplane(plane,:)>1)
+          fprintf('Camera %d has corr>1 (%f) in corrplane(%d,[%s])\n',i,max(corrplane(plane,:)),plane,shortlist(find(corrplane(plane,:)>1)));
         end
       end
       vis.corr(i,vc.ledmap)=max(corrplane,[],1);
