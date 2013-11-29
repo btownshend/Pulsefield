@@ -134,7 +134,14 @@ int Visible::processImage(const Frame *frame, float fps) {
 			y+=3;
 		    }
 		}
-		float denom=sqrt((sxx-sx*sx/N)*(syy-sy*sy/N));
+		float denom2=(sxx-sx*sx/N)*(syy-sy*sy/N);
+		float denom;
+		if (denom2>=0) 
+		    denom=sqrt(denom2);
+		else {
+		    fprintf(stderr,"Warning denom[%d]=%f (<0)\n",i,denom2);
+		    denom=0;
+		}
 		if (denom!=0.0) {
 		    float corrcol=(sxy-sx*sy/N)/denom;
 		    if (corrcol > corr[i])
