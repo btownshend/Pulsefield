@@ -32,16 +32,22 @@ for c=1:length(p.camera)
       I=arecont(cam.id);
       setfig('interactive');clf;
       imshow(I.im);
+      hold on;
       title('Click on top left, bottom right corners, return to retry');
       [cx,cy]=ginput(2);
       if length(cx)==2
-        break;
+        I.bounds=round([cx,cy]);
+        plot(I.bounds(:,1),I.bounds(:,2),'x');
+        pause(0.1);
+        [extrinsic,status]=extrinsic_auto(I,target,cam.distortion,0,0);
+        if status==0
+          break;
+        end
+        fprintf('Retrying with new image\n');
+      else
+        fprintf('Only got %d points -- grabbing a new image\n', length(cx));
       end
-      fprintf('Only got %d points -- grabbing a new image\n', length(cx));
     end
-    I.bounds=round([cx,cy]);
-    plot(I.bounds(:,1),I.bounds(:,2),'x');
-    extrinsic=extrinsic_auto(I,target,cam.distortion,0,0);
     position=cam2grid(extrinsic,[0;0;0]);
     fprintf('Camera %d position is [%.2f,%.2f,%.2f]\n', cam.id, position);
     p.camera(c).distortion=cam.distortion;

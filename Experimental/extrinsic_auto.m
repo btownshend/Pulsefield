@@ -1,4 +1,4 @@
-function r=extrinsic_auto(I,target,d,dorectify,debug)
+function [r,status]=extrinsic_auto(I,target,d,dorectify,debug)
 if nargin<4
   dorectify=0;
 end
@@ -48,7 +48,9 @@ fprintf('Finding corners...');
 corners=findcorners(im,debug);
 
 if corners.fail
-  error('Failed corner detection');
+  fprintf('Failed corner detection\n');
+  status=1;
+  return;
 end
 corners.grid(:,:,1)=corners.grid(:,:,1)+bounds(1,2)-1;
 corners.grid(:,:,2)=corners.grid(:,:,2)+bounds(1,1)-1;
@@ -58,7 +60,9 @@ grid_pts=[reshape(corners.grid(:,:,2),1,nopts_mat);grid_pts];
 nX=size(corners.grid,1)-1;
 nY=size(corners.grid,2)-1;
 if nX~=target.nX || nY~=target.nY
-  error('Corner detection returned grid of size %dx%d, but expected %dx%d',nX,nY,target.nX, target.nY);
+  fprintf('Corner detection returned grid of size %dx%d, but expected %dx%d',nX,nY,target.nX, target.nY);
+  status=1;
+  return;
 end
 Np = (nX+1)*(nY+1);
 
@@ -107,3 +111,4 @@ if debug
   title(sprintf('Reprojection (RMS error=%.1f pixels)',meanerr));
 end
 
+status=0;
