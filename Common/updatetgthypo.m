@@ -109,6 +109,7 @@ end
 % Calculate entry likelihoods
 for i=1:ntgts
   % Add a new possible hypothesis corresponding to an entry
+  fprintf('TODO: should use an entry line\n');
   pixdist=sqrt((tgts(i).pixellist(:,1)-layout.entry(1)).^2+(tgts(i).pixellist(:,2)-layout.entry(2)).^2);
   [entrydist(i),closest]=min(pixdist);
   
@@ -135,6 +136,7 @@ end
 % Calculate exit likelihoods
 for j=1:length(h)
   % Add a new possible hypothesis corresponding to an exit
+  fprintf('TODO: should use an entry line\n');
   exitdist(j)=norm(h(j).pos-layout.entry);  % Distance from entry
   interval=(snap.when-h(j).lasttime)*3600*24;  % Time since last seen
   pspeed=exppdf(exitdist(j)/interval,speedmu);   % Prob they moved to here
