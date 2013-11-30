@@ -42,9 +42,12 @@ if ~isempty(l.active)
 end
 labels{3}='Active';
 
-if ~isempty(l.entry)
+if isfield(l,'entryline') && ~isempty(l.entryline)
+  h(4)=plot(l.entryline(:,1),l.entryline(:,2),'r:');
+elseif ~isempty(l.entry)
   h(4)=plot(l.entry(1),l.entry(2),'r*');
 end
+  
 labels{4}='Entry';
 
 if ~isempty(p) && isfield(p,'rays') && ~isempty(p.rays)

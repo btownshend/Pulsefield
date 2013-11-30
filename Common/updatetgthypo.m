@@ -109,15 +109,14 @@ end
 % Calculate entry likelihoods
 for i=1:ntgts
   % Add a new possible hypothesis corresponding to an entry
-  fprintf('TODO: should use an entry line\n');
-  pixdist=sqrt((tgts(i).pixellist(:,1)-layout.entry(1)).^2+(tgts(i).pixellist(:,2)-layout.entry(2)).^2);
-  [entrydist(i),closest]=min(pixdist);
+  entrydist(i)=disttoentry(layout,tgts(i).pixellist);
   
   % dist(i,j)=norm(tgts(i).pos-layout.entry);  % Distance from entry
   pspeed=exppdf(entrydist(i)/(dt/2),speedmu);   % Prob they moved to here if they just entered
   pentry=0.1; % expcdf(dt,1/entryrate);   % Prob they entered in last dt seconds
 
   entrylike(i)=pspeed*pentry;
+  fprintf('entrylike(%d)=%f\n', i, entrylike(i));
 end
 
   
@@ -136,8 +135,7 @@ end
 % Calculate exit likelihoods
 for j=1:length(h)
   % Add a new possible hypothesis corresponding to an exit
-  fprintf('TODO: should use an entry line\n');
-  exitdist(j)=norm(h(j).pos-layout.entry);  % Distance from entry
+  exitdist(j)=disttoentry(layout,h(j).pos);
   interval=(snap.when-h(j).lasttime)*3600*24;  % Time since last seen
   pspeed=exppdf(exitdist(j)/interval,speedmu);   % Prob they moved to here
   pexit=expcdf(interval,1/exitrate);   % Prob they exited in last dt seconds

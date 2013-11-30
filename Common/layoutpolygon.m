@@ -168,10 +168,10 @@ active=ledcorners(2:end-1,:);  % Slightly inside line of LEDs
 
 % Entry point
 entry=mean(ledcorners([2,end-1],:));
-
+entryline=[ledcorners(2,:);ledcorners(end-1,:)];
 % Flag LEDs outside of active region (so we don't assume that blockage of them is due to something inside active region)
 outsider=~inpolygon(lpos(:,1),lpos(:,2),active(:,1)*1.01,active(:,2)*1.01);
 fprintf('LEDs outside active region: %s\n',shortlist(find(outsider)));
 
 % Setup return variables
-layout=struct('cpos',cpos,'cdir',cdir,'lpos',lpos,'ldir',ldir,'active',active,'pos',pos,'entry',entry,'outsider',outsider);
+layout=struct('cpos',cpos,'cdir',cdir,'lpos',lpos,'ldir',ldir,'active',active,'pos',pos,'entry',entry,'entryline',entryline,'outsider',outsider);

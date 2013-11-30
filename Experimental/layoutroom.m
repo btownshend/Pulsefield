@@ -94,8 +94,8 @@ active=[0,-width/2
 pos=active;
 
 % Entry is in middle of opening
-entry=[0 0];
-entryline=[0,-width;0 width];
+entry=mean(cpos([1,end],:));
+entryline=[cpos(1,:);cpos(end,:)];
 
 % Flag LEDs outside of active region (so we don't assume that blockage of them is due to something inside active region)
 outsider=false(nled,1); % None
