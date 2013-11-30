@@ -32,6 +32,7 @@ for i=1:size(vis.v,1)
         plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,'oy');
       end
     end
+    set(gca,'Position',get(gca,'OuterPosition'));   % Explode plot to fill space
   end
   if isfield(vis,'im')
     subplot(length(vis.im),ncol,(i-1)*ncol+col);
@@ -52,6 +53,7 @@ for i=1:size(vis.v,1)
         %         plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,'oy');
       end
     end
+    set(gca,'Position',get(gca,'OuterPosition'));   % Explode plot to fill space
   end
   if isfield(vis,'lev')
     subplot(size(vis.v,1),ncol,(i-1)*ncol+col);col=col+1;
