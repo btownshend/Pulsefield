@@ -99,6 +99,7 @@ for i=1:size(vis.v,1)
     ax=axis;
     ax(3)=min(ax(3),0);ax(4)=1.0;
     axis(ax);
+    set(gca,'Position',get(gca,'OuterPosition'));   % Explode plot to fill space
     %    legend('Correlation','Threshold');
   elseif isfield(vis,'v')   % .v only, no .corr
     subplot(size(vis.v,1),ncol,(i-1)*ncol+col);
@@ -115,7 +116,7 @@ for i=1:size(vis.v,1)
     axis(ax);
   end
   title(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(i,:)==1),sum(vis.v(i,:)==0),sum(isnan(vis.v(i,:)))));
-  xlabel('LED');
+  %  xlabel('LED');
   ylabel('Signal');
 end
 suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(:)==1),sum(vis.v(:)==0),sum(isnan(vis.v(:)))));
