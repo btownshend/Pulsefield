@@ -14,7 +14,7 @@ if ~exist('p','var')
     physid=sscanf(h,'%*d.%*d.%*d.%d')-70;
     p.camera(i)=setupcamera(ctype,i,physid);
   end
-  nled=200;
+  nled=600;
   p.led=struct('id',num2cell(1:nled));
   p.colors={[1 1 1], [1 0 0], [0 1 0], [0 0 1],[1 1 0],[1 0 1], [0 1 1]};
 
