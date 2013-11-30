@@ -42,6 +42,9 @@ classdef SoundAppGrid < SoundApp
           ind=ind+1;
         end
       end
+      if (size(obj.position,1)>info.al.numclips())
+        fprintf('Warning: Grid has %d locations, but only %d scenes in Ableton -- wrapping extras\n', size(obj.position,1), info.al.numclips());
+      end
       cell=1:size(obj.position,1);
       obj.pitch=cell+round(64-mean(cell));
       if ~isempty(info.song)
@@ -131,7 +134,7 @@ classdef SoundAppGrid < SoundApp
           end
           if info.ableton && ~isempty(info.song)
             %pan=pos(2)/max(abs(p.layout.active(:,2)));
-            info.al.cliptrigger(info.song,channel,newcell);
+            info.al.cliptrigger(info.song,channel,mod(newcell-1,info.al.numclips())+1);
           end
           if obj.debug
             fprintf('ID %d (channel %d) moved from grid %d (%.2f) to grid %d (%.2f)\n', id, channel, active.cell, activedist, newcell, newdist);
@@ -173,7 +176,7 @@ classdef SoundAppGrid < SoundApp
         end
         if info.ableton && ~isempty(info.song)
           %pan=pos(2)/max(abs(p.layout.active(:,2)));
-          info.al.cliptrigger(info.song,channel,newcell);
+          info.al.cliptrigger(info.song,channel,mod(newcell-1,info.al.numclips())+1);
         end
         obj.actives=[obj.actives,struct('cell',newcell,'id',id,'triggertime',now,'offtime',nan)];
         if obj.debug
@@ -265,7 +268,7 @@ classdef SoundAppGrid < SoundApp
           col='gray';
           for j=1:length(ids)
             channel=info.cm.id2channel(ids(j));
-            if ~isempty(info.song) && info.al.haveclip(info.song,channel,i)
+            if ~isempty(info.song) && info.al.haveclip(info.song,channel,mod(i-1,info.al.numclips())+1)
               txt=[txt,sprintf('T%d ',channel)];
               col=col2touchosc(id2color(ids(j),p.colors));
             else
