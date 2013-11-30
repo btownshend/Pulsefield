@@ -16,7 +16,7 @@
 % - Compute pixcalib using distortion model of each camera
 
 function p=pixcalibrate_noled(p,varargin)
-defaults=struct('newimages',false,'doplot',false,'maxcameramovement',0.5);
+defaults=struct('newimages',false,'doplot',false,'maxcameramovement',0.5,'maxoffaxis',65);
 args=processargs(defaults,varargin);
 
 target=struct('dX',0.03,'dY',0.03,'nX',16,'nY',16,'bottomrowheight',.0625);
@@ -59,24 +59,21 @@ end
 
 % Construct the mapping from grid coordinates to world coordinates
 p.calibration.target=target;
+p.calibration.maxoffaxis=args.maxoffaxis;
 p=transformcameras(p);
 
 if args.doplot
-  setfig('Grid space');clf;
-  hold on;
+  setfig('Grid space');
   plotworld(p,struct('R',eye(3),'T',[0;0;0]));
 end
 
 if args.doplot
-  setfig('World space');clf;
-  hold on;
+  setfig('World space');
   plotworld(p);
-  axis([-5,5,0,10,0,2]);
 end
 
 % Now setup the pixcalib structure
 ledheight=mean(p.layout.cposz);
-maxoffaxis=65*pi/180;   % Maximum off-axis angle to use
 for c=1:length(p.camera)
   cam=p.camera(c);
   % Camera may be operating at different resolution than was used for distortion calibration
@@ -93,7 +90,7 @@ for c=1:length(p.camera)
     lposCF=Rwc*lpos'+Twc;
     % Check angle off lens axis
     offaxis=atan(norm(lposCF(1:2))/lposCF(3));
-    if (abs(offaxis)>maxoffaxis)
+    if (abs(offaxis)>args.maxoffaxis*pi/180)
       %      fprintf('LED %d is too far off axis - %.1f degrees\n', l, offaxis*180/pi);
       pc(l)=struct('pos',[nan,nan],'valid',false,'inuse',false,'diameter',nan);
     else
