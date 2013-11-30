@@ -26,6 +26,9 @@ for c=1:length(p.camera)
   end
   % Plot all the other cameras
   for c2=1:length(p.camera)
+    if c2==c
+      continue;
+    end
     cpos=[p.layout.cpos(c2,:),p.layout.cposz(c2)];
     pixelpos=getpixelpos(cam,cpos);
     if ~any(isnan(pixelpos))
