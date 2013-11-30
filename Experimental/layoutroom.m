@@ -82,7 +82,7 @@ end
 ldir(far,1)=-1; ldir(far,2)=0;
 ldir(bottom|top,1)=0; ldir(bottom,2)=1; ldir(top,2)=-1;
 
-lposz(1:nled)=cameraheight;
+lposz(1:nled)=0;
 ldirz(1:nled)=0;
 
 % Active area

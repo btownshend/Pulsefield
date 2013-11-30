@@ -73,7 +73,6 @@ if args.doplot
 end
 
 % Now setup the pixcalib structure
-ledheight=mean(p.layout.cposz);
 for c=1:length(p.camera)
   cam=p.camera(c);
   % Camera may be operating at different resolution than was used for distortion calibration
@@ -86,7 +85,7 @@ for c=1:length(p.camera)
   Twc=-Rwc*cam.extcal.Tcw;
   for l=1:size(p.layout.lpos,1)
     % Calculate LED position in camera frame of reference
-    lpos=[p.layout.lpos(l,:),ledheight];
+    lpos=[p.layout.lpos(l,:),p.layout.lposz(l)];
     lposCF=Rwc*lpos'+Twc;
     % Check angle off lens axis
     offaxis=atan(norm(lposCF(1:2))/lposCF(3));
