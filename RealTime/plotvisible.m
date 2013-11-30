@@ -81,6 +81,13 @@ for i=1:size(vis.v,1)
     corr(isnan(vis.v(i,:)))=nan;
     plot(corr,'g');
     hold on;
+    % Points bounded by 2 NaNs are hard to see:
+    for k=1:length(corr)
+      if ~isnan(corr(k))&&(k==1 || isnan(corr(k-1)))&&(k==length(corr) || isnan(corr(k+1)))
+        fprintf('line at (%d,%d)\n',i,k);
+        plot([k-0.5,k+0.5],[corr(k),corr(k)],'g')
+      end
+    end
     if isfield(vis,'mincorr')
       % Plot threshold, broken with NaNs for unused LEDs
       mc=corr*0+vis.mincorr;
