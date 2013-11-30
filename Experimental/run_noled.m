@@ -35,7 +35,7 @@ if ~isfield(p.camera(1),'pixcalib')
     for i=1:length(p.camera)
       plotpixcalib(p.camera(i));
     end
-    plotdistortion(p);
+    % plotdistortion(p);
   end
 end
 plotvalid(p);
