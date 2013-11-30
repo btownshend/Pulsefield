@@ -18,7 +18,7 @@ if ~exist('p','var')
   p.led=struct('id',num2cell(1:nled));
   p.colors={[1 1 1], [1 0 0], [0 1 0], [0 0 1],[1 1 0],[1 0 1], [0 1 1]};
 
-  p.layout=layoutroom(130/39.37,140/39.37,ncamera,nled);
+  p.layout=layoutroom(130/39.37,145/39.37,ncamera,nled);
   p.noleds=true;
   plotlayout(p.layout);
 end
@@ -31,11 +31,11 @@ setupcameras(p,'mode','quality','daynight','day','analoggain',25,'illum','indoor
 if ~isfield(p.camera(1),'pixcalib')
   disp('Pixel calibration');
   p=pixcalibrate_noled(p,'doplot',doplot);
-  if doplot
+  if 0 && doplot
     for i=1:length(p.camera)
       plotpixcalib(p.camera(i));
     end
-    % plotdistortion(p);
+    plotdistortion(p);
   end
 end
 plotvalid(p);
