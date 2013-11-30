@@ -95,8 +95,12 @@ for c=1:length(p.camera)
       pc(l)=struct('pos',[nan,nan],'valid',false,'inuse',false,'diameter',nan);
     else
       % Map to camera pixel
-      pixelpos=round(scale*distort(cam.distortion,(lposCF(1:2)/lposCF(3))')');
-      if pixelpos(1)<0||pixelpos(1)>=cam.hpixels||pixelpos(2)<0||pixelpos(2)>=cam.vpixels
+      if lposCF(3)<0
+        pixelpos=[nan,nan];
+      else
+        pixelpos=round(scale*distort(cam.distortion,(lposCF(1:2)/lposCF(3))')');
+      end
+      if any(isnan(pixelpos)) || pixelpos(1)<0||pixelpos(1)>=cam.hpixels||pixelpos(2)<0||pixelpos(2)>=cam.vpixels
         fprintf('LED %d has pixel off sensor at [%.0f,%.0f]\n', l, pixelpos);
         pc(l)=struct('pos',[nan,nan],'valid',false,'inuse',false,'diameter',nan);
       else
