@@ -138,7 +138,7 @@ while true
       if args.debug
         fprintf('Got %s blob for frame %d, camera %d: cnt=%d/%d/%d\n', m.path, frame, c, sum(blob==0), sum(blob==1), sum(blob==2));
       end
-    elseif strcmp(m.path,'/vis/image') || strcmp(m.path,'/vis/refimage')  || strcmp(m.path,'/vis/frame')
+    elseif strcmp(m.path,'/vis/image') || strcmp(m.path,'/vis/refimage')  || strcmp(m.path,'/vis/refimage2') || strcmp(m.path,'/vis/frame')
       c=m.data{1}+1;   % Camera
       if frame ~= m.data{2}
         fprintf('Got %s for frame %d while reading frame %d\n', m.path, m.data{2}, frame);
@@ -189,8 +189,12 @@ while true
         end
         if strcmp(m.path,'/vis/image')
           vis.im{c}=rawimage;
-        else  % /vis/refimage
+        elseif strcmp(m.path,'/vis/refimage')
           vis.refim{c}=rawimage;
+        elseif strcmp(m.path,'/vis/refimage2')
+          vis.refim2{c}=rawimage;
+        else
+          fprintf('Bad message: %s with file %s\n', m.path, filename);
         end
       end
     end
