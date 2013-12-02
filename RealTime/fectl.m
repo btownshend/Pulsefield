@@ -70,9 +70,9 @@ elseif strcmp(op,'start')
       res='full';
     end
     oscmsgout('FE','/vis/set/res',{int32(i-1),res});
-    if isfield(p.camera(i),'viscache') && isfield(p.camera(i).viscache,'refim')
+    if isfield(p.camera(i),'viscache') && isfield(p.camera(i).viscache,'refim') && p.analysisparams.updatetc==0
       oscmsgout('FE','/vis/set/updatetc',{ p.analysisparams.updatetc });    % Turn on updates of reference image
-      fprintf('Frontend is automatically updating reference with a time constant of %f seconds\n', p.analysisparams.updatetc);
+      fprintf('Frontend is not updating reference\n');
       refim = im2single(p.camera(i).viscache.refim);
       filename=sprintf('/tmp/setref_%.6f_%d.raw',(now-datenum(1970,1,1)+7/24)*24*3600,i);
       [fd,errmsg]=fopen(filename,'wb');
@@ -85,9 +85,6 @@ elseif strcmp(op,'start')
       fclose(fd);
       fprintf('Sending reference image to frontend in %s\n',filename);
       oscmsgout('FE','/vis/set/refimage',{ int32(i-1), size(refim,2), size(refim,1), size(refim,3), filename});
-    else
-      fprintf('Frontend is automatically updating reference with a time constant of %f seconds\n', p.analysisparams.updatetc);
-      oscmsgout('FE','/vis/set/updatetc',{ p.analysisparams.updatetc });
     end
       
     % setRoi expects x0, y0, x1, y1 (with 1-based indexing)
@@ -105,6 +102,12 @@ elseif strcmp(op,'start')
     pause(1);   % Try not to overrun UDP stack
   end
   oscmsgout('FE','/vis/start',{});
+  if p.analysisparams.updatetc~=0
+    oscmsgout('FE','/vis/set/updatetc',{ 0.5 });   % Do a quick initialization (average with time constant of 0.5 second)
+    pause(2);   % Leaves at least 4 time constants to adapt -- should be within 2% of t
+    fprintf('Frontend is automatically updating reference with a time constant of %f seconds\n', p.analysisparams.updatetc);
+    oscmsgout('FE','/vis/set/updatetc',{ p.analysisparams.updatetc });
+  end
 elseif strcmp(op,'ping')
   % Make sure FE knows where to send replies
   [~,myport]=getsubsysaddr('MPV');
