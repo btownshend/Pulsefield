@@ -7,6 +7,7 @@ if ~exist('p','var')
   p=struct;
   p.analysisparams=analysissetup();
   p.analysisparams.detector=1;   % Use foreground/background detector
+  p.analysisparams.mintgtdiam=0.08;   % Smaller targets (for feet) -- 8cm diameter
   %ctype='av10115';
   ctype='av10115-half';
   ncamera=6;
@@ -43,7 +44,8 @@ plotvalid(p);
 
 if ~isfield(p.camera(1),'viscache')
   disp('Visible calibration');
-  [allvis,p]=getvisible(p,'init',true,'usefrontend',false,'disableleds',false);
+  % Use a larger window to improve foreground object detection when background is bland
+  [allvis,p]=getvisible(p,'init','wsize',[21,11],'usefrontend',false,'disableleds',false);
 end
 
 if 0 && ~isfield(p,'crosstalk')
