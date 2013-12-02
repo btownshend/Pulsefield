@@ -28,6 +28,12 @@ else
   nc=length(cameras);
 end
 
+if isfield(p.analysisparams,'detector')
+  detector=p.analysisparams.detector;
+else
+  detector=0;
+end
+  
 if nargin<5
   setfig('checkcalibration');
 else
@@ -36,6 +42,9 @@ end
 clf;
 nstack=1;
 if isfield(vis,'refim')
+  nstack=nstack+1;
+end
+if isfield(vis,'refim2') && detector==1
   nstack=nstack+1;
 end
 if exist('bigwindow','var')
@@ -81,7 +90,7 @@ for ci=1:length(cameras)
       else
         title(sprintf('*vis.im %d (max=%d)\n', l, max(im(:))));
       end
-      xlabel(sprintf('p=%.3f',vis.corr(c,l)));
+      xlabel(sprintf('Score=%.3f',vis.corr(c,l)));
 
       % overlay pixelList boundaries
       plist=pixcalib(l).pixelList;
@@ -103,17 +112,34 @@ for ci=1:length(cameras)
       else
         imshow(refim);
       end
-      rrgb=corr2(im(:),refim(:));
-      imgray=rgb2graywithweight(im);
-      refimgray=rgb2graywithweight(refim);
-      % fprintf('TL im=%f,%f,%f (%f), refim=%f,%f,%f (%f)\n', im(1,1,:), imgray(1,1), refim(1,1,:), refimgray(1,1));
-      rgray=corr2(imgray,refimgray);
-      for j=1:3
-        r(j)=corr2(im(:,:,j),refim(:,:,min(size(refim,3),j)));
+
+      if detector==0
+        % Correlation-based detector
+        rrgb=corr2(im(:),refim(:));
+        imgray=rgb2graywithweight(im);
+        refimgray=rgb2graywithweight(refim);
+        % fprintf('TL im=%f,%f,%f (%f), refim=%f,%f,%f (%f)\n', im(1,1,:), imgray(1,1), refim(1,1,:), refimgray(1,1));
+        rgray=corr2(imgray,refimgray);
+        for j=1:3
+          r(j)=corr2(im(:,:,j),refim(:,:,min(size(refim,3),j)));
+        end
+        xlabel(sprintf('r=(%.3f,%.3f,%.3f),RGB=%.3f,Gray=%.3f',r,rrgb,rgray));
+      elseif detector==1
+        % Foreground/background detector
+        xlabel('Using fg detector');
       end
       title(sprintf('vis.refim %d (max=%.1f)',l,255*max(refim(:))));
-      xlabel(sprintf('r=(%.3f,%.3f,%.3f),RGB=%.3f,Gray=%.3f',r,rrgb,rgray));
       ylabel(sprintf('(%d:%d, %d:%d)',vc.tlpos(l,2),vc.brpos(l,2),vc.tlpos(l,1),vc.brpos(l,1)));
+    end
+    if isfield(vis,'refim2') && detector==1
+      % Plot std
+      subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
+      stack=stack+1;
+      refim2=vis.refim2{c}(vc.tlpos(l,2):vc.brpos(l,2),vc.tlpos(l,1):vc.brpos(l,1),:);
+      std=sqrt(refim2-refim.^2);
+      maxstd=max(std(:));
+      imshow(std/(20/255));
+      title(sprintf('std %d/20 (max=%.1f)',l,255*maxstd));
     end
     if exist('bigwindow','var') && exist('bigim','var')
       subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
