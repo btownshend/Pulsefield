@@ -19,7 +19,9 @@ for i=1:size(vis.v,1)
     imshow(vis.refim{i});
     axis normal
     hold on;
-    title(sprintf('Reference %d',sainfo.camera(i).id));
+    if i==1
+      title(sprintf('Reference %d',sainfo.camera(i).id));
+    end
     pause(0.01);
     for j=1:length(c)
       if ~isnan(vis.v(i,j))
@@ -40,7 +42,9 @@ for i=1:size(vis.v,1)
     imshow(vis.im{i});
     axis normal
     hold on;
-    title(sprintf('Camera %d',sainfo.camera(i).id));
+    if i==1
+      title(sprintf('Camera %d',sainfo.camera(i).id));
+    end
     pause(0.01);
     for j=1:length(c)
       if ~isnan(vis.v(i,j))
@@ -99,8 +103,6 @@ for i=1:size(vis.v,1)
     ax=axis;
     ax(3)=min(ax(3),0);ax(4)=1.0;
     axis(ax);
-    set(gca,'Position',get(gca,'OuterPosition'));   % Explode plot to fill space
-    %    legend('Correlation','Threshold');
   elseif isfield(vis,'v')   % .v only, no .corr
     subplot(size(vis.v,1),ncol,(i-1)*ncol+col);
     col=col+1;
@@ -115,9 +117,10 @@ for i=1:size(vis.v,1)
     ax(3)=-0.1;ax(4)=1.1;
     axis(ax);
   end
-  title(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(i,:)==1),sum(vis.v(i,:)==0),sum(isnan(vis.v(i,:)))));
+  title(sprintf('Visible: %d, Blocked: %d, Disabled: %d, Score: %.3f', sum(vis.v(i,:)==1),sum(vis.v(i,:)==0),sum(isnan(vis.v(i,:))),nanmean(vis.corr(i,:))));
   %  xlabel('LED');
   ylabel('Signal');
 end
-suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(:)==1),sum(vis.v(:)==0),sum(isnan(vis.v(:)))));
+suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d, Score: %.3f', sum(vis.v(:)==1),sum(vis.v(:)==0),sum(isnan(vis.v(:))),nanmean(vis.corr(:))));
 fprintf('Can use: checkcalibration(p,vis,[led list]) to check particular leds\n');
+fprintf('Can also try: plotcalibration(p,vis)\n');
