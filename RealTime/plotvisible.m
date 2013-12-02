@@ -117,10 +117,18 @@ for i=1:size(vis.v,1)
     ax(3)=-0.1;ax(4)=1.1;
     axis(ax);
   end
-  title(sprintf('Visible: %d, Blocked: %d, Disabled: %d, Score: %.3f', sum(vis.v(i,:)==1),sum(vis.v(i,:)==0),sum(isnan(vis.v(i,:))),nanmean(vis.corr(i,:))));
+  if isfield(vis,'corr')
+    title(sprintf('Visible: %d, Blocked: %d, Disabled: %d, Score: %.3f', sum(vis.v(i,:)==1),sum(vis.v(i,:)==0),sum(isnan(vis.v(i,:))),nanmean(vis.corr(i,:))));
+  else
+    title(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(i,:)==1),sum(vis.v(i,:)==0),sum(isnan(vis.v(i,:)))));
+  end
   %  xlabel('LED');
   ylabel('Signal');
 end
-suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d, Score: %.3f', sum(vis.v(:)==1),sum(vis.v(:)==0),sum(isnan(vis.v(:))),nanmean(vis.corr(:))));
+if isfield(vis,'corr')
+  suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d, Score: %.3f', sum(vis.v(:)==1),sum(vis.v(:)==0),sum(isnan(vis.v(:))),nanmean(vis.corr(:))));
+else
+  suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(:)==1),sum(vis.v(:)==0),sum(isnan(vis.v(:)))));
+end
 fprintf('Can use: checkcalibration(p,vis,[led list]) to check particular leds\n');
 fprintf('Can also try: plotcalibration(p,vis)\n');
