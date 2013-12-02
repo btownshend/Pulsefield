@@ -11,6 +11,7 @@
 %	init:	  true to initialize data for operation, store in returned p struct (default false)
 %	usefrontend: use frontend to acquire high-speed stream (default true)
 %	timeout:  timeout in seconds to wait for frame (default 1.0)
+%	disableleds: true to disable leds that show low correlation between initialization patterns (default: true)
 % When 'init' is used, additional options are available:
 %	wsize:    2x1 size of window [height width], in pixels, which will be centered on centroid of LED (default: [11 7], for init only)
 %	navg:	  number of samples to average over (default=number of colors in p.colors; which are used as onval)
@@ -24,8 +25,8 @@
 % 	im{ncam} - full images
 %	tgt{ncam,nled} - images of each target
 function [vis,p]=getvisible(p,varargin)
-defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[5 7],'navg',2*length(p.colors),'calccorr',true,'mincorr',0.5,...
-            'usefrontend',true,'timeout',1.0);
+defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[5 7],'navg',2*length(p.colors),'calccorr',true,...
+                'mincorr',0.5,'usefrontend',true,'timeout',1.0,'disableleds',true);
 args=processargs(defaults,varargin);
 if args.init
   if nargout~=2
@@ -132,13 +133,15 @@ if args.init
   end
 
   % Disable LEDs that show low correlation
-  for c=1:length(p.camera)
-    for l=1:length(p.led)
-      if p.camera(c).pixcalib(l).valid
-        [mincorr,ord]=min(p.camera(c).viscache.refcorr(l,:));
-        if mincorr < 0.7
-          fprintf('Warning: disabling pixel due to min corr <0.7; corr(%d,%d)=%.4f with [%d,%d,%d]\n', c,l,mincorr, onval{ord});
-          p.camera(c).viscache.inuse(l)=false;
+  if args.disableleds
+    for c=1:length(p.camera)
+      for l=1:length(p.led)
+        if p.camera(c).pixcalib(l).valid
+          [mincorr,ord]=min(p.camera(c).viscache.refcorr(l,:));
+          if mincorr < 0.7
+            fprintf('Warning: disabling pixel due to min corr <0.7; corr(%d,%d)=%.4f with [%d,%d,%d]\n', c,l,mincorr, onval{ord});
+            p.camera(c).viscache.inuse(l)=false;
+          end
         end
       end
     end

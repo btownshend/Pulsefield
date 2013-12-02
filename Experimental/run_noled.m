@@ -43,7 +43,7 @@ plotvalid(p);
 
 if ~isfield(p.camera(1),'viscache')
   disp('Visible calibration');
-  [allvis,p]=getvisible(p,'init',true,'usefrontend',false);
+  [allvis,p]=getvisible(p,'init',true,'usefrontend',false,'disableleds',false);
 end
 
 if 0 && ~isfield(p,'crosstalk')
