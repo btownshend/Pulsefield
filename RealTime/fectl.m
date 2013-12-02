@@ -54,6 +54,11 @@ elseif strcmp(op,'start')
   oscmsgout('FE','/vis/stop',{});
   oscmsgout('FE','/vis/set/fps',{p.analysisparams.fps});
   oscmsgout('FE','/vis/set/corrthresh',{0.5});
+  if isfield(p.analysisparams,'detector') && p.analysisparams.detector==1
+    oscmsgout('FE','/vis/set/fgdetector',{int32(1)});
+  else
+    oscmsgout('FE','/vis/set/fgdetector',{int32(0)});
+  end
   for i=1:length(p.camera)
     c=p.camera(i);
     if strcmp(c.type,'av10115')

@@ -6,6 +6,7 @@ if ~exist('p','var')
   disp('Initializing setup')
   p=struct;
   p.analysisparams=analysissetup();
+  p.analysisparams.detector=1;   % Use foreground/background detector
   %ctype='av10115';
   ctype='av10115-half';
   ncamera=6;

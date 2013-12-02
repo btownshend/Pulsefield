@@ -21,3 +21,4 @@ aparams.npixels=500;
 aparams.fps=15;    % Max speed at which frontend can reasonably keep up
 aparams.updatetc=60;  % Time constant for update of reference image
 aparams.mincorr=0.5;
+aparams.detector=0;   % 0 for correlation, 1 for foreground detector
