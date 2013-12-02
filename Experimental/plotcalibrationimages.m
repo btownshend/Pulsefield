@@ -1,4 +1,7 @@
-function plotcalibrationimages(p,vis)
+function plotcalibrationimages(p,vis,varargin)
+defaults=struct('addpoints',[]);
+args=processargs(defaults,varargin);
+
 roomheight=3;   % Height of room in meters
 step=0.05;      % Step size for drawing active area outline in meters
 setfig('calibimages');clf;
@@ -60,6 +63,14 @@ for c=1:length(p.camera)
       end
     end
   end
+  % Add any points given on command line
+  for i=1:size(args.addpoints,1)
+    pp=getpixelpos(cam,args.addpoints(i,:));
+    if ~any(isnan(pp))
+      plot(pp(1),pp(2),'om');
+    end
+  end
+  
   title(sprintf('Camera %d',c));
   set(gca,'Position',get(gca,'OuterPosition'));   % Explode plot to fill space
 end
