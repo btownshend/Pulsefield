@@ -1,19 +1,10 @@
-% Calculate background noise model using a set of background frames
-function nm=noisemodel(bg,cam)
-for i=1:length(bg)
-  a=bg{i};
-  im=im2double(a{cam});
-  if i==1
-    s=im;
-    s2=im.^2;
-  else
-    s=s+im;
-    s2=s2+im.^2;
-  end
-end
-N=length(bg);
-nm.avg=s/N;
-nm.std=sqrt(s2-s.^2/N);
+% Calculate background noise model using vis data
+function nm=noisemodel(vis,cam)
+nm.avg=vis.refim{cam};
+nm.std=sqrt(vis.refim2{cam}-vis.refim{cam}.^2);
 % Make sure the std isn't too small -- use 1/3 of mean as clip
-fprintf('Clipping at %.3f\n', mean(nm.std(:))/3);
-nm.std=max(nm.std,mean(nm.std(:))/3);
+cliplev=mean(nm.std(:))/3;
+fprintf('Clipping at %.3f\n', cliplev);
+nm.std(nm.std>=0 & nm.std<cliplev)=cliplev;
+nm.std(nm.std<0 & nm.std>-cliplev)=-cliplev;
+
