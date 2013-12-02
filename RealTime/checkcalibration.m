@@ -90,8 +90,11 @@ for ci=1:length(cameras)
       else
         title(sprintf('*vis.im %d (max=%d)\n', l, max(im(:))));
       end
-      xlabel(sprintf('Score=%.3f',vis.corr(c,l)));
-
+      if detector==1
+        xlabel(sprintf('Score=%.3f (Avg NStd=%.2f)',vis.corr(c,l),(1-vis.corr(c,l))*p.analysisparams.fgscale));
+      else
+        xlabel(sprintf('Score=%.3f',vis.corr(c,l)));
+      end
       % overlay pixelList boundaries
       plist=pixcalib(l).pixelList;
       roi=p.camera(c).roi;
@@ -106,6 +109,9 @@ for ci=1:length(cameras)
       subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
       stack=stack+1;
       refim=vis.refim{c}(vc.tlpos(l,2):vc.brpos(l,2),vc.tlpos(l,1):vc.brpos(l,1),:);
+      % Note that frontend sends vis struct with refim,refim2 AFTER updating with current image, back this update out
+      k=p.analysisparams.fps*p.analysisparams.updatetc;
+      refim=(refim*k-im2double(im))/(k-1);
       if rescale
         refimsc=refim/max(refim(:));
         imshow(refimsc);
@@ -136,10 +142,14 @@ for ci=1:length(cameras)
       subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
       stack=stack+1;
       refim2=vis.refim2{c}(vc.tlpos(l,2):vc.brpos(l,2),vc.tlpos(l,1):vc.brpos(l,1),:);
-      std=sqrt(refim2-refim.^2);
-      maxstd=max(std(:));
-      imshow(std/(20/255));
-      title(sprintf('std %d/20 (max=%.1f)',l,255*maxstd));
+      k=p.analysisparams.fps*p.analysisparams.updatetc;
+      refim2=(refim2*k-im2double(im).^2)/(k-1);
+      var=refim2-refim.^2;
+      nstd=(im2double(im)-refim).^2./var;
+      maxnstd=sqrt(max(nstd(:)));
+      meanstd=sqrt(mean(nstd(:)));
+      imshow(sqrt(nstd)/maxnstd);
+      title(sprintf('nstd %d (max=%.2f, avg=%.2f)',l,maxnstd,meanstd));
     end
     if exist('bigwindow','var') && exist('bigim','var')
       subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
