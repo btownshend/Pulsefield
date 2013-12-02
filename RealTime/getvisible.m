@@ -13,7 +13,7 @@
 %	timeout:  timeout in seconds to wait for frame (default 1.0)
 %	disableleds: true to disable leds that show low correlation between initialization patterns (default: true)
 % When 'init' is used, additional options are available:
-%	wsize:    2x1 size of window [height width], in pixels, which will be centered on centroid of LED (default: [11 7], for init only)
+%	wsize:    2x1 size of window [height width], in pixels, which will be centered on centroid of LED (default: [5 7], for init only)
 %	navg:	  number of samples to average over (default=number of colors in p.colors; which are used as onval)
 % Returns vis with fields:
 % 	v(ncam,nled) - 1 if LED is visible, 0 if not
