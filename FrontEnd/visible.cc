@@ -10,6 +10,9 @@
 float Visible::updateTimeConstant=60;  // Default is 60sec time constant for updating reference
 float Visible::corrThreshold = 0.7;
 bool Visible::fgDetector = false;
+float Visible::fgMinVar = 0.006*0.006;  // Empirically determined as about the 1% point of the observed variances of non-saturated pixels
+float Visible::fgThresh[2] = {1.0,2.5};  // Thresholds for fg/bg detector
+float Visible::fgScale = 4.5;  // fg/bg scaling
 
 Visible::Visible(int _nleds, int _camid) {
     nleds=_nleds;
@@ -102,7 +105,7 @@ int Visible::processImage(const Frame *frame, float fps) {
 	    // Grayscale match, used weighted sum of signal
 	    const float scale=1.0/(255*4);
 	    if (fgDetector) {
-		float sstd=0;
+		float svar=0;
 		for (int h=0;h<tgtHeight[i];h++) {
 		    int index=(ypos[i]+h)*refWidth+xpos[i];
 		    const byte *x=&fimg[index*3];
@@ -110,15 +113,17 @@ int Visible::processImage(const Frame *frame, float fps) {
 		    const float *y2=&refImage2[index];
 		    for (int w=0;w<tgtWidth[i];w++) {
 			float xv=(2*float(x[0])+float(x[1])+float(x[2]))*scale;  // Convert to gray scale with extra weight to reds
-			float std=sqrt(*y2-(*y)*(*y));
-			sstd+=fabsf(xv-*y)/std;
+			float var=*y2-(*y)*(*y);
+			if (var<fgMinVar) var=fgMinVar;
+			svar+=(xv-*y)*(xv-*y)/var;
 			y2++;
 			x+=3;
 			y++;
 		    }
 		}
-		sstd/=N;
-		corr[i]=1.0-sstd/3.0;   // Make it look like a correlation roughly so thresholding will work correctly (1.5*std -> corr=0.5)
+		svar=sqrt(svar/N);
+		corr[i]=1.0-svar/fgScale;   // Make it look like a correlation roughly so thresholding will work correctly
+		visible[i]=(svar<fgThresh[0])?1:((svar>fgThresh[1])?0:2);
 	    } else {
 		// Correlation based
 		float sxx=0,sxy=0,syy=0,sx=0,sy=0;
@@ -142,15 +147,15 @@ int Visible::processImage(const Frame *frame, float fps) {
 		    corr[i]=0;
 		else
 		    corr[i]=(sxy-sx*sy/N)/denom;
+		visible[i]=corr[i]>=corrThreshold;
 	    }
 	} else {
 	    assert(refDepth==3);
 	    // RGB, check correlation on each plane separately and use the max found
-	    corr[i]=-2;   // Assume minimum possible (but correct this below if not increased)
 	    if (fgDetector) {
 		const float scale=1.0/255;
+		float svar=0;
 		for (int col=0;col<refDepth;col++) {
-		    float sstd=0;
 		    for (int h=0;h<tgtHeight[i];h++) {
 			int index=(ypos[i]+h)*refWidth+xpos[i];
 			const byte *x=&fimg[index*3+col];   // Offset by color
@@ -158,24 +163,25 @@ int Visible::processImage(const Frame *frame, float fps) {
 			const float *y2=&refImage2[index*3+col];
 			for (int w=0;w<tgtWidth[i];w++) {
 			    float xv=float(x[0])*scale;  // Just one color at a time
-			    float std=sqrt(*y2-(*y)*(*y));
-			    sstd+=fabsf(xv-*y)/std;
-			    //			    if (i==100 && w==0 && h==0)
-			    //				printf("y2=%g, y=%g, x=%d, xv=%g, std=%g,sstd=%g,xv-y=%g, abs(xv-y)/std=%g\n",*y2,*y,x[0],xv,std,sstd,xv-*y,fabsf(xv-*y)/std);
+			    float var=*y2-(*y)*(*y);
+			    if (var<fgMinVar) var=fgMinVar;
+			    svar+=(xv-*y)*(xv-*y)/var;
+			    //if (i==100 && w==1 && h==1)
+				//	printf("xpos=%d, ypos=%d, y2=%g, y=%g, x=%d, xv=%g, var=%g,svar=%g,xv-y=%g, (xv-y)^2/var=%g\n",xpos[i],ypos[i],*y2,*y,x[0],xv,var,svar,xv-*y,(xv-*y)*(xv-*y)/var);
 			    x+=3;  // Skip to next pixel of same color
 			    y+=3;
 			    y2+=3;
 			}
 		    }
-		    if (i==100) {
-			printf("Col=%d, sstd=%g\n",col,sstd);
-		    }
-		    sstd/=N;
-		    float corrcol = 1.0-sstd/3.0;
-		    if (corrcol>corr[i])
-			corr[i]=corrcol;
+		    //  if (i==100) {
+		    //	printf("Col=%d, svar=%g\n",col,svar);
+		    //}
 		}
+		svar=sqrt(svar/(N*3));
+		corr[i] = 1.0-svar/fgScale;
+		visible[i]=(svar<fgThresh[0])?1:((svar>fgThresh[1])?0:2);
 	    } else {
+		corr[i]=-2;   // Assume minimum possible (but correct this below if not increased)
 		for (int col=0;col<refDepth;col++) {
 		    float sxx=0,sxy=0,syy=0,sx=0,sy=0;
 		    for (int h=0;h<tgtHeight[i];h++) {
@@ -208,9 +214,10 @@ int Visible::processImage(const Frame *frame, float fps) {
 			    corr[i]=corrcol;
 		    }
 		}
+		if (corr[i]==-2)
+		    corr[i]=0.0;   // Since we used -2 as the initializer before
+		visible[i]=corr[i]>=corrThreshold;
 	    }
-	    if (corr[i]==-2)
-		corr[i]=0.0;   // Since we used -2 as the initializer before
 	}
 	if (i==-1) {
 	    // Debug
@@ -223,7 +230,6 @@ int Visible::processImage(const Frame *frame, float fps) {
 	}
 	if((corr[i]<-1.01 && ~fgDetector) || corr[i]>1.01)
 	    fprintf(stderr,"Warning: corr[%d]=%f\n", i, corr[i]);
-	visible[i]=corr[i]>=corrThreshold;
 	// Need 10 visible frames in a row to enable, 100 blocked (not necessarily in a row) since last enable to disable
 	if (visible[i]) {
 	    visframes[i]++;

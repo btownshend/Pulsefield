@@ -4,6 +4,9 @@
 class Visible {
     static float updateTimeConstant, corrThreshold; 
     static bool fgDetector;  // True to use foreground/background detector based on noise statistics; false to use correlation detector
+    static float fgThresh[2];  // Thresholds for fg/bg detector
+    static float fgScale;  // fg/bg scaling
+    static float fgMinVar;  // Minimum variance per pixel
     int nleds;
     int *xpos;   // Position of top left of each target region
     int *ypos;
@@ -39,5 +42,5 @@ class Visible {
     static void setUpdateTimeConstant(float t) { updateTimeConstant=t; }
     static void setCorrThresh(float t) { corrThreshold=t; }
     static float getCorrThresh() { return corrThreshold; }
-    static void setFgDetector(bool on) { fgDetector=on; }
+    static void setFgDetector(bool on,float minvar, float fgscale,float fgthresh1,float fgthresh2) { fgDetector=on; fgMinVar=minvar; fgScale=fgscale; fgThresh[0]=fgthresh1; fgThresh[1]=fgthresh2; }
 };

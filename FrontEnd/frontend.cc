@@ -55,7 +55,7 @@ static int setRefImage_handler(const char *path, const char *types, lo_arg **arg
 static int setROI_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setROI(argv[0]->i,argv[1]->i,argv[2]->i,argv[3]->i,argv[4]->i); return 0; }
 static int setUpdateTC_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setUpdateTC(argv[0]->f); return 0; }
 static int setCorrThresh_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setCorrThresh(argv[0]->f); return 0; }
-static int setFgDetector_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setFgDetector(argv[0]->i); return 0; }
+static int setFgDetector_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setFgDetector(argv[0]->i,argv[1]->f,argv[2]->f,argv[3]->f,argv[4]->f); return 0; }
 
 static int getCorr_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::CORR,argv[0]->i); return 0; }
 static int getRefImage_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::REFIMAGE,argv[0]->i); return 0; }
@@ -127,7 +127,7 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     lo_server_add_method(s,"/vis/set/fps","i",setFPS_handler,this);
     lo_server_add_method(s,"/vis/set/updatetc","f",setUpdateTC_handler,this);
     lo_server_add_method(s,"/vis/set/corrthresh","f",setCorrThresh_handler,this);
-    lo_server_add_method(s,"/vis/set/fgdetector","i",setFgDetector_handler,this);
+    lo_server_add_method(s,"/vis/set/fgdetector","iffff",setFgDetector_handler,this);
     lo_server_add_method(s,"/vis/set/res","is",setRes_handler,this);
     lo_server_add_method(s,"/vis/set/refimage","iiiis",setRefImage_handler,this);
     lo_server_add_method(s,"/vis/set/roi","iiiii",setROI_handler,this);
@@ -293,6 +293,7 @@ void FrontEnd::processFrames() {
 	    struct timeval tstart, tend;
 	    if (debug)
 		gettimeofday(&tstart,NULL);
+	    //	    printf("Frame %d, Camera %d\n",this->frame,i);
 	    if (vis[i]->processImage(frame,cameras[i]->getFPS())) {
 		// Failed.  Skip processing this frame
 		fprintf(stderr,"Processing of frame %d from camera %d failed; skipping\n", this->frame, i);
@@ -461,8 +462,8 @@ void FrontEnd::setCorrThresh(float thresh) {
     Visible::setCorrThresh(thresh);
 }
 
-void FrontEnd::setFgDetector(int on) {
-    Visible::setFgDetector(on==1);
+void FrontEnd::setFgDetector(int on,float fgminvar, float fgscale,float fgthresh1, float fgthresh2) {
+    Visible::setFgDetector(on==1,fgminvar,fgscale,fgthresh1,fgthresh2);
 }
 
 void FrontEnd::setRes(int camera, const char *res) {
