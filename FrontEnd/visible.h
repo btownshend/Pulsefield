@@ -3,6 +3,7 @@
 
 class Visible {
     static float updateTimeConstant, corrThreshold; 
+    static bool fgDetector;  // True to use foreground/background detector based on noise statistics; false to use correlation detector
     int nleds;
     int *xpos;   // Position of top left of each target region
     int *ypos;
@@ -13,7 +14,7 @@ class Visible {
     float *corr;
     // Reference image (full size) - subparts used for targets
     int refHeight, refWidth, refDepth;  
-    float *refImage;
+    float *refImage,*refImage2;
     struct timeval timestamp;  // Timestamp of image
     int camid;   // For debug messages
     void updateTarget(const Frame *frame,float fps);
@@ -33,8 +34,10 @@ class Visible {
 
     const float *getRefImage() const { return refImage; }
     const char* saveRef(int c) const;
+    const char* saveRef2(int c) const;
     
     static void setUpdateTimeConstant(float t) { updateTimeConstant=t; }
     static void setCorrThresh(float t) { corrThreshold=t; }
     static float getCorrThresh() { return corrThreshold; }
+    static void setFgDetector(bool on) { fgDetector=on; }
 };

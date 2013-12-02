@@ -37,6 +37,7 @@ class FrontEnd {
     void setFPS(int fps);
     void setUpdateTC(float updateTime);
     void setCorrThresh(float thresh);
+    void setFgDetector(int on);
     void setRes(int camera,const char *res);
     void setROI(int camera, int x0, int x1, int y0, int y1);
     void setRefImage(int camera, int imgwidth, int imgheight, int imgdepth, const char *filename);

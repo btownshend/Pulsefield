@@ -55,6 +55,7 @@ static int setRefImage_handler(const char *path, const char *types, lo_arg **arg
 static int setROI_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setROI(argv[0]->i,argv[1]->i,argv[2]->i,argv[3]->i,argv[4]->i); return 0; }
 static int setUpdateTC_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setUpdateTC(argv[0]->f); return 0; }
 static int setCorrThresh_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setCorrThresh(argv[0]->f); return 0; }
+static int setFgDetector_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setFgDetector(argv[0]->i); return 0; }
 
 static int getCorr_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::CORR,argv[0]->i); return 0; }
 static int getRefImage_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::REFIMAGE,argv[0]->i); return 0; }
@@ -126,6 +127,7 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     lo_server_add_method(s,"/vis/set/fps","i",setFPS_handler,this);
     lo_server_add_method(s,"/vis/set/updatetc","f",setUpdateTC_handler,this);
     lo_server_add_method(s,"/vis/set/corrthresh","f",setCorrThresh_handler,this);
+    lo_server_add_method(s,"/vis/set/fgdetector","i",setFgDetector_handler,this);
     lo_server_add_method(s,"/vis/set/res","is",setRes_handler,this);
     lo_server_add_method(s,"/vis/set/refimage","iiiis",setRefImage_handler,this);
     lo_server_add_method(s,"/vis/set/roi","iiiii",setROI_handler,this);
@@ -369,6 +371,16 @@ void FrontEnd::sendMessages() {
 		    int depth=vis[c]->getRefDepth();
 		    lo_send(addr, "/vis/refimage","iiiiiiiss",c,frame,ts.tv_sec,ts.tv_usec, width, height,depth,"f",filename);
 		}
+		if (debug)
+		    printf("Sending REFIMAGE2 to %s:%d\n", dests.getHost(i),dests.getPort(i));
+		const char *filename2=vis[c]->saveRef2(c);    // Save frame in file, retrieve filename (as float)
+		if (filename2!=0) {
+		    printf("Saved image in %s\n", filename2);
+		    int width=vis[c]->getRefWidth();
+		    int height=vis[c]->getRefHeight();
+		    int depth=vis[c]->getRefDepth();
+		    lo_send(addr, "/vis/refimage2","iiiiiiiss",c,frame,ts.tv_sec,ts.tv_usec, width, height,depth,"f",filename2);
+		}
 	    }	   
 	    if (sendOnce & IMAGE) {
 		if (debug)
@@ -447,6 +459,10 @@ void FrontEnd::setUpdateTC(float updateTime) {
 
 void FrontEnd::setCorrThresh(float thresh) {
     Visible::setCorrThresh(thresh);
+}
+
+void FrontEnd::setFgDetector(int on) {
+    Visible::setFgDetector(on==1);
 }
 
 void FrontEnd::setRes(int camera, const char *res) {

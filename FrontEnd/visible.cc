@@ -9,6 +9,7 @@
 
 float Visible::updateTimeConstant=60;  // Default is 60sec time constant for updating reference
 float Visible::corrThreshold = 0.7;
+bool Visible::fgDetector = false;
 
 Visible::Visible(int _nleds, int _camid) {
     nleds=_nleds;
@@ -23,6 +24,7 @@ Visible::Visible(int _nleds, int _camid) {
     tgtWidth=new int[nleds];
     tgtHeight=new int[nleds];
     refImage = 0;
+    refImage2 = 0;
 
     // Default the values of xpos, ypos
     for (int i=0;i<nleds;i++) {
@@ -43,6 +45,8 @@ Visible::~Visible() {
     delete [] corr;
     if (refImage)
 	delete [] refImage;
+    if (refImage2)
+	delete [] refImage2;
 }
 
 // Set position (center point) of an LED target within frame images  (0,0) origin; use -1 if unused
@@ -61,12 +65,17 @@ void Visible::setRefImage(int width, int height, int depth, const float *image) 
     refDepth=depth;
     if (refImage)
 	delete [] refImage;
+    if (refImage2)
+	delete [] refImage2;
     refImage = new float[width*height*depth];
-    for (int i=0;i<width*height*depth;i++)
+    refImage2 = new float[width*height*depth];
+    for (int i=0;i<width*height*depth;i++) {
 	if (image)
 	    refImage[i]=image[i];
 	else
 	    refImage[i] = 0.5;
+	refImage2[i]=refImage[i]*refImage[i];
+    }
 }
 
 // Process an image frame to determine visibility; fills visiblity array
@@ -91,73 +100,128 @@ int Visible::processImage(const Frame *frame, float fps) {
 	}
 	if (refDepth==1) {
 	    // Grayscale match, used weighted sum of signal
-	    float sxx=0,sxy=0,syy=0,sx=0,sy=0;
-	    for (int h=0;h<tgtHeight[i];h++) {
-		int index=(ypos[i]+h)*refWidth+xpos[i];
-		const byte *x=&fimg[index*3];
-		const float *y=&refImage[index];
-		for (int w=0;w<tgtWidth[i];w++) {
-		    float xv;
-		    xv=2*float(x[0])+float(x[1])+float(x[2]);  // Convert to gray scale with extra weight to reds
-		    sxx+=xv*xv;
-		    sx+=xv;
-		    sy+=(*y);
-		    syy+=(*y)*(*y);
-		    sxy+=xv*(*y++);
-		    x+=3;
+	    const float scale=1.0/(255*4);
+	    if (fgDetector) {
+		float sstd=0;
+		for (int h=0;h<tgtHeight[i];h++) {
+		    int index=(ypos[i]+h)*refWidth+xpos[i];
+		    const byte *x=&fimg[index*3];
+		    const float *y=&refImage[index];
+		    const float *y2=&refImage2[index];
+		    for (int w=0;w<tgtWidth[i];w++) {
+			float xv=(2*float(x[0])+float(x[1])+float(x[2]))*scale;  // Convert to gray scale with extra weight to reds
+			float std=sqrt(*y2-(*y)*(*y));
+			sstd+=fabsf(xv-*y)/std;
+			y2++;
+			x+=3;
+			y++;
+		    }
 		}
-	    }
-	    float denom=sqrt((sxx-sx*sx/N)*(syy-sy*sy/N));
-	    if (denom==0.0)
-		corr[i]=0;
-	    else
-		corr[i]=(sxy-sx*sy/N)/denom;
-	} else {
-	    assert(refDepth==3);
-	    // RGB, check correlation on each plane separately and use the max found
-	    corr[i]=-2;   // Assume minimum possible (but correct this below if not increased)
-	    for (int col=0;col<refDepth;col++) {
+		sstd/=N;
+		corr[i]=1.0-sstd/3.0;   // Make it look like a correlation roughly so thresholding will work correctly (1.5*std -> corr=0.5)
+	    } else {
+		// Correlation based
 		float sxx=0,sxy=0,syy=0,sx=0,sy=0;
 		for (int h=0;h<tgtHeight[i];h++) {
 		    int index=(ypos[i]+h)*refWidth+xpos[i];
-		    const byte *x=&fimg[index*3+col];   // Offset by color
-		    const float *y=&refImage[index*3+col]; 
+		    const byte *x=&fimg[index*3];
+		    const float *y=&refImage[index];
 		    for (int w=0;w<tgtWidth[i];w++) {
 			float xv;
-			xv=float(x[0]);  // Just one color at a time
+			xv=2*float(x[0])+float(x[1])+float(x[2]);  // Convert to gray scale with extra weight to reds
 			sxx+=xv*xv;
 			sx+=xv;
 			sy+=(*y);
 			syy+=(*y)*(*y);
-			sxy+=xv*(*y);
-			x+=3;  // Skip to next pixel of same color
-			y+=3;
+			sxy+=xv*(*y++);
+			x+=3;
 		    }
 		}
-		float denom2=(sxx-sx*sx/N)*(syy-sy*sy/N);
-		float denom;
-		if (denom2>=0) 
-		    denom=sqrt(denom2);
-		else {
-		    fprintf(stderr,"Warning denom[%d]=%f (<0)\n",i,denom2);
-		    denom=0;
-		}
-		if (denom!=0.0) {
-		    float corrcol=(sxy-sx*sy/N)/denom;
-		    if (corrcol > corr[i])
+		float denom=sqrt((sxx-sx*sx/N)*(syy-sy*sy/N));
+		if (denom==0.0)
+		    corr[i]=0;
+		else
+		    corr[i]=(sxy-sx*sy/N)/denom;
+	    }
+	} else {
+	    assert(refDepth==3);
+	    // RGB, check correlation on each plane separately and use the max found
+	    corr[i]=-2;   // Assume minimum possible (but correct this below if not increased)
+	    if (fgDetector) {
+		const float scale=1.0/255;
+		for (int col=0;col<refDepth;col++) {
+		    float sstd=0;
+		    for (int h=0;h<tgtHeight[i];h++) {
+			int index=(ypos[i]+h)*refWidth+xpos[i];
+			const byte *x=&fimg[index*3+col];   // Offset by color
+			const float *y=&refImage[index*3+col]; 
+			const float *y2=&refImage2[index*3+col];
+			for (int w=0;w<tgtWidth[i];w++) {
+			    float xv=float(x[0])*scale;  // Just one color at a time
+			    float std=sqrt(*y2-(*y)*(*y));
+			    sstd+=fabsf(xv-*y)/std;
+			    //			    if (i==100 && w==0 && h==0)
+			    //				printf("y2=%g, y=%g, x=%d, xv=%g, std=%g,sstd=%g,xv-y=%g, abs(xv-y)/std=%g\n",*y2,*y,x[0],xv,std,sstd,xv-*y,fabsf(xv-*y)/std);
+			    x+=3;  // Skip to next pixel of same color
+			    y+=3;
+			    y2+=3;
+			}
+		    }
+		    if (i==100) {
+			printf("Col=%d, sstd=%g\n",col,sstd);
+		    }
+		    sstd/=N;
+		    float corrcol = 1.0-sstd/3.0;
+		    if (corrcol>corr[i])
 			corr[i]=corrcol;
-		    if (i==-1) {
-			int tlind=ypos[i]*refWidth+xpos[i];
-			printf("tl=(%d,%d), IM=%d, REF=%f, Corr(%d)=%.3f\n",xpos[i],ypos[i],fimg[tlind*3+col], refImage[tlind*3+col], col, corrcol);
-			tlind=(ypos[i]+tgtHeight[i]-1)*refWidth+(xpos[i]+tgtWidth[i]-1);
-			printf("br=(%d,%d), IM=%d, REF=%f, Corr(%d)=%.3f\n",xpos[i]+tgtWidth[i]-1,ypos[i]+tgtHeight[i]-1,fimg[tlind*3+col], refImage[tlind*3+col], col, corrcol);
+		}
+	    } else {
+		for (int col=0;col<refDepth;col++) {
+		    float sxx=0,sxy=0,syy=0,sx=0,sy=0;
+		    for (int h=0;h<tgtHeight[i];h++) {
+			int index=(ypos[i]+h)*refWidth+xpos[i];
+			const byte *x=&fimg[index*3+col];   // Offset by color
+			const float *y=&refImage[index*3+col]; 
+			for (int w=0;w<tgtWidth[i];w++) {
+			    float xv;
+			    xv=float(x[0]);  // Just one color at a time
+			    sxx+=xv*xv;
+			    sx+=xv;
+			    sy+=(*y);
+			    syy+=(*y)*(*y);
+			    sxy+=xv*(*y);
+			    x+=3;  // Skip to next pixel of same color
+			    y+=3;
+			}
+		    }
+		    float denom2=(sxx-sx*sx/N)*(syy-sy*sy/N);
+		    float denom;
+		    if (denom2>=0) 
+			denom=sqrt(denom2);
+		    else {
+			fprintf(stderr,"Warning denom[%d]=%f (<0)\n",i,denom2);
+			denom=0;
+		    }
+		    if (denom!=0.0) {
+			float corrcol=(sxy-sx*sy/N)/denom;
+			if (corrcol > corr[i])
+			    corr[i]=corrcol;
 		    }
 		}
 	    }
 	    if (corr[i]==-2)
 		corr[i]=0.0;   // Since we used -2 as the initializer before
 	}
-	if(corr[i]<-1.01 || corr[i]>1.01)
+	if (i==-1) {
+	    // Debug
+	    int tlind=ypos[i]*refWidth+xpos[i];
+	    for (int col=0;col<refDepth;col++) {
+		printf("tl=(%d,%d), IM=%d, REF=%f, REF2=%f, Corr(%d)=%g\n",xpos[i],ypos[i],fimg[tlind*3+col], refImage[tlind*refDepth+col], refImage2[tlind*refDepth+col],col,corr[i]);
+		tlind=(ypos[i]+tgtHeight[i]-1)*refWidth+(xpos[i]+tgtWidth[i]-1);
+		printf("br=(%d,%d), IM=%d, REF=%f, REF2=%f, Corr(%d)=%g\n",xpos[i]+tgtWidth[i]-1,ypos[i]+tgtHeight[i]-1,fimg[tlind*3+col], refImage[tlind*refDepth+col], refImage2[tlind*refDepth+col], col,corr[i]);
+	    }
+	}
+	if((corr[i]<-1.01 && ~fgDetector) || corr[i]>1.01)
 	    fprintf(stderr,"Warning: corr[%d]=%f\n", i, corr[i]);
 	visible[i]=corr[i]>=corrThreshold;
 	// Need 10 visible frames in a row to enable, 100 blocked (not necessarily in a row) since last enable to disable
@@ -170,13 +234,13 @@ int Visible::processImage(const Frame *frame, float fps) {
 		blockedframes[i]=0;
 		visframes[i]=0;
 	    }
-	} else  {
-	    blockedframes[i]++;
-	    visframes[i]=0;
-	    if (blockedframes[i]>50 && enabled[i]) {
-		enabled[i]=0;
-		printf("Disabling ray %d.%d\n",camid,i);
-	    }
+	// } else  {
+	//     blockedframes[i]++;
+	//     visframes[i]=0;
+	//     if (blockedframes[i]>50 && enabled[i]) {
+	// 	enabled[i]=0;
+	// 	printf("Disabling ray %d.%d\n",camid,i);
+	//     }
 	}
 	if (!enabled[i]) {
 	    visible[i]=2;
@@ -209,22 +273,32 @@ void Visible::updateTarget(const Frame *frame, float fps) {
 
     const byte *newimg = frame->getImage();
     float *refimg = refImage;
+    float *refimg2 = refImage2;
     float oweight = 1.0-weight;
     int nPixels = refHeight*refWidth;
     const byte *endimg = &newimg[nPixels*3];
-    float scale=weight*refDepth/3/255;
-    if (refDepth==1)
+    if (refDepth==1) {
+	float scale=weight/4/255;
+	float scale2=scale/255;
 	while (newimg<endimg) {
-	    *refimg = (*refimg)*oweight+(newimg[0]+newimg[1]+newimg[2])*scale;
+	    float xv=2.0f*newimg[0]+newimg[1]+newimg[2];
+	    *refimg = (*refimg)*oweight+xv*scale;
+	    *refimg2 = (*refimg2)*oweight+xv*xv*scale2;
 	    newimg+=3;
 	    refimg++;
+	    refimg2++;
 	}
-    else
+    } else {
+	float scale=weight/255;
+	float scale2=scale/255;
 	while (newimg<endimg) {
 	    *refimg = (*refimg)*oweight+(*newimg)*scale;
+	    *refimg2 = (*refimg2)*oweight+(*newimg)*(*newimg)*scale2;
 	    newimg++;
 	    refimg++;
+	    refimg2++;
 	}
+    }
 }
 
 // Save reference image in a file
@@ -235,6 +309,22 @@ const char* Visible::saveRef(int c) const {
     int fd=open(filename,O_CREAT|O_TRUNC|O_WRONLY,0644);
     int nbytes=refHeight*refWidth*refDepth*sizeof(*refImage);
     if (write(fd,refImage,nbytes)!=nbytes)  {
+	close(fd);
+	perror(filename);
+	return (char *)0;
+    }
+    close(fd);
+    return filename;
+}
+
+const char* Visible::saveRef2(int c) const {
+    if (!fgDetector)
+	return (char *)0;
+    static char filename[1000];
+    sprintf(filename,"/tmp/refimage2.%d,%ld.%06ld.raw",c,(long int)timestamp.tv_sec,(long int)timestamp.tv_usec);
+    int fd=open(filename,O_CREAT|O_TRUNC|O_WRONLY,0644);
+    int nbytes=refHeight*refWidth*refDepth*sizeof(*refImage2);
+    if (write(fd,refImage2,nbytes)!=nbytes)  {
 	close(fd);
 	perror(filename);
 	return (char *)0;
