@@ -259,20 +259,20 @@ int Visible::processImage(const Frame *frame, float fps) {
 		visframes[i]=0;
 	    }
 	} else if (visible[i]==0) {
-	     blockedframes[i]++;
-	     visframes[i]=0;
-	     if (blockedframes[i]>50 && enabled[i]) {
-	 	enabled[i]=0;
-	 	printf("Disabling ray %d.%d\n",camid,i);
-	     }
+	    blockedframes[i]++;
+	    visframes[i]=0;
+	    if (blockedframes[i]>50 && enabled[i]) {
+		enabled[i]=0;
+		printf("Disabling ray %d.%d\n",camid,i);
+	    }
 	}
 	if (!enabled[i]) {
 	    visible[i]=2;
 	    continue;
 	}
-
-	totalvis=totalvis+(visible[i]?1:0);
     }
+
+    totalvis=totalvis+(visible[i]?1:0);
     if (totalvis < 10) {
 	fprintf(stderr,"Warning: Only %d visible pixels for frame; skipping\n",totalvis);
 	//	return -1;
