@@ -55,7 +55,7 @@ static int setRefImage_handler(const char *path, const char *types, lo_arg **arg
 static int setROI_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setROI(argv[0]->i,argv[1]->i,argv[2]->i,argv[3]->i,argv[4]->i); return 0; }
 static int setUpdateTC_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setUpdateTC(argv[0]->f); return 0; }
 static int setCorrThresh_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setCorrThresh(argv[0]->f); return 0; }
-static int setFgDetector_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setFgDetector(argv[0]->i,argv[1]->f,argv[2]->f,argv[3]->f,argv[4]->f); return 0; }
+static int setFgDetector_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setFgDetector(argv[0]->i,argv[1]->f,argv[2]->f,argv[3]->f,argv[4]->f,argv[5]->f); return 0; }
 
 static int getCorr_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::CORR,argv[0]->i); return 0; }
 static int getRefImage_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->getStat(FrontEnd::REFIMAGE,argv[0]->i); return 0; }
@@ -127,7 +127,7 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     lo_server_add_method(s,"/vis/set/fps","i",setFPS_handler,this);
     lo_server_add_method(s,"/vis/set/updatetc","f",setUpdateTC_handler,this);
     lo_server_add_method(s,"/vis/set/corrthresh","f",setCorrThresh_handler,this);
-    lo_server_add_method(s,"/vis/set/fgdetector","iffff",setFgDetector_handler,this);
+    lo_server_add_method(s,"/vis/set/fgdetector","ifffff",setFgDetector_handler,this);
     lo_server_add_method(s,"/vis/set/res","is",setRes_handler,this);
     lo_server_add_method(s,"/vis/set/refimage","iiiis",setRefImage_handler,this);
     lo_server_add_method(s,"/vis/set/roi","iiiii",setROI_handler,this);
@@ -462,8 +462,8 @@ void FrontEnd::setCorrThresh(float thresh) {
     Visible::setCorrThresh(thresh);
 }
 
-void FrontEnd::setFgDetector(int on,float fgminvar, float fgscale,float fgthresh1, float fgthresh2) {
-    Visible::setFgDetector(on==1,fgminvar,fgscale,fgthresh1,fgthresh2);
+void FrontEnd::setFgDetector(int on,float fgminvar, float fgmaxvar, float fgscale,float fgthresh1, float fgthresh2) {
+    Visible::setFgDetector(on==1,fgminvar,fgmaxvar,fgscale,fgthresh1,fgthresh2);
 }
 
 void FrontEnd::setRes(int camera, const char *res) {

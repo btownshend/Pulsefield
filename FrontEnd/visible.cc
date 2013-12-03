@@ -11,6 +11,7 @@ float Visible::updateTimeConstant=60;  // Default is 60sec time constant for upd
 float Visible::corrThreshold = 0.7;
 bool Visible::fgDetector = false;
 float Visible::fgMinVar = 0.006*0.006;  // Empirically determined as about the 1% point of the observed variances of non-saturated pixels
+float Visible::fgMaxVar = (10.0/255)*(10.0/255);
 float Visible::fgThresh[2] = {1.0,2.5};  // Thresholds for fg/bg detector
 float Visible::fgScale = 4.5;  // fg/bg scaling
 
@@ -106,6 +107,7 @@ int Visible::processImage(const Frame *frame, float fps) {
 	    const float scale=1.0/(255*4);
 	    if (fgDetector) {
 		float svar=0;
+		int cnt=0;
 		for (int h=0;h<tgtHeight[i];h++) {
 		    int index=(ypos[i]+h)*refWidth+xpos[i];
 		    const byte *x=&fimg[index*3];
@@ -114,14 +116,17 @@ int Visible::processImage(const Frame *frame, float fps) {
 		    for (int w=0;w<tgtWidth[i];w++) {
 			float xv=(2*float(x[0])+float(x[1])+float(x[2]))*scale;  // Convert to gray scale with extra weight to reds
 			float v=*var;
+			if (v<=fgMaxVar) {
 			    if (v<fgMinVar) v=fgMinVar;
 			    svar+=(xv-*y)*(xv-*y)/v;
+			    cnt++;
+			}
 			var++;
 			x+=3;
 			y++;
 		    }
 		}
-		svar=sqrt(svar/N);
+		svar=sqrt(svar/cnt);
 		corr[i]=1.0-svar/fgScale;   // Make it look like a correlation roughly so thresholding will work correctly
 		visible[i]=(svar<fgThresh[0])?1:((svar>fgThresh[1])?0:2);
 	    } else {
@@ -155,6 +160,7 @@ int Visible::processImage(const Frame *frame, float fps) {
 	    if (fgDetector) {
 		const float scale=1.0/255;
 		float svar=0;
+		int cnt=0;
 		for (int col=0;col<refDepth;col++) {
 		    for (int h=0;h<tgtHeight[i];h++) {
 			int index=(ypos[i]+h)*refWidth+xpos[i];
@@ -164,8 +170,11 @@ int Visible::processImage(const Frame *frame, float fps) {
 			for (int w=0;w<tgtWidth[i];w++) {
 			    float xv=float(x[0])*scale;  // Just one color at a time
 			    float v=*var;
+			    if (v<=fgMaxVar) {
 				if (v<fgMinVar) v=fgMinVar;
 				svar+=(xv-*y)*(xv-*y)/v;
+				cnt++;
+			    }
 				//if (i==100 && w==1 && h==1)
 				//	printf("xpos=%d, ypos=%d, y2=%g, y=%g, x=%d, xv=%g, var=%g,svar=%g,xv-y=%g, (xv-y)^2/var=%g\n",xpos[i],ypos[i],*y2,*y,x[0],xv,var,svar,xv-*y,(xv-*y)*(xv-*y)/var);
 			    x+=3;  // Skip to next pixel of same color
@@ -177,7 +186,7 @@ int Visible::processImage(const Frame *frame, float fps) {
 		    //	printf("Col=%d, svar=%g\n",col,svar);
 		    //}
 		}
-		svar=sqrt(svar/(N*3));
+		svar=sqrt(svar/cnt);
 		corr[i] = 1.0-svar/fgScale;
 		visible[i]=(svar<fgThresh[0])?1:((svar>fgThresh[1])?0:2);
 	    } else {

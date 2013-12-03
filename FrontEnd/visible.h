@@ -7,6 +7,7 @@ class Visible {
     static float fgThresh[2];  // Thresholds for fg/bg detector
     static float fgScale;  // fg/bg scaling
     static float fgMinVar;  // Minimum variance per pixel
+    static float fgMaxVar;  // Maximum variance per pixel (disble if higher than this)
     int nleds;
     int *xpos;   // Position of top left of each target region
     int *ypos;
@@ -42,5 +43,5 @@ class Visible {
     static void setUpdateTimeConstant(float t) { updateTimeConstant=t; }
     static void setCorrThresh(float t) { corrThreshold=t; }
     static float getCorrThresh() { return corrThreshold; }
-    static void setFgDetector(bool on,float minvar, float fgscale,float fgthresh1,float fgthresh2) { fgDetector=on; fgMinVar=minvar; fgScale=fgscale; fgThresh[0]=fgthresh1; fgThresh[1]=fgthresh2; }
+    static void setFgDetector(bool on,float minvar, float maxvar, float fgscale,float fgthresh1,float fgthresh2);
 };

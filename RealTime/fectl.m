@@ -55,9 +55,9 @@ elseif strcmp(op,'start')
   oscmsgout('FE','/vis/set/fps',{p.analysisparams.fps});
   oscmsgout('FE','/vis/set/corrthresh',{0.5});
   if isfield(p.analysisparams,'detector') && p.analysisparams.detector==1
-    oscmsgout('FE','/vis/set/fgdetector',{int32(1),p.analysisparams.fgminvar,p.analysisparams.fgscale,p.analysisparams.fgthresh(1),p.analysisparams.fgthresh(2)});
+    oscmsgout('FE','/vis/set/fgdetector',{int32(1),p.analysisparams.fgminvar,p.analysisparams.fgmaxvar,p.analysisparams.fgscale,p.analysisparams.fgthresh(1),p.analysisparams.fgthresh(2)});
   else
-    oscmsgout('FE','/vis/set/fgdetector',{int32(0),0.0,0.0,0.0,0.0});
+    oscmsgout('FE','/vis/set/fgdetector',{int32(0),0.0,0.0,0.0,0.0,0.0});
   end
   for i=1:length(p.camera)
     c=p.camera(i);
