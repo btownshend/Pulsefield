@@ -1,4 +1,4 @@
-% Plot variance of pixels
+% Plot variance of pixels - for debugging operation of detector
 function varplot(p,vis)
 setfig('varplot');
 ncam=length(p.camera);
