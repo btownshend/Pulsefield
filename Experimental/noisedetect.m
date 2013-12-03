@@ -36,7 +36,8 @@ thresh=p.analysisparams.fgthresh(2);
 
 fprintf('Using window size of [%d,%d]\n',args.wsize);
 f=sqrt(mean(imfilter(nstd,fspecial('average',args.wsize)),3));
-
+fracgood=mean(imfilter(nm.var<=p.analysisparams.fgmaxvar,fspecial('average',args.wsize)),3);
+fprintf('Have %d pixels with excessive variance\n', sum(fracgood(:)<0.5));
 
 subplot(nrow,ncol,pnum); pnum=pnum+1;
 imshow(f/thresh);
@@ -68,19 +69,37 @@ nled=size(vis.corr,2);
 for l=1:nled
   pl=round((vc.tlpos(l,:)+vc.brpos(l,:))/2);
   nstd=(1-vis.corr(cam,l))*p.analysisparams.fgscale;
-  if nstd<p.analysisparams.fgthresh(1)
-    plot(pl(1),pl(2),'g');
-  elseif isnan(nstd) || nstd<p.analysisparams.fgthresh(2)
-    plot(pl(1),pl(2),'y');
-  else
-    plot(pl(1),pl(2),'r');
-  end
   if ~any(isnan(pl))
     pf(l)=f(pl(2),pl(1));
+    isgood=fracgood(pl(2),pl(1))>0.5;
+    if ~isgood
+      fprintf('LED %d not used since %.2f fraction of the pixels have variance > %.2f\n', l, fracgood(pl(2),pl(1)),p.analysisparams.fgmaxvar);
+      plot(pl(1),pl(2),'m');
+    elseif nstd<p.analysisparams.fgthresh(1)
+      plot(pl(1),pl(2),'g');
+      if vis.v(cam,l)~=1
+        fprintf('LED %d has vis.vorig=%d, but should be 1\n',l,vis.vorig(cam,l));
+      end
+    elseif isnan(nstd) || nstd<p.analysisparams.fgthresh(2)
+      plot(pl(1),pl(2),'y');
+      if ~isnan(vis.v(cam,l))
+        fprintf('LED %d has vis.vorig=%d, but should be NaN\n',l,vis.vorig(cam,l));
+      end
+    else
+      plot(pl(1),pl(2),'r');
+      if vis.v(cam,l)~=0
+        fprintf('LED %d has vis.vorig=%d, but should be 0\n',l,vis.vorig(cam,l));
+      end
+    end
   else
     pf(l)=nan;
   end
+  if l==300
+    maxvar=max(max(max(nm.var(vc.tlpos(l,2):vc.brpos(l,2),vc.tlpos(l,1):vc.brpos(l,1),:))))
+    keyboard;
+  end
 end
+
 subplot(nrow,ncol,pnum); pnum=pnum+1;
 fecorr=vis.corr(cam,:);
 recorr=1-pf/p.analysisparams.fgscale;
