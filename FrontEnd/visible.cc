@@ -306,6 +306,8 @@ void Visible::updateTarget(const Frame *frame, float fps) {
 	while (newimg<endimg) {
 	    float xv=(2.0f*newimg[0]+newimg[1]+newimg[2])*scale;
 	    float xvs2=(xv-*refimg)*(xv-*refimg);
+	    if (xvs2>*refimg2 * 2)
+		xvs2=*refimg2*2;   // Don't allow variance to increase too rapidly or blocked leds with rapidly increase variance
 	    *refimg = (*refimg)*oweight+xv*weight;
 	    *refimg2 = (*refimg2)*oweight+xvs2*weight;   // Update variance
 	    newimg+=3;
@@ -317,6 +319,8 @@ void Visible::updateTarget(const Frame *frame, float fps) {
 	while (newimg<endimg) {
 	    float xv=*newimg *scale;
 	    float xvs2=(xv-*refimg)*(xv-*refimg);
+	    if (xvs2>*refimg2 * 2)
+		xvs2=*refimg2*2;   // Don't allow variance to increase too rapidly or blocked leds with rapidly increase variance
 	    *refimg = (*refimg)*oweight+xv*weight;
 	    float oldval=*refimg2;
 	    *refimg2 = (*refimg2)*oweight+xvs2*weight;
