@@ -8,7 +8,7 @@ if isempty(args.wsize)
 end
 
 setfig('noisedet');clf;
-nplot=7; pnum=1;
+nrow=8; ncol=1; pnum=1;
 
 nm=noisemodel(p,vis,cam);
 img=im2double(vis.im{cam});
@@ -18,14 +18,19 @@ fprintf('Mean sample level: %.1f/255, mean std: %.1f/255\n',255*mean(nm.avg(:)),
 fprintf('Fraction >1 std from avg: %.3f\n',mean(nstd(:)>1));
 fprintf('Fraction >2 std from avg: %.3f\n',mean(nstd(:)>2));
 
-subplot(nplot,1,pnum); pnum=pnum+1;
+subplot(nrow,ncol,pnum); pnum=pnum+1;
+vscale=10;
+imshow(sqrt(nm.var)*255/vscale);
+title(sprintf('Pixel STD (in 255-scale) / %d', vscale));
+
+subplot(nrow,ncol,pnum); pnum=pnum+1;
 ufscale=10;
 imshow(nstd/ufscale);
 title(sprintf('Unfiltered deviation / %.1f',ufscale));
 
 thresh=p.analysisparams.fgthresh(2);
 
-%subplot(nplot,1,pnum); pnum=pnum+1;
+%subplot(nrow,ncol,pnum); pnum=pnum+1;
 %hist(min(thresh,nstd(:)),1000);
 %title('Distribution of nstd');
 
@@ -33,7 +38,7 @@ fprintf('Using window size of [%d,%d]\n',args.wsize);
 f=sqrt(mean(imfilter(nstd,fspecial('average',args.wsize)),3));
 
 
-subplot(nplot,1,pnum); pnum=pnum+1;
+subplot(nrow,ncol,pnum); pnum=pnum+1;
 imshow(f/thresh);
 title(sprintf('Filtered deviation / %.2f',thresh));
 
@@ -42,17 +47,17 @@ for i=1:2
   det=f>thresh;
   rgb=img;
   rgb(:,:,2)=max(rgb(:,:,2),det);
-  subplot(nplot,1,pnum); pnum=pnum+1;
+  subplot(nrow,ncol,pnum); pnum=pnum+1;
   imshow(rgb);
   title(sprintf('Deviation>%.2f',thresh));
 end
 
-%subplot(nplot,1,pnum); pnum=pnum+1;
+%subplot(nrow,ncol,pnum); pnum=pnum+1;
 %hist(f(:),1000);
 %title('Distribution of f');
 
 % Overall plot with LED decisions overlaid
-subplot(nplot,1,pnum); pnum=pnum+1;
+subplot(nrow,ncol,pnum); pnum=pnum+1;
 %imshow(nstd/max(nstd(:)));
 imshow(f/thresh);
 hold on;
@@ -76,7 +81,7 @@ for l=1:nled
     pf(l)=nan;
   end
 end
-subplot(nplot,1,pnum); pnum=pnum+1;
+subplot(nrow,ncol,pnum); pnum=pnum+1;
 fecorr=vis.corr(cam,:);
 recorr=1-pf/p.analysisparams.fgscale;
 plot(fecorr,'m');
@@ -86,7 +91,7 @@ plot([1,nled],[vis.mincorr,vis.mincorr],':');
 legend('From FrontEnd','Recomputed');
 title(sprintf('FrontEnd corr (mean=%.3f) and reccomputed (%.3f)', nanmean(fecorr), nanmean(recorr)));
 
-subplot(nplot,1,pnum); pnum=pnum+1;
+subplot(nrow,ncol,pnum); pnum=pnum+1;
 festd=(1-vis.corr(cam,:))*p.analysisparams.fgscale;
 plot(festd,'m');
 hold on;
@@ -95,3 +100,4 @@ plot([1,nled],p.analysisparams.fgthresh(1)*[1,1],':');
 plot([1,nled],p.analysisparams.fgthresh(2)*[1,1],':');
 legend('From FrontEnd','Recomputed');
 title(sprintf('FrontEnd nstd (mean=%.3f) and reccomputed (%.3f)', nanmean(festd), nanmean(pf)));
+
