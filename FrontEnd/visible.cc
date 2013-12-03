@@ -351,3 +351,8 @@ const char* Visible::saveRef2(int c) const {
     close(fd);
     return filename;
 }
+
+void Visible::setFgDetector(bool on,float minvar, float maxvar, float fgscale,float fgthresh1,float fgthresh2) {
+    fgDetector=on; fgMinVar=minvar; fgMaxVar=maxvar; fgScale=fgscale; fgThresh[0]=fgthresh1; fgThresh[1]=fgthresh2;
+    printf("Set foreground/background detector to %d, var=[%g,%g], scale=%g, thresh=[%g,%g]\n", fgDetector,fgMinVar,fgMaxVar,fgScale,fgThresh[0],fgThresh[1]);
+}
