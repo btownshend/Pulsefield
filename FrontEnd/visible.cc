@@ -110,13 +110,13 @@ int Visible::processImage(const Frame *frame, float fps) {
 		    int index=(ypos[i]+h)*refWidth+xpos[i];
 		    const byte *x=&fimg[index*3];
 		    const float *y=&refImage[index];
-		    const float *y2=&refImage2[index];
+		    const float *var=&refImage2[index];
 		    for (int w=0;w<tgtWidth[i];w++) {
 			float xv=(2*float(x[0])+float(x[1])+float(x[2]))*scale;  // Convert to gray scale with extra weight to reds
-			float var=*y2-(*y)*(*y);
-			if (var<fgMinVar) var=fgMinVar;
-			svar+=(xv-*y)*(xv-*y)/var;
-			y2++;
+			float v=*var;
+			    if (v<fgMinVar) v=fgMinVar;
+			    svar+=(xv-*y)*(xv-*y)/v;
+			var++;
 			x+=3;
 			y++;
 		    }
@@ -160,17 +160,17 @@ int Visible::processImage(const Frame *frame, float fps) {
 			int index=(ypos[i]+h)*refWidth+xpos[i];
 			const byte *x=&fimg[index*3+col];   // Offset by color
 			const float *y=&refImage[index*3+col]; 
-			const float *y2=&refImage2[index*3+col];
+			const float *var=&refImage2[index*3+col];
 			for (int w=0;w<tgtWidth[i];w++) {
 			    float xv=float(x[0])*scale;  // Just one color at a time
-			    float var=*y2-(*y)*(*y);
-			    if (var<fgMinVar) var=fgMinVar;
-			    svar+=(xv-*y)*(xv-*y)/var;
-			    //if (i==100 && w==1 && h==1)
+			    float v=*var;
+				if (v<fgMinVar) v=fgMinVar;
+				svar+=(xv-*y)*(xv-*y)/v;
+				//if (i==100 && w==1 && h==1)
 				//	printf("xpos=%d, ypos=%d, y2=%g, y=%g, x=%d, xv=%g, var=%g,svar=%g,xv-y=%g, (xv-y)^2/var=%g\n",xpos[i],ypos[i],*y2,*y,x[0],xv,var,svar,xv-*y,(xv-*y)*(xv-*y)/var);
 			    x+=3;  // Skip to next pixel of same color
 			    y+=3;
-			    y2+=3;
+			    var+=3;
 			}
 		    }
 		    //  if (i==100) {
@@ -284,22 +284,26 @@ void Visible::updateTarget(const Frame *frame, float fps) {
     int nPixels = refHeight*refWidth;
     const byte *endimg = &newimg[nPixels*3];
     if (refDepth==1) {
-	float scale=weight/4/255;
-	float scale2=scale/255;
+	float scale=1/4.0/255.0;
 	while (newimg<endimg) {
-	    float xv=2.0f*newimg[0]+newimg[1]+newimg[2];
-	    *refimg = (*refimg)*oweight+xv*scale;
-	    *refimg2 = (*refimg2)*oweight+xv*xv*scale2;
+	    float xv=(2.0f*newimg[0]+newimg[1]+newimg[2])*scale;
+	    float xvs2=(xv-*refimg)*(xv-*refimg);
+	    *refimg = (*refimg)*oweight+xv*weight;
+	    *refimg2 = (*refimg2)*oweight+xvs2*weight;   // Update variance
 	    newimg+=3;
 	    refimg++;
 	    refimg2++;
 	}
     } else {
-	float scale=weight/255;
-	float scale2=scale/255;
+	float scale=1.0/255;
 	while (newimg<endimg) {
-	    *refimg = (*refimg)*oweight+(*newimg)*scale;
-	    *refimg2 = (*refimg2)*oweight+(*newimg)*(*newimg)*scale2;
+	    float xv=*newimg *scale;
+	    float xvs2=(xv-*refimg)*(xv-*refimg);
+	    *refimg = (*refimg)*oweight+xv*weight;
+	    float oldval=*refimg2;
+	    *refimg2 = (*refimg2)*oweight+xvs2*weight;
+	    if (newimg==endimg-1)
+		printf("newimg=%d, xv=%g, xvs2=%g, refimg=%g, refimg2=%g->%g, weight=%g\n", *newimg, xv, xvs2, *refimg, oldval, *refimg2, weight);
 	    newimg++;
 	    refimg++;
 	    refimg2++;

@@ -17,7 +17,7 @@ class Visible {
     float *corr;
     // Reference image (full size) - subparts used for targets
     int refHeight, refWidth, refDepth;  
-    float *refImage,*refImage2;
+    float *refImage,*refImage2;    // Estimate of reference and its variance
     struct timeval timestamp;  // Timestamp of image
     int camid;   // For debug messages
     void updateTarget(const Frame *frame,float fps);
