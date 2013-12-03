@@ -128,7 +128,11 @@ int Visible::processImage(const Frame *frame, float fps) {
 		}
 		svar=sqrt(svar/cnt);
 		corr[i]=1.0-svar/fgScale;   // Make it look like a correlation roughly so thresholding will work correctly
-		visible[i]=(svar<fgThresh[0])?1:((svar>fgThresh[1])?0:2);
+		if (cnt<N/2) {
+		    visible[i]=2;
+		    printf("Disabled LED %d since cnt=%d/%d\n", i, cnt,N);
+		} else
+		    visible[i]=(svar<fgThresh[0])?1:((svar>fgThresh[1])?0:2);
 	    } else {
 		// Correlation based
 		float sxx=0,sxy=0,syy=0,sx=0,sy=0;
@@ -188,7 +192,12 @@ int Visible::processImage(const Frame *frame, float fps) {
 		}
 		svar=sqrt(svar/cnt);
 		corr[i] = 1.0-svar/fgScale;
-		visible[i]=(svar<fgThresh[0])?1:((svar>fgThresh[1])?0:2);
+		if (cnt<N*3/2)   {
+		    // More than half the pixels have high variance -- disable this LED
+		    visible[i]=2;
+		    printf("Disabled LED %d since cnt=%d/%d\n", i, cnt,N*3);
+		} else
+		    visible[i]=(svar<fgThresh[0])?1:((svar>fgThresh[1])?0:2);
 	    } else {
 		corr[i]=-2;   // Assume minimum possible (but correct this below if not increased)
 		for (int col=0;col<refDepth;col++) {
@@ -237,7 +246,7 @@ int Visible::processImage(const Frame *frame, float fps) {
 		printf("br=(%d,%d), IM=%d, REF=%f, REF2=%f, Corr(%d)=%g\n",xpos[i]+tgtWidth[i]-1,ypos[i]+tgtHeight[i]-1,fimg[tlind*3+col], refImage[tlind*refDepth+col], refImage2[tlind*refDepth+col], col,corr[i]);
 	    }
 	}
-	if((corr[i]<-1.01 && ~fgDetector) || corr[i]>1.01)
+	if((corr[i]<-1.01 && !fgDetector) || corr[i]>1.01)
 	    fprintf(stderr,"Warning: corr[%d]=%f\n", i, corr[i]);
 	// Need 10 visible frames in a row to enable, 100 blocked (not necessarily in a row) since last enable to disable
 	if (visible[i]==1) {
