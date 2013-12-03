@@ -94,10 +94,6 @@ for l=1:nled
   else
     pf(l)=nan;
   end
-  if l==300
-    maxvar=max(max(max(nm.var(vc.tlpos(l,2):vc.brpos(l,2),vc.tlpos(l,1):vc.brpos(l,1),:))))
-    keyboard;
-  end
 end
 
 subplot(nrow,ncol,pnum); pnum=pnum+1;
