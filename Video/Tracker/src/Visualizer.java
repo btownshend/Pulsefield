@@ -35,6 +35,7 @@ public abstract class Visualizer {
 	public void setName(String name) { this.name=name; }
 	
 	public void drawBorders(PApplet parent, boolean octagon, PVector wsize) {
+		octagon=false;
 		if (octagon) {
 			parent.beginShape();
 			float gapAngle=(float)(10f*Math.PI /180);
