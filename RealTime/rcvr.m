@@ -119,7 +119,8 @@ while true
           error('/vis/visible message has incorrect number of LEDS: expected %d, got %d\n', length(p.led),length(blob));
         end
         vis.v(c,:)=single(blob);
-        vis.v(c,blob==2)=nan;
+        vis.vorig(c,:)=vis.v(c,:);
+        vis.v(c,blob>=2)=nan;
         % Turn off indicators for LEDs we're not using
         vis.v(c,~p.camera(c).viscache.inuse)=nan;
         filled(c)=true;
