@@ -10,10 +10,10 @@
 float Visible::updateTimeConstant=60;  // Default is 60sec time constant for updating reference
 float Visible::corrThreshold = 0.7;
 bool Visible::fgDetector = false;
-float Visible::fgMinVar = 0.006*0.006;  // Empirically determined as about the 1% point of the observed variances of non-saturated pixels
+float Visible::fgMinVar = (2.0/255)*(2.0/255); 
 float Visible::fgMaxVar = (10.0/255)*(10.0/255);
-float Visible::fgThresh[2] = {1.0,2.5};  // Thresholds for fg/bg detector
-float Visible::fgScale = 4.5;  // fg/bg scaling
+float Visible::fgThresh[2] = {1.5,2.0};  // Thresholds for fg/bg detector
+float Visible::fgScale = 4.0;  // fg/bg scaling
 
 Visible::Visible(int _nleds, int _camid) {
     nleds=_nleds;
@@ -78,7 +78,7 @@ void Visible::setRefImage(int width, int height, int depth, const float *image) 
 	    refImage[i]=image[i];
 	else
 	    refImage[i] = 0.5;
-	refImage2[i]=refImage[i]*refImage[i];
+	refImage2[i]=3.0/255;    // Estimate of variance
     }
 }
 
