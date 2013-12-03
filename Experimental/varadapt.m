@@ -32,7 +32,11 @@ end
 inuse(:,:,2)=inuse;
 inuse(:,:,3)=inuse(:,:,1);
 sel=inuse(:)>5;
-
+if sum(sel)==0
+  sel(:)=true;
+  fprintf('Using all pixels as "in use"\n');
+end
+  
 setfig('varadapt');
 scale=10;
 pnum=1;
