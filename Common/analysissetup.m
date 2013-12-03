@@ -22,6 +22,7 @@ aparams.fps=15;    % Max speed at which frontend can reasonably keep up
 aparams.updatetc=60;  % Time constant for update of reference image
 aparams.mincorr=0.5;
 aparams.detector=0;   % 0 for correlation, 1 for foreground detector
-aparams.fgthresh=[1.0,2.0];   % Thresholds for foreground detector in number of stdevs from mean, first number is bounds for unblocked/indet, second for indet/blocked
-aparams.fgminvar=0.06*0.06;
+aparams.fgthresh=[1.5,2.0];   % Thresholds for foreground detector in number of stdevs from mean, first number is bounds for unblocked/indet, second for indet/blocked
+aparams.fgminvar=(2.0/255)^2;  % From empirical observations
+aparams.fgmaxvar=(10/255)^2;
 aparams.fgscale=2*aparams.fgthresh(2);    % Scaling factor to convert nstd from fg detector into a 'corr' -- corr=1-nstd/fgscale
