@@ -248,29 +248,31 @@ int Visible::processImage(const Frame *frame, float fps) {
 	}
 	if((corr[i]<-1.01 && !fgDetector) || corr[i]>1.01)
 	    fprintf(stderr,"Warning: corr[%d]=%f\n", i, corr[i]);
-	// Need 10 visible frames in a row to enable, 100 blocked (not necessarily in a row) since last enable to disable
-	if (visible[i]==1) {
-	    visframes[i]++;
-	    if (visframes[i]>400) {
-		if (!enabled[i])
-		    printf("Enabling ray %d.%d (had been blocked for %d frames)\n",camid,i,blockedframes[i]);
-		enabled[i]=1;
-		blockedframes[i]=0;
+	if (!fgDetector) {
+	    // Need 10 visible frames in a row to enable, 100 blocked (not necessarily in a row) since last enable to disable
+	    if (visible[i]==1) {
+		visframes[i]++;
+		if (visframes[i]>400) {
+		    if (!enabled[i])
+			printf("Enabling ray %d.%d (had been blocked for %d frames)\n",camid,i,blockedframes[i]);
+		    enabled[i]=1;
+		    blockedframes[i]=0;
+		    visframes[i]=0;
+		}
+	    } else if (visible[i]==0) {
+		blockedframes[i]++;
 		visframes[i]=0;
+		if (blockedframes[i]>50 && enabled[i]) {
+		    enabled[i]=0;
+		    printf("Disabling ray %d.%d\n",camid,i);
+		}
 	    }
-	} else if (visible[i]==0) {
-	    blockedframes[i]++;
-	    visframes[i]=0;
-	    if (blockedframes[i]>50 && enabled[i]) {
-		enabled[i]=0;
-		printf("Disabling ray %d.%d\n",camid,i);
+	    if (!enabled[i]) {
 		visible[i]=4;
+		continue;
 	    }
 	}
-	if (!enabled[i]) {
-	    continue;
-	}
-	totalvis=totalvis+(visible[i]==1)?1:0;
+	totalvis=totalvis+((visible[i]==1)?1:0);
     }
 
     if (totalvis < 10) {
