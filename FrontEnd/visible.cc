@@ -78,7 +78,7 @@ void Visible::setRefImage(int width, int height, int depth, const float *image) 
 	    refImage[i]=image[i];
 	else
 	    refImage[i] = 0.5;
-	refImage2[i]=3.0/255;    // Estimate of variance
+	refImage2[i]=(3.0/255)*(3.0/255);    // Estimate of variance
     }
 }
 
@@ -129,7 +129,7 @@ int Visible::processImage(const Frame *frame, float fps) {
 		svar=sqrt(svar/cnt);
 		corr[i]=1.0-svar/fgScale;   // Make it look like a correlation roughly so thresholding will work correctly
 		if (cnt<N/2) {
-		    visible[i]=2;
+		    visible[i]=3;
 		    printf("Disabled LED %d since cnt=%d/%d\n", i, cnt,N);
 		} else
 		    visible[i]=(svar<fgThresh[0])?1:((svar>fgThresh[1])?0:2);
@@ -194,7 +194,7 @@ int Visible::processImage(const Frame *frame, float fps) {
 		corr[i] = 1.0-svar/fgScale;
 		if (cnt<N*3/2)   {
 		    // More than half the pixels have high variance -- disable this LED
-		    visible[i]=2;
+		    visible[i]=3;
 		    printf("Disabled LED %d since cnt=%d/%d\n", i, cnt,N*3);
 		} else
 		    visible[i]=(svar<fgThresh[0])?1:((svar>fgThresh[1])?0:2);
@@ -264,15 +264,15 @@ int Visible::processImage(const Frame *frame, float fps) {
 	    if (blockedframes[i]>50 && enabled[i]) {
 		enabled[i]=0;
 		printf("Disabling ray %d.%d\n",camid,i);
+		visible[i]=4;
 	    }
 	}
 	if (!enabled[i]) {
-	    visible[i]=2;
 	    continue;
 	}
+	totalvis=totalvis+(visible[i]==1)?1:0;
     }
 
-    totalvis=totalvis+(visible[i]?1:0);
     if (totalvis < 10) {
 	fprintf(stderr,"Warning: Only %d visible pixels for frame; skipping\n",totalvis);
 	//	return -1;
