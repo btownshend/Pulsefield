@@ -99,7 +99,7 @@ for c=1:length(p.camera)
       else
         pixelpos=round(scale*distort(cam.distortion,(lposCF(1:2)/lposCF(3))')');
       end
-      if any(isnan(pixelpos)) || pixelpos(1)<0||pixelpos(1)>=cam.hpixels||pixelpos(2)<0||pixelpos(2)>=cam.vpixels
+      if any(isnan(pixelpos)) || pixelpos(1)<=0||pixelpos(1)>=cam.hpixels||pixelpos(2)<=0||pixelpos(2)>=cam.vpixels   % Not sure why I need <=0 instead of just <0..
         fprintf('LED %d has pixel off sensor at [%.0f,%.0f]\n', l, pixelpos);
         pc(l)=struct('pos',[nan,nan],'valid',false,'inuse',false,'diameter',nan);
       else
