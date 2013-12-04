@@ -50,6 +50,7 @@ corners=findcorners(im,debug);
 if corners.fail
   fprintf('Failed corner detection\n');
   status=1;
+  r=[];
   return;
 end
 corners.grid(:,:,1)=corners.grid(:,:,1)+bounds(1,2)-1;
@@ -62,6 +63,7 @@ nY=size(corners.grid,2)-1;
 if nX~=target.nX || nY~=target.nY
   fprintf('Corner detection returned grid of size %dx%d, but expected %dx%d',nX,nY,target.nX, target.nY);
   status=1;
+  r=[];
   return;
 end
 Np = (nX+1)*(nY+1);
