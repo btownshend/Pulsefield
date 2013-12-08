@@ -6,7 +6,7 @@
 % Output:
 %   snap - w/hypo field added, snap.nextid updated
 function snap=updatetgthypo(layout,prevsnap,snap,samp)
-debug=0;
+debug=2;
 % PARAMETERS
 minunique=5;  % Could be ghost if less than this many unique rays
 pghost=0.9;	% with this prob
@@ -239,18 +239,20 @@ for i=1:length(missed)
   end
   % Check if it could be an entry
   if entrylike(mi)>minimumlike
-    if 0
+    if 1
       % Check if anyone else is already nearby (to prevent double counting entries)
       nearby=false;
       fprintf('Distance to other hypos is ');
       for j=1:length(hf)
         edist=norm(hf(j).pos-t.pos);
         fprintf('%.2f ', edist);
-        nearby=nearby||(edist<0.2);   % TODO - choose value
+        nearby=nearby||(edist<0.4);   % TODO - choose value
       end
       if nearby
         fprintf('.  Has close neighbors, not considering as an entry\n');
         continue;
+      else
+        fprintf('\n');
       end
     end
     % New entry
