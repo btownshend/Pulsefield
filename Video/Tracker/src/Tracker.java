@@ -18,7 +18,7 @@ public class Tracker extends PApplet {
 	private float avgFrameRate=0;
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
-	float minx=-3.2f, maxx=3.2f, miny=-3.2f, maxy=3.2f;
+	float minx=0f, maxx=0f, miny=0f, maxy=0f;
 	Visualizer vis[];
 	VisualizerGrid visAbleton;
 	VisualizerNavier visNavier;
@@ -250,7 +250,7 @@ public class Tracker extends PApplet {
 		positions.add(id, channel);
 	}
 
-	synchronized public void pfupdate(int sampnum, float elapsed, int id, float ypos, float xpos, float yvelocity, float xvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
+	synchronized public void pfupdate(int sampnum, float elapsed, int id, float xpos, float ypos, float yvelocity, float xvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
 		/*	if (channel!=99) {
 			PApplet.print("update: ");
 			PApplet.print("samp="+sampnum);
@@ -262,6 +262,22 @@ public class Tracker extends PApplet {
 			PApplet.println(",channel="+channel);
 		} */
 		//ypos=-ypos;
+		if (xpos<this.minx) {
+			PApplet.println("Got xpos ("+xpos+") less than minx ("+minx+"), resetting");
+			this.minx=xpos;
+		}
+		if (xpos>this.maxx) {
+			PApplet.println("Got xpos ("+xpos+") greater than maxx ("+maxx+"), resetting");
+			this.maxx=xpos;
+		}
+		if (ypos<this.miny) {
+			PApplet.println("Got ypos ("+ypos+") less than miny ("+miny+"), resetting");
+			this.miny=ypos;
+		}
+		if (ypos>this.maxy) {
+			PApplet.println("Got ypos ("+ypos+") greater than maxy ("+maxy+"), resetting");
+			this.maxy=ypos;
+		}
 		positions.move(id, channel, mapposition(xpos, ypos), groupid, groupsize, elapsed);
 	}
 
