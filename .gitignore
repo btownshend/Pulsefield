@@ -35,10 +35,6 @@ arecont/hi.aac
 arecont/C5.old
 arecont/calibrate.log
 arecont/calib_data.mat
-Experimental/*-Results_left.mat
-
-Experimental/c1-Results_left.mat
-
 Experimental/c1-Results_left.mat
 
 Experimental/c2-Results_left.mat
@@ -48,7 +44,5 @@ Experimental/c3-Results_left.mat
 Experimental/c4-Results_left.mat
 
 Experimental/c5-Results_left.mat
-
-Experimental/c6-Results_left.mat
 
 Experimental/c6-Results_left.mat
