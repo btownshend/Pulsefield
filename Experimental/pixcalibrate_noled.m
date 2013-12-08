@@ -28,6 +28,7 @@ for c=1:length(p.camera)
   cam=p.camera(c);
   if args.newimages || ~isfield(cam,'extcal') || isempty(cam.extcal)
     cam.distortion=load(sprintf('c%d-Results_left',cam.physid));
+    I=arecont(cam.id);   % First read seems to always give truncated image (probably after pausing frontend)
     while true
       I=arecont(cam.id);
       setfig('interactive');clf;
