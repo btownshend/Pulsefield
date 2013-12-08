@@ -131,4 +131,4 @@ else
   suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(:)==1),sum(vis.v(:)==0),sum(isnan(vis.v(:)))));
 end
 fprintf('Can use: checkcalibration(p,vis,[led list]) to check particular leds\n');
-fprintf('Can also try: plotcalibration(p,vis)\n');
+fprintf('Can also try: plotcalibrationimages(p,vis)\n');
