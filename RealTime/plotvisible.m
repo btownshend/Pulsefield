@@ -9,6 +9,7 @@ ncol=(isfield(vis,'corr')|isfield(vis,'v'))+isfield(vis,'im')+isfield(vis,'refim
 if ~isfield(vis,'v')
   vis.v=vis.lev>127;
 end
+distotal=0;
 for i=1:size(vis.v,1)
   c=sainfo.camera(i).pixcalib;
   roi=sainfo.camera(i).roi;
@@ -107,7 +108,7 @@ for i=1:size(vis.v,1)
     subplot(size(vis.v,1),ncol,(i-1)*ncol+col);
     col=col+1;
     vtmp=vis.v(i,:);
-    vtmp(isnan(vtmp))=0.5;
+    vtmp(isnan(vtmp)&sainfo.camera(i).viscache.inuse)=0.5;
     plot(vtmp,'g');
     hold on;
     % Plot off signals in red
@@ -117,18 +118,20 @@ for i=1:size(vis.v,1)
     ax(3)=-0.1;ax(4)=1.1;
     axis(ax);
   end
+  disabled=sum(isnan(vis.v(i,:))&sainfo.camera(i).viscache.inuse);
+  distotal=distotal+disabled;
   if isfield(vis,'corr')
-    title(sprintf('Visible: %d, Blocked: %d, Disabled: %d, Score: %.3f', sum(vis.v(i,:)==1),sum(vis.v(i,:)==0),sum(isnan(vis.v(i,:))),nanmean(vis.corr(i,:))));
+    title(sprintf('Visible: %d, Blocked: %d, Disabled: %d, Score: %.3f', sum(vis.v(i,:)==1),sum(vis.v(i,:)==0),disabled,nanmean(vis.corr(i,:))));
   else
-    title(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(i,:)==1),sum(vis.v(i,:)==0),sum(isnan(vis.v(i,:)))));
+    title(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(i,:)==1),sum(vis.v(i,:)==0),disabled));
   end
   %  xlabel('LED');
   ylabel('Signal');
 end
 if isfield(vis,'corr')
-  suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d, Score: %.3f', sum(vis.v(:)==1),sum(vis.v(:)==0),sum(isnan(vis.v(:))),nanmean(vis.corr(:))));
+  suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d, Score: %.3f', sum(vis.v(:)==1),sum(vis.v(:)==0),distotal,nanmean(vis.corr(:))));
 else
-  suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(:)==1),sum(vis.v(:)==0),sum(isnan(vis.v(:)))));
+  suptitle(sprintf('Visible: %d, Blocked: %d, Disabled: %d', sum(vis.v(:)==1),sum(vis.v(:)==0),distotal));
 end
 fprintf('Can use: checkcalibration(p,vis,[led list]) to check particular leds\n');
 fprintf('Can also try: plotcalibrationimages(p,vis)\n');
