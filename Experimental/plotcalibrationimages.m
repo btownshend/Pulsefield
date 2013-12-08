@@ -12,10 +12,14 @@ for c=1:length(p.camera)
   subplot(2,3,c);
   hold on;
   if nargin>=2 && isfield(vis,'im')
-    imtmp=imresize(cam.extcal.image.im,scale)/2;
+    if isfield(cam.extcal,'image')
+      imtmp=imresize(cam.extcal.image.im,scale)/2;
+    else
+      imtmp=zeros(p.camera(c).vpixels,p.camera(c).hpixels,3,'uint8');
+    end
     imtmp(cam.roi(3):cam.roi(4)-1,cam.roi(1):cam.roi(2)-1,:)=vis.im{c};
     imshow(imtmp);
-  else
+  elseif isfield(cam.extcal,'image')
     imshow(imresize(cam.extcal.image.im,scale));
   end
   pcy=arrayfun(@(z) z.pos(2),cam.pixcalib);
