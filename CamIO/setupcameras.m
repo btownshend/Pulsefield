@@ -21,22 +21,24 @@ if strcmp(args.mode,'highspeed')
     error('setupcameras: exposure time must be between 1 and 80\n');
   end
 end
-fprintf('Setting cameras to mode %s, exposure time %d, %s, analoggain=%d, illum=%s\n',args.mode,args.exptime,args.daynight,args.analoggain,args.illum);
+fprintf('Setting cameras to mode %s, exposure time %d, %s, analoggain=%d, illum=%s ...',args.mode,args.exptime,args.daynight,args.analoggain,args.illum);
 for i=1:length(p.camera)
+  fprintf('%d...',i);
   id=p.camera(i).id;
+  arecont_set(id,'autoexp','on');
+  arecont_set(id,'exposure','on');
   arecont_set(id,'1080p_mode','off');
   arecont_set(id,'day_binning','off');
   arecont_set(id,'night_binning','off');
-  arecont_set(id,'autoexp','on');
-  arecont_set(id,'exposure','on');
   arecont_set(id,'brightness',0);
   arecont_set(id,'lowlight',args.mode);
   arecont_set(id,'shortexposures',args.exptime);
   arecont_set(id,'maxdigitalgain',32);
   arecont_set(id,'analoggain',args.analoggain);
-  arecont_set(id,'illum','outdoor');
+  arecont_set(id,'illum',args.illum);
   if p.camera(i).physid~=1
     % Camera 1 does not have day/night mode
     arecont_set(id,'daynight',args.daynight);
   end
 end
+fprintf('\n');
