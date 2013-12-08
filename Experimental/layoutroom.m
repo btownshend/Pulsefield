@@ -3,56 +3,64 @@
 % width - width of room in m(open side)
 % length - length of room
 % nled - number of (virtual) LEDs along walls of room
-% doplot - 1 to plot
+% 'doplot' true - to plot
+% 'clayout' l - use existing layout for positions of cameras
 %
 % X will run down length of room, Y across
 % Y-axis is entry area
-function layout=layoutroom(width,length,ncameras,nled,doplot)
-if nargin<5
-  doplot=0;
-end
-cameraheight=0.047;
+function layout=layoutroom(width,length,varargin)
+defaults=struct('plot',false,'ncamera',6,'nled',600,'clayout',[],'cameraheight',0.047);
+args=processargs(defaults,varargin)
 
 
 % Work in meters
 inchpermeter=39.3700787;
 feetpermeter=inchpermeter/12;
 
-% Camera positions
-pairsep=(27+3/32)/inchpermeter;
-cpos=[];
-cdir=[];
-% Arranged clockwise
-cpos(1,:)=[pairsep,-width/2]/sqrt(2);
-cpos(2,:)=[0,pairsep-width/2]/sqrt(2);
-cpos(3:4,1)=0;
-cpos(3,2)=-pairsep/2;
-cpos(4,2)=+pairsep/2;
-cpos(5,:)=[0,width/2-pairsep/sqrt(2)];
-cpos(6,:)=[pairsep/sqrt(2),width/2];
-cdir(1:2,1:2)=1/sqrt(2);
-cdir(3:4,1)=1;
-cdir(3:4,2)=0;
-cdir(5:6,1)=1/sqrt(2);
-cdir(5:6,2)=-1/sqrt(2);
-if ncameras==4
-  cpos=cpos([1,2,5,6],:);
-  cdir=cdir([1,2,5,6],:);
-elseif ncameras==2
-  cpos=cpos([3,4],:);
-  cdir=cdir([3,4],:);
-elseif ncameras~=6
-  error('layoutroom only implemented for 2,4, or 6 cameras');
+if ~isempty(args.clayout)
+  cpos=args.clayout.cpos;
+  cposz=args.clayout.cposz;
+  cdir=args.clayout.cdir;
+  cdirz=args.clayout.cdirz;
+  croll=args.clayout.croll;
+  args.ncamera=size(cpos,1);
+else
+  % Camera positions
+  pairsep=(27+3/32)/inchpermeter;
+  cpos=[];
+  cdir=[];
+  % Arranged clockwise
+  cpos(1,:)=[pairsep,-width/2]/sqrt(2);
+  cpos(2,:)=[0,pairsep-width/2]/sqrt(2);
+  cpos(3:4,1)=0;
+  cpos(3,2)=-pairsep/2;
+  cpos(4,2)=+pairsep/2;
+  cpos(5,:)=[0,width/2-pairsep/sqrt(2)];
+  cpos(6,:)=[pairsep/sqrt(2),width/2];
+  cdir(1:2,1:2)=1/sqrt(2);
+  cdir(3:4,1)=1;
+  cdir(3:4,2)=0;
+  cdir(5:6,1)=1/sqrt(2);
+  cdir(5:6,2)=-1/sqrt(2);
+  if args.ncamera==4
+    cpos=cpos([1,2,5,6],:);
+    cdir=cdir([1,2,5,6],:);
+  elseif args.ncamera==2
+    cpos=cpos([3,4],:);
+    cdir=cdir([3,4],:);
+  elseif args.ncamera~=6
+    error('layoutroom only implemented for 2,4, or 6 cameras');
+  end
+  croll(1:args.ncamera)=0;   % Roll of cameras in radian around axis in cdir using right-hand rule
+  cposz(1:args.ncamera)=args.cameraheight;
+  cdirz(1:args.ncamera)=0;
 end
-croll(1:ncameras)=0;   % Roll of cameras in radian around axis in cdir using right-hand rule
-cposz(1:ncameras)=cameraheight;
-cdirz(1:ncameras)=0;
 
 % Virtual LED positions
 equalangle=1;
 if equalangle
   % Points along wall uniformly spaced in angle from the point (0,width/2)
-  angle=-pi/2:pi/(nled-1):pi/2;
+  angle=-pi/2:pi/(args.nled-1):pi/2;
   far=cos(angle)/length > abs(sin(angle)/(width/2));   % Rays that will strike far wall
   top=~far & angle<0;
   bottom=~far & angle>0;
@@ -65,9 +73,9 @@ if equalangle
 else
   % Equal spacing
   perimeter=2*length+width;
-  spacing=perimeter/(nled-1);
-  nside=round(length/perimeter*nled);
-  nfar=nled-2*nside;
+  spacing=perimeter/(args.nled-1);
+  nside=round(length/perimeter*args.nled);
+  nfar=args.nled-2*nside;
   top=1:nside;
   far=nside+(1:nfar);
   bottom=nside+nfar+(1:nside);
@@ -82,23 +90,24 @@ end
 ldir(far,1)=-1; ldir(far,2)=0;
 ldir(bottom|top,1)=0; ldir(bottom,2)=1; ldir(top,2)=-1;
 
-lposz(1:nled)=0;
-ldirz(1:nled)=0;
+lposz(1:args.nled)=0;
+ldirz(1:args.nled)=0;
 
 % Active area
-active=[0,-width/2
+active=[cpos(1,1),cpos(1,2)
         length,-width/2
         length,width/2
-        0,width/2
-        0,-width/2];
+        cpos(end,1),cpos(end,2)
+        cpos(1,1),cpos(1,2)];
 pos=active;
 
 % Entry is in middle of opening
 entry=mean(cpos([1,end],:));
+% Entry line between first and last camera
 entryline=[cpos(1,:);cpos(end,:)];
 
 % Flag LEDs outside of active region (so we don't assume that blockage of them is due to something inside active region)
-outsider=false(nled,1); % None
+outsider=false(args.nled,1); % None
 
 % Setup return variables
 layout=struct('cpos',cpos,'cdir',cdir,'croll',croll,'cposz',cposz,'cdirz',cdirz,'lpos',lpos,'lposz',lposz,'ldir',ldir,'ldirz',ldirz,'active',active,'pos',pos,'entry',entry,'entryline',entryline,'outsider',outsider);

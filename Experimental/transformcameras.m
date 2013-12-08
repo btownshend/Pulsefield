@@ -81,7 +81,6 @@ gw=transform(world,gpos');
 % Correct the layout
 roomwidth=gw(2,lastcamera)-gw(2,1)+0.2;  % 10cm beyond outer cameras
 fprintf('Adjusting room size to width of %.2f m aligned with cameras 1 and %d at the edges\n', roomwidth, lastcamera);
-p.layout=layoutroom(roomwidth,max(p.layout.active(:,1)),size(p.layout.cpos,1),size(p.layout.lpos,1),0);
 
 % Map directions
 forward=[0;0;1];   % In camera reference frame, direction it is facing
@@ -93,14 +92,16 @@ for i=1:size(cpos,1)
   cdir=Rcw*forward;
   mapup=Rcw*up;
   roll=atan(mapup(2)/mapup(3));   % Roll of the camera in radians
-  p.layout.cpos(i,:)=gw(1:2,i);
-  p.layout.cposz(i)=gw(3,i);
-  p.layout.cdir(i,:)=cdir(1:2);
-  p.layout.cdirz(i)=cdir(3);
-  p.layout.croll(i)=roll;
+  clayout.cpos(i,:)=gw(1:2,i);
+  clayout.cposz(i)=gw(3,i);
+  clayout.cdir(i,:)=cdir(1:2);
+  clayout.cdirz(i)=cdir(3);
+  clayout.croll(i)=roll;
   p.camera(i).extcal.Rcw=Rcw;
   p.camera(i).extcal.Tcw=Tcw;
 end
+
+p.layout=layoutroom(roomwidth,max(p.layout.active(:,1)),'nled',size(p.layout.lpos,1),'clayout',clayout);
 
 p.calibration.Rgw=world.R;
 p.calibration.Tgw=world.T;
