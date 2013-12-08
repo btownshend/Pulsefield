@@ -191,7 +191,7 @@ if args.usefrontend
     end
     vis.whenrcvd=now;
     age=(vis.whenrcvd-max(vis.acquired))*24*3600;
-    if mod(vis.frame(1),50)==0 || age>0.3
+    if mod(vis.frame(1),50)==0 || age>0.3 || age<0
       fprintf('Got visframe %d that is %.3f seconds old\n',vis.frame(1),age);
     end
     break;
