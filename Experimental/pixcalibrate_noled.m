@@ -113,18 +113,41 @@ for c=1:length(p.camera)
 
 
   % Setup ROI for each camera
-  cp=reshape([pc([pc.valid]).pos],2,[]);
-  border=5;   % min(6,max([pc([pc.valid]).diameter]));
-  p.camera(c).roi=[
-      max(1,floor(min(cp(1,:))-border)),min(cam.hpixels,ceil(max(cp(1,:))+border)),...
-      max(1,floor(min(cp(2,:))-border)),min(cam.vpixels,ceil(max(cp(2,:))+border))];
-  % Make divisible by 32 for camera
-  p.camera(c).roi([1,3])=floor((p.camera(c).roi([1,3])-1)/32)*32+1;
-  p.camera(c).roi([2,4])=ceil((p.camera(c).roi([2,4])-1)/32)*32+1;
-  roi=p.camera(c).roi;
-  fprintf('Camera %d: Using %d LEDS, ROI size = %d x %d\n', c, sum([pc.valid]), (roi(2)-roi(1)),(roi(4)-roi(3)));
-  if (roi(4)-roi(3))>200
-    fprintf('**WARNING** Camera %d has excessive ROI size = %d x %d\n', c, (roi(2)-roi(1)),(roi(4)-roi(3)));
+  while true
+    cp=reshape([pc([pc.valid]).pos],2,[]);
+    border=5;   % min(6,max([pc([pc.valid]).diameter]));
+    p.camera(c).roi=[
+        max(1,floor(min(cp(1,:))-border)),min(cam.hpixels,ceil(max(cp(1,:))+border)),...
+        max(1,floor(min(cp(2,:))-border)),min(cam.vpixels,ceil(max(cp(2,:))+border))];
+    % Make divisible by 32 for camera
+    p.camera(c).roi([1,3])=floor((p.camera(c).roi([1,3])-1)/32)*32+1;
+    p.camera(c).roi([2,4])=ceil((p.camera(c).roi([2,4])-1)/32)*32+1;
+    roi=p.camera(c).roi;
+    fprintf('Camera %d: Using %d LEDS, ROI size = %d x %d\n', c, sum([pc.valid]), (roi(2)-roi(1)),(roi(4)-roi(3)));
+    if (roi(4)-roi(3))<=192
+      break;
+    end
+    fprintf('**WARNING** Camera %d has excessive ROI size = %d x %d - disabling some pixels\n', c, (roi(2)-roi(1)),(roi(4)-roi(3)));
+    bottomleds=[]; topleds=[];
+    for i=1:length(pc)
+      if pc(i).valid && pc(i).pos(2)-p.camera(c).roi(3)<32+border
+        topleds(end+1)=i;
+      elseif pc(i).valid && p.camera(c).roi(4)-pc(i).pos(2)<32+border
+        bottomleds(end+1)=i;
+      end
+    end
+    fprintf('Can reduce ROI by 32 by removing the %d bottom LEDS or the %d top ones\n', length(bottomleds), length(topleds));
+    if length(bottomleds)<=length(topleds)
+      for i=bottomleds
+        pc(i).inuse=false;
+        pc(i).valid=false;
+      end
+    else
+      for i=topleds
+        pc(i).inuse=false;
+        pc(i).valid=false;
+      end
+    end
   end
   fprintf('Camera %d ROI=[%.0f-%.0f,%.0f-%.0f]\n',c,roi);
 
