@@ -5,6 +5,7 @@ args=processargs(defaults,varargin);
 roomheight=3;   % Height of room in meters
 step=0.05;      % Step size for drawing active area outline in meters
 setfig('calibimages');clf;
+fprintf('G=visible, R=blocked, Y=disabled(intermediate), M=disabled(high variance), Cyan=disabled(unused)\n');
 for c=1:length(p.camera)
   cam=p.camera(c);
   scale=cam.hpixels/cam.distortion.Wcal;
@@ -23,9 +24,18 @@ for c=1:length(p.camera)
     plot(pcx,pcy,'.');
   else
     % Colorcode visible LEDs
-    sel=vis.v(c,:)==0; plot(pcx(sel),pcy(sel),'.r');
-    sel=vis.v(c,:)==1; plot(pcx(sel),pcy(sel),'.g');
-    sel=isnan(vis.v(c,:)); plot(pcx(sel),pcy(sel),'.y');
+    if isfield(vis,'vorig')
+      v=vis.vorig(c,:);
+    else
+      v=vis.v(c,:);
+      v(isnan(v))=2;
+    end
+    v(~cam.viscache.inuse)=4;
+    sel=v==0; plot(pcx(sel),pcy(sel),'.r');
+    sel=v==1; plot(pcx(sel),pcy(sel),'.g');
+    sel=v==2; plot(pcx(sel),pcy(sel),'.y');
+    sel=v==3; plot(pcx(sel),pcy(sel),'.m');
+    sel=v==4; plot(pcx(sel),pcy(sel),'.c');
   end
   % Plot all the other cameras
   for c2=1:length(p.camera)
