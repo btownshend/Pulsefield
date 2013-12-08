@@ -125,7 +125,7 @@ while true
         vis.v(c,~p.camera(c).viscache.inuse)=nan;
         filled(c)=true;
         vis.frame=frame;
-        vis.acquired(c)=(((sec+usec/1e6)/3600-7)/24)+datenum(1970,1,1);   % Convert to matlab datenum (assuming 7 hours offset from GMT)
+        vis.acquired(c)=(((sec+usec/1e6)/3600-8)/24)+datenum(1970,1,1);   % Convert to matlab datenum (assuming 7 hours offset from GMT)
         if args.debug
           fprintf('Got visframe %d, camera %d with total latency of %.3f sec\n', frame, c, (now-vis.acquired(c))*24*3600);
         end
