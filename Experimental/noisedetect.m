@@ -8,15 +8,15 @@ if isempty(args.wsize)
 end
 
 setfig('noisedet');clf;
-nrow=8; ncol=1; pnum=1;
+nrow=6; ncol=1; pnum=1;
 
 nm=noisemodel(p,vis,cam);
 img=im2double(vis.im{cam});
 diff=img-nm.avg;
-nstd=diff.*diff./nm.var;
+nvar=diff.*diff./nm.var;
 fprintf('Mean sample level: %.1f/255, mean std: %.1f/255\n',255*mean(nm.avg(:)),255*mean(sqrt(nm.var(:))));
-fprintf('Fraction >1 std from avg: %.3f\n',mean(nstd(:)>1));
-fprintf('Fraction >2 std from avg: %.3f\n',mean(nstd(:)>2));
+fprintf('Fraction >1 std from avg: %.3f\n',mean(nvar(:)>1));
+fprintf('Fraction >2 std from avg: %.3f\n',mean(nvar(:)>2^2));
 
 subplot(nrow,ncol,pnum); pnum=pnum+1;
 vscale=10;
@@ -25,19 +25,30 @@ title(sprintf('Pixel STD (in 255-scale) / %d', vscale));
 
 subplot(nrow,ncol,pnum); pnum=pnum+1;
 ufscale=10;
-imshow(nstd/ufscale);
+imshow(nvar/ufscale);
 title(sprintf('Unfiltered deviation / %.1f',ufscale));
 
 thresh=p.analysisparams.fgthresh(2);
 
 %subplot(nrow,ncol,pnum); pnum=pnum+1;
-%hist(min(thresh,nstd(:)),1000);
-%title('Distribution of nstd');
+%hist(min(thresh,nvar(:)),1000);
+%title('Distribution of nvar');
 
 fprintf('Using window size of [%d,%d]\n',args.wsize);
-f=sqrt(mean(imfilter(nstd,fspecial('average',args.wsize)),3));
-fracgood=mean(imfilter(nm.var<=p.analysisparams.fgmaxvar,fspecial('average',args.wsize)),3);
-fprintf('Have %d pixels with excessive variance\n', sum(fracgood(:)<0.5));
+H=fspecial('average',args.wsize);
+%H=fspecial('gaussian',args.wsize,5);
+if 0
+  % Use maximum
+  fc=[];
+  for c=1:3
+    fc(:,:,c)=nlfilter(nvar(:,:,c),args.wsize,@(x) max(x(:)) );
+  end
+  f=sqrt(max(fc,[],3));
+else
+  f=sqrt(mean(imfilter(nvar,H),3));
+end
+fracgood=mean(imfilter(nm.var<=p.analysisparams.fgmaxvar,fspecial('average',args.wsize),'replicate'),3);
+fprintf('Have %d (%.1f%%) pixels with variance > (%.1f/255)^2\n', sum(fracgood(:)<0.5),mean(fracgood(:)<0.5)*100,sqrt(p.analysisparams.fgmaxvar)*255);
 
 subplot(nrow,ncol,pnum); pnum=pnum+1;
 imshow(f/thresh);
@@ -48,6 +59,7 @@ for i=1:2
   det=f>thresh;
   rgb=img;
   rgb(:,:,2)=max(rgb(:,:,2),det);
+  rgb(:,:,1)=max(rgb(:,:,1),fracgood<0.5);
   subplot(nrow,ncol,pnum); pnum=pnum+1;
   imshow(rgb);
   title(sprintf('Deviation>%.2f',thresh));
@@ -59,7 +71,7 @@ end
 
 % Overall plot with LED decisions overlaid
 subplot(nrow,ncol,pnum); pnum=pnum+1;
-%imshow(nstd/max(nstd(:)));
+%imshow(nvar/max(nvar(:)));
 imshow(f/thresh);
 hold on;
 pc=p.camera(cam).pixcalib;
@@ -96,17 +108,17 @@ for l=1:nled
   end
 end
 
-subplot(nrow,ncol,pnum); pnum=pnum+1;
-fecorr=vis.corr(cam,:);
-recorr=1-pf/p.analysisparams.fgscale;
-plot(fecorr,'m');
-hold on;
-plot(recorr);
-plot([1,nled],[vis.mincorr,vis.mincorr],':');
-legend('From FrontEnd','Recomputed');
-title(sprintf('FrontEnd corr (mean=%.3f) and reccomputed (%.3f)', nanmean(fecorr), nanmean(recorr)));
+% subplot(nrow,ncol,pnum); pnum=pnum+1;
+% fecorr=vis.corr(cam,:);
+% recorr=1-pf/p.analysisparams.fgscale;
+% plot(fecorr,'m');
+% hold on;
+% plot(recorr);
+% plot([1,nled],[vis.mincorr,vis.mincorr],':');
+% legend('From FrontEnd','Recomputed');
+% title(sprintf('FrontEnd corr (mean=%.3f) and reccomputed (%.3f)', nanmean(fecorr), nanmean(recorr)));
 
-subplot(nrow,ncol,pnum); pnum=pnum+1;
+setfig('noisedet2');clf;
 festd=(1-vis.corr(cam,:))*p.analysisparams.fgscale;
 plot(festd,'m');
 hold on;
