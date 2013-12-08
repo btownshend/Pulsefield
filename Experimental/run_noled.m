@@ -8,6 +8,7 @@ if ~exist('p','var')
   p.analysisparams=analysissetup();
   p.analysisparams.detector=1;   % Use foreground/background detector
   p.analysisparams.mintgtdiam=0.08;   % Smaller targets (for feet) -- 8cm diameter
+  p.analysisparams.maxfalsegapsep=0.5;   % For gap between feet
   %ctype='av10115';
   ctype='av10115-half';
   ncamera=6;
