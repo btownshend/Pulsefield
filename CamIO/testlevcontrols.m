@@ -5,6 +5,9 @@ satthresh=250;
 v={struct('autoexp','on','exposure','on','brightness',0,'lowlight','quality','shortexposures',1,'analoggain',1,'maxexptime',1),
    struct('autoexp','on','exposure','on','brightness',0,'lowlight','quality','shortexposures',1,'analoggain',1,'maxexptime',100),
    struct('autoexp','on','exposure','on','brightness',0,'lowlight','quality','shortexposures',1,'analoggain',1,'maxexptime',1)};
+v={struct('autoexp','on','exposure','on','brightness',0,'lowlight','highspeed','shortexposures',40,'analoggain',1,'maxexptime',40),
+   struct('autoexp','on','exposure','on','brightness',0,'lowlight','highspeed','shortexposures',40,'analoggain',100,'maxexptime',40),
+   struct('autoexp','on','exposure','on','brightness',0,'lowlight','highspeed','shortexposures',40,'analoggain',1,'maxexptime',40)};
 n=length(v);
 s={};x={};
 for i=1:n
