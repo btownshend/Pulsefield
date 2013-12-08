@@ -29,7 +29,11 @@ end
 fectl(p,'quit');
 
 % Set camera exposures to defaults
-setupcameras(p,'mode','quality','daynight','day','analoggain',25,'illum','indoor');
+% Fix the exposure time to 40ms and maximum analog gain to 768 (12*64)
+setupcameras(p,'mode','highspeed','exptime',80,'daynight','day','analoggain',12,'illum','automatic');   
+pause(2);
+% Turn off auto exposure
+lockexposure(p,1);
 
 if ~isfield(p.camera(1),'pixcalib')
   disp('Pixel calibration');
@@ -46,7 +50,7 @@ plotvalid(p);
 if ~isfield(p.camera(1),'viscache')
   disp('Visible calibration');
   % Use a larger window to improve foreground object detection when background is bland
-  [allvis,p]=getvisible(p,'init','wsize',[21,11],'usefrontend',false,'disableleds',false);
+  [allvis,p]=getvisible(p,'init','wsize',[11,5],'usefrontend',false,'disableleds',false);
 end
 
 if 0 && ~isfield(p,'crosstalk')
