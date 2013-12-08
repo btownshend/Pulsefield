@@ -36,6 +36,17 @@ for samp=1:length(snap)
   end
 end
 
+% Initial entres
+for j=1:length(snap(1).hypo)
+  hj=snap(1).hypo(j);
+  plot(hj.pos(1),hj.pos(2),'o','Color',id2color(hj.id,recvis.p.colors));
+end
+% Final exits
+for j=1:length(snap(end).hypo)
+  hj=snap(end).hypo(j);
+  plot(hj.pos(1),hj.pos(2),'x','Color',id2color(hj.id,recvis.p.colors));
+end
+  
 
 subplot(222);
 hold on;
