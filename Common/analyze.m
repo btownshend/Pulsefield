@@ -13,6 +13,9 @@ function snap=analyze(p,v,doplot,truetgts)
 if nargin<3
   doplot=false;
 end
+if isfield(p.analysisparams,'expandrays')
+  v=expandrays(p,v);
+end
 layout=p.layout;
 rays=p.rays;
 % im is zero where someone could be, 1 where they can't be
