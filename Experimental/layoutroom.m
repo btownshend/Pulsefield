@@ -49,7 +49,7 @@ cposz(1:ncameras)=cameraheight;
 cdirz(1:ncameras)=0;
 
 % Virtual LED positions
-equalangle=0;
+equalangle=1;
 if equalangle
   % Points along wall uniformly spaced in angle from the point (0,width/2)
   angle=-pi/2:pi/(nled-1):pi/2;
