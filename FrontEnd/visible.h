@@ -2,7 +2,7 @@
 #include "frame.h"
 
 class Visible {
-    static float updateTimeConstant, corrThreshold; 
+    static float updateTimeConstant[2], corrThreshold; 
     static bool fgDetector;  // True to use foreground/background detector based on noise statistics; false to use correlation detector
     static float fgThresh[2];  // Thresholds for fg/bg detector
     static float fgScale;  // fg/bg scaling
@@ -40,7 +40,7 @@ class Visible {
     const char* saveRef(int c) const;
     const char* saveRef2(int c) const;
     
-    static void setUpdateTimeConstant(float t) { updateTimeConstant=t; }
+    static void setUpdateTimeConstant(float t[2]) { updateTimeConstant[0]=t[0]; updateTimeConstant[1]=t[1]; }
     static void setCorrThresh(float t) { corrThreshold=t; }
     static float getCorrThresh() { return corrThreshold; }
     static void setFgDetector(bool on,float minvar, float maxvar, float fgscale,float fgthresh1,float fgthresh2);

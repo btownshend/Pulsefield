@@ -110,7 +110,7 @@ for ci=1:length(cameras)
       stack=stack+1;
       refim=vis.refim{c}(vc.tlpos(l,2):vc.brpos(l,2),vc.tlpos(l,1):vc.brpos(l,1),:);
       % Note that frontend sends vis struct with refim,refim2 AFTER updating with current image, back this update out
-      k=p.analysisparams.fps*p.analysisparams.updatetc;
+      k=p.analysisparams.fps*p.analysisparams.updatetc(1);
       refim=(refim*k-im2double(im))/(k-1);
       if rescale
         refimsc=refim/max(refim(:));
@@ -142,7 +142,7 @@ for ci=1:length(cameras)
       subplot(nc,nl*nstack,(ci-1)*nl*nstack+(i-1)*nstack+stack);
       stack=stack+1;
       refim2=vis.refim2{c}(vc.tlpos(l,2):vc.brpos(l,2),vc.tlpos(l,1):vc.brpos(l,1),:);
-      k=p.analysisparams.fps*p.analysisparams.updatetc;
+      k=p.analysisparams.fps*p.analysisparams.updatetc(2);
       refim2=(refim2*k-im2double(im).^2)/(k-1);
       var=refim2;
       nstd=(im2double(im)-refim).^2./var;

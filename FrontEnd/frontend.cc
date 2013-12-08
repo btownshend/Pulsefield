@@ -53,7 +53,7 @@ static int setFPS_handler(const char *path, const char *types, lo_arg **argv, in
 static int setRes_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setRes(argv[0]->i,&argv[1]->s); return 0; }
 static int setRefImage_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setRefImage(argv[0]->i,argv[1]->i,argv[2]->i,argv[3]->i, &argv[4]->s); return 0; }
 static int setROI_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setROI(argv[0]->i,argv[1]->i,argv[2]->i,argv[3]->i,argv[4]->i); return 0; }
-static int setUpdateTC_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setUpdateTC(argv[0]->f); return 0; }
+static int setUpdateTC_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setUpdateTC(argv[0]->f,argv[0]->f); return 0; }
 static int setCorrThresh_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setCorrThresh(argv[0]->f); return 0; }
 static int setFgDetector_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setFgDetector(argv[0]->i,argv[1]->f,argv[2]->f,argv[3]->f,argv[4]->f,argv[5]->f); return 0; }
 
@@ -125,7 +125,7 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
 
     lo_server_add_method(s,"/vis/set/pos","iiiiii",setPos_handler,this);
     lo_server_add_method(s,"/vis/set/fps","i",setFPS_handler,this);
-    lo_server_add_method(s,"/vis/set/updatetc","f",setUpdateTC_handler,this);
+    lo_server_add_method(s,"/vis/set/updatetc","ff",setUpdateTC_handler,this);
     lo_server_add_method(s,"/vis/set/corrthresh","f",setCorrThresh_handler,this);
     lo_server_add_method(s,"/vis/set/fgdetector","ifffff",setFgDetector_handler,this);
     lo_server_add_method(s,"/vis/set/res","is",setRes_handler,this);
@@ -452,9 +452,11 @@ void FrontEnd::setFPS(int fps) {
 	cameras[i]->setFPS(fps);
 }
 
-// Change time constant (in seconds) for updating reference images
+// Change time constant (in seconds) for updating reference images [0] and variance estimate[1]
 // Use 0 to not update
-void FrontEnd::setUpdateTC(float updateTime) {
+void FrontEnd::setUpdateTC(float updateTime1, float updateTime2) {
+    printf("Setting update time constants to (%.1f,%.1f) seconds\n",updateTime1,updateTime2);
+    float updateTime[2]={updateTime1,updateTime2};
     Visible::setUpdateTimeConstant(updateTime);
 }
 

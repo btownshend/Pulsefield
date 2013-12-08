@@ -7,7 +7,7 @@
 
 #include "visible.h"
 
-float Visible::updateTimeConstant=60;  // Default is 60sec time constant for updating reference
+float Visible::updateTimeConstant[]={60,300};  // Default is 60sec time constant for updating reference mean and variance
 float Visible::corrThreshold = 0.7;
 bool Visible::fgDetector = false;
 float Visible::fgMinVar = (2.0/255)*(2.0/255); 
@@ -291,16 +291,18 @@ void Visible::updateTarget(const Frame *frame, float fps) {
     assert(frame->getHeight() == refHeight);
     assert(frame->isColor());
 
-    if (updateTimeConstant == 0)
+    if (updateTimeConstant[0] == 0 && updateTimeConstant[1]==0)
 	// Special case, no updates
 	return;
 
-    float weight = 1.0/(updateTimeConstant * fps);   
+    float mweight = 1.0/(updateTimeConstant[0] * fps);   
+    float vweight = 1.0/(updateTimeConstant[1] * fps);   
 
     const byte *newimg = frame->getImage();
     float *refimg = refImage;
     float *refimg2 = refImage2;
-    float oweight = 1.0-weight;
+    float omweight = 1.0-mweight;
+    float ovweight = 1.0-vweight;
     int nPixels = refHeight*refWidth;
     const byte *endimg = &newimg[nPixels*3];
     if (refDepth==1) {
@@ -310,8 +312,8 @@ void Visible::updateTarget(const Frame *frame, float fps) {
 	    float xvs2=(xv-*refimg)*(xv-*refimg);
 	    if (xvs2>*refimg2 * 2)
 		xvs2=*refimg2*2;   // Don't allow variance to increase too rapidly or blocked leds with rapidly increase variance
-	    *refimg = (*refimg)*oweight+xv*weight;
-	    *refimg2 = (*refimg2)*oweight+xvs2*weight;   // Update variance
+	    *refimg = (*refimg)*omweight+xv*mweight;
+	    *refimg2 = (*refimg2)*ovweight+xvs2*vweight;   // Update variance
 	    newimg+=3;
 	    refimg++;
 	    refimg2++;
@@ -323,11 +325,11 @@ void Visible::updateTarget(const Frame *frame, float fps) {
 	    float xvs2=(xv-*refimg)*(xv-*refimg);
 	    if (xvs2>*refimg2 * 2)
 		xvs2=*refimg2*2;   // Don't allow variance to increase too rapidly or blocked leds with rapidly increase variance
-	    *refimg = (*refimg)*oweight+xv*weight;
-	    float oldval=*refimg2;
-	    *refimg2 = (*refimg2)*oweight+xvs2*weight;
-	    if (newimg==endimg-1)
-		printf("newimg=%d, xv=%g, xvs2=%g, refimg=%g, refimg2=%g->%g, weight=%g\n", *newimg, xv, xvs2, *refimg, oldval, *refimg2, weight);
+	    *refimg = (*refimg)*omweight+xv*mweight;
+	    //float oldval=*refimg2;
+	    *refimg2 = (*refimg2)*ovweight+xvs2*vweight;
+	    //	    if (newimg==endimg-1)
+	    //		printf("newimg=%d, xv=%g, xvs2=%g, refimg=%g, refimg2=%g->%g, weight=%g\n", *newimg, xv, xvs2, *refimg, oldval, *refimg2, weight);
 	    newimg++;
 	    refimg++;
 	    refimg2++;

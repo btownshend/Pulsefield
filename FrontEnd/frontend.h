@@ -35,7 +35,7 @@ class FrontEnd {
     void startStop(bool start);
     void setPos(int camera, int led, int xpos, int ypos, int tgtWidth, int tgtHeight);
     void setFPS(int fps);
-    void setUpdateTC(float updateTime);
+    void setUpdateTC(float updateTime1,float updateTime2);
     void setCorrThresh(float thresh);
     void setFgDetector(int on,float fgminvar, float fgmaxvar, float fgscale,float fgthresh1, float fgthresh2);
     void setRes(int camera,const char *res);
