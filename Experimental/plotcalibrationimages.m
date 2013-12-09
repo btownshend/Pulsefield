@@ -64,7 +64,7 @@ for c=1:length(p.camera)
     p0(i,:)=getpixelpos(cam,[a(i,:),0]);
     ph(i,:)=getpixelpos(cam,[a(i,:),roomheight]);
   end
-  plot(p0(:,1),p0(:,2),'c');
+  %plot(p0(:,1),p0(:,2),'c');
   plot(ph(:,1),ph(:,2),'c');
   % Draw corner verticals
   for i=1:size(p.layout.active,1)
