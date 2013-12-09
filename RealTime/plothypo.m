@@ -64,7 +64,7 @@ for samp=2:length(snap)
   end
 end
 xlabel('Sample');
-ylabel('Y Position (m)');
+ylabel('X Position (m)');
 
 subplot(224);
 hold on;
@@ -90,4 +90,6 @@ xlabel('Time (sec)');
 ylabel('Occupancy');
 title(sprintf('%.1f fps', length(snap)/t(end)));
 
-suptitle(recvis.note);
+if isfield(recvis,'note')
+  suptitle(recvis.note);
+end
