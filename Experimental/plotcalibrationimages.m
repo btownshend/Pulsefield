@@ -2,7 +2,7 @@ function plotcalibrationimages(p,vis,varargin)
 defaults=struct('addpoints',[]);
 args=processargs(defaults,varargin);
 
-roomheight=3;   % Height of room in meters
+roomheight=122/39.37;   % Height of room in meters
 step=0.05;      % Step size for drawing active area outline in meters
 setfig('calibimages');clf;
 fprintf('G=visible, R=blocked, Y=disabled(intermediate), M=disabled(high variance), Cyan=disabled(unused)\n');

@@ -21,7 +21,10 @@ if ~exist('p','var')
   p.led=struct('id',num2cell(1:nled));
   p.colors={[1 1 1], [1 0 0], [0 1 0], [0 0 1],[1 1 0],[1 0 1], [0 1 1]};
 
-  p.layout=layoutroom(130/39.37,145/39.37,'ncamera',ncamera,'nled',nled);
+  % office
+  %p.layout=layoutroom(130/39.37,145/39.37,'ncamera',ncamera,'nled',nled);
+  % CCRMA stage  length(from camers 3,4 to screen)=284", width from windows to walls=277"
+  p.layout=layoutroom(284/39.37,277/39.37,'ncamera',ncamera,'nled',nled);
   p.noleds=true;
   plotlayout(p.layout);
 end

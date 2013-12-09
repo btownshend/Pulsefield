@@ -79,7 +79,8 @@ fprintf('Translate by [%.2f,%.2f,%.2f] to move cameras to correct position\n',of
 gw=transform(world,gpos');
 
 % Correct the layout
-roomwidth=gw(2,lastcamera)-gw(2,1)+0.2;  % 10cm beyond outer cameras
+%roomwidth=gw(2,lastcamera)-gw(2,1)+0.2;  % 10cm beyond outer cameras
+roomwidth=max(p.layout.active(:,2))-min(p.layout.active(:,2));
 fprintf('Adjusting room size to width of %.2f m aligned with cameras 1 and %d at the edges\n', roomwidth, lastcamera);
 
 % Map directions

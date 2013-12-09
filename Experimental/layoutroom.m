@@ -90,21 +90,25 @@ end
 ldir(far,1)=-1; ldir(far,2)=0;
 ldir(bottom|top,1)=0; ldir(bottom,2)=1; ldir(top,2)=-1;
 
-lposz(1:args.nled)=0;
+lposz(1:args.nled)=1.5/39.37;  % Center of target strips
 ldirz(1:args.nled)=0;
 
 % Active area
-active=[cpos(1,1),cpos(1,2)
+cextend=0.35;  % Start active area in front of cameras
+active=[cpos(1,1)+cdir(1,1)*cextend,cpos(1,2)+cdir(1,2)*cextend,
+        cpos(1,1)+cextend*cdir(1,1)+(cpos(1,2)+width/2),-width/2
         length,-width/2
         length,width/2
-        cpos(end,1),cpos(end,2)
-        cpos(1,1),cpos(1,2)];
+        cpos(end,1)+cextend*cdir(end,1)+(width/2-cpos(end,2)),width/2];
+for i=size(cpos,1):-1:1
+  active(end+1,:)=cpos(i,:)+cextend*cdir(i,:);
+end
 pos=active;
 
 % Entry is in middle of opening
-entry=mean(cpos([1,end],:));
+entry=mean(cpos([2,end-1],:));
 % Entry line between first and last camera
-entryline=[cpos(1,:);cpos(end,:)];
+entryline=[cpos(2,:);cpos(end-1,:)];
 
 % Flag LEDs outside of active region (so we don't assume that blockage of them is due to something inside active region)
 outsider=false(args.nled,1); % None
