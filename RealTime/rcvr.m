@@ -6,7 +6,9 @@ args=processargs(defaults,varargin);
 if args.stats
   % Request stats from frontend
   rcvr(p,'flush',true,'skipstale',false);   % Flush any queued data (turn off skipstale to avoid confusing messages)
-  fprintf('Sending request for stats\n');
+  if args.debug
+    fprintf('Sending request for stats\n');
+  end
   oscmsgout('FE','/vis/get/corr',{int32(1)});
   oscmsgout('FE','/vis/get/refimage',{int32(1)});
   oscmsgout('FE','/vis/get/image',{int32(1)});
@@ -15,7 +17,7 @@ if args.stats
   % Might be a few without these fields
   % Could also be a race condition where only some of the above fields are filled, and the rest are in the next frame
   for i=1:3
-    vis=rcvr(p,'skipstale',false)
+    vis=rcvr(p,'skipstale',false);
     if isfield(vis,'im')
       if ~isfield(vis,'refim') || ~isfield(vis,'corr')
         break;
@@ -37,7 +39,9 @@ while true
   end
   if isempty(m)
     if args.flush
-      fprintf('Buffers flushed, now looking for vis\n');
+      if args.debug
+        fprintf('Buffers flushed, now looking for vis\n');
+      end
       args.flush=false;  % Now continue normally
       frame=-1;
       continue;
@@ -80,7 +84,9 @@ while true
         if args.flush 
           frame=-1;   % Continue and look for another one
           vis=[];
-          fprintf('Skipping frame to flush buffers\n');
+          if args.debug
+            fprintf('Skipping frame to flush buffers\n');
+          end
         else
           if args.skipstale
             vis.when=max(vis.acquired);
