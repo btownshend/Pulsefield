@@ -33,7 +33,7 @@ fectl(p,'quit');
 
 % Set camera exposures to defaults
 % Fix the exposure time to 40ms and maximum analog gain to 768 (12*64)
-setupcameras(p,'mode','highspeed','exptime',80,'daynight','day','analoggain',12,'illum','automatic');   
+setupcameras(p,'mode','highspeed','exptime',80,'daynight','day','analoggain',12,'illum','indoor');   
 pause(2);
 % Turn off auto exposure
 lockexposure(p,1);
