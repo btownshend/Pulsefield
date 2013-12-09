@@ -34,7 +34,14 @@ classdef SoundAppGrid < SoundApp
       obj.hysteresis=min([dx,dy])/10;
       ind=1;
       for i=obj.nx:-1:1
-        for j=1:obj.ny
+        if i==1 || i==obj.nx
+          inset=2;
+        elseif i==2 || i==obj.nx-1
+          inset=1;
+        else
+          inset=0;
+        end
+        for j=1+inset:obj.ny-inset
           pos=[obj.minx+(i-0.5)*dx,obj.miny+(j-0.5)*dy];
           if inpolygon(pos(1),pos(2),p.layout.active(:,1),p.layout.active(:,2))
             obj.position(end+1,:)=pos;
@@ -42,7 +49,7 @@ classdef SoundAppGrid < SoundApp
           ind=ind+1;
         end
       end
-      if (size(obj.position,1)>info.al.numclips())
+      if (size(obj.position,1)~=info.al.numclips())
         fprintf('Warning: Grid has %d locations, but only %d scenes in Ableton -- wrapping extras\n', size(obj.position,1), info.al.numclips());
       end
       cell=1:size(obj.position,1);

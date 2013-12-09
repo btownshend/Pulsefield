@@ -81,6 +81,10 @@ public class VisualizerGrid extends VisualizerPS {
 
 		if (components[1].equals("grid") && components[2].equals("cell")) {
 			int cell=Integer.parseInt(components[3])-1;  // Cell is 1-60; change to 0
+			if(cell<0 || cell>=60) {
+				PApplet.println("Bad grid cell: "+cell);
+				cell=0;
+			}
 			if (components.length == 4) {
 				String value=theOscMessage.get(0).stringValue();
 				//PApplet.println("cell "+cell+" = "+value);
