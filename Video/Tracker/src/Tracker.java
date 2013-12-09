@@ -23,10 +23,12 @@ public class Tracker extends PApplet {
 	VisualizerGrid visAbleton;
 	VisualizerNavier visNavier;
 	VisualizerDDR visDDR;
-	String visnames[]={"Pads","Navier","Tron","Ableton","DDR","Poly","Voronoi","Guitar"};
-	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3"};
+	VisualizerDot visDot;
+	VisualizerChuck visChuck;
+	String visnames[]={"Pads","Navier","Tron","Ableton","DDR","Poly","Voronoi","Guitar","Dot","CHucK"};
+	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5"};
 	int currentvis=-1;
-	static NetAddress TO, MPO, AL, MAX;
+	static NetAddress TO, MPO, AL, MAX, CK;
 	Positions positions;
 	Ableton ableton;
 	boolean useMAX;
@@ -61,6 +63,7 @@ public class Tracker extends PApplet {
 		TO = new NetAddress(config.getHost("TO"), config.getPort("TO"));
 		MPO = new NetAddress(config.getHost("MPO"), config.getPort("MPO"));
 		AL = new NetAddress(config.getHost("AL"), config.getPort("AL"));
+		CK = new NetAddress(config.getHost("CK"), config.getPort("CK"));
 		PApplet.println("AL at "+config.getHost("AL")+":"+config.getPort("AL"));
 		MAX = new NetAddress(config.getHost("MAX"), config.getPort("MAX"));
 		ableton = new Ableton(oscP5, AL);
@@ -83,7 +86,9 @@ public class Tracker extends PApplet {
 		vis[5]=new VisualizerPoly(this,scale,synth);
 		vis[6]=new VisualizerVoronoi(this,scale,synth);
 		vis[7]=new VisualizerGuitar(this,synth);
-		setapp(5);
+		vis[8]=new VisualizerDot(this);
+		vis[9]=new VisualizerChuck(this);
+		setapp(9);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
@@ -129,6 +134,9 @@ public class Tracker extends PApplet {
 			oscP5.send(msg,TO);
 		else if (dest.equals("MPO"))
 			oscP5.send(msg,MPO);
+		else if (dest.equals("CK")) {
+			oscP5.send(msg,CK);
+		}
 		else
 			System.err.println("sendOSC: Bad destination: "+dest);
 	}
