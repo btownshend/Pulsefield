@@ -112,7 +112,8 @@ for i=1:ntgts
   entrydist(i)=disttoentry(layout,tgts(i).pixellist);
   
   % dist(i,j)=norm(tgts(i).pos-layout.entry);  % Distance from entry
-  pspeed=exppdf(entrydist(i)/(dt/2),speedmu);   % Prob they moved to here if they just entered
+  %  pspeed=exppdf(entrydist(i)/(dt/2),speedmu);   % Prob they moved to here if they just entered
+  pspeed=1-expcdf(entrydist(i)/dt,speedmu);   % Prob they moved to here if they just entered
   pentry=0.1; % expcdf(dt,1/entryrate);   % Prob they entered in last dt seconds
 
   entrylike(i)=pspeed*pentry;
@@ -142,6 +143,15 @@ for j=1:length(h)
   exitlike(j)=pspeed*pexit;
 end
 
+% Allow people to appear/disappear anywhere with low prob
+% Done after normalization
+if exist('entrylike')
+  entrylike=max(0.01,entrylike);
+end
+if exist('exitlike')
+  exitlike=max(0.01,exitlike);
+end
+
 % Dump values
 if debug && length(like)>0
   fprintf('\n%3d Uniq  XPos   YPos  ',samp);
@@ -164,6 +174,13 @@ if debug && length(like)>0
     fprintf('%7.5f ',exitlike);
     fprintf('\n');
   end
+end
+origlike=like;
+if exist('entrylike')
+  origlike(1:length(entrylike),end+1)=entrylike;
+end
+if exist('exitlike')
+  origlike(end+1,1:length(exitlike))=exitlike;
 end
 
 if samp==-1
@@ -230,6 +247,17 @@ for i=1:length(h)
 end
 
 % Missed targets -- could be entries
+% Check what the total  likelihood for unmatched possible entries was in the last frame
+unmatched=~ismember(1:length(prevsnap.tgts),[prevsnap.hypo.tnum]);
+if sum(unmatched)>0
+  unmatchedlike=sum(prevsnap.like(unmatched,end));
+  if debug
+    fprintf('Carrying forward %d unmatched targets from prior frame with total entry likelihood of %f\n', sum(unmatched), unmatchedlike);
+  end
+else
+  unmatchedlike=0;
+end
+
 missed=find(~matched & [tgts.nunique]>minunique);
 for i=1:length(missed)
   mi=missed(i);
@@ -238,7 +266,7 @@ for i=1:length(missed)
     fprintf('Target %d at (%.3f,%.3f) with %d unique rays, maxlike=%g, entrylike=%g, not matched\n', mi, t.pos, t.nunique,max(like(mi,:)),entrylike(mi));
   end
   % Check if it could be an entry
-  if entrylike(mi)>minimumlike
+  if entrylike(mi)+unmatchedlike>minimumlike
     if 1
       % Check if anyone else is already nearby (to prevent double counting entries)
       nearby=false;
@@ -264,6 +292,9 @@ for i=1:length(missed)
     if debug
       fprintf('Assigned target %d (%6.3f,%6.3f) to NEW hypo %d with dist=%.2f, like=%.3f\n', mi, t.pos, id, entrydist(mi), entrylike(mi));
     end
+  else
+    % Increment unmatched likelihood by prior unmatched ones
+    origlike(mi,end)=origlike(mi,end)+unmatchedlike;
   end
 end
 
@@ -287,4 +318,4 @@ for i=1:ntgts
 end
     
 snap.hypo=hf;
-snap.like=like;
+snap.like=origlike;
