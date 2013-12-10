@@ -99,6 +99,9 @@ for i=1:ntgts
 
     % Estimate of likelihood that target i is the same as hypo j (heuristic)
     like(i,j)=pspeed*pdir*(1-pfalse)*phidden;
+    if (debug)
+      fprintf('like(%d,%d)=%f dist=%f, pspeed=%f, pdir=%f, 1-pfalse=%f, phidden=%f\n', i,j,like(i,j),dist(i,j),pspeed,pdir,1-pfalse,phidden);
+    end
   end
   % Decrease likelhood of targets that don't have unique rays
   if tgts(i).nunique<minunique
@@ -117,7 +120,7 @@ for i=1:ntgts
   pentry=0.1; % expcdf(dt,1/entryrate);   % Prob they entered in last dt seconds
 
   entrylike(i)=pspeed*pentry;
-  fprintf('entrylike(%d)=%f\n', i, entrylike(i));
+  fprintf('entry T%d: dist=%f, like=%f\n', i, entrydist(i), entrylike(i));
 end
 
   
@@ -263,7 +266,7 @@ for i=1:length(missed)
   mi=missed(i);
   t=tgts(mi);
   if debug
-    fprintf('Target %d at (%.3f,%.3f) with %d unique rays, maxlike=%g, entrylike=%g, not matched\n', mi, t.pos, t.nunique,max(like(mi,:)),entrylike(mi));
+    fprintf('Target %d at (%.3f,%.3f) with %d unique rays, maxlike=%g, entrylike=%g+%g, not matched\n', mi, t.pos, t.nunique,max(like(mi,:)),entrylike(mi),unmatchedlike);
   end
   % Check if it could be an entry
   if entrylike(mi)+unmatchedlike>minimumlike
