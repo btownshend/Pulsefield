@@ -298,20 +298,44 @@ for i=1:length(missed)
   end
 end
 
-% Adjust areas of hypotheses that match the same target as another
+% Adjust areas of hypotheses that match the same target as another so they share the area
+% Adjust positions to spread them evenly over the target in the same relative order they were previously
 for i=1:ntgts
   if matched(i)>1
     if debug
       fprintf('Scaling area of hypotheses matching target %d by %d\n', i, matched(i));
     end
-    for j=1:length(hf)
-      if hf(j).tnum==i
-        % Rescale area
-        hf(j).area=hf(j).area/matched(i);
-        % Uncertain about other stats
-        hf(j).minoraxislength=nan;
-        hf(j).majoraxislength=nan;
-        hf(j).orientation=nan;
+    minx=min(tgts(i).pixellist(:,1));
+    maxx=max(tgts(i).pixellist(:,1));
+    miny=min(tgts(i).pixellist(:,2));
+    maxy=max(tgts(i).pixellist(:,2));
+    ingroup=find([hf.tnum]==i);
+    xpos=arrayfun(@(z) z.pos(1), hf(ingroup));
+    [~,xorder]=sort(xpos);
+    ypos=arrayfun(@(z) z.pos(2), hf(ingroup));
+    [~,yorder]=sort(ypos);
+    if debug
+      fprintf('T%d: xpos=%s, xorder=%s, ypos=%s, yorder=%s\n',i,sprintf('%f ',xpos),sprintf('%d ',xorder),sprintf('%f ',ypos),sprintf('%d ',yorder));
+    end
+    for ij=1:length(ingroup)
+      j=ingroup(ij);
+      % Rescale area
+      hf(j).area=hf(j).area/matched(i);
+      % Uncertain about other stats
+      hf(j).minoraxislength=nan;
+      hf(j).majoraxislength=nan;
+      hf(j).orientation=nan;
+      % Spread along target, averaging in current position
+      prevhypo=find([prevsnap.hypo.id]==hf(j).id);
+      if ~isempty(prevhypo)
+        prevpos=prevsnap.hypo(prevhypo).pos;
+      else
+        prevpos=hf(j).pos;
+      end
+      hf(j).pos(1)=(xorder(ij)/(matched(i)+1)*(maxx-minx)+minx)*0.25+prevpos(1)*0.75;
+      hf(j).pos(2)=(yorder(ij)/(matched(i)+1)*(maxy-miny)+miny)*0.25+prevpos(2)*0.75;
+      if debug
+        fprintf('Adjusted position in group from (%f,%f) to (%f,%f)\n', prevpos,hf(j).pos);
       end
     end
   end
