@@ -12,7 +12,8 @@ public class Tracker extends PApplet {
 	 * 
 	 */
 	private static boolean present = false;
-
+	private static boolean autocycle = false;
+	
 	private static final long serialVersionUID = 1L;
 	int tick=0;
 	private float avgFrameRate=0;
@@ -333,10 +334,12 @@ public class Tracker extends PApplet {
 	}
 
 	public void cycle() {
-		Calendar cal=Calendar.getInstance();
-		int hour=cal.get(Calendar.HOUR_OF_DAY);
-		PApplet.println("Autocycling hour = "+hour);
-		cycler.change(hour>=7 && hour <= 19);
+		if (autocycle) {
+			Calendar cal=Calendar.getInstance();
+			int hour=cal.get(Calendar.HOUR_OF_DAY);
+			PApplet.println("Autocycling hour = "+hour);
+			cycler.change(hour>=7 && hour <= 19);
+		}
 	}
 	
 	synchronized public void pfsetnpeople(int n) {
