@@ -29,7 +29,7 @@ while (true) {
 	0=>done;
 
 	for (int t; t < min.numTracks(); t++)
-		//	spork ~ track(t);
+		spork ~ track(t);
 
 	while (done < min.numTracks())
 		1::second => now;
@@ -45,6 +45,10 @@ class newListener extends OSCListener {
     Shred @listener;
 
     fun void receiveEvent(OscEvent oe) {
+		if (numGens>=MAXGEN) {
+			<<<"Unable to create another generator, already have ",numGens>>>;
+			return;
+		}
 		oe.getInt() => int id;
 		oe.getInt() => int type;
 		<<<"Creating new instrument id ",id," of type ",type>>>;
@@ -106,6 +110,7 @@ class delListener extends OSCListener {
 
 fun void track(int t)
 {
+	<<<"Starting MIDI reader for track ",t>>>;
     while(min.read(msg, t)) {
         if(msg.when > 0::second)
             msg.when => now;
