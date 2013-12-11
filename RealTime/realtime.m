@@ -36,7 +36,7 @@ if ~oscloopback('MPV') || ~oscloopback('MPO') || ~oscloopback('MPL') || ~oscloop
 end
 
 % Setup destination for outgoing OSC messages
-p.oscdests={'MAX','LD','TO','VD'};
+p.oscdests={'MAX','LD','TO','VD','CK'};
 
 % Turn on LEDS directly (in case LED server is not running)
 if ~isfield(p,'noleds')
