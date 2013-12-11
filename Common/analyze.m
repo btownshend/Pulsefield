@@ -13,6 +13,9 @@ function snap=analyze(p,v,doplot,truetgts)
 if nargin<3
   doplot=false;
 end
+if isfield(v,'v')
+  v=v.v;   % Convenience fix for passing in vis instead of vis.v
+end
 if isfield(p.analysisparams,'expandrays')
   v=expandrays(p,v);
 end
