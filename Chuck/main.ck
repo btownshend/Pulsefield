@@ -90,11 +90,13 @@ class delListener extends OSCListener {
 
     fun void receiveEvent(OscEvent oe) {
 	oe.getInt() => int id;
+	<<<"Got delete ",id," message.">>>;
 	for (0=>int i;i<numGens;i++) {
+//		<<<"gens[",i,"].id=",gens[i].id>>>;
 	    if (gens[i].id == id) {
-		gens[i].stop();
+			gens[i].stop();
 		// Remove from list
-		for (0=>int j;j<numGens-1;j++) {
+		for (i+1=>int j;j<numGens-1;j++) {
 		    gens[j+1]@=>gens[j];
 		}
 		<<<"Deleted instrument ",i," with ID ",id>>>;
