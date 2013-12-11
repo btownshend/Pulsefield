@@ -129,6 +129,7 @@ class Controller extends Fiducial {
 				msg.add(cc.cc1);
 				cc1val = (float) (dir/(2*Math.PI)-0.25f);  // Map so up on screen is 0.0 and increases CW
 				if (cc1val<0)cc1val=cc1val+1f;
+				cc1val *= 128;
 				msg.add(cc1val);
 				Tracker.sendOSC("CK",msg);
 			}
@@ -136,8 +137,8 @@ class Controller extends Fiducial {
 				OscMessage msg = new OscMessage("/chuck/dev/"+parent.id+"/cc");
 				msg.add(cc.cc2);
 				// Linear from 0.0 at DISTBREAK to 1.0 at distance DISTCREATE
-				cc2val=1.0f-dist/(Fiducials.DISTBREAK-Fiducials.DISTCREATE);
-				if (cc2val>1.0f) cc2val=1.0f;
+				cc2val=128*(1.0f-dist/(Fiducials.DISTBREAK-Fiducials.DISTCREATE));
+				if (cc2val>128.0f) cc2val=128.0f;
 				if (cc2val<0.0f) cc2val=0.0f;
 				msg.add(cc2val);  
 				Tracker.sendOSC("CK",msg);
@@ -164,9 +165,9 @@ class Controller extends Fiducial {
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
 		if (cc!=null) {
 			if (cc.cc1!=-1)
-				parent.text(String.format("CC%d=%.2f",cc.cc1,cc1val),x,y-sz*0.3f);
+				parent.text(String.format("CC%d=%.0f",cc.cc1,cc1val),x,y-sz*0.3f);
 			if (cc.cc2!=-1)
-				parent.text(String.format("CC%d=%.2f",cc.cc2,cc2val),x,y+sz*0.3f);
+				parent.text(String.format("CC%d=%.0f",cc.cc2,cc2val),x,y+sz*0.3f);
 		}
 	}
 
