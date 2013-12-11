@@ -8,14 +8,14 @@ public class STKGenerator extends Generator {
 	}
 
 	fun void start(StkInstrument newinstr, int id) {
-		<<<"STKGenerator.startListeners">>>;
+		<<<"STKGenerator.start">>>;
 		newinstr@=>instr;
 		instr => pan => dac;
 		startListeners(id);
     }
 
     fun void stop() {
-		<<<"STKGenerator.stopListeners">>>;
+		<<<"STKGenerator.stop">>>;
 		instr=<pan=<dac;
 		stopListeners();
 	}
