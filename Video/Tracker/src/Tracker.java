@@ -67,6 +67,7 @@ public class Tracker extends PApplet {
 		MPO = new NetAddress(config.getHost("MPO"), config.getPort("MPO"));
 		AL = new NetAddress(config.getHost("AL"), config.getPort("AL"));
 		CK = new NetAddress(config.getHost("CK"), config.getPort("CK"));
+		PApplet.println("Sending chuck commands to "+config.getHost("CK")+":"+config.getPort("CK"));
 		PApplet.println("AL at "+config.getHost("AL")+":"+config.getPort("AL"));
 		MAX = new NetAddress(config.getHost("MAX"), config.getPort("MAX"));
 		ableton = new Ableton(oscP5, AL);
@@ -211,6 +212,8 @@ public class Tracker extends PApplet {
 	public void keyPressed() {
 		if (key=='C' || key=='c')
 			pfsetnpeople(0);
+		else if (key>='1' && key<='9')
+			mouseID=90+key-'1';
 	}
 
 	public static void main(String args[]) {
@@ -299,6 +302,7 @@ public class Tracker extends PApplet {
 			PApplet.print(",axislength=("+majoraxis+","+minoraxis+")");
 			PApplet.println(",channel="+channel);
 		} */
+		// NOTE: Need to map xvelocity,yvelocity before using them!
 
 		if (xpos<Tracker.rawminx) {
 			PApplet.println("Got xpos ("+xpos+") less than minx ("+Tracker.rawminx+")");
@@ -344,6 +348,8 @@ public class Tracker extends PApplet {
 	
 	synchronized public void pfsetnpeople(int n) {
 		PApplet.println("/pf/set/npeople: now have "+n+" people, size="+positions.positions.size());
+		if (n==0)
+			setapp(currentvis);   // Cause a reset
 		if (n==0 && positions.positions.size()>0)
 			cycle();
 		positions.setnpeople(n);
