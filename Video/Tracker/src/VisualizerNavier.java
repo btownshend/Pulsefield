@@ -131,7 +131,7 @@ class VisualizerNavier extends Visualizer {
 			int c=ps.getcolor(parent);
 			parent.fill(c,255);
 			parent.stroke(c,255);
-			PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
+			//PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
 			
 			float sz=5;
 			if (ps.groupsize > 1)
