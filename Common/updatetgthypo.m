@@ -6,7 +6,7 @@
 % Output:
 %   snap - w/hypo field added, snap.nextid updated
 function snap=updatetgthypo(layout,prevsnap,snap,samp)
-debug=2;
+debug=0;
 % PARAMETERS
 minunique=5;  % Could be ghost if less than this many unique rays
 pghost=0.9;	% with this prob
@@ -120,7 +120,9 @@ for i=1:ntgts
   pentry=0.1; % expcdf(dt,1/entryrate);   % Prob they entered in last dt seconds
 
   entrylike(i)=pspeed*pentry;
-  fprintf('entry T%d: dist=%f, like=%f\n', i, entrydist(i), entrylike(i));
+  if (debug)
+    fprintf('entry T%d: dist=%f, like=%f\n', i, entrydist(i), entrylike(i));
+  end
 end
 
   
