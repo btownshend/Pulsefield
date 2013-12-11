@@ -232,7 +232,7 @@ function info=oscupdate(p,info,sampnum,snap,prevsnap)
         info.lastvcnts(c,:)=vcnts;
       end
     else
-      fprintf('Info does not have a .vis field\n');
+      %fprintf('Info does not have a .vis field\n');
     end
     
     % Update number of people present after all exits, entries

@@ -72,7 +72,7 @@ while samp<=length(recvis.vis)
   transitions=sum(abs(diff(vis.v'))==1);
   if any(transitions>20) && samp>=suppressuntil
     suppressuntil=samp+50;
-    fprintf('Too many LED blockage edges at snapshot %d: %s (ignoring until samp %d)\n', samp, sprintf('%d ',transitions),suppressuntil);
+    fprintf('More than 20 LED blockage edges at snapshot %d: %s (suppressing further messages until samp %d)\n', samp, sprintf('%d ',transitions),suppressuntil);
   end
 
   % Analyze data to estimate position of targets using layout
