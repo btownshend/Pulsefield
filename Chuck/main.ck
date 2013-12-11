@@ -1,6 +1,6 @@
-10=>int MAXINSTR;
-Generator @listeners[MAXINSTR];
-0=>int numInstruments;
+10=>int MAXGEN;
+Generator @gens[MAXGEN];
+0=>int numGens;
 
 Globals gl;
 <<<"port=",Globals.port>>>;
@@ -59,14 +59,14 @@ class newListener extends OSCListener {
 			}
 			STKGenerator @newgen;
 			new STKGenerator @=> newgen;
-			newgen @=> listeners[numInstruments];
-			newgen.startListeners(instr,id);
+			newgen @=> gens[numGens];
+			newgen.start(instr,id);
 		}else {
 			<<<"Bad instrument type: ",type>>>;
 			return;
 		}
-//		listeners[numInstruments].playNote(440,1.0);   // Calling playnote here hangs ChucK!, probably due to some bug around calling things from events
-		numInstruments+1=>numInstruments;
+//		gens[numGens].playNote(440,1.0);   // Calling playnote here hangs ChucK!, probably due to some bug around calling things from events
+		numGens+1=>numGens;
 		<<<"receiveEvent done">>>;
     } 	       
 
@@ -82,15 +82,15 @@ class delListener extends OSCListener {
 
     fun void receiveEvent(OscEvent oe) {
 	oe.getInt() => int id;
-	for (0=>int i;i<numInstruments;i++) {
-	    if (listeners[i].id == id) {
-		listeners[i].stopListeners();
+	for (0=>int i;i<numGens;i++) {
+	    if (gens[i].id == id) {
+		gens[i].stop();
 		// Remove from list
-		for (0=>int j;j<numInstruments-1;j++) {
-		    listeners[j+1]@=>listeners[j];
+		for (0=>int j;j<numGens-1;j++) {
+		    gens[j+1]@=>gens[j];
 		}
 		<<<"Deleted instrument ",i," with ID ",id>>>;
-		numInstruments-1=>numInstruments;
+		numGens-1=>numGens;
 		i-1=>i;  // Allow this index to be retested
 	    }
 	}
@@ -110,10 +110,10 @@ fun void track(int t)
         if(msg.when > 0::second)
             msg.when => now;
         
-        if((msg.data1 & 0x90) == 0x90 && msg.data2 > 0 && msg.data3 > 0 && numInstruments>0) {
-	    t%numInstruments => int inum;
+        if((msg.data1 & 0x90) == 0x90 && msg.data2 > 0 && msg.data3 > 0 && numGens>0) {
+	    t%numGens => int inum;
 	    <<<"Playing track ",t,": ",msg.data2,"/",msg.data3," on  instrument ",inum>>>;
-		listeners[inum].playNote(msg.data2,msg.data3/127.0);
+		gens[inum].playNote(msg.data2,msg.data3/127.0);
 	}
     }
     done++;
