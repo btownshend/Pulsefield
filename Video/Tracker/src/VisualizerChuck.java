@@ -1,6 +1,4 @@
 import java.util.HashMap;
-import java.util.Iterator;
-
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -41,21 +39,30 @@ class GeneratorType {
 	int code;
 	int color;
 	CCPair cclist[];
-	GeneratorType(String name, int color, int code, int cc11, int cc12, int cc1col, int cc21, int cc22, int cc2col) {
+	GeneratorType(String name, int color, int code, CCPair cc1) {
 		this.name=name;
 		this.color=color;
 		this.code=code;
 		this.cclist=new CCPair[2];
-		cclist[0]=new CCPair(cc11,cc12,cc1col);
-		cclist[1]=new CCPair(cc21,cc22,cc2col);
+		cclist[0]=cc1;
+		cclist[1]=new CCPair(-1,-1,0);
+	}
+	GeneratorType(String name, int color, int code, CCPair cc1, CCPair cc2) {
+		this.name=name;
+		this.color=color;
+		this.code=code;
+		this.cclist=new CCPair[2];
+		cclist[0]=cc1;
+		cclist[1]=cc2;
 	}
 }
 
 
 class Generator extends Fiducial {
 	static final GeneratorType genTypes[] = {
-		new GeneratorType("BeeThree",0xffff0000,0,2,4,0xffffff00,1,11,0xffff00ff),
-		new GeneratorType("Mandolin",0xff00ff00,0,2,4,0xffffff00,1,11,0xffff00ff)
+		new GeneratorType("FM",0xff0000ff,0,new CCPair(1,11,0xffff00ff)),
+		new GeneratorType("BeeThree",0xffff0000,1,new CCPair(2,4,0xffffff00),new CCPair(1,11,0xffff00ff)),
+		new GeneratorType("Mandolin",0xff00ff00,2,new CCPair(2,4,0xffffff00),new CCPair(1,11,0xffff00ff))
 	};
 
 	static final int NUMGENTYPES=genTypes.length;

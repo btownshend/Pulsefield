@@ -1,4 +1,4 @@
-SRCS=OSCListener.ck globals.ck generator.ck stkgenerator.ck main.ck
+SRCS=OSCListener.ck globals.ck generator.ck stkgenerator.ck fmgenerator.ck main.ck
 main:
 	chuck --verbose:3 $(SRCS)
 

@@ -52,13 +52,17 @@ class newListener extends OSCListener {
 		oe.getInt() => int id;
 		oe.getInt() => int type;
 		<<<"Creating new instrument id ",id," of type ",type>>>;
-		if (type<=2) {
+		if (type==0) {
+			FMGenerator fmgen;
+			fmgen @=> gens[numGens];
+			fmgen.start(id);
+	   } else if (type<=3) {
 			StkInstrument @instr;
-			if (type==0)  {
+			if (type==1)  {
 				new BeeThree @=> instr;
-			} else if (type==1) {
-				new Mandolin @=> instr;
 			} else if (type==2) {
+				new Mandolin @=> instr;
+			} else if (type==3) {
 				new FMVoices @=> instr;
 			}
 			STKGenerator @newgen;
