@@ -1,6 +1,5 @@
 10=>int MAXINSTR;
-StkInstrument @instruments[MAXINSTR];
-StkListener @listeners[MAXINSTR];
+Generator @listeners[MAXINSTR];
 0=>int numInstruments;
 
 Globals gl;
@@ -46,30 +45,31 @@ class newListener extends OSCListener {
     Shred @listener;
 
     fun void receiveEvent(OscEvent oe) {
-	oe.getInt() => int id;
-	oe.getInt() => int type;
-	<<<"Creating new instrument id ",id," of type ",type>>>;
-	if (type==0) 
-	    new BeeThree@=>instruments[numInstruments];
-	else if (type==1)
-	    new Mandolin@=>instruments[numInstruments];
-	else if (type==2)
-	    new FMVoices@=>instruments[numInstruments];
-	else if (type==3)
-	    new Rhodey@=>instruments[numInstruments];
-	else if (type==4)
-	    new TubeBell@=>instruments[numInstruments];
-	else {
-	    <<<"Bad instrument type: ",type>>>;
-	    return;
-	}
-	instruments[numInstruments].freq(440);
-	instruments[numInstruments].noteOn(1.0);
-
-	new StkListener @=> listeners[numInstruments];
-	listeners[numInstruments].startListeners(instruments[numInstruments],id);
-	numInstruments+1=>numInstruments;
+		oe.getInt() => int id;
+		oe.getInt() => int type;
+		<<<"Creating new instrument id ",id," of type ",type>>>;
+		if (type<=2) {
+			StkInstrument @instr;
+			if (type==0)  {
+				new BeeThree @=> instr;
+			} else if (type==1) {
+				new Mandolin @=> instr;
+			} else if (type==2) {
+				new FMVoices @=> instr;
+			}
+			STKGenerator @newgen;
+			new STKGenerator @=> newgen;
+			newgen @=> listeners[numInstruments];
+			newgen.startListeners(instr,id);
+		}else {
+			<<<"Bad instrument type: ",type>>>;
+			return;
+		}
+//		listeners[numInstruments].playNote(440,1.0);   // Calling playnote here hangs ChucK!, probably due to some bug around calling things from events
+		numInstruments+1=>numInstruments;
+		<<<"receiveEvent done">>>;
     } 	       
+
     spork ~listen("/chuck/new  i i",Globals.port) @=> listener;
 
     fun void stop() {
@@ -87,7 +87,6 @@ class delListener extends OSCListener {
 		listeners[i].stopListeners();
 		// Remove from list
 		for (0=>int j;j<numInstruments-1;j++) {
-		    instruments[j+1]@=>instruments[j];
 		    listeners[j+1]@=>listeners[j];
 		}
 		<<<"Deleted instrument ",i," with ID ",id>>>;

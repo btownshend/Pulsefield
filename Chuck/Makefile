@@ -1,5 +1,9 @@
+SRCS=OSCListener.ck globals.ck generator.ck stkgenerator.ck main.ck
 main:
-	chuck OSCListener.ck globals.ck stklistener.ck main.ck
+	chuck --verbose:3 $(SRCS)
+
+dump:
+	chuck --dump $(SRCS)
 
 test:
 	chuck OSCListener.ck person.ck pulsefield.ck test.ck

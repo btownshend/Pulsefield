@@ -1,62 +1,55 @@
-public class StkListener  {
-	5 => int NVOICES;  // Polyphony, all sharing same settings
+public class Generator  {
     int id;
-    StkInstrument @instr[NVOICES];
-	int curvoice;
     Pan2 pan;
-    CCListener cc;
+    CCListener cclistener;
 //    FreqListener freq;
     PanListener panlistener;
 	float ccvals[128];
 
-    fun void startListeners(StkInstrument instr, int id) {
+    fun void startListeners(int id) {
+		<<<"Generator.startListeners">>>;
 		id=>this.id;
-		for (0=>int i;i<NVOICES;i++) {
-			instr@=>this.instr[i];
-			this.instr[i] => pan => dac;
-		}
-		cc.start(this,id);
+		cclistener.start(this,id);
 //		freq.start(this,id);
 		panlistener.start(this,id);
-		0=>curvoice;
     }
 
     fun void stopListeners() {
-		for (0=>int i;i<NVOICES;i++) {
-			instr[i]=<pan=<dac;
-		}
-		cc.stop();
+		<<<"Generator.stopListeners">>>;
+		cclistener.stop();
 //		freq.stop();
 		panlistener.stop();
 	}
 
-	fun void setCC(int cc, float val) {
+	fun void logNewCC(int cc, float val) {
 		if (cc<ccvals.cap()) {
-			if ((val*10 $int) != (ccvals[cc]*10 $int))
-				<<<"Got CC(",cc,",",val,") for ID ",id>>>;
+			if ((val $int) != (ccvals[cc] $int))
+			<<<"Got CC(",cc,",",val,") for ID ",id>>>;
 			val=>ccvals[cc];
 		}
-		for (0=>int i;i<NVOICES;i++)
-			instr[i].controlChange(cc,val);
+	}
+	
+	fun void setCC(int cc, float val) {
+		<<<"Generator.setCC(",cc,",",val,")">>>;
+		logNewCC(cc,val);
 	}
 
 	fun void playNote(int note, float vel) {
-		instr[curvoice].freq(Std.mtof(note));
-		instr[curvoice].noteOn(vel);
-		1+=>curvoice;
-		if (curvoice>=NVOICES) {
-			0=>curvoice;
-		}
+		<<<"playNote() not implemented by subclass!">>>;
+	}
+
+	fun void stop() {
+		<<<"stop() not implemented by subclass!">>>;
 	}
 }
 
 
-class StkControlListener extends OSCListener {
-    StkListener @wrapper;
+class GenControlListener extends OSCListener {
+    Generator @wrapper;
     Shred @listener;
     int id;
 
-    fun void start(StkListener wrapper, int id, string suffix) {
+    fun void start(Generator wrapper, int id, string suffix) {
 		id=>this.id;   // For debugging
 		wrapper@=>this.wrapper;
 		spork ~listen("/chuck/dev/"+id+"/"+suffix,Globals.port) @=> listener;
@@ -67,13 +60,13 @@ class StkControlListener extends OSCListener {
     }
 }
 
-class CCListener extends StkControlListener {
+class CCListener extends GenControlListener {
     fun void receiveEvent(OscEvent oe) {
 		oe.getInt() => int cc;
 		oe.getFloat() => float value;
 		wrapper.setCC(cc,value);
     } 	       
-    fun void start(StkListener wrapper, int id) {
+    fun void start(Generator wrapper, int id) {
 		start(wrapper,id,"cc i f");
     }
     fun void stop() {  // For some reason, the base class' stop() is not visible...
@@ -82,13 +75,13 @@ class CCListener extends StkControlListener {
     }
 }
 
-// class FreqListener extends StkControlListener {
+// class FreqListener extends GenControlListener {
 //     fun void receiveEvent(OscEvent oe) {
 // 		oe.getFloat() => float value;
 // 		<<<"Got freq(",value,") for ID ",id>>>;
 // 		wrapper.instr.freq(value);
 //     } 	       
-//     fun void start(StkListener wrapper, int id) {
+//     fun void start(Generator wrapper, int id) {
 // 		start(wrapper,id,"freq f");
 //     }
 //     fun void stop() {  // For some reason, the base class' stop() is not visible...
@@ -97,14 +90,14 @@ class CCListener extends StkControlListener {
 //     }
 // }
 
-class PanListener extends StkControlListener {
+class PanListener extends GenControlListener {
     fun void receiveEvent(OscEvent oe) {
 		oe.getFloat() => float value;
 		if ((wrapper.pan.pan()*10 $ int) != (value*10 $ int))
 			<<<"Got pan(",value,") for ID ",id>>>;
 		wrapper.pan.pan(value);
     } 	       
-    fun void start(StkListener wrapper, int id) {
+    fun void start(Generator wrapper, int id) {
 		start(wrapper,id,"pan f");
     }
     fun void stop() {  // For some reason, the base class' stop() is not visible...
