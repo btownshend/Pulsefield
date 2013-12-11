@@ -205,7 +205,12 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 		super();
 	}
 
-
+	void removeAll() {
+		for (Fiducial f: values())
+			f.stop();
+		super.clear();
+	}
+	
 	void addNew(Position pos, int id) {
 		int ngen=0, nctrl=0;
 		for (Fiducial f: values()) {
@@ -323,6 +328,7 @@ public class VisualizerChuck extends Visualizer {
 
 	@Override
 	public void stop() {
+		fiducials.removeAll();
 		OscMessage msg = new OscMessage("/chuck/stop");
 		Tracker.sendOSC("CK",msg);
 	}
