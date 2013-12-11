@@ -205,15 +205,20 @@ public class Tracker extends PApplet {
 
 	public void mouseReleased() {
 		//pfexit(0, 0, 98);
-		mouseID=(mouseID-90+1)%8+90;
+		//mouseID=(mouseID-90+1)%10+90;
 	}
 	
 	@Override
 	public void keyPressed() {
-		if (key=='C' || key=='c')
+		if (key=='C' || key=='c') {
+			mouseID=90;
 			pfsetnpeople(0);
-		else if (key>='1' && key<='9')
+		} else if (key>='1' && key<='9')
 			mouseID=90+key-'1';
+		else if (key=='x'||key=='X') {
+			// Current ID exits
+			pfexit(0,0,mouseID);
+		}
 	}
 
 	public static void main(String args[]) {
