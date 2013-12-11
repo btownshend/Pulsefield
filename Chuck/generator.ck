@@ -2,7 +2,7 @@ public class Generator  {
     int id;
     Pan2 pan;
     CCListener cclistener;
-//    FreqListener freq;
+    YListener ylistener;
     PanListener panlistener;
 	float ccvals[128];
 
@@ -10,14 +10,14 @@ public class Generator  {
 		<<<"Generator.startListeners">>>;
 		id=>this.id;
 		cclistener.start(this,id);
-//		freq.start(this,id);
+		ylistener.start(this,id);
 		panlistener.start(this,id);
     }
 
     fun void stopListeners() {
 		<<<"Generator.stopListeners">>>;
 		cclistener.stop();
-//		freq.stop();
+		ylistener.stop();
 		panlistener.stop();
 	}
 
@@ -32,6 +32,10 @@ public class Generator  {
 	fun void setCC(int cc, float val) {
 		<<<"Generator.setCC(",cc,",",val,")">>>;
 		logNewCC(cc,val);
+	}
+
+	fun void setY(float val) {
+		<<<"Generator.setY(",val,")">>>;
 	}
 
 	fun void playNote(int note, float vel) {
@@ -75,20 +79,20 @@ class CCListener extends GenControlListener {
     }
 }
 
-// class FreqListener extends GenControlListener {
-//     fun void receiveEvent(OscEvent oe) {
-// 		oe.getFloat() => float value;
-// 		<<<"Got freq(",value,") for ID ",id>>>;
-// 		wrapper.instr.freq(value);
-//     } 	       
-//     fun void start(Generator wrapper, int id) {
-// 		start(wrapper,id,"freq f");
-//     }
-//     fun void stop() {  // For some reason, the base class' stop() is not visible...
-// 		<<<"Stopping freqlistener for id ",id>>>;
-// 		1=>done;
-//     }
-// }
+class YListener extends GenControlListener {
+    fun void receiveEvent(OscEvent oe) {
+		oe.getFloat() => float value;
+		<<<"Got yl(",value,") for ID ",id>>>;
+		wrapper.setY(value);
+    } 	       
+    fun void start(Generator wrapper, int id) {
+		start(wrapper,id,"y f");
+    }
+    fun void stop() {  // For some reason, the base class' stop() is not visible...
+		<<<"Stopping ylistener for id ",id>>>;
+		1=>done;
+    }
+}
 
 class PanListener extends GenControlListener {
     fun void receiveEvent(OscEvent oe) {
