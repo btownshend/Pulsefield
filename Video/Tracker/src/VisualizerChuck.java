@@ -9,143 +9,301 @@ import processing.opengl.PGL;
 import processing.opengl.PGraphicsOpenGL;
 
 // Visualizer that sends messages to chuck
-class Fiducial extends Position {
-	int type;
-	Fiducial parent;
-	
-	Fiducial(Position ps, int type) {
+abstract class Fiducial extends Position {
+	Fiducial(Position ps) {
 		super(ps.origin,ps.channel,ps.id);
-		this.type=type;
-		OscMessage msg = new OscMessage("/chuck/new");
-		msg.add(id);
-		msg.add(type);
-		Tracker.sendOSC("CK",msg);
 	}
-	
+
 	void update(Position ps) {
 		origin=ps.origin;
-		OscMessage msg = new OscMessage("/chuck/update");
-		msg.add(type);
-		msg.add(ps.origin.x);
-		msg.add(ps.origin.y);
+	}
+
+	abstract void draw(PApplet parent, PVector wsize, float sz);
+	void stop() { }
+}
+
+class CCPair {
+	int cc1,cc2;
+	int color;
+	CCPair() {
+		cc1=-1;
+		cc2=-1;
+	}
+	CCPair(int cc1, int cc2, int color) {
+		this.cc1=cc1;
+		this.cc2=cc2;
+		this.color=color;
+	}
+}
+
+class GeneratorType {
+	String name;
+	int code;
+	int color;
+	CCPair cclist[];
+	GeneratorType(String name, int color, int code, int cc11, int cc12, int cc1col, int cc21, int cc22, int cc2col) {
+		this.name=name;
+		this.color=color;
+		this.code=code;
+		this.cclist=new CCPair[2];
+		cclist[0]=new CCPair(cc11,cc12,cc1col);
+		cclist[1]=new CCPair(cc21,cc22,cc2col);
+	}
+}
+
+
+class Generator extends Fiducial {
+	static final GeneratorType genTypes[] = {
+		new GeneratorType("BeeThree",0xffff0000,0,2,4,0xffffff00,1,11,0xffff00ff),
+		new GeneratorType("Mandolin",0xff00ff00,0,2,4,0xffffff00,1,11,0xffff00ff)
+	};
+
+	static final int NUMGENTYPES=genTypes.length;
+
+	GeneratorType genType;
+	int nControllers;
+
+	Generator(Position ps, GeneratorType genType) {
+		super(ps);
+		this.genType=genType;
+		OscMessage msg = new OscMessage("/chuck/new");
+		msg.add(id);
+		msg.add(genType.code);
 		Tracker.sendOSC("CK",msg);
+		nControllers=0;
 	}
 	
+	@Override() 
+	void stop() {
+		OscMessage msg = new OscMessage("/chuck/del");
+		msg.add(id);
+		Tracker.sendOSC("CK",msg);
+		PApplet.println("Stopped generator ID "+id);
+	}
 
+	@Override
+	void update(Position ps) {
+		super.update(ps);
+		OscMessage msg = new OscMessage("/chuck/dev/"+id+"/pan");
+		msg.add((ps.origin.x+1f)/2f);
+		Tracker.sendOSC("CK",msg);
+		msg = new OscMessage("/chuck/dev/"+id+"/y");
+		msg.add((-ps.origin.y+1f)/2f); // Flip direction so top of screen (far side of PF) is 1.0
+		Tracker.sendOSC("CK",msg);
+	}
+
+	@Override 
 	void draw(PApplet parent, PVector wsize, float sz) {
 		float x=(origin.x+1)*wsize.x/2;
 		float y=(origin.y+1)*wsize.y/2;
-		if (type==0) {
-			parent.ellipseMode(PConstants.CENTER);
-			parent.ellipse(x, y, sz, sz);
-		} else if (type==1) {
-			parent.rectMode(PConstants.CENTER);
-			parent.rect(x, y, sz, sz);
-		} else if (type==2) {
-			parent.triangle(x-sz/2,y+sz/2,x+sz/2,y+sz/2,x,y-sz/2);
-		} else {
-			PApplet.println("Unable to draw fiducial type "+type);
+		parent.fill(genType.color);
+		parent.stroke(genType.color);
+		parent.ellipseMode(PConstants.CENTER);
+		parent.ellipse(x, y, sz, sz);
+		parent.fill(255,255);
+		parent.textSize(sz*.7f);
+		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
+		parent.text(genType.name,x,y);
+	}
+}
+
+class Controller extends Fiducial {
+	Generator parent;
+	CCPair cc;   // Controller numbers to use for (dir,dist), -1 to ignore
+	float cc1val, cc2val;
+	
+	Controller(Position ps) {
+		super(ps);
+		parent=null;
+		cc=null;
+	}
+
+	@Override
+	void update(Position ps) {
+		super.update(ps);
+		if (parent!=null) {
+			float dir=PVector.sub(parent.origin,origin).heading();
+			float dist=PVector.dist(parent.origin,origin);
+			if (cc.cc1!=-1) {
+				OscMessage msg = new OscMessage("/chuck/dev/"+parent.id+"/cc");
+				msg.add(cc.cc1);
+				cc1val = (float) (dir/(2*Math.PI)-0.25f);  // Map so up on screen is 0.0 and increases CW
+				if (cc1val<0)cc1val=cc1val+1f;
+				msg.add(cc1val);
+				Tracker.sendOSC("CK",msg);
+			}
+			if (cc.cc2!=-1) {
+				OscMessage msg = new OscMessage("/chuck/dev/"+parent.id+"/cc");
+				msg.add(cc.cc2);
+				// Linear from 0.0 at DISTBREAK to 1.0 at distance DISTCREATE
+				cc2val=1.0f-dist/(Fiducials.DISTBREAK-Fiducials.DISTCREATE);
+				if (cc2val>1.0f) cc2val=1.0f;
+				if (cc2val<0.0f) cc2val=0.0f;
+				msg.add(cc2val);  
+				Tracker.sendOSC("CK",msg);
+			}
 		}
+	}
+
+	@Override 
+	void draw(PApplet parent, PVector wsize, float sz) {
+		float x=(origin.x+1)*wsize.x/2;
+		float y=(origin.y+1)*wsize.y/2;
+		if (cc!=null) {
+			parent.fill(cc.color);
+			parent.stroke(cc.color);
+		}
+		parent.rectMode(PConstants.CENTER);
+		parent.rect(x, y, sz, sz);
+		// parent.triangle(x-sz/2,y+sz/2,x+sz/2,y+sz/2,x,y-sz/2);
+		if (this.parent!=null) {
+			parent.line((origin.x+1)*wsize.x/2, (origin.y+1)*wsize.y/2, (this.parent.origin.x+1)*wsize.x/2, (this.parent.origin.y+1)*wsize.y/2);
+		}
+		parent.fill(255,255);
+		parent.textSize(sz*.5f);
+		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
+		if (cc!=null) {
+			if (cc.cc1!=-1)
+				parent.text(String.format("CC%d=%.2f",cc.cc1,cc1val),x,y-sz*0.3f);
+			if (cc.cc2!=-1)
+				parent.text(String.format("CC%d=%.2f",cc.cc2,cc2val),x,y+sz*0.3f);
+		}
+	}
+
+	void connect(Generator parent) {
+		if (parent.nControllers >= parent.genType.cclist.length) {
+			PApplet.println("Not connecting additional controller to "+parent.id+", which already has "+parent.nControllers+" controllers");
+			return;
+		}
+		this.parent=parent;
+		this.cc=parent.genType.cclist[parent.nControllers];
+		PApplet.println("Connect controller "+id+" to generator "+parent.id+" on controllers "+this.cc.cc1+","+this.cc.cc2);
+		parent.nControllers++;
+	}
+
+	void disconnect() {
+		PApplet.println("Disconnect controller "+id+" from generator "+parent.id);
+		parent.nControllers--;
+		parent=null;
 	}
 }
 
 class Fiducials extends HashMap<Integer,Fiducial> {
+	static final float DISTBREAK=0.5f;   // Distance to break connections (in screen normalized coordinates)
+	static final float DISTCREATE=0.1f;  // Distance to create connections 
 	private static final long serialVersionUID = -1131006311643745996L;
-	static final String types[]= {"Carrier","Modulator","MI"};
-	static final int ntypes=types.length;
-
 
 	Fiducials() {
 		super();
 	}
-	
-	// Choose a type for a new entry
-	int newType(int id) {
-		int newt=id%ntypes;
-		return newt;
+
+
+	void addNew(Position pos, int id) {
+		int ngen=0, nctrl=0;
+		for (Fiducial f: values()) {
+			if (f instanceof Generator)
+				ngen++;
+			else
+				nctrl++;
+		}
+		if (ngen==0 || nctrl>ngen)
+			put(id, new Generator(pos,Generator.genTypes[ngen%Generator.NUMGENTYPES]));
+		else
+			put(id, new Controller(pos));
 	}
 	
+	void remove(int id) {
+		for (Fiducial f: values()) {
+			if (f.id==id) {
+				f.stop();
+				if (f instanceof Controller) {
+					Controller c=(Controller)f;
+					if (c.parent==f)
+						c.disconnect();
+				}
+			}	
+		}
+		super.remove(id);
+	}
+
 	/* Make links from fiducials to lower numbered ones */
 	void makeLinks() {
 		for (Fiducial f: values()) {
-			if (f.type>0) {
-				float mindist=1e10f;
-				Fiducial newparent=null;
-				for (Fiducial f2: values()) {
-					if (f2.type==f.type-1) {
-						float dist=PVector.dist(f.origin, f2.origin);
-						//PApplet.println("Distance from "+f.id+" to "+f2.id+" = "+dist);
-						if (dist<mindist) {
-							mindist=dist;
-							newparent=f2;
-						}
+			if (f instanceof Controller) {
+				Controller c=(Controller)f;
+				if (c.parent != null) {
+					// Check if we need to break connection
+					float dist=PVector.dist(c.origin,c.parent.origin);
+					if (dist>DISTBREAK) {
+						c.disconnect();
 					}
 				}
-
-				if (f.parent!=newparent && f.parent!=null) {
-					// Remove old link
-					PApplet.println("Disconnect "+f.parent.id+" from "+f.id);
-					OscMessage msg = new OscMessage("/chuck/disconnect");
-					msg.add(f.id);
-					Tracker.sendOSC("CK",msg);
-					f.parent=null;
-				}
-				if (newparent!=null && f.parent==null) {
-					f.parent=newparent;
-					OscMessage msg = new OscMessage("/chuck/connect");
-					msg.add(f.id);
-					msg.add(f.parent.id);	
-					Tracker.sendOSC("CK",msg);
-					PApplet.println("Connect "+f.parent.id+" to "+f.id);
+				if (c.parent==null) {
+					// See if we can form a new connection
+					float mindist=1e10f;
+					Generator newparent=null;
+					for (Fiducial f2: values()) {
+						if (f2 instanceof Generator) {
+							float dist=PVector.dist(c.origin, f2.origin);
+							//PApplet.println("Distance from "+f.id+" to "+f2.id+" = "+dist);
+							if (dist<mindist) {
+								mindist=dist;
+								newparent=(Generator)f2;
+							}
+						}
+					}
+					if (newparent!=null && mindist<=DISTCREATE) {
+						c.connect(newparent);
+					}
 				}
 			}
 		}
 	}
-	
+
 	void draw(PApplet parent, PVector wsize) {
-		float sz=20;
+		float sz=30;
 		for (Fiducial f: values()) {
 			int c=f.getcolor(parent);
 			parent.fill(c,255);
 			parent.stroke(c,255);
 			parent.strokeWeight(5);
 			f.draw(parent,wsize,sz);
-			if (f.parent!=null) {
-				parent.line((f.origin.x+1)*wsize.x/2, (f.origin.y+1)*wsize.y/2, (f.parent.origin.x+1)*wsize.x/2, (f.parent.origin.y+1)*wsize.y/2);
-			}
 		}
 	}
 }
 
 public class VisualizerChuck extends Visualizer {
 	Fiducials fiducials;
-	
+
 	VisualizerChuck(PApplet parent) {
 		super();
 		fiducials=new Fiducials();
 	}
-	
-
 
 	@Override
 	public void update(PApplet parent, Positions allpos) {
 		// Update internal state of the dancers
 		for (int id: allpos.positions.keySet()) {
 			if (!fiducials.containsKey(id)) {
-				fiducials.put(id,new Fiducial(allpos.get(id),fiducials.newType(id)));
+				fiducials.addNew(allpos.get(id),id);
 			}
-			
+
 			Fiducial f=fiducials.get(id);
 			f.update(allpos.get(id));
 		}
 		// Remove fiducials for which we no longer have a position (exitted)
-		for (Iterator<Integer> iter = fiducials.keySet().iterator();iter.hasNext();) {
-			int id=iter.next().intValue();
-			if (!allpos.positions.containsKey(id)) {
-				PApplet.println("Removing ID "+id);
-				iter.remove();
+		boolean done;
+		do {
+			done=true;
+			for (int id: fiducials.keySet()) {
+				if (!allpos.positions.containsKey(id)) {
+					PApplet.println("Removing ID "+id);
+					fiducials.remove(id);
+					done=false;
+					break;  // Avoid concurrent modification problem
+				}
 			}
-		}
+		} while (!done);
 		fiducials.makeLinks();
 	}
 
@@ -154,7 +312,13 @@ public class VisualizerChuck extends Visualizer {
 		OscMessage msg = new OscMessage("/chuck/start");
 		Tracker.sendOSC("CK",msg);
 	}
-	
+
+	@Override
+	public void stop() {
+		OscMessage msg = new OscMessage("/chuck/stop");
+		Tracker.sendOSC("CK",msg);
+	}
+
 	@Override
 	public void draw(PApplet parent, Positions p, PVector wsize) {
 		PGL pgl=PGraphicsOpenGL.pgl;
@@ -173,4 +337,5 @@ public class VisualizerChuck extends Visualizer {
 		fiducials.draw(parent,wsize);
 	}
 }
+
 
