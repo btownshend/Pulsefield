@@ -18,7 +18,9 @@ public class Tracker extends PApplet {
 	private float avgFrameRate=0;
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
-	float minx=0f, maxx=0f, miny=0f, maxy=0f;
+	static float minx=-3.61f, maxx=3.61f, miny=-3.2f, maxy=3.2f;
+	static float rawminy=-3.61f, rawmaxy=3.61f, rawminx=0.63f, rawmaxx=7.04f;
+	static final float screenrotation=90f;   // Rotate raw coordinates CCW by this number of degrees
 	Visualizer vis[];
 	VisualizerGrid visAbleton;
 	VisualizerNavier visNavier;
@@ -237,8 +239,35 @@ public class Tracker extends PApplet {
 		}  /* print the address pattern and the typetag of the received OscMessage */
 	}
 
-	PVector mapposition(float x, float y) {
-		return new PVector((x-minx)/(maxx-minx)*2f-1, (y-miny)/(maxy-miny)*2f-1 );
+	public PVector normalizePosition(PVector pos) {
+		return new PVector(pos.x*2f/(Tracker.maxx-Tracker.minx),pos.y*2f/(Tracker.maxy-Tracker.miny));
+	}
+	
+	public PVector mapPosition(float x, float y) {
+		return mapPosition(new PVector(x,y));
+	}
+
+	public PVector mapPosition(PVector raw) {
+		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
+		PVector result=PVector.sub(raw,mid);
+		result.rotate((float)Math.toRadians(Tracker.screenrotation));
+		// Flip y-axis since screen has origin in top left
+		result.y=-result.y;
+//		PApplet.println("Mapped ("+raw+") to ("+result);
+		return result;
+	}
+	
+	public void resetcoords() {
+		PVector tl=mapPosition(Tracker.rawminx,Tracker.rawmaxy);
+		PVector tr=mapPosition(Tracker.rawmaxx,Tracker.rawmaxy);
+		PVector bl=mapPosition(Tracker.rawminx,Tracker.rawminy);
+		PVector br=mapPosition(Tracker.rawmaxx,Tracker.rawminy);
+		Tracker.minx=Math.min(Math.min(tl.x,tr.x),Math.min(bl.x,br.x));
+		Tracker.maxx=Math.max(Math.max(tl.x,tr.x),Math.max(bl.x,br.x));
+		Tracker.miny=Math.min(Math.min(tl.y,tr.y),Math.min(bl.y,br.y));
+		Tracker.maxy=Math.max(Math.max(tl.y,tr.y),Math.max(bl.y,br.y));
+		PApplet.println("Min/max raw:  "+Tracker.rawminx+":"+Tracker.rawmaxx+", "+Tracker.rawminy+":"+Tracker.rawmaxy);
+		PApplet.println("Min/max scrn: "+Tracker.minx+":"+Tracker.maxx+", "+Tracker.miny+":"+Tracker.maxy);
 	}
 
 	synchronized public void pfstarted() {
@@ -258,7 +287,7 @@ public class Tracker extends PApplet {
 		positions.add(id, channel);
 	}
 
-	synchronized public void pfupdate(int sampnum, float elapsed, int id, float xpos, float ypos, float yvelocity, float xvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
+	synchronized public void pfupdate(int sampnum, float elapsed, int id, float xpos, float ypos, float xvelocity, float yvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
 		/*	if (channel!=99) {
 			PApplet.print("update: ");
 			PApplet.print("samp="+sampnum);
@@ -269,37 +298,38 @@ public class Tracker extends PApplet {
 			PApplet.print(",axislength=("+majoraxis+","+minoraxis+")");
 			PApplet.println(",channel="+channel);
 		} */
-		//ypos=-ypos;
-		if (xpos<this.minx) {
-			PApplet.println("Got xpos ("+xpos+") less than minx ("+minx+"), resetting");
-			this.minx=xpos;
-		}
-		if (xpos>this.maxx) {
-			PApplet.println("Got xpos ("+xpos+") greater than maxx ("+maxx+"), resetting");
-			this.maxx=xpos;
-		}
-		if (ypos<this.miny) {
-			PApplet.println("Got ypos ("+ypos+") less than miny ("+miny+"), resetting");
-			this.miny=ypos;
-		}
-		if (ypos>this.maxy) {
-			PApplet.println("Got ypos ("+ypos+") greater than maxy ("+maxy+"), resetting");
-			this.maxy=ypos;
-		}
-		positions.move(id, channel, mapposition(xpos, ypos), groupid, groupsize, elapsed);
-	}
 
+		if (xpos<Tracker.rawminx) {
+			PApplet.println("Got xpos ("+xpos+") less than minx ("+Tracker.rawminx+")");
+		}
+		if (xpos>Tracker.rawmaxx) {
+			PApplet.println("Got xpos ("+xpos+") greater than maxx ("+Tracker.rawmaxx+")");
+		}
+		if (ypos<Tracker.rawminy) {
+			PApplet.println("Got ypos ("+ypos+") less than miny ("+Tracker.rawminy+")");
+		}
+		if (ypos>Tracker.rawmaxy) {
+			PApplet.println("Got ypos ("+ypos+") greater than maxy ("+Tracker.rawmaxy+"),");
+		}
+
+		positions.move(id, channel, normalizePosition(mapPosition(xpos, ypos)), groupid, groupsize, elapsed);
+	}
+	
 	public void pfsetminx(float minx) {  
-		this.minx=minx;
+		Tracker.rawminx=minx;
+		resetcoords();
 	}
 	public void pfsetminy(float miny) {  
-		this.miny=miny;
+		Tracker.rawminy=miny;
+		resetcoords();
 	}
 	public void pfsetmaxx(float maxx) {  
-		this.maxx=maxx;
+		Tracker.rawmaxx=maxx;
+		resetcoords();
 	}
 	public void pfsetmaxy(float maxy) {  
-		this.maxy=maxy;
+		Tracker.rawmaxy=maxy;
+		resetcoords();
 	}
 
 	public void cycle() {
