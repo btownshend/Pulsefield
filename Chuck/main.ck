@@ -66,7 +66,7 @@ class newListener extends OSCListener {
 			if (type==1)  {
 				new BeeThree @=> instr;
 			} else if (type==2) {
-				new Mandolin @=> instr;
+				new ModalBar @=> instr;
 			} else if (type==3) {
 				new FMVoices @=> instr;
 			}
