@@ -53,7 +53,7 @@ plotvalid(p);
 if ~isfield(p.camera(1),'viscache')
   disp('Visible calibration');
   % Use a larger window to improve foreground object detection when background is bland
-  [allvis,p]=getvisible(p,'init','wsize',[11,5],'usefrontend',false,'disableleds',false);
+  [allvis,p]=getvisible(p,'init','wsize',[13,5],'usefrontend',false,'disableleds',false);
 end
 
 if 0 && ~isfield(p,'crosstalk')
