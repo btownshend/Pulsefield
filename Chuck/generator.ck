@@ -61,7 +61,7 @@ public class Generator  {
     // Use Y as gain
     	fun void setY(float val) {
 //	    	<<<"StkGenerator.setY(",val,")">>>;
-	    pan.gain(1.0*(1.0-Math.fabs(val-0.5)*1.9));
+	    pan.gain(0.95*(1.0-Math.fabs(val-0.6)/0.6)+0.05);
 	}
 
 	fun void noteOn(int note, float vel) {
