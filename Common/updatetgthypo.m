@@ -200,10 +200,17 @@ while ~isempty(like)
   [maxlike,mpos]=max(like(:));
   [mi,mj]=ind2sub(size(like),mpos);
   if maxlike<minimumlike
-    if debug
-      fprintf('Likelihood of next alternative = %g, skipping\n',maxlike);
+    if h(mj).groupsize>1 && maxlike>minimumlike/5
+      if debug
+        fprintf(['Likelihood of next alternative = %g, but it is in ' ...
+                 'a group so not skipping\n'], maxlike);
+      end
+    else
+      if debug
+        fprintf('Likelihood of next alternative = %g, skipping\n',maxlike);
+      end
+      break;
     end
-    break;
   end
   if isempty(hf) || ~ismember(h(mj).id,[hf.id])
     id=h(mj).id;
