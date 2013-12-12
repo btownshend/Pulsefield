@@ -10,6 +10,9 @@ delListener dl;
 MidiFileIn min;
 MidiMsg msg;
 
+BPM masterClock;
+masterClock.tempo(120);
+
 string filename;
 if (me.args() == 0)
     me.sourceDir() + "/988-aria.mid" => filename;
@@ -75,6 +78,8 @@ class newListener extends OSCListener {
 		}
 //		gens[numGens].playNote(440,1.0);   // Calling playnote here hangs ChucK!, probably due to some bug around calling things from events
 		numGens+1=>numGens;
+		// Play a pattern
+		spork ~gens[numGens-1].playPattern();
 		<<<"receiveEvent done">>>;
     } 	       
 
@@ -124,7 +129,7 @@ fun void track(int t)
         if((msg.data1 & 0x90) == 0x90 && msg.data2 > 0 && msg.data3 > 0 && numGens>0) {
 	    t%numGens => int inum;
 	    <<<"Playing track ",t,": ",msg.data2,"/",msg.data3," on  instrument ",inum>>>;
-		gens[inum].playNote(msg.data2,msg.data3/127.0);
+		gens[inum].noteOn(msg.data2,msg.data3/127.0);
 	}
     }
     done++;

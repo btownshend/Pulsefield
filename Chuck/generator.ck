@@ -5,6 +5,8 @@ public class Generator  {
     YListener ylistener;
     PanListener panlistener;
 	float ccvals[128];
+    0=>int running;
+    0=>int curpat;
 
     fun void startListeners(int id) {
 		<<<"Generator.startListeners">>>;
@@ -12,6 +14,8 @@ public class Generator  {
 		cclistener.start(this,id);
 		ylistener.start(this,id);
 		panlistener.start(this,id);
+		1=>running;
+		0=>curpat;
     }
 
     fun void stopListeners() {
@@ -19,6 +23,7 @@ public class Generator  {
 		cclistener.stop();
 		ylistener.stop();
 		panlistener.stop();
+		0=>running;
 	}
 
 	fun void logNewCC(int cc, float val) {
@@ -38,12 +43,48 @@ public class Generator  {
 		<<<"Generator.setY(",val,")">>>;
 	}
 
-	fun void playNote(int note, float vel) {
-		<<<"playNote() not implemented by subclass!">>>;
+       fun void setPattern(int patnum) {
+	   if (patnum<0 || patnum>Pattern.NUMPATTERNS)
+	       <<<"ID ",id," bad pattern: ",patnum>>>;
+	   else
+	       patnum=>curpat;
+       }
+    // Use Y as gain
+    	fun void setY(float val) {
+//	    	<<<"StkGenerator.setY(",val,")">>>;
+	    pan.gain(0.2*(1.0-Math.fabs(val-0.5)*1.9));
+	}
+
+	fun void noteOn(int note, float vel) {
+		<<<"noteOn() not implemented by subclass!">>>;
+	}
+
+	fun void noteOff() {
+		<<<"noteOff() not implemented by subclass!">>>;
 	}
 
 	fun void stop() {
 		<<<"stop() not implemented by subclass!">>>;
+	}
+
+	fun void playPattern() {
+	    Pattern p;
+		while (running) {
+		       <<<"ID ",id," waiting for measure">>>;
+			BPM.measure => now;
+			<<<"ID ",id," playing pattern ",curpat>>>;
+			p.set(curpat);
+			for (0=>int i;i<p.length;i++) {
+				if (p.notes[i]!=0) {
+					noteOn(p.notes[i],1.0);
+				} else {
+					noteOff();
+				}
+				if (i<p.length-1)  // Use measure event for duration of last element
+				    p.durs[i]=>now;
+				noteOff();
+			}
+		}
 	}
 }
 

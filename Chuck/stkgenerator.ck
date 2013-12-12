@@ -20,9 +20,13 @@ public class STKGenerator extends Generator {
 		stopListeners();
 	}
 
-	fun void playNote(int note, float vel) {
-//		<<<"STKGenerator.playNote(",note,",",vel,")">>>;
+	fun void noteOn(int note, float vel) {
+		<<<"STKGenerator.noteOn(",note,",",vel,")">>>;
 		instr.freq(Std.mtof(note));
 		instr.noteOn(vel);
+	}
+
+	fun void noteOff() {
+		instr.noteOff(1.0);
 	}
 }
