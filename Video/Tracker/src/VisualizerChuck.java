@@ -118,6 +118,8 @@ class Generator extends Fiducial {
 		new GeneratorType("Shakers",0xff3fef50,8,new CCPair(2,"Energy",4,"Decay",0xff1fff80),
 				new CCPair(1071,"Preset",new PVector(0.0f,22.99f),11,"NObjects",new PVector(1.0f,4.99f),0xff1f3f30),
 					ccpat,reverb),
+		new GeneratorType("VoicForm",0xff1fefa0,9,new CCPair(4,"Vowel",new PVector(0f,31.99f),2,"Voicing",new PVector(0.0f,128.0f),0xff7fff80),
+				ccpat,reverb,cc1_11),
 					
 
 

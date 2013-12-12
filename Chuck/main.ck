@@ -64,7 +64,7 @@ class newListener extends OSCListener {
 			FMGenerator fmgen;
 			fmgen @=> gens[numGens];
 			fmgen.start(id);
-	   } else if (type<=8) {
+	   } else if (type<=9) {
 			StkInstrument @instr;
 			if (type==1)  {
 				new BeeThree @=> instr;
@@ -82,6 +82,8 @@ class newListener extends OSCListener {
 			    new Clarinet @=>instr;
 			} else if (type==8) {
 			    new Shakers @=>instr;
+			} else if (type==9) {
+			    new VoicForm @=>instr;
 			}
 			STKGenerator @newgen;
 			new STKGenerator @=> newgen;
