@@ -22,6 +22,7 @@ public class Generator  {
 
     fun void stopListeners() {
 		<<<"Generator.stopListeners">>>;
+		pan.gain(0.0);
 		cclistener.stop();
 		ylistener.stop();
 		panlistener.stop();
@@ -83,6 +84,8 @@ public class Generator  {
 			<<<"ID ",id," playing pattern ",curpat>>>;
 			p.set(curpat);
 			for (0=>int i;i<p.length;i++) {
+			    	if (!running)
+				   break;
 				if (p.notes[i]!=0) {
 					noteOn(p.notes[i],1.0);
 				} else {
