@@ -13,6 +13,9 @@ MidiMsg msg;
 BPM masterClock;
 masterClock.tempo(120);
 
+Patterns pats;
+pats.initrandom();
+
 string filename;
 if (me.args() == 0)
     me.sourceDir() + "/988-aria.mid" => filename;

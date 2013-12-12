@@ -95,7 +95,7 @@ class GeneratorType {
 
 class Generator extends Fiducial {
 	static final CCPair cc1_11=new CCPair(1,"LFODepth",11,"LFOSpd",0xffff00ff);
-	static final CCPair ccpat=new CCPair(200,"Pattern",new PVector(0.0f,1.99f),-1,"-",new PVector(0.0f,0.0f),0xff007f4f);
+	static final CCPair ccpat=new CCPair(200,"Pattern",new PVector(0.0f,15.99f),-1,"-",new PVector(0.0f,0.0f),0xff007f4f);
 	static final CCPair reverb=new CCPair(201,"Reverb",new PVector(0.0f,100f),-1,"-",new PVector(0.0f,0.0f),0xff8000ff);
 	static final GeneratorType genTypes[] = {
 		new GeneratorType("FM",0xff0000ff,0,new CCPair(1,"LFODepth",new PVector(0.0f,500.0f),11,"LFOSpd",new PVector(1.0f,500.0f),0xffff00ff),

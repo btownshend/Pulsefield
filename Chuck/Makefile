@@ -1,4 +1,4 @@
-SRCS=OSCListener.ck globals.ck BPM.ck pattern.ck generator.ck stkgenerator.ck fmgenerator.ck main.ck record.ck
+SRCS=OSCListener.ck globals.ck BPM.ck pattern.ck patterns.ck generator.ck stkgenerator.ck fmgenerator.ck main.ck record.ck
 VERBOSE=1
 
 main:

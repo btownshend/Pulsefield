@@ -17,7 +17,7 @@ public class Generator  {
 		ylistener.start(this,id);
 		panlistener.start(this,id);
 		1=>running;
-		Math.random2(0,Pattern.NUMPATTERNS-1)=>curpat;
+		Math.random2(0,Patterns.NUMPATTERNS-1)=>curpat;
     }
 
     fun void stopListeners() {
@@ -44,7 +44,7 @@ public class Generator  {
 
 	fun void setCC2(int cc, float val) {
 	    if (cc==200) {  // pattern
-		setPattern(val$int);
+	        setPattern(val$int);
 	    } else if (cc==201) { // reverb mix
 		rev.mix(val/100.0);
 	    } else {
@@ -53,7 +53,7 @@ public class Generator  {
 	}
 
        fun void setPattern(int patnum) {
-	   if (patnum<0 || patnum>Pattern.NUMPATTERNS)
+	   if (patnum<0 || patnum>Patterns.NUMPATTERNS)
 	       <<<"ID ",id," bad pattern: ",patnum>>>;
 	   else
 	       patnum=>curpat;
@@ -77,12 +77,11 @@ public class Generator  {
 	}
 
 	fun void playPattern() {
-	    Pattern p;
 		while (running) {
 		       <<<"ID ",id," waiting for measure">>>;
 			BPM.measure => now;
 			<<<"ID ",id," playing pattern ",curpat>>>;
-			p.set(curpat);
+			Patterns.get(curpat) @=> Pattern @p;
 			for (0=>int i;i<p.length;i++) {
 			    	if (!running)
 				   break;
