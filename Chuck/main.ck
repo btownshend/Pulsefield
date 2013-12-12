@@ -31,8 +31,8 @@ while (true) {
 
 	0=>done;
 
-		spork ~ track(t);
 	for (int t; t < min.numTracks(); t++) {
+		//		spork ~ track(t);
 	}
 
 	<<<"Running...">>>;
