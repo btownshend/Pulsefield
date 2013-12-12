@@ -93,9 +93,11 @@ public class Generator  {
 				} else {
 					noteOff();
 				}
-				if (i<p.length-1)  // Use measure event for duration of last element
-				    p.durs[i]=>now;
+
+				p.durs[i]-BPM.sixteenthNote/2=>now;
 				noteOff();
+				if (i<p.length-1)  // Use measure event for duration of last element			}
+				    BPM.sixteenthNote/2=>now;
 			}
 		}
 	}
