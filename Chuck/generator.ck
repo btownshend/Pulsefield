@@ -11,6 +11,7 @@ public class Generator  {
 
     fun void startListeners(int id) {
 		<<<"Generator.startListeners">>>;
+		pan.gain(0.5);
 		id=>this.id;
 		cclistener.start(this,id);
 		ylistener.start(this,id);
@@ -59,7 +60,7 @@ public class Generator  {
     // Use Y as gain
     	fun void setY(float val) {
 //	    	<<<"StkGenerator.setY(",val,")">>>;
-	    pan.gain(0.2*(1.0-Math.fabs(val-0.5)*1.9));
+	    pan.gain(1.0*(1.0-Math.fabs(val-0.5)*1.9));
 	}
 
 	fun void noteOn(int note, float vel) {

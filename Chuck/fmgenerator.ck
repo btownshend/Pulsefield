@@ -22,7 +22,7 @@ public class FMGenerator extends Generator {
 
 	fun void start(int id) {
 		<<<"FMGenerator.start">>>;
-		pan.gain(0.2);  // Avoid clipping
+		pan.gain(0.5);  // Avoid clipping
 		env => pan;
 		2=>carrier.sync;
 		startListeners(id);
