@@ -10,9 +10,11 @@ public class FMGenerator extends Generator {
 			val=>mod.freq;
 		} else if (cc==1) {  // Modulation depth
 			val/128.0=>moddepth;
-		}
 
 		mod.gain(mod.freq()*moddepth);
+		} else {
+		     setCC2(cc,val);
+		     }
 	}
 
 	fun void setFreq(float freq) {
@@ -21,14 +23,15 @@ public class FMGenerator extends Generator {
 
 	fun void start(int id) {
 		<<<"FMGenerator.start">>>;
-		carrier => pan => dac;
+		pan.gain(0.2);  // Avoid clipping
+		env => pan;
 		2=>carrier.sync;
 		startListeners(id);
     }
 
     fun void stop() {
 		<<<"FMGenerator.stop">>>;
-		carrier =< pan =< dac;
+		env =< pan;
 		stopListeners();
 	}
 
@@ -42,4 +45,14 @@ public class FMGenerator extends Generator {
 		<<<"FMGenerator.setY(",val,")">>>;
 		carrier.freq(val*880);
 	}
+
+	fun void noteOn(int note, float vel) {
+		env.keyOn();
+	}
+
+	fun void noteOff() {
+		env.keyOff();
+	}
+
+    
 }

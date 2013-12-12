@@ -2,21 +2,26 @@ public class STKGenerator extends Generator {
     StkInstrument @instr;
 
 	fun void setCC(int cc, float val) {
+	    // No way in ChucK to call super.setCC()...
+	    logNewCC(cc,val);
+
+	    if (cc<=128)
 		instr.controlChange(cc,val);
-		// No way in ChucK to call super.setCC()...
-		logNewCC(cc,val);
+	    else
+		setCC2(cc,val);
 	}
 
 	fun void start(StkInstrument newinstr, int id) {
 		<<<"STKGenerator.start">>>;
 		newinstr@=>instr;
-		instr => pan => dac;
+		pan.gain(0.2);  // Avoid clipping
+		instr => pan;
 		startListeners(id);
     }
 
     fun void stop() {
 		<<<"STKGenerator.stop">>>;
-		instr=<pan=<dac;
+	        instr=<pan;
 		stopListeners();
 	}
 

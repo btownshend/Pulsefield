@@ -1,6 +1,7 @@
 public class Generator  {
     int id;
-    Pan2 pan;
+    Pan2 pan => JCRev rev => dac;
+    rev.mix(0.1);
     CCListener cclistener;
     YListener ylistener;
     PanListener panlistener;
@@ -39,8 +40,14 @@ public class Generator  {
 		logNewCC(cc,val);
 	}
 
-	fun void setY(float val) {
-		<<<"Generator.setY(",val,")">>>;
+	fun void setCC2(int cc, float val) {
+	    if (cc==200) {  // pattern
+		setPattern(val$int);
+	    } else if (cc==201) { // reverb mix
+		rev.mix(val/100.0);
+	    } else {
+		<<<"Bad cc: ",cc>>>;
+	    }
 	}
 
        fun void setPattern(int patnum) {
