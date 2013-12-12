@@ -1,5 +1,5 @@
 public class FMGenerator extends Generator {
-	SinOsc mod => SinOsc carrier;
+	SinOsc mod => SinOsc carrier => ADSR env;
 	float moddepth;
 	
 	fun void setCC(int cc, float val) {
