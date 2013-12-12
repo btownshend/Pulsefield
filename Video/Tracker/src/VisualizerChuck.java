@@ -206,7 +206,7 @@ class Controller extends Fiducial {
 				OscMessage msg = new OscMessage("/chuck/dev/"+parent.id+"/cc");
 				msg.add(cc.cc2);
 				// Linear from 0.0 at DISTBREAK to 1.0 at distance DISTCREATE
-				cc2val=(1.0f-dist/(Fiducials.DISTBREAK-Fiducials.DISTCREATE));
+				cc2val=(1.0f-(dist-Fiducials.DISTCREATE)/(Fiducials.DISTBREAK-Fiducials.DISTCREATE));
 				if (cc2val>1.0f) cc2val=1.0f;
 				if (cc2val<0.0f) cc2val=0.0f;
 				cc2val=cc2val*(cc.rng2.y-cc.rng2.x)+cc.rng2.x;
