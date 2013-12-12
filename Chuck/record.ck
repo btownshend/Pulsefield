@@ -8,7 +8,7 @@ if (me.args())
 
 capture =>out.wavFilename;
 <<<"Writing to ",capture>>>;
-20::second=>now;
+60::second=>now;
 out.closeFile();
 <<<"Closed ",capture>>>;
 
