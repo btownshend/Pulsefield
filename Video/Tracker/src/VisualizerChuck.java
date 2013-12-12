@@ -272,7 +272,7 @@ class Controller extends Fiducial {
 
 class Fiducials extends HashMap<Integer,Fiducial> {
 	static final float DISTBREAK=0.5f;   // Distance to break connections (in screen normalized coordinates)
-	static final float DISTCREATE=0.1f;  // Distance to create connections 
+	static final float DISTCREATE=0.2f;  // Distance to create connections 
 	private static final long serialVersionUID = -1131006311643745996L;
 
 	Fiducials() {
