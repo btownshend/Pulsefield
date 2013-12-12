@@ -17,7 +17,7 @@ public class Generator  {
 		ylistener.start(this,id);
 		panlistener.start(this,id);
 		1=>running;
-		0=>curpat;
+		Math.random2(0,Pattern.NUMPATTERNS-1)=>curpat;
     }
 
     fun void stopListeners() {
