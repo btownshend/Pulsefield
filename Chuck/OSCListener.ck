@@ -16,6 +16,7 @@ public class OSCListener {
 		receiveEvent(oe); 
 	    } 
 	} 
+	<<<"No longer listening for ",msg>>>;
     } 
     fun void receiveEvent(OscEvent oe) { 
 	<<<"Unhandled event to ",path >>>;

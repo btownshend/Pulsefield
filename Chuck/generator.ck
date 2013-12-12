@@ -4,7 +4,7 @@ public class Generator  {
     CCListener cclistener;
     YListener ylistener;
     PanListener panlistener;
-	float ccvals[128];
+    float ccvals[128];
     0=>int running;
     0=>int curpat;
 
@@ -123,7 +123,7 @@ class CCListener extends GenControlListener {
 class YListener extends GenControlListener {
     fun void receiveEvent(OscEvent oe) {
 		oe.getFloat() => float value;
-		<<<"Got yl(",value,") for ID ",id>>>;
+		//<<<"Got yl(",value,") for ID ",id>>>;
 		wrapper.setY(value);
     } 	       
     fun void start(Generator wrapper, int id) {

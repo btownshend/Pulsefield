@@ -41,7 +41,7 @@ public class Positions {
 
 	public void setnpeople(int n) {
 		if (n!=positions.size()) {
-			PApplet.println("Have "+positions.size()+" people, but got message that there are "+n+" .. clearing.");
+			PApplet.println("Had "+positions.size()+" people, but got message that there are "+n+" .. cleared.");
 			positions.clear();
 		}
 	}

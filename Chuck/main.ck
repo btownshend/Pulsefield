@@ -3,7 +3,7 @@ Generator @gens[MAXGEN];
 0=>int numGens;
 
 Globals gl;
-<<<"port=",Globals.port>>>;
+<<<"OSC incoming port=",Globals.port>>>;
 newListener nl;
 delListener dl;
 
@@ -31,9 +31,11 @@ while (true) {
 
 	0=>done;
 
-	for (int t; t < min.numTracks(); t++)
 		spork ~ track(t);
+	for (int t; t < min.numTracks(); t++) {
+	}
 
+	<<<"Running...">>>;
 	while (done < min.numTracks())
 		1::second => now;
 
@@ -97,7 +99,7 @@ class delListener extends OSCListener {
 	oe.getInt() => int id;
 	<<<"Got delete ",id," message.">>>;
 	for (0=>int i;i<numGens;i++) {
-//		<<<"gens[",i,"].id=",gens[i].id>>>;
+	    <<<"gens[",i,"].id=",gens[i].id>>>;
 	    if (gens[i].id == id) {
 			gens[i].stop();
 		// Remove from list
@@ -108,6 +110,9 @@ class delListener extends OSCListener {
 		numGens-1=>numGens;
 		i-1=>i;  // Allow this index to be retested
 	    }
+	}
+	if (initial==numGens) {
+	    <<<"Didn't delete anything!">>>;
 	}
     } 	       
     spork ~listen("/chuck/del  i",Globals.port) @=> listener;

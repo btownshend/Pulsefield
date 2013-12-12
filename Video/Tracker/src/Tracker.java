@@ -210,6 +210,7 @@ public class Tracker extends PApplet {
 	
 	@Override
 	public void keyPressed() {
+		PApplet.println("Mouse key: "+key);
 		if (key=='C' || key=='c') {
 			mouseID=90;
 			pfsetnpeople(0);
@@ -217,7 +218,9 @@ public class Tracker extends PApplet {
 			mouseID=90+key-'1';
 		else if (key=='x'||key=='X') {
 			// Current ID exits
+			PApplet.println("Mouse ID "+mouseID+" exitting.");
 			pfexit(0,0,mouseID);
+			PApplet.println("Finished mouse exit");
 		}
 	}
 
@@ -357,7 +360,7 @@ public class Tracker extends PApplet {
 			setapp(currentvis);   // Cause a reset
 		if (n==0 && positions.positions.size()>0)
 			cycle();
-		positions.setnpeople(n);
+		positions.setnpeople(n);  // Also clears positions
 	}
 
 	synchronized public void pfexit(int sampnum, float elapsed, int id) {
