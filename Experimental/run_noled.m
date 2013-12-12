@@ -7,8 +7,8 @@ if ~exist('p','var')
   p=struct;
   p.analysisparams=analysissetup();
   p.analysisparams.detector=0;   % Use foreground/background detector
-  p.analysisparams.mintgtdiam=0.08;   % Smaller targets (for feet) -- 8cm diameter
-  p.analysisparams.maxfalsegap=0.5;   % For gap between feet
+  p.analysisparams.mintgtdiam=0.1;   % Smaller targets (for feet) -- 8cm diameter
+  p.analysisparams.maxfalsegap=0.4;   % For gap between feet
   %ctype='av10115';
   ctype='av10115-half';
   ncamera=6;

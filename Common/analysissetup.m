@@ -27,4 +27,4 @@ aparams.fgminvar=(3.0/255)^2;  % From empirical observations
 aparams.fgmaxvar=(10/255)^2;
 aparams.fgscale=2*aparams.fgthresh(2);    % Scaling factor to convert nstd from fg detector into a 'corr' -- corr=1-nstd/fgscale
 
-aparams.expandrays=5;   % Expand blocked rays by this number of LEDS (TODO: Make this relative to distances)
+aparams.expandrays=2;   % Expand blocked rays by this number of LEDS (TODO: Make this relative to distances)
