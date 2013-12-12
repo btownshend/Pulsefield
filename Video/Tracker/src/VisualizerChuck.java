@@ -105,8 +105,22 @@ class Generator extends Fiducial {
 		new GeneratorType("ModalBar",0xff00ff00,2,new CCPair(16,"Preset",new PVector(0.0f,8.99f),1,"Mix",new PVector(0.0f,1.0f),0xffffff00),
 					ccpat,new CCPair(2,"Hardness",4,"Position",0xffff00ff),
 					reverb),
-		new GeneratorType("FMVoices",0xff7f7f40,1,new CCPair(2,"Vowel",4,"Tilt",0xff7fff80),
+		new GeneratorType("FMVoices",0xff7f7f40,3,new CCPair(2,"Vowel",4,"Tilt",0xff7fff80),
 					ccpat,reverb,cc1_11),
+		new GeneratorType("TubeBell",0xff1f7f80,4,new CCPair(2,"ModIndex",4,"Crossfade",0xff7fff80),
+					ccpat,reverb,cc1_11),
+		new GeneratorType("Wurley",0xffff1f00,5,new CCPair(2,"ModIndex",4,"Crossfade",0xff7fff80),
+					ccpat,reverb,cc1_11),
+		new GeneratorType("Moog",0xff217fff,6,new CCPair(2,"Q",4,"SweepRate",0xff7f7f80),
+					ccpat,reverb,cc1_11),
+		new GeneratorType("Clarinet",0xff3fef50,7,new CCPair(2,"ReedStiff",4,"NGain",0xff7ffff0),
+					ccpat,reverb,cc1_11),
+		new GeneratorType("Shakers",0xff3fef50,8,new CCPair(2,"Energy",4,"Decay",0xff1fff80),
+				new CCPair(1071,"Preset",new PVector(0.0f,22.99f),11,"NObjects",new PVector(1.0f,4.99f),0xff1f3f30),
+					ccpat,reverb),
+					
+
+
 	};
 
 	static final int NUMGENTYPES=genTypes.length;

@@ -64,7 +64,7 @@ class newListener extends OSCListener {
 			FMGenerator fmgen;
 			fmgen @=> gens[numGens];
 			fmgen.start(id);
-	   } else if (type<=3) {
+	   } else if (type<=8) {
 			StkInstrument @instr;
 			if (type==1)  {
 				new BeeThree @=> instr;
@@ -72,6 +72,16 @@ class newListener extends OSCListener {
 				new ModalBar @=> instr;
 			} else if (type==3) {
 				new FMVoices @=> instr;
+			} else if (type==4) {
+			        new TubeBell  @=> instr;
+			} else if (type==5) {
+			    new Wurley @=>instr;
+			} else if (type==6) {
+			    new Moog @=>instr;
+			} else if (type==7) {
+			    new Clarinet @=>instr;
+			} else if (type==8) {
+			    new Shakers @=>instr;
 			}
 			STKGenerator @newgen;
 			new STKGenerator @=> newgen;
