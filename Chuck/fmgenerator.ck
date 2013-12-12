@@ -9,12 +9,11 @@ public class FMGenerator extends Generator {
 		if (cc==11) { // Modulator frequency 
 			val=>mod.freq;
 		} else if (cc==1) {  // Modulation depth
-			val/128.0=>moddepth;
-
-		mod.gain(mod.freq()*moddepth);
+			val=>moddepth;
 		} else {
 		     setCC2(cc,val);
 		     }
+		mod.gain(moddepth);
 	}
 
 	fun void setFreq(float freq) {
@@ -42,8 +41,8 @@ public class FMGenerator extends Generator {
 	}
 
 	fun void setY(float val) {
-		<<<"FMGenerator.setY(",val,")">>>;
-		carrier.freq(val*880);
+//		<<<"FMGenerator.setY(",val,")">>>;
+		carrier.freq(Math.pow(2.0,val*4)*110);
 	}
 
 	fun void noteOn(int note, float vel) {
