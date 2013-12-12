@@ -13,7 +13,7 @@ public class Pattern {
 	    57 => int basenote;
 	    3 => int noctaves;
 	    [  1,    2,   4,   8, 16]@=>int notelengths[];
-	    [0.1,0.2,0.4,0.2,0.1]@=>float lengthprobs[];
+	    [0.1,0.3,0.4,0.2,0.0]@=>float lengthprobs[];
 
 	    16*Math.random2(1,2) => int patternlength;   // Length of pattern in 16th notes
 	    0=>int total;   // Number of sixteenth notes so far
