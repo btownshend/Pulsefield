@@ -5,7 +5,7 @@ public class STKGenerator extends Generator {
 	    // No way in ChucK to call super.setCC()...
 	    logNewCC(cc,val);
 
-	    if (cc<=128)
+	    if (cc<=128 || cc==1071)
 		instr.controlChange(cc,val);
 	    else
 		setCC2(cc,val);
