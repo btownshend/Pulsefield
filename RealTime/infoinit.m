@@ -18,7 +18,7 @@ function info=infoinit()
   
   % Table of apps
   info.apps={ SoundAppGuitar('5/1'), SoundAppCSeq('5/2'), SoundAppHotspots('5/3'), SoundAppGrid('5/4'), SoundAppVideo('5/5') };
-  info.currapp=info.apps{4};
+  info.currapp=info.apps{5};
 
   % Table of sample sets
   info.samples=struct('name',{'MIDI',   'A','B',   'C'},...
