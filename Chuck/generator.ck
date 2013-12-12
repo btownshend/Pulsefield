@@ -1,6 +1,6 @@
 public class Generator  {
     int id;
-    Pan2 pan => JCRev rev => dac;
+    Pan2 pan => JCRev rev => HPF hp => dac;
     rev.mix(0.1);
     CCListener cclistener;
     YListener ylistener;
@@ -11,7 +11,10 @@ public class Generator  {
 
     fun void startListeners(int id) {
 		<<<"Generator.startListeners">>>;
-		pan.gain(0.5);
+		pan.gain(0.5);   // Will change with Y positions
+		rev.mix(0.1);    // Will get changed by controller
+		rev.gain(0.5);   // Avoid clipping
+		hp.freq(20);  // Some instruments seem to have a DC offset
 		id=>this.id;
 		cclistener.start(this,id);
 		ylistener.start(this,id);
@@ -61,7 +64,7 @@ public class Generator  {
     // Use Y as gain
     	fun void setY(float val) {
 //	    	<<<"StkGenerator.setY(",val,")">>>;
-	    pan.gain(0.95*(1.0-Math.fabs(val-0.4)/0.6)+0.05);
+	    pan.gain(0.8*(1.0-Math.fabs(val-0.4)/0.6)+0.2);
 	}
 
 	fun void noteOn(int note, float vel) {
