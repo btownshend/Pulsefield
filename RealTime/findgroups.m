@@ -9,6 +9,8 @@ for i=1:length(snap.hypo)
       snap.hypo(i).groupid=prevsnap.hypo(ph).groupid;
       snap.hypo(i).groupsize=prevsnap.hypo(ph).groupsize;
       fprintf('Hypo %d has no attributed target, copying groupid %d, groupsize %d from prevsnap\n', snap.hypo(i).id, snap.hypo(i).groupid, snap.hypo(i).groupsize);
+      % TODO: Is there a bug here? - if this is added to a group,
+      % the other members of the group won't count it (below)
     end
   else
     % Compute groupid -- lowest id in group, or 0 if not in a group
