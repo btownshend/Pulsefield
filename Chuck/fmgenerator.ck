@@ -23,14 +23,14 @@ public class FMGenerator extends Generator {
 	fun void start(int id) {
 		<<<"FMGenerator.start">>>;
 		pan.gain(0.5);  // Avoid clipping
-		env => pan;
+		env => rev;
 		2=>carrier.sync;
 		startListeners(id);
     }
 
     fun void stop() {
 		<<<"FMGenerator.stop">>>;
-		env =< pan;
+		env =< rev;
 		stopListeners();
 	}
 

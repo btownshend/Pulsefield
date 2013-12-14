@@ -1,6 +1,6 @@
 public class Generator  {
     int id;
-    Pan2 pan => JCRev rev => HPF hp => dac;
+    JCRev rev => HPF hp => Pan2 pan =>dac;
     rev.mix(0.1);
     CCListener cclistener;
     YListener ylistener;
@@ -155,7 +155,7 @@ class PanListener extends GenControlListener {
 		oe.getFloat() => float value;
 		if ((wrapper.pan.pan()*10 $ int) != (value*10 $ int))
 			<<<"Got pan(",value,") for ID ",id>>>;
-		wrapper.pan.pan(value);
+		wrapper.pan.pan(value*2-1);
     } 	       
     fun void start(Generator wrapper, int id) {
 		start(wrapper,id,"pan f");

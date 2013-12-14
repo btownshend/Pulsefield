@@ -15,13 +15,13 @@ public class STKGenerator extends Generator {
 		<<<"STKGenerator.start">>>;
 		newinstr@=>instr;
 		pan.gain(0.2);  // Avoid clipping
-		instr => pan;
+		instr => rev;
 		startListeners(id);
     }
 
     fun void stop() {
 		<<<"STKGenerator.stop">>>;
-	        instr=<pan;
+	        instr=<rev;
 		stopListeners();
 	}
 
