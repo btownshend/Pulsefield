@@ -21,7 +21,7 @@ public class BPM
 		new Event @=> beat;
 		new Event @=> measure;
 		while (true) {
-		    <<<"Measure, quarterNote=",quarterNote>>>;
+		    //<<<"Measure, quarterNote=",quarterNote>>>;
 		    measure.broadcast();
 		    for (0=>int i;i<4;i++) {
 			beat.broadcast;

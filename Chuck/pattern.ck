@@ -9,7 +9,8 @@ public class Pattern {
 
 	// Add a random pattern
 	fun void setrandom() {
-	    [0,2,4,7,9]@=>int scale[];
+	    [0,2,4,7,9]@=>int scale[]; // Pentatonic
+	    //[0,2,4,5,7,9,11]@=>int scale[]; // Major
 	    57 => int basenote;
 	    3 => int noctaves;
 	    [  1,    2,   4,   8, 16]@=>int notelengths[];
