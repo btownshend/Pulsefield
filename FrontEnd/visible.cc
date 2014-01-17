@@ -249,7 +249,7 @@ int Visible::processImage(const Frame *frame, float fps) {
 	}
 	if((corr[i]<-1.01 && !fgDetector) || corr[i]>1.01)
 	    fprintf(stderr,"Warning: corr[%d]=%f\n", i, corr[i]);
-	if (0 && !fgDetector) {
+	if (!fgDetector) {
 	    // Need 10 visible frames in a row to enable, 100 blocked (not necessarily in a row) since last enable to disable
 	    if (visible[i]==1) {
 		visframes[i]++;
