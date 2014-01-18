@@ -1,4 +1,15 @@
-% Do noisedetection of a frame
+% Do background detection of a frame using noise models for each pixel
+% Process:
+%  - analyze each of R,G,B independently
+%   - compute distribution for each pixel (mean,var) when background present from vis.refim and vis.refim2
+%   - normalize current image (vis.im) by subtracting means, squaring, divide by var =>  (number of stds from mean for each pixel)^2
+%   - average over rectangular windows given by wsize (or p.camera.viscache.wsize)
+%   - count fraction within each window that are <fgmaxvar
+%  - average the fraction over R,G,B
+%  - compare with (1-vis.corr)*fgscale (should be the same as C++ program does the same computation)
+%  - sample at center points of each window in p.camera().viscache.{tl,br}pos
+%  - decide if background if fracgood>0.5
+%  - compare with decision encoded in vis
 function noisedetect(p,vis,cam,varargin)
 defaults=struct('wsize',[]);
 args=processargs(defaults,varargin);
