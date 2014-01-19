@@ -10,6 +10,13 @@ if ~isfield(vis,'v')
   vis.v=vis.lev>127;
 end
 distotal=0;
+if isfield(vis,'vorig')
+  vorig=vis.vorig;
+else
+  vorig=vis.v;
+  vorig(isnan(vorig))=2;
+end
+
 for i=1:size(vis.v,1)
   c=sainfo.camera(i).pixcalib;
   roi=sainfo.camera(i).roi;
@@ -26,7 +33,7 @@ for i=1:size(vis.v,1)
     pause(0.01);
     for j=1:length(c)
       colors='rgymck';
-      plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,['o',colors(vis.vorig(i,j)+1)]);
+      plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,['o',colors(vorig(i,j)+1)]);
     end
     set(gca,'Position',get(gca,'OuterPosition'));   % Explode plot to fill space
   end
