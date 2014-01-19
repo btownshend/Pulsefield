@@ -16,14 +16,20 @@
 %	wsize:    2x1 size of window [height width], in pixels, which will be centered on centroid of LED (default: [5 7], for init only)
 %	navg:	  number of samples to average over (default=number of colors in p.colors; which are used as onval)
 % Returns vis with fields:
-% 	v(ncam,nled) - 1 if LED is visible, 0 if not
-%	when - when acquisition too place
+% 	v(ncam,nled) - 1 if LED is visible, 0 if not, nan if unknown
+%	vorig(ncam,nled) - full encoded 'vis' value (0..5)
 %	corr - correlation with template
+%	frame - overall frame
+%	cframe(ncam) - camera frames
+%	when - when acquisition took place
+%	whenrcvd - time that this data was received
+%	acquired(ncam) - acquired times
+%	mincorr - value used for thresholding
 % when 'init' is used, the returned 'vis' is a cell array of 'navg' normal vis structs, each with full stats, except correlations
 % If 'stats' option is passed in, also sets:
-% 	lev(ncam,nled) - level at each LED spot
 % 	im{ncam} - full images
-%	tgt{ncam,nled} - images of each target
+%	refim{ncam} - reference image
+%	refim2{ncam} - variance of reference image
 function [vis,p]=getvisible(p,varargin)
 defaults=struct('setleds',true,'im',{{}},'stats',false,'init',false,'onval',127*p.colors{1},'wsize',[5 7],'navg',2*length(p.colors),'calccorr',true,...
                 'mincorr',0.5,'usefrontend',true,'timeout',1.0,'disableleds',true);
