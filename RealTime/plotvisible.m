@@ -25,15 +25,8 @@ for i=1:size(vis.v,1)
     end
     pause(0.01);
     for j=1:length(c)
-      if ~isnan(vis.v(i,j))
-        if vis.v(i,j)
-          plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,'og');
-        else
-          plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,'or');
-        end
-      else
-        plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,'oy');
-      end
+      colors='rgymck';
+      plot(c(j).pos(1)-roi(1)+1,c(j).pos(2)-roi(3)+1,['o',colors(vis.vorig(i,j)+1)]);
     end
     set(gca,'Position',get(gca,'OuterPosition'));   % Explode plot to fill space
   end
