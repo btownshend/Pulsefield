@@ -165,7 +165,11 @@ int Visible::processImage(const Frame *frame, float fps) {
 		const float scale=1.0/255;
 		float svar=0;
 		int cnt=0;
+		int cnty=0;
+		float yvar=0;
+		float ysum,y2sum;
 		for (int col=0;col<refDepth;col++) {
+		    ysum=0; y2sum=0;
 		    for (int h=0;h<tgtHeight[i];h++) {
 			int index=(ypos[i]+h)*refWidth+xpos[i];
 			const byte *x=&fimg[index*3+col];   // Offset by color
@@ -177,6 +181,8 @@ int Visible::processImage(const Frame *frame, float fps) {
 			    if (v<=fgMaxVar) {
 				if (v<fgMinVar) v=fgMinVar;
 				svar+=(xv-*y)*(xv-*y)/v;
+				ysum+=*y;
+				y2sum+=*y * *y;
 				cnt++;
 			    }
 				//if (i==100 && w==1 && h==1)
@@ -186,18 +192,31 @@ int Visible::processImage(const Frame *frame, float fps) {
 			    var+=3;
 			}
 		    }
+		    // Compute diversity of reference for each plane
+		    yvar=yvar+y2sum/(cnt-cnty)-ysum*ysum/(cnt-cnty)/(cnt-cnty);
+		    cnty=cnt;   // Avoids having to keep a separate counter
 		    //  if (i==100) {
 		    //	printf("Col=%d, svar=%g\n",col,svar);
 		    //}
 		}
+		yvar/=3;   // Average over 3 planes (not the same as the average of all the data, ignoring the color)
 		svar=sqrt(svar/cnt);
 		corr[i] = 1.0-svar/fgScale;
 		if (cnt<N*3/2)   {
 		    // More than half the pixels have high variance -- disable this LED
 		    visible[i]=3;
 		    printf("Disabled LED %d since cnt=%d/%d\n", i, cnt,N*3);
-		} else
-		    visible[i]=(svar<fgThresh[0])?1:((svar>fgThresh[1])?0:2);
+		} else if (svar>fgThresh[1]) {
+		    visible[i]=0;   // Foreground
+		} else if (svar>fgThresh[0]) {
+		    visible[i]=2;   // Between the two fgThresh values - indeterminate
+		} else if (yvar<0.0025) {
+		    if (visible[i]!=5)
+			printf("Ignored background LED %d since yvar=%g (ysum=%g, y2sum=%g, cnt=%d)\n",i, yvar,ysum,y2sum,cnt);
+		    visible[i]=5;   // Looks like background, but low diversity so it could actually be foreground
+		} else {
+		    visible[i]=1;
+		}
 	    } else {
 		corr[i]=-2;   // Assume minimum possible (but correct this below if not increased)
 		for (int col=0;col<refDepth;col++) {
