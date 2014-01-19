@@ -1,6 +1,5 @@
 % Determine how probability of bg/fg varies with diversity (variance of pixels in a window)
 function bgprob(p,vis,cam)
-pc=p.camera(cam).pixcalib;
 vc=p.camera(cam).viscache;
 wsize=p.camera(cam).viscache.wsize;
 nled=size(vis.corr,2);
