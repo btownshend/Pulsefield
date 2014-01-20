@@ -55,6 +55,16 @@ if args.init
   fprintf('Pausing LEDServer\n');
   lsctl(p,'pause');
   fprintf('Initializing viscache...\n');
+
+  if ~isfield(p.camera(1).pixcalib,'origpos')
+    % Keep a copy of the original positions so they can be used if the setup is re-inited
+    % pixcalib.pos may be changed slightly to find higher diversity windows
+    for i=1:length(p.camera)
+      for j=1:length(p.camera(i).pixcalib)
+        p.camera(i).pixcalib(j).origpos=p.camera(i).pixcalib(j).pos;
+      end
+    end
+  end
   for i=1:length(p.camera)
     c=p.camera(i).pixcalib;
     roi=p.camera(i).roi;
@@ -67,7 +77,7 @@ if args.init
     imgsize=[roi(4)-roi(3),roi(2)-roi(1)];
     for vj=1:length(fvalid)
       j=fvalid(vj);
-      tpos=c(j).pos-[roi(1),roi(3)]+1;
+      tpos=c(j).origpos-[roi(1),roi(3)]+1;
       [s1,s2]=ind2sub(args.wsize,1:prod(args.wsize));
       s1=round(tpos(:,2)+s1-mean(s1));
       s2=round(tpos(:,1)+s2-mean(s2));
@@ -129,7 +139,85 @@ if args.init
     pc=p.camera(c).pixcalib;
     fvalid=find([pc.valid]);
     p.camera(c).viscache.ledmap=fvalid;
+
+    % Adjust window position to maximize diversity within window
+    roi=p.camera(c).roi;
+    maxshiftx=3;
+    maxshifty=10;
+    vc=p.camera(c).viscache;
+    minx=1;
+    for vj=1:length(fvalid)
+      j=fvalid(vj);
+      best=[nan,nan];
+      maxdiv=0;
+      tldiv=nan;
+      if vj>1
+        minx=vc.tlpos(fvalid(vj-1),1)+1;
+      else
+        minx=1;
+      end
+      maxx=size(refim,2)-vc.wsize(2);
+      if vj<length(fvalid)
+        maxx=min(maxx,vc.tlpos(fvalid(vj+1),1)-1);
+      end
+      if maxx<minx
+        minx=vc.tlpos(j,1);
+        maxx=minx;
+      end
+      %fprintf('(%d,%d) - checking from x=%d:%d\n',c,j,minx,maxx);
+      for xpos=max(minx,vc.tlpos(j,1)-maxshiftx):min(vc.tlpos(j,1)+maxshiftx,maxx)
+        for ypos=max(1,vc.tlpos(j,2)-maxshifty):min(vc.tlpos(j,2)+maxshifty,size(refim,1)-vc.wsize(1))
+          % Calculate diversity of a window at (xpos,ypos)
+          for rgb=1:3
+            div(rgb)=std(reshape(refim(ypos:ypos+vc.wsize(1)-1,xpos:xpos+vc.wsize(2)-1,rgb),1,[]));
+          end
+          divavg=mean(div);
+          if divavg>maxdiv
+            maxdiv=divavg;
+            best=[xpos,ypos];
+          end
+          if xpos==vc.tlpos(j,1) && ypos==vc.tlpos(j,2)
+            tldiv=divavg;
+          end
+        end
+      end
+      if isnan(tldiv) || all(best==vc.tlpos(j,:)) || maxdiv<1.1*tldiv
+        fprintf('For (%d,%d), leaving tlpos at (%d,%d)\n', c,j, vc.tlpos(j,:));
+        changed=0;
+      else
+        fprintf('Best diversity for (%d,%d) is %.4g using (%d,%d) instead of tlpos=(%d,%d) where it was %.4g\n',c,j,maxdiv,best,vc.tlpos(j,:),tldiv);
+        vc.tlpos(j,:)=best;
+        vc.brpos(j,:)=best+vc.wsize(2:-1:1)-1;
+        changed=1;
+      end
+      ind=[];
+      for xpos=vc.tlpos(j,1):vc.brpos(j,1)
+        for ypos=vc.tlpos(j,2):vc.brpos(j,2)
+          ind(end+1)=sub2ind(size(refim),ypos,xpos);
+        end
+      end
+      if ~changed && any(ind~=vc.indices(vj,:))
+        error('Incorrect indices\n');
+      end
+      vc.indices(vj,:)=ind;
+      p.camera(c).pixcalib(j).pos=round((vc.tlpos(j,:)+vc.brpos(j,:))/2)+[roi(1),roi(3)]-1;
+      % Update pc.{pixelList,indices,rgbindices} (same code as in pixcalibrarte_noled.m)
+      pixelList=round(p.camera(c).pixcalib(j).pos);  % Just set pixelList to same as pos
+      p.camera(c).pixcalib(j).pixelList=pixelList;
+      pixelList(:,1)=pixelList(:,1)-roi(1)+1;
+      pixelList(:,2)=pixelList(:,2)-roi(3)+1;
+      % Setup indices from pixellists
+      p.camera(c).pixcalib(j).indices=...
+          sub2ind([roi(4)-roi(3),roi(2)-roi(1)],pixelList(:,2),pixelList(:,1));
+      p.camera(c).pixcalib(j).rgbindices=[...
+          sub2ind([roi(4)-roi(3),roi(2)-roi(1),3],pixelList(:,2),pixelList(:,1),1*ones(size(pixelList,1),1));...
+          sub2ind([roi(4)-roi(3),roi(2)-roi(1),3],pixelList(:,2),pixelList(:,1),2*ones(size(pixelList,1),1));...
+          sub2ind([roi(4)-roi(3),roi(2)-roi(1),3],pixelList(:,2),pixelList(:,1),3*ones(size(pixelList,1),1))];
+    end
+    p.camera(c).viscache=vc;
   end
+  
+
   % Check correlation of each image with avg
   for i=1:length(vis)
     vistmp=getvisible(p,'im',vis{i}.im,'stats',true);
