@@ -160,7 +160,7 @@ public class VisualizerDDR extends Visualizer {
 		final float leftwidth=150;
 		final float rightwidth=250;
 		final float rightmargin=50;
-		PGL pgl=PGraphicsOpenGL.pgl;
+		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
 		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
 		pgl.blendEquation(PGL.FUNC_ADD);  
 		parent.background(0, 0, 0);  

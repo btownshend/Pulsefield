@@ -59,7 +59,7 @@ public class VisualizerPS extends Visualizer {
 	}
 
 	public void draw(PApplet parent, Positions p, PVector wsize) {
-		PGL pgl=PGraphicsOpenGL.pgl;
+		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
 		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
 		pgl.blendEquation(PGL.FUNC_ADD);  
 		parent.background(0, 0, 0);  
