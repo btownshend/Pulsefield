@@ -44,6 +44,13 @@ elseif strcmp(cam.type,'av10115')
   cam.sensorwidth=1.67*cam.hpixels/1000; % Sensor width (mm)
   cam.fisheye=1;
   cam.fov=145*pi/180;
+elseif strcmp(cam.type,'av10115-4mm')
+  % Arecont Vision AV10115 with Arecont 4mm 
+  cam.hpixels=3648;
+  cam.vpixels=2752;
+  cam.sensorwidth=1.67*cam.hpixels/1000; % Sensor width (mm)
+  cam.fisheye=0;
+  cam.lens=4.0;
 elseif strcmp(cam.type,'av10115-half')
   % Arecont Vision AV10115 with SUNEX 2.67mm fisheye (half resolution mode)
   cam.hpixels=3648/2;
