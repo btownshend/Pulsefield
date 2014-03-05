@@ -1,3 +1,12 @@
+% Plot visibility of rays
+%
+% Based on vorig 
+%  0 red  - foreground 
+%  1 green- background
+%  2 yell - indeterminate
+%  3 mag  - disabled due to high variance of background
+%  4 cyan - disabled due to being blocked for an extended time
+%  5 black- looks like background, but bg is low diversity
 function plotvisible(sainfo,vis,figname)
 if nargin<3
   setfig('getvisible');
