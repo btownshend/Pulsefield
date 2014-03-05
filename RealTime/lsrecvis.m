@@ -1,13 +1,23 @@
 % List recordings
-function lsrecvis(varargin)
+function lsrecvis(subdir,varargin)
 defaults=struct('minocc',1,'maxocc',9999,'minframes',1);
 args=processargs(defaults,varargin);
-files=dir([pfroot(),'/Recordings/*.mat']);
+if nargin<1
+  fprintf('Usage:  lsrecvis(subdir [,options])\n');
+  fprintf('Where subdir is one of:\n');
+  files=dir([pfroot(),'/Recordings/']);
+  for i=1:length(files)
+    fprintf('\t%s\n',files(i).name);
+  end
+  return;
+end
+rdir=[pfroot(),'/Recordings/',subdir,'/'];
+files=dir([rdir,'/*.mat']);
 for i=1:length(files)
   f=files(i);
-  zz=load([pfroot(),'/Recordings/',f.name],'note');
+  zz=load([rdir,f.name],'note');
   if ~isfield(zz,'note')
-    system(sprintf('mv %s/Recordings/%s %s/Recordings/BAD',pfroot(),f.name,pfroot()));
+    system(sprintf('mv %s/%s %s/BAD',rdir,f.name,rdir));
     fprintf('Moved %s to BAD\n', f.name);
   end
   if ~isfield(zz,'note')
