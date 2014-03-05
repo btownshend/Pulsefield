@@ -2,6 +2,7 @@ BASEDIR=../../..
 LIBLO=$(BASEDIR)/OSC/liblo-0.26
 SICKTOOLBOX=$(BASEDIR)/sicktoolbox/trunk/c++/drivers
 SICKLIBDIR=$(SICKTOOLBOX)/lms5xx/sicklms5xx/.libs
+SICKLIB=$(SICKLIBDIR)/libsicklms5xx.a 
 CXX=g++
 DEBUG=-g -Wall
 PROFILE=
@@ -9,13 +10,13 @@ OPTIMIZE=-O3
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/base/src -I$(SICKTOOLBOX)/lms5xx
 CFLAGS=$(DEBUG)  -O3
 LDFLAGS=-L$(LIBLO) $(DEBUG) $(PROFILE)
-LIBES=-llo $(SICKLIBDIR)/libsicklms5xx.a -g
+LIBES=-llo $(SICKLIB) -g
 CXXSRCS=frontend.cc dest.cc main.cc urlconfig.cc sickio.cc
 CSRCS=
 SRCS=$(CXXSRCS) $(CSRCS)
 all: frontend
 
-frontend: $(CSRCS:.c=.o) $(CXXSRCS:.cc=.o)
+frontend: $(CSRCS:.c=.o) $(CXXSRCS:.cc=.o) $(SICKLIB)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
 
 depend:
