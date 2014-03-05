@@ -1,7 +1,7 @@
-addpath ~/Documents/Photography/Calibration/Camera/amcctoolbox/calibration
-addpath ~/Documents/Photography/Calibration/Camera/amcctoolbox/amcctoolbox
-addpath ~/Documents/Photography/Calibration/Camera/amcctoolbox/amcctoolbox/CornerFinder
-addpath ~/Documents/Photography/Calibration/Camera/amcctoolbox
+addpath ~/Dropbox/Pulsefield/src/amcctoolbox/calibration
+addpath ~/Dropbox/Pulsefield/src/amcctoolbox/amcctoolbox
+addpath ~/Dropbox/Pulsefield/src/amcctoolbox/amcctoolbox/CornerFinder
+addpath ~/Dropbox/Pulsefield/src/amcctoolbox
 
 diary calibrate.log
 %cams=[ 1 2 3 4 5 6 ];
