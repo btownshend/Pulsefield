@@ -39,6 +39,7 @@ SickIO::SickIO(int _id, const char *host, int port) {
 			sick_lms_5xx->SetSickScanDataFormat(SickLMS5xx::SICK_LMS_5XX_SCAN_FORMAT_UNKNOWN);
 		} catch(...) {
 			fprintf(stderr,"Initialize failed! Are you using the correct IP address?\n");
+			exit(1);
 		}
 
 	pthread_create(&runThread, NULL, runner, (void *)this);
