@@ -11,7 +11,9 @@ function dir=pix2dir(cam,pos)
 if ~isfield(cam,'distortion')
   error('pix2dir: Camera structure does not contain a distortion model');
 end
-if ~strcmp(cam.distortion.mdl,'amcc-fisheye')
+if ~isfield(cam.distortion,'mdl')
+  fprintf('pix2dir: No distortion model in struct, assuming amcc-fisheye\n');
+elseif ~strcmp(cam.distortion.mdl,'amcc-fisheye')
   error('pix2dir: Unknown distortion model: %s',cam.distortion.mdl);
 end
 xd=(pos-cam.distortion.cc)./cam.distortion.fc;
