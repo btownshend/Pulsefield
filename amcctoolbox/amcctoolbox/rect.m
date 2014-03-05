@@ -27,7 +27,9 @@ if nargin < 7,
    alpha = 0;
 end;
 
-
+if nargin<8
+  fisheye=0;
+end
 
 % Note: R is the motion of the points in space
 % So: X2 = R*X where X: coord in the old reference frame, X2: coord in the new ref frame.
