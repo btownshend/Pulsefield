@@ -17,7 +17,7 @@ elseif ~strcmp(cam.distortion.mdl,'amcc-fisheye')
   error('pix2dir: Unknown distortion model: %s',cam.distortion.mdl);
 end
 xd=(pos-cam.distortion.cc)./cam.distortion.fc;
-x=comp_fisheye_distortion(xd',cam.distortion.kc)';
+x=comp_fisheye_distortion(xd,cam.distortion.kc)';
 dir(:,1)=x(:,1);
 dir(:,2)=1;
 dir(:,3)=x(:,2);
