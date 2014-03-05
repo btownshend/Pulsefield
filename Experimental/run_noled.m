@@ -26,7 +26,8 @@ if ~exist('p','var')
   % CCRMA stage  length(from camers 3,4 to screen)=284", width from windows to walls=277"
   %  p.layout=layoutroom(284/39.37,277/39.37,'ncamera',ncamera,'nled',nled);
   % BT Studio  llength(from camers 3,4 to far wall)=11', width from fireplace cabinet to opp wall=15'
-  p.layout=layoutroom(11*12/39.37,15*12/39.37,'ncamera',ncamera,'nled',nled);
+%  p.layout=layoutroom(11*12/39.37,15*12/39.37,'ncamera',ncamera,'nled',nled);
+    p.layout=layoutroom(18*12/39.37,25*12/39.37,'ncamera',ncamera,'nled',nled);
   p.noleds=true;
   plotlayout(p.layout);
 end
@@ -35,7 +36,7 @@ fectl(p,'quit');
 
 % Set camera exposures to defaults
 % Fix the exposure time to 40ms and maximum analog gain to 768 (12*64)
-setupcameras(p,'mode','highspeed','exptime',80,'daynight','day','analoggain',12,'illum','indoor');   
+setupcameras(p,'mode','highspeed','exptime',80,'daynight','day','analoggain',50,'illum','indoor');   
 pause(2);
 % Turn off auto exposure
 lockexposure(p,1);
