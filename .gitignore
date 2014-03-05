@@ -17,7 +17,6 @@ Video/Tracker/bin/arrow.png
 Video/Tracker/lib/oscP5
 Video/Tracker/lib/promidi
 Video/Tracker/lib/themidibus
-Video/Tracker/lib/processing
 Video/Tracker/src/themidibus
 Video/Tracker/bin/runTracker.jar
 .svn

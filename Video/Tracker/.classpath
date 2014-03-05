@@ -3,24 +3,16 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="data"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/processing/core.jar"/>
-	<classpathentry kind="lib" path="lib/processing/gluegen-rt.jar">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Tracker/lib/processing"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/processing/jogl-all.jar">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Tracker/lib/processing"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="lib/promidi/library/promidi.jar" sourcepath="lib/promidi"/>
 	<classpathentry kind="lib" path="lib/oscP5/library/oscP5.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="file:/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/oscP5/reference/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/processing/core.jar"/>
 	<classpathentry kind="lib" path="lib/processing/gluegen-rt-natives-macosx-universal.jar"/>
+	<classpathentry kind="lib" path="lib/processing/gluegen-rt.jar"/>
 	<classpathentry kind="lib" path="lib/processing/jogl-all-natives-macosx-universal.jar"/>
+	<classpathentry kind="lib" path="lib/processing/jogl-all.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
