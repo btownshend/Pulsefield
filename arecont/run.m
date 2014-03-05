@@ -5,7 +5,7 @@ addpath ~/Dropbox/Pulsefield/src/amcctoolbox
 
 diary calibrate.log
 %cams=[ 1 2 3 4 5 6 ];
-cams=5;
+cams=2;
 wd=cd;
 for i=1:length(cams)
   cd(wd);
@@ -18,7 +18,7 @@ for i=1:length(cams)
   save_name = [calib_name,'Results_left'];
 
   % Where the images are (forward slashes only, and must include a trailing slash)
-  input_dir = sprintf('C%d/',cam);
+  input_dir = sprintf('C%d.4mm/',cam);
 
   % Where the data will be saved (forward slashes only, and must include a trailing slash). This folder should already exist.
   output_dir = input_dir;
@@ -49,15 +49,15 @@ for i=1:length(cams)
   rot_flag = 0;
 
   % indicate whether or not to use the fisheye calibration routine.
-  fisheye = true;
+  fisheye = false;  % ************ NOTE ***********
 
   % indicate whether or not to use the third radial distortion term when doing a projective calibration
   k3_enable = false;
 
   % Calibrate the monocular camera automatically
   % and reject those images with error greater than proj_tol
-  auto_mono_calibrator_efficient; % version 1.3a and before
-                                  %auto_mono_calibrator_efficient(calib_name, save_name, input_dir, output_dir, format_image, dX, dY, nx_crnrs, ny_crnrs, proj_tol, rot_flag, fisheye, k3_enable); % version 1.3b and after
+%  auto_mono_calibrator_efficient; % version 1.3a and before
+  auto_mono_calibrator_efficient(calib_name, save_name, input_dir, output_dir, format_image, dX, dY, nx_crnrs, ny_crnrs, proj_tol, rot_flag, fisheye, k3_enable); % version 1.3b and after
 
   % If desired, show the final reprojection error to the user by uncommenting the following line
 end
