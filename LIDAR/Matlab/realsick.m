@@ -1,7 +1,17 @@
+p=struct();
+p.analsysisparams=analysissetup();
+p.lidar=struct('id',1);
 [~,myport]=getsubsysaddr('MPV');
 fprintf('Instructing frontend to use port %d to send us msgs\n', myport);
 oscmsgout('FE','/vis/dest/add/port',{myport});
 ok=oscping('FE','MPV');
+if ~felidarctl(p,'ping') && ~felidarctl(p,'start')
+  error('Failed to start front end');
+end
+
+if ~ok
+  error('Failed ping of front end');
+end
 
 oscmsgout('FE','/vis/get/reflect',{uint32(0)});
 oscmsgout('FE','/vis/set/echoes',{uint32(1)});
@@ -18,6 +28,7 @@ ftime=(1/fps)/3600/24;
 while true
   newvis=sickrcvr('debug',0);
   if isempty(newvis)
+    fprintf('No data received from frontend, exitting...\n');
     break;
   end
   newvis.range=newvis.range(:,1,:);
