@@ -76,5 +76,7 @@ else
 end
 
 if nargin>=3
+  cam.physid=physid;
+else
   cam.physid=id;
 end
