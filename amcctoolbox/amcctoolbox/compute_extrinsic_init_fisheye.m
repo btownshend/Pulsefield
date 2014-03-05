@@ -110,7 +110,7 @@ if (r < 1e-3)|(Np < 5), %1e-3, %1e-4, %norm(X_kk(3,:)) < eps, % Test of planarit
    %H(:,1) = H(:,1)/norm(H(:,1));
    %H(:,2) = H(:,2)/norm(H(:,2));
    
-   if 0, %%% Some tests for myself... the opposite sign solution leads to negative depth!!!
+   if 1, %%% Some tests for myself... the opposite sign solution leads to negative depth!!!
        
        % Case#1: no opposite sign:
        
