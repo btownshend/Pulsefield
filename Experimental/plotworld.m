@@ -50,6 +50,8 @@ for c=1:length(p.camera)
     end
     pp=p2;
   end
+  up=tw(world,cam2grid(r,[0,-dist,0]'));
+  plot3([campos(1),up(1)],[campos(2),up(2)],[campos(3),up(3)],'g');
 end
 box on;
 axis vis3d;

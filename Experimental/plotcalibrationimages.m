@@ -9,7 +9,7 @@ fprintf('G=visible, R=blocked, Y=disabled(intermediate), M=disabled(high varianc
 for c=1:length(p.camera)
   cam=p.camera(c);
   scale=cam.hpixels/cam.distortion.Wcal;
-  subplot(2,3,c);
+  subplot(2,ceil(length(p.camera)/2),c);
   hold on;
   if nargin>=2 && isfield(vis,'im')
     if isfield(cam.extcal,'image')
@@ -21,6 +21,8 @@ for c=1:length(p.camera)
     imshow(imtmp);
   elseif isfield(cam.extcal,'image')
     imshow(imresize(cam.extcal.image.im,scale));
+  else
+    axis ij
   end
   pcy=arrayfun(@(z) z.pos(2),cam.pixcalib);
   pcx=arrayfun(@(z) z.pos(1),cam.pixcalib);
@@ -64,7 +66,7 @@ for c=1:length(p.camera)
     p0(i,:)=getpixelpos(cam,[a(i,:),0]);
     ph(i,:)=getpixelpos(cam,[a(i,:),roomheight]);
   end
-  %plot(p0(:,1),p0(:,2),'c');
+  plot(p0(:,1),p0(:,2),'c');
   plot(ph(:,1),ph(:,2),'c');
   % Draw corner verticals
   for i=1:size(p.layout.active,1)
