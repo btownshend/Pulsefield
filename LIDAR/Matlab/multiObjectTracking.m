@@ -249,8 +249,8 @@ function deleteLostTracks(obj)
     return;
   end
   
-  invisibleForTooLong = 10;
-  ageThreshold = 8;
+  invisibleForTooLong = 50;
+  ageThreshold = 20;
   
   % compute the fraction of the track's age for which it was visible
   ages = [obj.tracks(:).age];
