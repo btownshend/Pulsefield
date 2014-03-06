@@ -25,12 +25,22 @@ fnum=[];
 fps=5;  % Video display rate
 lastacquired=0;
 ftime=(1/fps)/3600/24;
+iswaiting=false;
 while true
   newvis=sickrcvr('debug',0);
   if isempty(newvis)
-    fprintf('No data received from frontend, exitting...\n');
-    break;
+    if iswaiting
+      fprintf('.');
+    else
+      fprintf('Waiting for data from frontend.');
+      iswaiting=true;
+    end
+    continue;
   end
+  if iswaiting
+    fprintf('done\n');
+  end
+  iswaiting=false;
   newvis.range=newvis.range(:,1,:);
   if isfield(newvis,'reflect')
     newvis.reflect=newvis.reflect(:,1,:);
