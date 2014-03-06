@@ -322,7 +322,7 @@ void FrontEnd::stopRecording() {
     recording=false;
 }
 
-int FrontEnd::playFile(const char *filename) {
+int FrontEnd::playFile(const char *filename,bool singleStep) {
     printf("Playing back recording from %s\n", filename);
     FILE *fd=fopen(filename,"r");
     if (fd == NULL) {
@@ -340,6 +340,7 @@ int FrontEnd::playFile(const char *filename) {
 
     struct timeval lastfile;
     struct timeval lastnow;
+    int frameStep=0;
 
     while (true) {
 	sendOnce |= sendAlways;
@@ -349,14 +350,27 @@ int FrontEnd::playFile(const char *filename) {
 	    printf("EOF on %s\n",filename);
 	    break;
 	}
+	while (singleStep && frameStep<=0) {
+	    printf("Num frames to step? ");
+	    char buf[100];
+	    fgets(buf,sizeof(buf)-1,stdin);
+	    if (buf[0]==0xa)
+		frameStep=1;
+	    else
+		frameStep=atoi(buf);
+	    printf("Advancing %d frames\n", frameStep);
+	} 
+	frameStep--;
+
 	struct timeval now;
 	gettimeofday(&now,0);
-
+	
 	long int waittime=(acquired.tv_sec-lastfile.tv_sec-(now.tv_sec-lastnow.tv_sec))*1000000+(acquired.tv_usec-lastfile.tv_usec-(now.tv_usec-lastnow.tv_usec));
 	if (waittime >1000 && waittime<1000000) {
 	    //printf("Wait %ld usec\n", waittime);
 	    usleep(waittime);
 	}
+
 	lastnow=now;
 	lastfile=acquired;
 

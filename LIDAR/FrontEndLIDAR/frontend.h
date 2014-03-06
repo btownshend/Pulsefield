@@ -1,6 +1,7 @@
 #ifndef _FRONTEND_H_
 #define _FRONTEND_H_
 
+#include <pthread.h>
 #include "lo/lo.h"
 #include "defs.h"
 #include "dest.h"
@@ -39,7 +40,7 @@ class FrontEnd {
 
     int startRecording(const char *filename);
     void stopRecording();
-    int playFile(const char *filename);
+    int playFile(const char *filename, bool singleStep);
 
     // Handlers for OSC messages
     void startStop(bool start);

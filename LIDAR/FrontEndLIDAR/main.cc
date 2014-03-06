@@ -7,7 +7,7 @@
 static int nsick=1;
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr, "Usage: %s [-R | -r recordfile | -p playfile [-l] ] (had %d args)\n",argv[0],argc-1);
+    fprintf(stderr, "Usage: %s [-R | -r recordfile | -p playfile [-s] [-l] ] (had %d args)\n",argv[0],argc-1);
     exit(1);
 }
 
@@ -17,9 +17,13 @@ int main(int argc, char *argv[])
     const char *playFile=NULL;
     int ch;
     bool loop=false;
+    bool singlestep=false;
 
-    while ((ch=getopt(argc,argv,"r:Rp:l"))!=-1) {
+    while ((ch=getopt(argc,argv,"sr:Rp:l"))!=-1) {
 	switch (ch) {
+	case 's':
+	    singlestep=true;
+	    break;
 	case 'l':
 	    loop=true;
 	    break;
@@ -50,7 +54,7 @@ int main(int argc, char *argv[])
 	FrontEnd fe(0);
 	// Now playback file through it
 	do {
-	    int rc=fe.playFile(playFile);
+	    int rc=fe.playFile(playFile,singlestep);
 	    if (rc)
 		exit(1);
 	} while (loop);   // Keep repeating if loop is set
