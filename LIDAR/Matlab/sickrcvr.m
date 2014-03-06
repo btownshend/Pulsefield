@@ -5,6 +5,7 @@ args=processargs(defaults,varargin);
 
 vis=[];
 frame=-1;
+
 while true
   if args.nowait || args.flush
     m=oscmsgin('MPV',0.0);
@@ -89,7 +90,7 @@ while true
         vis=[];
       end
     elseif strcmp(m.path,'/vis/range')  || strcmp(m.path,'/vis/reflect')
-      c=m.data{1}+1;   %  Sensor
+      c=m.data{1};   %  Sensor
       if filled(c)
         if vis.cframe(c)~=m.data{2} || vis.nmeasure~=m.data{6}
           fprintf('Different parameters from previously received frame for sensor %d (prior frame %d, cur frame %d)\n', c, vis.cframe(c), m.data{2});
