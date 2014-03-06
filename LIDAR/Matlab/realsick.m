@@ -17,7 +17,7 @@ oscmsgout('FE','/vis/get/reflect',{uint32(0)});
 oscmsgout('FE','/vis/set/echoes',{uint32(1)});
 
 tracker=multiObjectTracking();
-im=255*ones(600,600,3,'uint8');
+im=255*zeros(600,600,3,'uint8');
 winbounds=[-3,3,-0.5,5];
 
 bg=[];
