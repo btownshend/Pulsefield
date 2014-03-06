@@ -2,7 +2,7 @@
 % 0 - background
 % 1-n - target i
 function targets=classify(vis,bg,varargin)
-defaults=struct('minsep',0.3);
+defaults=struct('minsep',0.3,'mintarget',0.15);
 args=processargs(defaults,varargin);
 class=[];
 for i=1:length(vis.range)
@@ -20,10 +20,18 @@ for i=1:length(vis.range)
 end
 pos=[];
 bbox=[];
+isnoise=false(1,max(class));
 for i=1:max(class)
   sel=class==i;
   xy=range2xy(vis.angle(sel)+pi/2,vis.range(sel));
   pos(i,:)=mean(xy,1);
   bbox(i,:)=[min(xy(:,1)),min(xy(:,2)),max(xy(:,1))-min(xy(:,1)),max(xy(:,2))-min(xy(:,2))];
+  radius=norm(bbox(i,3:4));
+  if radius<args.mintarget
+    isnoise(i)=true;
+  end
 end
+pos=pos(~isnoise,:);
+bbox=bbox(~isnoise,:);
+class(isnoise)=1;
 targets=struct('class',class,'pos',pos,'bbox',bbox);
