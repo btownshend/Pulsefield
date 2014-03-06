@@ -42,9 +42,8 @@ SickIO::SickIO(int _id, const char *host, int port) {
 		}
 	setNumEchoes(5);
 	setCaptureRSSI(true);
-	scanFreq=25;
-	scanRes=0.25;
-	updateScanFreqAndRes();
+	setScanFreq(25);
+	setScanRes(0.25);
 	running=false;
 }
 
