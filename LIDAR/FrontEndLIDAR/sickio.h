@@ -72,8 +72,6 @@ public:
 		return id;
 	}
 
-	void setFPS(int fps);
-	void setRes(const char *res);
 	void setNumEchoes(int nechoes);
 	void setCaptureRSSI(bool on);
 	void setScanFreq(int freq) {

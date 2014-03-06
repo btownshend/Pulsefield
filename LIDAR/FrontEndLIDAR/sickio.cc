@@ -112,20 +112,11 @@ int SickIO::stop() {
     return 0;
 }
 
-void SickIO::setFPS(int fps) {
-	fprintf(stderr,"SickIO::setFPS not implemented\n");
-}
-
-void SickIO::setRes(const char *res) {
-	fprintf(stderr,"SickIO::setRes not implemented\n");
-}
-
 void SickIO::run() {
 	printf("SickIO::run()\n");
 	while (true)
 		get();
 }
-
 
 void SickIO::get() {
 	try {
