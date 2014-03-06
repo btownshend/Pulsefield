@@ -377,6 +377,7 @@ int FrontEnd::playFile(const char *filename) {
 	    if (doQuit)
 		break;
     }
+    fclose(fd);
     return 0;
 }
 

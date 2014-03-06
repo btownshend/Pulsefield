@@ -7,20 +7,30 @@
 static int nsick=1;
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr, "Usage: %s [-r recordfile | -p playfile] (had %d args)\n",argv[0],argc-1);
+    fprintf(stderr, "Usage: %s [-R | -r recordfile | -p playfile [-l] ] (had %d args)\n",argv[0],argc-1);
     exit(1);
 }
 
 int main(int argc, char *argv[])
 {
-    const char *recordFile=NULL;
+    char *recordFile=NULL;
     const char *playFile=NULL;
     int ch;
+    bool loop=false;
 
-    while ((ch=getopt(argc,argv,"r:p:"))!=-1) {
+    while ((ch=getopt(argc,argv,"r:Rp:l"))!=-1) {
 	switch (ch) {
+	case 'l':
+	    loop=true;
+	    break;
 	case 'r':
 	    recordFile=optarg;
+	    break;
+	case 'R':
+	    recordFile=new char[1000];
+	    time_t t;
+	    time(&t);
+	    strftime(recordFile,1000,"%Y%m%dT%H%M%S.ferec",localtime(&t));
 	    break;
 	case 'p':
 	    playFile=optarg;
@@ -39,11 +49,12 @@ int main(int argc, char *argv[])
 	// Create a front end with no sensors so it doesn't access any devices
 	FrontEnd fe(0);
 	// Now playback file through it
-	int rc=fe.playFile(playFile);
-	if (rc)
-	    exit(1);
-	else
-	    exit(0);
+	do {
+	    int rc=fe.playFile(playFile);
+	    if (rc)
+		exit(1);
+	} while (loop);   // Keep repeating if loop is set
+	exit(0);
     }
 
     FrontEnd fe(nsick);
