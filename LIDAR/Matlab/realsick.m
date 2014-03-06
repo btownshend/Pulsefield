@@ -26,6 +26,7 @@ fps=5;  % Video display rate
 lastacquired=0;
 ftime=(1/fps)/3600/24;
 iswaiting=false;
+lastvis=[];
 while true
   newvis=sickrcvr('debug',0);
   if isempty(newvis)
@@ -57,4 +58,5 @@ while true
     lastacquired=newvis.acquired;
   end
   fnum(end+1)=newvis.cframe;
+  lastvis=newvis;
 end
