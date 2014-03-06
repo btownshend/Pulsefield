@@ -27,6 +27,7 @@ private:
 	int nechoes;
 	bool captureRSSI;
 	void get();
+	bool running;
 	int scanFreq;
 	double scanRes;
 
@@ -36,7 +37,8 @@ public:
 	virtual ~SickIO();
 
 	void run();
-	int startStop(bool start);
+	int start();
+	int stop();
 
 	unsigned int getNumMeasurements() const {
 		return num_measurements;

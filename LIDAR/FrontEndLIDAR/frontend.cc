@@ -102,6 +102,7 @@ FrontEnd::FrontEnd(int _nsick) {
 		}
 		const char *host=urls.getHost(ident);
 		sick[i]=new SickIO(i+1,host,port);
+		sick[i]->start();
 	}
 	printf("done\n");fflush(stdout);
 
@@ -262,15 +263,20 @@ void FrontEnd::sendMessages() {
 
 void FrontEnd::startStop(bool start) {
 	printf("FrontEnd: %s\n", start?"start":"stop");
-	for (int i=0;i<nsick;i++)
-		if (sick[i]->startStop(start) < 0  && start) {
+	if (start) {
+	    for (int i=0;i<nsick;i++)
+		if (sick[i]->start() < 0 ) {
 			fprintf(stderr,"Failed to start sensor %d, aborting startup\n", sick[i]->getId());
 			start=false;
 			// Stop any cameras we already started
 			for (int j=0;j<=i;j++)
-				(void)sick[j]->startStop(false);
+			    (void)sick[j]->stop();
 			break;
 		}
+	} else  {
+	    for (int i=0;i<nsick;i++)
+		(void)sick[i]->stop();
+	}
 
 	// Send status update message
 	for (int i=0;i<dests.count();i++) {

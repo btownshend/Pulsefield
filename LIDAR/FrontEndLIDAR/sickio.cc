@@ -40,8 +40,6 @@ SickIO::SickIO(int _id, const char *host, int port) {
 			fprintf(stderr,"Initialize failed! Are you using the correct IP address?\n");
 			exit(1);
 		}
-
-	pthread_create(&runThread, NULL, runner, (void *)this);
 	setNumEchoes(5);
 	setCaptureRSSI(true);
 	scanFreq=25;
@@ -61,9 +59,6 @@ SickIO::~SickIO() {
 	}
 }
 
-int SickIO::startStop(bool start) {
-	fprintf(stderr,"SickIO::startStop not implemented\n");
-	return 1;
 void SickIO::updateScanFreqAndRes() {	
 	if (!fake)
 	    sick_lms_5xx->SetSickScanFreqAndRes(sick_lms_5xx->IntToSickScanFreq(scanFreq),sick_lms_5xx->DoubleToSickScanRes(scanRes));
@@ -91,6 +86,31 @@ void SickIO::setCaptureRSSI(bool on) {
 	sick_lms_5xx->SetSickScanDataFormat(SickLMS5xx::SICK_LMS_5XX_SCAN_FORMAT_DIST);
 }
 
+
+int SickIO::start() {
+    if (running)
+	return 0;
+    int rc=pthread_create(&runThread, NULL, runner, (void *)this);
+    if (rc) {
+	fprintf(stderr,"pthread_create failed with error code %d\n", rc);
+	return -1;
+    }
+    running=true;
+    return 0;
+}
+
+int SickIO::stop() {
+    if (!running)
+	return 0;
+    // Stop
+    fprintf(stderr,"SickIO::startStop canceling thread\n");
+    int rc=pthread_cancel(runThread);
+    if (rc) {
+	fprintf(stderr,"pthread_cancel failed with error code %d\n", rc);
+	return -1;
+    }
+    running=false;
+    return 0;
 }
 
 void SickIO::setFPS(int fps) {
