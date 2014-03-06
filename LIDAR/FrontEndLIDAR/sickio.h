@@ -45,11 +45,11 @@ public:
 	}
 
 	const unsigned int* getRange(int echo) const {
-		return range[echo];
+	    return range[echo];
 	}
 
 	const unsigned int* getReflect(int echo) const {
-		return reflect[echo];
+	    return reflect[echo];
 	}
 
 	const struct timeval& getAcquired() const {
@@ -73,6 +73,7 @@ public:
 	}
 
 	void setNumEchoes(int nechoes);
+	int getNumEchoes() const { return nechoes; }
 	void setCaptureRSSI(bool on);
 	void setScanFreq(int freq) {
 	    scanFreq=freq;

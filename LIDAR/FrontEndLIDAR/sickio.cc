@@ -40,10 +40,11 @@ SickIO::SickIO(int _id, const char *host, int port) {
 			fprintf(stderr,"Initialize failed! Are you using the correct IP address?\n");
 			exit(1);
 		}
-	setNumEchoes(5);
-	setCaptureRSSI(true);
-	setScanFreq(25);
-	setScanRes(0.25);
+	setNumEchoes(1);
+	setCaptureRSSI(false);
+	scanFreq=50;
+	scanRes=0.5;
+	updateScanFreqAndRes();
 	running=false;
 }
 
@@ -59,6 +60,7 @@ SickIO::~SickIO() {
 }
 
 void SickIO::updateScanFreqAndRes() {	
+    printf("Updating device to scanFreq=%d (%d), scanRes=%f (%d)\n",scanFreq,sick_lms_5xx->IntToSickScanFreq(scanFreq),scanRes,sick_lms_5xx->DoubleToSickScanRes(scanRes));
 	if (!fake)
 	    sick_lms_5xx->SetSickScanFreqAndRes(sick_lms_5xx->IntToSickScanFreq(scanFreq),sick_lms_5xx->DoubleToSickScanRes(scanRes));
 }
@@ -127,7 +129,7 @@ void SickIO::get() {
 		//				         SickLMS5xx::SICK_LMS_5XX_REFLECT_NONE);
 		assert(nechoes>=1 && nechoes<=MAXECHOES);
 		if (fake) {
-			num_measurements=190*4;
+			num_measurements=190/scanRes+1;
 			for (int i=0;i<(int)num_measurements;i++) {
 				for (int e=0;e<nechoes;e++) {
 					range[e][i]=i+e*100;
@@ -135,7 +137,7 @@ void SickIO::get() {
 				}
 			}
 			status=1;
-			usleep(30000);
+			usleep(1000000/scanFreq);
 		} else
 			sick_lms_5xx->GetSickMeasurements(
 				range[0], (nechoes>=2)?range[1]:NULL, (nechoes>=3)?range[2]:NULL, (nechoes>=4)?range[3]:NULL, (nechoes>=5)?range[4]:NULL,
@@ -161,9 +163,12 @@ void SickIO::get() {
 	}
 
 	gettimeofday(&acquired,0);
+	if (valid)
+	    fprintf(stderr,"Warning, frame %d overwritten before being retrieved\n", frame);
 	frame++;
 	valid=true;
-	printf("Got %d measurements, status=%d\n",num_measurements,status);
+	if (frame%100==0)
+	    printf("Frame %d: got %d measurements, status=%d\n",frame,num_measurements,status);
 }
 
 
