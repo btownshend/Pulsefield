@@ -289,7 +289,7 @@ void FrontEnd::startStop(bool start) {
 void FrontEnd::setFPS(int fps) {
 	printf("Setting all sensors to %d FPS\n", fps);
 	for (int i=0;i<nsick;i++)
-		sick[i]->setFPS(fps);
+		sick[i]->setScanFreq(fps);
 }
 
 
@@ -299,7 +299,8 @@ void FrontEnd::setRes(int sickid, const char *res) {
 		fprintf(stderr,"setRes: bad sensor number: %d\n", sickid);
 		return;
 	}
-	sick[sickid]->setRes(res);
+	double dres=atof(res);
+	sick[sickid]->setScanRes(dres);
 }
 
 void FrontEnd::setEchoes(int echoes) {

@@ -44,6 +44,10 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	pthread_create(&runThread, NULL, runner, (void *)this);
 	setNumEchoes(5);
 	setCaptureRSSI(true);
+	scanFreq=25;
+	scanRes=0.25;
+	updateScanFreqAndRes();
+	running=false;
 }
 
 SickIO::~SickIO() {
@@ -60,6 +64,11 @@ SickIO::~SickIO() {
 int SickIO::startStop(bool start) {
 	fprintf(stderr,"SickIO::startStop not implemented\n");
 	return 1;
+void SickIO::updateScanFreqAndRes() {	
+	if (!fake)
+	    sick_lms_5xx->SetSickScanFreqAndRes(sick_lms_5xx->IntToSickScanFreq(scanFreq),sick_lms_5xx->DoubleToSickScanRes(scanRes));
+}
+
 void SickIO::setNumEchoes(int _nechoes) {
     assert(_nechoes>=1 && _nechoes<=MAXECHOES);
     nechoes=_nechoes;

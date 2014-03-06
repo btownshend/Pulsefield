@@ -27,6 +27,10 @@ private:
 	int nechoes;
 	bool captureRSSI;
 	void get();
+	int scanFreq;
+	double scanRes;
+
+	void updateScanFreqAndRes();
 public:
 	SickIO(int _id, const char *host, int port);
 	virtual ~SickIO();
@@ -70,6 +74,14 @@ public:
 	void setRes(const char *res);
 	void setNumEchoes(int nechoes);
 	void setCaptureRSSI(bool on);
+	void setScanFreq(int freq) {
+	    scanFreq=freq;
+	    updateScanFreqAndRes();
+	}
+	void setScanRes(double res) {
+	    scanRes=res;
+	    updateScanFreqAndRes();
+	}
 };
 
 #endif /* SICKIO_H_ */
