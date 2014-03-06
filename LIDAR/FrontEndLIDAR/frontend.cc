@@ -133,6 +133,15 @@ FrontEnd::FrontEnd(int _nsick) {
 	/* add method that will match any path and args if they haven't been caught above */
 	lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
 
+	/* Start incoming message processing */
+	printf("Creating thread for incoming messages (server=0x%lx)...",(long int)s);
+	int rc=pthread_create(&incomingThread, NULL, processIncoming, (void *)s);
+	if (rc) {
+	    fprintf(stderr,"pthread_create failed with error code %d\n", rc);
+	    exit(1);
+	}
+	printf("done\n");
+
 	/* add default destinations */
 	// addDest("localhost",7771);
 
@@ -141,22 +150,20 @@ FrontEnd::FrontEnd(int _nsick) {
 }
 
 FrontEnd::~FrontEnd() {
-	for (int i=0;i<nsick;i++) {
-		delete sick[i];
-	}
-	delete [] sick;
-	lo_server_free(s);
+    int rc=pthread_cancel(incomingThread);
+    if (rc) {
+	fprintf(stderr,"pthread_cancel failed with error code %d\n", rc);
+    }
+    for (int i=0;i<nsick;i++) {
+	delete sick[i];
+    }
+    delete [] sick;
+    lo_server_free(s);
 }
 
 void FrontEnd::run() {
 	int retval;
 
-	int lo_fd = lo_server_get_socket_fd(s);
-	if (lo_fd < 0) {
-		fprintf(stderr,"lo_server_get_socket_fd failed\n");
-		perror("");
-		exit(1);
-	}
 	struct timeval ts1,ts2,lastprocess;
 	gettimeofday(&lastprocess,0);   // Keep track of time of last successful frame
 	while (true) {  /* Forever */
@@ -166,8 +173,8 @@ void FrontEnd::run() {
 		FD_ZERO(&rfds);
 
 		/* get the file descriptor of the server socket and watch for messages */
-		FD_SET(lo_fd, &rfds);
-		int maxfd=lo_fd;
+		//FD_SET(lo_fd, &rfds);
+		int maxfd=1;
 
 		gettimeofday(&ts1,0);
 		if (debug>2) {
@@ -190,12 +197,6 @@ void FrontEnd::run() {
 			//fprintf(stderr,"Select timeout\n");
 		}
 
-		// Process OSC messages
-		if (FD_ISSET(lo_fd, &rfds))
-			// Process all queued messages
-			while (lo_server_recv_noblock(s, 0) != 0)
-				if (doQuit)
-					return;
 
 		// Read data from sensors
 		bool allValid=true;
@@ -209,6 +210,16 @@ void FrontEnd::run() {
 	// NOT REACHED
 }
 
+// Processing incoming OSC messages in a separate thread
+void *FrontEnd::processIncoming(void *arg) {
+    lo_server s = (lo_server)arg;
+    printf("processIncoming(s=0x%lx)\n",(long int)s);
+    // Process all queued messages
+    while (lo_server_recv(s) != 0)
+	if (doQuit)
+	    break;
+    return NULL;
+}
 
 void FrontEnd::processFrames() {
 	if (debug>1)
@@ -371,11 +382,6 @@ int FrontEnd::playFile(const char *filename) {
 	sendMessages(cid,cframe, acquired,  nmeasure, nechoes, &rangeref[0], &reflectref[0]);
 
 	sendOnce=0;
-
-	// Process all queued messages
-	while (lo_server_recv_noblock(s, 0) != 0)
-	    if (doQuit)
-		break;
     }
     fclose(fd);
     return 0;

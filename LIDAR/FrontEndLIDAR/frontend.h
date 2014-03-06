@@ -26,6 +26,9 @@ class FrontEnd {
 
     bool recording;
     FILE *recordFD;
+
+    pthread_t incomingThread;
+    static void *processIncoming(void *arg);
  public:
     enum { RANGE=0x10, REFLECT=0x20 };  // Bitmasks of what to send in next message group
 
