@@ -5,6 +5,7 @@
 #include <strings.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #include "frontend.h"
 #include "urlconfig.h"
@@ -69,6 +70,8 @@ FrontEnd::FrontEnd(int _nsick) {
 	nsick=_nsick;
 	sick = new SickIO*[nsick];
 	nechoes=1;
+	recording=false;
+	recordFD=NULL;
 
 	URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
 
@@ -208,58 +211,174 @@ void FrontEnd::run() {
 
 
 void FrontEnd::processFrames() {
-	if (debug)
+	if (debug>1)
 		printf("Processing frame %d\n",frame);
 	sendMessages();
-	for (int i=0;i<nsick;i++) {
-		// clear valid flag so another frame can be read
-		sick[i]->clearValid();
-	}
+	if (recording)
+	    recordFrame();
 	frame=frame+1;
 }
 
 // Send all messages that are in the sendOnce list to the destinations
 void FrontEnd::sendMessages() {
+    sendOnce |= sendAlways;
+    for (int c=0;c<nsick;c++) {
+	const unsigned int *range[SickIO::MAXECHOES];
+	const unsigned int *reflect[SickIO::MAXECHOES];
+	for (int i=0;i<sick[c]->getNumEchoes();i++) {
+	    range[i]=sick[c]->getRange(i);
+	    reflect[i]=sick[c]->getReflect(i);
+	}
+	sendMessages(sick[c]->getId(),sick[c]->getFrame(),sick[c]->getAcquired(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
+	// clear valid flag so another frame can be read
+	sick[c]->clearValid();
+    }
+	
+    sendOnce=0;
+}
+
+void FrontEnd::sendMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
 	if (debug>1)
 		printf("sendMessages()  sendOnce=%ld, ndest=%d\n",sendOnce,dests.count());
 
-	sendOnce |= sendAlways;
 	for (int i=0;i<dests.count();i++) {
 		char cbuf[10];
-		printf("Sending messages to %s:%d\n",dests.getHost(i),dests.getPort(i));
+		if (debug>2)
+		    printf("Sending messages to %s:%d\n",dests.getHost(i),dests.getPort(i));
 		sprintf(cbuf,"%d",dests.getPort(i));
 		lo_address addr = lo_address_new(dests.getHost(i), cbuf);
 		lo_send(addr,"/vis/beginframe","i",frame);
-		for (int c=0;c<nsick;c++) {
-			struct timeval ts=sick[c]->getAcquired();
-			if (sendOnce & RANGE) {
-				// Send range info
-				for (int e=0;e<nechoes;e++) {
-					const unsigned int *ranges=sick[c]->getRange(e);
-					lo_blob data = lo_blob_new(sick[c]->getNumMeasurements()*sizeof(*ranges),ranges);
-					if (debug>1)
-						printf("Sending RANGE(%d,%d) (N=%d) to %s:%d\n", c, e, sick[c]->getNumMeasurements(), dests.getHost(i),dests.getPort(i));
-					lo_send(addr, "/vis/range","iiiiiib",c,sick[c]->getFrame(),ts.tv_sec, ts.tv_usec, e, sick[c]->getNumMeasurements(), data);
-					lo_blob_free(data);
-				}
-			}
-			if (sendOnce & REFLECT) {
-				for (int e=0;e<nechoes;e++) {
-					const unsigned int *reflect=sick[c]->getReflect(e);
-					lo_blob data = lo_blob_new(sick[c]->getNumMeasurements()*sizeof(*reflect),reflect);
-					if (debug>1)
-						printf("Sending REFLECT(%d,%d) (N=%d) to %s:%d\n", c, e, sick[c]->getNumMeasurements(), dests.getHost(i),dests.getPort(i));
-					lo_send(addr, "/vis/reflect","iiiiiib",c,sick[c]->getFrame(),ts.tv_sec, ts.tv_usec, e, sick[c]->getNumMeasurements(), data);
-					lo_blob_free(data);
-				}
-			}
+		if (sendOnce & RANGE) {
+		    // Send range info
+		    for (int e=0;e<nechoes;e++) {
+			lo_blob data = lo_blob_new(nmeasure*sizeof(*ranges[e]),ranges[e]);
+			if (debug>2)
+			    printf("Sending RANGE(%d,%d) (N=%d) to %s:%d\n", id, e, nmeasure, dests.getHost(i),dests.getPort(i));
+			lo_send(addr, "/vis/range","iiiiiib",id,frame,acquired.tv_sec, acquired.tv_usec, e, nmeasure, data);
+			lo_blob_free(data);
+		    }
+		}
+		if (sendOnce & REFLECT) {
+		    for (int e=0;e<nechoes;e++) {
+			lo_blob data = lo_blob_new(nmeasure*sizeof(*reflect[e]),reflect[e]);
+			if (debug>2)
+			    printf("Sending REFLECT(%d,%d) (N=%d) to %s:%d\n", id, e, nmeasure, dests.getHost(i),dests.getPort(i));
+			lo_send(addr, "/vis/reflect","iiiiiib",id,frame,acquired.tv_sec, acquired.tv_usec, e, nmeasure, data);
+			lo_blob_free(data);
+		    }
 		}
 		lo_send(addr,"/vis/endframe","i",frame);
 		lo_address_free(addr);
 	}
-	sendOnce=0;
 }
 
+void FrontEnd::recordFrame() {
+    assert(recording && recordFD>=0);
+    
+    for (int c=0;c<nsick;c++) {
+	struct timeval ts=sick[c]->getAcquired();
+	fprintf(recordFD,"%d %d %ld %d %d %d\n",sick[c]->getId(),sick[c]->getFrame(),ts.tv_sec,ts.tv_usec,nechoes,sick[c]->getNumMeasurements());
+	for (int e=0;e<nechoes;e++) {
+	    const unsigned int *ranges=sick[c]->getRange(e);
+	    fprintf(recordFD,"D%d ",e);
+	    for (int i=0;i<(int)sick[c]->getNumMeasurements();i++)
+		fprintf(recordFD,"%d ",ranges[i]);
+	    fprintf(recordFD,"\n");
+	}
+	for (int e=0;e<nechoes;e++) {
+	    const unsigned int *reflect=sick[c]->getReflect(e);
+	    fprintf(recordFD,"R%d ",e);
+	    for (int i=0;i<(int)sick[c]->getNumMeasurements();i++)
+		fprintf(recordFD,"%d ",reflect[i]);
+	    fprintf(recordFD,"\n");
+	}
+    }
+}
+
+int FrontEnd::startRecording(const char *filename) {
+    recordFD = fopen(filename,"w");
+    if (recordFD == NULL) {
+	fprintf(stderr,"Unable to open recording file %s for writing\n", filename);
+	return -1;
+    }
+    printf("Recording into %s\n", filename);
+    recording=true;
+    return 0;
+}
+
+void FrontEnd::stopRecording() {
+    (void)fclose(recordFD);
+    recording=false;
+}
+
+int FrontEnd::playFile(const char *filename) {
+    printf("Playing back recording from %s\n", filename);
+    FILE *fd=fopen(filename,"r");
+    if (fd == NULL) {
+	fprintf(stderr,"Unable to open playback file %s for reading\n", filename);
+	return -1;
+    }
+    unsigned int range[SickIO::MAXECHOES][SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
+    unsigned int reflect[SickIO::MAXECHOES][SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
+    const unsigned int *rangeref[SickIO::MAXECHOES];
+    const unsigned int *reflectref[SickIO::MAXECHOES];
+    for (int i=0;i<SickIO::MAXECHOES;i++) {
+	rangeref[i]=range[i];
+	reflectref[i]=reflect[i];
+    }
+
+    struct timeval lastfile;
+    struct timeval lastnow;
+
+    while (true) {
+	sendOnce |= sendAlways;
+	int cid,cframe,nechoes,nmeasure;
+	struct timeval acquired;
+	if (EOF==fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&cframe,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure)) {
+	    printf("EOF on %s\n",filename);
+	    break;
+	}
+	struct timeval now;
+	gettimeofday(&now,0);
+
+	long int waittime=(acquired.tv_sec-lastfile.tv_sec-(now.tv_sec-lastnow.tv_sec))*1000000+(acquired.tv_usec-lastfile.tv_usec-(now.tv_usec-lastnow.tv_usec));
+	if (waittime >1000 && waittime<1000000) {
+	    //printf("Wait %ld usec\n", waittime);
+	    usleep(waittime);
+	}
+	lastnow=now;
+	lastfile=acquired;
+
+	assert(nechoes>=1 && nechoes<=SickIO::MAXECHOES);
+	assert(nmeasure>0 && nmeasure<=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS);
+
+	for (int e=0;e<nechoes;e++) {
+	    int echo;
+	    fscanf(fd,"D%d ",&echo);
+	    assert(echo>=0 && echo<nechoes);
+	    for (int i=0;i<nmeasure;i++)
+		fscanf(fd,"%d ",&range[e][i]);
+	}
+	for (int e=0;e<nechoes;e++) {
+	    int echo;
+	    fscanf(fd,"R%d ",&echo);
+	    assert(echo>=0 && echo<nechoes);
+	    for (int i=0;i<nmeasure;i++)
+		fscanf(fd,"%d ",&reflect[e][i]);
+	}
+	if (cframe%100==0)
+	    printf("Playing frame %d\n",cframe);
+	sendMessages(cid,cframe, acquired,  nmeasure, nechoes, &rangeref[0], &reflectref[0]);
+
+	sendOnce=0;
+
+	// Process all queued messages
+	while (lo_server_recv_noblock(s, 0) != 0)
+	    if (doQuit)
+		break;
+    }
+    return 0;
+}
 
 void FrontEnd::startStop(bool start) {
 	printf("FrontEnd: %s\n", start?"start":"stop");

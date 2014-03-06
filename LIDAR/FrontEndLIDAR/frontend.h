@@ -21,7 +21,11 @@ class FrontEnd {
 
     void processFrames();
     void sendMessages();   // Send messages to OSC destinations
+    void sendMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int *ranges[], const unsigned int *reflect[]);
+    void recordFrame();
 
+    bool recording;
+    FILE *recordFD;
  public:
     enum { RANGE=0x10, REFLECT=0x20 };  // Bitmasks of what to send in next message group
 
@@ -29,6 +33,10 @@ class FrontEnd {
     ~FrontEnd();
 
     void run();
+
+    int startRecording(const char *filename);
+    void stopRecording();
+    int playFile(const char *filename);
 
     // Handlers for OSC messages
     void startStop(bool start);
