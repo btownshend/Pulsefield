@@ -36,13 +36,14 @@ SickIO::SickIO(int _id, const char *host, int port) {
 		try {
 			sick_lms_5xx = new SickLMS5xx(host,port);
 			sick_lms_5xx->Initialize();
-			sick_lms_5xx->SetSickScanDataFormat(SickLMS5xx::SICK_LMS_5XX_SCAN_FORMAT_UNKNOWN);
 		} catch(...) {
 			fprintf(stderr,"Initialize failed! Are you using the correct IP address?\n");
 			exit(1);
 		}
 
 	pthread_create(&runThread, NULL, runner, (void *)this);
+	setNumEchoes(5);
+	setCaptureRSSI(true);
 }
 
 SickIO::~SickIO() {
@@ -59,6 +60,28 @@ SickIO::~SickIO() {
 int SickIO::startStop(bool start) {
 	fprintf(stderr,"SickIO::startStop not implemented\n");
 	return 1;
+void SickIO::setNumEchoes(int _nechoes) {
+    assert(_nechoes>=1 && _nechoes<=MAXECHOES);
+    nechoes=_nechoes;
+    if (fake)
+	return;
+    if (nechoes==1)
+	sick_lms_5xx->SetSickEchoFilter(SickLMS5xx::SICK_LMS_5XX_ECHO_FILTER_FIRST);
+    else
+	sick_lms_5xx->SetSickEchoFilter(SickLMS5xx::SICK_LMS_5XX_ECHO_FILTER_ALL_ECHOES);
+}
+
+void SickIO::setCaptureRSSI(bool on) {
+    captureRSSI=on;
+    if (fake)
+	return;
+
+    if (captureRSSI)
+	sick_lms_5xx->SetSickScanDataFormat(SickLMS5xx::SICK_LMS_5XX_SCAN_FORMAT_DIST_REFLECT);
+    else
+	sick_lms_5xx->SetSickScanDataFormat(SickLMS5xx::SICK_LMS_5XX_SCAN_FORMAT_DIST);
+}
+
 }
 
 void SickIO::setFPS(int fps) {
@@ -72,11 +95,11 @@ void SickIO::setRes(const char *res) {
 void SickIO::run() {
 	printf("SickIO::run()\n");
 	while (true)
-		get(MAXECHOES);
+		get();
 }
 
 
-void SickIO::get(int nechoes) {
+void SickIO::get() {
 	try {
 		//unsigned int range_2_vals[SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
 		//sick_lms_5xx.SetSickScanFreqAndRes(SickLMS5xx::SICK_LMS_5XX_SCAN_FREQ_25,
@@ -97,7 +120,7 @@ void SickIO::get(int nechoes) {
 		} else
 			sick_lms_5xx->GetSickMeasurements(
 				range[0], (nechoes>=2)?range[1]:NULL, (nechoes>=3)?range[2]:NULL, (nechoes>=4)?range[3]:NULL, (nechoes>=5)?range[4]:NULL,
-				reflect[0], (nechoes>=2)?reflect[1]:NULL, (nechoes>=3)?reflect[2]:NULL, (nechoes>=4)?reflect[3]:NULL, (nechoes>=5)?reflect[4]:NULL,
+				captureRSSI?reflect[0]:NULL, (captureRSSI&&nechoes>=2)?reflect[1]:NULL, (captureRSSI&&nechoes>=3)?reflect[2]:NULL, (captureRSSI&&nechoes>=4)?reflect[3]:NULL, (captureRSSI&&nechoes>=5)?reflect[4]:NULL,
 				num_measurements,&status);
 	}
 

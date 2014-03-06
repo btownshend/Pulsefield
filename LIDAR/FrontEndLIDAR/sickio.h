@@ -24,11 +24,14 @@ private:
 	unsigned int frame;
 	bool valid;
 	pthread_t runThread;
+	int nechoes;
+	bool captureRSSI;
+	void get();
 public:
 	SickIO(int _id, const char *host, int port);
 	virtual ~SickIO();
+
 	void run();
-	void get(int nechoes);
 	int startStop(bool start);
 
 	unsigned int getNumMeasurements() const {
@@ -65,7 +68,8 @@ public:
 
 	void setFPS(int fps);
 	void setRes(const char *res);
-
+	void setNumEchoes(int nechoes);
+	void setCaptureRSSI(bool on);
 };
 
 #endif /* SICKIO_H_ */
