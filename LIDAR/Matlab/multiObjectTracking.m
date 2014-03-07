@@ -57,13 +57,29 @@ classdef multiObjectTracking < handle
 % Create System objects used for reading the video frames, detecting
 % foreground objects, and displaying results.
 
-function obj = multiObjectTracking()
+function obj = multiObjectTracking(withVideo)
 % create system objects used for reading video, detecting moving objects,
 % and displaying the results
   obj.initializeTracks(); % create an empty array of tracks
   obj.nextId = 1; % ID of the next track
 
-  obj.videoPlayer = vision.VideoPlayer('Position', [20, 400, 600, 600]);
+  if nargin<1 || withVideo
+    obj.videoPlayer = vision.VideoPlayer('Position', [20, 400, 600, 600]);
+  end
+end
+
+% Clone this class
+function c = clone(obj)
+  c=multiObjectTracking(false);
+  c.minVisibleCount=obj.minVisibleCount;
+  c.tracks=obj.tracks;
+  c.assignments=obj.assignments;
+  c.unassignedTracks=obj.unassignedTracks;
+  c.unassignedDetections=obj.unassignedDetections;
+  c.nextId=obj.nextId;
+  for i=1:length(c.tracks)
+    c.tracks(i).kalmanFilter=c.tracks(i).kalmanFilter.clone();
+  end
 end
 
 function update(obj,centroids,bboxes)
