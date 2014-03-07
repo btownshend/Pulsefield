@@ -26,7 +26,8 @@ fps=5;  % Video display rate
 lastacquired=0;
 ftime=(1/fps)/3600/24;
 iswaiting=false;
-lastvis=[];
+prevvis=[];
+prevtracker=[];
 while true
   newvis=sickrcvr('debug',0);
   if isempty(newvis)
@@ -34,8 +35,12 @@ while true
       fprintf('.');
     else
       fprintf('Waiting for data from frontend.');
+      if ~isempty(prevvis)
+        diagnostic(bg,prevvis,tracker,prevtracker);
+      end
       iswaiting=true;
     end
+    pause(0.1);
     continue;
   end
   if iswaiting
@@ -49,7 +54,8 @@ while true
 
   bg=updatebg(bg,newvis);
   newvis.targets=classify(newvis,bg);
-
+  prevtracker=tracker.clone();
+  
   tracker.update(newvis.targets.pos,newvis.targets.bbox);
   if newvis.acquired>lastacquired+ftime
     im2=vis2image(newvis,im,winbounds,0);
@@ -58,5 +64,5 @@ while true
     lastacquired=newvis.acquired;
   end
   fnum(end+1)=newvis.cframe;
-  lastvis=newvis;
+  prevvis=newvis;
 end
