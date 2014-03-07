@@ -61,3 +61,6 @@ LIDAR/FrontEndLIDAR/frontend
 LIDAR/FrontEndLIDAR/rec2.txt
 
 *.ferec
+
+LIDAR/Matlab/SFUN.hold/
+LIDAR/Matlab/VISIONTB/
