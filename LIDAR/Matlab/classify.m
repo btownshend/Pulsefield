@@ -35,7 +35,8 @@ for i=maxspecial+1:max(class)
   pos(i-maxspecial,:)=mean(xy,1);
   bbox(i-maxspecial,:)=[min(xy(:,1)),min(xy(:,2)),max(xy(:,1))-min(xy(:,1)),max(xy(:,2))-min(xy(:,2))];
   radius=norm(bbox(i-maxspecial,3:4));
-  if radius<args.mintarget
+  if 0 && radius<args.mintarget
+    % Remove 'noise'
     isnoise(i-maxspecial)=true;
   end
 end
