@@ -1,15 +1,18 @@
 % Diagnostic plots/output
 function diagnostic(bg,vis,nexttracker,tracker)
+MAXSPECIAL=2;
 fprintf('\n');
 setfig('diagnostic');clf;
 
 xy=range2xy(vis.angle+pi/2,vis.range);
 bxy=range2xy(bg.angle+pi/2,bg.range);
-sel=vis.class>0;
-plot(xy(sel,1),xy(sel,2),'.k');
+sel=vis.class>MAXSPECIAL;
+plot(xy(sel,1),xy(sel,2),'.r');
 hold on;
+sel=vis.class>0&vis.class<=MAXSPECIAL;
+plot(xy(sel,1),xy(sel,2),'.k');
 
-col='rgbcymk';
+col='gbcymk';
 for i=1:length(tracker.tracks)
   t=tracker.tracks(i);
   k=t.kalmanFilter;
