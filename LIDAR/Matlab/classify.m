@@ -26,6 +26,15 @@ shadowed=false(length(vis.range),2);
 for i=1:length(vis.range)
   if norm(vis.range(i)-bg.range(i))<args.maxbgsep
     class(i)=BACKGROUND;
+  elseif i>1 && ((bg.range(i)<vis.range(i)) == (bg.range(i-1)>vis.range(i)))
+    % Current point is on a line joining adjacent background points
+    % TODO - sometimes more than 1 scanline error in background 
+    % e.g. bg= 5 5 5 10 10 10
+    % new scan=5 5 5 5  5   10
+    class(i)=BACKGROUND;
+  elseif i>length(vis.range) && ((bg.range(i)<vis.range(i)) == (bg.range(i+1)>vis.range(i)))
+    % Current point is on a line joining adjacent background points
+    class(i)=BACKGROUND;
   elseif vis.range(i)>bg.range(i)
     class(i)=OUTSIDE;
   % elseif i>1 && norm(vis.range(i)-bg.range(i-1))<args.maxbgsep
