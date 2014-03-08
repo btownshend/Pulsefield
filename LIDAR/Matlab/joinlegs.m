@@ -40,6 +40,10 @@ for i=1:length(classes)
   end
 end
 
+% Setup vis.leg - 0 for one blob, 1 for left leg, 2 for right leg
+vis.leg=nan(size(vis.class));
+vis.leg(vis.class>MAXSPECIAL)=0;
+
 while true
   matchup
   nmatches=sum(matchup,2);
@@ -51,6 +55,8 @@ while true
     m1=makematches(i);
     m2=find(matchup(m1,:));
     fprintf('Matching %d (class %d) and %d (class %d)\n', m1, classes(m1), m2, classes(m2));
+    vis.leg(vis.class==classes(m1))=1;
+    vis.leg(vis.class==classes(m2))=2;
     vis.class(vis.class==classes(m2))=classes(m1);
   end
   matchup=matchup(nmatches~=1,nmatches~=1);
