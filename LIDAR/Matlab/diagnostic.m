@@ -18,7 +18,7 @@ for i=1:length(tracker.tracks)
   k=t.kalmanFilter;
   loc=k.State([1,3])';
   vel=k.State([2,4])';
-  fprintf('Track %d: age=%d, visCount=%d, consInvis=%d, loc=(%.1f,%1.f), velocity=(%.1f,%.1f), bbox=(%.1f,%.1f,%.1f,%.1f)\n', t.id, t.age, t.totalVisibleCount, t.consecutiveInvisibleCount, loc, vel, t.bbox);
+  fprintf('Track %d: MSE=%.3>f age=%d, visCount=%d, consInvis=%d, loc=(%.1f,%1.f), velocity=(%.1f,%.1f), bbox=(%.1f,%.1f,%.1f,%.1f)\n', t.id, sqrt(mean(t.error.^2)), t.age, t.totalVisibleCount, t.consecutiveInvisibleCount, loc, vel, t.bbox);
   color=col(min(i,length(col)));
   plot(loc(:,1),loc(:,2),['o',color]);
   nexttracks=nexttracker.tracks;
