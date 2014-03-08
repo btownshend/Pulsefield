@@ -53,7 +53,8 @@ while true
   end
 
   bg=updatebg(bg,newvis);
-  newvis.targets=classify(newvis,bg);
+  newvis=classify(newvis,bg);
+  newvis=calcbboxes(newvis);
   prevtracker=tracker.clone();
   
   tracker.update(newvis.targets.pos,newvis.targets.bbox);

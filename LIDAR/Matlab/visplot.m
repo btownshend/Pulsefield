@@ -3,7 +3,7 @@ xy=range2xy(vis.angle+pi/2,vis.range);
 setfig('visplot');clf;
 hold on;
 if isfield(vis,'targets')
-  col=vis.targets.class+1;
+  col=vis.class+1;
 else
   col=1;
 end

@@ -35,7 +35,7 @@ else
   xy(xy(:)<1)=1;
   xy(xy(:,2)>size(im,1),2)=size(im,1);
   xy(xy(:,1)>size(im,2),1)=size(im,2);
-  col=vis.targets.class+1;
+  col=vis.class+1;
   col(col>size(colors,1))=size(colors,1);
   fuzz=1;
   for i=1:size(xy,1)

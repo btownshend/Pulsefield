@@ -5,7 +5,7 @@ setfig('diagnostic');clf;
 
 xy=range2xy(vis.angle+pi/2,vis.range);
 bxy=range2xy(bg.angle+pi/2,bg.range);
-sel=vis.targets.class>0;
+sel=vis.class>0;
 plot(xy(sel,1),xy(sel,2),'.k');
 hold on;
 
@@ -31,9 +31,9 @@ for i=1:length(tracker.tracks)
   if sum(asel)==1
     det=nexttracker.assignments(asel,2);
     cnum=det+2;
-    fprintf('det=%d, class=%d, npts=%d\n',det,cnum,sum(vis.targets.class==cnum));
+    fprintf('det=%d, class=%d, npts=%d\n',det,cnum,sum(vis.class==cnum));
     plot(vis.targets.pos(det,1),vis.targets.pos(det,2),['x',color]);
-    sel=vis.targets.class==cnum;
+    sel=vis.class==cnum;
     plot(xy(sel,1),xy(sel,2),['.',color]);
   end
 end
