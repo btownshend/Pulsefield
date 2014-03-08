@@ -6,7 +6,7 @@ defaults=struct('maxlegdiam',0.3,...   % Maximum leg diameter
                 'debug',true...
                 );
 args=processargs(defaults,varargin);
-MAXSPECIAL=2
+MAXSPECIAL=2;
 
 classes=unique(vis.class(vis.class>MAXSPECIAL));
 toobig=false(size(classes));
@@ -45,7 +45,6 @@ vis.leg=nan(size(vis.class));
 vis.leg(vis.class>MAXSPECIAL)=0;
 
 while true
-  matchup
   nmatches=sum(matchup,2);
   makematches=find(nmatches==1);
   if isempty(makematches)
