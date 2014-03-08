@@ -40,10 +40,14 @@ for i=1:length(tracker.tracks)
     plot(xy(sel,1),xy(sel,2),['.',color]);
   end
 end
-c=axis;
 plot(bxy(:,1),bxy(:,2),'k');
 axis equal;
-ctr=(floor(c([1,3]))+ceil(c([2,4])))/2;
-sz=max(ceil(c([2,4]))-floor(c([1,3])));
-newc=[ctr(1)-sz/2,ctr(1)+sz/2,ctr(2)-sz/2,ctr(2)+sz/2];
-axis(newc);  % Zoom to ROI
+xyt=xy(vis.class>MAXSPECIAL,:);
+if ~isempty(xyt)
+  c=[min(xyt(:,1)),max(xyt(:,1)),min(xyt(:,2)),max(xyt(:,2))];
+  ctr=(floor(c([1,3]))+ceil(c([2,4])))/2;
+  sz=max(ceil(c([2,4]))-floor(c([1,3])));
+  newc=[ctr(1)-sz/2,ctr(1)+sz/2,ctr(2)-sz/2,ctr(2)+sz/2];
+  axis(newc);  % Zoom to ROI
+end
+
