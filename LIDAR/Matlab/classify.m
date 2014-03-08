@@ -41,7 +41,7 @@ for i=1:length(vis.range)
 
     % Check if it is close enough to a prior target
     for j=i-1:-1:1
-      if norm(xy(i,:)-xy(j,:))<args.maxtgtsep
+      if norm(xy(i,:)-xy(j,:))<args.maxtgtsep && class(j)>MAXSPECIAL
         % Close enough
         class(i)=class(j);
         break;
