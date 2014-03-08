@@ -5,8 +5,11 @@ setfig('diagnostic');clf;
 
 xy=range2xy(vis.angle+pi/2,vis.range);
 bxy=range2xy(bg.angle+pi/2,bg.range);
-col='rgbcymk';
+sel=vis.targets.class>0;
+plot(xy(sel,1),xy(sel,2),'.k');
 hold on;
+
+col='rgbcymk';
 for i=1:length(tracker.tracks)
   t=tracker.tracks(i);
   k=t.kalmanFilter;
@@ -40,6 +43,4 @@ axis equal;
 ctr=(floor(c([1,3]))+ceil(c([2,4])))/2;
 sz=max(ceil(c([2,4]))-floor(c([1,3])));
 newc=[ctr(1)-sz/2,ctr(1)+sz/2,ctr(2)-sz/2,ctr(2)+sz/2];
-c
-newc
 axis(newc);  % Zoom to ROI
