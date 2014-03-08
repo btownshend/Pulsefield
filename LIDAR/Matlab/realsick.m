@@ -54,6 +54,7 @@ while true
 
   bg=updatebg(bg,newvis);
   newvis=classify(newvis,bg);
+  newvis=joinlegs(newvis);
   newvis=calcbboxes(newvis);
   prevtracker=tracker.clone();
   
