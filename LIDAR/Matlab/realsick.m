@@ -22,21 +22,26 @@ winbounds=[-3,3,-0.5,5];
 
 bg=[];
 fnum=[];
-fps=5;  % Video display rate
-lastacquired=0;
-ftime=(1/fps)/3600/24;
+fps=50;  % Video display rate
 iswaiting=false;
-prevvis=[];
-prevtracker=[];
+snap=[];
 while true
-  newvis=sickrcvr('debug',0);
-  if isempty(newvis)
+  vis=sickrcvr('debug',0);
+  if isempty(vis)
     if iswaiting
       fprintf('.');
     else
       fprintf('Waiting for data from frontend.');
-      if ~isempty(prevvis)
-        diagnostic(bg,prevvis,tracker,prevtracker);
+      if ~isempty(snap)
+        im2=vis2image(snap(end).vis,im,winbounds,0);
+        im3=vis2image(bg,im2,winbounds,1);
+        tracker.displayTrackingResults(im3,winbounds);
+      end
+
+      if length(snap)>1
+        diagnostic(snap(end).bg,snap(end).vis,snap(end).tracker,snap(end-1).tracker);
+      elseif length(snap)>0
+        diagnostic(snap(end).bg,snap(end).vis,snap(end).tracker);
       end
       iswaiting=true;
     end
@@ -47,24 +52,19 @@ while true
     fprintf('done\n');
   end
   iswaiting=false;
-  newvis.range=newvis.range(:,1,:);
-  if isfield(newvis,'reflect')
-    newvis.reflect=newvis.reflect(:,1,:);
+  vis.range=vis.range(:,1,:);
+  if isfield(vis,'reflect')
+    vis.reflect=vis.reflect(:,1,:);
   end
 
-  bg=updatebg(bg,newvis);
-  newvis=classify(newvis,bg);
-  newvis=joinlegs(newvis);
-  newvis=calcbboxes(newvis);
+  bg=updatebg(bg,vis);
+  vis=classify(vis,bg);
+  vis=joinlegs(vis);
+  vis=calcbboxes(vis);
   prevtracker=tracker.clone();
-  
-  tracker.update(newvis.targets.pos,newvis.targets.bbox);
-  if newvis.acquired>lastacquired+ftime
-    im2=vis2image(newvis,im,winbounds,0);
-    im3=vis2image(bg,im2,winbounds,1);
-    tracker.displayTrackingResults(im3,winbounds);
-    lastacquired=newvis.acquired;
-  end
-  fnum(end+1)=newvis.cframe;
-  prevvis=newvis;
+  tracker.update(vis.targets.pos,vis.targets.bbox);
+
+  fnum(end+1)=vis.cframe;
+
+  snap=[snap,struct('vis',vis,'bg',bg,'tracker',tracker.clone())];
 end
