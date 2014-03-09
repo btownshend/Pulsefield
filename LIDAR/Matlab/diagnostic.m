@@ -1,5 +1,8 @@
 % Diagnostic plots/output
-function diagnostic(bg,vis,tracker,prevtracker)
+function diagnostic(snap)
+bg=snap(end).bg;
+vis=snap(end).vis;
+tracker=snap(end).tracker;
 MAXSPECIAL=2;
 fprintf('\n');
 setfig('diagnostic');clf;
@@ -10,24 +13,21 @@ bxy=range2xy(bg.angle+pi/2,bg.range);
 
 col='gbcymk';
 plotted=false(size(vis.class));
-for i=1:length(prevtracker.tracks)
-  t=prevtracker.tracks(i);
+for i=1:length(tracker.tracks)
+  t=tracker.tracks(i);
   k=t.kalmanFilter;
-  loc=k.State([1,3])';
+  loc=t.updatedLoc;
   vel=k.State([2,4])';
   error=norm(t.predictedLoc-t.measuredLoc);
-  fprintf('Track %d: MSE=%.3f age=%d, visCount=%d, consInvis=%d, loc=(%.1f,%1.f), velocity=(%.1f,%.1f), bbox=(%.1f,%.1f,%.1f,%.1f)\n', t.id, sqrt(mean(error.^2)), t.age, t.totalVisibleCount, t.consecutiveInvisibleCount, loc, vel, t.bbox);
+  fprintf('Track %d: MSE=%.3f age=%d, visCount=%d, consInvis=%d, loc=(%.1f,%1.f), velocity=(%.1f,%.1f), bbox=(%.1f,%.1f,%.1f,%.1f)\n', t.id, sqrt(mean(error.^2)), t.age, t.totalVisibleCount, t.consecutiveInvisibleCount, t.updatedLoc, vel, t.bbox);
   color=col(min(i,length(col)));
-  plot(loc(:,1),loc(:,2),['o',color]);
-  nexttracks=tracker.tracks;
-  nextsel=[nexttracks.id]==t.id;
-  if sum(nextsel)==1
-    % Show prior position
-    prevloc=nexttracks(nextsel).kalmanFilter.State([1,3])';
-    plot([prevloc(:,1),loc(:,1)],[prevloc(:,2),loc(:,2)],color);
-  else
-    fprintf('No next track\n');
+  if ~isempty(t.predictedLoc)
+    plot(t.predictedLoc(1),t.predictedLoc(2),['o',color]);
   end
+  if ~isempty(t.measuredLoc)
+    plot(t.measuredLoc(1),t.measuredLoc(2),['x',color]);
+  end
+  plot(t.updatedLoc(1),t.updatedLoc(2),['+',color]);
   asel=tracker.assignments(:,1)==i;
   if sum(asel)==1
     det=tracker.assignments(asel,2);

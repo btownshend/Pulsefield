@@ -38,10 +38,8 @@ while true
         tracker.displayTrackingResults(im3,winbounds);
       end
 
-      if length(snap)>1
-        diagnostic(snap(end).bg,snap(end).vis,snap(end).tracker,snap(end-1).tracker);
-      elseif length(snap)>0
-        diagnostic(snap(end).bg,snap(end).vis,snap(end).tracker);
+      if length(snap)>0
+        diagnostic(snap(end));
       end
       iswaiting=true;
     end
