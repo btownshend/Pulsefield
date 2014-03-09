@@ -3,16 +3,13 @@ function diagnostic(bg,vis,nexttracker,tracker)
 MAXSPECIAL=2;
 fprintf('\n');
 setfig('diagnostic');clf;
+hold on;
 
 xy=range2xy(vis.angle+pi/2,vis.range);
 bxy=range2xy(bg.angle+pi/2,bg.range);
-sel=vis.class>MAXSPECIAL;
-plot(xy(sel,1),xy(sel,2),'.r');
-hold on;
-sel=vis.class>0&vis.class<=MAXSPECIAL;
-plot(xy(sel,1),xy(sel,2),'.k');
 
 col='gbcymk';
+plotted=false(size(vis.class));
 for i=1:length(tracker.tracks)
   t=tracker.tracks(i);
   k=t.kalmanFilter;
@@ -37,9 +34,25 @@ for i=1:length(tracker.tracks)
     fprintf('det=%d, class=%d, npts=%d\n',det,cnum,sum(vis.class==cnum));
     plot(vis.targets.pos(det,1),vis.targets.pos(det,2),['x',color]);
     sel=vis.class==cnum;
-    plot(xy(sel,1),xy(sel,2),['.',color]);
+    lsel=sel& (vis.leg==2);
+    rsel=sel& (vis.leg==1);
+    osel=sel&~lsel&~rsel;
+    plot(xy(osel,1),xy(osel,2),['.',color]);
+    plot(xy(lsel,1),xy(lsel,2),['<',color]);
+    plot(xy(rsel,1),xy(rsel,2),['>',color]);
+    plotted=plotted|sel;
   end
 end
+if sum(plotted)>0
+  sel=~plotted & vis.class>MAXSPECIAL;
+  if sum(sel)>0
+    fprintf('%d target points not matched to tracks\n', sum(sel));
+  end
+  plot(xy(sel,1),xy(sel,2),'.r');
+  sel=~plotted & vis.class>0&vis.class<=MAXSPECIAL;
+  plot(xy(sel,1),xy(sel,2),'.k');
+end
+
 plot(bxy(:,1),bxy(:,2),'k');
 axis equal;
 xyt=xy(vis.class>MAXSPECIAL,:);
