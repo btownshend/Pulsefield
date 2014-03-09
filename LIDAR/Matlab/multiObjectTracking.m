@@ -89,6 +89,9 @@ function update(obj,centroids,bboxes)
   obj.updateUnassignedTracks();
   obj.deleteLostTracks();
   obj.createNewTracks(centroids,bboxes);
+  for trackIdx=1:length(obj.tracks)
+    obj.tracks(trackIdx).updatedLoc=obj.tracks(trackIdx).kalmanFilter.State([1,3])';
+  end
 end
 
 
