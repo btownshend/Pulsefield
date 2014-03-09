@@ -43,7 +43,7 @@ for i=1:length(tracker.tracks)
     plotted=plotted|sel;
   end
 end
-if sum(plotted)>0
+if sum(~plotted)>0
   sel=~plotted & vis.class>MAXSPECIAL;
   if sum(sel)>0
     fprintf('%d target points not matched to tracks\n', sum(sel));
