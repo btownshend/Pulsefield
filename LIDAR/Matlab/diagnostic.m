@@ -18,7 +18,11 @@ for i=1:length(tracker.tracks)
   k=t.kalmanFilter;
   loc=t.updatedLoc;
   vel=k.State([2,4])';
-  error=norm(t.predictedLoc-t.measuredLoc);
+  if ~isempty(t.predictedLoc) && ~isempty(t.measuredLoc)
+    error=norm(t.predictedLoc-t.measuredLoc);
+  else
+    error=nan;
+  end
   fprintf('Track %d: MSE=%.3f age=%d, visCount=%d, consInvis=%d, loc=(%.1f,%1.f), velocity=(%.1f,%.1f), bbox=(%.1f,%.1f,%.1f,%.1f)\n', t.id, sqrt(mean(error.^2)), t.age, t.totalVisibleCount, t.consecutiveInvisibleCount, t.updatedLoc, vel, t.bbox);
   color=col(min(i,length(col)));
   if ~isempty(t.predictedLoc)
