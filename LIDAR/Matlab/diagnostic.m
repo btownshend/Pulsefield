@@ -27,9 +27,9 @@ for i=1:length(tracker.tracks)
   else
     fprintf('No next track\n');
   end
-  asel=tracker.assignments(:,1)==i;
+  asel=nexttracker.assignments(:,1)==i;
   if sum(asel)==1
-    det=tracker.assignments(asel,2);
+    det=nexttracker.assignments(asel,2);
     cnum=det+2;
     fprintf('det=%d, class=%d, npts=%d\n',det,cnum,sum(vis.class==cnum));
     plot(vis.targets.pos(det,1),vis.targets.pos(det,2),['x',color]);
