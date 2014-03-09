@@ -8,8 +8,8 @@ if isempty(bg)
   return;
 end
 
-isbg=((bg.range(:,1)-vis.range(:,1)).^2+(bg.range(:,2)-vis.range(:,2)).^2)<args.minsep^2
-isnewbg=((bg.newrange(:,1)-vis.range(:,1)).^2+(bg.newrange(:,2)-vis.range(:,2)).^2)<args.minsep^2
+isbg=((bg.range(:,1)-vis.range(:,1)).^2+(bg.range(:,2)-vis.range(:,2)).^2)<args.minsep^2;
+isnewbg=((bg.newrange(:,1)-vis.range(:,1)).^2+(bg.newrange(:,2)-vis.range(:,2)).^2)<args.minsep^2;
 isnewbg=isnewbg&~isbg;
 
 % Averaging for current background
