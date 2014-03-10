@@ -51,24 +51,3 @@ if dot([x-x1,y-y1],[x2-x1,y2-y1])<0
 end
 %fprintf('rayline((%.1f,%.1f)->(%.1f,%.1f), (%.1f,%.1f)-(%.1f,%.1f) = (%.1f,%.1f) d=%f\n',p1,p2-p1,p3,p4,x,y,d);
 
-function d=linecircle(p1,p2,c,r)
-x1=p1(1)-c(1);y1=p1(2)-c(2);
-x2=p2(1)-c(1);y2=p2(2)-c(2);
-D=x1*y2-x2*y1;
-dx=x2-x1;
-dy=y2-y1;
-dr=norm([dx,dy]);
-rad=(r*dr)^2-D^2;
-if rad<0
-  d=inf;
-else
-  x=(D*dy+sign(dy)*dx*sqrt(rad))/(dr^2);
-  y=(-D*dx+abs(dy)*sqrt(rad))/(dr^2);
-  %  fprintf('(%.1f,%.1f)->(%.1f,%.1f) intersects (%.1f,%.1f) at (%.2f,%.2f) ',p1,p2,c,x+c(1),y+c(1));
-  d1=norm([x1-x,y1-y]);
-  x=D*dy-sign(dy)*dx*sqrt(rad)/(dr^2);
-  y=-D*dx-abs(dy)*sqrt(rad)/(dr^2);
-  %  fprintf('and (%.2f,%.2f)\n',x+c(1),y+c(2));
-  d2=norm([x1-x,y1-y]);
-  d=min(d1,d2);
-end
