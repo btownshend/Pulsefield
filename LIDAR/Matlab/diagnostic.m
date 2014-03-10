@@ -25,13 +25,13 @@ for i=1:length(tracker.tracks)
   end
   fprintf('Track %d: MSE=%.3f age=%d, visCount=%d, consInvis=%d, loc=(%.1f,%1.f), velocity=(%.1f,%.1f), bbox=(%.1f,%.1f,%.1f,%.1f)\n', t.id, sqrt(mean(error.^2)), t.age, t.totalVisibleCount, t.consecutiveInvisibleCount, t.updatedLoc, vel, t.bbox);
   color=col(min(i,length(col)));
-  if ~isempty(t.predictedLoc)
-    plot(t.predictedLoc(1),t.predictedLoc(2),['o',color]);
-  end
+  % plot(t.updatedLoc(1),t.updatedLoc(2),['+',color]);
+  % if ~isempty(t.predictedLoc)
+  %   plot(t.predictedLoc(1),t.predictedLoc(2),['x',color]);
+  % end
   if ~isempty(t.measuredLoc)
-    plot(t.measuredLoc(1),t.measuredLoc(2),['x',color]);
+    plot(t.measuredLoc(1),t.measuredLoc(2),['o',color]);
   end
-  plot(t.updatedLoc(1),t.updatedLoc(2),['+',color]);
   asel=tracker.assignments(:,1)==i;
   if sum(asel)==1
     det=tracker.assignments(asel,2);
