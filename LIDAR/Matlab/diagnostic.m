@@ -46,7 +46,17 @@ for i=1:length(tracker.tracks)
     plot(xy(lsel,1),xy(lsel,2),['<',color]);
     plot(xy(rsel,1),xy(rsel,2),['>',color]);
     plotted=plotted|sel;
+    % Draw legs
+    for lnum=1:length(vis.targets(det).legs)
+      leg=vis.targets(det).legs{lnum};
+      angle=-pi:pi/20:pi;
+      [x,y]=pol2cart(angle,leg.radius);
+      x=x+leg.center(1);
+      y=y+leg.center(2);
+      plot(x,y,color);
+    end
   end
+  plot(t.bbox(1)+[0,0,t.bbox(3),t.bbox(3),0],t.bbox(2)+[0,t.bbox(4),t.bbox(4),0,0],color);
 end
 if sum(~plotted)>0
   sel=~plotted & vis.class>MAXSPECIAL;
