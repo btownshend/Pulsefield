@@ -37,7 +37,7 @@ for i=1:length(tracker.tracks)
     det=tracker.assignments(asel,2);
     cnum=det+2;
     fprintf('det=%d, class=%d, npts=%d\n',det,cnum,sum(vis.class==cnum));
-    plot(vis.targets.pos(det,1),vis.targets.pos(det,2),['x',color]);
+    plot(vis.targets(det).pos(1),vis.targets(det).pos(2),['x',color]);
     sel=vis.class==cnum;
     lsel=sel& (vis.leg==2);
     rsel=sel& (vis.leg==1);
