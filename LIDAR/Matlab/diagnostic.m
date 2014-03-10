@@ -79,3 +79,35 @@ if ~isempty(xyt)
   axis(newc);  % Zoom to ROI
 end
 
+if length(snap)>1
+  % Plot locations
+  setfig('diagnostic-tracks');clf;
+  ids=[];
+  for i=1:length(snap)
+    ids=unique([ids,[snap(i).tracker.tracks.id]]);
+  end
+  ids
+  for i=1:length(ids)
+    id=ids(i);
+    ploc=[];mloc=[];uloc=[];
+    for j=1:length(snap)
+      sel=[snap(j).tracker.tracks.id]==id;
+      if isempty(sel)
+        uloc=[uloc;nan,nan];
+        ploc=[ploc;nan,nan];
+        mloc=[mloc;nan,nan];
+      else
+        uloc=[uloc;snap(j).tracker.tracks(sel).updatedLoc];
+        ploc=[ploc;snap(j).tracker.tracks(sel).predictedLoc];
+        mloc=[mloc;snap(j).tracker.tracks(sel).measuredLoc];
+      end
+    end
+    plot(ploc(:,1),ploc(:,2),'b-o');
+    hold on;
+    plot(mloc(:,1),mloc(:,2),'g-o');
+    plot(uloc(:,1),uloc(:,2),'r-o');
+    legend('predicted','measured','updated');
+  end
+end
+
+      
