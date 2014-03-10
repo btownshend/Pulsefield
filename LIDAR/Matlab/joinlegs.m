@@ -62,3 +62,31 @@ while true
   classes=classes(nmatches~=1);
 end
 
+% Split classes that only have one leg
+for i=1:length(classes)
+  c=classes(i);
+  sel=vis.class==c;
+  if sum(sel)>=2 && any(vis.leg(sel))==0
+    fprintf('Attempting to split class %d into 2 legs\n', classes(i));
+    assert(all(vis.leg(sel)==0));
+    % Need to split leg
+    fsel=find(sel);
+    % Try each split position (split==last point in left leg)
+    minerr=1e99;
+    bestsplit=1;
+    for split=1:length(fsel)-1
+      l1=legmodel(vis.xy(fsel(1):fsel(split),:));
+      l2=legmodel(vis.xy(fsel(split+1):fsel(end),:));
+      err=l1.err+l2.err;
+      fprintf('Split %d, err=%f+%f=%f\n', split, l1.err,l2.err,err);
+      if err<minerr
+        bestsplit=split;
+        minerr=err;
+      end
+    end
+    fprintf('Best legs for target %d = %d-%d,%d-%d with error %.1f\n',i, fsel(1),fsel(bestsplit),fsel(bestsplit+1),fsel(end), minerr);
+    vis.leg(fsel(1:bestsplit))=1;
+    vis.leg(fsel(bestsplit+1:end))=2;
+  end
+end
+
