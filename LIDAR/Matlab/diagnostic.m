@@ -47,14 +47,15 @@ for i=1:length(tracker.tracks)
     plot(xy(rsel,1),xy(rsel,2),['>',color]);
     plotted=plotted|sel;
     % Draw legs
-    for lnum=1:length(vis.targets(det).legs)
-      leg=vis.targets(det).legs{lnum};
-      angle=-pi:pi/20:pi;
-      [x,y]=pol2cart(angle,leg.radius);
-      x=x+leg.center(1);
-      y=y+leg.center(2);
-      plot(x,y,color);
-    end
+    legs=vis.targets(det).legs;
+    angle=-pi:pi/20:pi;
+    [x,y]=pol2cart(angle,legs.radius);
+    x1=x+legs.c1(1);
+    y1=y+legs.c1(2);
+    plot(x1,y1,color);
+    x2=x+legs.c2(1);
+    y2=y+legs.c2(2);
+    plot(x2,y2,color);
   end
   plot(t.bbox(1)+[0,0,t.bbox(3),t.bbox(3),0],t.bbox(2)+[0,t.bbox(4),t.bbox(4),0,0],color);
 end

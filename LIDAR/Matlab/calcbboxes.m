@@ -7,16 +7,14 @@ MAXSPECIAL=2;
 pos=[];
 bbox=[];
 bounded=[];
-leftlegs=[];
-rightlegs=[];
+legs=[];
 for i=MAXSPECIAL+1:max(vis.class)
   sel=vis.class==i;
   if sum(sel)==0
     continue;
   end
 
-  leftlegs=[leftlegs,legmodel(vis.xy(sel&vis.leg==1,:))];
-  rightlegs=[rightlegs,legmodel(vis.xy(sel&vis.leg==2,:))];
+  legs=[legs,legmodel(vis,i)];
   pos(end+1,:)=mean(vis.xy(sel,:),1);
   bbox(end+1,:)=[min(vis.xy(sel,1)),min(vis.xy(sel,2)),max(vis.xy(sel,1))-min(vis.xy(sel,1)),max(vis.xy(sel,2))-min(vis.xy(sel,2))];
   fsel=find(sel);
@@ -24,4 +22,4 @@ for i=MAXSPECIAL+1:max(vis.class)
   cnum=size(pos,1)+MAXSPECIAL;
   vis.class(vis.class==i)=cnum;
 end
-vis.targets=struct('legs',{{leftlegs,rightlegs}},'pos',pos,'bbox',bbox,'bounded',bounded);
+vis.targets=struct('legs',legs,'pos',pos,'bbox',bbox,'bounded',bounded);
