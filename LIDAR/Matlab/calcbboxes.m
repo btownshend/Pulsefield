@@ -14,9 +14,12 @@ for i=MAXSPECIAL+1:max(vis.class)
     continue;
   end
 
-  legs=[legs,legmodel(vis,i)];
-  pos(end+1,:)=mean(vis.xy(sel,:),1);
-  bbox(end+1,:)=[min(vis.xy(sel,1)),min(vis.xy(sel,2)),max(vis.xy(sel,1))-min(vis.xy(sel,1)),max(vis.xy(sel,2))-min(vis.xy(sel,2))];
+  lm=legmodel(vis,i);
+  legs=[legs,lm];
+  pos(end+1,:)=(lm.c1+lm.c2)/2;
+  ll=min([lm.c1;lm.c2])-lm.radius;
+  ur=max([lm.c1;lm.c2])+lm.radius;
+  bbox(end+1,:)=[ll,ur-ll];
   fsel=find(sel);
   bounded(end+1)=~vis.shadowed(fsel(1)) && ~vis.shadowed(fsel(end));
   cnum=size(pos,1)+MAXSPECIAL;
