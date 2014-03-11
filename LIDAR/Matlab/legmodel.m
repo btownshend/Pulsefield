@@ -8,7 +8,7 @@ function legs=legmodel(vis,class,varargin)
   defaults=struct('maxlegdiam',0.3,...   % Maximum leg diameter
                   'minlegdiam',0.1,...   % Minimum
                   'maxlegsep',0.3,...
-                  'debug',true...
+                  'debug',false...
                   );
   args=processargs(defaults,varargin);
 
@@ -20,7 +20,8 @@ function legs=legmodel(vis,class,varargin)
   end
   xy=vis.xy(vis.class==class,:);
   shadowed=vis.shadowed(vis.class==class,:);
-
+  leg=vis.leg(vis.class==class,:);
+  
   npts=size(xy,1);
   c1=mean(xy(1:floor(npts/2),:),1);
   c2=mean(xy(ceil((npts+1)/2):end,:),1);
@@ -34,24 +35,32 @@ function legs=legmodel(vis,class,varargin)
   else
     options=optimset('Display','none');
   end
-  x=fminsearch(@(x) calcerror(x(1),x(2:3),x(4:5),args,xy,shadowed),x0,options);
+  x=fminsearch(@(x) calcerror(x(1),x(2:3),x(4:5),args,xy,shadowed,leg),x0,options);
 
   r=x(1);
   c1=x(2:3);
   c2=x(4:5);
-  err=sqrt(calcerror(x(1),x(2:3),x(4:5),args,xy,shadowed));
+  [err,a1]=calcerror(x(1),x(2:3),x(4:5),args,xy,shadowed,leg);
   %  if args.debug
   %    plotresults(r,c1,c2,args,xy,shadowed);
   %  end
 
-  legs=struct('c1',c1,'c2',c2,'radius',r,'err',err);
+  ass=ones(1,size(xy,1));
+  ass(~a1)=2;
+  legs=struct('c1',c1,'c2',c2,'radius',r,'err',sqrt(err),'assignment',ass);
 end
 
-function err2=calcerror(r,c1,c2,args,xy,shadowed)
+function [err,assign1]=calcerror(r,c1,c2,args,xy,shadowed,leg)
   d1=sqrt((xy(:,1)-c1(1)).^2+(xy(:,2)-c1(2)).^2);
   d2=sqrt((xy(:,1)-c2(1)).^2+(xy(:,2)-c2(2)).^2);
-  err2=min((d1-r).^2,(d2-r).^2);
-  penalty=zeros(4,1);
+  if all(leg)==0
+    assign1=(d1-r).^2<(d2-r).^2;
+  else
+    assign1=leg==1;
+  end
+  err(assign1)=(d1(assign1)-r).^2;
+  err(~assign1)=(d2(~assign1)-r).^2;
+  penalty=zeros(1,4);
 
   if norm(c1-c2)<r*2
     % Penalty for overlapping legs
@@ -81,11 +90,11 @@ function err2=calcerror(r,c1,c2,args,xy,shadowed)
   end
   if args.debug
     plotresults(r,c1,c2,args,xy,shadowed);
-    title(sprintf('err=%f,penalty=[%s]',sqrt(mean(err2)),sprintf('%f ',sqrt(penalty))));
+    title(sprintf('err=%f,penalty=[%s]',sqrt(mean(err)),sprintf('%f ',sqrt(penalty))));
     pause(0.1);
   end
   
-  err2=mean([err2;penalty]);
+  err=mean([err,penalty]);
 end
 
 
