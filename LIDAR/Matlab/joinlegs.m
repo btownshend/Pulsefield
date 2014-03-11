@@ -46,18 +46,16 @@ vis.leg(vis.class>MAXSPECIAL)=0;
 
 while true
   nmatches=sum(matchup,2);
-  makematches=find(nmatches==1);
+  makematches=find(nmatches==1,1);
   if isempty(makematches)
     break;
   end
-  for i=1:length(makematches)
-    m1=makematches(i);
-    m2=find(matchup(m1,:));
-    fprintf('Matching %d (class %d) and %d (class %d)\n', m1, classes(m1), m2, classes(m2));
-    vis.leg(vis.class==classes(m1))=1;
-    vis.leg(vis.class==classes(m2))=2;
-    vis.class(vis.class==classes(m2))=classes(m1);
-  end
+  m1=makematches;
+  m2=find(matchup(m1,:));
+  fprintf('Matching %d (class %d) and %d (class %d)\n', m1, classes(m1), m2, classes(m2));
+  vis.leg(vis.class==classes(m1))=1;
+  vis.leg(vis.class==classes(m2))=2;
+  vis.class(vis.class==classes(m2))=classes(m1);
   matchup=matchup(nmatches~=1,nmatches~=1);
   classes=classes(nmatches~=1);
 end
