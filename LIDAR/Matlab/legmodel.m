@@ -41,7 +41,7 @@ function legs=legmodel(vis,class,varargin)
       shadowed(k,2)=1;
     end
   end
-  res=angle(2)-angle(1);
+  res=vis.angle(2)-vis.angle(1);
   theta1=max(angle(leg==1))-min(angle(leg==1))+res;
   range1=mean(range(leg==1));
   theta2=max(angle(leg==2))-min(angle(leg==2))+res;
@@ -80,6 +80,7 @@ function legs=legmodel(vis,class,varargin)
   [c1(1),c1(2)]=pol2cart(angle1+pi/2,range1+r);
   [c2(1),c2(2)]=pol2cart(angle2+pi/2,range2+r);
   
+  plotresults(r,c1,c2,args,xy,shadowed);
   for i=1:2
     xy(leg==1,i)=xy(leg==1,i)-c1(i);
     xy(leg==2,i)=xy(leg==2,i)-c2(i);
@@ -87,7 +88,6 @@ function legs=legmodel(vis,class,varargin)
   err=mean((sqrt(xy(:,1).^2+xy(:,2).^2)-r).^2);
   ass=leg;
   legs=struct('c1',c1,'c2',c2,'radius',r,'err',sqrt(err),'assignment',ass);
-  plotresults(r,c1,c2,args,xy,shadowed);
 end
 
 function plotresults(r,c1,c2,args,xy,shadowed)
