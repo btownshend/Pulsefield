@@ -5,7 +5,6 @@ MAXSPECIAL=2;
 
 % Calculate centroids and bounding boxes, pack class numbers
 pos=[];
-bbox=[];
 bounded=[];
 legs=[];
 for i=MAXSPECIAL+1:max(vis.class)
@@ -16,13 +15,14 @@ for i=MAXSPECIAL+1:max(vis.class)
 
   lm=legmodel(vis,i);
   legs=[legs,lm];
-  pos(end+1,:)=(lm.c1+lm.c2)/2;
-  ll=min([lm.c1;lm.c2])-lm.radius;
-  ur=max([lm.c1;lm.c2])+lm.radius;
-  bbox(end+1,:)=[ll,ur-ll];
+  if all(isfinite(lm.c2))
+    pos(end+1,:)=(lm.c1+lm.c2)/2;
+  else
+    pos(end+1,:)=lm.c1;
+  end
   fsel=find(sel);
   bounded(end+1)=~vis.shadowed(fsel(1)) && ~vis.shadowed(fsel(end));
   cnum=size(pos,1)+MAXSPECIAL;
   vis.class(vis.class==i)=cnum;
 end
-vis.targets=struct('legs',legs,'pos',pos,'bbox',bbox,'bounded',bounded);
+vis.targets=struct('legs',legs,'pos',pos,'bounded',bounded);

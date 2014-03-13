@@ -59,7 +59,7 @@ while true
   vis=classify(vis,bg);
   vis=joinlegs(vis);
   vis=calcbboxes(vis);
-  tracker.update(vis.targets.pos,vis.targets.bbox);
+  tracker.update(vis.targets.pos,vis.targets.legs);
 
   fnum(end+1)=vis.cframe;
 

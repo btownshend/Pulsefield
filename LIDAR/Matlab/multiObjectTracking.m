@@ -82,13 +82,13 @@ function c = clone(obj)
   end
 end
 
-function update(obj,centroids,bboxes)
+function update(obj,centroids,legs)
   obj.predictNewLocationsOfTracks();
   obj.detectionToTrackAssignment(centroids);
-  obj.updateAssignedTracks(centroids,bboxes);
+  obj.updateAssignedTracks(centroids,legs);
   obj.updateUnassignedTracks();
   obj.deleteLostTracks();
-  obj.createNewTracks(centroids,bboxes);
+  obj.createNewTracks(centroids,legs);
   for trackIdx=1:length(obj.tracks)
     obj.tracks(trackIdx).updatedLoc=obj.tracks(trackIdx).kalmanFilter.State([1,3])';
   end
@@ -133,7 +133,7 @@ function initializeTracks(obj)
 % create an empty array of tracks
   obj.tracks = struct(...
       'id', {}, ...
-      'bbox', {}, ...
+      'legs', {}, ...
       'kalmanFilter', {}, ...
       'age', {}, ...
       'totalVisibleCount', {}, ...
@@ -151,16 +151,16 @@ end
 
 function predictNewLocationsOfTracks(obj)
   for i = 1:length(obj.tracks)
-    bbox = obj.tracks(i).bbox;
+    legs = obj.tracks(i).legs;
     
     % predict the current location of the track
     predictedCentroid = predict(obj.tracks(i).kalmanFilter);
+    delta=predictedCentroid-obj.tracks(i).updatedLoc;
     obj.tracks(i).predictedLoc=predictedCentroid;
     
-    % shift the bounding box so that its center is at 
-    % the predicted location
-    predictedCentroid = predictedCentroid - bbox(3:4) / 2;
-    obj.tracks(i).bbox = [predictedCentroid, bbox(3:4)];
+    % shift the legs the same amount
+    obj.tracks(i).legs.c1=obj.tracks(i).legs.c1+delta;
+    obj.tracks(i).legs.c2=obj.tracks(i).legs.c2+delta;
   end
 end
 
@@ -225,13 +225,13 @@ end
 % the new bounding box, and increases the age of the track and the total
 % visible count by 1. Finally, the function sets the invisible count to 0. 
 
-function updateAssignedTracks(obj,centroids,bboxes)
+function updateAssignedTracks(obj,centroids,alllegs)
   numAssignedTracks = size(obj.assignments, 1);
   for i = 1:numAssignedTracks
     trackIdx = obj.assignments(i, 1);
     detectionIdx = obj.assignments(i, 2);
     centroid = centroids(detectionIdx, :);
-    bbox = bboxes(detectionIdx, :);
+    legs = alllegs(detectionIdx);
     
     % correct the estimate of the object's location
     % using the new detection
@@ -241,7 +241,7 @@ function updateAssignedTracks(obj,centroids,bboxes)
     
     % replace predicted bounding box with detected
     % bounding box
-    obj.tracks(trackIdx).bbox = bbox;
+    obj.tracks(trackIdx).legs = legs;
     
     % update track's age
     obj.tracks(trackIdx).age = obj.tracks(trackIdx).age + 1;
@@ -303,14 +303,14 @@ end
 % detection is a start of a new track. In practice, you can use other cues
 % to eliminate noisy detections, such as size, location, or appearance.
 
-function createNewTracks(obj,centroids,bboxes)
+function createNewTracks(obj,centroids,alllegs)
   centroids = centroids(obj.unassignedDetections, :);
-  bboxes = bboxes(obj.unassignedDetections, :);
+  alllegs = alllegs(obj.unassignedDetections);
   
   for i = 1:size(centroids, 1)
     
     centroid = centroids(i,:);
-    bbox = bboxes(i, :);
+    legs = alllegs(i);
     
     fprintf('Create new track with id %d at (%.1f, %.1f)\n', obj.nextId, centroid);
     % create a Kalman filter object
@@ -320,7 +320,7 @@ function createNewTracks(obj,centroids,bboxes)
     % create a new track
     newTrack = struct(...
         'id', obj.nextId, ...
-        'bbox', bbox, ...
+        'legs', legs, ...
         'kalmanFilter', kalmanFilter, ...
         'age', 1, ...
         'totalVisibleCount', 1, ...
@@ -334,7 +334,7 @@ function createNewTracks(obj,centroids,bboxes)
     obj.tracks(end + 1) = newTrack;
     
     % And to the assignments
-    obj.assignments(end+1,:)=[obj.nextId,obj.unassignedDetections(i)]
+    obj.assignments(end+1,:)=[obj.nextId,obj.unassignedDetections(i)];
 
     % increment the next id
     obj.nextId = obj.nextId + 1;
@@ -360,14 +360,14 @@ function displayTrackingResults(obj,frame,winbounds)
     % in this frame, display its predicted bounding box.
     if ~isempty(reliableTracks)
       % get bounding boxes
-      bboxes = cat(1, reliableTracks.bbox);
-      for i=1:size(bboxes,1)
-        bboxes(i,1)=(bboxes(i,1)-winbounds(1))/(winbounds(2)-winbounds(1))*(size(frame,2)-1)+1;
-        bboxes(i,2)=(winbounds(4)-(bboxes(i,2)+bboxes(i,4)))/(winbounds(4)-winbounds(3))*(size(frame,1)-1)+1;
-        bboxes(i,3)=bboxes(i,3)/(winbounds(2)-winbounds(1))*(size(frame,2)-1);
-        bboxes(i,4)=bboxes(i,4)/(winbounds(4)-winbounds(3))*(size(frame,1)-1);
-      end
-      bboxes=round(bboxes);
+      % bboxes = cat(1, reliableTracks.bbox);
+      % for i=1:size(bboxes,1)
+      %   bboxes(i,1)=(bboxes(i,1)-winbounds(1))/(winbounds(2)-winbounds(1))*(size(frame,2)-1)+1;
+      %   bboxes(i,2)=(winbounds(4)-(bboxes(i,2)+bboxes(i,4)))/(winbounds(4)-winbounds(3))*(size(frame,1)-1)+1;
+      %   bboxes(i,3)=bboxes(i,3)/(winbounds(2)-winbounds(1))*(size(frame,2)-1);
+      %   bboxes(i,4)=bboxes(i,4)/(winbounds(4)-winbounds(3))*(size(frame,1)-1);
+      % end
+      % bboxes=round(bboxes);
       
       % get ids
       ids = int32([reliableTracks(:).id]);
