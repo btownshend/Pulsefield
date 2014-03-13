@@ -80,7 +80,9 @@ function legs=legmodel(vis,class,varargin)
   [c1(1),c1(2)]=pol2cart(angle1+pi/2,range1+r);
   [c2(1),c2(2)]=pol2cart(angle2+pi/2,range2+r);
   
-  plotresults(r,c1,c2,args,xy,shadowed);
+if args.debug
+  plotresults(class,r,c1,c2,args,xy,leg);
+end
   for i=1:2
     xy(leg==1,i)=xy(leg==1,i)-c1(i);
     xy(leg==2,i)=xy(leg==2,i)-c2(i);

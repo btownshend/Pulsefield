@@ -85,15 +85,21 @@ for i=MAXSPECIAL+1:max(class)
   if sz<args.mintarget
     if shadowed(fsel(1))&1
       % Shadowed on the left, may not be noise
-      fprintf('Class %d (%d:%d) may be a target shadowed on the left\n', i, min(fsel),max(fsel));
+      if args.debug
+        fprintf('Class %d (%d:%d) may be a target shadowed on the left\n', i, min(fsel),max(fsel));
+      end
       continue;
     end
     if shadowed(fsel(end))&2
-      fprintf('Class %d (%d:%d) may be a target shadowed on the right\n', i, min(fsel),max(fsel));
+      if args.debug
+        fprintf('Class %d (%d:%d) may be a target shadowed on the right\n', i, min(fsel),max(fsel));
+      end
       continue;
     end
     % Remove 'noise'
-    fprintf('Target class %d (%d:%d) at (%.1f,%.1f):(%.1f,%.1f) is probably noise\n', i, min(fsel), max(fsel), xy(fsel(1),:),xy(fsel(end),:));
+    if args.debug
+      fprintf('Target class %d (%d:%d) at (%.1f,%.1f):(%.1f,%.1f) is probably noise\n', i, min(fsel), max(fsel), xy(fsel(1),:),xy(fsel(end),:));
+    end
     class(class==i)=NOISE;
   end
 end

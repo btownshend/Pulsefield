@@ -106,8 +106,7 @@ end
 % The structure contains the following fields:
 %
 % * |id| :                  the integer ID of the track
-% * |bbox| :                the current bounding box of the object; used
-%                           for display
+% * |legs| :                the current leg positions
 % * |kalmanFilter| :        a Kalman filter object used for motion-based
 %                           tracking
 % * |age| :                 the number of frames since the track was first
