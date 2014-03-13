@@ -23,7 +23,7 @@ for i=1:length(tracker.tracks)
   else
     error=nan;
   end
-  fprintf('Track %d: MSE=%.3f age=%d, visCount=%d, consInvis=%d, loc=(%.1f,%1.f), velocity=(%.1f,%.1f), bbox=(%.1f,%.1f,%.1f,%.1f)\n', t.id, sqrt(mean(error.^2)), t.age, t.totalVisibleCount, t.consecutiveInvisibleCount, t.updatedLoc, vel, t.bbox);
+  fprintf('Track %d: MSE=%.3f age=%d, visCount=%d, consInvis=%d, loc=(%.1f,%1.f), velocity=(%.1f,%.1f), legs=(%.1f,(%.1f,%.1f),(%.1f,%.1f))\n', t.id, sqrt(mean(error.^2)), t.age, t.totalVisibleCount, t.consecutiveInvisibleCount, t.updatedLoc, vel, t.legs.radius,t.legs.c1,t.legs.c2);
   color=col(min(i,length(col)));
   % plot(t.updatedLoc(1),t.updatedLoc(2),['+',color]);
   % if ~isempty(t.predictedLoc)
@@ -37,7 +37,7 @@ for i=1:length(tracker.tracks)
     det=tracker.assignments(asel,2);
     cnum=det+2;
     fprintf('det=%d, class=%d, npts=%d\n',det,cnum,sum(vis.class==cnum));
-    plot(vis.targets(det).pos(1),vis.targets(det).pos(2),['x',color]);
+    plot(vis.targets.pos(det,1),vis.targets.pos(det,2),['x',color]);
     sel=vis.class==cnum;
     lsel=sel& (vis.leg==2);
     rsel=sel& (vis.leg==1);
@@ -47,7 +47,7 @@ for i=1:length(tracker.tracks)
     plot(xy(rsel,1),xy(rsel,2),['>',color]);
     plotted=plotted|sel;
     % Draw legs
-    legs=vis.targets(det).legs;
+    legs=vis.targets.legs(det);
     angle=-pi:pi/20:pi;
     [x,y]=pol2cart(angle,legs.radius);
     x1=x+legs.c1(1);
@@ -57,7 +57,6 @@ for i=1:length(tracker.tracks)
     y2=y+legs.c2(2);
     plot(x2,y2,color);
   end
-  plot(t.bbox(1)+[0,0,t.bbox(3),t.bbox(3),0],t.bbox(2)+[0,t.bbox(4),t.bbox(4),0,0],color);
 end
 if sum(~plotted)>0
   sel=~plotted & vis.class>MAXSPECIAL;
@@ -87,27 +86,51 @@ if length(snap)>1
   for i=1:length(snap)
     ids=unique([ids,[snap(i).tracker.tracks.id]]);
   end
-  ids
+  subplot(223);
+  nid=arrayfun(@(z) max([z.tracker.tracks.id]), snap);
+  plot(nid);
+  ylabel('Maximum ID');
+  
   for i=1:length(ids)
     id=ids(i);
     ploc=[];mloc=[];uloc=[];
     for j=1:length(snap)
       sel=[snap(j).tracker.tracks.id]==id;
-      if isempty(sel)
+      if sum(sel)==0
         uloc=[uloc;nan,nan];
         ploc=[ploc;nan,nan];
         mloc=[mloc;nan,nan];
       else
         uloc=[uloc;snap(j).tracker.tracks(sel).updatedLoc];
-        ploc=[ploc;snap(j).tracker.tracks(sel).predictedLoc];
+        if isempty(snap(j).tracker.tracks(sel).predictedLoc)
+          ploc=[ploc;nan,nan];
+        else
+          ploc=[ploc;snap(j).tracker.tracks(sel).predictedLoc];
+        end
         mloc=[mloc;snap(j).tracker.tracks(sel).measuredLoc];
       end
     end
-    plot(ploc(:,1),ploc(:,2),'b-o');
+    subplot(221);
+    plot(ploc(:,1),ploc(:,2),'b-');
     hold on;
-    plot(mloc(:,1),mloc(:,2),'g-o');
-    plot(uloc(:,1),uloc(:,2),'r-o');
-    legend('predicted','measured','updated');
+    plot(mloc(:,1),mloc(:,2),'g-');
+    %plot(uloc(:,1),uloc(:,2),'r-');
+    for k=1:size(ploc,1)
+      plot([mloc(k,1),ploc(k,1)],[mloc(k,2),ploc(k,2)],'k');
+    end
+    %legend('predicted','measured','Location','SouthOutside');
+    
+    subplot(222);
+    plot(ploc(:,1),'b-');
+    hold on;
+    plot(mloc(:,1),'g-');
+    title('X Position');
+    
+    subplot(224)
+    plot(ploc(:,2),'b-');
+    hold on;
+    plot(mloc(:,2),'g-');
+    title('Y Position');
   end
 end
 
