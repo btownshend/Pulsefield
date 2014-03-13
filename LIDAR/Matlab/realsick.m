@@ -21,8 +21,6 @@ im=255*zeros(600,600,3,'uint8');
 winbounds=[-3,3,-0.5,5];
 
 bg=[];
-fnum=[];
-fps=50;  % Video display rate
 iswaiting=false;
 snap=[];
 while true
@@ -39,11 +37,11 @@ while true
       end
 
       if length(snap)>0
-        diagnostic(snap(end));
+        diagnostic(snap);
       end
       iswaiting=true;
     end
-    pause(0.1);
+    pause(0.01);
     continue;
   end
   if iswaiting
@@ -61,7 +59,14 @@ while true
   vis=calcbboxes(vis);
   tracker.update(vis.targets.pos,vis.targets.legs);
 
-  fnum(end+1)=vis.cframe;
+  if mod(length(snap)+1,1)==0
+    im2=vis2image(vis,im,winbounds,0);
+    im3=vis2image(bg,im2,winbounds,1);
+    tracker.displayTrackingResults(im3,winbounds);
+  end
 
   snap=[snap,struct('vis',vis,'bg',bg,'tracker',tracker.clone())];
+  if mod(length(snap),100)==0
+    fprintf('%d...',length(snap));
+  end
 end
