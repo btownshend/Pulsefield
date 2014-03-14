@@ -13,7 +13,7 @@ toobig=false(size(classes));
 for i=1:length(classes)
   c1=classes(i);
   p1=find(vis.class==c1);
-  d1=norm(vis.xy(p1(1))-vis.xy(p1(end)));
+  d1=norm(vis.xy(p1(1),:)-vis.xy(p1(end),:));
   if d1>args.maxlegdiam;
     if args.debug
       fprintf('Class %d cannot be a single leg since its diameter = %.2f > %.2f\n',c1,d1,args.maxlegdiam);
@@ -30,7 +30,7 @@ for i=1:length(classes)
   for j=i+1:length(classes)
     c2=classes(j);
     p2=find(vis.class==c2);
-    sep=min(norm(vis.xy(p1(1))-vis.xy(p2(end))), norm(vis.xy(p1(end))-vis.xy(p2(1))));
+    sep=min(norm(vis.xy(p1(1),:)-vis.xy(p2(end),:)), norm(vis.xy(p1(end),:)-vis.xy(p2(1),:)));
     if sep<args.maxlegsep
       if args.debug
         fprintf('Classes %d and %d are separated by %.2f, so could be 2 legs\n', c1,c2, sep);
