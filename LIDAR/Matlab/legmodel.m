@@ -74,6 +74,7 @@ function legs=legmodel(vis,class,varargin)
     end
   end
 
+  % Set position of first leg (or body if there is only one leg)
   anglewidth1=2*r/range1;
   shadowed1=shadowed(leg<=1,:);
   if shadowed1(1,1)&~shadowed1(end,2)
@@ -86,13 +87,17 @@ function legs=legmodel(vis,class,varargin)
   [c1(1),c1(2)]=pol2cart(angle1+pi/2,range1+r);
 
   if ~all(leg==0)
+    % Set position of 2nd leg
     anglewidth2=2*r/range2;
     shadowed2=shadowed(leg==2,:);
     if shadowed2(1,1)&~shadowed2(end,2)
       angle2=angle(find(leg==2,1,'last'))+res/2-anglewidth2/2;
+      range2=range2-r/4;   % Reduced distance since we dont have the near points
     elseif ~shadowed2(1,1)&shadowed2(end,2)
       angle2=angle(find(leg==2,1))-res/2+anglewidth2/2;
+      range2=range2-r/4;   % Reduced distance since we dont have the near points
     else
+      % Assume middle if both or neither edges are shadowed
       angle2=mean(angle(leg==2));
     end
     [c2(1),c2(2)]=pol2cart(angle2+pi/2,range2+r);
