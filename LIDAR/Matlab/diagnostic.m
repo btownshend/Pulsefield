@@ -87,7 +87,7 @@ if length(snap)>1
     ids=unique([ids,[snap(i).tracker.tracks.id]]);
   end
   subplot(223);
-  nid=arrayfun(@(z) max([z.tracker.tracks.id]), snap);
+  nid=arrayfun(@(z) max([z.tracker.tracks.id,0]), snap);
   plot(nid);
   ylabel('Maximum ID');
   
