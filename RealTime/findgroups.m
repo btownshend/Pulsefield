@@ -2,16 +2,9 @@
 function [info,snap]=findgroups(info,snap,prevsnap)
 for i=1:length(snap.hypo)
   if isnan(snap.hypo(i).tnum)
-    ph=find([prevsnap.hypo.id]==snap.hypo(i).id,1);
-    if isempty(ph)
-      fprintf('Hypo %d has tnum=nan, no corresponding entry in prevsnap, assuming not in group\n', i);
-    else
-      snap.hypo(i).groupid=prevsnap.hypo(ph).groupid;
-      snap.hypo(i).groupsize=prevsnap.hypo(ph).groupsize;
-      fprintf('Hypo %d has no attributed target, copying groupid %d, groupsize %d from prevsnap\n', snap.hypo(i).id, snap.hypo(i).groupid, snap.hypo(i).groupsize);
-      % TODO: Is there a bug here? - if this is added to a group,
-      % the other members of the group won't count it (below)
-    end
+    fprintf('Hypo %d has tnum=nan, assuming not in group\n', i);
+    snap.hypo(i).groupid=0;
+    snap.hypo(i).groupsize=1;
   else
     % Compute groupid -- lowest id in group, or 0 if not in a group
     sametnum=find(snap.hypo(i).tnum==[snap.hypo.tnum]);
