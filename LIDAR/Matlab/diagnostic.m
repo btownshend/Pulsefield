@@ -23,12 +23,12 @@ for i=1:length(tracker.tracks)
   else
     error=nan;
   end
-  fprintf('Track %d: MSE=%.3f age=%d, visCount=%d, consInvis=%d, loc=(%.1f,%1.f), velocity=(%.1f,%.1f), legs=(%.1f,(%.1f,%.1f),(%.1f,%.1f))\n', t.id, sqrt(mean(error.^2)), t.age, t.totalVisibleCount, t.consecutiveInvisibleCount, t.updatedLoc, vel, t.legs.radius,t.legs.c1,t.legs.c2);
+  fprintf('Track %d: MSE=%.3f age=%d, visCount=%d, consInvis=%d, loc=(%.2f,%.2f), velocity=(%.2f,%.2f), legs=(%.2f,(%.2f,%.2f),(%.2f,%.2f))\n', t.id, sqrt(mean(error.^2)), t.age, t.totalVisibleCount, t.consecutiveInvisibleCount, t.updatedLoc, vel, t.legs.radius,t.legs.c1,t.legs.c2);
   color=col(min(i,length(col)));
   % plot(t.updatedLoc(1),t.updatedLoc(2),['+',color]);
-  % if ~isempty(t.predictedLoc)
-  %   plot(t.predictedLoc(1),t.predictedLoc(2),['x',color]);
-  % end
+  if ~isempty(t.predictedLoc)
+    plot(t.predictedLoc(1),t.predictedLoc(2),['x',color]);
+  end
   if ~isempty(t.measuredLoc)
     plot(t.measuredLoc(1),t.measuredLoc(2),['o',color]);
   end
