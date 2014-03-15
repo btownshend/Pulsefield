@@ -1,5 +1,20 @@
 % Diagnostic plots/output
 function diagnostic(snap)
+if length(snap)>1
+  % Calculate tracker stats
+  alls=[];allc=[];
+  for i=1:length(snap)
+    t=snap(i).tracker;
+    for j=1:length(t.tracks)
+      if t.tracks(j).age>10 && ~isempty(t.tracks(j).measuredLoc)
+        k=t.tracks(j).kalmanFilter;
+        alls(:,end+1)=k.State;
+        allc(:,end+1)=diag(k.StateCovariance);
+      end
+    end
+  end
+  fprintf('Tracker state position sigma: state:(%.2f, %.2f, %.2f, %.2f), cov:(%.2f, %.2f, %.2f, %.2f)\n', sqrt(mean(alls.^2,2)),sqrt(mean(allc,2)));
+end
 bg=snap(end).bg;
 vis=snap(end).vis;
 tracker=snap(end).tracker;
