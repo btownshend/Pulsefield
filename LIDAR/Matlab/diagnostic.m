@@ -1,5 +1,10 @@
 % Diagnostic plots/output
-function diagnostic(snap)
+function diagnostic(snap,varargin)
+defaults=struct('trackid',[],...   % Only show these trackids
+                'debug',false...
+                );
+args=processargs(defaults,varargin);
+
 if length(snap)>1
   % Calculate tracker stats
   alls=[];allc=[];
@@ -102,49 +107,62 @@ if length(snap)>1
     ids=unique([ids,[snap(i).tracker.tracks.id]]);
   end
   subplot(223);
-  nid=arrayfun(@(z) max([z.tracker.tracks.id,0]), snap);
-  plot(nid);
-  ylabel('Maximum ID');
+  for i=1:length(ids)
+    idpresent=arrayfun(@(z) ismember(ids(i),[z.tracker.tracks.id]), snap);
+    idtmp=nan(1,length(snap));
+    idtmp(idpresent)=ids(i);
+    if ismember(ids(i),args.trackid)
+      plot(idtmp,'g');
+    else
+      plot(idtmp,'r');
+    end
+    hold on;
+  end
+  ylabel('ID Presence');
   
+  frame=arrayfun(@(z) z.vis.frame,snap);
   for i=1:length(ids)
     id=ids(i);
-    ploc=[];mloc=[];uloc=[];
+    if ~isempty(args.trackid) && ~ismember(id,args.trackid)
+      continue;
+    end
+    ploc=nan(length(snap),2);
+    mloc=ploc;
+    uloc=ploc;
     for j=1:length(snap)
       sel=[snap(j).tracker.tracks.id]==id;
-      if sum(sel)==0
-        uloc=[uloc;nan,nan];
-        ploc=[ploc;nan,nan];
-        mloc=[mloc;nan,nan];
-      else
-        uloc=[uloc;snap(j).tracker.tracks(sel).updatedLoc];
-        if isempty(snap(j).tracker.tracks(sel).predictedLoc)
-          ploc=[ploc;nan,nan];
-        else
-          ploc=[ploc;snap(j).tracker.tracks(sel).predictedLoc];
+      if sum(sel)>0
+        uloc(j,:)=snap(j).tracker.tracks(sel).updatedLoc;
+        if ~isempty(snap(j).tracker.tracks(sel).predictedLoc)
+          ploc(j,:)=snap(j).tracker.tracks(sel).predictedLoc;
         end
-        mloc=[mloc;snap(j).tracker.tracks(sel).measuredLoc];
+        if ~isempty(snap(j).tracker.tracks(sel).measuredLoc)
+          mloc(j,:)=snap(j).tracker.tracks(sel).measuredLoc;
+        end
       end
     end
     subplot(221);
-    plot(ploc(:,1),ploc(:,2),'b-');
+    plot(ploc(:,1),ploc(:,2),'b.-');
     hold on;
-    plot(mloc(:,1),mloc(:,2),'g-');
+    plot(mloc(:,1),mloc(:,2),'g.-');
     %plot(uloc(:,1),uloc(:,2),'r-');
-    for k=1:size(ploc,1)
-      plot([mloc(k,1),ploc(k,1)],[mloc(k,2),ploc(k,2)],'k');
-    end
+    %    for k=1:size(ploc,1)
+    %      plot([mloc(k,1),ploc(k,1)],[mloc(k,2),ploc(k,2)],'k');
+    %    end
     %legend('predicted','measured','Location','SouthOutside');
     
     subplot(222);
-    plot(ploc(:,1),'b-');
+    plot(frame,ploc(:,1),'b.-');
     hold on;
-    plot(mloc(:,1),'g-');
+    plot(frame,mloc(:,1),'g.-');
+    xlabel('Frame');
     title('X Position');
     
     subplot(224)
-    plot(ploc(:,2),'b-');
+    plot(frame,ploc(:,2),'b.-');
     hold on;
-    plot(mloc(:,2),'g-');
+    plot(frame,mloc(:,2),'g.-');
+    xlabel('Frame');
     title('Y Position');
   end
 end
