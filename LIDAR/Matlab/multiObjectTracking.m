@@ -336,8 +336,14 @@ function createNewTracks(obj,centroids,alllegs)
     
     fprintf('Create new track with id %d at (%.1f, %.1f)\n', obj.nextId, centroid);
     % create a Kalman filter object
+    % Initial estimate is accurate for position, but unknown for velocity
+    % Use observed state matrix vairances from diagnostic() output to estimate these
+    % initial position error = same as state position error
+    % initial velocity error = MSE(velocity)=MSE(KF.State([2,4]).^2)
+    % state position error = MSE(KF.StateCovariance([1,3]))
+    % state velocity error = MSE(KF.StateCovariance([2,4]))
     kalmanFilter = configureKalmanFilter('ConstantVelocity', ...
-                                         centroid, [0.2, 0.1], [0.1, 0.05], 0.2);
+                                         centroid, [0.2, 0.05].^2, [0.2, 0.22].^2, 0.2^2);
     
     % create a new track
     newTrack = struct(...
