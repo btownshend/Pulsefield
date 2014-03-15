@@ -57,7 +57,15 @@ while true
   vis=classify(vis,bg);
   vis=joinlegs(vis);
   vis=calcbboxes(vis);
-  tracker.update(vis.targets.pos,vis.targets.legs);
+  if isempty(snap)
+    npredict=1;
+  else
+    npredict=vis.cframe-snap(end).vis.cframe;
+  end
+  if npredict>1
+    fprintf('Skipping ahead %d frames\n', npredict);
+  end
+  tracker.update(vis.targets.pos,vis.targets.legs,npredict);
 
   if mod(length(snap)+1,1)==0
     im2=vis2image(vis,im,winbounds,0);

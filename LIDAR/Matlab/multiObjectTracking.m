@@ -82,8 +82,8 @@ function c = clone(obj)
   end
 end
 
-function update(obj,centroids,legs)
-  obj.predictNewLocationsOfTracks();
+function update(obj,centroids,legs,nsteps)
+  obj.predictNewLocationsOfTracks(nsteps);
   obj.detectionToTrackAssignment(centroids);
   obj.updateAssignedTracks(centroids,legs);
   obj.updateUnassignedTracks();
@@ -148,15 +148,27 @@ end
 % Use the Kalman filter to predict the centroid of each track in the
 % current frame, and update its bounding box accordingly.
 
-function predictNewLocationsOfTracks(obj)
+function predictNewLocationsOfTracks(obj,nsteps)
+  if nargin<2
+    nsteps=1;
+  end
   for i = 1:length(obj.tracks)
     legs = obj.tracks(i).legs;
     
     % predict the current location of the track
-    predictedCentroid = predict(obj.tracks(i).kalmanFilter);
-    delta=predictedCentroid-obj.tracks(i).updatedLoc;
+    if ~isempty(obj.tracks(i).updatedLoc)
+      lastpos=obj.tracks(i).updatedLoc;
+    else
+      lastpos=obj.tracks(i).predictedLoc;
+    end
+    for k=1:nsteps
+      predictedCentroid = predict(obj.tracks(i).kalmanFilter);
+    end
+    delta=predictedCentroid-lastpos;
     obj.tracks(i).predictedLoc=predictedCentroid;
-    
+    obj.tracks(i).measuredLoc=[];
+    obj.tracks(i).updatedLoc=[];
+
     % shift the legs the same amount
     obj.tracks(i).legs.c1=obj.tracks(i).legs.c1+delta;
     obj.tracks(i).legs.c2=obj.tracks(i).legs.c2+delta;
