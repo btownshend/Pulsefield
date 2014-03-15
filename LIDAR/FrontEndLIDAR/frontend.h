@@ -40,7 +40,7 @@ class FrontEnd {
 
     int startRecording(const char *filename);
     void stopRecording();
-    int playFile(const char *filename, bool singleStep);
+    int playFile(const char *filename, bool singleStep,float speedFactor=1.0f);
 
     // Handlers for OSC messages
     void startStop(bool start);

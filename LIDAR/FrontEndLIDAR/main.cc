@@ -7,7 +7,7 @@
 static int nsick=1;
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr, "Usage: %s [-R | -r recordfile | -p playfile [-s] [-l] ] (had %d args)\n",argv[0],argc-1);
+    fprintf(stderr, "Usage: %s [-R | -r recordfile | -p playfile [-s] [-l] [-x slowfactor] ] (had %d args)\n",argv[0],argc-1);
     exit(1);
 }
 
@@ -18,8 +18,9 @@ int main(int argc, char *argv[])
     int ch;
     bool loop=false;
     bool singlestep=false;
+    float speedFactor =1.0f;
 
-    while ((ch=getopt(argc,argv,"sr:Rp:l"))!=-1) {
+    while ((ch=getopt(argc,argv,"sr:Rp:lx:"))!=-1) {
 	switch (ch) {
 	case 's':
 	    singlestep=true;
@@ -39,6 +40,9 @@ int main(int argc, char *argv[])
 	case 'p':
 	    playFile=optarg;
 	    break;
+	case 'x':
+	    speedFactor=atof(optarg);
+	    break;
 	default:
 	    usage(argc,argv);
 	}
@@ -54,7 +58,7 @@ int main(int argc, char *argv[])
 	FrontEnd fe(0);
 	// Now playback file through it
 	do {
-	    int rc=fe.playFile(playFile,singlestep);
+	    int rc=fe.playFile(playFile,singlestep,speedFactor);
 	    if (rc)
 		exit(1);
 	} while (loop);   // Keep repeating if loop is set

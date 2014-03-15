@@ -322,7 +322,7 @@ void FrontEnd::stopRecording() {
     recording=false;
 }
 
-int FrontEnd::playFile(const char *filename,bool singleStep) {
+int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
     printf("Playing back recording from %s\n", filename);
     FILE *fd=fopen(filename,"r");
     if (fd == NULL) {
@@ -366,6 +366,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep) {
 	gettimeofday(&now,0);
 	
 	long int waittime=(acquired.tv_sec-lastfile.tv_sec-(now.tv_sec-lastnow.tv_sec))*1000000+(acquired.tv_usec-lastfile.tv_usec-(now.tv_usec-lastnow.tv_usec));
+	waittime=waittime*speedFactor;
 	if (waittime >1000 && waittime<1000000) {
 	    //printf("Wait %ld usec\n", waittime);
 	    usleep(waittime);
