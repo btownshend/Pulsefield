@@ -23,8 +23,18 @@ winbounds=[-5,5,-0.5,8];
 bg=[];
 iswaiting=false;
 snap=[];
+
 while true
-  vis=sickrcvr('debug',0);
+  if exist('oldsnap','var')
+    % Reprocess oldsnap
+    if length(snap)>=length(oldsnap)
+      break;
+    end
+    vis=oldsnap(length(snap)+1).vis;
+  else
+    vis=sickrcvr('debug',0);
+  end
+    
   if isempty(vis)
     if iswaiting
       fprintf('.');
