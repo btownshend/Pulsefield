@@ -32,7 +32,7 @@ for i=1:length(tracker.tracks)
   if ~isempty(t.measuredLoc)
     plot(t.measuredLoc(1),t.measuredLoc(2),['o',color]);
   end
-  asel=tracker.assignments(:,1)==i;
+  asel=tracker.assignments(:,1)==t.id;
   if sum(asel)==1
     det=tracker.assignments(asel,2);
     cnum=det+2;

@@ -45,9 +45,9 @@ classdef multiObjectTracking < handle
   properties
     minVisibleCount = 8;
     tracks;
-    assignments;
-    unassignedTracks;
-    unassignedDetections;
+    assignments;	% (N,2) matrix;  (:,1) is centroid index, (:,2) is track ID
+    unassignedTracks;	% trackIDs for unassigned tracks
+    unassignedDetections;	% Centroid indices for unassigned detections
     nextId;
     videoPlayer;
   end
@@ -215,6 +215,13 @@ function detectionToTrackAssignment(obj,centroids)
   costOfNonAssignment = 1;
   [obj.assignments, obj.unassignedTracks, obj.unassignedDetections] = ...
       assignDetectionsToTracks(cost, costOfNonAssignment);
+  % Change from track indices to track ids
+  if ~isempty(obj.assignments)
+    obj.assignments(:,1)=[obj.tracks(obj.assignments(:,1)).id];
+  end
+  if ~isempty(obj.unassignedTracks)
+    obj.unassignedTracks=[obj.tracks(obj.unassignedTracks).id];
+  end
 end
 
 %% Update Assigned Tracks
@@ -227,7 +234,7 @@ end
 function updateAssignedTracks(obj,centroids,alllegs)
   numAssignedTracks = size(obj.assignments, 1);
   for i = 1:numAssignedTracks
-    trackIdx = obj.assignments(i, 1);
+    trackIdx = find([obj.tracks.id]==obj.assignments(i, 1));
     detectionIdx = obj.assignments(i, 2);
     centroid = centroids(detectionIdx, :);
     legs = alllegs(detectionIdx);
@@ -257,7 +264,7 @@ end
 
 function updateUnassignedTracks(obj)
   for i = 1:length(obj.unassignedTracks)
-    ind = obj.unassignedTracks(i);
+    ind = find([obj.tracks.id]==obj.unassignedTracks(i));
     obj.tracks(ind).age = obj.tracks(ind).age + 1;
     obj.tracks(ind).consecutiveInvisibleCount = ...
         obj.tracks(ind).consecutiveInvisibleCount + 1;
@@ -385,8 +392,8 @@ function displayTrackingResults(obj,frame,winbounds)
       % for i=1:length(labels)
       %   fprintf('Annotating with %s at (%f,%f,%f,%f)\n', labels{i},bboxes (i,:));
       % end
-      frame = insertObjectAnnotation(frame, 'rectangle', ...
-                                     bboxes, labels);
+%      frame = insertObjectAnnotation(frame, 'rectangle', ...
+ %                                    bboxes, labels);
       
     end
   end
