@@ -226,9 +226,10 @@ function detectionToTrackAssignment(obj,centroids)
   obj.cost=cost;
   
   % solve the assignment problem
-  costOfNonAssignment = 1;
+  costUnassignedTracks = 10;
+  costUnassignedDetections = 10;
   [obj.assignments, obj.unassignedTracks, obj.unassignedDetections] = ...
-      assignDetectionsToTracks(cost, costOfNonAssignment);
+      assignDetectionsToTracks(cost, costUnassignedTracks, costUnassignedDetections);
   % Change from track indices to track ids
   if ~isempty(obj.assignments)
     obj.assignments(:,1)=[obj.tracks(obj.assignments(:,1)).id];
@@ -282,6 +283,7 @@ function updateUnassignedTracks(obj)
     obj.tracks(ind).age = obj.tracks(ind).age + 1;
     obj.tracks(ind).consecutiveInvisibleCount = ...
         obj.tracks(ind).consecutiveInvisibleCount + 1;
+    obj.tracks(ind).measuredLoc=[];
   end
 end
 
