@@ -74,6 +74,7 @@ function c = clone(obj)
   c.minVisibleCount=obj.minVisibleCount;
   c.tracks=obj.tracks;
   c.assignments=obj.assignments;
+  c.cost=obj.cost;
   c.unassignedTracks=obj.unassignedTracks;
   c.unassignedDetections=obj.unassignedDetections;
   c.nextId=obj.nextId;
@@ -222,7 +223,8 @@ function detectionToTrackAssignment(obj,centroids)
   end
   reliableTrackInds =  [obj.tracks(:).totalVisibleCount] > obj.minVisibleCount;
   cost(~reliableTrackInds,:)=cost(~reliableTrackInds,:)+0.5;   % Increase cost of assigning to an invisible track
-
+  obj.cost=cost;
+  
   % solve the assignment problem
   costOfNonAssignment = 1;
   [obj.assignments, obj.unassignedTracks, obj.unassignedDetections] = ...
