@@ -64,8 +64,14 @@ while true
     im3=vis2image(bg,im2,winbounds,1);
     tracker.displayTrackingResults(im3,winbounds);
   end
-
+  
   snap=[snap,struct('vis',vis,'bg',bg,'tracker',tracker.clone())];
+  if length(snap)>1
+    sendosc({'VD'},snap(end),snap(end-1));
+  else
+    sendosc({'VD'},snap(end));
+  end
+  
   if mod(length(snap),100)==0
     fprintf('%d...',length(snap));
   end
