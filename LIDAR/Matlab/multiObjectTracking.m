@@ -77,8 +77,13 @@ function c = clone(obj)
   end
 end
 
-function update(obj,centroids,legs,nsteps)
+function update(obj,vis,bg,nsteps,fps)
+  centroids=vis.targets.pos;
+  legs=vis.targets.legs;
   obj.predictNewLocationsOfTracks(nsteps);
+  % Constraints
+  obj.constrainVelocity(fps);
+  moveintoshadows(obj,vis,bg);
   obj.detectionToTrackAssignment(centroids);
   obj.updateAssignedTracks(centroids,legs);
   obj.updateUnassignedTracks();
@@ -138,6 +143,20 @@ function initializeTracks(obj)
       );
 end
 
+function constrainVelocity(obj,fps)
+  MAXSPEED=1.3/fps;       % 1.3 m/s
+  for i=1:length(obj.tracks)
+    state=obj.tracks(i).kalmanFilter.State;
+    spd=norm(state([2,4]));
+    if spd>MAXSPEED;
+      fprintf('Limiting speed of ID %d to %.1f m/s (was %.1f m/s)\n', obj.tracks(i).id, MAXSPEED*fps, spd*fps);
+      state([2,4])=state([2,4])*(MAXSPEED/spd);
+      obj.tracks(i).kalmanFilter.State=state;
+    end
+  end
+end
+
+  
 
 %% Predict New Locations of Existing Tracks
 % Use the Kalman filter to predict the centroid of each track in the
