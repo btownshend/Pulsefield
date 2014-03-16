@@ -8,8 +8,8 @@ args=processargs(defaults,varargin);
 
 if ~isempty(args.frames)
   frame=arrayfun(@(z) z.vis.frame, snap);
-  i1=find(frames>=args.frames(1),1);
-  i2=find(frames<=args.frames(2),1,'last');
+  i1=find(frame>=args.frames(1),1);
+  i2=find(frame<=args.frames(2),1,'last');
   snap=snap(i1:i2);
   fprintf('Showing snap(%d:%d)\n', i1, i2);
 end
@@ -191,11 +191,13 @@ if length(snap)>1
     subplot(233);
     [heading,speed]=cart2pol(vel(:,1),vel(:,2));
     plot(frame,heading*180/pi,'b.-');
+    hold on;
     xlabel('Frame');
     title('Heading');
     
     subplot(236)
     plot(frame,speed,'b.-');
+    hold on;
     xlabel('Frame');
     title('Speed');
 
