@@ -71,6 +71,7 @@ while true
     fprintf('Skipping ahead %d frames\n', npredict);
   end
   tracker.update(vis.targets.pos,vis.targets.legs,npredict);
+  moveintoshadows(tracker,vis);
   snap=[snap,struct('vis',vis,'bg',bg,'tracker',tracker.clone())];
   if length(snap)>1
     sendosc({'VD'},snap(end),snap(end-1));
