@@ -5,12 +5,12 @@ for i=1:length(tracker.tracks)
   if t.consecutiveInvisibleCount>0
     % Not visible
     [theta,range]=xy2range(t.updatedLoc);
-    if theta<vis.range(1) || theta>vis.range(end)
+    if theta<vis.angle(1) || theta>vis.angle(end)
       fprintf('Track %d at (%.2f,%.2f) is outside FOV\n',t.id, t.updatedLoc);
-      if theta<vis.range(1)
-        theta=vis.range(1);
+      if theta<vis.angle(1)
+        theta=vis.angle(1);
       else
-        theta=vis.range(end);
+        theta=vis.angle(end);
       end
       newpos=range2xy(theta,range);
       closest=norm(newpos-t.updatedLoc)^2;
