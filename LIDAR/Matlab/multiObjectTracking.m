@@ -238,14 +238,14 @@ function detectionToTrackAssignment(obj,centroids)
   end
   reliableTrackInds =  [obj.tracks(:).totalVisibleCount] > obj.minVisibleCount;
   
-  cost(~reliableTrackInds,:)=cost(~reliableTrackInds,:)+1;   % Increase cost of assigning to an invisible track
+  cost(~reliableTrackInds,:)=cost(~reliableTrackInds,:)+.5;   % Increase cost of assigning to an invisible track
                                                              % If this is too big, the cost > cost of unassigned tracks so tracks never stay visible for long
                                                              % If too small, then ephemeral tracks take over long-lived ones
   obj.cost=cost;
   
   % solve the assignment problem
-  costUnassignedTracks = 2;
-  costUnassignedDetections = 2;
+  costUnassignedTracks = .5;
+  costUnassignedDetections = .5;
   [obj.assignments, obj.unassignedTracks, obj.unassignedDetections] = ...
       assignDetectionsToTracks(cost, costUnassignedTracks, costUnassignedDetections);
   % Change from track indices to track ids
