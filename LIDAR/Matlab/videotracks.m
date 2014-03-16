@@ -3,17 +3,30 @@
 % for each track on the video frame. It then 
 % displays the frame  in their respective video players. 
 
-function videotracks(snap)
-  winbounds=[-5,5,-0.5,8];
-  vp = vision.VideoPlayer('Position', [20, 400, 600, 600]);
-  im=255*zeros(600,600,3,'uint8');
+function vp=videotracks(snap,vp,speedFactor)
+  winbounds=[-8,5,-0.5,6];
+  if nargin<2
+    width=800;
+    height=round((winbounds(4)-winbounds(3))/(winbounds(2)-winbounds(1))*width);
+    vp = vision.VideoPlayer('Position', [20, 20, width, height]);
+  else
+    vp.reset();
+  end
+  
+  if nargin<3
+    speedFactor=1.0;
+  end
+  im=255*zeros(vp.Position(4),vp.Position(3),3,'uint8');
 
+  starttime=now;
+  totalwait=0;
+  ww=[];
+  tic
   for is=1:length(snap)
     s=snap(is);
     v=s.vis;
-    im2=vis2image(v,im,winbounds,0);
-    frame=vis2image(snap(is).bg,im2,winbounds,1);
-
+    frame=im;
+    
     obj=snap(is).tracker;
     if ~isempty(obj.tracks)
       
@@ -21,46 +34,57 @@ function videotracks(snap)
       % only display tracks that have been visible for more than 
       % a minimum number of frames.
       reliableTrackInds =[obj.tracks(:).totalVisibleCount] > obj.minVisibleCount;
-      reliableTracks = obj.tracks(reliableTrackInds);
       
       % display the objects. If an object has not been detected
       % in this frame, display its predicted bounding box.
-      if ~isempty(reliableTracks)
-        % get bounding boxes
-        % bboxes = cat(1, reliableTracks.bbox);
-        % for i=1:size(bboxes,1)
-        %   bboxes(i,1)=(bboxes(i,1)-winbounds(1))/(winbounds(2)-winbounds(1))*(size(frame,2)-1)+1;
-        %   bboxes(i,2)=(winbounds(4)-(bboxes(i,2)+bboxes(i,4)))/(winbounds(4)-winbounds(3))*(size(frame,1)-1)+1;
-        %   bboxes(i,3)=bboxes(i,3)/(winbounds(2)-winbounds(1))*(size(frame,2)-1);
-        %   bboxes(i,4)=bboxes(i,4)/(winbounds(4)-winbounds(3))*(size(frame,1)-1);
-        % end
-        % bboxes=round(bboxes);
-        
-        % get ids
-        ids = int32([reliableTracks(:).id]);
-        
-        % create labels for objects indicating the ones for 
-        % which we display the predicted rather than the actual 
-        % location
-        labels = cellstr(int2str(ids'));
-        predictedTrackInds = [reliableTracks(:).consecutiveInvisibleCount] > 0;
-        isPredicted = cell(size(labels));
-        isPredicted(predictedTrackInds) = {' predicted'};
-        labels = strcat(labels, isPredicted);
+      if ~isempty(obj.tracks)
+        predictedTrackInds = [obj.tracks.consecutiveInvisibleCount] > 0;
         
         % draw on the frame
-        % for i=1:length(labels)
-        %   fprintf('Annotating with %s at (%f,%f,%f,%f)\n', labels{i},bboxes (i,:));
-        % end
-        %      frame = insertObjectAnnotation(frame, 'rectangle', ...
-        %                                    bboxes, labels);
-        
+        for i=1:length(obj.tracks)
+          t=obj.tracks(i);
+          if reliableTrackInds(i)
+            col='green';
+          else
+            col='yellow';
+          end
+          l=t.legs;
+          c1=mappt(l.c1,winbounds,size(frame));
+          rtmp=mappt(l.c1+[l.radius,0],winbounds,size(frame));
+          radius=rtmp(1)-c1(1);
+          frame=insertObjectAnnotation(frame,'circle',[c1,radius],'L','Color',col);
+          if all(isfinite(l.c2))
+            c2=mappt(l.c2,winbounds,size(frame));
+            frame=insertObjectAnnotation(frame,'circle',[c2,radius],'R','Color',col);
+            radius=radius+norm(c2-c1)/2;
+          end
+          pos=mappt(t.updatedLoc,winbounds,size(frame));
+          if predictedTrackInds(i)
+            label=sprintf('[%d]',t.id);
+          else
+            label=sprintf('%d',t.id);
+          end
+          frame=insertObjectAnnotation(frame,'circle',[pos,radius],label,'Color',col);
+        end
       end
     end
-    
-    vp.step(frame);
-    if is<length(snap)
-      pause((snap(is+1).vis.when-snap(is).vis.when)*24*3600);
+    frame=vis2image(v,frame,winbounds,0);
+    frame=vis2image(snap(is).bg,frame,winbounds,1);
+
+    waittime=(snap(is).vis.when-snap(1).vis.when)/speedFactor-(now-starttime); 
+    ww(end+1)=waittime;
+    if waittime>0
+      pause(waittime*3600*24);
     end
+    vp.step(frame);
   end
+  endtime=toc;
+  fprintf('Played at %.2fx real time with %d late frames\n', (snap(end).vis.when-snap(1).vis.when)*24*3600/endtime,sum(ww<0));
 end
+
+function mapped=mappt(xy,winbounds,framesz)
+  mapped(1)=round((xy(1)-winbounds(1))./(winbounds(2)-winbounds(1))*framesz(2)+1);
+  mapped(2)=round((winbounds(4)-xy(2))./(winbounds(4)-winbounds(3))*framesz(1)+1);
+end
+
+  
