@@ -64,7 +64,7 @@ end
 
 % Clone this class
 function c = clone(obj)
-  c=multiObjectTracking(false);
+  c=multiObjectTracking();
   c.minVisibleCount=obj.minVisibleCount;
   c.tracks=obj.tracks;
   c.assignments=obj.assignments;
