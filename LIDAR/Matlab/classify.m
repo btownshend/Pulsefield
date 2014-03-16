@@ -84,7 +84,8 @@ for i=MAXSPECIAL+1:max(class)
     continue;
   end
   fsel=find(sel);
-  sz=norm(xy(fsel(1),:)-xy(fsel(end),:));
+  scanwidth=mean(vis.range(fsel([1,end])))*(vis.angle(2)-vis.angle(1));
+  sz=norm(xy(fsel(1),:)-xy(fsel(end),:))+scanwidth;
   if sz<args.mintarget
     if shadowed(fsel(1))&1
       % Shadowed on the left, may not be noise
