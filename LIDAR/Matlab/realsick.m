@@ -1,3 +1,4 @@
+fps=50;
 if ~exist('oldsnap','var')
   p=struct();
   p.analsysisparams=analysissetup();
@@ -75,8 +76,7 @@ while true
   if npredict>1
     fprintf('Skipping ahead %d frames\n', npredict);
   end
-  tracker.update(vis.targets.pos,vis.targets.legs,npredict);
-  moveintoshadows(tracker,vis);
+  tracker.update(vis,bg,npredict,fps);
   snap=[snap,struct('vis',vis,'bg',bg,'tracker',tracker.clone())];
   if length(snap)>1
     sendosc({'VD'},snap(end),snap(end-1));
