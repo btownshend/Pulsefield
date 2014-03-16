@@ -6,7 +6,7 @@
 function vis=classify(vis,bg,varargin)
 defaults=struct('maxtgtsep',0.2,...   % Max separation between points that are still the same target (unless there is a gap between)
                 'maxbgsep',0.1,...    % Max distance from background to be considered part of background
-                'mintarget',0.05,...  % Minimum target size (otherwise is noise)
+                'mintarget',0.13,...  % Minimum unshadowed target size (otherwise is noise)
                 'minrange',0.1,...    % Minimum range, less than this becomes noise (dirt on sensor glass)
                 'debug',false...
                 );
