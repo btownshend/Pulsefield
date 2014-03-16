@@ -341,6 +341,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
     struct timeval lastfile;
     struct timeval lastnow;
     int frameStep=0;
+    int lastcframe=-1;
 
     while (true) {
 	sendOnce |= sendAlways;
@@ -350,6 +351,10 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	    printf("EOF on %s\n",filename);
 	    break;
 	}
+	if (cframe!=lastcframe+1 && lastcframe!=-1)
+	    fprintf(stderr,"Input file skips frames %d-%d\n",lastcframe+1,cframe-1);
+
+	lastcframe=cframe;
 	while (singleStep && frameStep<=0) {
 	    printf("Num frames to step? ");
 	    char buf[100];
