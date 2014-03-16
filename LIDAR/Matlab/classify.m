@@ -20,13 +20,16 @@ MAXSPECIAL=2;
 
 xy=range2xy(vis.angle,vis.range);
 
-class=zeros(length(vis.range),1);
+class=nan(length(vis.range),1);
 shadowed=false(length(vis.range),2);
 
-for i=1:length(vis.range)
-  if norm(vis.range(i)-bg.range(i))<args.maxbgsep
-    class(i)=BACKGROUND;
-  elseif i>1 && ((bg.range(i)<vis.range(i)) == (bg.range(i-1)>vis.range(i)))
+bgsep=abs(vis.range(1,1,:)-bg.range(1,1,:));
+isbg=bgsep<args.maxbgsep;
+class(isbg)=BACKGROUND;
+notbg=find(~isbg);
+for ii=1:length(notbg)
+  i=notbg(ii);
+  if i>1 && ((bg.range(i)<vis.range(i)) == (bg.range(i-1)>vis.range(i)))
     % Current point is on a line joining adjacent background points
     % TODO - sometimes more than 1 scanline error in background 
     % e.g. bg= 5 5 5 10 10 10
@@ -98,9 +101,11 @@ for i=MAXSPECIAL+1:max(class)
     end
     % Remove 'noise'
     if args.debug
-      fprintf('Target class %d (%d:%d) at (%.1f,%.1f):(%.1f,%.1f) is probably noise\n', i, min(fsel), max(fsel), xy(fsel(1),:),xy(fsel(end),:));
+      fprintf('Target class %d (%d:%d) at (%.1f,%.1f):(%.1f,%.1f) has size %.2f<%.2f, is probably noise\n', i, min(fsel), max(fsel), xy(fsel(1),:),xy(fsel(end),:),sz,args.mintarget);
     end
     class(class==i)=NOISE;
+  elseif args.debug
+    fprintf('Target class %d (%d:%d) at (%.1f,%.1f):(%.1f,%.1f) spanning %d points has size %.2f>%.2f: accepted\n', i, min(fsel), max(fsel), xy(fsel(1),:),xy(fsel(end),:),length(fsel),sz,args.mintarget);
   end
 end
 
