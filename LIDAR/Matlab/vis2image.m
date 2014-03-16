@@ -1,6 +1,6 @@
 % Overlay a scan onto an image with given mapping
 function im=vis2image(vis,im, winbounds,isbg)
-xy=range2xy(vis.angle+pi/2,vis.range);
+xy=range2xy(vis.angle,vis.range);
 xy(:,1)=(xy(:,1)-winbounds(1))/(winbounds(2)-winbounds(1))*(size(im,2)-1)+1;
 xy(:,2)=(winbounds(4)-xy(:,2))/(winbounds(4)-winbounds(3))*(size(im,1)-1)+1;
 colors=[0 0.2 0   % Background points

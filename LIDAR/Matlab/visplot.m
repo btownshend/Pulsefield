@@ -1,5 +1,5 @@
 function visplot(vis)
-xy=range2xy(vis.angle+pi/2,vis.range);
+xy=range2xy(vis.angle,vis.range);
 setfig('visplot');clf;
 hold on;
 if isfield(vis,'targets')

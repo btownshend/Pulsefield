@@ -28,8 +28,8 @@ fprintf('\n');
 setfig('diagnostic');clf;
 hold on;
 
-xy=range2xy(vis.angle+pi/2,vis.range);
-bxy=range2xy(bg.angle+pi/2,bg.range);
+xy=range2xy(vis.angle,vis.range);
+bxy=range2xy(bg.angle,bg.range);
 
 col='gbcymk';
 plotted=false(size(vis.class));

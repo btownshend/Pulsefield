@@ -18,7 +18,7 @@ OUTSIDE=1;
 NOISE=2;
 MAXSPECIAL=2;
 
-xy=range2xy(vis.angle+pi/2,vis.range);
+xy=range2xy(vis.angle,vis.range);
 
 class=zeros(length(vis.range),1);
 shadowed=false(length(vis.range),2);
