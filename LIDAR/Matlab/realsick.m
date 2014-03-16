@@ -66,6 +66,11 @@ while true
   else
     npredict=vis.cframe-snap(end).vis.cframe;
   end
+  if npredict<0
+    % Probably due to frontend playing back a file in a loop
+    fprintf('Got frame %d after frame %d ... quittting\n',vis.cframe,snap(end).vis.cframe);
+    break;
+  end
   if npredict>1
     fprintf('Skipping ahead %d frames\n', npredict);
   end
