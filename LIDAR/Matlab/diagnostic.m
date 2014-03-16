@@ -21,7 +21,7 @@ if length(snap)>1
   for i=1:length(snap)
     t=snap(i).tracker;
     for j=1:length(t.tracks)
-      if t.tracks(j).age>10 && ~isempty(t.tracks(j).measuredLoc)
+      if t.tracks(j).age>10 && (isempty(args.trackid) || ismember(t.tracks(j).id,args.trackid))
         k=t.tracks(j).kalmanFilter;
         alls(:,end+1)=k.State;
         allc(:,end+1)=diag(k.StateCovariance);
@@ -29,7 +29,13 @@ if length(snap)>1
     end
   end
   fprintf('Tracker state position sigma: state:(%.2f, %.2f, %.2f, %.2f), cov:(%.2f, %.2f, %.2f, %.2f)\n', sqrt(mean(alls.^2,2)),sqrt(mean(allc,2)));
+  setfig('statecov');clf;
+  plot(sqrt(allc)');
+  legend('px','vx','py','vy');
+  ylabel('Sigma');
+  xlabel('Sample');
 end
+
 bg=snap(end).bg;
 vis=snap(end).vis;
 tracker=snap(end).tracker;
