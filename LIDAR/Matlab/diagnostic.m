@@ -109,6 +109,12 @@ if length(snap)>1
   subplot(223);
   for i=1:length(ids)
     idpresent=arrayfun(@(z) ismember(ids(i),[z.tracker.tracks.id]), snap);
+    % Only present if there was also a measurement 
+    for k=1:length(idpresent)
+      if idpresent(k) 
+        idpresent(k)=~isempty(snap(k).tracker.tracks([snap(k).tracker.tracks.id]==ids(i)).measuredLoc);
+      end
+    end
     idtmp=nan(1,length(snap));
     idtmp(idpresent)=ids(i);
     if ismember(ids(i),args.trackid)
