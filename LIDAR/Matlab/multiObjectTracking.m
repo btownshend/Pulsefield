@@ -361,7 +361,7 @@ function createNewTracks(obj,centroids,alllegs)
     % state position error = MSE(KF.StateCovariance([1,3]))
     % state velocity error = MSE(KF.StateCovariance([2,4]))
     kalmanFilter = configureKalmanFilter('ConstantVelocity', ...
-                                         centroid, [0.2, 0.05].^2, [0.2, 0.22].^2, 0.2^2);
+                                         centroid, [0.2, 0.05].^2, [0.05, 0.01].^2, 0.2^2);
     
     % create a new track
     newTrack = struct(...
