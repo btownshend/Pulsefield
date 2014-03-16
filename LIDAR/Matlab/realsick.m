@@ -33,7 +33,7 @@ while true
     end
     vis=oldsnap(length(snap)+1).vis;
   else
-    vis=sickrcvr('debug',0);
+    vis=sickrcvr('debug',0,'skipstale',false);
   end
     
   if isempty(vis)
