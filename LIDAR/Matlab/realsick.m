@@ -19,9 +19,6 @@ if ~exist('oldsnap','var')
 end
 
 tracker=multiObjectTracking();
-im=255*zeros(600,600,3,'uint8');
-winbounds=[-5,5,-0.5,8];
-
 bg=[];
 iswaiting=false;
 snap=[];
