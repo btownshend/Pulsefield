@@ -122,7 +122,7 @@ if length(snap)>1
   for i=1:length(snap)
     ids=unique([ids,[snap(i).tracker.tracks.id]]);
   end
-  subplot(223);
+  subplot(234);
   for i=1:length(ids)
     idpresent=arrayfun(@(z) ismember(ids(i),[z.tracker.tracks.id]), snap);
     % Only present if there was also a measurement 
@@ -134,15 +134,14 @@ if length(snap)>1
     idtmp=nan(1,length(snap));
     idtmp(idpresent)=ids(i);
     if ismember(ids(i),args.trackid)
-      plot(idtmp,'g');
+      plot(frame,idtmp,'g');
     else
-      plot(idtmp,'r');
+      plot(frame,idtmp,'r');
     end
     hold on;
   end
   ylabel('ID Presence');
   
-  frame=arrayfun(@(z) z.vis.frame,snap);
   for i=1:length(ids)
     id=ids(i);
     if ~isempty(args.trackid) && ~ismember(id,args.trackid)
@@ -151,6 +150,7 @@ if length(snap)>1
     ploc=nan(length(snap),2);
     mloc=ploc;
     uloc=ploc;
+    vel=ploc;
     for j=1:length(snap)
       sel=[snap(j).tracker.tracks.id]==id;
       if sum(sel)>0
@@ -161,9 +161,10 @@ if length(snap)>1
         if ~isempty(snap(j).tracker.tracks(sel).measuredLoc)
           mloc(j,:)=snap(j).tracker.tracks(sel).measuredLoc;
         end
+        vel(j,:)=snap(j).tracker.tracks(sel).kalmanFilter.State([2,4]);
       end
     end
-    subplot(221);
+    subplot(231);
     plot(ploc(:,1),ploc(:,2),'b.-');
     hold on;
     plot(mloc(:,1),mloc(:,2),'g.-');
@@ -173,19 +174,31 @@ if length(snap)>1
     %    end
     %legend('predicted','measured','Location','SouthOutside');
     
-    subplot(222);
+    subplot(232);
     plot(frame,ploc(:,1),'b.-');
     hold on;
     plot(frame,mloc(:,1),'g.-');
     xlabel('Frame');
     title('X Position');
     
-    subplot(224)
+    subplot(235)
     plot(frame,ploc(:,2),'b.-');
     hold on;
     plot(frame,mloc(:,2),'g.-');
     xlabel('Frame');
     title('Y Position');
+
+    subplot(233);
+    [heading,speed]=cart2pol(vel(:,1),vel(:,2));
+    plot(frame,heading*180/pi,'b.-');
+    xlabel('Frame');
+    title('Heading');
+    
+    subplot(236)
+    plot(frame,speed,'b.-');
+    xlabel('Frame');
+    title('Speed');
+
   end
 end
 
