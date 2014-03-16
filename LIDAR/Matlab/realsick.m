@@ -40,11 +40,6 @@ while true
       fprintf('.');
     else
       fprintf('Waiting for data from frontend.');
-      if ~isempty(snap)
-        im2=vis2image(snap(end).vis,im,winbounds,0);
-        im3=vis2image(bg,im2,winbounds,1);
-        tracker.displayTrackingResults(im3,winbounds);
-      end
 
       if length(snap)>0
         diagnostic(snap);
@@ -76,13 +71,6 @@ while true
     fprintf('Skipping ahead %d frames\n', npredict);
   end
   tracker.update(vis.targets.pos,vis.targets.legs,npredict);
-
-  if mod(length(snap)+1,1)==0
-    im2=vis2image(vis,im,winbounds,0);
-    im3=vis2image(bg,im2,winbounds,1);
-    tracker.displayTrackingResults(im3,winbounds);
-  end
-  
   snap=[snap,struct('vis',vis,'bg',bg,'tracker',tracker.clone())];
   if length(snap)>1
     sendosc({'VD'},snap(end),snap(end-1));

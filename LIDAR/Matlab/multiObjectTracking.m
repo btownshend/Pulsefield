@@ -46,26 +46,20 @@ classdef multiObjectTracking < handle
     minVisibleCount = 8;
     tracks;
     assignments;	% (N,2) matrix;  (:,1) is centroid index, (:,2) is track ID
+    cost;
     unassignedTracks;	% trackIDs for unassigned tracks
     unassignedDetections;	% Centroid indices for unassigned detections
     nextId;
-    videoPlayer;
   end
   
   methods
 %% Create System Objects
-% Create System objects used for reading the video frames, detecting
-% foreground objects, and displaying results.
-
-function obj = multiObjectTracking(withVideo)
+function obj = multiObjectTracking()
 % create system objects used for reading video, detecting moving objects,
 % and displaying the results
   obj.initializeTracks(); % create an empty array of tracks
   obj.nextId = 1; % ID of the next track
 
-  if nargin<1 || withVideo
-    obj.videoPlayer = vision.VideoPlayer('Position', [20, 400, 600, 600]);
-  end
 end
 
 % Clone this class
@@ -99,7 +93,7 @@ end
 
 %% Initialize Tracks
 % The |initializeTracks| function creates an array of tracks, where each
-% track is a structure representing a moving object in the video. The
+% track is a structure representing a moving object. The
 % purpose of the structure is to maintain the state of a tracked object.
 % The state consists of information used for detection to track assignment,
 % track termination, and display. 
@@ -368,77 +362,5 @@ function createNewTracks(obj,centroids,alllegs)
     obj.nextId = obj.nextId + 1;
   end
 end
-
-%% Display Tracking Results
-% The |displayTrackingResults| function draws a bounding box and label ID 
-% for each track on the video frame. It then 
-% displays the frame  in their respective video players. 
-
-function displayTrackingResults(obj,frame,winbounds)
-  if ~isempty(obj.tracks)
-    
-    % noisy detections tend to result in short-lived tracks
-    % only display tracks that have been visible for more than 
-    % a minimum number of frames.
-    reliableTrackInds = ...
-        [obj.tracks(:).totalVisibleCount] > obj.minVisibleCount;
-    reliableTracks = obj.tracks(reliableTrackInds);
-    
-    % display the objects. If an object has not been detected
-    % in this frame, display its predicted bounding box.
-    if ~isempty(reliableTracks)
-      % get bounding boxes
-      % bboxes = cat(1, reliableTracks.bbox);
-      % for i=1:size(bboxes,1)
-      %   bboxes(i,1)=(bboxes(i,1)-winbounds(1))/(winbounds(2)-winbounds(1))*(size(frame,2)-1)+1;
-      %   bboxes(i,2)=(winbounds(4)-(bboxes(i,2)+bboxes(i,4)))/(winbounds(4)-winbounds(3))*(size(frame,1)-1)+1;
-      %   bboxes(i,3)=bboxes(i,3)/(winbounds(2)-winbounds(1))*(size(frame,2)-1);
-      %   bboxes(i,4)=bboxes(i,4)/(winbounds(4)-winbounds(3))*(size(frame,1)-1);
-      % end
-      % bboxes=round(bboxes);
-      
-      % get ids
-      ids = int32([reliableTracks(:).id]);
-      
-      % create labels for objects indicating the ones for 
-      % which we display the predicted rather than the actual 
-      % location
-      labels = cellstr(int2str(ids'));
-      predictedTrackInds = ...
-          [reliableTracks(:).consecutiveInvisibleCount] > 0;
-      isPredicted = cell(size(labels));
-      isPredicted(predictedTrackInds) = {' predicted'};
-      labels = strcat(labels, isPredicted);
-      
-      % draw on the frame
-      % for i=1:length(labels)
-      %   fprintf('Annotating with %s at (%f,%f,%f,%f)\n', labels{i},bboxes (i,:));
-      % end
-%      frame = insertObjectAnnotation(frame, 'rectangle', ...
- %                                    bboxes, labels);
-      
-    end
-  end
-  
-  obj.videoPlayer.step(frame);
-end
-
-%% Summary
-% This example created a motion-based system for detecting and
-% tracking multiple moving objects. Try using a different video to see if
-% you are able to detect and track objects. Try modifying the parameters
-% for the detection, assignment, and deletion steps.  
-%
-% The tracking in this example was solely based on motion with the
-% assumption that all objects move in a straight line with constant speed.
-% When the motion of an object significantly deviates from this model, the
-% example may produce tracking errors. Notice the mistake in tracking the
-% person labeled #12, when he is occluded by the tree. 
-%
-% The likelihood of tracking errors can be reduced by using a more complex
-% motion model, such as constant acceleration, or by using multiple Kalman
-% filters for every object. Also, you can incorporate other cues for
-% associating detections over time, such as size, shape, and color. 
-
 end
 end
