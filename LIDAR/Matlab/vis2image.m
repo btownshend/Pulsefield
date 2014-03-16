@@ -27,31 +27,28 @@ if isbg
   y=interp1(r,xy(:,2),0:max(r));
   x=round(min(max(1,x),size(im,2)));
   y=round(min(max(1,y),size(im,1)));
-  for k=1:length(x)
-    im(y(k),x(k),:)=im(y(k),x(k),:)+reshape(bgline,1,1,3);
+  ind=sub2ind(size(im),y,x,ones(size(x)));
+  skip=size(im,1)*size(im,2);  % Offset of each color plane
+  for k=1:3
+    im(ind)=im(ind)+bgline(k);
+    ind=ind+skip;   % Advance to next color plane
   end
 else
   xy=round(xy);
-  xy(xy(:)<1)=1;
-  xy(xy(:,2)>size(im,1),2)=size(im,1);
-  xy(xy(:,1)>size(im,2),1)=size(im,2);
+  fuzz=1;
+  xy(xy(:)<1+fuzz)=1+fuzz;
+  xy(xy(:,2)>size(im,1)-fuzz,2)=size(im,1)-fuzz;
+  xy(xy(:,1)>size(im,2)-fuzz,1)=size(im,2)-fuzz;
   col=vis.class+1;
   col(col>size(colors,1))=size(colors,1);
-  fuzz=1;
-  for i=1:size(xy,1)
-    if col(i)==0
-      % Don't draw background
-      continue;
-    end
+  ind=sub2ind(size(im),xy(:,2),xy(:,1),ones(size(xy,1),1));
+  skip2=size(im,1);
+  skip3=size(im,1)*size(im,2);
+  for k=1:3
     for fx=-fuzz:fuzz
-      if xy(i,1)+fx<1 || xy(i,1)+fx>size(im,2)
-        continue;
-      end
       for fy=-fuzz:fuzz
-        if xy(i,2)+fy<1 || xy(i,2)+fy>size(im,1)
-          continue;
-        end
-        im(xy(i,2)+fy,xy(i,1)+fx,:)=im(xy(i,2)+fy,xy(i,1)+fx,:)+reshape(colors(col(i),:),1,1,3);
+        ind1=ind+fy+fx*skip2+(k-1)*skip3;
+        im(ind1)=im(ind1)+colors(col,k);
       end
     end
   end
