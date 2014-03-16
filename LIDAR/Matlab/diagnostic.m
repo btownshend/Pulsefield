@@ -1,9 +1,19 @@
 % Diagnostic plots/output
 function diagnostic(snap,varargin)
 defaults=struct('trackid',[],...   % Only show these trackids
+                'frames',[],...
                 'debug',false...
                 );
 args=processargs(defaults,varargin);
+
+if ~isempty(args.frames)
+  frame=arrayfun(@(z) z.vis.frame, snap);
+  i1=find(frames>=args.frames(1),1);
+  i2=find(frames<=args.frames(2),1,'last');
+  snap=snap(i1:i2);
+  fprintf('Showing snap(%d:%d)\n', i1, i2);
+end
+frame=arrayfun(@(z) z.vis.frame,snap);
 
 if length(snap)>1
   % Calculate tracker stats
