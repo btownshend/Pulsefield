@@ -211,17 +211,22 @@ function detectionToTrackAssignment(obj,centroids)
   %  fprintf('Cost=\n');
   if nDetections>0
     for i = 1:nTracks
-      cost(i, :) = distance(obj.tracks(i).kalmanFilter, centroids);
+      %cost(i, :) = distance(obj.tracks(i).kalmanFilter, centroids);
+      % kalman distance bounces around way too much...
+      cost(i,:)=sqrt((obj.tracks(i).predictedLoc(1)-centroids(:,1)).^2+(obj.tracks(i).predictedLoc(2)-centroids(:,2)).^2);
       %   fprintf('%2d %s\n',obj.tracks(i).id,sprintf('%4.1f ',cost(i,:)));
     end
   end
   reliableTrackInds =  [obj.tracks(:).totalVisibleCount] > obj.minVisibleCount;
-  cost(~reliableTrackInds,:)=cost(~reliableTrackInds,:)+0.5;   % Increase cost of assigning to an invisible track
+  
+  cost(~reliableTrackInds,:)=cost(~reliableTrackInds,:)+1;   % Increase cost of assigning to an invisible track
+                                                             % If this is too big, the cost > cost of unassigned tracks so tracks never stay visible for long
+                                                             % If too small, then ephemeral tracks take over long-lived ones
   obj.cost=cost;
   
   % solve the assignment problem
-  costUnassignedTracks = 10;
-  costUnassignedDetections = 10;
+  costUnassignedTracks = 2;
+  costUnassignedDetections = 2;
   [obj.assignments, obj.unassignedTracks, obj.unassignedDetections] = ...
       assignDetectionsToTracks(cost, costUnassignedTracks, costUnassignedDetections);
   % Change from track indices to track ids
