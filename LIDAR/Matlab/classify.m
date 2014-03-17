@@ -6,7 +6,7 @@
 function vis=classify(vis,bg,varargin)
 defaults=struct('maxtgtsep',0.2,...   % Max separation between points that are still the same target (unless there is a gap between)
                 'maxbgsep',0.1,...    % Max distance from background to be considered part of background
-                'mintarget',0.13,...  % Minimum unshadowed target size (otherwise is noise)
+                'mintarget',0.1,...  % Minimum unshadowed target size (otherwise is noise)
                 'minrange',0.1,...    % Minimum range, less than this becomes noise (dirt on sensor glass)
                 'maxrange',5,...      % Maximum range, outside this is ignored
                 'debug',false...
@@ -25,9 +25,10 @@ class=nan(length(vis.range),1);
 shadowed=false(length(vis.range),2);
 isbg=bg.isbg(vis);
 class(isbg)=BACKGROUND;
-isoutside=vis.range(1,1,:)>args.maxrange;isoutside=isoutside(:)';
-class(isoutside&~isbg)=OUTSIDE;
-notbg=find(~isbg&~isoutside);
+%isoutside=vis.range(1,1,:)>=args.maxrange;isoutside=isoutside(:)';
+%class(isoutside&~isbg)=OUTSIDE;
+%notbg=find(~isbg&~isoutside);
+notbg=find(~isbg);
 for ii=1:length(notbg)
   i=notbg(ii);
   if vis.range(i)<args.minrange
@@ -44,12 +45,18 @@ for ii=1:length(notbg)
         class(i)=class(j);
         break;
       end
-      if vis.range(j)>vis.range(i)
+      % Note that background calculation spreads out background assignment 1 scan wider than a shadowing background
+      % So even if there is no shadow, if the pixel is a background, it could be shadowing
+      if vis.range(j)>vis.range(i) & class(j)~=BACKGROUND
         % A discontinuity which is not shadowed, stop searching
         break;
       end
     end
   end
+end
+
+for ii=1:length(notbg)
+  i=notbg(ii);
   % See if a point would be shadowed on the left or right
   if i>1 && vis.range(i-1)<vis.range(i) && class(i-1)~=class(i)
     shadowed(i,1)=true;
