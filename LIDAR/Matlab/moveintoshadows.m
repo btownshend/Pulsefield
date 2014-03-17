@@ -41,7 +41,7 @@ for i=1:length(tracker.tracks)
     t.kalmanFilter.State=newstate;
     tracker.tracks(i)=t;
     if distmoved>1
-      keyboard
+      fprintf('**** Moved more than 1m\n');
     end
   end
 end
