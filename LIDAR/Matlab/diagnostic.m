@@ -2,6 +2,7 @@
 function diagnostic(snap,varargin)
 defaults=struct('trackid',[],...   % Only show these trackids
                 'frames',[],...
+                'minage',1,...
                 'debug',false...
                 );
 args=processargs(defaults,varargin);
@@ -12,6 +13,15 @@ if ~isempty(args.frames)
   i2=find(frame<=args.frames(2),1,'last');
   snap=snap(i1:i2);
   fprintf('Showing snap(%d:%d)\n', i1, i2);
+end
+if isempty(args.trackid) & args.minage>1
+  % Only show tracks that were visible for minage samples
+  tid=[];
+  for i=1:length(snap)
+    tid=[tid,snap(i).tracker.tracks([snap(i).tracker.tracks.age]>=args.minage).id];
+  end
+  args.trackid=unique(tid);
+  fprintf('Showing track IDS %s\n', sprintf('%d ',args.trackid));
 end
 frame=arrayfun(@(z) z.vis.frame,snap);
 
