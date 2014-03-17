@@ -57,6 +57,14 @@ end
 
 for ii=1:length(notbg)
   i=notbg(ii);
+  % Check if it is an isolated point (noise)
+  if (i==1 || abs(vis.range(i-1)-vis.range(i))>args.maxtgtsep) && ...
+     (i==length(vis.range) || abs(vis.range(i+1)-vis.range(i))>args.maxtgtsep)
+    if args.debug
+      fprintf('Marking point %d as noise\n', i);
+    end
+    class(i)=NOISE;
+  end
   % See if a point would be shadowed on the left or right
   if i>1 && vis.range(i-1)<vis.range(i) && class(i-1)~=class(i)
     shadowed(i,1)=true;
