@@ -4,7 +4,7 @@
 % displays the frame  in their respective video players. 
 
 function vp=videotracks(snap,vp,speedFactor)
-  winbounds=[-5,5,-0.5,5];
+  winbounds=[-5.1,5.1,-0.5,5.1];
   if nargin<2
     width=800;
     height=round((winbounds(4)-winbounds(3))/(winbounds(2)-winbounds(1))*width);
