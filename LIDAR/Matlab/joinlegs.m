@@ -36,7 +36,6 @@ for i=1:length(classes)
     if sep<args.maxlegsep+args.minlegdiam
       if args.debug
         fprintf('Classes %d and %d are separated by %.2f, so could be 2 legs\n', c1,c2, sep);
-        keyboard
       end
       matchup(i,j)=sep;
     end
