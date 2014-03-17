@@ -50,11 +50,12 @@ for ii=1:length(notbg)
       end
     end
   end
-    if i>1 && vis.range(i-1)<vis.range(i) && class(i-1)~=class(i) && class(i-1)~=BACKGROUND
-      shadowed(i,1)=true;
-    end
-    if i<length(vis.range) && vis.range(i+1)<vis.range(i) && class(i+1)~=class(i) && class(i+1)~=BACKGROUND
-      shadowed(i,2)=true;
+  % See if a point would be shadowed on the left or right
+  if i>1 && vis.range(i-1)<vis.range(i) && class(i-1)~=class(i)
+    shadowed(i,1)=true;
+  end
+  if i<length(vis.range) && vis.range(i+1)<vis.range(i) && class(i+1)~=class(i)
+    shadowed(i,2)=true;
   end
 end
 
