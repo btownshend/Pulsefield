@@ -1,6 +1,6 @@
 % Calculate bounding boxes and positions based on current classifications
 % Also pack class numbers to eliminate missing classes
-function vis=calcbboxes(vis)
+function vis=maketargets(vis)
 MAXSPECIAL=2;
 
 % Calculate centroids and bounding boxes, pack class numbers
