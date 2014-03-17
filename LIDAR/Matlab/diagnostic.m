@@ -122,7 +122,7 @@ if length(snap)>1
   for i=1:length(snap)
     ids=unique([ids,[snap(i).tracker.tracks.id]]);
   end
-  subplot(234);
+  subplot(235);
   for i=1:length(ids)
     idpresent=arrayfun(@(z) ismember(ids(i),[z.tracker.tracks.id]), snap);
     % Only present if there was also a measurement 
@@ -140,6 +140,9 @@ if length(snap)>1
     end
     hold on;
   end
+  c=axis;
+  c(3)=c(3)-0.1;c(4)=c(4)+0.1;
+  axis(c);
   ylabel('ID Presence');
   
   for i=1:length(ids)
@@ -168,24 +171,34 @@ if length(snap)>1
     plot(ploc(:,1),ploc(:,2),'b.-');
     hold on;
     plot(mloc(:,1),mloc(:,2),'g.-');
+    axis equal
+    c=axis;
     %plot(uloc(:,1),uloc(:,2),'r-');
     %    for k=1:size(ploc,1)
     %      plot([mloc(k,1),ploc(k,1)],[mloc(k,2),ploc(k,2)],'k');
     %    end
     %legend('predicted','measured','Location','SouthOutside');
     
-    subplot(232);
-    plot(frame,ploc(:,1),'b.-');
+    subplot(234);
+    plot(ploc(:,1),frame,'b.-');
     hold on;
-    plot(frame,mloc(:,1),'g.-');
-    xlabel('Frame');
+    plot(mloc(:,1),frame,'g.-');
+    cx=axis;
+    cx(1:2)=c(1:2);
+    axis(cx);
+    ylabel('Frame');
+    xlabel('X Position');
     title('X Position');
     
-    subplot(235)
+    subplot(232)
     plot(frame,ploc(:,2),'b.-');
     hold on;
     plot(frame,mloc(:,2),'g.-');
+    cy=axis;
+    cy(3:4)=c(3:4);
+    axis(cy);
     xlabel('Frame');
+    ylabel('YPosition');
     title('Y Position');
 
     subplot(233);
