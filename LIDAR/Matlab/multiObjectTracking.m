@@ -50,6 +50,7 @@ classdef multiObjectTracking < handle
     unassignedTracks;	% trackIDs for unassigned tracks
     unassignedDetections;	% Centroid indices for unassigned detections
     nextId;
+    maxrange;
   end
   
   methods
@@ -59,7 +60,7 @@ function obj = multiObjectTracking()
 % and displaying the results
   obj.initializeTracks(); % create an empty array of tracks
   obj.nextId = 1; % ID of the next track
-
+  obj.maxrange = 7;
 end
 
 % Clone this class
@@ -72,6 +73,7 @@ function c = clone(obj)
   c.unassignedTracks=obj.unassignedTracks;
   c.unassignedDetections=obj.unassignedDetections;
   c.nextId=obj.nextId;
+  c.maxrange=obj.maxrange;
   for i=1:length(c.tracks)
     c.tracks(i).kalmanFilter=c.tracks(i).kalmanFilter.clone();
   end
@@ -326,8 +328,11 @@ function deleteLostTracks(obj)
   % find the indices of 'lost' tracks
   lostInds = (ages < ageThreshold & visibility < 0.6) | ...
       [obj.tracks(:).consecutiveInvisibleCount] >= invisibleForTooLong;
-  
-  fl=find(lostInds);
+  outsideInds = arrayfun(@(z) ~isempty(z.predictedLoc) && (norm(z.predictedLoc) > obj.maxrange || z.predictedLoc(2)<0),obj.tracks);
+  if sum(outsideInds)>0
+    fprintf('Deleting %d tracks out of range\n', sum(outsideInds));
+  end
+  fl=find(lostInds|outsideInds);
   for i=1:length(fl)
     t=obj.tracks(fl(i));
     fprintf('Deleting track %d with age %d, total %d, consec invis %d\n', ...
@@ -335,7 +340,7 @@ function deleteLostTracks(obj)
   end
 
   % delete lost tracks
-  obj.tracks = obj.tracks(~lostInds);
+  obj.tracks = obj.tracks(~(lostInds|outsideInds));
 end
 
 %% Create New Tracks
