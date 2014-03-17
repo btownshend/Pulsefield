@@ -2,7 +2,8 @@
 function vis=joinlegs(vis,varargin)
 defaults=struct('maxlegdiam',0.3,...   % Maximum leg diameter
                 'minlegdiam',0.1,...   % Minimum
-                'maxlegsep',0.3,...    % Maximum space between 2 legs
+                'maxlegsep',0.4,...    % Maximum space between 2 legs
+                'divergence',11,...    % Divergence of beam in mrad (expands effective breadth of objects)
                 'debug',false...
                 );
 args=processargs(defaults,varargin);
@@ -14,9 +15,10 @@ for i=1:length(classes)
   c1=classes(i);
   p1=find(vis.class==c1);
   d1=norm(vis.xy(p1(1),:)-vis.xy(p1(end),:));
-  if d1>args.maxlegdiam;
+  maxleg=args.maxlegdiam+vis.range(p1(1))*args.divergence/1000;
+  if d1>maxleg
     if args.debug
-      fprintf('Class %d cannot be a single leg since its diameter = %.2f > %.2f\n',c1,d1,args.maxlegdiam);
+      fprintf('Class %d cannot be a single leg since its diameter = %.2f > %.2f\n',c1,d1,maxleg);
     end
     toobig(i)=true;
   end
@@ -31,7 +33,7 @@ for i=1:length(classes)
     c2=classes(j);
     p2=find(vis.class==c2);
     sep=min(norm(vis.xy(p1(1),:)-vis.xy(p2(end),:)), norm(vis.xy(p1(end),:)-vis.xy(p2(1),:)));
-    if sep<args.maxlegsep
+    if sep<args.maxlegsep+args.minlegdiam
       if args.debug
         fprintf('Classes %d and %d are separated by %.2f, so could be 2 legs\n', c1,c2, sep);
         keyboard
