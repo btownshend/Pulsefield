@@ -12,7 +12,7 @@ classdef Background < handle
 
     methods
       function bg=Background(vis,varargin)
-        defaults=struct('minsep',0.1,'tc',50*60,'minbgfreq',0.01,'maxrange',50,'debug',false);
+        defaults=struct('minsep',0.1,'tc',50*60,'minbgfreq',0.01,'maxrange',7,'debug',false);
         args=processargs(defaults,varargin);
         bg.angle=vis.angle;
         r=min(vis.range(:,1,:),args.maxrange); r=r(:);
