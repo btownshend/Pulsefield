@@ -72,14 +72,14 @@ for i=MAXSPECIAL+1:max(class)
   scanwidth=mean(vis.range(fsel([1,end])))*(vis.angle(2)-vis.angle(1));
   sz=norm(xy(fsel(1),:)-xy(fsel(end),:))+scanwidth;
   if sz<args.mintarget
-    if shadowed(fsel(1))&1
+    if shadowed(fsel(1),1)
       % Shadowed on the left, may not be noise
       if args.debug
         fprintf('Class %d (%d:%d) may be a target shadowed on the left\n', i, min(fsel),max(fsel));
       end
       continue;
     end
-    if shadowed(fsel(end))&2
+    if shadowed(fsel(end),2)
       if args.debug
         fprintf('Class %d (%d:%d) may be a target shadowed on the right\n', i, min(fsel),max(fsel));
       end

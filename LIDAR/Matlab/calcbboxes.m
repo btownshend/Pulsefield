@@ -21,7 +21,7 @@ for i=MAXSPECIAL+1:max(vis.class)
     pos(end+1,:)=lm.c1;
   end
   fsel=find(sel);
-  bounded(end+1)=~vis.shadowed(fsel(1)) && ~vis.shadowed(fsel(end));
+  bounded(end+1)=~vis.shadowed(fsel(1),1) && ~vis.shadowed(fsel(end),2);
   cnum=size(pos,1)+MAXSPECIAL;
   vis.class(vis.class==i)=cnum;
 end
