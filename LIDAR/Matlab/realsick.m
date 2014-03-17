@@ -23,7 +23,6 @@ tracker=multiObjectTracking();
 bg=[];
 iswaiting=false;
 snap=[];
-maxrange=5;      % Maximum range, everything beyond this ignored
 
 while true
   if exist('oldsnap','var')
@@ -54,7 +53,6 @@ while true
     fprintf('done\n');
   end
   iswaiting=false;
-  vis.range=min(vis.range(:,1,:),maxrange);
   if isfield(vis,'reflect')
     vis.reflect=vis.reflect(:,1,:);
   end

@@ -5,16 +5,17 @@ classdef Background < handle
       range;
       freq;
       minsep;
+      maxrange;
       tc;
       minbgfreq;
     end
 
     methods
       function bg=Background(vis,varargin)
-        defaults=struct('minsep',0.1,'tc',50*60,'minbgfreq',0.01,'debug',false);
+        defaults=struct('minsep',0.1,'tc',50*60,'minbgfreq',0.01,'maxrange',50,'debug',false);
         args=processargs(defaults,varargin);
         bg.angle=vis.angle;
-        r=vis.range(:,1,:); r=r(:);
+        r=min(vis.range(:,1,:),args.maxrange); r=r(:);
         for i=1:3
           bg.range(i,:)=r;
           bg.freq(i,:)=0*r;
@@ -23,11 +24,18 @@ classdef Background < handle
         bg.minsep=args.minsep;
         bg.tc=args.tc;
         bg.minbgfreq=args.minbgfreq;
+        bg.maxrange=args.maxrange;
       end
         
       function is=isbg(bg,vis)
         r=vis.range(:,1,:);r=r(:)';
-        is=abs(r-bg.range(1,:))<bg.minsep | (bg.freq(2,:) >bg.minbgfreq & abs(r-bg.range(2,:))<bg.minsep);
+        % One of the 2 most frequent ranges
+        is1=abs(r-bg.range(1,:))<bg.minsep | abs(r-bg.range(2,:))<bg.minsep;
+        bgs=[bg.range(1,:);bg.range(1,[1,1:end-1]);bg.range(1,[2:end,end])];
+        % AND, between adjacent most frequent ranges
+        % This way, the 2nd most frequent range is only used if there is a plausible reason for it (laser picking up near bg in some frames, far bg in others)
+        is2=(r+bg.minsep)>min(bgs,[],1) & (r-bg.minsep)<max(bgs,[],1);
+        is=(is1&is2)|r>=bg.maxrange;
       end
       
       function is=isoutside(bg,vis)
@@ -39,7 +47,8 @@ classdef Background < handle
         defaults=struct('debug',false);
         args=processargs(defaults,varargin);
         r=vis.range(:,1,:); r=r(:)';
-
+        r=min(r,bg.maxrange);
+        
         isbg(1,:)=abs(bg.range(1,:)-r) < bg.minsep;
         isbg(2,:)=~isbg(1,:) & abs(bg.range(2,:)-r) < bg.minsep;
         isbg(3,:)=~isbg(1,:) & ~isbg(2,:) & abs(bg.range(3,:)-r) < bg.minsep;
@@ -111,4 +120,5 @@ classdef Background < handle
       end
     end
    end
+
 end
