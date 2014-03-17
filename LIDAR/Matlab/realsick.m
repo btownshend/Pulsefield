@@ -59,7 +59,12 @@ while true
     vis.reflect=vis.reflect(:,1,:);
   end
 
-  bg=updatebg(bg,vis);
+  if isempty(bg)
+    bg=Background(vis);
+  else
+    bg.update(vis);
+  end
+
   vis=classify(vis,bg);
   vis=joinlegs(vis);
   vis=calcbboxes(vis);
@@ -76,7 +81,7 @@ while true
   if npredict>1
     fprintf('Skipping ahead %d frames\n', npredict);
   end
-  tracker.update(vis,bg,npredict,fps);
+  tracker.update(vis,npredict,fps);
   snap=[snap,struct('vis',vis,'bg',bg,'tracker',tracker.clone())];
   if length(snap)>1
     sendosc({'VD'},snap(end),snap(end-1));

@@ -45,7 +45,7 @@ setfig('diagnostic');clf;
 hold on;
 
 xy=range2xy(vis.angle,vis.range);
-bxy=range2xy(bg.angle,bg.range);
+bxy=range2xy(bg.angle,bg.range(1,:));
 
 col='gbcymk';
 plotted=false(size(vis.class));

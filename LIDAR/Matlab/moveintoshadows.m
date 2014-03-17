@@ -1,5 +1,5 @@
 % Move all tracker states that are invisible into the nearest shadow
-function tracker=moveintoshadows(tracker,vis,bg)
+function tracker=moveintoshadows(tracker,vis)
 for i=1:length(tracker.tracks)
   t=tracker.tracks(i);
   if t.consecutiveInvisibleCount>0

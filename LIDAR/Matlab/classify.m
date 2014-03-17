@@ -8,6 +8,7 @@ defaults=struct('maxtgtsep',0.2,...   % Max separation between points that are s
                 'maxbgsep',0.1,...    % Max distance from background to be considered part of background
                 'mintarget',0.13,...  % Minimum unshadowed target size (otherwise is noise)
                 'minrange',0.1,...    % Minimum range, less than this becomes noise (dirt on sensor glass)
+                'maxrange',5,...      % Maximum range, outside this is ignored
                 'debug',false...
                 );
 args=processargs(defaults,varargin);
@@ -22,29 +23,14 @@ xy=range2xy(vis.angle,vis.range);
 
 class=nan(length(vis.range),1);
 shadowed=false(length(vis.range),2);
-
-bgsep=abs(vis.range(1,1,:)-bg.range(1,1,:));
-isbg=bgsep<args.maxbgsep;
+isbg=bg.isbg(vis);
 class(isbg)=BACKGROUND;
-notbg=find(~isbg);
+isoutside=vis.range(1,1,:)>args.maxrange;isoutside=isoutside(:)';
+class(isoutside&~isbg)=OUTSIDE;
+notbg=find(~isbg&~isoutside);
 for ii=1:length(notbg)
   i=notbg(ii);
-  if i>1 && ((bg.range(i)<vis.range(i)) == (bg.range(i-1)>vis.range(i)))
-    % Current point is on a line joining adjacent background points
-    % TODO - sometimes more than 1 scanline error in background 
-    % e.g. bg= 5 5 5 10 10 10
-    % new scan=5 5 5 5  5   10
-    class(i)=BACKGROUND;
-  elseif i>length(vis.range) && ((bg.range(i)<vis.range(i)) == (bg.range(i+1)>vis.range(i)))
-    % Current point is on a line joining adjacent background points
-    class(i)=BACKGROUND;
-  elseif vis.range(i)>bg.range(i)
-    class(i)=OUTSIDE;
-  % elseif i>1 && norm(vis.range(i)-bg.range(i-1))<args.maxbgsep
-  %   class(i)=BACKGROUND;
-  % elseif i<length(vis.range) && norm(vis.range(i)-bg.range(i+1))<args.maxbgsep
-  %   class(i)=BACKGROUND;
-  elseif vis.range(i)<args.minrange
+  if vis.range(i)<args.minrange
     class(i)=NOISE;
   else
     % A target
@@ -64,18 +50,16 @@ for ii=1:length(notbg)
       end
     end
   end
-  if class(i)~=BACKGROUND
     if i>1 && vis.range(i-1)<vis.range(i) && class(i-1)~=class(i) && class(i-1)~=BACKGROUND
       shadowed(i,1)=true;
     end
     if i<length(vis.range) && vis.range(i+1)<vis.range(i) && class(i+1)~=class(i) && class(i+1)~=BACKGROUND
       shadowed(i,2)=true;
-    end
   end
 end
 
 if args.debug
-  fprintf('Classify: %d background, %d outside, %d noise, %d targets in %d classes\n', sum(class==0), sum(class==1), sum(class==2), sum(class>2), max(class)-MAXSPECIAL);
+  fprintf('Classify: %d background, %d outside, %d noise, %d targets in %d classes\n', sum(class==BACKGROUND), sum(class==OUTSIDE), sum(class==NOISE), sum(class>MAXSPECIAL), max(class)-MAXSPECIAL);
 end
 % Remove noise
 for i=MAXSPECIAL+1:max(class)

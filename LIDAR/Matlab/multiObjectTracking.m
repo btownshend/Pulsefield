@@ -77,13 +77,13 @@ function c = clone(obj)
   end
 end
 
-function update(obj,vis,bg,nsteps,fps)
+function update(obj,vis,nsteps,fps)
   centroids=vis.targets.pos;
   legs=vis.targets.legs;
   obj.predictNewLocationsOfTracks(nsteps);
   % Constraints
   obj.constrainVelocity(fps);
-  moveintoshadows(obj,vis,bg);
+  moveintoshadows(obj,vis);
   obj.detectionToTrackAssignment(centroids);
   obj.updateAssignedTracks(centroids,legs);
   obj.updateUnassignedTracks();

@@ -6,7 +6,7 @@ if nargin<3 || firsttime==0
 end
 tm=(snap.vis.when-firsttime)*24*3600;
 
-bxy=range2xy(snap.bg.angle,snap.bg.range);
+bxy=range2xy(snap.bg.angle,snap.bg.range(1,:));
 
 if mod(snap.vis.frame,100)==0
   oscmsgout(dests,'/pf/set/minx',{min(bxy(:,1))});
