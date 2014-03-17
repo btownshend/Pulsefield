@@ -65,7 +65,7 @@ while true
 
   vis=classify(vis,bg);
   vis=joinlegs(vis);
-  vis=calcbboxes(vis);
+  vis=maketargets(vis);
   if isempty(snap)
     npredict=1;
   else
