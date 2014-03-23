@@ -35,7 +35,7 @@ for j=1:length(jclasses)
       vis.shadowed(p(bkpt+1),1)=true;
     end
     if debug
-      fprintf('Split class %d with diameter>=%.2f, %d pts, into classes %d,%d at position %d, minbreak=%d, maxbreak=%d\n', c,norm(vis.xy(p(1),:)-vis.xy(p(end),:)),length(p),c,nextclass-1,bkpt,minbreak, maxbreak);
+      fprintf('Split class %d with diameter %.2f, %d pts, into classes %d,%d at position %d, minbreak=%d, maxbreak=%d\n', c,norm(vis.xy(p(1),:)-vis.xy(p(end),:)),length(p),c,nextclass-1,bkpt,minbreak, maxbreak);
     end
   end
 end
