@@ -19,7 +19,8 @@ if ~exist('oldsnap','var')
   oscmsgout('FE','/vis/set/echoes',{uint32(1)});
 end
 
-tracker=multiObjectTracking();
+%tracker=multiObjectTracking();
+tracker=World();
 bg=[];
 iswaiting=false;
 snap=[];
@@ -57,6 +58,8 @@ while true
     vis.reflect=vis.reflect(:,1,:);
   end
 
+  fprintf('\n*** Snap %d\n', length(snap)+1);
+  
   if isempty(bg)
     bg=Background(vis);
   else
@@ -64,8 +67,9 @@ while true
   end
 
   vis=classify(vis,bg);
-  vis=joinlegs(vis);
-  vis=maketargets(vis);
+  vis=splitclasses(vis,0.25);  % TODO: this and other constants should be collected up somewhere
+  %  vis=joinlegs(vis);
+  %  vis=maketargets(vis);
   if isempty(snap)
     npredict=1;
   else

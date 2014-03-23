@@ -17,11 +17,11 @@ end
 
 oscmsgout(dests,'/pf/frame',{int32(snap.vis.frame)});
 
-cid=[snap.tracker.tracks.id];
+cid=arrayfun(@(z) z.id, snap.tracker.tracks);
 if nargin<3
   pid=[];
 else
-  pid=[prevsnap.tracker.tracks.id];
+  pid=arrayfun(@(z) z.id, prevsnap.tracker.tracks);
 end
 
 for i=1:length(snap.tracker.tracks)
@@ -30,12 +30,8 @@ for i=1:length(snap.tracker.tracks)
     oscmsgout(dests,'/pf/entry',{int32(snap.vis.frame),tm,int32(t.id),int32(0)});
   end
   legs=t.legs;
-  if all(isfinite(legs.c2))
-    mmaxes=[norm(legs.c1-legs.c2)+2*legs.radius,2*legs.radius];
-  else
-    mmaxes=[2*legs.radius,2*legs.radius];
-  end
-  oscmsgout(dests,'/pf/update',{int32(snap.vis.frame),tm,int32(t.id),t.updatedLoc(1),t.updatedLoc(2),t.kalmanFilter.State(2),t.kalmanFilter.State(4),mmaxes(1),mmaxes(2),int32(0),int32(1),int32(0)});
+  mmaxes=[norm(diff(legs,1)),0]+t.legdiam;
+  oscmsgout(dests,'/pf/update',{int32(snap.vis.frame),tm,int32(t.id),t.position(1),t.position(2),t.velocity(1),t.velocity(2),mmaxes(1),mmaxes(2),int32(0),int32(1),int32(0)});
 end
 
 lost=setdiff(pid,cid);

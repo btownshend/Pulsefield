@@ -25,27 +25,6 @@ if isempty(args.trackid) & args.minage>1
 end
 frame=arrayfun(@(z) z.vis.frame,snap);
 
-if length(snap)>1
-  % Calculate tracker stats
-  alls=[];allc=[];
-  for i=1:length(snap)
-    t=snap(i).tracker;
-    for j=1:length(t.tracks)
-      if t.tracks(j).age>10 && (isempty(args.trackid) || ismember(t.tracks(j).id,args.trackid))
-        k=t.tracks(j).kalmanFilter;
-        alls(:,end+1)=k.State;
-        allc(:,end+1)=diag(k.StateCovariance);
-      end
-    end
-  end
-  fprintf('Tracker state position sigma: state:(%.2f, %.2f, %.2f, %.2f), cov:(%.2f, %.2f, %.2f, %.2f)\n', sqrt(mean(alls.^2,2)),sqrt(mean(allc,2)));
-  setfig('statecov');clf;
-  plot(sqrt(allc)');
-  legend('px','vx','py','vy');
-  ylabel('Sigma');
-  xlabel('Sample');
-end
-
 bg=snap(end).bg;
 vis=snap(end).vis;
 tracker=snap(end).tracker;
@@ -61,47 +40,29 @@ col='gbcymk';
 plotted=false(size(vis.class));
 for i=1:length(tracker.tracks)
   t=tracker.tracks(i);
-  k=t.kalmanFilter;
-  loc=t.updatedLoc;
-  vel=k.State([2,4])';
-  if ~isempty(t.predictedLoc) && ~isempty(t.measuredLoc)
-    error=norm(t.predictedLoc-t.measuredLoc);
-  else
-    error=nan;
-  end
-  fprintf('Track %d: MSE=%.3f age=%d, visCount=%d, consInvis=%d, loc=(%.2f,%.2f), velocity=(%.2f,%.2f), legs=(%.2f,(%.2f,%.2f),(%.2f,%.2f))\n', t.id, sqrt(mean(error.^2)), t.age, t.totalVisibleCount, t.consecutiveInvisibleCount, t.updatedLoc, vel, t.legs.radius,t.legs.c1,t.legs.c2);
+  loc=t.position;
+  vel=t.velocity;
+  fprintf('%s\n', t.tostring());
   color=col(min(i,length(col)));
   % plot(t.updatedLoc(1),t.updatedLoc(2),['+',color]);
-  if ~isempty(t.predictedLoc)
-    plot(t.predictedLoc(1),t.predictedLoc(2),['x',color]);
-  end
-  if ~isempty(t.measuredLoc)
-    plot(t.measuredLoc(1),t.measuredLoc(2),['o',color]);
-  end
-  asel=tracker.assignments(:,1)==t.id;
-  if sum(asel)==1
-    det=tracker.assignments(asel,2);
-    cnum=det+2;
-    fprintf('det=%d, class=%d, npts=%d\n',det,cnum,sum(vis.class==cnum));
-    plot(vis.targets.pos(det,1),vis.targets.pos(det,2),['x',color]);
-    sel=vis.class==cnum;
-    lsel=sel& (vis.leg==2);
-    rsel=sel& (vis.leg==1);
-    osel=sel&~lsel&~rsel;
-    plot(xy(osel,1),xy(osel,2),['.',color]);
-    plot(xy(lsel,1),xy(lsel,2),['<',color]);
-    plot(xy(rsel,1),xy(rsel,2),['>',color]);
-    plotted=plotted|sel;
+  plot(t.position(1),t.position(2),['x',color]);
+  plot(t.legs(:,1),t.legs(:,2),['o',color]);
+  cnum=t.legclasses;
+  cnum(cnum==1)=nan;
+  %fprintf('class=(%d,%d), npts=(%d,%d)\n',cnum,sum(vis.class==cnum(1)),sum(vis.class==cnum(2)));
+  lsel=vis.class==cnum(1);
+  rsel=vis.class==cnum(2);
+  plot(xy(lsel,1),xy(lsel,2),['<',color]);
+  plot(xy(rsel,1),xy(rsel,2),['>',color]);
+  plotted=plotted|lsel|rsel;
+  for l=1:2
     % Draw legs
-    legs=vis.targets.legs(det);
+    leg=t.legs(l,:);
     angle=-pi:pi/20:pi;
-    [x,y]=pol2cart(angle,legs.radius);
-    x1=x+legs.c1(1);
-    y1=y+legs.c1(2);
-    plot(x1,y1,color);
-    x2=x+legs.c2(1);
-    y2=y+legs.c2(2);
-    plot(x2,y2,color);
+    [x,y]=pol2cart(angle,t.legdiam/2);
+    x=x+leg(1);
+    y=y+leg(2);
+    plot(x,y,color);
   end
 end
 if sum(~plotted)>0
@@ -130,15 +91,15 @@ if length(snap)>1
   setfig('diagnostic-tracks');clf;
   ids=[];
   for i=1:length(snap)
-    ids=unique([ids,[snap(i).tracker.tracks.id]]);
+    ids=unique([ids,arrayfun(@(z) z.id, snap(i).tracker.tracks)]);
   end
   subplot(235);
   for i=1:length(ids)
-    idpresent=arrayfun(@(z) ismember(ids(i),[z.tracker.tracks.id]), snap);
+    idpresent=arrayfun(@(z) ismember(ids(i),arrayfun(@(y) y.id, z.tracker.tracks)), snap);
     % Only present if there was also a measurement 
     for k=1:length(idpresent)
       if idpresent(k) 
-        idpresent(k)=~isempty(snap(k).tracker.tracks([snap(k).tracker.tracks.id]==ids(i)).measuredLoc);
+        idpresent(k)=~isempty(snap(k).tracker.tracks(arrayfun(@(y) y.id, snap(k).tracker.tracks)==ids(i)).position);
       end
     end
     idtmp=nan(1,length(snap));
@@ -160,39 +121,24 @@ if length(snap)>1
     if ~isempty(args.trackid) && ~ismember(id,args.trackid)
       continue;
     end
-    ploc=nan(length(snap),2);
-    mloc=ploc;
-    uloc=ploc;
-    vel=ploc;
+    loc=nan(length(snap),2);
+    vel=loc;
     for j=1:length(snap)
-      sel=[snap(j).tracker.tracks.id]==id;
+      sel=arrayfun(@(z) z.id, snap(j).tracker.tracks)==id;
       if sum(sel)>0
-        uloc(j,:)=snap(j).tracker.tracks(sel).updatedLoc;
-        if ~isempty(snap(j).tracker.tracks(sel).predictedLoc)
-          ploc(j,:)=snap(j).tracker.tracks(sel).predictedLoc;
-        end
-        if ~isempty(snap(j).tracker.tracks(sel).measuredLoc)
-          mloc(j,:)=snap(j).tracker.tracks(sel).measuredLoc;
-        end
-        vel(j,:)=snap(j).tracker.tracks(sel).kalmanFilter.State([2,4]);
+        loc(j,:)=snap(j).tracker.tracks(sel).position;
+        vel(j,:)=snap(j).tracker.tracks(sel).velocity;
       end
     end
     subplot(231);
-    plot(ploc(:,1),ploc(:,2),'b.-');
+    plot(loc(:,1),loc(:,2),'b.-');
     hold on;
-    plot(mloc(:,1),mloc(:,2),'g.-');
     axis equal
     c=axis;
-    %plot(uloc(:,1),uloc(:,2),'r-');
-    %    for k=1:size(ploc,1)
-    %      plot([mloc(k,1),ploc(k,1)],[mloc(k,2),ploc(k,2)],'k');
-    %    end
-    %legend('predicted','measured','Location','SouthOutside');
     
     subplot(234);
-    plot(ploc(:,1),frame,'b.-');
+    plot(loc(:,1),frame,'b.-');
     hold on;
-    plot(mloc(:,1),frame,'g.-');
     cx=axis;
     cx(1:2)=c(1:2);
     axis(cx);
@@ -201,14 +147,13 @@ if length(snap)>1
     title('X Position');
     
     subplot(232)
-    plot(frame,ploc(:,2),'b.-');
+    plot(frame,loc(:,2),'b.-');
     hold on;
-    plot(frame,mloc(:,2),'g.-');
     cy=axis;
     cy(3:4)=c(3:4);
     axis(cy);
     xlabel('Frame');
-    ylabel('YPosition');
+    ylabel('Y Position');
     title('Y Position');
 
     subplot(233);
