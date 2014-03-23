@@ -48,7 +48,11 @@ classdef World < handle
       for p=1:length(obj.tracks)
         like(p,:,:)=obj.tracks(p).getclasslike(vis);
         if obj.debug
-          fprintf('Person %2d: %s\n', obj.tracks(p).id, sprintf('%.1f ', like(p,:,:)));
+          fprintf('Person %2d: %s\n', obj.tracks(p).id);
+          for i=1:size(like,2)
+            fprintf('[%s] ',sprintf('%.1f ', like(p,i,:)));
+          end
+          fprintf('\n');
         end
       end
 
