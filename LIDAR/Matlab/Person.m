@@ -247,8 +247,8 @@ classdef Person < handle
       sxy=range2xy(srange,vis.angle);
       dist=(sxy(:,1)-otherlegpos(:,1)).^2 + (sxy(:,2)-otherlegpos(:,2)).^2;
       possible=dist<=maxdist+obj.legdiam/2;
-      ledges=find([0,~possible(1:end-1)]&possible);
-      redges=find(possible & [~possible(2:end),0]);
+      ledges=find([0;~possible(1:end-1)]&possible);
+      redges=find(possible & [~possible(2:end);0]);
       widths=(sxy(redges,1)-sxy(ledges,1)).^2+(sxy(redges,2)-sxy(ledges,2)).^2;
       epossible=find(widths>=obj.legdiam^2);
       
