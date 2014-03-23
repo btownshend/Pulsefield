@@ -4,38 +4,30 @@ classdef Background < handle
       angle;
       range;
       freq;
-      minsep;
-      maxrange;
-      tc;
-      minbgfreq;
     end
 
     methods
-      function bg=Background(vis,varargin)
-        defaults=struct('minsep',0.1,'tc',50*60,'minbgfreq',0.01,'maxrange',7,'debug',false);
-        args=processargs(defaults,varargin);
+      function bg=Background(vis)
+        params=getparams();
         bg.angle=vis.angle;
-        r=min(vis.range(:,1,:),args.maxrange); r=r(:);
+        r=min(vis.range(:,1,:),params.maxrange); r=r(:);
         for i=1:3
           bg.range(i,:)=r;
           bg.freq(i,:)=0*r;
         end
         bg.freq(1,:)=1;
-        bg.minsep=args.minsep;
-        bg.tc=args.tc;
-        bg.minbgfreq=args.minbgfreq;
-        bg.maxrange=args.maxrange;
       end
         
       function is=isbg(bg,vis)
+        params=getparams();
         r=vis.range(:,1,:);r=r(:)';
         % One of the 2 most frequent ranges
-        is1=abs(r-bg.range(1,:))<bg.minsep | abs(r-bg.range(2,:))<bg.minsep;
+        is1=abs(r-bg.range(1,:))<params.minbgsep | abs(r-bg.range(2,:))<params.minbgsep;
         bgs=[bg.range(1,:);bg.range(1,[1,1:end-1]);bg.range(1,[2:end,end])];
         % AND, between adjacent most frequent ranges
         % This way, the 2nd most frequent range is only used if there is a plausible reason for it (laser picking up near bg in some frames, far bg in others)
-        is2=(r+bg.minsep)>min(bgs,[],1) & (r-bg.minsep)<max(bgs,[],1);
-        is=(is1&is2)|r>=bg.maxrange;
+        is2=(r+params.minbgsep)>min(bgs,[],1) & (r-params.minbgsep)<max(bgs,[],1);
+        is=(is1&is2)|r>=params.maxrange;
       end
       
       function is=isoutside(bg,vis)
@@ -46,22 +38,23 @@ classdef Background < handle
       function update(bg,vis,varargin)
         defaults=struct('debug',false);
         args=processargs(defaults,varargin);
+        params=getparams();
         r=vis.range(:,1,:); r=r(:)';
-        r=min(r,bg.maxrange);
+        r=min(r,params.maxrange);
         
-        isbg(1,:)=abs(bg.range(1,:)-r) < bg.minsep;
-        isbg(2,:)=~isbg(1,:) & abs(bg.range(2,:)-r) < bg.minsep;
-        isbg(3,:)=~isbg(1,:) & ~isbg(2,:) & abs(bg.range(3,:)-r) < bg.minsep;
+        isbg(1,:)=abs(bg.range(1,:)-r) < params.minbgsep;
+        isbg(2,:)=~isbg(1,:) & abs(bg.range(2,:)-r) < params.minbgsep;
+        isbg(3,:)=~isbg(1,:) & ~isbg(2,:) & abs(bg.range(3,:)-r) < params.minbgsep;
 
         % Averaging for closest matched bg
         for i=1:size(bg.range,1)
-          bg.range(i,isbg(i,:))=r(isbg(i,:))/bg.tc+bg.range(i,isbg(i,:))*(1-1/bg.tc);
-          bg.freq(i,:)=(bg.freq(i,:)*(bg.tc-1)+isbg(i,:))/bg.tc;
+          bg.range(i,isbg(i,:))=r(isbg(i,:))/params.tc+bg.range(i,isbg(i,:))*(1-1/params.tc);
+          bg.freq(i,:)=(bg.freq(i,:)*(params.tc-1)+isbg(i,:))/params.tc;
         end
 
         % Reset bg3 if there are no matches
         newpt=not(any(isbg,1));
-        bg.freq(end,newpt)=1/bg.tc;   % Reset count if we're not close to new background
+        bg.freq(end,newpt)=1/params.tc;   % Reset count if we're not close to new background
         bg.range(end,newpt)=r(newpt);   % Reset to current position for points far from any of the three
 
         % Swap things when bg(n) frequency is higher than bg(n-1)
@@ -78,8 +71,9 @@ classdef Background < handle
     end
     
     function test(bg,snap,minfreq)
+      params=getparams();
       if nargin<3
-        minfreq=bg.minbgfreq;
+        minfreq=params.minbgfreq;
       end
       col='rgb';
       for s=1:100:length(snap)-99
@@ -112,7 +106,7 @@ classdef Background < handle
         for i=1:3
           semilogy(bg.angle,bg.freq(i,:),col(i));
           hold on;
-          plot(bg.angle([1,end]),bg.minbgfreq*[1,1],':');
+          plot(bg.angle([1,end]),params.minbgfreq*[1,1],':');
         end
         title('Frequency');
         suptitle(sprintf('After snap %d',s));

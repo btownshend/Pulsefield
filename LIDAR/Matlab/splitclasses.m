@@ -1,6 +1,8 @@
 % Split excessively large classes
 function vis=splitclasses(vis,maxsize)
 debug=true;
+params=getparams();
+maxsize=params.maxclasssize;
 MAXSPECIAL=2;
 jclasses=unique(vis.class(vis.class>MAXSPECIAL));
 nextclass=max(jclasses)+1;

@@ -25,6 +25,7 @@ classdef Person < handle
       if nargin<1
         return;   % For cloning
       end
+      params=getparams();
       
       obj.debug=true;
       if obj.debug
@@ -51,7 +52,7 @@ classdef Person < handle
 
       obj.prevlegs=obj.legs;
       obj.position=mean(obj.legs,1);
-      obj.posvar=0.1^2*[1,1];
+      obj.posvar=params.initialPositionVar*[1,1];
       obj.velocity=[0,0];
       obj.legvelocity=zeros(2,2);
       obj.leftness=0.0;
@@ -78,20 +79,21 @@ classdef Person < handle
     end
       
     function predict(obj,nstep,fps)
+      params=getparams();
       obj.prevlegs=obj.legs;
       for i=1:2
         obj.legs(i,:)=obj.legs(i,:)+obj.legvelocity(i,:)*nstep/fps;
       end
       obj.position=mean(obj.legs,1);
       obj.velocity=mean(obj.legvelocity,1);
-      obj.posvar=obj.posvar+0.1^2*nstep;	% Amount of drift per unit step
+      obj.posvar=obj.posvar+params.driftVar*nstep;	% Amount of drift per unit step
     end
     
     function [like,p1,p2]=getclasslike(obj,vis)
     % Compute like(i,j) which is likelihood that class i is leg1, class j is leg 2
     % like(i,1) and like(i,j) represents leg not being visible (shadowed)
+      params=getparams();
       MAXSPECIAL=2;
-      hiddenPenalty=1;   % Extra log like for matching a shadowed point
       classes=unique(vis.class);
       classes=[1;classes(classes>MAXSPECIAL)];
       like=inf(max(classes),max(classes));
@@ -135,10 +137,10 @@ classdef Person < handle
           l1=normlike([0,sqrt(obj.posvar(1))],norm(p1-obj.legs(1,:)));
           l2=normlike([0,sqrt(obj.posvar(2))],norm(p2-obj.legs(2,:)));
           if i==1
-            l1=l1+hiddenPenalty;
+            l1=l1+params.hiddenPenalty;
           end
           if j==1
-            l2=l2+hiddenPenalty;
+            l2=l2+params.hiddenPenalty;
           end
          like(i,j)=l1+l2;
         end
@@ -147,6 +149,7 @@ classdef Person < handle
       
     function update(obj, vis, i,j, nstep,fps);
     % Update positions of object using vis with legs assigned to classes i,j
+      params=getparams();
       obj.legclasses=[i,j];
       if i~=1
         obj.legs(1,:)=obj.circmodel(vis,i,true);
@@ -161,10 +164,10 @@ classdef Person < handle
         obj.legs(2,:)=obj.nearestshadowed(vis,obj.legs(1,:),obj.maxlegsep+obj.legdiam,obj.legs(2,:));
       end
       if i~=1
-        obj.posvar(1)=0.1^2;   % Locked down again
+        obj.posvar(1)=params.initialPositionVar;   % Locked down again
       end
       if j~=1
-        obj.posvar(2)=0.1^2;
+        obj.posvar(2)=params.initialPositionVar;
       end
       newpos=mean(obj.legs,1);
       % Update velocity

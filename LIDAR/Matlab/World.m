@@ -29,6 +29,7 @@ classdef World < handle
     end
     
     function update(obj,vis,nsteps,fps)
+      params=getparams();
       obj.predict(nsteps,fps);
       
       MAXSPECIAL=2;
@@ -93,7 +94,7 @@ classdef World < handle
           dist=sqrt((center(:,1)-center(i,1)).^2+(center(:,2)-center(i,2)).^2);
           dist(i)=inf;
           [closest,j] = min(dist);
-          if ~isempty(closest) && closest<0.5  % TODO: Gather up this constant
+          if ~isempty(closest) && closest<params.newPersonPairMaxDist
             obj.tracks=[obj.tracks,Person(obj.nextid,vis,otherclasses(i),otherclasses(j))];
             obj.nextid=obj.nextid+1;
             otherclasses(j)=nan;
@@ -113,9 +114,7 @@ classdef World < handle
       if isempty(obj.tracks)
         return;
       end
-      
-      invisibleForTooLong = 50;
-      ageThreshold = 20;
+      params=getparams();
       
       % compute the fraction of the track's age for which it was visible
       ages = [obj.tracks(:).age];
@@ -123,8 +122,8 @@ classdef World < handle
       visibility = totalVisibleCounts ./ ages;
       
       % find the indices of 'lost' people
-      lostInds = (ages < ageThreshold & visibility < 0.6) | ...
-          [obj.tracks(:).consecutiveInvisibleCount] >= invisibleForTooLong;
+      lostInds = (ages < params.ageThreshold & visibility < params.minVisibility) | ...
+          [obj.tracks(:).consecutiveInvisibleCount] >= params.invisibleForTooLong;
       outsideInds = arrayfun(@(z) ~isempty(z.position) && (norm(z.position) > obj.maxrange || z.position(2)<0),obj.tracks);
       if sum(outsideInds)>0
         fprintf('Deleting %d people out of range\n', sum(outsideInds));

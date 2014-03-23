@@ -67,7 +67,6 @@ while true
   end
 
   vis=classify(vis,bg);
-  vis=splitclasses(vis,0.25);  % TODO: this and other constants should be collected up somewhere
   vis=splitclasses(vis);
   if isempty(snap)
     npredict=1;
