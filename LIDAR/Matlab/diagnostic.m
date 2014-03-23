@@ -7,6 +7,18 @@ defaults=struct('trackid',[],...   % Only show these trackids
                 );
 args=processargs(defaults,varargin);
 
+if isempty(args.trackid) & args.minage>1
+  % Only show tracks that were visible for minage samples
+  tid=[];
+  for i=1:length(snap)
+    if ~isempty(snap(i).tracker.tracks)
+      tid=[tid,snap(i).tracker.tracks(arrayfun(@(z) z.age, snap(i).tracker.tracks)>=args.minage).id];
+    end
+  end
+  args.trackid=unique(tid);
+  fprintf('Showing track IDS %s\n', sprintf('%d ',args.trackid));
+end
+
 if ~isempty(args.frames)
   frame=arrayfun(@(z) z.vis.frame, snap);
   i1=find(frame>=args.frames(1),1);
@@ -14,15 +26,7 @@ if ~isempty(args.frames)
   snap=snap(i1:i2);
   fprintf('Showing snap(%d:%d)\n', i1, i2);
 end
-if isempty(args.trackid) & args.minage>1
-  % Only show tracks that were visible for minage samples
-  tid=[];
-  for i=1:length(snap)
-    tid=[tid,snap(i).tracker.tracks([snap(i).tracker.tracks.age]>=args.minage).id];
-  end
-  args.trackid=unique(tid);
-  fprintf('Showing track IDS %s\n', sprintf('%d ',args.trackid));
-end
+
 frame=arrayfun(@(z) z.vis.frame,snap);
 
 bg=snap(end).bg;
@@ -36,14 +40,15 @@ hold on;
 xy=range2xy(vis.angle,vis.range);
 bxy=range2xy(bg.angle,bg.range(1,:));
 
-col='gbcymk';
+colors='gbcymk';
 plotted=false(size(vis.class));
 for i=1:length(tracker.tracks)
   t=tracker.tracks(i);
+  id=t.id;
   loc=t.position;
   vel=t.velocity;
   fprintf('%s\n', t.tostring());
-  color=col(min(i,length(col)));
+  color=colors(mod(id-1,length(colors))+1);
   % plot(t.updatedLoc(1),t.updatedLoc(2),['+',color]);
   plot(t.position(1),t.position(2),['x',color]);
   plot(t.legs(:,1),t.legs(:,2),['o',color]);
@@ -118,27 +123,30 @@ if length(snap)>1
   
   for i=1:length(ids)
     id=ids(i);
+    color=colors(mod(id-1,length(colors))+1);
     if ~isempty(args.trackid) && ~ismember(id,args.trackid)
       continue;
     end
-    loc=nan(length(snap),2);
-    vel=loc;
+    loc=nan(length(snap),2,2);
+    vel=nan(length(snap),2);
     for j=1:length(snap)
       sel=arrayfun(@(z) z.id, snap(j).tracker.tracks)==id;
       if sum(sel)>0
-        loc(j,:)=snap(j).tracker.tracks(sel).position;
+        loc(j,:,:)=snap(j).tracker.tracks(sel).legs;
         vel(j,:)=snap(j).tracker.tracks(sel).velocity;
       end
     end
     subplot(231);
-    plot(loc(:,1),loc(:,2),'b.-');
+    plot(loc(:,1,1),loc(:,1,2),[color,'.-']);
     hold on;
+    plot(loc(:,2,1),loc(:,2,2),[color,'.-']);
     axis equal
     c=axis;
     
     subplot(234);
-    plot(loc(:,1),frame,'b.-');
+    plot(loc(:,1,1),frame,[color,'.-']);
     hold on;
+    plot(loc(:,2,1),frame,[color,'.-']);
     cx=axis;
     cx(1:2)=c(1:2);
     axis(cx);
@@ -147,8 +155,9 @@ if length(snap)>1
     title('X Position');
     
     subplot(232)
-    plot(frame,loc(:,2),'b.-');
+    plot(frame,loc(:,1,2),[color,'.-']);
     hold on;
+    plot(frame,loc(:,2,2),[color,'.-']);
     cy=axis;
     cy(3:4)=c(3:4);
     axis(cy);
@@ -158,13 +167,13 @@ if length(snap)>1
 
     subplot(233);
     [heading,speed]=cart2pol(vel(:,1),vel(:,2));
-    plot(frame,heading*180/pi,'b.-');
+    plot(frame,heading*180/pi,[color,'.-']);
     hold on;
     xlabel('Frame');
     title('Heading');
     
     subplot(236)
-    plot(frame,speed,'b.-');
+    plot(frame,speed,[color,'.-']);
     hold on;
     xlabel('Frame');
     title('Speed');
