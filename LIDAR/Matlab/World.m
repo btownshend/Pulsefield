@@ -65,8 +65,10 @@ classdef World < handle
         like(p,:,:)=inf;
         if i>1
           like(:,i,:)=inf;
+          like(:,:,i)=inf;
         end
         if j>1
+          like(:,j,:)=inf;
           like(:,:,j)=inf;
         end
       end
