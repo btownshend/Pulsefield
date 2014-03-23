@@ -81,13 +81,27 @@ classdef World < handle
       otherclasses=otherclasses(otherclasses>MAXSPECIAL);
       if ~isempty(otherclasses)
         for i=1:length(otherclasses)
+          center(i,:)=mean(vis.xy(vis.class==otherclasses(i),:),1);
+          fprintf('Class %d at (%.2f,%.2f) not assigned.\n', otherclasses(i), center(i,:));
+        end
+        for i=1:length(otherclasses)
+          if isnan(otherclasses(i))
+            % Already consumed
+            continue;
+          end
           sel=vis.class==otherclasses(i);
-          fprintf('Class %d at (%.2f,%.2f) not assigned. ', otherclasses(i), mean(vis.xy(sel,:),1));
-          if all(vis.xy(sel,2))>0 && all(vis.range(sel)<obj.maxrange)
+          dist=sqrt((center(:,1)-center(i,1)).^2+(center(:,2)-center(i,2)).^2);
+          dist(i)=inf;
+          [closest,j] = min(dist);
+          if ~isempty(closest) && closest<0.5  % TODO: Gather up this constant
+            obj.tracks=[obj.tracks,Person(obj.nextid,vis,otherclasses(i),otherclasses(j))];
+            obj.nextid=obj.nextid+1;
+            otherclasses(j)=nan;
+          elseif all(vis.xy(sel,2))>0 && all(vis.range(sel)<obj.maxrange)
             obj.tracks=[obj.tracks,Person(obj.nextid,vis,otherclasses(i))];
             obj.nextid=obj.nextid+1;
           else
-            fprintf('Ignoring since it is partially out of range\n');
+            fprintf('Ignoring class %d since it is solitary and partially out of range\n',otherclasses(i));
           end
         end
       end
