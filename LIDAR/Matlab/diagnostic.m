@@ -34,7 +34,7 @@ vis=snap(end).vis;
 tracker=snap(end).tracker;
 MAXSPECIAL=2;
 fprintf('\n');
-setfig('diagnostic');clf;
+setfig(sprintf('Frame %d',snap(end).vis.frame));clf;
 hold on;
 
 xy=range2xy(vis.angle,vis.range);
