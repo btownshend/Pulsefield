@@ -3,6 +3,8 @@ classdef Person < handle
     id; 	% ID of person
     position; 	% Position of core (hips)
     legs;   	% Coordinates of legs;  legs(1,:)=left, legs(2,:)=right
+    prevlegs;	% Previous leg coordinates
+    legvelocity;% Velocity of each leg
     legclasses;	% Classes assigned to legs
     posvar;	% Estimated variance of position of legs 
     velocity;   % Overall velocity
@@ -11,6 +13,7 @@ classdef Person < handle
     maxlegsep;	% Maximum separation of leg centers
     leftness;	% Fraction of time leg(1) is on the left side of direction of motion
     maxmovement;% Maximum amount of movement per updated
+    maxlegspeed;% Maximum speed of a leg in m/s
     age;
     consecutiveInvisibleCount;
     totalVisibleCount;
@@ -46,21 +49,24 @@ classdef Person < handle
         obj.legclasses=[class1,1];
       end
 
+      obj.prevlegs=obj.legs;
       obj.position=mean(obj.legs,1);
       obj.posvar=0.1^2*[1,1];
       obj.velocity=[0,0];
+      obj.legvelocity=zeros(2,2);
       obj.leftness=0.0;
       obj.age=1;
       obj.consecutiveInvisibleCount=0;
       obj.totalVisibleCount=1;
       obj.maxmovement=1;
+      obj.maxlegspeed=3;  % m/s
       if obj.debug
         fprintf('Created %s\n',obj.tostring());
       end
     end
     
     function s=tostring(obj)
-      s=sprintf('P%d at (%.2f,%.2f) with legs at (%.2f,%.2f)[%d], (%.2f,%.2f)[%d] posstd=(%.2f,%.2f), age=%d,cic=%d,tvc=%d\n', obj.id, obj.position,obj.legs(1,:), obj.legclasses(1), obj.legs(2,:),obj.legclasses(2), sqrt(obj.posvar),obj.age,obj.consecutiveInvisibleCount,obj.totalVisibleCount);
+      s=sprintf('P%d at (%.2f,%.2f) with legs at (%.2f,%.2f)[%d], (%.2f,%.2f)[%d]; vel=(%.2f,%.2f),(%.2f,%.2f) posstd=(%.2f,%.2f), age=%d,cic=%d,tvc=%d\n', obj.id, obj.position,obj.legs(1,:), obj.legclasses(1), obj.legs(2,:),obj.legclasses(2), obj.legvelocity(1,:), obj.legvelocity(2,:),sqrt(obj.posvar),obj.age,obj.consecutiveInvisibleCount,obj.totalVisibleCount);
     end
 
     function p=clone(obj)
@@ -71,12 +77,13 @@ classdef Person < handle
       end
     end
       
-    function predict(obj,nstep)
-      oldpos=obj.position;
-      obj.position=obj.position+obj.velocity*nstep;
+    function predict(obj,nstep,fps)
+      obj.prevlegs=obj.legs;
       for i=1:2
-        obj.legs(i,:)=obj.legs(i,:)+obj.velocity*nstep;
+        obj.legs(i,:)=obj.legs(i,:)+obj.legvelocity(i,:)*nstep/fps;
       end
+      obj.position=mean(obj.legs,1);
+      obj.velocity=mean(obj.legvelocity,1);
       obj.posvar=obj.posvar+0.1^2*nstep;	% Amount of drift per unit step
     end
     
@@ -138,7 +145,7 @@ classdef Person < handle
       end
     end
       
-    function update(obj, vis, i,j);
+    function update(obj, vis, i,j, nstep,fps);
     % Update positions of object using vis with legs assigned to classes i,j
       obj.legclasses=[i,j];
       if i~=1
@@ -160,11 +167,28 @@ classdef Person < handle
         obj.posvar(2)=0.1^2;
       end
       newpos=mean(obj.legs,1);
+      % Update velocity
+      obj.legvelocity=(obj.legs-obj.prevlegs)/(nstep/fps);   % TODO: could filter this
+      for k=1:2
+        spd=norm(obj.legvelocity(k,:));
+        if spd>obj.maxlegspeed
+          if obj.debug
+            fprintf('P%d: Reducing leg%d speed from %.2f to %.2f\n', obj.id, k, spd, obj.maxlegspeed);
+          end
+          obj.legvelocity(k,:)=obj.legvelocity(k,:)/spd*obj.maxlegspeed;
+        end
+      end
+      fprintf('left =(%.2f,%.2f)->(%.2f,%.2f) nstep=%d, vel=(%.2f,%.2f)\n',obj.prevlegs(1,:),obj.legs(1,:),nstep,obj.legvelocity(1,:));
+      fprintf('right=(%.2f,%.2f)->(%.2f,%.2f) nstep=%d, vel=(%.2f,%.2f)\n',obj.prevlegs(2,:),obj.legs(2,:),nstep,obj.legvelocity(2,:));
+      obj.velocity=mean(obj.legvelocity,1);
+
       delta=newpos-obj.position;
       obj.leftness=obj.leftness*0.99+0.01*dot([-delta(2),delta(1)],diff(obj.legs,1));
-      if obj.leftness<0.0
+      if false && obj.leftness<0.0
+        % TODO: this causes the tracks to flip too often
         fprintf('Person %d: swapping legs: leftness=%.2f\n', obj.id, obj.leftness);
         obj.legs=obj.legs([2,1],:);
+        obj.legvelocity=obj.legvelocity([2,1],:);
         obj.leftness=-obj.leftness;
       end
       obj.position=newpos;
@@ -175,7 +199,9 @@ classdef Person < handle
         obj.totalVisibleCount=obj.totalVisibleCount+1;
       end
       obj.age=obj.age+1;
-      % TODO: update velocity
+      if obj.debug
+        fprintf('Updated %s\n', obj.tostring());
+      end
     end
 
     function pos=nearestshadowed(obj,vis,otherlegpos,maxdist,targetpos)
@@ -184,10 +210,18 @@ classdef Person < handle
     % Should also be as close to targetpos as possible
       pos=targetpos;
       if norm(otherlegpos-pos) > maxdist
-        fprintf('Target position (%.2f,%.2f) is more than %.2f from other leg at (%.2f,%.2f)\n',pos, norm(pos-otherlegpos), otherlegpos);
+        fprintf('Target position (%.2f,%.2f) is too far (%.2fm) from other leg at (%.2f,%.2f)\n',pos, norm(pos-otherlegpos), otherlegpos);
         dir=pos-otherlegpos;  dir=dir/norm(dir);
         % Move as far as we can from other leg
         pos=otherlegpos+dir*maxdist;
+        fprintf(' Moved to (%.2f,%.2f)\n', pos);
+      end
+      
+      if norm(otherlegpos-pos) < obj.legdiam
+        fprintf('Target position (%.2f,%.2f) is too close (%.2fm) from other leg at (%.2f,%.2f)\n',pos, norm(pos-otherlegpos), otherlegpos);
+        dir=pos-otherlegpos;  dir=dir/norm(dir);
+        % Move as far as we can from other leg
+        pos=otherlegpos+dir*obj.legdiam;
         fprintf(' Moved to (%.2f,%.2f)\n', pos);
       end
       

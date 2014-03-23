@@ -22,14 +22,14 @@ classdef World < handle
       w.nextid=obj.nextid;
     end
       
-    function predict(obj,nsteps)
+    function predict(obj,nsteps,fps)
       for i=1:length(obj.tracks)
-        obj.tracks(i).predict(nsteps);
+        obj.tracks(i).predict(nsteps,fps);
       end
     end
     
     function update(obj,vis,nsteps,fps)
-      obj.predict(nsteps);
+      obj.predict(nsteps,fps);
       
       MAXSPECIAL=2;
       maxclass=max([1;vis.class]);
@@ -58,7 +58,7 @@ classdef World < handle
         [minlike,maxind]=min(like(:));
         [p,i,j]=ind2sub(size(like),maxind);
         assign(p,:)=[i,j];
-        obj.tracks(p).update(vis,i,j);
+        obj.tracks(p).update(vis,i,j,nsteps,fps);
         if obj.debug
           fprintf('Assigned classes %d,%d to person %d with loglike=%f\n', i,j,obj.tracks(p).id,-minlike);
         end
