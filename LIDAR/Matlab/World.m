@@ -11,7 +11,7 @@ classdef World < handle
       obj.tracks=[];
       obj.nextid=1;
       obj.maxrange=7;
-      obj.debug=true;
+      obj.debug=false;
     end
 
     function w=clone(obj)
@@ -83,7 +83,9 @@ classdef World < handle
       if ~isempty(otherclasses)
         for i=1:length(otherclasses)
           center(i,:)=mean(vis.xy(vis.class==otherclasses(i),:),1);
-          fprintf('Class %d at (%.2f,%.2f) not assigned.\n', otherclasses(i), center(i,:));
+          if obj.debug
+            fprintf('Class %d at (%.2f,%.2f) not assigned.\n', otherclasses(i), center(i,:));
+          end
         end
         for i=1:length(otherclasses)
           if isnan(otherclasses(i))
