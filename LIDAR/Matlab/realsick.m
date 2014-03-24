@@ -82,7 +82,7 @@ while true
     fprintf('Skipping ahead %d frames\n', npredict);
   end
   tracker.update(vis,npredict,fps);
-  snap=[snap,struct('vis',vis,'bg',bg,'tracker',tracker.clone())];
+  snap=[snap,struct('vis',vis,'bg',bg.clone(),'tracker',tracker.clone())];
   if length(snap)>1
     sendosc({'VD'},snap(end),snap(end-1));
   else

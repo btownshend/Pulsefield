@@ -8,6 +8,9 @@ classdef Background < handle
 
     methods
       function bg=Background(vis)
+        if nargin<1
+          return;	% For empty constructor
+        end
         params=getparams();
         bg.angle=vis.angle;
         r=min(vis.range(:,1,:),params.maxrange); r=r(:);
@@ -16,6 +19,13 @@ classdef Background < handle
           bg.freq(i,:)=0*r;
         end
         bg.freq(1,:)=1;
+      end
+        
+      function bg=clone(obj)
+        bg=Background();
+        bg.angle=obj.angle;
+        bg.range=obj.range;
+        bg.freq=obj.freq;
       end
         
       function is=isbg(bg,vis)
