@@ -18,15 +18,20 @@ classdef Person < handle
   end
   
   methods
-    function obj=Person(id,vis,class1,class2);
+    function obj=Person(id,vis,class1,class2,debug);
       if nargin<1
         return;   % For cloning
       end
       params=getparams();
       
-      obj.debug=true;
+      if nargin<5
+        obj.debug=false;
+      else
+        obj.debug=debug;
+      end
+      
       if obj.debug
-        if nargin<4
+        if isempty(class2)
           fprintf('Creating person %d using class %d\n',id, class1);
         else
           fprintf('Creating person %d using classes %d,%d\n',id, class1,class2);
@@ -36,7 +41,7 @@ classdef Person < handle
       obj.legdiam=params.initlegdiam;
 
       obj.legs(1,:)=obj.circmodel(vis,class1,false);
-      if nargin>=4
+      if ~isempty(class2)
         obj.legs(2,:)=obj.circmodel(vis,class2,false);
         obj.legclasses=[class1,class2];
       else
@@ -170,7 +175,7 @@ classdef Person < handle
         spd=norm(obj.legvelocity(k,:));
         if spd>params.maxlegspeed
           if obj.debug
-            fprintf('P%d: Reducing leg%d speed from %.2f to %.2f\n', obj.id, k, spd, obj.maxlegspeed);
+            fprintf('P%d: Reducing leg%d speed from %.2f to %.2f\n', obj.id, k, spd, params.maxlegspeed);
           end
           obj.legvelocity(k,:)=obj.legvelocity(k,:)/spd*params.maxlegspeed;
         end
@@ -205,28 +210,27 @@ classdef Person < handle
     % Estimate position of a circle (leg) of diameter obj.legdiam, that is fully shadowed
     % Must be within maxdist of otherlegpos
     % Should also be as close to targetpos as possible
-      debug=false;
       pos=targetpos;
       if norm(otherlegpos-pos) > maxdist
-        if debug
-          fprintf('Target position (%.2f,%.2f) is too far (%.2fm) from other leg at (%.2f,%.2f)\n',pos, norm(pos-otherlegpos), otherlegpos);
+        if obj.debug
+          fprintf('Target position (%.2f,%.2f) is too far (%.2fm) from other leg at (%.2f,%.2f). ',pos, norm(pos-otherlegpos), otherlegpos);
         end
         dir=pos-otherlegpos;  dir=dir/norm(dir);
         % Move as far as we can from other leg
         pos=otherlegpos+dir*maxdist;
-        if debug
+        if obj.debug
           fprintf(' Moved to (%.2f,%.2f)\n', pos);
         end
       end
       
       if norm(otherlegpos-pos) < obj.legdiam
-        if debug
-          fprintf('Target position (%.2f,%.2f) is too close (%.2fm) to other leg at (%.2f,%.2f)\n',pos, norm(pos-otherlegpos), otherlegpos);
+        if obj.debug
+          fprintf('Target position (%.2f,%.2f) is too close (%.2fm) to other leg at (%.2f,%.2f). ',pos, norm(pos-otherlegpos), otherlegpos);
         end
         dir=pos-otherlegpos;  dir=dir/norm(dir);
         % Move as far as we can from other leg
         pos=otherlegpos+dir*obj.legdiam;
-        if debug
+        if obj.debug
           fprintf(' Moved to (%.2f,%.2f)\n', pos);
         end
       end

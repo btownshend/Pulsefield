@@ -58,7 +58,7 @@ while true
     vis.reflect=vis.reflect(:,1,:);
   end
 
-  fprintf('\n*** Snap %d\n', length(snap)+1);
+  %fprintf('\n*** Snap %d\n', length(snap)+1);
   
   if isempty(bg)
     bg=Background(vis);

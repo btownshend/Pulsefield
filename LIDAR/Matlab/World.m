@@ -95,11 +95,11 @@ classdef World < handle
           dist(i)=inf;
           [closest,j] = min(dist);
           if ~isempty(closest) && closest<params.newPersonPairMaxDist
-            obj.tracks=[obj.tracks,Person(obj.nextid,vis,otherclasses(i),otherclasses(j))];
+            obj.tracks=[obj.tracks,Person(obj.nextid,vis,otherclasses(i),otherclasses(j),false)];
             obj.nextid=obj.nextid+1;
             otherclasses(j)=nan;
           elseif all(vis.xy(sel,2))>0 && all(vis.range(sel)<obj.maxrange)
-            obj.tracks=[obj.tracks,Person(obj.nextid,vis,otherclasses(i))];
+            obj.tracks=[obj.tracks,Person(obj.nextid,vis,otherclasses(i),[],false)];
             obj.nextid=obj.nextid+1;
           else
             fprintf('Ignoring class %d since it is solitary and partially out of range\n',otherclasses(i));
