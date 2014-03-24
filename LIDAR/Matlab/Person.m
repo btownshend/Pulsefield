@@ -170,7 +170,14 @@ classdef Person < handle
       end
       newpos=mean(obj.legs,1);
       % Update velocity
-      obj.legvelocity=(obj.legs-obj.prevlegs)/(nstep/fps);   % TODO: could filter this
+      newlegvelocity=(obj.legs-obj.prevlegs)/(nstep/fps);
+      obj.legvelocity=obj.legvelocity*(1-1/params.velupdatetc)+newlegvelocity/params.velupdatetc;
+      if i==1
+        obj.legvelocity(1,:)=obj.legvelocity(1,:)*params.veldamping;
+      end
+      if j==1
+        obj.legvelocity(2,:)=obj.legvelocity(2,:)*params.veldamping;
+      end
       for k=1:2
         spd=norm(obj.legvelocity(k,:));
         if spd>params.maxlegspeed
