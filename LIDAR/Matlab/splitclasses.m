@@ -1,6 +1,7 @@
 % Split excessively large classes
-function vis=splitclasses(vis,maxsize)
-debug=true;
+function vis=splitclasses(vis,varargin)
+defaults=struct('debug',false);
+args=processargs(defaults,varargin);
 params=getparams();
 maxsize=params.maxclasssize;
 MAXSPECIAL=2;
@@ -36,7 +37,7 @@ for j=1:length(jclasses)
     else
       vis.shadowed(p(bkpt+1),1)=true;
     end
-    if debug
+    if args.debug
       fprintf('Split class %d with diameter %.2f, %d pts, into classes %d,%d at position %d, minbreak=%d, maxbreak=%d\n', c,norm(vis.xy(p(1),:)-vis.xy(p(end),:)),length(p),c,nextclass-1,bkpt,minbreak, maxbreak);
     end
   end

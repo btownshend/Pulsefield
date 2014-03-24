@@ -49,9 +49,9 @@ classdef World < handle
       for p=1:length(obj.tracks)
         like(p,:,:)=obj.tracks(p).getclasslike(vis);
         if obj.debug
-          fprintf('Person %2d: %s\n', obj.tracks(p).id);
-          for i=1:size(like,2)
-            fprintf('[%s] ',sprintf('%.1f ', like(p,i,:)));
+          fprintf('Person %2d like: %s\n', obj.tracks(p).id);
+          for i=[1,3:size(like,2)]
+            fprintf('C%d:[%.1f / %s] ',i,like(p,i,1),sprintf('%.1f ', like(p,i,3:end)));
           end
           fprintf('\n');
         end
@@ -63,10 +63,10 @@ classdef World < handle
         [minlike,maxind]=min(like(:));
         [p,i,j]=ind2sub(size(like),maxind);
         assign(p,:)=[i,j];
-        obj.tracks(p).update(vis,i,j,nsteps,fps);
         if obj.debug
           fprintf('Assigned classes %d,%d to person %d with loglike=%f\n', i,j,obj.tracks(p).id,-minlike);
         end
+        obj.tracks(p).update(vis,i,j,nsteps,fps);
         like(p,:,:)=inf;
         if i>1
           like(:,i,:)=inf;

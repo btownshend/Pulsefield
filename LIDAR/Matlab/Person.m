@@ -181,8 +181,8 @@ classdef Person < handle
           obj.legvelocity(k,:)=obj.legvelocity(k,:)/spd*obj.maxlegspeed;
         end
       end
-      fprintf('left =(%.2f,%.2f)->(%.2f,%.2f) nstep=%d, vel=(%.2f,%.2f)\n',obj.prevlegs(1,:),obj.legs(1,:),nstep,obj.legvelocity(1,:));
-      fprintf('right=(%.2f,%.2f)->(%.2f,%.2f) nstep=%d, vel=(%.2f,%.2f)\n',obj.prevlegs(2,:),obj.legs(2,:),nstep,obj.legvelocity(2,:));
+      %fprintf('left =(%.2f,%.2f)->(%.2f,%.2f) nstep=%d, vel=(%.2f,%.2f)\n',obj.prevlegs(1,:),obj.legs(1,:),nstep,obj.legvelocity(1,:));
+      %fprintf('right=(%.2f,%.2f)->(%.2f,%.2f) nstep=%d, vel=(%.2f,%.2f)\n',obj.prevlegs(2,:),obj.legs(2,:),nstep,obj.legvelocity(2,:));
       obj.velocity=mean(obj.legvelocity,1);
 
       delta=newpos-obj.position;
@@ -211,21 +211,30 @@ classdef Person < handle
     % Estimate position of a circle (leg) of diameter obj.legdiam, that is fully shadowed
     % Must be within maxdist of otherlegpos
     % Should also be as close to targetpos as possible
+      debug=false;
       pos=targetpos;
       if norm(otherlegpos-pos) > maxdist
-        fprintf('Target position (%.2f,%.2f) is too far (%.2fm) from other leg at (%.2f,%.2f)\n',pos, norm(pos-otherlegpos), otherlegpos);
+        if debug
+          fprintf('Target position (%.2f,%.2f) is too far (%.2fm) from other leg at (%.2f,%.2f)\n',pos, norm(pos-otherlegpos), otherlegpos);
+        end
         dir=pos-otherlegpos;  dir=dir/norm(dir);
         % Move as far as we can from other leg
         pos=otherlegpos+dir*maxdist;
-        fprintf(' Moved to (%.2f,%.2f)\n', pos);
+        if debug
+          fprintf(' Moved to (%.2f,%.2f)\n', pos);
+        end
       end
       
       if norm(otherlegpos-pos) < obj.legdiam
-        fprintf('Target position (%.2f,%.2f) is too close (%.2fm) from other leg at (%.2f,%.2f)\n',pos, norm(pos-otherlegpos), otherlegpos);
+        if debug
+          fprintf('Target position (%.2f,%.2f) is too close (%.2fm) to other leg at (%.2f,%.2f)\n',pos, norm(pos-otherlegpos), otherlegpos);
+        end
         dir=pos-otherlegpos;  dir=dir/norm(dir);
         % Move as far as we can from other leg
         pos=otherlegpos+dir*obj.legdiam;
-        fprintf(' Moved to (%.2f,%.2f)\n', pos);
+        if debug
+          fprintf(' Moved to (%.2f,%.2f)\n', pos);
+        end
       end
       
       [theta,range]=xy2range(pos);
