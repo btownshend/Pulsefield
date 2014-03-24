@@ -4,6 +4,7 @@
 % displays the frame  in their respective video players. 
 
 function vp=videotracks(snap,vp,speedFactor)
+  params=getparams();
   winbounds=[-5.1,5.1,-0.5,5.1];
   if nargin<2
     width=800;
@@ -33,7 +34,7 @@ function vp=videotracks(snap,vp,speedFactor)
       % noisy detections tend to result in short-lived tracks
       % only display tracks that have been visible for more than 
       % a minimum number of frames.
-      reliableTrackInds =[obj.tracks(:).totalVisibleCount] > obj.minVisibleCount;
+      reliableTrackInds =[obj.tracks(:).totalVisibleCount] > 1;
       
       % display the objects. If an object has not been detected
       % in this frame, display its predicted bounding box.
@@ -48,17 +49,16 @@ function vp=videotracks(snap,vp,speedFactor)
           else
             col='yellow';
           end
-          l=t.legs;
-          c1=mappt(l.c1,winbounds,size(frame));
-          rtmp=mappt(l.c1+[l.radius,0],winbounds,size(frame));
+          c1=mappt(t.legs(1,:),winbounds,size(frame));
+          rtmp=mappt(t.legs(1,:)+[t.legdiam/2,0],winbounds,size(frame));
           radius=rtmp(1)-c1(1);
           frame=insertObjectAnnotation(frame,'circle',[c1,radius],'L','Color',col);
-          if all(isfinite(l.c2))
-            c2=mappt(l.c2,winbounds,size(frame));
+          if all(isfinite(t.legs(2,:)))
+            c2=mappt(t.legs(2,:),winbounds,size(frame));
             frame=insertObjectAnnotation(frame,'circle',[c2,radius],'R','Color',col);
             radius=radius+norm(c2-c1)/2;
           end
-          pos=mappt(t.updatedLoc,winbounds,size(frame));
+          pos=mappt(t.position,winbounds,size(frame));
           if predictedTrackInds(i)
             label=sprintf('[%d]',t.id);
           else
