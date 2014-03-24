@@ -298,7 +298,7 @@ classdef Person < handle
       maxangle=max(vis.angle(sel));
       minangle=min(vis.angle(sel));
       theta=maxangle-minangle+res;
-      range=min(vis.range(sel))+obj.legdiam/2;
+      range=mean(vis.range(sel))+obj.legdiam/4;
       
       % Set position of leg
       anglewidth=obj.legdiam/range;
