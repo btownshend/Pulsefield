@@ -8,7 +8,7 @@ args=processargs(defaults,varargin);
 frames=arrayfun(@(z) z.vis.frame, snap);
 
 if ~isempty(args.frame)
-  index=find(frame==frames);
+  index=find(args.frame==frames);
   if isempty(index)
     fprintf('Frame not found\n');
     return;
