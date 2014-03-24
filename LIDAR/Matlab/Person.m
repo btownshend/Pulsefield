@@ -10,10 +10,7 @@ classdef Person < handle
     velocity;   % Overall velocity
                 %facing;  	% Vector pointing forward
     legdiam;	% Estimate of leg diameter in meters
-    maxlegsep;	% Maximum separation of leg centers
     leftness;	% Fraction of time leg(1) is on the left side of direction of motion
-    maxmovement;% Maximum amount of movement per updated
-    maxlegspeed;% Maximum speed of a leg in m/s
     age;
     consecutiveInvisibleCount;
     totalVisibleCount;
@@ -36,8 +33,7 @@ classdef Person < handle
         end
       end
       obj.id=id;
-      obj.legdiam=0.2;
-      obj.maxlegsep=0.4;
+      obj.legdiam=params.initlegdiam;
 
       obj.legs(1,:)=obj.circmodel(vis,class1,false);
       if nargin>=4
@@ -59,8 +55,6 @@ classdef Person < handle
       obj.age=1;
       obj.consecutiveInvisibleCount=0;
       obj.totalVisibleCount=1;
-      obj.maxmovement=1;
-      obj.maxlegspeed=3;  % m/s
       if obj.debug
         fprintf('Created %s\n',obj.tostring());
       end
@@ -119,7 +113,7 @@ classdef Person < handle
             p2=obj.circmodel(vis,j,false);
           end
           % Check leg separation (add legdiam in case the estimates are off due to legs being partially shadowed)
-          if ((i~=1 || j~=1) && norm(p2-p1)>obj.maxlegsep+obj.maxmovement) || (i~=1 && j~=1 && norm(p2-p1)>obj.maxlegsep+obj.legdiam*2)
+          if ((i~=1 || j~=1) && norm(p2-p1)>params.maxlegsep+params.maxmovement) || (i~=1 && j~=1 && norm(p2-p1)>params.maxlegsep+obj.legdiam*2)
             % Too far apart!
             if obj.debug
               fprintf('Person %d, leg classes=(%d,%d) would give excessive leg sep of %.2f\n', obj.id, i, j, norm(p2-p1));
@@ -129,10 +123,10 @@ classdef Person < handle
           end
           % Now do the hidden one
           if i==1
-            p1=obj.nearestshadowed(vis,p2,obj.maxlegsep+obj.legdiam,p1);
+            p1=obj.nearestshadowed(vis,p2,params.maxlegsep,p1);
           end
           if j==1
-            p2=obj.nearestshadowed(vis,p1,obj.maxlegsep+obj.legdiam,p2);
+            p2=obj.nearestshadowed(vis,p1,params.maxlegsep,p2);
           end
           l1=normlike([0,sqrt(obj.posvar(1))],norm(p1-obj.legs(1,:)));
           l2=normlike([0,sqrt(obj.posvar(2))],norm(p2-obj.legs(2,:)));
@@ -158,10 +152,10 @@ classdef Person < handle
         obj.legs(2,:)=obj.circmodel(vis,j,true);
       end
       if i==1
-        obj.legs(1,:)=obj.nearestshadowed(vis,obj.legs(2,:),obj.maxlegsep+obj.legdiam,obj.legs(1,:));
+        obj.legs(1,:)=obj.nearestshadowed(vis,obj.legs(2,:),params.maxlegsep+obj.legdiam,obj.legs(1,:));
       end
       if j==1
-        obj.legs(2,:)=obj.nearestshadowed(vis,obj.legs(1,:),obj.maxlegsep+obj.legdiam,obj.legs(2,:));
+        obj.legs(2,:)=obj.nearestshadowed(vis,obj.legs(1,:),params.maxlegsep+obj.legdiam,obj.legs(2,:));
       end
       if i~=1
         obj.posvar(1)=params.initialPositionVar;   % Locked down again
@@ -174,11 +168,11 @@ classdef Person < handle
       obj.legvelocity=(obj.legs-obj.prevlegs)/(nstep/fps);   % TODO: could filter this
       for k=1:2
         spd=norm(obj.legvelocity(k,:));
-        if spd>obj.maxlegspeed
+        if spd>params.maxlegspeed
           if obj.debug
             fprintf('P%d: Reducing leg%d speed from %.2f to %.2f\n', obj.id, k, spd, obj.maxlegspeed);
           end
-          obj.legvelocity(k,:)=obj.legvelocity(k,:)/spd*obj.maxlegspeed;
+          obj.legvelocity(k,:)=obj.legvelocity(k,:)/spd*params.maxlegspeed;
         end
       end
       %fprintf('left =(%.2f,%.2f)->(%.2f,%.2f) nstep=%d, vel=(%.2f,%.2f)\n',obj.prevlegs(1,:),obj.legs(1,:),nstep,obj.legvelocity(1,:));

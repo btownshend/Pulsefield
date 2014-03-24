@@ -24,7 +24,7 @@ p=struct(...
 ... % ******** Classifying LIDAR scans
 'maxtgtsep',0.25,...   		% Max separation between points that are still the same target (unless there is a gap between)
 'maxbgsep',0.1,...    		% Max distance from background to be considered part of background
-'mintarget',0.1,...  		% Minimum unshadowed target size (otherwise is noise)
+'mintarget',0.1,...  		% Minimum unsughadowed target size (otherwise is noise)
 'minrange',0.1,...    		% Minimum range, less than this becomes noise (dirt on sensor glass)
 'maxrange',5, ...      		% Maximum range, outside this is ignored
 'maxclasssize',0.3, ...		% Maximum size of a single class in meters before it needs to be split
@@ -36,6 +36,12 @@ p=struct(...
 'hiddenPenalty',3,...		% Extra loglike penalty when using a shadowed position for a leg
 'newPersonPairMaxDist',0.5,...	% Maximum distance between pairs of new classes to attribute to same (new) person
 ... % ******** Predicting positions of legs
+'initlegdiam',0.2,...		% Initial diameter of legs
+'maxlegspeed',4.0,...		% Maximum speed of a leg in m/s
+'maxlegsep',0.4,...		% Maximum separation of leg centers
+'maxmovement',1,...		% Maximum amount of movement in meters per update
+'velupdatetc',10,...		% Velocity update time constant in frames
+'veldamping',0.8,...		% Damping (multiplicative factor) for legvelocity when not visible
 'initialPositionVar',0.1^2,...  % Variance of initial position estimates
 'driftVar',0.1^2 ...  		% Additional variance of position estimates per step when they are estimated 
 );
