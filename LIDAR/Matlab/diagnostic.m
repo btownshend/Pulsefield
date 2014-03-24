@@ -69,12 +69,14 @@ for i=1:length(ids)
     continue;
   end
   loc=nan(length(snap),2,2);
+  legvel=nan(length(snap),2,2);
   vel=nan(length(snap),2);
   for j=1:length(snap)
     sel=arrayfun(@(z) z.id, snap(j).tracker.tracks)==id;
     if sum(sel)>0
       loc(j,:,:)=snap(j).tracker.tracks(sel).legs;
       vel(j,:)=snap(j).tracker.tracks(sel).velocity;
+      legvel(j,:,:)=snap(j).tracker.tracks(sel).legvelocity;
     end
   end
   subplot(231);
@@ -107,17 +109,20 @@ for i=1:length(ids)
   title('Y Position');
 
   subplot(233);
-  [heading,speed]=cart2pol(vel(:,1),vel(:,2));
+  [heading,~]=cart2pol(vel(:,1),vel(:,2));
   plot(frame,heading*180/pi,[color,'.-']);
   hold on;
   xlabel('Frame');
-  title('Heading');
+  title('Overall Heading');
   
   subplot(236)
-  plot(frame,speed,[color,'.-']);
+  [~,spd1]=cart2pol(legvel(:,1,1),legvel(:,1,2));
+  [~,spd2]=cart2pol(legvel(:,2,1),legvel(:,2,2));
+  plot(frame,spd1,[color,'.-']);
   hold on;
+  plot(frame,spd2,[color,'.-']);
   xlabel('Frame');
-  title('Speed');
+  title('Leg Speed');
 end
 
 
