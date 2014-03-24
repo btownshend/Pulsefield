@@ -42,7 +42,7 @@ for ii=1:length(notbg)
       end
       % Note that background calculation spreads out background assignment 1 scan wider than a shadowing background
       % So even if there is no shadow, if the pixel is a background, it could be shadowing
-      if vis.range(j)>vis.range(i) % & class(j)~=BACKGROUND
+      if vis.range(j)>vis.range(i)+params.maxclasssize % & class(j)~=BACKGROUND
         % A discontinuity which is not shadowed, stop searching
         break;
       end
