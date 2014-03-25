@@ -121,11 +121,12 @@ for i=1:length(ids)
   title('Y Position');
 
   subplot(233);
-  [heading,~]=cart2pol(vel(:,1),vel(:,2));
-  plot(frame,heading*180/pi,[color,'.-']);
+  [~,spd]=cart2pol(vel(:,1),vel(:,2));
+  plot(frame,spd,[color,'-']);
   hold on;
+  plot(frame(vis(:,1)&vis(:,2)),spd(vis(:,1)&vis(:,2)),[color,'.']);
   xlabel('Frame');
-  title('Overall Heading');
+  title('Total Speed');
   
   subplot(236)
   [~,spd1]=cart2pol(legvel(:,1,1),legvel(:,1,2));
