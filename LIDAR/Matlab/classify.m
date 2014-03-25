@@ -53,12 +53,20 @@ end
 for ii=1:length(notbg)
   i=notbg(ii);
   % Check if it is an isolated point (noise)
-  if (i==1 || abs(vis.range(i-1)-vis.range(i))>params.maxtgtsep) && ...
-     (i==length(vis.range) || abs(vis.range(i+1)-vis.range(i))>params.maxtgtsep)
+  if (i==1 || class(i-1)==BACKGROUND) && (i==length(vis.range) || class(i+1)==BACKGROUND)
     if args.debug
       fprintf('Marking point %d as noise\n', i);
     end
     class(i)=NOISE;
+  end
+  if i>1 && i<length(class) && class(i-1)~=class(i) && class(i+1)~=class(i)
+    % Scans of the first point of a target are sometimes farther off
+    % A single point class just before this, with a wider sep theshold, is probably the same target
+    if norm(xy(i,:)-xy(i+1,:))<2*params.maxtgtsep && class(i+1)>MAXSPECIAL
+      class(i)=class(i+1);
+    elseif norm(xy(i,:)-xy(i-1,:))<2*params.maxtgtsep && class(i-1)>MAXSPECIAL
+      class(i)=class(i-1);
+    end
   end
   % See if a point would be shadowed on the left or right
   if i>1 && vis.range(i-1)<vis.range(i) && class(i-1)~=class(i)
