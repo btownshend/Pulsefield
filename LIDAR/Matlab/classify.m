@@ -40,6 +40,11 @@ for ii=1:length(notbg)
         class(i)=class(j);
         break;
       end
+      if norm(xy(i,:)-xy(j,:))<params.initlegdiam*1.1 && class(j)>MAXSPECIAL && class(j)~=class(i-1)
+        % This could be a leg visible on both sides of a closer leg
+        class(i)=class(j);
+        break;
+      end
       % Note that background calculation spreads out background assignment 1 scan wider than a shadowing background
       % So even if there is no shadow, if the pixel is a background, it could be shadowing
       if vis.range(j)>vis.range(i)+params.maxclasssize % & class(j)~=BACKGROUND
