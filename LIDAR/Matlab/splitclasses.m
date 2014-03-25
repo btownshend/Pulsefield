@@ -7,6 +7,9 @@ maxsize=params.maxclasssize;
 MAXSPECIAL=2;
 jclasses=unique(vis.class(vis.class>MAXSPECIAL));
 nextclass=max(jclasses)+1;
+redo=true;
+while redo
+  redo=false;
 for j=1:length(jclasses)
   c=jclasses(j);
   p=find(vis.class==c);
@@ -26,6 +29,14 @@ for j=1:length(jclasses)
   % Distance from i to 1 is <maxlegdiam, but i+1 to 1 is >maxlegdiam
   maxbreak=i;  
   if minbreak>0
+    if minbreak>maxbreak
+      if args.debug
+        fprintf('Split class %d - too big for one break\n', c);
+      end
+      minbreak=1;
+      maxbreak=length(p)-1;
+      redo=true;
+    end
     % Target too large, split it at biggest jump
     delta=diff(vis.xy(p(minbreak:maxbreak+1),1)).^2+diff(vis.xy(p(minbreak:maxbreak+1),2)).^2;
     [~,bkpt]=max(delta);
@@ -41,6 +52,7 @@ for j=1:length(jclasses)
       fprintf('Split class %d with diameter %.2f, %d pts, into classes %d,%d at position %d, minbreak=%d, maxbreak=%d\n', c,norm(vis.xy(p(1),:)-vis.xy(p(end),:)),length(p),c,nextclass-1,bkpt,minbreak, maxbreak);
     end
   end
+end
 end
 
 % Compress class numbers
