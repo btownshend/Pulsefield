@@ -41,7 +41,7 @@ p=struct(...
 'maxlegsep',0.4,...		% Maximum separation of leg centers
 'maxmovement',1,...		% Maximum amount of movement in meters per update
 'velupdatetc',10,...		% Velocity update time constant in frames
-'veldamping',0.8,...		% Damping (multiplicative factor) for legvelocity when not visible
+'veldamping',0.95,...		% Damping (multiplicative factor) for legvelocity when not visible
 'initialPositionVar',0.1^2,...  % Variance of initial position estimates
 'driftVar',0.1^2 ...  		% Additional variance of position estimates per step when they are estimated 
 );
