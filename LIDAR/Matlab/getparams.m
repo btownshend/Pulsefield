@@ -31,7 +31,7 @@ p=struct(...
 ... % ******** Deleting tracks
 'invisibleForTooLong',50,...	% Number of frames of invisible before deleting
 'ageThreshold',20,...		% Age before considered reliable    
-'minVisibility',0.6,...		% Minimum visibility to maintain new tracks (before ageThreshold reached)
+'minVisibility',0.9,...		% Minimum visibility to maintain new tracks (before ageThreshold reached)
 ... % ******** Likelihood analysis
 'hiddenPenalty',3,...		% Extra loglike penalty when using a shadowed position for a leg
 'newPersonPairMaxDist',0.5,...	% Maximum distance between pairs of new classes to attribute to same (new) person
