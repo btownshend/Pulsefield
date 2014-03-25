@@ -89,6 +89,9 @@ classdef Person < handle
     function [like,p1,p2]=getclasslike(obj,vis)
     % Compute like(i,j) which is likelihood that class i is leg1, class j is leg 2
     % like(i,1) and like(i,j) represents leg not being visible (shadowed)
+      if obj.debug
+        fprintf('getclasslike for ID %d\n', obj.id);
+      end
       params=getparams();
       MAXSPECIAL=2;
       classes=unique(vis.class);
