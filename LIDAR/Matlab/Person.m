@@ -257,43 +257,48 @@ classdef Person < handle
         return;
       end
 
-      [~,cpos1]=min(abs(vis.angle-theta-anglewidth/2));
-      [~,cpos2]=min(abs(vis.angle-theta+anglewidth/2));
+      [~,cpos1]=min(abs(vis.angle-theta+anglewidth/2));
+      [~,cpos2]=min(abs(vis.angle-theta-anglewidth/2));
       if all(vis.range(cpos1:cpos2)<range)
         % Already shadowed
         return;
       end
       
       % Current prediction is not shadowed
-      fprintf('Person %d leg at (%.2f,%.2f) is invisible, but not shadowed\n',obj.id, pos);
-
-      % Find shadow points that are within range
-      srange=max(range,vis.range+obj.legdiam/2);
-      sxy=range2xy(srange,vis.angle);
-      dist=(sxy(:,1)-otherlegpos(:,1)).^2 + (sxy(:,2)-otherlegpos(:,2)).^2;
-      possible=dist<=maxdist+obj.legdiam/2;
-      ledges=find([0;~possible(1:end-1)]&possible);
-      redges=find(possible & [~possible(2:end);0]);
-      widths=(sxy(redges,1)-sxy(ledges,1)).^2+(sxy(redges,2)-sxy(ledges,2)).^2;
-      epossible=find(widths>=obj.legdiam^2);
-      
-      if ~isempty(epossible)
-        fprintf('Person %d could be in %d different shadows\n', obj.id, length(epossible));
-        scenters=sxy(ledges(epossible),:)+sxy(redges(epossible),:);
-        cdist=sqrt((scenters(:,1)-pos(1))^2+(scenters(:,2)-pos(2)).^2);
-        [~,minpos]=min(cdist);
-        pos=scenters(minpos,:);
-        fprintf('Best location is in shadow %d-%d at (%.2f,%.2f)\n', ledges(epossible(minpos)),redges(epossible(minpos)),pos);
-      else
-        fprintf('No feasible shadow found for person %d\n', obj.id);
-        pos=[nan,nan];
-        return;
+      % Find shadows that can hide this object
+      % ledge,redge,srange gives left, right indices, distance of each shadow
+      minrange=max(range,vis.range+obj.legdiam/2);
+      minrange=minrange(:)';
+      srange=minrange;
+      ledges=1:length(srange);
+      redges=ledges;
+      res=vis.angle(2)-vis.angle(1);
+      while true
+        % Compute widths of each shadow
+        widths=(redges-ledges+2).*srange*res;
+        % Check if big enough
+        if all(widths>=obj.legdiam)
+          break;
+        end
+        % Expand small ones
+        redges(widths<obj.legdiam)=redges(widths<obj.legdiam)+1;
+        % Last possibility may be past end, remove it
+        sel=redges<=length(srange);
+        redges=redges(sel);
+        ledges=ledges(sel);
+        srange=srange(sel);
+        srange=max(srange(ledges),minrange(redges));
       end
-      
-      distmoved=norm(pos-t.targetpos);
-      fprintf('Moving to closest valid point at (%.2f,%.2f) with a distance of %.2f\n', pos, distmoved);
-      if distmoved>1
-        fprintf('**** Moved more than 1m\n');
+
+      scenters=range2xy((vis.angle(ledges)+vis.angle(redges))/2,srange);
+      cdist=sqrt((scenters(:,1)-pos(1)).^2+(scenters(:,2)-pos(2)).^2);
+      [~,minpos]=min(cdist);
+      ledge=ledges(minpos);
+      redge=redges(minpos);
+      pos=scenters(minpos,:);
+      distmoved=norm(pos-targetpos);
+      if obj.debug
+        fprintf('Best location for (%.2f,%.2f) is in shadow %d-%d at (%.2f,%.2f) with a distance of %.2f\n', targetpos, ledge,redge,pos,distmoved);
       end
     end
 
