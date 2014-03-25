@@ -26,7 +26,7 @@ p=struct(...
 'maxbgsep',0.1,...    		% Max distance from background to be considered part of background
 'mintarget',0.1,...  		% Minimum unsughadowed target size (otherwise is noise)
 'minrange',0.1,...    		% Minimum range, less than this becomes noise (dirt on sensor glass)
-'maxrange',5, ...      		% Maximum range, outside this is ignored
+'maxrange',6, ...      		% Maximum range, outside this is ignored
 'maxclasssize',0.3, ...		% Maximum size of a single class in meters before it needs to be split
 ... % ******** Deleting tracks
 'invisibleForTooLong',50,...	% Number of frames of invisible before deleting
