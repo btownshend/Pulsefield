@@ -262,7 +262,7 @@ classdef Person < handle
 
       [~,cpos1]=min(abs(vis.angle-theta+anglewidth/2));
       [~,cpos2]=min(abs(vis.angle-theta-anglewidth/2));
-      if all(vis.range(cpos1:cpos2)<range)
+      if all(vis.range(cpos1:cpos2)<range) || theta>pi/2 || theta<-pi/2
         % Already shadowed
         return;
       end
