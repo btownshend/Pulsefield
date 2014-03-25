@@ -30,7 +30,7 @@ hold on;
 xy=range2xy(vis.angle,vis.range);
 bxy=range2xy(bg.angle,bg.range(1,:));
 
-colors='gbcymk';
+colors='rgbcmk';
 plotted=false(size(vis.class));
 for i=1:length(tracker.tracks)
   t=tracker.tracks(i);

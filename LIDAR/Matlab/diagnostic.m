@@ -31,7 +31,7 @@ frame=arrayfun(@(z) z.vis.frame,snap);
 
 tracker=snap(end).tracker;
 MAXSPECIAL=2;
-colors='gbcymk';
+colors='rgbcmk';
 
 % Plot locations
 setfig('diagnostic-tracks');clf;
