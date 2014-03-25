@@ -33,6 +33,9 @@ classdef Background < handle
         r=vis.range(:,1,:);r=r(:)';
         % One of the 2 most frequent ranges
         is1=abs(r-bg.range(1,:))<params.minbgsep | abs(r-bg.range(2,:))<params.minbgsep;
+        % Or near adjacent scan bg
+        is1=is1|abs(r-bg.range(1,[2:end,end]))<params.minbgsep | abs(r-bg.range(2,[2:end,end]))<params.minbgsep;
+        is1=is1|abs(r-bg.range(1,[1,1:end-1]))<params.minbgsep | abs(r-bg.range(2,[1,1:end-1]))<params.minbgsep;
         bgs=[bg.range(1,:);bg.range(1,[1,1:end-1]);bg.range(1,[2:end,end])];
         % AND, between adjacent most frequent ranges
         % This way, the 2nd most frequent range is only used if there is a plausible reason for it (laser picking up near bg in some frames, far bg in others)
