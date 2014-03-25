@@ -305,13 +305,26 @@ classdef Person < handle
     function pos=circmodel(obj,vis,class,update)
     % Estimate position of a circle (leg) of diameter obj.legdiam, that results in echoes in vis for class 
       sel=[vis.class]==class;
+      fsel=find(sel);
       assert(sum(sel)>0);
 
       res=vis.angle(2)-vis.angle(1);
       maxangle=max(vis.angle(sel));
       minangle=min(vis.angle(sel));
       theta=maxangle-minangle+res;
-      range=mean(vis.range(sel))+obj.legdiam/4;
+      if sum(sel)==1
+        % Just one point 
+        % Sometimes scan will average two nearby targets, thus making the mostly shadowed edge appear too close
+        range=vis.range(fsel)+obj.legdiam/4;
+        if fsel>1 && vis.range(fsel-1)<vis.range(fsel)
+          range=max(range,vis.range(fsel-1)+obj.legdiam*5/4);
+        end
+        if fsel<length(vis.range) && vis.range(fsel+1)<vis.range(fsel)
+          range=max(range,vis.range(fsel+1)+obj.legdiam*5/4);
+        end
+      else
+        range=mean(vis.range(sel))+obj.legdiam/4;
+      end
       
       % Set position of leg
       anglewidth=obj.legdiam/range;
