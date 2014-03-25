@@ -71,25 +71,35 @@ for i=1:length(ids)
   loc=nan(length(snap),2,2);
   legvel=nan(length(snap),2,2);
   vel=nan(length(snap),2);
+  vis=false(length(snap),2);
   for j=1:length(snap)
     sel=arrayfun(@(z) z.id, snap(j).tracker.tracks)==id;
     if sum(sel)>0
       loc(j,:,:)=snap(j).tracker.tracks(sel).legs;
       vel(j,:)=snap(j).tracker.tracks(sel).velocity;
       legvel(j,:,:)=snap(j).tracker.tracks(sel).legvelocity;
+      vis(j,:)=[snap(j).tracker.tracks(sel).legclasses]~=1;
     end
   end
   subplot(231);
-  plot(loc(:,1,1),loc(:,1,2),[color,'.-']);
+  plot(loc(:,1,1),loc(:,1,2),[color,'-']);
   hold on;
-  plot(loc(:,2,1),loc(:,2,2),[color,'.-']);
+  plot(loc(:,2,1),loc(:,2,2),[color,'-']);
+  plot(loc(vis(:,1),1,1),loc(vis(:,1),1,2),[color,'.']);
+  plot(loc(vis(:,2),2,1),loc(vis(:,2),2,2),[color,'.']);
+  % Invisible ones
+  plot(loc(~vis(:,1),1,1),loc(~vis(:,1),1,2),[color,'o']);
+  plot(loc(~vis(:,2),2,1),loc(~vis(:,2),2,2),[color,'o']);
   axis equal
   c=axis;
   
   subplot(234);
-  plot(loc(:,1,1),frame,[color,'.-']);
+  plot(loc(:,1,1),frame,[color,'-']);
   hold on;
-  plot(loc(:,2,1),frame,[color,'.-']);
+  plot(loc(:,2,1),frame,[color,'-']);
+  % Visible points
+  plot(loc(vis(:,1),1,1),frame(vis(:,1)),[color,'.']);
+  plot(loc(vis(:,2),2,1),frame(vis(:,2)),[color,'.']);
   cx=axis;
   cx(1:2)=c(1:2);
   axis(cx);
@@ -98,9 +108,11 @@ for i=1:length(ids)
   title('X Position');
   
   subplot(232)
-  plot(frame,loc(:,1,2),[color,'.-']);
+  plot(frame,loc(:,1,2),[color,'-']);
   hold on;
-  plot(frame,loc(:,2,2),[color,'.-']);
+  plot(frame,loc(:,2,2),[color,'-']);
+  plot(frame(vis(:,1)),loc(vis(:,1),1,2),[color,'.']);
+  plot(frame(vis(:,2)),loc(vis(:,2),2,2),[color,'.']);
   cy=axis;
   cy(3:4)=c(3:4);
   axis(cy);
@@ -118,9 +130,11 @@ for i=1:length(ids)
   subplot(236)
   [~,spd1]=cart2pol(legvel(:,1,1),legvel(:,1,2));
   [~,spd2]=cart2pol(legvel(:,2,1),legvel(:,2,2));
-  plot(frame,spd1,[color,'.-']);
+  plot(frame,spd1,[color,'-']);
   hold on;
-  plot(frame,spd2,[color,'.-']);
+  plot(frame,spd2,[color,'-']);
+  plot(frame(vis(:,1)),spd1(vis(:,1)),[color,'.']);
+  plot(frame(vis(:,2)),spd2(vis(:,2)),[color,'.']);
   xlabel('Frame');
   title('Leg Speed');
 end
