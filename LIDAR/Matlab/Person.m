@@ -168,13 +168,23 @@ classdef Person < handle
       end
       newpos=mean(obj.legs,1);
       % Update velocity
-      newlegvelocity=(obj.legs-obj.prevlegs)/(nstep/fps);
-      obj.legvelocity=obj.legvelocity*(1-1/params.velupdatetc)+newlegvelocity/params.velupdatetc;
-      if i==1
-        obj.legvelocity(1,:)=obj.legvelocity(1,:)*params.veldamping;
-      end
-      if j==1
-        obj.legvelocity(2,:)=obj.legvelocity(2,:)*params.veldamping;
+      if i==1 && j==1
+        % Both legs hidden, maintain both at average velocity
+        avgvelocity=mean(obj.legvelocity,1)*params.veldamping;
+        obj.legvelocity(1,:)=avgvelocity;
+        obj.legvelocity(2,:)=avgvelocity;
+      else
+        newlegvelocity=(obj.legs-obj.prevlegs)/(nstep/fps);
+        if i==1 || obj.consecutiveInvisibleCount>0
+          obj.legvelocity(1,:)=obj.legvelocity(1,:)*params.veldamping;
+        else
+          obj.legvelocity(1,:)=obj.legvelocity(1,:)*(1-1/params.velupdatetc)+newlegvelocity(1,:)/params.velupdatetc;
+        end
+        if j==1 || obj.consecutiveInvisibleCount>0
+          obj.legvelocity(2,:)=obj.legvelocity(2,:)*params.veldamping;
+        else
+          obj.legvelocity(2,:)=obj.legvelocity(2,:)*(1-1/params.velupdatetc)+newlegvelocity(2,:)/params.velupdatetc;
+        end
       end
       for k=1:2
         spd=norm(obj.legvelocity(k,:));
