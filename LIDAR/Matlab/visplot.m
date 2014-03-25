@@ -7,7 +7,7 @@ if isfield(vis,'targets')
 else
   col=1;
 end
-colors='rgbcmyk';
+colors='rgbcmk';
 col(col>length(colors))=length(colors);
 for i=1:size(xy,1)
   plot(xy(i,1),xy(i,2),['.',colors(col(i))]);
