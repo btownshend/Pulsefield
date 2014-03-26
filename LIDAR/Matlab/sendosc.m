@@ -1,6 +1,8 @@
 function sendosc(dests,snap,prevsnap)
 global firsttime
 
+params=getparams();
+
 if nargin<3 || firsttime==0
   firsttime=snap.vis.when;
 end
@@ -17,23 +19,32 @@ end
 
 oscmsgout(dests,'/pf/frame',{int32(snap.vis.frame)});
 
-cid=arrayfun(@(z) z.id, snap.tracker.tracks);
-if nargin<3
-  pid=[];
-else
-  pid=arrayfun(@(z) z.id, prevsnap.tracker.tracks);
-end
-
+cid=[];
 for i=1:length(snap.tracker.tracks)
   t=snap.tracker.tracks(i);
-  if t.age==1
-    oscmsgout(dests,'/pf/entry',{int32(snap.vis.frame),tm,int32(t.id),int32(0)});
+  if t.age<params.ageThreshold
+    continue;
+  else
+    cid(end+1)=t.id;
+    if t.age==params.ageThreshold
+      oscmsgout(dests,'/pf/entry',{int32(snap.vis.frame),tm,int32(t.id),int32(0)});
+    end
   end
   legs=t.legs;
   mmaxes=[norm(diff(legs,1)),0]+t.legdiam;
   oscmsgout(dests,'/pf/update',{int32(snap.vis.frame),tm,int32(t.id),t.position(1),t.position(2),t.velocity(1),t.velocity(2),mmaxes(1),mmaxes(2),int32(0),int32(1),int32(0)});
 end
 
+pid=[];
+if nargin>=3
+  for i=1:length(prevsnap.tracker.tracks)
+    t=prevsnap.tracker.tracks(i);
+    if t.age>=params.ageThreshold
+      pid(end+1)=t.id;
+    end
+  end
+end
+    
 lost=setdiff(pid,cid);
 for i=1:length(lost)
   oscmsgout(dests,'/pf/exit',{int32(snap.vis.frame),tm,int32(lost(i))});
