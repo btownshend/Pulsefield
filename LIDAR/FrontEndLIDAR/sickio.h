@@ -7,19 +7,22 @@
 
 #ifndef SICKIO_H_
 #define SICKIO_H_
+#include <math.h>
 #include <pthread.h>
 #include <sicklms5xx/SickLMS5xx.hh>
+#include <mat.h>
 
 class SickIO {
 public:
 	static const int MAXECHOES=5;
+	static const int MAXMEASUREMENTS=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS;
 private:
 	int id;
 	SickToolbox::SickLMS5xx *sick_lms_5xx;
-	unsigned int range[MAXECHOES][SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
-	unsigned int reflect[MAXECHOES][SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
+	unsigned int range[MAXECHOES][MAXMEASUREMENTS];
+	unsigned int reflect[MAXECHOES][MAXMEASUREMENTS];
 	unsigned int status;
-	unsigned int num_measurements;
+	int num_measurements;
 	struct timeval acquired;
 	unsigned int frame;
 	bool valid;
@@ -30,17 +33,36 @@ private:
 	bool running;
 	int scanFreq;
 	double scanRes;
-
 	void updateScanFreqAndRes();
+	bool fake;
 public:
 	SickIO(int _id, const char *host, int port);
+	// Constructor to fake the data from a scan
+	SickIO(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]){
+	    fake=true;
+	    id=_id;
+	    frame=_frame;
+	    acquired=_acquired;
+	    num_measurements=_nmeasure;
+	    nechoes=_nechoes;
+	    for (int i=0;i<nechoes;i++)
+		for (int j=0;j<num_measurements;j++) {
+		    range[i][j]=_range[i][j];
+		    reflect[i][j]=_reflect[i][j];
+		}
+	    scanRes=190.0/(num_measurements-1);
+	}
+
 	virtual ~SickIO();
 
 	void run();
 	int start();
 	int stop();
 
-	unsigned int getNumMeasurements() const {
+	// Convert to an mxArray
+	mxArray *convertToMX() const;
+
+	int getNumMeasurements() const {
 		return num_measurements;
 	}
 
@@ -54,6 +76,18 @@ public:
 
 	const struct timeval& getAcquired() const {
 		return acquired;
+	}
+
+	float getAngle(int measurement)  const {
+	    return scanRes*(measurement-(num_measurements-1)/2.0);
+	}
+
+	float getX(int measurement, int echo=0)  const {
+	    return cos(getAngle(measurement))*range[echo][measurement];
+	}
+
+	float getY(int measurement, int echo=0) const {
+	    return sin(getAngle(measurement))*range[echo][measurement];
 	}
 
 	unsigned int getFrame() const {
@@ -82,6 +116,9 @@ public:
 	void setScanRes(double res) {
 	    scanRes=res;
 	    updateScanFreqAndRes();
+	}
+	float getScanRes() const {
+	    return scanRes;
 	}
 };
 

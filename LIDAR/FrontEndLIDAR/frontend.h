@@ -7,22 +7,27 @@
 #include "dest.h"
 
 class SickIO;
+class Tracker;
+class Snapshot;
 
 class FrontEnd {
     int serverPort;
 
     int nsick;
     int nechoes;
+    Snapshot *snap;
     SickIO **sick;
+    Tracker *tracker;
     Destinations dests;
     lo_server s;
     
     int frame;
     long int sendOnce, sendAlways;
 
-    void processFrames();
-    void sendMessages();   // Send messages to OSC destinations
-    void sendMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int *ranges[], const unsigned int *reflect[]);
+    // Process all frames
+    void processFrames();   
+    // Send out low-level vis messages for given sick data
+    void sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int *ranges[], const unsigned int *reflect[]);
     void recordFrame();
 
     bool recording;

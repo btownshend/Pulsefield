@@ -5,6 +5,7 @@
  *      Author: bst
  */
 
+#include <math.h>
 #include <stdio.h>
 #include <string>
 #include <iostream>
@@ -12,10 +13,10 @@
 #include <pthread.h>
 #include "sickio.h"
 
+#include "mat.h"
+
 using namespace SickToolbox;
 using namespace std;
-
-bool fake=false;
 
 static void *runner(void *t) {
 	((SickIO*)t)->run();
@@ -31,6 +32,7 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	valid=false;
 	num_measurements=0;
 	status=0;
+	fake=false;
 
 	if (!fake)
 		try {
@@ -142,7 +144,7 @@ void SickIO::get() {
 			sick_lms_5xx->GetSickMeasurements(
 				range[0], (nechoes>=2)?range[1]:NULL, (nechoes>=3)?range[2]:NULL, (nechoes>=4)?range[3]:NULL, (nechoes>=5)?range[4]:NULL,
 				captureRSSI?reflect[0]:NULL, (captureRSSI&&nechoes>=2)?reflect[1]:NULL, (captureRSSI&&nechoes>=3)?reflect[2]:NULL, (captureRSSI&&nechoes>=4)?reflect[3]:NULL, (captureRSSI&&nechoes>=5)?reflect[4]:NULL,
-				num_measurements,&status);
+				*((unsigned int *)&num_measurements),&status);
 	}
 
 	catch(const SickConfigException & sick_exception) {
@@ -172,4 +174,41 @@ void SickIO::get() {
 }
 
 
+mxArray *SickIO::convertToMX() const {
+    const char *fieldnames[]={"cframe","nmeasure","range","angle","frame","acquired"};
+    mxArray *vis = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
+    mxArray *pFrame = mxCreateDoubleMatrix(1,1,mxREAL);
+    *mxGetPr(pFrame) = frame;
+    mxSetField(vis,0,"frame",pFrame);
+
+    mxArray *pCframe = mxCreateDoubleMatrix(1,1,mxREAL);
+    *mxGetPr(pCframe) = frame;
+    mxSetField(vis,0,"cframe",pCframe);
+
+    mxArray *pNmeasure = mxCreateDoubleMatrix(1,1,mxREAL);
+    *mxGetPr(pNmeasure) = num_measurements;
+    mxSetField(vis,0,"nmeasure",pNmeasure);
+
+    mxArray *pacquired = mxCreateDoubleMatrix(1,1,mxREAL);
+    *mxGetPr(pacquired) = (acquired.tv_sec + acquired.tv_usec/1e6)/86400.0 + 719529;
+    mxSetField(vis,0,"acquired",pacquired);
+
+    const mwSize dims[3]={nechoes,1,num_measurements};
+    mxArray *pRange = mxCreateNumericArray(3,dims,mxDOUBLE_CLASS,mxREAL);
+    assert(pRange!=NULL);
+    double *data=mxGetPr(pRange);
+    for (int j=0;j<nechoes;j++)
+	for (int i=0;i<num_measurements;i++)
+	    *data++=range[j][i]/1000.0;
+    mxSetField(vis,0,"range",pRange);
+
+    mxArray *pAngle = mxCreateDoubleMatrix(1,num_measurements,mxREAL);
+    assert(pAngle!=NULL);
+    data=mxGetPr(pAngle);
+    for (int i=0;i<num_measurements;i++)
+	*data++=(i-(num_measurements-1)/2.0)*scanRes*M_PI/180;
+    mxSetField(vis,0,"angle",pAngle);
+
+    return vis;
+}

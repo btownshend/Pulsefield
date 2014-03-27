@@ -10,6 +10,11 @@
 #include "frontend.h"
 #include "urlconfig.h"
 #include "sickio.h"
+#include "tracker.h"
+#include "snapshot.h"
+
+// MATLAB I/O
+#include "mat.h"
 
 int debug=1;
 
@@ -69,6 +74,8 @@ FrontEnd::FrontEnd(int _nsick) {
 	frame = 0;
 	nsick=_nsick;
 	sick = new SickIO*[nsick];
+	tracker = new Tracker();
+	snap = new Snapshot();
 	nechoes=1;
 	recording=false;
 	recordFD=NULL;
@@ -224,33 +231,31 @@ void *FrontEnd::processIncoming(void *arg) {
 void FrontEnd::processFrames() {
 	if (debug>1)
 		printf("Processing frame %d\n",frame);
-	sendMessages();
+
+	sendOnce |= sendAlways;
+	for (int c=0;c<nsick;c++) {
+	    const unsigned int *range[SickIO::MAXECHOES];
+	    const unsigned int *reflect[SickIO::MAXECHOES];
+	    for (int i=0;i<sick[c]->getNumEchoes();i++) {
+		range[i]=sick[c]->getRange(i);
+		reflect[i]=sick[c]->getReflect(i);
+	    }
+	    sendVisMessages(sick[c]->getId(),sick[c]->getFrame(),sick[c]->getAcquired(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
+	    // clear valid flag so another frame can be read
+	    sick[c]->clearValid();
+	}
+	tracker->track(*sick[0]);
+	
+	sendOnce=0;
 	if (recording)
 	    recordFrame();
+
 	frame=frame+1;
 }
 
-// Send all messages that are in the sendOnce list to the destinations
-void FrontEnd::sendMessages() {
-    sendOnce |= sendAlways;
-    for (int c=0;c<nsick;c++) {
-	const unsigned int *range[SickIO::MAXECHOES];
-	const unsigned int *reflect[SickIO::MAXECHOES];
-	for (int i=0;i<sick[c]->getNumEchoes();i++) {
-	    range[i]=sick[c]->getRange(i);
-	    reflect[i]=sick[c]->getReflect(i);
-	}
-	sendMessages(sick[c]->getId(),sick[c]->getFrame(),sick[c]->getAcquired(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
-	// clear valid flag so another frame can be read
-	sick[c]->clearValid();
-    }
-	
-    sendOnce=0;
-}
-
-void FrontEnd::sendMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
+void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
 	if (debug>1)
-		printf("sendMessages()  sendOnce=%ld, ndest=%d\n",sendOnce,dests.count());
+		printf("sendVisMessages()  sendOnce=%ld, ndest=%d\n",sendOnce,dests.count());
 
 	for (int i=0;i<dests.count();i++) {
 		char cbuf[10];
@@ -292,14 +297,14 @@ void FrontEnd::recordFrame() {
 	for (int e=0;e<nechoes;e++) {
 	    const unsigned int *ranges=sick[c]->getRange(e);
 	    fprintf(recordFD,"D%d ",e);
-	    for (int i=0;i<(int)sick[c]->getNumMeasurements();i++)
+	    for (int i=0;i<sick[c]->getNumMeasurements();i++)
 		fprintf(recordFD,"%d ",ranges[i]);
 	    fprintf(recordFD,"\n");
 	}
 	for (int e=0;e<nechoes;e++) {
 	    const unsigned int *reflect=sick[c]->getReflect(e);
 	    fprintf(recordFD,"R%d ",e);
-	    for (int i=0;i<(int)sick[c]->getNumMeasurements();i++)
+	    for (int i=0;i<sick[c]->getNumMeasurements();i++)
 		fprintf(recordFD,"%d ",reflect[i]);
 	    fprintf(recordFD,"\n");
 	}
@@ -399,7 +404,17 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	}
 	if (cframe%100==0)
 	    printf("Playing frame %d\n",cframe);
-	sendMessages(cid,cframe, acquired,  nmeasure, nechoes, &rangeref[0], &reflectref[0]);
+	sendVisMessages(cid,cframe, acquired,  nmeasure, nechoes, &rangeref[0], &reflectref[0]);
+	if (sick[0])
+	    *sick[0]=SickIO(cid,cframe, acquired,  nmeasure, nechoes, range,reflect);
+	else
+	    sick[0]=new SickIO(cid,cframe, acquired,  nmeasure, nechoes, range,reflect);
+
+	tracker->track(*sick[0]);
+
+	snap->append(sick[0],tracker);
+	if (cframe==400)
+	    snap->save("mattest.mat");
 
 	sendOnce=0;
     }
