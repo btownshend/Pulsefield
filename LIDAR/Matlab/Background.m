@@ -21,6 +21,16 @@ classdef Background < handle
         bg.freq(1,:)=1;
       end
         
+      function obj=loadobj(obj)
+        if isstruct(obj)
+          newobj=Background;
+          newobj.angle=obj.angle;
+          newobj.range=obj.range;
+          newobj.freq=obj.freq;
+          obj=newobj;
+        end
+      end
+
       function bg=clone(obj)
         bg=Background();
         bg.angle=obj.angle;
