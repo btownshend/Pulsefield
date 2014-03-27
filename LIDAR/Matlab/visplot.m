@@ -5,7 +5,7 @@ hold on;
 if isfield(vis,'targets')
   col=vis.class+1;
 else
-  col=1;
+  col=ones(size(xy,1),1);
 end
 colors='rgbcmk';
 col(col>length(colors))=length(colors);
