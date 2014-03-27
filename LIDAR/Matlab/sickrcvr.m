@@ -100,7 +100,7 @@ while true
       sec=m.data{3};
       usec=m.data{4};
       echo=m.data{5}+1;
-      vis.echo(echo)=1;
+      %vis.echo(echo)=1;
       vis.nmeasure=m.data{6};
       vis.angle=(-95+(0:vis.nmeasure-1)/(vis.nmeasure-1)*190)*pi/180;
       blob=m.data{7};
