@@ -7,6 +7,7 @@
 
 #ifndef BACKGROUND_H_
 #define BACKGROUND_H_
+#include <vector>
 #include "sickio.h"
 
 class Background {
@@ -14,16 +15,15 @@ class Background {
     static const int NRANGES=3;
     static const int UPDATETC=50*60;
 
-    float range[SickIO::MAXMEASUREMENTS][NRANGES];			// Range in mm of background for NRANGES values/scan
-    float freq[SickIO::MAXMEASUREMENTS][NRANGES];
+    std::vector<float> range[NRANGES];   // Range in mm of background for NRANGES values/scan
+    std::vector<float> freq[NRANGES];
     float maxrange;
     float scanRes;
 
-    int num_measurements;
     void swap(int k, int i, int j);
 public:
     Background();
-    void update(const SickIO &sick,unsigned char *result);
+    std::vector<bool> update(const SickIO &sick);
     void setmaxrange(float _maxrange) {
 	maxrange=_maxrange;
     }

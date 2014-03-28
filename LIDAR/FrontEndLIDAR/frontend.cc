@@ -12,6 +12,7 @@
 #include "sickio.h"
 #include "tracker.h"
 #include "snapshot.h"
+#include "vis.h"
 
 // MATLAB I/O
 #include "mat.h"
@@ -76,6 +77,7 @@ FrontEnd::FrontEnd(int _nsick) {
 	sick = new SickIO*[nsick];
 	tracker = new Tracker();
 	snap = new Snapshot();
+	vis = new Vis();
 	nechoes=1;
 	recording=false;
 	recordFD=NULL;
@@ -244,7 +246,8 @@ void FrontEnd::processFrames() {
 	    // clear valid flag so another frame can be read
 	    sick[c]->clearValid();
 	}
-	tracker->track(*sick[0]);
+	vis->update(sick[0]);
+	tracker->track(vis);
 	
 	sendOnce=0;
 	if (recording)
@@ -410,10 +413,14 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	else
 	    sick[0]=new SickIO(cid,cframe, acquired,  nmeasure, nechoes, range,reflect);
 
-	tracker->track(*sick[0]);
+	
+	vis->update(sick[0]);
+	tracker->track(vis);
 
-	snap->append(sick[0],tracker);
-	if (cframe==400)
+	if (cframe>=400)
+	    snap->append(vis,tracker);
+
+	if (cframe==500)
 	    snap->save("mattest.mat");
 
 	sendOnce=0;

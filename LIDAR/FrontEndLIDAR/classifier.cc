@@ -1,4 +1,5 @@
 #include <math.h>
+#include <mat.h>
 #include "classifier.h"
 
 static const int debug=1;
@@ -13,18 +14,18 @@ static const unsigned int debugframe=482;
 Classifier::Classifier(): bg() {
 }
 
-void Classifier::update(const SickIO &sick, unsigned int *result) {
+void Classifier::update(const SickIO &sick) {
     bool fdebug=false;
     if (sick.getFrame() == debugframe)
 	fdebug=true;
+    classes.resize(sick.getNumMeasurements());
 
-    unsigned char isbg[SickIO::MAXMEASUREMENTS];
     const unsigned int *srange=sick.getRange(0);
-    bg.update(sick,isbg);
+    std::vector<bool> isbg = bg.update(sick);
     int nextclass=MAXSPECIAL+1;
-    for (int i=0;i<sick.getNumMeasurements();i++) {
+    for (unsigned int i=0;i<classes.size();i++) {
 	if (isbg[i]) {
-	    result[i]=BACKGROUND;
+	    classes[i]=BACKGROUND;
 	    continue;
 	}
 	// Check if close to a prior target
@@ -34,15 +35,15 @@ void Classifier::update(const SickIO &sick, unsigned int *result) {
 	for (int j=i-1;j>=0;j--) {
 	    float dist=sqrt(pow(sick.getX(i)-sick.getX(j),2) + pow(sick.getY(i)-sick.getY(j),2));
 	    if (fdebug)
-		printf("class[%d]=%d, dist=%f ", j, result[j],dist);
-	    if (dist < MAXTGTSEP && result[j]>MAXSPECIAL) {
-		result[i]=result[j];
+		printf("class[%d]=%d, dist=%f ", j, classes[j],dist);
+	    if (dist < MAXTGTSEP && classes[j]>MAXSPECIAL) {
+		classes[i]=classes[j];
 		newclass=false;
 		break;
 	    }
-	    if (dist< INITLEGDIAM*1.1 && result[j]>MAXSPECIAL && result[j]!=result[i-1]) {
+	    if (dist< INITLEGDIAM*1.1 && classes[j]>MAXSPECIAL && classes[j]!=classes[i-1]) {
 		// Could be a leg visible on both sides of a closer leg
-		result[i]=result[j];
+		classes[i]=classes[j];
 		newclass=false;
 		break;
 	    }
@@ -51,24 +52,24 @@ void Classifier::update(const SickIO &sick, unsigned int *result) {
 		break;
 	}
 	if (newclass) {
-	    result[i]=nextclass;
+	    classes[i]=nextclass;
 	    nextclass++;
 	}
 	if  (fdebug)
-	    printf("class=%d\n", result[i]);
+	    printf("class=%d\n", classes[i]);
     }
 
     if (debug && nextclass>MAXSPECIAL+1) {
 	printf("Frame %d: ", sick.getFrame());
-	for (int i=0;i<sick.getNumMeasurements();i++)
-	    if (result[i]!=BACKGROUND) {
-		int j;
-		for (j=i+1;j<sick.getNumMeasurements() && result[i]==result[j];j++)
+	for (unsigned int i=0;i<classes.size();i++)
+	    if (classes[i]!=BACKGROUND) {
+		unsigned int j;
+		for (j=i+1;j<classes.size() && classes[i]==classes[j];j++)
 		    ;
 		if (j==i+1)
-		    printf("%d@%d:%d, ",result[i],srange[i],i);
+		    printf("%d@%d:%d, ",classes[i],srange[i],i);
 		else
-		    printf("%d@%d:%d-%d, ",result[i],srange[i],i,j-1);
+		    printf("%d@%d:%d-%d, ",classes[i],srange[i],i,j-1);
 		i=j;
 	    }
 	printf("\n");

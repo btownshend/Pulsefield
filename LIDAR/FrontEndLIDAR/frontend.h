@@ -9,6 +9,7 @@
 class SickIO;
 class Tracker;
 class Snapshot;
+class Vis;
 
 class FrontEnd {
     int serverPort;
@@ -18,6 +19,7 @@ class FrontEnd {
     Snapshot *snap;
     SickIO **sick;
     Tracker *tracker;
+    Vis *vis;
     Destinations dests;
     lo_server s;
     

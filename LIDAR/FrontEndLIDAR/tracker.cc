@@ -3,9 +3,8 @@
 Tracker::Tracker() {
 }
 
-void Tracker::track(const SickIO &sick) {
-    unsigned int classes[SickIO::MAXMEASUREMENTS];
-    classifier.update(sick,classes);
+void Tracker::track(const Vis *vis) {
+    // TODO
 }
 
 mxArray *Tracker::convertToMX() const {
@@ -16,7 +15,7 @@ mxArray *Tracker::convertToMX() const {
     *mxGetPr(pDebug) = 0;
     mxSetField(tracker,0,"debug",pDebug);
 
-    if (mxSetClassName(tracker,"Tracker")) {
+    if (mxSetClassName(tracker,"World")) {
 	fprintf(stderr,"Unable to convert tracker to a Matlab class\n");
     }
     return tracker;

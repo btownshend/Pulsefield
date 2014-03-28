@@ -1,10 +1,7 @@
 .DS_Store
 /bin
 *.o
-RealTime/AL_pulsefield1C.mat
 RealTime/ableton.csv
-RealTime/ableton.mat
-RealTime/p.mat
 frontend.dSYM
 FrontEnd/frontend
 Arduino/libraries/Adafruit_NeoPixel/
@@ -33,27 +30,9 @@ arecont/test_undistortion_y.xml
 arecont/hi.aac
 arecont/C5.old
 arecont/calibrate.log
-arecont/calib_data.mat
-Experimental/c1-Results_left.mat
-
-Experimental/c2-Results_left.mat
-
-Experimental/c3-Results_left.mat
-
-Experimental/c4-Results_left.mat
-
-Experimental/c5-Results_left.mat
-
-Experimental/c6-Results_left.mat
-
 Chuck/audio.wav
 
 Chuck/audio (Capa's conflicted copy 2013-12-12).wav
-
-Experimental/phold.mat
-
-Experimental/phold1.mat
-
 LIDAR/FrontEndLIDAR/frontend
 
 *.bak
@@ -64,10 +43,6 @@ LIDAR/FrontEndLIDAR/rec2.txt
 
 LIDAR/Matlab/SFUN.hold/
 LIDAR/Matlab/VISIONTB/
-LIDAR/Matlab/oldsnap.mat
+*.mat
 
-LIDAR/Matlab/snap20140315t142923.mat
-
-LIDAR/Matlab/snap20140316T185312.mat
-
-LIDAR/Matlab/test.mat
+*.mat

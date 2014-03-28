@@ -59,9 +59,6 @@ public:
 	int start();
 	int stop();
 
-	// Convert to an mxArray
-	mxArray *convertToMX() const;
-
 	int getNumMeasurements() const {
 		return num_measurements;
 	}

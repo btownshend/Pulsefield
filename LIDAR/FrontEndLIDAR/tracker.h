@@ -11,13 +11,13 @@
 #include "classifier.h"
 #include "sickio.h"
 
+class Vis;
+
 class Tracker {
-    Classifier classifier;
 public:
     Tracker();
     // Track people and send update messages
-    void track(const SickIO &sick);
-    const Classifier *getClassifier() const { return &classifier; }
+    void track(const Vis *vis);
     mxArray *convertToMX() const;
 };
 

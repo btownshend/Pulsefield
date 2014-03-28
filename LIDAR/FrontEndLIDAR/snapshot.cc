@@ -2,13 +2,14 @@
 #include "sickio.h"
 #include "tracker.h"
 #include "snapshot.h"
+#include "vis.h"
 
 Snapshot::Snapshot() {
 }
 
-void Snapshot::append(const SickIO *sick, const Tracker *t) {
-    vis.push_back(sick->convertToMX());
-    bg.push_back(t->getClassifier()->getBackground()->convertToMX());
+void Snapshot::append(const Vis *v, const Tracker *t) {
+    vis.push_back(v->convertToMX());
+    bg.push_back(v->getClassifier()->getBackground()->convertToMX());
     tracker.push_back(t->convertToMX());
 }
 
@@ -20,7 +21,7 @@ void Snapshot::save(const char *filename) const {
 	return;
     }
     
-    const char *fieldnames[]={"vis","bg","tracker"};
+    const char *fieldnames[]={"vis","bg","tracker","classes"};
     mxArray *snap = mxCreateStructMatrix(vis.size(),1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
     for (int i=0;i<(int)vis.size();i++) {

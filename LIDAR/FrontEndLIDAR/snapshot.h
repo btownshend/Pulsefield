@@ -19,7 +19,7 @@ class Snapshot {
     std::vector<mxArray *> tracker;
 public:
     Snapshot();
-    void append(const SickIO *sick, const Tracker *tracker);
+    void append(const Vis *vis, const Tracker *tracker);
     void save(const char *filename) const;
 };
 
