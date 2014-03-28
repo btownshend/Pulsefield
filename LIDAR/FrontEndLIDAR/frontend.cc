@@ -10,7 +10,7 @@
 #include "frontend.h"
 #include "urlconfig.h"
 #include "sickio.h"
-#include "tracker.h"
+#include "world.h"
 #include "snapshot.h"
 #include "vis.h"
 
@@ -75,7 +75,7 @@ FrontEnd::FrontEnd(int _nsick) {
 	frame = 0;
 	nsick=_nsick;
 	sick = new SickIO*[nsick];
-	tracker = new Tracker();
+	world = new World();
 	snap = new Snapshot();
 	vis = new Vis();
 	nechoes=1;
@@ -247,7 +247,7 @@ void FrontEnd::processFrames() {
 	    sick[c]->clearValid();
 	}
 	vis->update(sick[0]);
-	tracker->track(vis);
+	world->track(vis);
 	
 	sendOnce=0;
 	if (recording)
@@ -415,10 +415,10 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 
 	
 	vis->update(sick[0]);
-	tracker->track(vis);
+	world->track(vis);
 
 	if (cframe>=400)
-	    snap->append(vis,tracker);
+	    snap->append(vis,world);
 
 	if (cframe==500)
 	    snap->save("mattest.mat");

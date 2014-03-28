@@ -11,15 +11,15 @@
 #include <vector>
 
 class SickIO;
-class Tracker;
+class World;
 
 class Snapshot {
     std::vector<mxArray *>  vis;
     std::vector<mxArray *>  bg;
-    std::vector<mxArray *> tracker;
+    std::vector<mxArray *> world;
 public:
     Snapshot();
-    void append(const Vis *vis, const Tracker *tracker);
+    void append(const Vis *vis, const World *world);
     void save(const char *filename) const;
 };
 

@@ -7,7 +7,7 @@
 #include "dest.h"
 
 class SickIO;
-class Tracker;
+class World;
 class Snapshot;
 class Vis;
 
@@ -18,7 +18,7 @@ class FrontEnd {
     int nechoes;
     Snapshot *snap;
     SickIO **sick;
-    Tracker *tracker;
+    World *world;
     Vis *vis;
     Destinations dests;
     lo_server s;
