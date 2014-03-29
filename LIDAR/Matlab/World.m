@@ -2,7 +2,6 @@ classdef World < handle
   properties
     tracks;
     nextid;
-    maxrange;
     debug;
   end
   
@@ -10,7 +9,6 @@ classdef World < handle
     function obj=World()
       obj.tracks=[];
       obj.nextid=1;
-      obj.maxrange=7;
       obj.debug=false;
     end
 
@@ -114,7 +112,7 @@ classdef World < handle
             obj.tracks=[obj.tracks,Person(obj.nextid,vis,otherclasses(i),otherclasses(j),false)];
             obj.nextid=obj.nextid+1;
             otherclasses(j)=nan;
-          elseif all(vis.xy(sel,2))>0 && all(vis.range(sel)<obj.maxrange)
+          elseif all(vis.xy(sel,2))>0 && all(vis.range(sel)<params.maxrange)
             obj.tracks=[obj.tracks,Person(obj.nextid,vis,otherclasses(i),[],false)];
             obj.nextid=obj.nextid+1;
           else
@@ -140,7 +138,7 @@ classdef World < handle
       % find the indices of 'lost' people
       lostInds = (ages < params.ageThreshold & visibility < params.minVisibility) | ...
           [obj.tracks(:).consecutiveInvisibleCount] >= params.invisibleForTooLong;
-      outsideInds = arrayfun(@(z) ~isempty(z.position) && (norm(z.position) > obj.maxrange || z.position(2)<0),obj.tracks);
+      outsideInds = arrayfun(@(z) ~isempty(z.position) && (norm(z.position) > params.maxrange || z.position(2)<0),obj.tracks);
       if sum(outsideInds)>0
         fprintf('Deleting %d people out of range\n', sum(outsideInds));
       end
