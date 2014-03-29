@@ -14,6 +14,20 @@ classdef World < handle
       obj.debug=false;
     end
 
+    function obj=loadobj(obj)
+      if isstruct(obj)
+        newobj=World;
+        newobj.tracks=obj.tracks;
+        newobj.nextid=obj.nextid;
+        if isfield(obj,'debug')
+          newobj.debug=obj.debug;
+        else
+          newobj.debug=false;
+        end
+        obj=newobj;
+      end
+    end
+
     function w=clone(obj)
       w=World();
       for i=1:length(obj.tracks)
