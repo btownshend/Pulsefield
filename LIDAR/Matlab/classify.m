@@ -73,7 +73,11 @@ for ii=1:length(notbg)
       class(i)=class(i-1);
     end
   end
-  % See if a point would be shadowed on the left or right
+end
+
+% See if a point would be shadowed on the left or right
+for ii=1:length(notbg)
+  i=notbg(ii);
   if i>1 && vis.range(i-1)<vis.range(i) && class(i-1)~=class(i)
     shadowed(i,1)=true;
   end
