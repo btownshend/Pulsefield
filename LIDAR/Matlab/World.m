@@ -107,6 +107,7 @@ classdef World < handle
           sel=vis.class==otherclasses(i);
           dist=sqrt((center(:,1)-center(i,1)).^2+(center(:,2)-center(i,2)).^2);
           dist(i)=inf;
+          dist(isnan(otherclasses))=inf;
           [closest,j] = min(dist);
           if ~isempty(closest) && closest<params.newPersonPairMaxDist
             obj.tracks=[obj.tracks,Person(obj.nextid,vis,otherclasses(i),otherclasses(j),false)];
