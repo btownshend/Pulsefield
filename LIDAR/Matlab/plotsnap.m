@@ -28,7 +28,6 @@ setfig(sprintf('Frame %d',snap.vis.frame));clf;
 hold on;
 
 xy=range2xy(vis.angle,vis.range);
-bxy=range2xy(bg.angle,bg.range(1,:));
 
 colors='rgbcmk';
 plotted=false(size(vis.class));
@@ -70,7 +69,18 @@ if sum(~plotted)>0
   plot(xy(sel,1),xy(sel,2),'.k');
 end
 
+bfreq=bg.freq/max(sum(bg.freq(1:2,:),1));
+bfreq(3,:)=1-sum(bfreq(1:2,:),1);
+[~,maxb]=max(bfreq,[],1);
+range=[];
+for i=1:length(maxb)
+  range(i)=bg.range(maxb(i),i);
+end
+params=getparams();
+range(maxb==3)=params.maxrange;
+bxy=range2xy(bg.angle,range);
 plot(bxy(:,1),bxy(:,2),'k');
+
 axis equal;
 xyt=xy(vis.class>MAXSPECIAL,:);
 if ~isempty(xyt)
