@@ -24,7 +24,7 @@ p=struct(...
 ... % ******** Classifying LIDAR scans
 'maxtgtsep',0.1,...   		% Max separation between points that are still the same target (unless there is a gap between)
 'maxbgsep',0.1,...    		% Max distance from background to be considered part of background
-'mintarget',0.1,...  		% Minimum unsughadowed target size (otherwise is noise)
+'mintarget',0.1,...  		% Minimum unshadowed target size (otherwise is noise)
 'minrange',0.1,...    		% Minimum range, less than this becomes noise (dirt on sensor glass)
 'maxrange',6, ...      		% Maximum range, outside this is ignored
 'maxclasssize',0.3, ...		% Maximum size of a single class in meters before it needs to be split
