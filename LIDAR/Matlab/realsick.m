@@ -62,10 +62,8 @@ while true
   
   if isempty(bg)
     bg=Background(vis);
-  else
-    bg.update(vis);
   end
-
+  bg.update(vis);
   vis=classify(vis,bg);
   vis=splitclasses(vis);
   if isempty(snap)
