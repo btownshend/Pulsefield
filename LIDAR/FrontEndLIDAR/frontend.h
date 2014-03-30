@@ -37,6 +37,8 @@ class FrontEnd {
 
     pthread_t incomingThread;
     static void *processIncoming(void *arg);
+    int matframes;
+    const char *matfile;
  public:
     enum { RANGE=0x10, REFLECT=0x20 };  // Bitmasks of what to send in next message group
 
@@ -61,5 +63,6 @@ class FrontEnd {
     void rmDest(lo_message msg, int port);
     void rmAllDest();
     void ping(lo_message msg, int seqnum);
+    void matsave(const char *filename, int frames) {matfile=filename; matframes=frames;}
 };
 #endif

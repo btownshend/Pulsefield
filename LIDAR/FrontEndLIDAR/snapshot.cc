@@ -21,15 +21,15 @@ void Snapshot::save(const char *filename) const {
 	return;
     }
     
-    const char *fieldnames[]={"vis","bg","world","classes"};
+    const char *fieldnames[]={"vis","bg","tracker","classes"};
     mxArray *snap = mxCreateStructMatrix(vis.size(),1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
     for (int i=0;i<(int)vis.size();i++) {
 	mxSetField(snap,i,"vis",vis[i]);
 	mxSetField(snap,i,"bg",bg[i]);
-	mxSetField(snap,i,"world",world[i]);
+	mxSetField(snap,i,"tracker",world[i]);
     }
-    matPutVariable(pmat, "snap",snap);
+    matPutVariable(pmat, "csnap",snap);
 
     if (matClose(pmat) != 0) 
 	fprintf(stderr,"Error closing MATLAB output file %s\n", filename);

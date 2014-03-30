@@ -72,9 +72,15 @@ FrontEnd::FrontEnd(int _nsick) {
 	if (debug)
 		printf("FrontEnd::FrontEnd()\n");
 
+	matframes=0;
 	frame = 0;
 	nsick=_nsick;
-	sick = new SickIO*[nsick];
+	if (nsick==0) {
+	    sick=new SickIO*[1];
+	    sick[0]=0;
+	} else
+	    sick = new SickIO*[nsick];
+	
 	world = new World();
 	snap = new Snapshot();
 	vis = new Vis();
@@ -101,6 +107,10 @@ FrontEnd::FrontEnd(int _nsick) {
 	}
 	printf("Started server on port %d\n", serverPort);
 
+	/* Start sending data to Matlab */
+	const int clientPort=urls.getPort("MPV");
+	const char *clientHost=urls.getHost("MPV");
+	dests.add(clientHost, clientPort);
 
 	/* Start cameras */
 	printf("Initializing with %d sensors...",nsick);fflush(stdout);
@@ -417,11 +427,14 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	vis->update(sick[0]);
 	world->track(vis);
 
-	if (cframe>=400)
+	if (matframes>0) {
 	    snap->append(vis,world);
-
-	if (cframe==500)
-	    snap->save("mattest.mat");
+	    
+	    if (cframe==matframes) {
+		snap->save(matfile);
+		break;
+	    }
+	}
 
 	sendOnce=0;
     }

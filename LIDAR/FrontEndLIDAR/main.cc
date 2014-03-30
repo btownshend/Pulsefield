@@ -7,7 +7,7 @@
 static int nsick=1;
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr, "Usage: %s [-R | -r recordfile | -p playfile [-s] [-l] [-x slowfactor] ] (had %d args)\n",argv[0],argc-1);
+    fprintf(stderr, "Usage: %s [-R | -r recordfile | -p playfile [-s] [-l] [-x slowfactor] [-m matframes [-M matfile ]] ] (had %d args)\n",argv[0],argc-1);
     exit(1);
 }
 
@@ -19,8 +19,10 @@ int main(int argc, char *argv[])
     bool loop=false;
     bool singlestep=false;
     float speedFactor =1.0f;
+    const char *matfile="mattest.mat";
+    int matframes=0;
 
-    while ((ch=getopt(argc,argv,"sr:Rp:lx:"))!=-1) {
+    while ((ch=getopt(argc,argv,"sr:Rp:lx:m:M:"))!=-1) {
 	switch (ch) {
 	case 's':
 	    singlestep=true;
@@ -30,6 +32,12 @@ int main(int argc, char *argv[])
 	    break;
 	case 'r':
 	    recordFile=optarg;
+	    break;
+	case 'm':
+	    matframes=atoi(optarg);
+	    break;
+	case 'M':
+	    matfile=optarg;
 	    break;
 	case 'R':
 	    recordFile=new char[1000];
@@ -50,12 +58,13 @@ int main(int argc, char *argv[])
     argc-=optind;
     argv+=optind;
     
-    if (argc>0 || (recordFile && playFile) )
+    if (argc>0 || (recordFile && playFile) || (matframes>0 && !playFile))
 	usage(argc,argv);
 
     if (playFile) {
 	// Create a front end with no sensors so it doesn't access any devices
 	FrontEnd fe(0);
+	fe.matsave(matfile,matframes);
 	// Now playback file through it
 	do {
 	    int rc=fe.playFile(playFile,singlestep,speedFactor);

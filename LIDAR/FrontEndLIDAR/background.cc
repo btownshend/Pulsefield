@@ -1,8 +1,10 @@
 #include <assert.h>
 #include "background.h"
+#include "parameters.h"
 
 Background::Background() {
-    maxrange=5000;
+    maxrange=6000;
+    minrange=100;
     scanRes=0;
 }
 
@@ -16,8 +18,34 @@ void Background::swap(int k, int i, int j) {
     freq[j][k]=tmpfreq;
 }
 
-std::vector<bool> Background::update(const SickIO &sick) {
+std::vector<bool> Background::isbg(const SickIO &sick) const {
     std::vector<bool> result(sick.getNumMeasurements(),false);
+    const unsigned int *srange = sick.getRange(0);
+    for (int i=0;i<sick.getNumMeasurements();i++) {
+	if (srange[i]>=maxrange || srange[i]<minrange)
+	    result[i]=true;
+	else {
+	    // Compute result
+	    for (int k=0;k<NRANGES-1;k++) {
+		if (k==0 && (abs(srange[i]-range[k][i]) < MINBGSEP ||
+			     (i>0 && abs(srange[i]-range[k][i-1])<MINBGSEP) ||
+			     (i+1<sick.getNumMeasurements() && abs(srange[i]-range[k][i+1])<MINBGSEP))) {
+		    // This is a background pixel if it matches the most common ranges of this or adjecent scans
+		    result[i]=true;
+		    break;
+		} else if (abs(srange[i]-range[k][i])<MINBGSEP) {
+		    // or if it matches the 2nd most common AND that range is between the most common background range for the adjacent scan points
+		    // This handles the case where a scan is partially occluded by a foreground object and averages between the near and far ranges
+		    result[i]=(srange[i]<range[0][std::max(0,i-1)] )!= (srange[i]<range[0][std::min(i+1,sick.getNumMeasurements()-1)]);
+		    break;
+		}
+	    }
+	}
+    }
+    return result;
+}
+
+void Background::update(const SickIO &sick) {
     const unsigned int *srange = sick.getRange(0);
     for (int i=0;i<NRANGES;i++) {
 	range[i].resize(sick.getNumMeasurements());
@@ -25,32 +53,32 @@ std::vector<bool> Background::update(const SickIO &sick) {
     }
     scanRes=sick.getScanRes();
     for (int i=0;i<sick.getNumMeasurements();i++) {
-	if (srange[i]>=maxrange)
-	    result[i]=true;
-	else {
-	    for (int k=0;k<NRANGES;k++)
-		freq[k][i]*=(1.0-1.0f/UPDATETC);
-	    result[i]=false;
+	if (srange[i]<maxrange && srange[i]>=minrange) {
 	    for (int k=0;k<NRANGES;k++) {
+		freq[k][i]*=(1.0-1.0f/UPDATETC);
 		if (abs(srange[i]-range[k][i]) < MINBGSEP) {
-		    result[i]=k<NRANGES-1;
 		    range[k][i]=srange[i]*1.0f/UPDATETC + range[k][i]*(1-1.0f/UPDATETC);
 		    freq[k][i]+=1.0f/UPDATETC;
 		    // Swap ordering if needed
-		    if  (k>0 && freq[k][i] > freq[k-1][i])
-			swap(i,k,k-1);
+		    for (int kk=k;kk>0;kk--)
+			if  (freq[kk][i] > freq[kk-1][i])
+			    swap(i,kk,kk-1);
+			else
+			    break;
 		    break;
 		} else if (k==NRANGES-1) {
 		    // No matches, reset last range value 
 		    range[k][i]=srange[i];
 		    freq[k][i]=1.0f/UPDATETC;
-		    if (freq[k][i] > freq[k-1][i])
-			swap(i,k,k-1);
+		    for (int kk=k;kk>0;kk--)
+			if  (freq[kk][i] > freq[kk-1][i])
+			    swap(i,kk,kk-1);
+			else
+			    break;
 		}
 	    }
 	}
     }
-    return result;
 }
 
 mxArray *Background::convertToMX() const {
@@ -60,8 +88,8 @@ mxArray *Background::convertToMX() const {
     mxArray *pRange = mxCreateDoubleMatrix(NRANGES,range[0].size(),mxREAL);
     assert(pRange!=NULL);
     double *data=mxGetPr(pRange);
-    for (int j=0;j<NRANGES;j++)
-	for (unsigned int i=0;i<range[0].size();i++)
+    for (unsigned int i=0;i<range[0].size();i++)
+	for (int j=0;j<NRANGES;j++)
 	    *data++=range[j][i]/1000.0;
     mxSetField(bg,0,"range",pRange);
 
@@ -75,8 +103,8 @@ mxArray *Background::convertToMX() const {
     mxArray *pFreq = mxCreateDoubleMatrix(NRANGES,range[0].size(),mxREAL);
     assert(pFreq!=NULL);
     data=mxGetPr(pFreq);
-    for (int j=0;j<NRANGES;j++)
-	for (unsigned int i=0;i<range[0].size();i++)
+    for (unsigned int i=0;i<range[0].size();i++)
+	for (int j=0;j<NRANGES;j++)
 	    *data++=freq[j][i];
     mxSetField(bg,0,"freq",pFreq);
 

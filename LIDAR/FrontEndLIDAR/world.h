@@ -10,10 +10,12 @@
 
 #include "classifier.h"
 #include "sickio.h"
+#include "people.h"
 
 class Vis;
 
 class World {
+    People people;
 public:
     World();
     // Track people and send update messages

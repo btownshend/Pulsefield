@@ -11,19 +11,19 @@
 #include "sickio.h"
 
 class Background {
-    static const int MINBGSEP=100;	// mm
     static const int NRANGES=3;
     static const int UPDATETC=50*60;
 
     std::vector<float> range[NRANGES];   // Range in mm of background for NRANGES values/scan
     std::vector<float> freq[NRANGES];
-    float maxrange;
+    unsigned int maxrange,minrange;
     float scanRes;
 
     void swap(int k, int i, int j);
 public:
     Background();
-    std::vector<bool> update(const SickIO &sick);
+    std::vector<bool> isbg(const SickIO &sick) const;
+    void update(const SickIO &sick);
     void setmaxrange(float _maxrange) {
 	maxrange=_maxrange;
     }

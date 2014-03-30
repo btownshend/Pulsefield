@@ -1,6 +1,7 @@
 BASEDIR=../../..
 LIBLO=$(BASEDIR)/OSC/liblo-0.26
-MATLAB=/Applications/MATLAB_R2013a.app
+#MATLAB=/Applications/MATLAB_R2013a.app
+MATLAB=/Applications/MATLAB_R2014a.app
 MATLABINC=$(MATLAB)/extern/include
 MATLABLIBDIR=$(MATLAB)/bin/maci64
 MATLABLIBES=-lmx -lmat
@@ -15,7 +16,7 @@ CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/ba
 CFLAGS=$(DEBUG)  $(OPTIMIZE)
 LDFLAGS=-L$(LIBLO) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) 
 LIBES=-llo $(SICKLIB) $(MATLABLIBES) -g 
-CXXSRCS=frontend.cc dest.cc main.cc urlconfig.cc sickio.cc background.cc world.cc classifier.cc snapshot.cc vis.cc
+CXXSRCS=frontend.cc dest.cc main.cc urlconfig.cc sickio.cc background.cc world.cc classifier.cc snapshot.cc vis.cc people.cc person.cc
 CSRCS=
 SRCS=$(CXXSRCS) $(CSRCS)
 all: frontend
@@ -25,7 +26,7 @@ frontend: $(CSRCS:.c=.o) $(CXXSRCS:.cc=.o) $(SICKLIB)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
 
 depend:
-	makedepend -Y -- $(CXXFLAGS) -- $(SRCS)
+	/opt/local/bin/makedepend -Y -- $(CXXFLAGS) -- $(SRCS)
 
 clean:
 	rm *.o
@@ -47,10 +48,10 @@ frontend.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxB
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-frontend.o: /Applications/MATLAB_R2013a.app/extern/include/mat.h
-frontend.o: /Applications/MATLAB_R2013a.app/extern/include/matrix.h
-frontend.o: /Applications/MATLAB_R2013a.app/extern/include/tmwtypes.h world.h
-frontend.o: classifier.h background.h snapshot.h vis.h
+frontend.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
+frontend.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+frontend.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h world.h
+frontend.o: classifier.h background.h people.h person.h snapshot.h vis.h
 dest.o: dest.h
 main.o: frontend.h ../../../OSC/liblo-0.26/lo/lo.h
 main.o: ../../../OSC/liblo-0.26/lo/lo_endian.h
@@ -68,9 +69,9 @@ sickio.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuf
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-sickio.o: /Applications/MATLAB_R2013a.app/extern/include/mat.h
-sickio.o: /Applications/MATLAB_R2013a.app/extern/include/matrix.h
-sickio.o: /Applications/MATLAB_R2013a.app/extern/include/tmwtypes.h
+sickio.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
+sickio.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+sickio.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
 background.o: background.h sickio.h
 background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -79,9 +80,10 @@ background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5x
 background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-background.o: /Applications/MATLAB_R2013a.app/extern/include/mat.h
-background.o: /Applications/MATLAB_R2013a.app/extern/include/matrix.h
-background.o: /Applications/MATLAB_R2013a.app/extern/include/tmwtypes.h
+background.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
+background.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+background.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
+background.o: parameters.h
 world.o: world.h classifier.h background.h sickio.h
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -90,12 +92,13 @@ world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuff
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-world.o: /Applications/MATLAB_R2013a.app/extern/include/mat.h
-world.o: /Applications/MATLAB_R2013a.app/extern/include/matrix.h
-world.o: /Applications/MATLAB_R2013a.app/extern/include/tmwtypes.h
-classifier.o: /Applications/MATLAB_R2013a.app/extern/include/mat.h
-classifier.o: /Applications/MATLAB_R2013a.app/extern/include/matrix.h
-classifier.o: /Applications/MATLAB_R2013a.app/extern/include/tmwtypes.h
+world.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
+world.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+world.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h people.h
+world.o: person.h
+classifier.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
+classifier.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+classifier.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
 classifier.o: classifier.h background.h sickio.h
 classifier.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 classifier.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -104,9 +107,10 @@ classifier.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5x
 classifier.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 classifier.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 classifier.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-snapshot.o: /Applications/MATLAB_R2013a.app/extern/include/mat.h
-snapshot.o: /Applications/MATLAB_R2013a.app/extern/include/matrix.h
-snapshot.o: /Applications/MATLAB_R2013a.app/extern/include/tmwtypes.h
+classifier.o: parameters.h
+snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
+snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
 snapshot.o: sickio.h
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -115,7 +119,8 @@ snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxB
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-snapshot.o: world.h classifier.h background.h snapshot.h vis.h
+snapshot.o: world.h classifier.h background.h people.h person.h snapshot.h
+snapshot.o: vis.h
 vis.o: vis.h sickio.h
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -124,7 +129,14 @@ vis.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuffer
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-vis.o: /Applications/MATLAB_R2013a.app/extern/include/mat.h
-vis.o: /Applications/MATLAB_R2013a.app/extern/include/matrix.h
-vis.o: /Applications/MATLAB_R2013a.app/extern/include/tmwtypes.h classifier.h
+vis.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
+vis.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+vis.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h classifier.h
 vis.o: background.h
+people.o: people.h person.h
+people.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
+people.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+people.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
+person.o: person.h /Applications/MATLAB_R2014a.app/extern/include/mat.h
+person.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+person.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h

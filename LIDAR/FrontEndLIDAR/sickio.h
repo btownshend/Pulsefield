@@ -75,16 +75,22 @@ public:
 		return acquired;
 	}
 
+	// Get angle of measurement in degrees
 	float getAngle(int measurement)  const {
 	    return scanRes*(measurement-(num_measurements-1)/2.0);
 	}
 
 	float getX(int measurement, int echo=0)  const {
-	    return cos(getAngle(measurement))*range[echo][measurement];
+	    return cos(getAngle(measurement)*M_PI/180)*range[echo][measurement];
 	}
 
 	float getY(int measurement, int echo=0) const {
-	    return sin(getAngle(measurement))*range[echo][measurement];
+	    return sin(getAngle(measurement)*M_PI/180)*range[echo][measurement];
+	}
+
+	// Distance between two scan points
+	float distance(int i, int j) const {
+	    return sqrt(pow(getX(i)-getX(j),2) + pow(getY(i)-getY(j),2));
 	}
 
 	unsigned int getFrame() const {
@@ -110,10 +116,12 @@ public:
 	    scanFreq=freq;
 	    updateScanFreqAndRes();
 	}
+	// Set scan resolution in degrees
 	void setScanRes(double res) {
 	    scanRes=res;
 	    updateScanFreqAndRes();
 	}
+	// Get scan resolution in degrees
 	float getScanRes() const {
 	    return scanRes;
 	}

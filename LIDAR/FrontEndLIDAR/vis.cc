@@ -8,9 +8,8 @@ void Vis::update(const SickIO *s) {
     classifier.update(*sick);
 }
 
-
 mxArray *Vis::convertToMX() const {
-    const char *fieldnames[]={"cframe","nmeasure","range","angle","frame","acquired","class"};
+    const char *fieldnames[]={"cframe","nmeasure","range","angle","frame","acquired","class","shadowed"};
     mxArray *vis = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
     mxArray *pFrame = mxCreateDoubleMatrix(1,1,mxREAL);
@@ -55,6 +54,15 @@ mxArray *Vis::convertToMX() const {
     for (unsigned int i=0;i<classes.size();i++)
 	*sdata++=classes[i];
     mxSetField(vis,0,"class",pCl);
+
+    const std::vector<bool> shadowed[2]={ classifier.getshadowed(0), classifier.getshadowed(1)};
+    mxArray *pSh = mxCreateLogicalMatrix(shadowed[0].size(),2);
+    assert(pSh!=NULL);
+    mxLogical *ldata=mxGetLogicals(pSh);
+    for (unsigned int i=0;i<2;i++)
+	for (unsigned int j=0;j<shadowed[i].size();j++)
+	    *ldata++=shadowed[i][j];
+    mxSetField(vis,0,"shadowed",pSh);
 
     return vis;
 }
