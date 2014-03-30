@@ -86,10 +86,6 @@ void Classifier::update(const SickIO &sick) {
 	// No targets, done.
 	return;
 
-    if (debug) {
-	print(sick);
-    }
-
     // Check for solitary classes not too far from adjacent classes
     for (unsigned int i=1;i<classes.size()-1;i++) {
 	if (classes[i]>MAXSPECIAL && classes[i-1]!=classes[i] && classes[i+1]!=classes[i]) {
@@ -117,9 +113,6 @@ void Classifier::update(const SickIO &sick) {
 	}
     }
     
-    if (sick.getFrame()==392)
-	printf("shadowed[:][142]=%d,%d\n",(int)shadowed[0][142],(int)shadowed[1][142]);
-
     // Eliminate small classes
     for (unsigned int c=MAXSPECIAL+1;c<nextclass;c++) {
 	int firstindex=getfirstindex(c);
@@ -131,7 +124,6 @@ void Classifier::update(const SickIO &sick) {
 	    continue;
 	float dist=sick.distance(firstindex,lastindex);
 	float scanwidth=(srange[firstindex]+srange[lastindex])/2.0*sick.getScanRes()*M_PI/180;
-	printf("dist=%f, scanwidth=%f\n",dist,scanwidth);
 	if (dist+scanwidth < MINTARGET) {
 	    printf("Target class %d (%d:%d) has size %.2f<%.2f, is probably noise\n", c, firstindex,lastindex, dist+scanwidth,MINTARGET);
 	    for (int i=firstindex;i<=lastindex;i++)
@@ -170,10 +162,6 @@ void Classifier::update(const SickIO &sick) {
 		}
 	    }
 	}
-
-    if (debug) {
-	print(sick);
-    }
 
     // Compact class numbers
     std::vector<bool> present(nextclass,false);
