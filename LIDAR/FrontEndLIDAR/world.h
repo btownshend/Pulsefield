@@ -10,12 +10,12 @@
 
 #include "classifier.h"
 #include "sickio.h"
-#include "people.h"
+#include "person.h"
 
 class Vis;
 
 class World {
-    People people;
+    std::vector<Person> people;
 public:
     World();
     // Track people and send update messages

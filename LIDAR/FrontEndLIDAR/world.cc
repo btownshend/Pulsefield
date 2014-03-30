@@ -15,7 +15,17 @@ mxArray *World::convertToMX() const {
     *mxGetPr(pNextid) = 0;
     mxSetField(world,0,"nextid",pNextid);
 
-    mxArray *pPeople=people.convertToMX();
+    const char *pfieldnames[]={"id","position","legs","prevlegs","legvelocity","legclasses","posvar","velocity","legdiam","leftness","age","consecutiveInvisibleCount","totalVisibleCount"};
+    mxArray *pPeople = mxCreateStructMatrix(1,people.size(),sizeof(pfieldnames)/sizeof(pfieldnames[0]),pfieldnames);
+
+    for (unsigned int i=0;i<people.size();i++) {
+	people[i].addToMX(pPeople,i);
+    }
+
+    if (mxSetClassName(pPeople,"Person")) {
+	fprintf(stderr,"Unable to convert people to a Matlab class\n");
+    }
+
     mxSetField(world,0,"tracks",pPeople);					      
 
     if (mxSetClassName(world,"World")) {
