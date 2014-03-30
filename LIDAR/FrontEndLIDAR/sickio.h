@@ -116,6 +116,9 @@ public:
 	    scanFreq=freq;
 	    updateScanFreqAndRes();
 	}
+	int getScanFreq() {
+	    return scanFreq;
+	}
 	// Set scan resolution in degrees
 	void setScanRes(double res) {
 	    scanRes=res;
