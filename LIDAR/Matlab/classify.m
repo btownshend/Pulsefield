@@ -58,7 +58,7 @@ end
 for ii=1:length(notbg)
   i=notbg(ii);
   % Check if it is an isolated point (noise)
-  if (i==1 || class(i-1)==BACKGROUND) && (i==length(vis.range) || class(i+1)==BACKGROUND)
+  if i>1 && i<length(vis.range) && vis.range(i-1)>vis.range(i) && class(i-1)==BACKGROUND && vis.range(i+1)>vis.range(i) && class(i+1)==BACKGROUND
     if args.debug
       fprintf('Marking point %d as noise\n', i);
     end
