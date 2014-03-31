@@ -21,6 +21,7 @@ public:
     mxArray *convertToMX() const;
 
     const Classifier *getClassifier() const { return &classifier; }
+    const SickIO *getSick() const { return sick; }
 };
 
 #endif  /* VIS_H_ */

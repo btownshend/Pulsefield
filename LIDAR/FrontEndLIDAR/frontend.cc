@@ -257,7 +257,7 @@ void FrontEnd::processFrames() {
 	    sick[c]->clearValid();
 	}
 	vis->update(sick[0]);
-	world->track(vis);
+	world->track(vis->getClassifier()->getTargets(),*vis,frame,sick[0]->getScanFreq());
 	
 	sendOnce=0;
 	if (recording)
@@ -425,7 +425,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 
 	
 	vis->update(sick[0]);
-	world->track(vis);
+	world->track(vis->getClassifier()->getTargets(),*vis,cframe,sick[0]->getScanFreq());
 
 	if (matframes>0) {
 	    snap->append(vis,world);

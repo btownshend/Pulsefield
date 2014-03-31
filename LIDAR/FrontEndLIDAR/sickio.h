@@ -12,6 +12,8 @@
 #include <sicklms5xx/SickLMS5xx.hh>
 #include <mat.h>
 
+#include "point.h"
+
 class SickIO {
 public:
 	static const int MAXECHOES=5;
@@ -51,6 +53,8 @@ public:
 		    reflect[i][j]=_reflect[i][j];
 		}
 	    scanRes=190.0/(num_measurements-1);
+	    scanFreq=50;
+	    updateScanFreqAndRes();
 	}
 
 	virtual ~SickIO();
@@ -81,11 +85,24 @@ public:
 	}
 
 	float getX(int measurement, int echo=0)  const {
-	    return cos(getAngle(measurement)*M_PI/180)*range[echo][measurement];
+	    return cos(getAngle(measurement)*M_PI/180+M_PI/2)*range[echo][measurement];
 	}
 
 	float getY(int measurement, int echo=0) const {
-	    return sin(getAngle(measurement)*M_PI/180)*range[echo][measurement];
+	    return sin(getAngle(measurement)*M_PI/180+M_PI/2)*range[echo][measurement];
+	}
+
+	Point getPoint(int measurement) const {
+	    return Point(getX(measurement),getY(measurement));
+	}
+	
+	// Get scan index closest to angle (in degrees) 
+	int getScanAtAngle(float angle) const {
+	    while (angle>180)
+		angle-=2*180;
+	    while (angle<-180)
+		angle+=2*180;
+	    return (int)(angle/scanRes+(num_measurements-1)/2.0 + 0.5);
 	}
 
 	// Distance between two scan points
@@ -116,7 +133,7 @@ public:
 	    scanFreq=freq;
 	    updateScanFreqAndRes();
 	}
-	int getScanFreq() {
+	int getScanFreq() const {
 	    return scanFreq;
 	}
 	// Set scan resolution in degrees

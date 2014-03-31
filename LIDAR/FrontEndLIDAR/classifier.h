@@ -9,18 +9,24 @@
 #define CLASSIFIER_H_
 
 #include <vector>
+#include <set>
 #include "background.h"
+#include "target.h"
 
 class Classifier {
-    enum classes { BACKGROUND=0, OUTSIDE=1, NOISE=2, MAXSPECIAL=2 };
     Background bg;
     std::vector<unsigned int> classes;
     std::vector<bool> shadowed[2];
+    Targets targets;
     int nextclass;
 public:
+    enum { BACKGROUND=0, OUTSIDE=1, NOISE=2, MAXSPECIAL=2 };
     Classifier();
     void update(const SickIO &sick);
-    const std::vector<unsigned int> getclasses() const { return classes; }
+    const Targets &getTargets() const { return targets; }
+    std::set<unsigned int> getUniqueClasses() const;
+    Point getClassCenter(const SickIO *sick, int c) const;
+    const std::vector<unsigned int> &getclasses() const { return classes; }
     const std::vector<bool> &getshadowed(int i) const { return shadowed[i]; }
     const Background *getBackground() const { return &bg; }
     mxArray *convertToMX() const;

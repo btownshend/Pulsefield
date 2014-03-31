@@ -62,8 +62,8 @@ SickIO::~SickIO() {
 }
 
 void SickIO::updateScanFreqAndRes() {	
-    printf("Updating device to scanFreq=%d (%d), scanRes=%f (%d)\n",scanFreq,sick_lms_5xx->IntToSickScanFreq(scanFreq),scanRes,sick_lms_5xx->DoubleToSickScanRes(scanRes));
-	if (!fake)
+    //    printf("Updating device to scanFreq=%d (%d), scanRes=%f (%d)\n",scanFreq,sick_lms_5xx->IntToSickScanFreq(scanFreq),scanRes,sick_lms_5xx->DoubleToSickScanRes(scanRes));
+    if (!fake)
 	    sick_lms_5xx->SetSickScanFreqAndRes(sick_lms_5xx->IntToSickScanFreq(scanFreq),sick_lms_5xx->DoubleToSickScanRes(scanRes));
 }
 

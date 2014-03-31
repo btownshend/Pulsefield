@@ -10,6 +10,14 @@ static const unsigned int debugframe=394;
 Classifier::Classifier(): bg() {
 }
 
+std::set<unsigned int> Classifier::getUniqueClasses() const {
+    std::set<unsigned int> result;
+    for (unsigned int i=0;i<classes.size();i++) 
+	if (classes[i]>MAXSPECIAL)
+	    result.insert(classes[i]);
+    return result;
+}
+
 int Classifier::getfirstindex(unsigned int c) const {
     for (unsigned int i=0;i<classes.size();i++) 
 	if (classes[i]==c)
@@ -177,6 +185,32 @@ void Classifier::update(const SickIO &sick) {
     for (unsigned int i=0;i<classes.size();i++)
 	if (classes[i]>MAXSPECIAL)
 	    classes[i]=mapped[classes[i]];
+    nextclass=nextup;
+
+    // Build target list
+    targets.clear();
+    for (int c=MAXSPECIAL+1;c<nextclass;c++) {
+	std::vector<Point> pts;
+	bool first=true;
+	bool leftsh, rightsh;
+	Point priorpt, nextpt;
+	for (unsigned int i=0;i<classes.size();i++) 
+	    if (classes[i]==c) {
+		pts.push_back(sick.getPoint(i));
+		if (first) {
+		    leftsh=shadowed[0][i];
+		    if (i>0)
+			priorpt=sick.getPoint(i-1);
+		    first=false;
+		}
+		rightsh=shadowed[1][i];
+		if (i+1<classes.size())
+		    nextpt=sick.getPoint(i+1);
+		else
+		    nextpt=Point();
+	    }
+	targets.push_back(Target(c,pts,leftsh,rightsh,priorpt,nextpt));
+    }
 
     if (debug) {
 	print(sick);

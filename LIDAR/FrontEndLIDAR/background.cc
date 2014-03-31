@@ -3,9 +3,8 @@
 #include "parameters.h"
 
 Background::Background() {
-    maxrange=6000;
-    minrange=100;
     scanRes=0;
+    nupdates=0;
 }
 
 void Background::swap(int k, int i, int j) {
@@ -22,11 +21,15 @@ std::vector<bool> Background::isbg(const SickIO &sick) const {
     std::vector<bool> result(sick.getNumMeasurements(),false);
     const unsigned int *srange = sick.getRange(0);
     for (int i=0;i<sick.getNumMeasurements();i++) {
-	if (srange[i]>=maxrange || srange[i]<minrange)
+	if (srange[i]>=MAXRANGE || srange[i]<MINRANGE)
 	    result[i]=true;
 	else {
 	    // Compute result
 	    for (int k=0;k<NRANGES-1;k++) {
+		if (freq[k][i]<MINBGFREQ) {
+		    result[i]=false;
+		    continue;
+		}
 		if (k==0 && (abs(srange[i]-range[k][i]) < MINBGSEP ||
 			     (i>0 && abs(srange[i]-range[k][i-1])<MINBGSEP) ||
 			     (i+1<sick.getNumMeasurements() && abs(srange[i]-range[k][i+1])<MINBGSEP))) {
@@ -52,13 +55,15 @@ void Background::update(const SickIO &sick) {
 	freq[i].resize(sick.getNumMeasurements());
     }
     scanRes=sick.getScanRes();
+    nupdates++;
+    float tc=std::min(nupdates,UPDATETC);  // Setup so that until we have UPDATETC frames, time constant weights all samples equally
     for (int i=0;i<sick.getNumMeasurements();i++) {
-	if (srange[i]<maxrange && srange[i]>=minrange) {
-	    for (int k=0;k<NRANGES;k++) {
-		freq[k][i]*=(1.0-1.0f/UPDATETC);
+	for (int k=0;k<NRANGES;k++) {
+	    freq[k][i]*=(1.0-1.0f/tc);
+	    if (srange[i]<MAXRANGE && srange[i]>=MINRANGE) {
 		if (abs(srange[i]-range[k][i]) < MINBGSEP) {
-		    range[k][i]=srange[i]*1.0f/UPDATETC + range[k][i]*(1-1.0f/UPDATETC);
-		    freq[k][i]+=1.0f/UPDATETC;
+		    range[k][i]=srange[i]*1.0f/tc + range[k][i]*(1-1.0f/tc);
+		    freq[k][i]+=1.0f/tc;
 		    // Swap ordering if needed
 		    for (int kk=k;kk>0;kk--)
 			if  (freq[kk][i] > freq[kk-1][i])
@@ -69,7 +74,7 @@ void Background::update(const SickIO &sick) {
 		} else if (k==NRANGES-1) {
 		    // No matches, reset last range value 
 		    range[k][i]=srange[i];
-		    freq[k][i]=1.0f/UPDATETC;
+		    freq[k][i]=1.0f/tc;
 		    for (int kk=k;kk>0;kk--)
 			if  (freq[kk][i] > freq[kk-1][i])
 			    swap(i,kk,kk-1);
