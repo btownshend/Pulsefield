@@ -26,7 +26,7 @@ public:
     Assignment maxLike() const { 
 	assert (entries.size()>0);
 	float best=0;
-	for (int i=1;i<entries.size();i++)
+	for (unsigned int i=1;i<entries.size();i++)
 	    if (entries[i].like>entries[best].like)
 		best=i;
 	return entries[best];
@@ -43,7 +43,7 @@ public:
 
     int size() const { return entries.size(); }
     void print() const {
-	for (int i=0;i<entries.size();i++)
+	for (unsigned int i=0;i<entries.size();i++)
 	    entries[i].print();
     }
 };

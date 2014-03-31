@@ -9,7 +9,7 @@ World::World() {
 
 void World::print() const {
     printf("World: frame=%d\n", lastframe);
-    for (int i=0;i<people.size();i++) {
+    for (unsigned int i=0;i<people.size();i++) {
 	people[i].print();
     }
 }
@@ -23,12 +23,12 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
     lastframe=frame;
 
     // Update existing tracks with next prediction
-    for (int i=0;i<people.size();i++)
+    for (unsigned int i=0;i<people.size();i++)
 	people[i].predict(nsteps,fps);
 
     // Assign current classes to tracks
     Likelihood likes;
-    for (int i=0;i<people.size();i++)
+    for (unsigned int i=0;i<people.size();i++)
 	people[i].getclasslike(targets,vis,likes,i);
 
     // Compute likelihoods of new tracks
@@ -52,7 +52,7 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
     }
 
     // Delete lost people
-    for (int i=0;i<people.size();i++)
+    for (unsigned int i=0;i<people.size();i++)
 	if (people[i].isDead()) {
 	    people.erase(people.begin()+i);
 	    i--;

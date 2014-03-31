@@ -33,9 +33,9 @@ mxArray *Vis::convertToMX() const {
     mxArray *pRange = mxCreateNumericArray(3,dims,mxDOUBLE_CLASS,mxREAL);
     assert(pRange!=NULL);
     double *data=mxGetPr(pRange);
-    for (int j=0;j<sick->getNumEchoes();j++) {
+    for (unsigned int j=0;j<sick->getNumEchoes();j++) {
 	const unsigned int *range=sick->getRange(j);
-	for (int i=0;i<sick->getNumMeasurements();i++)
+	for (unsigned int i=0;i<sick->getNumMeasurements();i++)
 	    *data++=range[i]/1000.0;
     }
     mxSetField(vis,0,"range",pRange);
@@ -43,7 +43,7 @@ mxArray *Vis::convertToMX() const {
     mxArray *pAngle = mxCreateDoubleMatrix(1,sick->getNumMeasurements(),mxREAL);
     assert(pAngle!=NULL);
     data=mxGetPr(pAngle);
-    for (int i=0;i<sick->getNumMeasurements();i++)
+    for (unsigned int i=0;i<sick->getNumMeasurements();i++)
 	*data++=(i-(sick->getNumMeasurements()-1)/2.0)*sick->getScanRes()*M_PI/180;
     mxSetField(vis,0,"angle",pAngle);
 

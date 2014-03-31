@@ -63,7 +63,7 @@ public:
 	int start();
 	int stop();
 
-	int getNumMeasurements() const {
+	unsigned int getNumMeasurements() const {
 		return num_measurements;
 	}
 
@@ -127,7 +127,7 @@ public:
 	}
 
 	void setNumEchoes(int nechoes);
-	int getNumEchoes() const { return nechoes; }
+	unsigned int getNumEchoes() const { return nechoes; }
 	void setCaptureRSSI(bool on);
 	void setScanFreq(int freq) {
 	    scanFreq=freq;

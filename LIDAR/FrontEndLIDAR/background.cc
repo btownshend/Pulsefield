@@ -20,7 +20,7 @@ void Background::swap(int k, int i, int j) {
 std::vector<bool> Background::isbg(const SickIO &sick) const {
     std::vector<bool> result(sick.getNumMeasurements(),false);
     const unsigned int *srange = sick.getRange(0);
-    for (int i=0;i<sick.getNumMeasurements();i++) {
+    for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
 	if (srange[i]>=MAXRANGE || srange[i]<MINRANGE)
 	    result[i]=true;
 	else {
@@ -39,7 +39,7 @@ std::vector<bool> Background::isbg(const SickIO &sick) const {
 		} else if (abs(srange[i]-range[k][i])<MINBGSEP) {
 		    // or if it matches the 2nd most common AND that range is between the most common background range for the adjacent scan points
 		    // This handles the case where a scan is partially occluded by a foreground object and averages between the near and far ranges
-		    result[i]=(srange[i]<range[0][std::max(0,i-1)] )!= (srange[i]<range[0][std::min(i+1,sick.getNumMeasurements()-1)]);
+		    result[i]=(srange[i]<range[0][std::max(0u,i-1)] )!= (srange[i]<range[0][std::min(i+1,sick.getNumMeasurements()-1)]);
 		    break;
 		}
 	    }
@@ -57,7 +57,7 @@ void Background::update(const SickIO &sick) {
     scanRes=sick.getScanRes();
     nupdates++;
     float tc=std::min(nupdates,UPDATETC);  // Setup so that until we have UPDATETC frames, time constant weights all samples equally
-    for (int i=0;i<sick.getNumMeasurements();i++) {
+    for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
 	for (int k=0;k<NRANGES;k++) {
 	    freq[k][i]*=(1.0-1.0f/tc);
 	    if (srange[i]<MAXRANGE && srange[i]>=MINRANGE) {

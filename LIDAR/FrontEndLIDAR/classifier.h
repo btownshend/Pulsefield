@@ -18,7 +18,7 @@ class Classifier {
     std::vector<unsigned int> classes;
     std::vector<bool> shadowed[2];
     Targets targets;
-    int nextclass;
+    unsigned int nextclass;
 public:
     enum { BACKGROUND=0, OUTSIDE=1, NOISE=2, MAXSPECIAL=2 };
     Classifier();

@@ -100,14 +100,14 @@ void Person::getclasslike(const Targets &targets, const Vis &vis, Likelihood &li
     // Compute like of each class assignment from vis to the 2 legs
     // Class 1 represents leg not being visible (shadowed)
     // Check assignments
-    for (int i=0;i<targets.size();i++) {
+    for (unsigned int i=0;i<targets.size();i++) {
 	const Target *t1=&targets[i];
 	Point cp1=t1->getCenter();
 	if ((legs[0]-cp1).norm() < MAXMOVEMENT) {
 	    // Possible leg assignment
 	    Point newleg0=circmodel(t1, false);
 	    float l0=normloglike(posvar[0],(legs[0]-newleg0).norm());
-	    for (int j=0;j<targets.size();j++) {
+	    for (unsigned int j=0;j<targets.size();j++) {
 		if (i==j)
 		    continue;
 		const Target *t2=&targets[j];
@@ -141,10 +141,10 @@ void Person::getclasslike(const Targets &targets, const Vis &vis, Likelihood &li
 }
 
 void Person::newclasslike(const Targets &targets, const Vis &vis, Likelihood &likes)  {
-    for (int i=0;i<targets.size();i++) {
+    for (unsigned int i=0;i<targets.size();i++) {
 	const Target *t1=&targets[i];
 	Point cp1=t1->getCenter();
-	for (int j=0;j<targets.size();j++) {
+	for (unsigned int j=0;j<targets.size();j++) {
 	    if (i==j)
 		continue;
 	    const Target *t2=&targets[j];
@@ -233,7 +233,7 @@ Point Person::circmodel(const Target *t,  bool update) {
     } else {
 	// Set range to average distance + legdiam/4
 	range=pts[0].getRange();
-	for (int i=1;i<pts.size();i++)
+	for (unsigned int i=1;i<pts.size();i++)
 	    range+=pts[i].getRange();
 	range/=pts.size();
 	range+=legdiam/4;
@@ -308,9 +308,9 @@ Point Person::nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos) 
     Point bestpos;
     int besti,bestj;
     float res=vis.getSick()->getScanRes()*M_PI/180;
-    for (int i=0;i<vis.getSick()->getNumMeasurements();i++) {
+    for (unsigned int i=0;i<vis.getSick()->getNumMeasurements();i++) {
 	float minrange=vis.getSick()->getRange(0)[i];
-	for (int j=i+1;j<vis.getSick()->getNumMeasurements() && j<=i+(cpos2-cpos1);j++) {
+	for (unsigned int j=i+1;j<vis.getSick()->getNumMeasurements() && j<=i+(cpos2-cpos1);j++) {
 	    minrange=std::max(minrange,(float)vis.getSick()->getRange(0)[j]);
 	    float shadowrange=std::max(minrange+legdiam,legdiam/((j-i)*res));
 	    if (i==0 || j==vis.getSick()->getNumMeasurements()) {

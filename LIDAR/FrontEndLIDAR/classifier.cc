@@ -189,7 +189,7 @@ void Classifier::update(const SickIO &sick) {
 
     // Build target list
     targets.clear();
-    for (int c=MAXSPECIAL+1;c<nextclass;c++) {
+    for (unsigned int c=MAXSPECIAL+1;c<nextclass;c++) {
 	std::vector<Point> pts;
 	bool first=true;
 	bool leftsh, rightsh;

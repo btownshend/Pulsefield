@@ -248,7 +248,7 @@ void FrontEnd::processFrames() {
 	for (int c=0;c<nsick;c++) {
 	    const unsigned int *range[SickIO::MAXECHOES];
 	    const unsigned int *reflect[SickIO::MAXECHOES];
-	    for (int i=0;i<sick[c]->getNumEchoes();i++) {
+	    for (unsigned int i=0;i<sick[c]->getNumEchoes();i++) {
 		range[i]=sick[c]->getRange(i);
 		reflect[i]=sick[c]->getReflect(i);
 	    }
@@ -310,14 +310,14 @@ void FrontEnd::recordFrame() {
 	for (int e=0;e<nechoes;e++) {
 	    const unsigned int *ranges=sick[c]->getRange(e);
 	    fprintf(recordFD,"D%d ",e);
-	    for (int i=0;i<sick[c]->getNumMeasurements();i++)
+	    for (unsigned int i=0;i<sick[c]->getNumMeasurements();i++)
 		fprintf(recordFD,"%d ",ranges[i]);
 	    fprintf(recordFD,"\n");
 	}
 	for (int e=0;e<nechoes;e++) {
 	    const unsigned int *reflect=sick[c]->getReflect(e);
 	    fprintf(recordFD,"R%d ",e);
-	    for (int i=0;i<sick[c]->getNumMeasurements();i++)
+	    for (unsigned int i=0;i<sick[c]->getNumMeasurements();i++)
 		fprintf(recordFD,"%d ",reflect[i]);
 	    fprintf(recordFD,"\n");
 	}
