@@ -2,6 +2,7 @@ classdef World < handle
   properties
     tracks;
     nextid;
+    npeople;
     debug;
   end
   
@@ -15,11 +16,11 @@ classdef World < handle
     function obj=loadobj(obj)
       if isstruct(obj)
         newobj=World;
-        newobj.tracks=obj.tracks;
-        newobj.nextid=obj.nextid;
-        if isfield(obj,'debug')
-          newobj.debug=obj.debug;
-        else
+        fn=fieldnames(obj);
+        for i=1:length(fn)
+          newobj.(fn{i})=obj.(fn{i});
+        end
+        if ~isfield(obj,'debug')
           newobj.debug=false;
         end
         obj=newobj;
