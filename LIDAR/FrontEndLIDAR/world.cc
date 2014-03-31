@@ -40,15 +40,17 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
     }
 
     // Greedy assignment
-    while (likes.size() > 0) {
-	Assignment a=likes.maxLike();
+    Likelihood result=likes.greedy();
+    
+    // Implement assignment
+    for (int i=0;i<result.size();i++) {
+	Assignment a=result[i];
 	printf("Assign: "); a.print();
 	if (a.track<0) {
 	    people.push_back(Person(nextid, vis, a.target1, a.target2));
 	    nextid++;
 	} else
 	    people[a.track].update(vis,a.target1,a.target2,nsteps,fps);
-	likes.remove(a);
     }
 
     // Delete lost people

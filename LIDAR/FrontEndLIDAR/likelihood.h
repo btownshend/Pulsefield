@@ -8,13 +8,18 @@
 #ifndef LIKELIHOOD_H_
 #define LIKELIHOOD_H_
 
+#include <vector>
+#include <assert.h>
+
+class Target;
+
 class Assignment {
  public:
     int track;
     const Target *target1, *target2;
     float like;
     Assignment(int t, const Target *t1, const Target *t2, float l) { track=t; target1=t1; target2=t2; like=l; }
-    void print() const { printf("\tTrack %3d, Classes %2d,%2d, Like %f\n", track, (target1!=NULL)?target1->getClass():1, (target2!=NULL)?target2->getClass():1, like); }
+    void print() const;
 };
 
 class Likelihood {
@@ -40,12 +45,14 @@ public:
 		++iter;
 	}
     }
-
+    const Assignment &operator[](int i) { return entries[i]; }
     int size() const { return entries.size(); }
     void print() const {
 	for (unsigned int i=0;i<entries.size();i++)
 	    entries[i].print();
     }
+    
+    Likelihood greedy();
 };
 
 #endif /* LIKELIHOOD_H_ */
