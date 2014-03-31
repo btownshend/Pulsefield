@@ -42,7 +42,7 @@ for i=1:length(tracker.tracks)
   plot(t.position(1),t.position(2),['x',color]);
   plot(t.legs(:,1),t.legs(:,2),['o',color]);
   cnum=t.legclasses;
-  cnum(cnum==1)=nan;
+  cnum(cnum==1)=10000;   % Different from any class
   %fprintf('class=(%d,%d), npts=(%d,%d)\n',cnum,sum(vis.class==cnum(1)),sum(vis.class==cnum(2)));
   lsel=vis.class==cnum(1);
   rsel=vis.class==cnum(2);
