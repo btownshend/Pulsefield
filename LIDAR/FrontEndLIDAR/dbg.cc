@@ -1,0 +1,247 @@
+/* $Id: dbg.cc,v 1.15 1998/07/14 22:30:18 eryk Exp $
+ *
+ * Eryk M. Warren (eryk@tc.com)
+ * Townshend Computer Tools
+ * Montreal, Quebec
+ *
+ * Wed Jun 8 17:03:07 EDT 1994
+ *
+ * Revision History: $Log: dbg.cc,v $
+ * Revision History: Revision 1.15  1998/07/14 22:30:18  eryk
+ * Revision History: Synced with /usr/ordinate/src/libutil/dbg.C
+ * Revision History:
+ * Revision History: Revision 1.3  1997/10/22 00:34:59  ogi
+ * Revision History: *** empty log message ***
+ * Revision History:
+ * Revision History: Revision 1.2  1997/09/15 16:40:27  bst
+ * Revision History: *** empty log message ***
+ * Revision History:
+ * Revision 1.1  1997/08/06  19:45:06  ogi
+ * Initial revision
+ *
+ * Revision History: Revision 1.13  1996/10/11 19:34:34  bst
+ * Revision History: Changes for compile on I86
+ * Revision History:
+ * Revision History: Revision 1.12  1995/09/22 17:59:14  bst
+ * Revision History: Removed timing code on Mac
+ * Revision History:
+ * Revision 1.11  1995/07/18  21:46:05  eryk
+ * *** empty log message ***
+ *
+ * Revision 1.10  1995/07/12  22:03:12  bst
+ * Added Debug directory handling, closing files.
+ *
+ * Revision 1.9  1995/07/01  21:07:56  bst
+ * Fixed bug in new DebugLevel
+ *
+ * Revision 1.8  1995/06/15  17:17:21  bst
+ * Rewrote to not use String, faster.
+ *
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <fstream.h>
+#include <string.h>
+#ifdef unix
+extern "C" {
+#include <sys/time.h>
+}
+#endif
+#include <ctype.h>
+#include "dbg.H"
+
+static int PrintTiming = 0;
+
+#if !defined(sgi) && !defined(M_I86) && !defined(__sparc)
+extern "C" int gettimeofday (struct timeval *tp, struct timezone *tzp);
+#endif
+
+// the default debug file output
+char *dbgf__;
+
+ostream& DbgFmt(ostream &s, const char* dstr, int level)
+{
+#ifdef unix
+    if (PrintTiming) {
+	char fullfmt[100];
+	struct timeval rt;
+	gettimeofday(&rt,0);
+	rt.tv_sec = rt.tv_sec%1000;
+	sprintf(fullfmt,"%4ld.%03ld: ",(long)rt.tv_sec,(long)rt.tv_usec/1000);
+	s << fullfmt;
+    }
+#endif
+    s << dstr;
+    int i;
+    for (i=strlen(dstr); i<20; i++)
+	s << " ";
+    for (i=0; i<level; i++)
+	s << ".";
+    return s;
+}
+
+struct Files {
+    char *fileName;
+    ostream *s;
+    Files *next;
+};
+
+static Files *openFiles = 0;
+static char *dbgDir = 0;
+
+ostream& DbgFile(const char *fname, const char *dstr, int level)
+{
+    for (Files *p=openFiles;p;p=p->next)
+	if (strcmp(p->fileName,fname) == 0)
+	    return *p->s;
+    Files *newFile = new Files;
+    newFile->next = openFiles;
+    openFiles = newFile;
+    newFile->fileName = new char[strlen(fname)+1];
+    strcpy(newFile->fileName,fname);
+    if (dbgDir == 0)
+	SetDebugDirectory(".");
+    char *fullFilename;
+    if (strcmp(fname,"-") == 0) {
+      fullFilename = new char[strlen(fname)+1];
+      sprintf(fullFilename,"%s",fname);
+      newFile->s = &cout;
+    } else {
+      fullFilename = new char[strlen(fname)+strlen(dbgDir)+2];
+      sprintf(fullFilename,"%s/%s",dbgDir,fname);
+      newFile->s = new ofstream(fullFilename);
+    }
+    dbg(dstr,level) << "Writing to '" << fullFilename << "'." << endl;
+    delete [] fullFilename;
+    return *newFile->s;
+}
+
+void CloseDebugFiles()
+{
+    Files *p=openFiles,*n;
+    for (;p;p=n) {
+	n=p->next;
+	delete [] p->fileName;
+	if (p->s != &cout)
+	  delete p->s;
+	delete p;
+    }
+    openFiles=0;
+}
+
+    
+void SetDebugDirectory(const char *dirName)
+{
+    if (dbgDir != 0)
+	delete [] dbgDir;
+    dbgDir = new char[strlen(dirName)+1];
+    strcpy(dbgDir,dirName);
+}
+
+const char *GetDebugDirectory()
+{
+    if (dbgDir == 0)
+	SetDebugDirectory(".");
+    return dbgDir;
+}
+
+
+struct DTable {
+    DTable *next;
+    char *str;
+    int level;
+    static DTable *Root;
+    DTable(const char *s, int lvl);
+    ~DTable();
+};
+
+inline DTable::~DTable()
+{
+    if (next) {
+	delete next;
+	next = 0;
+    }
+    if (str)
+	delete [] str;
+}
+
+DTable *DTable::Root = 0;
+
+DTable::DTable(const char *s, int lvl)
+{
+    str = new char[strlen(s)+1];
+    strcpy(str,s);
+    level = lvl;
+    next = Root;
+    Root = this;
+}
+
+
+// Find the first entry in DTable that matches 'dstr'.  A match occurs
+// if either the entry is identical or is prefix of 'dstr' followed by
+// a '.' or the end of the entry.  This gives the following results, as examp:
+//
+//   Entry	dstr		result
+//   DELIM	DELIM.test	match
+//   DELIM	DELIM		match
+//   DELIM	DELIMITER	no match
+//   DELIMITER	DELIM		no match
+//   DELIMITER  DELIM.test	no match
+//   D.TEST	D		no match
+//   D.TEST	D.TEST		match
+//   D.TEST	D.test		no match
+//   ""		anything	match
+//
+// DebugCheck() returns after the first match it finds.  Since the table is
+// formed by appending to the head, this results in returning the results 
+// for the matching entry that was last added to the table.	
+//
+int DebugCheck(const char* dstr,int level)
+{
+    register const char *s, *q;
+    for (DTable *p = DTable::Root; p; p=p->next) {
+	if (*p->str == 0) {
+	    // Default entry 
+	    return p->level >= level;
+	}
+	for (s=dstr,q=p->str;*s;s++,q++)
+	    if (*s != *q)
+		break;
+	if ((*q == 0) && ((*s == 0) || (*s == '.')))
+	    return p->level >= level;
+    }
+    return 0;
+}
+
+// Add an entry to the debug table
+// If 's' is an integer, then it serves as a default
+void SetDebug(const char* s, const char* dbgf)
+{
+    if (dbgf__)
+      delete dbgf__;
+    dbgf__=new char[strlen(dbgf)];
+    strcpy(dbgf__,dbgf);
+    if (strncmp(s,"TIMING",6) == 0) {
+	// Special case so we don't clog debug table
+	PrintTiming = 1;
+	return;
+    }
+
+    if (isdigit(*s))
+	(void)new DTable("",atoi(s));
+    else {
+	const char *colon = strchr(s,':');
+	if (colon) {
+	    char *s2 = new char[colon-s+1];
+	    if (colon != s)
+		strncpy(s2,s,colon-s);
+	    s2[colon-s] = 0;
+	    (void)new DTable(s2,atoi(colon+1));
+	    delete [] s2;
+	}
+	else {
+	    (void)new DTable(s,999);
+	}
+    }
+}
