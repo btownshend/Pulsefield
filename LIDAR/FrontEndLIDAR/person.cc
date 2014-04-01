@@ -100,6 +100,10 @@ void Person::getclasslike(const Targets &targets, const Vis &vis, Likelihood &li
     // Compute like of each class assignment from vis to the 2 legs
     // Class 1 represents leg not being visible (shadowed)
     // Check assignments
+    float penalties=0;
+    if (age<AGETHRESHOLD)
+	penalties+=YOUNGPENALTY;
+
     for (unsigned int i=0;i<targets.size();i++) {
 	const Target *t1=&targets[i];
 	Point cp1=t1->getCenter();
@@ -115,13 +119,13 @@ void Person::getclasslike(const Targets &targets, const Vis &vis, Likelihood &li
 		if ((legs[1] -cp2).norm() < MAXMOVEMENT) {
 		    Point newleg1=circmodel(t2,false);
 		    float l1=normloglike(posvar[1],(legs[1]-newleg1).norm());
-		    likes.add(Assignment(tracknum,t1,t2,l0+l1));
+		    likes.add(Assignment(tracknum,t1,t2,l0+l1-penalties));
 		}
 	    }
 	    // Leg2 hidden
 	    Point hidden1=nearestShadowed(vis,newleg0,legs[1]);
 	    float l1=normloglike(posvar[1],(legs[1]-hidden1).norm());
-	    likes.add(Assignment(tracknum,t1,NULL,l0+l1-HIDDENPENALTY));
+	    likes.add(Assignment(tracknum,t1,NULL,l0+l1-HIDDENPENALTY-penalties));
 	}
 	if ((legs[1] -cp1).norm() < MAXMOVEMENT) {
 	    Point newleg1=circmodel(t1, false);
@@ -129,7 +133,7 @@ void Person::getclasslike(const Targets &targets, const Vis &vis, Likelihood &li
 	    // Leg1 hidden
 	    Point hidden0=nearestShadowed(vis,newleg1,legs[0]);
 	    float l0=normloglike(posvar[0],(legs[0]-hidden0).norm());
-	    likes.add(Assignment(tracknum,NULL,t1,l0+l1-HIDDENPENALTY));
+	    likes.add(Assignment(tracknum,NULL,t1,l0+l1-HIDDENPENALTY-penalties));
 	}
     }
     // Both legs hidden
@@ -137,7 +141,7 @@ void Person::getclasslike(const Targets &targets, const Vis &vis, Likelihood &li
     Point hidden1=nearestShadowed(vis,hidden0,legs[1]);
     float l0=normloglike(posvar[0],(legs[0]-hidden0).norm());
     float l1=normloglike(posvar[1],(legs[1]-hidden1).norm());
-    likes.add(Assignment(tracknum,NULL,NULL,l0+l1-2*HIDDENPENALTY));
+    likes.add(Assignment(tracknum,NULL,NULL,l0+l1-2*HIDDENPENALTY-penalties));
 }
 
 void Person::newclasslike(const Targets &targets, const Vis &vis, Likelihood &likes)  {
@@ -312,7 +316,7 @@ Point Person::nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos) 
 	float minrange=vis.getSick()->getRange(0)[i];
 	for (unsigned int j=i+1;j<vis.getSick()->getNumMeasurements() && j<=i+(cpos2-cpos1);j++) {
 	    minrange=std::max(minrange,(float)vis.getSick()->getRange(0)[j]);
-	    float shadowrange=std::max((float)minrange,legdiam*HIDDENLEGSCALINGf/((j-i)*res));
+	    float shadowrange=std::max((float)minrange,legdiam*HIDDENLEGSCALING/((j-i)*res));
 	    if (i==0 || j==vis.getSick()->getNumMeasurements()) {
 		// End scans -- object can be outside FOV partially
 		shadowrange=minrange;

@@ -19,6 +19,9 @@ static const unsigned int MAXRANGE=6000;	// maximum distance from LIDAR; ranges 
 
 // ***** Classifier
 static const float MAXTGTSEP=100; 	// Max separation between points that are still the same target (unless there is a gap between)
+// Making MAXTGTSEP too small results in splitting one target into two and then creates a new extraneous person for one of them 
+// Making it too big can merge 2 legs together resulting in the other leg being placed in a shadow, this would occur if one leg is behind the other, partially occluded.   If it 
+// side-by-side the total class size is >MAXCLASSSIZE, it will be split before that happens
 static const float INITLEGDIAM=200;	// Initial diameter of legs
 static const float MAXLEGDIAM=220;	// Maximum diameter of legs
 static const float MAXCLASSSIZE=300;	// Maximum size of a single class in meters before it needs to be split
@@ -38,6 +41,7 @@ static const float NEWTRACKEQUIVDIST1=3000;	// log-likelihood of adding a new tr
 static const float NEWTRACKEQUIVDIST2=2000;	// log-likelihood of adding a new track for a class pair is equivalent to matching an existing class at this distance
 static const float LEFTNESSTC=500;	// time constant for updating leftness
 static const float HIDDENPENALTY=3;	// loglike penalty when using a shadowed position for a leg
+static const float YOUNGPENALTY=5;	// loglike penalty applied to "young" tracks (<AGETHRESHOLD)
 static const float HIDDENLEGSCALING=0.8;  // Scale diameter of leg by this much when looking for a place it could be shadowed
 
 // ******** Deleting tracks
