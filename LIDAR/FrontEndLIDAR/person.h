@@ -8,6 +8,7 @@
 #ifndef PERSON_H_
 #define PERSON_H_
 
+#include <ostream>
 #include <mat.h>
 #include "point.h"
 #include "target.h"
@@ -42,7 +43,7 @@ public:
     void predict(int nstep, float fps);
     void update(const Vis &vis, const Target *t1, const Target *t2, int nstep,float fps);
     void addToMX(mxArray *people, int index) const;
-    void print() const;
+    friend std::ostream &operator<<(std::ostream &s, const Person &p);
     bool isDead() const;
 };
 

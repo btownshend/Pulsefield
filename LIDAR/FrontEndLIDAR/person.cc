@@ -5,6 +5,7 @@
 #include "vis.h"
 #include "parameters.h"
 #include "likelihood.h"
+#include "dbg.h"
 
 Person::Person(int _id, const Vis &vis, const Target *target1, const Target *target2) {
     id=_id;
@@ -39,20 +40,19 @@ bool Person::isDead() const {
     float visibility = totalVisibleCount*1.0/age;
     bool result = (age<AGETHRESHOLD && visibility<MINVISIBILITY) || (consecutiveInvisibleCount >= INVISIBLEFORTOOLONG);
     if (result) {
-	printf(" Deleting ");
-	print();
+	dbg("Person.isDead",2) << " Deleting " << *this << std::endl;
     }
     return result;
 }
 
-void Person::print() const {
-    printf(" ID:%d, position: (%.0f,%.0f) legs:(%.0f,%.0f)+-%.0f, (%.0f, %.0f)+-%.0f  vel: (%f,%f) age: %d\n",
-	   id, position.X(), position.Y(),
-	   legs[0].X(), legs[0].Y(), sqrt(posvar[0]),
-	   legs[1].X(), legs[1].Y(), sqrt(posvar[1]), 
-	   velocity.X(), velocity.Y(),
-	   age
-	   );
+std::ostream &operator<<(std::ostream &s, const Person &p) {
+    s << "ID " << p.id 
+      << ", position: " << p.position
+      << ", legs: " << p.legs[0] << "+/-" << sqrt(p.posvar[0])
+      << ", " << p.legs[1] << "+/-" << sqrt(p.posvar[1])
+      << ", vel: " << p.velocity
+      << ", age: " << p.age;
+    return s;
 }
 
 void Person::predict(int nstep, float fps) {
@@ -68,7 +68,7 @@ void Person::predict(int nstep, float fps) {
     // Check that they didn't get too close or too far apart
     float legsep=(legs[0]-legs[1]).norm();
     if (legsep<legdiam) {
-	printf("predict: legs are %.0f apart (< %.0f), splitting\n", legsep, legdiam);
+	dbg("Person.predict",1) << "legs are " << legsep << " apart (< " << legdiam << "), splitting" << std::endl;
 	Point vec;
 	if (legsep>0)
 	    vec=(legs[0]-legs[1])*(legdiam/legsep-1);
@@ -79,7 +79,7 @@ void Person::predict(int nstep, float fps) {
 	legs[1]=legs[1]-vec*(posvar[1]/(posvar[0]+posvar[1]));
     }
     if (legsep>MAXLEGSEP) {
-	printf("predict: legs are %.0f apart (> %.0f), moving together\n", legsep, MAXLEGSEP);
+	dbg("Person.predict",1) << "legs are " << legsep << " apart (> " << MAXLEGSEP << "), moving together" << std::endl;
 	Point vec;
 	vec=(legs[0]-legs[1])*(MAXLEGSEP/legsep-1);
 	legs[0]=legs[0]+vec*(posvar[0]/(posvar[0]+posvar[1]));
@@ -89,6 +89,7 @@ void Person::predict(int nstep, float fps) {
     position.setY((legs[0].Y()+legs[1].Y())/2.0);
     velocity.setX((legvelocity[0].X()+legvelocity[1].X())/2.0);
     velocity.setY((legvelocity[0].Y()+legvelocity[1].Y())/2.0);
+    dbg("Person.predict",2) << "After predict: " << *this << std::endl;
 }
 
 // Get log like of given x for a zero-mean gaussian with given variance
@@ -264,7 +265,7 @@ Point Person::circmodel(const Target *t,  bool update) {
     }
     Point result;
     result.setThetaRange(angle,range);
-    //printf("circmodel(%d)=(%.0f,%.0f)\n", t->getClass(), result.X(), result.Y());
+    dbg("Person.circmodel",4) << t->getClass() << " =" << result << std::endl;
     return result;
 }
 
@@ -339,8 +340,9 @@ Point Person::nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos) 
 		break;
 	}
     }
-    //float distmoved=(bestpos-targetpos).norm();
-    //printf("Best location for (%.2f,%.2f) is in shadow %d-%d at (%.2f,%.2f) with a distance of %.2f\n", targetpos.X(), targetpos.Y(), besti, bestj, bestpos.X(), bestpos.Y(), distmoved);
+    float distmoved=(bestpos-targetpos).norm();
+    dbg("Person.nearestShadowed",4) << "Best location for " << targetpos << " is in shadow " << besti << "-" << bestj << " at "
+				    << bestpos << " with a distance of " << distmoved << std::endl;
     return bestpos;
 }
 

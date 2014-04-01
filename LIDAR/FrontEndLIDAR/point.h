@@ -8,6 +8,7 @@
 #ifndef POINT_H_
 #define POINT_H_
 
+#include <ostream>
 #include <math.h>
 
 class Point {
@@ -31,6 +32,7 @@ class Point {
     Point operator*(float s) { return Point(x*s,y*s); }
     float norm() const { return getRange(); }
     float dot(const Point &p2) const { return p2.X()*x+p2.Y()*y; }
+    friend std::ostream& operator<<(std::ostream &s, const Point &p);
 };
 
 #endif  /* POINT_H_ */

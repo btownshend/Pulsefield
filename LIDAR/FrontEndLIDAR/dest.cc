@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "dest.h"
+#include "dbg.h"
 
 Destinations::Destinations() {
     ndest=0; maxdest=0;
@@ -19,7 +20,7 @@ Destinations::~Destinations() {
 void Destinations::add(const char *host, int port) {
     for (int i=0;i<ndest;i++)
 	if (strcmp(hosts[i],host)==0 && ports[i]==port)   {
-	    printf("Already have %s:%d as a destination\n", host,port);
+	    dbg("Destinations.add",1) << "Already have " << host << ":" << port << " as a destination" << std::endl;
 	    return;
 	}
 	    
@@ -40,7 +41,7 @@ void Destinations::add(const char *host, int port) {
     hosts[ndest]=new char[strlen(host)+1];
     strcpy(hosts[ndest],host);
     ports[ndest]=port;
-    printf("Added destination %s:%d\n", host,port);
+    dbg("Destinations.add",1) << "Added destination " << host << ":" << port << std::endl;
     ndest++;
 }
 
@@ -54,6 +55,7 @@ void Destinations::remove(const char *host, int port) {
 	    ndest--;
 	    delete [] hosts[ndest];
 	    i--;
+	    dbg("Destinations.remove",1) << "Removed destination " << host << ":" << port << std::endl;
 	    printf("Removed destination %s:%d\n", host,port);
 	}
 }
@@ -62,5 +64,5 @@ void Destinations::removeAll() {
     for (int i=0;i<ndest;i++) 
 	delete [] hosts[i];
     ndest=0;
-    printf("Removed all destinations\n");
+    dbg("Destinations.removeAll",1) << "Removed all destinations." << std::endl;
 }

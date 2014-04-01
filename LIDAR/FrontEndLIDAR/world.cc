@@ -1,17 +1,19 @@
 #include "world.h"
 #include "likelihood.h"
 #include "vis.h"
+#include "dbg.h"
 
 World::World() {
     lastframe=0;
     nextid=1;
 }
 
-void World::print() const {
-    printf("World: frame=%d\n", lastframe);
-    for (unsigned int i=0;i<people.size();i++) {
-	people[i].print();
+std::ostream &operator<<(std::ostream &s, const World &w) {
+    s << "Frame=" <<  w.lastframe << std::endl;
+    for (unsigned int i=0;i<w.people.size();i++) {
+	s << "                          " << w.people[i] << std::endl;
     }
+    return s;
 }
 
 void World::track(const Targets &targets, const Vis &vis, int frame, float fps) {
@@ -35,7 +37,7 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
     Person::newclasslike(targets,vis,likes);
 
     if (likes.size()>0) {
-	dbg("Likelihood",2) << "Frame %d likelihoods: \n" << likes;
+	dbg("Likelihood",2) << "Frame " << frame << " likelihoods: \n" << likes;
     }
 
     // Greedy assignment
@@ -44,7 +46,7 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
     // Implement assignment
     for (int i=0;i<result.size();i++) {
 	Assignment a=result[i];
-	dbg("Assign",2) << a;
+	dbg("Assign",2) << "Assigning " << a << std::endl;
 	if (a.track<0) {
 	    people.push_back(Person(nextid, vis, a.target1, a.target2));
 	    nextid++;
@@ -59,7 +61,7 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
 	    i--;
 	}
 
-    print();
+    dbg("World.track",2) << *this;
 }
 
 mxArray *World::convertToMX() const {

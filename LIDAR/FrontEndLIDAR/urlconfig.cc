@@ -1,7 +1,7 @@
 #include <strings.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "dbg.h"
 #include "urlconfig.h"
 
 URLConfig::URLConfig(const char *configFile) {
@@ -38,7 +38,7 @@ URLConfig::URLConfig(const char *configFile) {
 	hosts[i]=new char[strlen(tmp_host)+1];
 	strcpy(hosts[i],tmp_host);
 
-	printf("Set %s to %s:%d\n", idents[i], hosts[i], ports[i]);
+	dbg("URLConfig",1) << "Set " << idents[i] << " to " <<  hosts[i] << ":" <<  ports[i]<< std::endl;
     }
     nurl=MAXURLS;
 }

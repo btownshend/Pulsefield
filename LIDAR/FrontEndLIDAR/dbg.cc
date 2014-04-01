@@ -29,7 +29,6 @@ char *dbgf__;
 
 std::ostream& DbgFmt(std::ostream &s, const char* dstr, int level)
 {
-#ifdef unix
     if (PrintTiming) {
 	char fullfmt[100];
 	struct timeval rt;
@@ -38,10 +37,9 @@ std::ostream& DbgFmt(std::ostream &s, const char* dstr, int level)
 	sprintf(fullfmt,"%4ld.%03ld: ",(long)rt.tv_sec,(long)rt.tv_usec/1000);
 	s << fullfmt;
     }
-#endif
     s << dstr;
     int i;
-    for (i=strlen(dstr); i<20; i++)
+    for (i=strlen(dstr); i<25; i++)
 	s << " ";
     for (i=0; i<level; i++)
 	s << ".";
@@ -77,7 +75,7 @@ std::ostream& DbgFile(const char *fname, const char *dstr, int level)
     } else {
       fullFilename = new char[strlen(fname)+strlen(dbgDir)+2];
       sprintf(fullFilename,"%s/%s",dbgDir,fname);
-      newFile->s = new std::ofstream(fullFilename);
+      newFile->s = new std::ofstream(fullFilename,std::ofstream::trunc);
     }
     dbg(dstr,level) << "Writing to '" << fullFilename << "'." << std::endl;
     delete [] fullFilename;

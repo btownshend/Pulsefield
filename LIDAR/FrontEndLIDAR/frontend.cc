@@ -13,6 +13,7 @@
 #include "world.h"
 #include "snapshot.h"
 #include "vis.h"
+#include "dbg.h"
 
 // MATLAB I/O
 #include "mat.h"
@@ -28,17 +29,17 @@ static void error(int num, const char *msg, const char *path)
  * message has not been fully handled and the server should try other methods */
 static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message , void *) {
 	int i;
-	printf("Unhandled Message Rcvd: %s (", path);
+	fprintf(stderr, "Unhandled Message Rcvd: %s (", path);
 	for (i=0; i<argc; i++) {
 		printf("%c",types[i]);
 	}
-	printf("): ");
+	fprintf(stderr, "): ");
 	for (i=0; i<argc; i++) {
 		lo_arg_pp((lo_type)types[i], argv[i]);
-		printf(", ");
+		fprintf(stderr, ", ");
 	}
-	printf("\n");
-	fflush(stdout);
+	fprintf(stderr,"\n");
+	fflush(stderr);
 	return 1;
 }
 
@@ -69,8 +70,7 @@ static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv,
 static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->ping(msg,argv[0]->i); return 0; }
 
 FrontEnd::FrontEnd(int _nsick) {
-	if (debug)
-		printf("FrontEnd::FrontEnd()\n");
+    dbg("FronEnd",1) << "FrontEnd::FrontEnd(" << _nsick << ")" << std::endl;
 
 	matframes=0;
 	frame = 0;
@@ -153,7 +153,7 @@ FrontEnd::FrontEnd(int _nsick) {
 	lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
 
 	/* Start incoming message processing */
-	printf("Creating thread for incoming messages (server=0x%lx)...",(long int)s);
+	dbg("FrontEnd",1) << "Creating thread for incoming messages (server=" << s << ")..." << std::flush;
 	int rc=pthread_create(&incomingThread, NULL, processIncoming, (void *)s);
 	if (rc) {
 	    fprintf(stderr,"pthread_create failed with error code %d\n", rc);
@@ -196,19 +196,13 @@ void FrontEnd::run() {
 		int maxfd=1;
 
 		gettimeofday(&ts1,0);
-		if (debug>2) {
-			printf("At select after %.3f msec.\n", (ts1.tv_usec-ts2.tv_usec)/1000.0+(ts1.tv_sec-ts2.tv_sec)*1000);
-			fflush(stdout);
-		}
+		dbg("FrontEnd.run",5) << "At select after " <<  std::setprecision(3) << (ts1.tv_usec-ts2.tv_usec)/1000.0+(ts1.tv_sec-ts2.tv_sec)*1000 << " msec." << std::endl;
 		struct timeval timeout;
 		timeout.tv_usec=1000;
 		timeout.tv_sec=0;
 		retval = select(maxfd + 1, &rfds, NULL, NULL, &timeout);
 		gettimeofday(&ts2,0);
-		if (debug>2) {
-			printf("Select done after %.3f msec. rfds=0x%lx\n", (ts2.tv_usec-ts1.tv_usec)/1000.0+(ts2.tv_sec-ts1.tv_sec)*1000,*(unsigned long*)&rfds);
-			fflush(stdout);
-		}
+		dbg("FrontEnd.run",5) << "Select done after " <<  std::setprecision(3) << (ts2.tv_usec-ts1.tv_usec)/1000.0+(ts2.tv_sec-ts1.tv_sec)*1000 << " msec., rfds=0x" << std::setbase(16) << *(unsigned long *)&rfds << std::setbase(10) << std::endl;
 		if (retval == -1) {
 			perror("select() error: ");
 			exit(1);
@@ -232,7 +226,7 @@ void FrontEnd::run() {
 // Processing incoming OSC messages in a separate thread
 void *FrontEnd::processIncoming(void *arg) {
     lo_server s = (lo_server)arg;
-    printf("processIncoming(s=0x%lx)\n",(long int)s);
+    dbg("FrontEnd.processIncoming",1) << "Started: s=" << std::setbase(16) << s << std::setbase(10) << std::endl;
     // Process all queued messages
     while (lo_server_recv(s) != 0)
 	if (doQuit)
@@ -241,8 +235,7 @@ void *FrontEnd::processIncoming(void *arg) {
 }
 
 void FrontEnd::processFrames() {
-	if (debug>1)
-		printf("Processing frame %d\n",frame);
+    dbg("FrontEnd.processFrame",1) << "Processing frame " << frame << std::endl;
 
 	sendOnce |= sendAlways;
 	for (int c=0;c<nsick;c++) {
@@ -267,13 +260,11 @@ void FrontEnd::processFrames() {
 }
 
 void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
-	if (debug>1)
-		printf("sendVisMessages()  sendOnce=%ld, ndest=%d\n",sendOnce,dests.count());
+    dbg("FrontEnd.sendVisMessages",5) << "sendOnce=0x" << std::setbase(16) << sendOnce << std::setbase(10)  << ", ndest=" << dests.count() << std::endl;
 
 	for (int i=0;i<dests.count();i++) {
 		char cbuf[10];
-		if (debug>2)
-		    printf("Sending messages to %s:%d\n",dests.getHost(i),dests.getPort(i));
+		dbg("FrontEnd.sendVisMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 		sprintf(cbuf,"%d",dests.getPort(i));
 		lo_address addr = lo_address_new(dests.getHost(i), cbuf);
 		lo_send(addr,"/vis/beginframe","i",frame);
@@ -281,8 +272,7 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 		    // Send range info
 		    for (int e=0;e<nechoes;e++) {
 			lo_blob data = lo_blob_new(nmeasure*sizeof(*ranges[e]),ranges[e]);
-			if (debug>2)
-			    printf("Sending RANGE(%d,%d) (N=%d) to %s:%d\n", id, e, nmeasure, dests.getHost(i),dests.getPort(i));
+			dbg("FrontEnd.sendVisMessages",6) << "Sending RANGE(" << id << "," << e << ") (N=" << nmeasure << ") to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 			lo_send(addr, "/vis/range","iiiiiib",id,frame,acquired.tv_sec, acquired.tv_usec, e, nmeasure, data);
 			lo_blob_free(data);
 		    }
@@ -290,8 +280,7 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 		if (sendOnce & REFLECT) {
 		    for (int e=0;e<nechoes;e++) {
 			lo_blob data = lo_blob_new(nmeasure*sizeof(*reflect[e]),reflect[e]);
-			if (debug>2)
-			    printf("Sending REFLECT(%d,%d) (N=%d) to %s:%d\n", id, e, nmeasure, dests.getHost(i),dests.getPort(i));
+			dbg("FrontEnd.sendVisMessages",6) << "Sending REFLECT(" << id << "," << e << ") (N=" << nmeasure << ") to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 			lo_send(addr, "/vis/reflect","iiiiiib",id,frame,acquired.tv_sec, acquired.tv_usec, e, nmeasure, data);
 			lo_blob_free(data);
 		    }
@@ -391,7 +380,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	long int waittime=(acquired.tv_sec-lastfile.tv_sec-(now.tv_sec-lastnow.tv_sec))*1000000+(acquired.tv_usec-lastfile.tv_usec-(now.tv_usec-lastnow.tv_usec));
 	waittime=waittime*speedFactor;
 	if (waittime >1000 && waittime<1000000) {
-	    //printf("Wait %ld usec\n", waittime);
 	    usleep(waittime);
 	}
 
@@ -474,14 +462,14 @@ void FrontEnd::startStop(bool start) {
 
 
 void FrontEnd::setFPS(int fps) {
-	printf("Setting all sensors to %d FPS\n", fps);
+    dbg("FrontEnd.setFPS",1) << "Setting all sensors to " << fps << " FPS" << std::endl;
 	for (int i=0;i<nsick;i++)
 		sick[i]->setScanFreq(fps);
 }
 
 
 void FrontEnd::setRes(int sickid, const char *res) {
-	printf("setRes(%d,%s)\n", sickid, res);
+    dbg("FrontEnd.setRes",1) << "Setting sensors " << sickid << " to resolution " << res  << " degrees." << std::endl;
 	if (sickid<0 || sickid>=nsick) {
 		fprintf(stderr,"setRes: bad sensor number: %d\n", sickid);
 		return;
@@ -494,14 +482,14 @@ void FrontEnd::setEchoes(int echoes) {
 	if (echoes<1 || echoes>SickIO::MAXECHOES) {
 		fprintf(stderr,"setEchoes: bad number of echoes: %d\n",echoes);
 	}
-	printf("Setting all sensors to return %d echoes\n", echoes);
+	dbg("FrontEnd.setEchoes",1) << "Setting all sensors to return " << echoes << " echoes." << std::endl;
 	nechoes=echoes;
 }
 
 
 
 void FrontEnd::getStat(long int stat, int mode) {
-	printf("getStat(%ld,%d)\n",stat,mode);fflush(stdout);
+    dbg("FrontEnd.getStat",1) << "getStat(" << stat << "," << mode << ")" << std::endl;
 	if (mode==2)
 		sendAlways |= stat;
 	else

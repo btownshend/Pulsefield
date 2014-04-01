@@ -1,11 +1,9 @@
+#include <string>
 #include <math.h>
 #include <mat.h>
 #include "classifier.h"
 #include "parameters.h"
-
-static const int debug=1;
-
-static const unsigned int debugframe=394;
+#include "dbg.h"
 
 Classifier::Classifier(): bg() {
 }
@@ -33,9 +31,9 @@ int Classifier::getlastindex(unsigned int c) const {
 }
 
 void Classifier::update(const SickIO &sick) {
-    bool fdebug=false;
-    if (sick.getFrame() == debugframe)
-	fdebug=true;
+    char dbgstr[100];
+    sprintf(dbgstr,"Frame.%d",sick.getFrame());
+
     targets.clear();
     classes.resize(sick.getNumMeasurements());
     shadowed[0].resize(sick.getNumMeasurements());
@@ -53,29 +51,27 @@ void Classifier::update(const SickIO &sick) {
 	    classes[i]=BACKGROUND;
 	    continue;
 	}
+	dbg(dbgstr,20) << "S[" << i << "] angle=" << std::fixed << std::setprecision(1) << sick.getAngle(i) << ", range=" << std::setprecision(0) << srange[i] << ", xy=(" << sick.getX(i) << "," << sick.getY(i) << ") ";
 	if (i>0 && i<classes.size()-1&&srange[i]<srange[i-1]&&isbg[i-1]&&srange[i]<srange[i+1]&&isbg[i+1]) {
 	    // isolated point, not shadowed on either side
-	    if (fdebug)
-		printf("NOISE %d angle=%f, range=%d, xy=(%f,%f)\n",i,sick.getAngle(i), srange[i], sick.getX(i), sick.getY(i));
 	    classes[i]=NOISE;
+	    dbgn(dbgstr,20) << "NOISE" << std::endl;
 	    continue;
 	}
 	// Check if close to a prior target
-	if (fdebug)
-	    printf("%d angle=%f, range=%d, xy=(%f,%f): ",i,sick.getAngle(i), srange[i], sick.getX(i), sick.getY(i));
 	bool newclass=true;
 	for (int j=i-1;j>=0;j--) {
 	    float dist=sick.distance(i,j);
-	    if (fdebug)
-		printf("class[%d]=%d, xy=(%f,%f), dist=%f ", j, classes[j],sick.getX(j),sick.getY(j),dist);
 	    if (dist < MAXTGTSEP && classes[j]>MAXSPECIAL) {
 		classes[i]=classes[j];
+		dbgn(dbgstr,20) << "PRIOR " << classes[i]  << std::endl;
 		newclass=false;
 		break;
 	    }
 	    if (dist<= MAXLEGDIAM && classes[j]>MAXSPECIAL && classes[j]!=classes[i-1]) {
 		// Could be a leg visible on both sides of a closer leg
 		classes[i]=classes[j];
+		dbgn(dbgstr,20) << "SPLIT " << classes[i]  << std::endl;
 		newclass=false;
 		break;
 	    }
@@ -85,10 +81,9 @@ void Classifier::update(const SickIO &sick) {
 	}
 	if (newclass) {
 	    classes[i]=nextclass;
+	    dbgn(dbgstr,20) << "NEW " << classes[i]  << std::endl;
 	    nextclass++;
 	}
-	if  (fdebug)
-	    printf("class=%d\n", classes[i]);
     }
 
     if (nextclass==MAXSPECIAL+1)
@@ -104,6 +99,7 @@ void Classifier::update(const SickIO &sick) {
 		if (classes[j]>MAXSPECIAL) {
 		    float delta=sick.distance(i,j);
 		    if (delta < 2*MAXTGTSEP) {
+			dbg(dbgstr,20) << "Reassigned singleton " << i << "(class " << classes[i]  << ") with delta=" << delta << " to class " << classes[j] << std::endl;
 			classes[i]=classes[j];
 			break;
 		    }
@@ -134,7 +130,7 @@ void Classifier::update(const SickIO &sick) {
 	float dist=sick.distance(firstindex,lastindex);
 	float scanwidth=(srange[firstindex]+srange[lastindex])/2.0*sick.getScanRes()*M_PI/180;
 	if (dist+scanwidth < MINTARGET) {
-	    printf("Target class %d (%d:%d) has size %.2f<%.2f, is probably noise\n", c, firstindex,lastindex, dist+scanwidth,MINTARGET);
+	    dbg(dbgstr,20) << "Target class " << c << " (" << firstindex << ":" << lastindex << ") has size " << dist+scanwidth << "<" << MINTARGET << ", is probably noise" << std::endl;
 	    for (int i=firstindex;i<=lastindex;i++)
 		if (classes[i]==c)
 		    classes[i]=NOISE;
@@ -160,7 +156,7 @@ void Classifier::update(const SickIO &sick) {
 		    float dist=sick.distance(i,j);
 		    if (dist>MAXCLASSSIZE) {
 			// Class size exceeded, break at biggest jump so far
-			printf("Splitting class %d@ %d-%d at %d\n", classes[i],i,j,bkpt);
+			dbg(dbgstr,20) << "Splitting class " << classes[i] << "@ " << i << "-" << j << " at " << bkpt << std::endl;
 			for (unsigned int k=bkpt;k<classes.size();k++)
 			    if (classes[k]==classes[i])
 				classes[k]=nextclass;
@@ -212,25 +208,20 @@ void Classifier::update(const SickIO &sick) {
 	targets.push_back(Target(c,pts,leftsh,rightsh,priorpt,nextpt));
     }
 
-    if (debug) {
-	print(sick);
+    if (DebugCheck("Classifier",2) ) {
+	dbg("Classifier",2) << "Frame " << sick.getFrame() << " ";
+	for (unsigned int i=0;i<classes.size();i++)
+	    if (classes[i]!=BACKGROUND) {
+		unsigned int j;
+		for (j=i+1;j<classes.size() && classes[i]==classes[j];j++)
+		    ;
+		if (j==i+1)
+		    dbgn("Classifier",2) << classes[i] << "@" << srange[i] << ": " << i <<  ", ";
+		else
+		    dbgn("Classifier",2) << classes[i] << "@" << srange[i] << ": " << i <<  "-" << j-1 << ", ";
+		i=j;
+	    }
+	dbgn("Classifier",2) << std::endl;
     }
-}
-
-void Classifier::print(const SickIO &sick) const {
-    const unsigned int *srange=sick.getRange(0);
-    printf("Frame %d: ", sick.getFrame());
-    for (unsigned int i=0;i<classes.size();i++)
-	if (classes[i]!=BACKGROUND) {
-	    unsigned int j;
-	    for (j=i+1;j<classes.size() && classes[i]==classes[j];j++)
-		;
-	    if (j==i+1)
-		printf("%d@%d:%d, ",classes[i],srange[i],i);
-	    else
-		printf("%d@%d:%d-%d, ",classes[i],srange[i],i,j-1);
-	    i=j;
-	}
-    printf("\n");
 }
 

@@ -33,8 +33,6 @@ public:
     // Get first,last index of given class; -1 if not found
     int getfirstindex(unsigned int c) const;
     int getlastindex(unsigned int c) const;
-    // Print out 
-    void print(const SickIO &sick) const;
 };
 
 #endif  /* CLASSIFIER_H_ */

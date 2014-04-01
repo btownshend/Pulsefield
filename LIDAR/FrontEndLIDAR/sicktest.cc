@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <string>
-#include <iostream>
+#include <ostream>
 #include <sicklms5xx/SickLMS5xx.hh>
 
 using namespace SickToolbox;

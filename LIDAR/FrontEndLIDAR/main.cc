@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     }
     argc-=optind;
     argv+=optind;
-    
+     
     if (argc>0 || (recordFile && playFile) || (matframes>0 && !playFile))
 	usage(argc,argv);
 

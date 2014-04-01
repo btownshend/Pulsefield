@@ -14,6 +14,7 @@
 #include "sickio.h"
 
 #include "mat.h"
+#include "dbg.h"
 
 using namespace SickToolbox;
 using namespace std;
@@ -62,7 +63,8 @@ SickIO::~SickIO() {
 }
 
 void SickIO::updateScanFreqAndRes() {	
-    //    printf("Updating device to scanFreq=%d (%d), scanRes=%f (%d)\n",scanFreq,sick_lms_5xx->IntToSickScanFreq(scanFreq),scanRes,sick_lms_5xx->DoubleToSickScanRes(scanRes));
+    dbg("SickIO.updateScanFreqAndRes",1) << "Updating device to scanFreq=" << scanFreq << "(" << sick_lms_5xx->IntToSickScanFreq(scanFreq) << "), scanRes="
+					 << scanRes << "(" << sick_lms_5xx->DoubleToSickScanRes(scanRes) << ")" << std::endl;
     if (!fake)
 	    sick_lms_5xx->SetSickScanFreqAndRes(sick_lms_5xx->IntToSickScanFreq(scanFreq),sick_lms_5xx->DoubleToSickScanRes(scanRes));
 }
@@ -117,7 +119,7 @@ int SickIO::stop() {
 }
 
 void SickIO::run() {
-	printf("SickIO::run()\n");
+    dbg("SickIO.run",1) << "Running" << std::endl;
 	while (true)
 		get();
 }
@@ -170,6 +172,6 @@ void SickIO::get() {
 	frame++;
 	valid=true;
 	if (frame%100==0)
-	    printf("Frame %d: got %d measurements, status=%d\n",frame,num_measurements,status);
+	    dbg("SickIO.get",1) << "Frame " << frame << ": got " << num_measurements << " measurements, status=" << status << std::endl;
 }
 

@@ -8,6 +8,7 @@
 #ifndef WORLD_H_
 #define WORLD_H_
 
+#include <ostream>
 #include "classifier.h"
 #include "target.h"
 #include "person.h"
@@ -24,7 +25,7 @@ public:
     void track(const Targets &targets, const Vis &vis, int frame, float fps);
     void deleteLostPeople();
     mxArray *convertToMX() const;
-    void print() const;
+    friend std::ostream &operator<<(std::ostream &s, const World &w);
 };
 
 #endif  /* WORLD_H_ */
