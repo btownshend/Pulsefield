@@ -69,6 +69,8 @@ if sum(~plotted)>0
   plot(xy(sel,1),xy(sel,2),'.k');
 end
 
+plot(xy(:,1),xy(:,2),'g');
+
 bfreq=bg.freq/max(sum(bg.freq(1:2,:),1));
 bfreq(3,:)=1-sum(bfreq(1:2,:),1);
 [~,maxb]=max(bfreq,[],1);
