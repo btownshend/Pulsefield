@@ -36,6 +36,7 @@ void Classifier::update(const SickIO &sick) {
     bool fdebug=false;
     if (sick.getFrame() == debugframe)
 	fdebug=true;
+    targets.clear();
     classes.resize(sick.getNumMeasurements());
     shadowed[0].resize(sick.getNumMeasurements());
     shadowed[1].resize(sick.getNumMeasurements());
@@ -188,7 +189,6 @@ void Classifier::update(const SickIO &sick) {
     nextclass=nextup;
 
     // Build target list
-    targets.clear();
     for (unsigned int c=MAXSPECIAL+1;c<nextclass;c++) {
 	std::vector<Point> pts;
 	bool first=true;
