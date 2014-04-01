@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <assert.h>
+#include <ostream>
 
 class Target;
 
@@ -19,7 +20,7 @@ class Assignment {
     const Target *target1, *target2;
     float like;
     Assignment(int t, const Target *t1, const Target *t2, float l) { track=t; target1=t1; target2=t2; like=l; }
-    void print() const;
+    friend std::ostream& operator<<(std::ostream &s, const Assignment &a);
 };
 
 class Likelihood {
@@ -47,10 +48,7 @@ public:
     }
     const Assignment &operator[](int i) { return entries[i]; }
     int size() const { return entries.size(); }
-    void print() const {
-	for (unsigned int i=0;i<entries.size();i++)
-	    entries[i].print();
-    }
+    friend std::ostream& operator<<(std::ostream &s, const Likelihood &l);
     
     Likelihood greedy();
 };

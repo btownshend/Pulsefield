@@ -1,55 +1,22 @@
 /* $Id: dbg.cc,v 1.15 1998/07/14 22:30:18 eryk Exp $
- *
- * Eryk M. Warren (eryk@tc.com)
  * Townshend Computer Tools
  * Montreal, Quebec
  *
  * Wed Jun 8 17:03:07 EDT 1994
  *
- * Revision History: $Log: dbg.cc,v $
- * Revision History: Revision 1.15  1998/07/14 22:30:18  eryk
- * Revision History: Synced with /usr/ordinate/src/libutil/dbg.C
- * Revision History:
- * Revision History: Revision 1.3  1997/10/22 00:34:59  ogi
- * Revision History: *** empty log message ***
- * Revision History:
- * Revision History: Revision 1.2  1997/09/15 16:40:27  bst
- * Revision History: *** empty log message ***
- * Revision History:
- * Revision 1.1  1997/08/06  19:45:06  ogi
- * Initial revision
- *
- * Revision History: Revision 1.13  1996/10/11 19:34:34  bst
- * Revision History: Changes for compile on I86
- * Revision History:
- * Revision History: Revision 1.12  1995/09/22 17:59:14  bst
- * Revision History: Removed timing code on Mac
- * Revision History:
- * Revision 1.11  1995/07/18  21:46:05  eryk
- * *** empty log message ***
- *
- * Revision 1.10  1995/07/12  22:03:12  bst
- * Added Debug directory handling, closing files.
- *
- * Revision 1.9  1995/07/01  21:07:56  bst
- * Fixed bug in new DebugLevel
- *
- * Revision 1.8  1995/06/15  17:17:21  bst
- * Rewrote to not use String, faster.
- *
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <fstream.h>
-#include <string.h>
-#ifdef unix
+#include <iostream>
+#include <fstream>
+#include <ostream>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <assert.h>
+//#include <string.h>
 extern "C" {
-#include <sys/time.h>
+    //#include <sys/time.h>
 }
-#endif
-#include <ctype.h>
-#include "dbg.H"
+//#include <ctype.h>
+#include "dbg.h"
 
 static int PrintTiming = 0;
 
@@ -60,7 +27,7 @@ extern "C" int gettimeofday (struct timeval *tp, struct timezone *tzp);
 // the default debug file output
 char *dbgf__;
 
-ostream& DbgFmt(ostream &s, const char* dstr, int level)
+std::ostream& DbgFmt(std::ostream &s, const char* dstr, int level)
 {
 #ifdef unix
     if (PrintTiming) {
@@ -83,14 +50,14 @@ ostream& DbgFmt(ostream &s, const char* dstr, int level)
 
 struct Files {
     char *fileName;
-    ostream *s;
+    std::ostream *s;
     Files *next;
 };
 
 static Files *openFiles = 0;
 static char *dbgDir = 0;
 
-ostream& DbgFile(const char *fname, const char *dstr, int level)
+std::ostream& DbgFile(const char *fname, const char *dstr, int level)
 {
     for (Files *p=openFiles;p;p=p->next)
 	if (strcmp(p->fileName,fname) == 0)
@@ -106,13 +73,13 @@ ostream& DbgFile(const char *fname, const char *dstr, int level)
     if (strcmp(fname,"-") == 0) {
       fullFilename = new char[strlen(fname)+1];
       sprintf(fullFilename,"%s",fname);
-      newFile->s = &cout;
+      newFile->s = &std::cout;
     } else {
       fullFilename = new char[strlen(fname)+strlen(dbgDir)+2];
       sprintf(fullFilename,"%s/%s",dbgDir,fname);
-      newFile->s = new ofstream(fullFilename);
+      newFile->s = new std::ofstream(fullFilename);
     }
-    dbg(dstr,level) << "Writing to '" << fullFilename << "'." << endl;
+    dbg(dstr,level) << "Writing to '" << fullFilename << "'." << std::endl;
     delete [] fullFilename;
     return *newFile->s;
 }
@@ -123,7 +90,7 @@ void CloseDebugFiles()
     for (;p;p=n) {
 	n=p->next;
 	delete [] p->fileName;
-	if (p->s != &cout)
+	if (p->s != &std::cout)
 	  delete p->s;
 	delete p;
     }

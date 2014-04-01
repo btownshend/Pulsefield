@@ -16,7 +16,7 @@ CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/ba
 CFLAGS=$(DEBUG)  $(OPTIMIZE)
 LDFLAGS=-L$(LIBLO) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) 
 LIBES=-llo $(SICKLIB) $(MATLABLIBES) -g 
-CXXSRCS=frontend.cc dest.cc main.cc urlconfig.cc sickio.cc background.cc world.cc classifier.cc snapshot.cc vis.cc person.cc target.cc likelihood.cc
+CXXSRCS=frontend.cc dest.cc main.cc urlconfig.cc sickio.cc background.cc world.cc classifier.cc snapshot.cc vis.cc person.cc target.cc likelihood.cc dbg.cc
 CSRCS=
 SRCS=$(CXXSRCS) $(CSRCS)
 all: frontend

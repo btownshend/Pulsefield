@@ -35,8 +35,7 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
     Person::newclasslike(targets,vis,likes);
 
     if (likes.size()>0) {
-	printf("Frame %d likelihoods: \n", frame);
-	likes.print();
+	dbg("Likelihood",2) << "Frame %d likelihoods: \n" << likes;
     }
 
     // Greedy assignment
@@ -45,7 +44,7 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
     // Implement assignment
     for (int i=0;i<result.size();i++) {
 	Assignment a=result[i];
-	printf("Assign: "); a.print();
+	dbg("Assign",2) << a;
 	if (a.track<0) {
 	    people.push_back(Person(nextid, vis, a.target1, a.target2));
 	    nextid++;

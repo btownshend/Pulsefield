@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 #include "frontend.h"
+#include "dbg.h"
 
 static int nsick=1;
 
@@ -22,8 +23,11 @@ int main(int argc, char *argv[])
     const char *matfile="mattest.mat";
     int matframes=0;
 
-    while ((ch=getopt(argc,argv,"sr:Rp:lx:m:M:"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:sr:Rp:lx:m:M:"))!=-1) {
 	switch (ch) {
+	case 'd':
+	    SetDebug(optarg);
+	    break;
 	case 's':
 	    singlestep=true;
 	    break;

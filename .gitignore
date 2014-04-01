@@ -46,3 +46,5 @@ LIDAR/Matlab/VISIONTB/
 *.mat
 
 *.mat
+
+LIDAR/FrontEndLIDAR/Debug.out

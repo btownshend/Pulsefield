@@ -1,6 +1,7 @@
-
 #ifndef DBG_H
 #define DBG_H
+
+#include <ostream>
 
 static const char *debugFile="Debug.out";
 // the default debug file output
@@ -16,22 +17,11 @@ void SetDebug (const char* dlev, const char *dbgf=debugFile);
 void CloseDebugFiles(void);
 #endif /* NODEBUG */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-    
 void SetDebugDirectory(const char *dirName);
 const char *GetDebugDirectory(void);
 
-#ifdef __cplusplus
-}
-#endif
-
-#ifdef __cplusplus
-class ostream;
-
-ostream& DbgFmt(ostream& s,const char* dstr, int level);
-ostream& DbgFile(const char *fname, const char *dstr, int level);
+std::ostream& DbgFmt(std::ostream& s,const char* dstr, int level);
+std::ostream& DbgFile(const char *fname, const char *dstr, int level);
 
 // Output to a stream with no prefix
 #define dbgsn(s,fn,level)  if(DebugCheck((fn),(level))) (s)
@@ -44,5 +34,4 @@ ostream& DbgFile(const char *fname, const char *dstr, int level);
 // Output to file without prefix
 #define dbgfn(fname,fn,level) if (DebugCheck((fn),(level))) DbgFile((fname),(fn),(level))
 
-#endif /* cplusplus */
 #endif /* !DBG_H */
