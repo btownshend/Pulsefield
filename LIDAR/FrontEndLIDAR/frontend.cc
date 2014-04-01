@@ -406,10 +406,10 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	if (cframe%100==0)
 	    printf("Playing frame %d\n",cframe);
 	sendVisMessages(cid,cframe, acquired,  nmeasure, nechoes, &rangeref[0], &reflectref[0]);
-	if (sick[0])
-	    *sick[0]=SickIO(cid,cframe, acquired,  nmeasure, nechoes, range,reflect);
-	else
-	    sick[0]=new SickIO(cid,cframe, acquired,  nmeasure, nechoes, range,reflect);
+	if (!sick[0])
+	    sick[0]=new SickIO();
+	
+	sick[0]->set(cid,cframe, acquired,  nmeasure, nechoes, range,reflect);
 
 	
 	vis->update(sick[0]);

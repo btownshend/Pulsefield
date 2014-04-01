@@ -40,8 +40,12 @@ private:
 public:
 	SickIO(int _id, const char *host, int port);
 	// Constructor to fake the data from a scan
-	SickIO(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]){
+	SickIO() {
 	    fake=true;
+	    scanFreq=50;
+	}
+	// Set values for faking
+	void set(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]){
 	    id=_id;
 	    frame=_frame;
 	    acquired=_acquired;
@@ -53,8 +57,6 @@ public:
 		    reflect[i][j]=_reflect[i][j];
 		}
 	    scanRes=190.0/(num_measurements-1);
-	    scanFreq=50;
-	    updateScanFreqAndRes();
 	}
 
 	virtual ~SickIO();
