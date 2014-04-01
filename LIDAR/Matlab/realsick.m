@@ -1,5 +1,5 @@
 params=getparams();
-if ~exist('oldsnap','var')
+if false && ~exist('oldsnap','var')
   p=struct();
   p.analsysisparams=analysissetup();
   p.lidar=struct('id',1);
