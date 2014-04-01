@@ -61,8 +61,10 @@ void Person::predict(int nstep, float fps) {
 	legs[i].setX(legs[i].X()+legvelocity[i].X()*nstep/fps);
 	legs[i].setY(legs[i].Y()+legvelocity[i].Y()*nstep/fps);
 	posvar[i]+=DRIFTVAR*nstep;
-	posvar[i]=std::min(posvar[i],posvar[1-i]+MAXLEGSEP*MAXLEGSEP);
     }
+    // If one leg is locked down, then the other leg can't vary more than MAXLEGSEP
+    for (int i=0;i<2;i++)
+	posvar[i]=std::min(posvar[i],posvar[1-i]+MAXLEGSEP*MAXLEGSEP);
     // Check that they didn't get too close or too far apart
     float legsep=(legs[0]-legs[1]).norm();
     if (legsep<legdiam) {
