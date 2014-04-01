@@ -39,7 +39,7 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
     }
 
     // Greedy assignment
-    Likelihood result=likes.greedy();
+    Likelihood result=likes.smartassign();
     
     // Implement assignment
     for (int i=0;i<result.size();i++) {

@@ -51,6 +51,7 @@ public:
     friend std::ostream& operator<<(std::ostream &s, const Likelihood &l);
     
     Likelihood greedy();
+    Likelihood smartassign();
 };
 
 #endif /* LIKELIHOOD_H_ */
