@@ -159,6 +159,7 @@ FrontEnd::FrontEnd(int _nsick) {
 	    fprintf(stderr,"pthread_create failed with error code %d\n", rc);
 	    exit(1);
 	}
+	dbgn("FrontEnd",1) << "done." << std::endl;
 	printf("done\n");
 
 	/* add default destinations */
