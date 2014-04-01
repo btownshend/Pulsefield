@@ -38,6 +38,7 @@ static const float NEWTRACKEQUIVDIST1=3000;	// log-likelihood of adding a new tr
 static const float NEWTRACKEQUIVDIST2=2000;	// log-likelihood of adding a new track for a class pair is equivalent to matching an existing class at this distance
 static const float LEFTNESSTC=500;	// time constant for updating leftness
 static const float HIDDENPENALTY=3;	// loglike penalty when using a shadowed position for a leg
+static const float HIDDENLEGSCALING=0.8;  // Scale diameter of leg by this much when looking for a place it could be shadowed
 
 // ******** Deleting tracks
 static const int INVISIBLEFORTOOLONG=50;	// Number of frames of invisible before deleting

@@ -282,7 +282,7 @@ Point Person::nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos) 
     }
     float theta=pos.getTheta();
     float range=pos.getRange();
-    const float anglewidth=legdiam/range;
+    const float anglewidth=legdiam/range*HIDDENLEGSCALING;   // Make it a little smaller to allow it to be hidden
     if (theta+anglewidth/2 <= vis.getSick()->getAngle(0) || theta-anglewidth/2 >= vis.getSick()->getAngle(vis.getSick()->getNumMeasurements()-1)) {
 	// Already outside of FOV
 	return pos;
@@ -312,7 +312,7 @@ Point Person::nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos) 
 	float minrange=vis.getSick()->getRange(0)[i];
 	for (unsigned int j=i+1;j<vis.getSick()->getNumMeasurements() && j<=i+(cpos2-cpos1);j++) {
 	    minrange=std::max(minrange,(float)vis.getSick()->getRange(0)[j]);
-	    float shadowrange=std::max(minrange+legdiam,legdiam/((j-i)*res));
+	    float shadowrange=std::max((float)minrange,legdiam*HIDDENLEGSCALINGf/((j-i)*res));
 	    if (i==0 || j==vis.getSick()->getNumMeasurements()) {
 		// End scans -- object can be outside FOV partially
 		shadowrange=minrange;
