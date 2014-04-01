@@ -258,7 +258,7 @@ Point Person::circmodel(const Target *t,  bool update) {
     }
     Point result;
     result.setThetaRange(angle,range);
-    printf("circmodel(%d)=(%.0f,%.0f)\n", t->getClass(), result.X(), result.Y());
+    //printf("circmodel(%d)=(%.0f,%.0f)\n", t->getClass(), result.X(), result.Y());
     return result;
 }
 
@@ -333,8 +333,8 @@ Point Person::nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos) 
 		break;
 	}
     }
-    float distmoved=(bestpos-targetpos).norm();
-    printf("Best location for (%.2f,%.2f) is in shadow %d-%d at (%.2f,%.2f) with a distance of %.2f\n", targetpos.X(), targetpos.Y(), besti, bestj, bestpos.X(), bestpos.Y(), distmoved);
+    //float distmoved=(bestpos-targetpos).norm();
+    //printf("Best location for (%.2f,%.2f) is in shadow %d-%d at (%.2f,%.2f) with a distance of %.2f\n", targetpos.X(), targetpos.Y(), besti, bestj, bestpos.X(), bestpos.Y(), distmoved);
     return bestpos;
 }
 
