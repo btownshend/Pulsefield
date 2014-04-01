@@ -107,7 +107,7 @@ void Person::getclasslike(const Targets &targets, const Vis &vis, Likelihood &li
     for (unsigned int i=0;i<targets.size();i++) {
 	const Target *t1=&targets[i];
 	Point cp1=t1->getCenter();
-	if ((legs[0]-cp1).norm() < MAXMOVEMENT) {
+	if ((legs[0]-cp1).norm() < MAXMOVEMENT+sqrt(posvar[0])) {
 	    // Possible leg assignment
 	    Point newleg0=circmodel(t1, false);
 	    float l0=normloglike(posvar[0],(legs[0]-newleg0).norm());
@@ -127,7 +127,7 @@ void Person::getclasslike(const Targets &targets, const Vis &vis, Likelihood &li
 	    float l1=normloglike(posvar[1],(legs[1]-hidden1).norm());
 	    likes.add(Assignment(tracknum,t1,NULL,l0+l1-HIDDENPENALTY-penalties));
 	}
-	if ((legs[1] -cp1).norm() < MAXMOVEMENT) {
+	if ((legs[1] -cp1).norm() < MAXMOVEMENT+sqrt(posvar[1])) {
 	    Point newleg1=circmodel(t1, false);
 	    float l1=normloglike(posvar[1],(legs[1]-newleg1).norm());
 	    // Leg1 hidden
