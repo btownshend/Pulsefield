@@ -108,8 +108,8 @@ FrontEnd::FrontEnd(int _nsick) {
 	printf("Started server on port %d\n", serverPort);
 
 	/* Start sending data to Matlab */
-	const int clientPort=urls.getPort("MPV");
-	const char *clientHost=urls.getHost("MPV");
+	const int clientPort=urls.getPort("VD");
+	const char *clientHost=urls.getHost("VD");
 	dests.add(clientHost, clientPort);
 
 	/* Start cameras */
@@ -160,13 +160,12 @@ FrontEnd::FrontEnd(int _nsick) {
 	    exit(1);
 	}
 	dbgn("FrontEnd",1) << "done." << std::endl;
-	printf("done\n");
 
 	/* add default destinations */
 	// addDest("localhost",7771);
 
-	/* Set to always send only VIS information */
-	sendAlways=0; // RANGE;
+	/* Set to always send only PF information */
+	sendAlways=PF;
 }
 
 FrontEnd::~FrontEnd() {

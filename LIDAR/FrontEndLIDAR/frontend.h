@@ -40,7 +40,7 @@ class FrontEnd {
     int matframes;
     const char *matfile;
  public:
-    enum { RANGE=0x10, REFLECT=0x20 };  // Bitmasks of what to send in next message group
+    enum { RANGE=0x10, REFLECT=0x20, PF=0x40 };  // Bitmasks of what to send in next message group
 
     FrontEnd(int nsick);
     ~FrontEnd();
