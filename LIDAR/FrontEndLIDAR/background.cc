@@ -74,27 +74,26 @@ void Background::update(const SickIO &sick) {
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
 	for (int k=0;k<NRANGES;k++) {
 	    freq[k][i]*=(1.0-1.0f/tc);
-	    if (srange[i]<MAXRANGE && srange[i]>=MINRANGE) {
-		if (abs(srange[i]-range[k][i]) < MINBGSEP) {
-		    range[k][i]=srange[i]*1.0f/tc + range[k][i]*(1-1.0f/tc);
-		    freq[k][i]+=1.0f/tc;
-		    // Swap ordering if needed
-		    for (int kk=k;kk>0;kk--)
-			if  (freq[kk][i] > freq[kk-1][i])
-			    swap(i,kk,kk-1);
-			else
-			    break;
-		    break;
-		} else if (k==NRANGES-1) {
-		    // No matches, reset last range value 
-		    range[k][i]=srange[i];
-		    freq[k][i]=1.0f/tc;
-		    for (int kk=k;kk>0;kk--)
-			if  (freq[kk][i] > freq[kk-1][i])
-			    swap(i,kk,kk-1);
-			else
-			    break;
-		}
+	    // Note allow updates even if range>MAXRANGE, otherwise points slightly smaller than MAXRANGE get biased and have low freq
+	    if (abs(srange[i]-range[k][i]) < MINBGSEP) {
+		range[k][i]=srange[i]*1.0f/tc + range[k][i]*(1-1.0f/tc);
+		freq[k][i]+=1.0f/tc;
+		// Swap ordering if needed
+		for (int kk=k;kk>0;kk--)
+		    if  (freq[kk][i] > freq[kk-1][i])
+			swap(i,kk,kk-1);
+		    else
+			break;
+		break;
+	    } else if (k==NRANGES-1 && srange[i]<MAXRANGE && srange[i]>=MINRANGE) {
+		// No matches, inside active area; reset last range value 
+		range[k][i]=srange[i];
+		freq[k][i]=1.0f/tc;
+		for (int kk=k;kk>0;kk--)
+		    if  (freq[kk][i] > freq[kk-1][i])
+			swap(i,kk,kk-1);
+		    else
+			break;
 	    }
 	}
     }
