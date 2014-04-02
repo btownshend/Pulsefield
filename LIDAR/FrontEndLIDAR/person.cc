@@ -11,15 +11,15 @@ static const int NCHANNELS=16;
 static int channeluse[NCHANNELS];
 
 Person::Person(int _id, const Vis &vis, const Target *target1, const Target *target2) {
-    static int lastchannel=0;
     id=_id;
     // Find a free channel, or advance to next one if none free
-    for (int i=0;i<NCHANNELS+1;i++) {
-	if (channeluse[i]==0)
+    channel=0;
+    for (int i=0;i<NCHANNELS;i++) {
+	if (channeluse[i]==0) {
+	    channel=i;
 	    break;
-	lastchannel=(lastchannel+1)%NCHANNELS;
+	}
     }
-    channel=lastchannel;
     channeluse[channel]++;
 
     legdiam=INITLEGDIAM;

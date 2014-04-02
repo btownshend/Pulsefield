@@ -54,6 +54,7 @@ public:
     Point getVelocity() const { return velocity; }
     const Point* getLegs() const { return legs; }
     float getLegDiam() const { return legdiam; }
+    int getAge() const { return age; }
 };
 
 #endif  /* PERSON_H_ */

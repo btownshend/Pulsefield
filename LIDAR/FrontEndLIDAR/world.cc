@@ -3,6 +3,7 @@
 #include "likelihood.h"
 #include "vis.h"
 #include "dbg.h"
+#include "parameters.h"
 
 World::World() {
     lastframe=0;
@@ -81,27 +82,34 @@ void World::sendMessages(const Destinations &dests, const struct timeval &acquir
 	// Handle entries
 	std::set<int>exitids = lastid;
 	unsigned int priornpeople=lastid.size();
-	for (unsigned int p=0;p<people.size();p++){
-	   exitids.erase(people[i].getID());
-	    if ( lastid.count(people[i].getID()) == 0)
-		lo_send(addr,"/pf/entry","ifii",lastframe,now,people[i].getID(),people[i].getChannel());
-	    lastid.insert(people[i].getID());
+	unsigned activePeople=0;
+	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
+	    if (p->getAge() >= AGETHRESHOLD) {
+		activePeople++;
+		exitids.erase(p->getID());
+		if ( lastid.count(p->getID()) == 0)
+		    lo_send(addr,"/pf/entry","ifii",lastframe,now,p->getID(),p->getChannel());
+		lastid.insert(p->getID());
+	    }
 	}
+
 	// Handle exits
-	for (std::set<int>::iterator i=exitids.begin();i!=exitids.end();i++) {
-	    lo_send(addr,"/pf/exit","ifi",lastframe,now,*i);
-	    lastid.erase(people[*i].getID());
+	for (std::set<int>::iterator p=exitids.begin();p!=exitids.end();p++) {
+	    lo_send(addr,"/pf/exit","ifi",lastframe,now,*p);
+	    lastid.erase(*p);
 	}
 
 	// Current size
-	if (people.size() != priornpeople)
+	if (activePeople != priornpeople)
 	    lo_send(addr,"/pf/set/npeople","i",people.size());
 
 	// Updates
-	for (unsigned int p=0;p<people.size();p++) {
-	    const Point *l =people[p].getLegs();
-	    float lspace=(l[1]-l[0]).norm();
-	    lo_send(addr, "/pf/update","ififfffffiii",lastframe,now,people[p].getID(),people[p].getPosition().X(),people[p].getPosition().Y(),people[p].getVelocity().X(),people[p].getVelocity().Y(),lspace+people[p].getLegDiam(),people[p].getLegDiam(),0,0,people[p].getChannel());
+	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
+	    if (p->getAge() >= AGETHRESHOLD) {
+		const Point *l =p->getLegs();
+		float lspace=(l[1]-l[0]).norm();
+		lo_send(addr, "/pf/update","ififfffffiii",lastframe,now,p->getID(),p->getPosition().X(),p->getPosition().Y(),p->getVelocity().X(),p->getVelocity().Y(),lspace+p->getLegDiam(),p->getLegDiam(),0,0,p->getChannel());
+	    }
 	}
 	lo_address_free(addr);
     }
