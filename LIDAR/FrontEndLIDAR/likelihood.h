@@ -40,7 +40,7 @@ public:
     void remove(Assignment a) {
 	std::vector<Assignment>::iterator iter;
 	for (iter = entries.begin(); iter != entries.end(); ) {
-	    if ((a.target1!=NULL && (a.target1==iter->target1 || a.target1==iter->target2)) || (a.target2!=NULL && (a.target2==iter->target2 || a.target2==iter->target1)) || a.track==iter->track)
+	    if ((a.target1!=NULL && (a.target1==iter->target1 || a.target1==iter->target2)) || (a.target2!=NULL && (a.target2==iter->target2 || a.target2==iter->target1)) || (a.track!=-1 && a.track==iter->track))
 		iter = entries.erase(iter);
 	    else
 		++iter;
