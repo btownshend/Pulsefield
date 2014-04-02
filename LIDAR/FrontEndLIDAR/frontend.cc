@@ -166,7 +166,7 @@ FrontEnd::FrontEnd(int _nsick) {
 	// addDest("localhost",7771);
 
 	/* Set to always send only VIS information */
-	sendAlways=RANGE;
+	sendAlways=0; // RANGE;
 }
 
 FrontEnd::~FrontEnd() {
@@ -262,6 +262,8 @@ void FrontEnd::processFrames() {
 }
 
 void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
+    if (! (sendOnce & (RANGE|REFLECT)))
+	return;
     dbg("FrontEnd.sendVisMessages",5) << "sendOnce=0x" << std::setbase(16) << sendOnce << std::setbase(10)  << ", ndest=" << dests.count() << std::endl;
 
 	for (int i=0;i<dests.count();i++) {
@@ -416,6 +418,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	
 	vis->update(sick[0]);
 	world->track(vis->getClassifier()->getTargets(),*vis,cframe,sick[0]->getScanFreq());
+	world->sendMessages(dests,sick[0]->getAcquired());
 
 	if (matframes>0) {
 	    snap->append(vis,world);
