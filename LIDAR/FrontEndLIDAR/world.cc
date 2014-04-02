@@ -10,6 +10,7 @@ World::World() {
     nextid=1;
     starttime.tv_sec=0;
     starttime.tv_usec=0;
+    initWindow();
 }
 
 void World::track(const Targets &targets, const Vis &vis, int frame, float fps) {
@@ -61,6 +62,8 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
 	for (unsigned int i=0;i<people.size();i++)
 	    dbg("World.track",2)  << people[i] << std::endl;
     }
+    if (frame%1==0)
+	draw();
 }
 
 void World::sendMessages(const Destinations &dests, const struct timeval &acquired) {
@@ -76,8 +79,13 @@ void World::sendMessages(const Destinations &dests, const struct timeval &acquir
 	dbg("World.sendMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 	sprintf(cbuf,"%d",dests.getPort(i));
 	lo_address addr = lo_address_new(dests.getHost(i), cbuf);
-	if (sendstart)
+	if (sendstart) {
 	    lo_send(addr,"/pf/started","");
+	    lo_send(addr,"/pf/set/minx","f",-(float)MAXRANGE/1000.0);
+	    lo_send(addr,"/pf/set/maxx","f",MAXRANGE/1000.0);
+	    lo_send(addr,"/pf/set/miny","f",0.0);
+	    lo_send(addr,"/pf/set/maxy","f",MAXRANGE/1000.0);
+	}
 	lo_send(addr,"/pf/frame","i",lastframe);
 	// Handle entries
 	std::set<int>exitids = lastid;
@@ -108,7 +116,7 @@ void World::sendMessages(const Destinations &dests, const struct timeval &acquir
 	    if (p->getAge() >= AGETHRESHOLD) {
 		const Point *l =p->getLegs();
 		float lspace=(l[1]-l[0]).norm();
-		lo_send(addr, "/pf/update","ififfffffiii",lastframe,now,p->getID(),p->getPosition().X(),p->getPosition().Y(),p->getVelocity().X(),p->getVelocity().Y(),lspace+p->getLegDiam(),p->getLegDiam(),0,0,p->getChannel());
+		lo_send(addr, "/pf/update","ififfffffiii",lastframe,now,p->getID(),p->getPosition().X()/1000,p->getPosition().Y()/1000,p->getVelocity().X(),p->getVelocity().Y(),(lspace+p->getLegDiam())/1000,p->getLegDiam()/1000,0,0,p->getChannel());
 	    }
 	}
 	lo_address_free(addr);
