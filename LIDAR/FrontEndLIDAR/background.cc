@@ -1,6 +1,7 @@
 #include <assert.h>
 #include "background.h"
 #include "parameters.h"
+#include "dbg.h"
 
 Background::Background() {
     scanRes=0;
@@ -17,31 +18,44 @@ void Background::swap(int k, int i, int j) {
     freq[j][k]=tmpfreq;
 }
 
-std::vector<bool> Background::isbg(const SickIO &sick) const {
-    std::vector<bool> result(sick.getNumMeasurements(),false);
+// Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
+std::vector<float> Background::isbg(const SickIO &sick) const {
+    std::vector<float> result(sick.getNumMeasurements(),false);
     const unsigned int *srange = sick.getRange(0);
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
 	if (srange[i]>=MAXRANGE || srange[i]<MINRANGE)
-	    result[i]=true;
+	    result[i]=1.0;
 	else {
 	    // Compute result
+	    result[i]=0.0;
 	    for (int k=0;k<NRANGES-1;k++) {
-		if (freq[k][i]<MINBGFREQ) {
-		    result[i]=false;
-		    continue;
+		// This is a background pixel if it matches the ranges of this scan's background
+		if (freq[k][i]>0 && abs(srange[i]-range[k][i]) < MINBGSEP )
+		    result[i]+=freq[k][i];
+	    }
+	    if (result[i]<MINBGFREQ) {
+		// No strong primary matches, If it matches adjacent scan backgrounds, consider that with a weighting
+		for (int k=0;k<NRANGES-1;k++) {
+		    if (i>0 && abs(srange[i]-range[k][i-1])<MINBGSEP) 
+			result[i]+=freq[k][i-1]*ADJSCANBGWEIGHT;
+		    if (i+1<sick.getNumMeasurements() && abs(srange[i]-range[k][i+1])<MINBGSEP)
+			result[i]+=freq[k][i+1]*ADJSCANBGWEIGHT;
 		}
-		if (k==0 && (abs(srange[i]-range[k][i]) < MINBGSEP ||
-			     (i>0 && abs(srange[i]-range[k][i-1])<MINBGSEP) ||
-			     (i+1<sick.getNumMeasurements() && abs(srange[i]-range[k][i+1])<MINBGSEP))) {
-		    // This is a background pixel if it matches the most common ranges of this or adjecent scans
-		    result[i]=true;
-		    break;
-		} else if (abs(srange[i]-range[k][i])<MINBGSEP) {
-		    // or if it matches the 2nd most common AND that range is between the most common background range for the adjacent scan points
-		    // This handles the case where a scan is partially occluded by a foreground object and averages between the near and far ranges
-		    result[i]=(srange[i]<range[0][std::max(0u,i-1)] )!= (srange[i]<range[0][std::min(i+1,sick.getNumMeasurements()-1)]);
-		    break;
+	    }
+	    if (result[i]==0 && freq[0][i]>0) {
+		// Still no matches, check if is between this and adjacent background
+		if (i>0 && freq[0][i-1]>0 && (srange[i]>range[0][i] != srange[i]>range[0][i-1])) {
+		    result[i]=std::min(freq[0][i],freq[0][i-1])*INTERPSCANBGWEIGHT;
+		    dbg("Background.isbg",4) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i-1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
 		}
+		if (i+1<sick.getNumMeasurements() && freq[0][i+1]>0 && (srange[i]>range[0][i] != srange[i]>range[0][i+1])) {
+		    result[i]=std::min(freq[0][i],freq[0][i+1])*INTERPSCANBGWEIGHT;
+		    dbg("Background.isbg",4) << "Scan " << i << " at " << std::setprecision(0)  <<std::fixed <<  srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i+1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
+		}
+	    }
+	    if (result[i]>1.0) {
+		dbg("Background.isbg",1) << "Scan " << i << " at " << srange[i] << " had prob " << result[i] << "; reducing to 1.0"  << std::endl;
+		result[i]=1.0;
 	    }
 	}
     }

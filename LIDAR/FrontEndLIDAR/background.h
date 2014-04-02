@@ -21,7 +21,8 @@ class Background {
     void swap(int k, int i, int j);
 public:
     Background();
-    std::vector<bool> isbg(const SickIO &sick) const;
+    // Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
+    std::vector<float> isbg(const SickIO &sick) const;
     void update(const SickIO &sick);
     mxArray *convertToMX() const;
 };
