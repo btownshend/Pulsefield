@@ -19,6 +19,7 @@ class Likelihood;
 class Person {
     // Overall 
     int id;
+    int channel;
     Point position;
     Point velocity;
     int age;
@@ -39,6 +40,7 @@ class Person {
     Point adjustLegSep(Point legtoadj, Point otherlegpos);
 public:
     Person(int _id, const Vis &vis, const Target *t1, const Target *t2);
+    ~Person();
     void getclasslike(const Targets &targets, const Vis &vis, Likelihood &likes, int tracknum);
     static void newclasslike(const Targets &targets, const Vis &vis, Likelihood &likes);
     void predict(int nstep, float fps);
@@ -46,6 +48,12 @@ public:
     void addToMX(mxArray *people, int index) const;
     friend std::ostream &operator<<(std::ostream &s, const Person &p);
     bool isDead() const;
+    int getID() const { return id; }
+    int getChannel() const { return channel; }
+    Point getPosition() const { return position; }
+    Point getVelocity() const { return velocity; }
+    const Point* getLegs() const { return legs; }
+    float getLegDiam() const { return legdiam; }
 };
 
 #endif  /* PERSON_H_ */

@@ -1,3 +1,6 @@
+#ifndef DEST_H_
+#define DEST_H_
+
 class Destinations {
     int ndest;
     int maxdest;
@@ -13,3 +16,5 @@ class Destinations {
     const char *getHost(int i) const { return hosts[i]; }
     int getPort(int i) const { return ports[i]; }
 };
+
+#endif  /* DEST_H_ */

@@ -252,7 +252,8 @@ void FrontEnd::processFrames() {
 	}
 	vis->update(sick[0]);
 	world->track(vis->getClassifier()->getTargets(),*vis,frame,sick[0]->getScanFreq());
-	
+	world->sendMessages(dests,sick[0]->getAcquired());
+
 	sendOnce=0;
 	if (recording)
 	    recordFrame();

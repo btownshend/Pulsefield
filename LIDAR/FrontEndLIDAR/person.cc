@@ -7,8 +7,21 @@
 #include "likelihood.h"
 #include "dbg.h"
 
+static const int NCHANNELS=16;
+static int channeluse[NCHANNELS];
+
 Person::Person(int _id, const Vis &vis, const Target *target1, const Target *target2) {
+    static int lastchannel=0;
     id=_id;
+    // Find a free channel, or advance to next one if none free
+    for (int i=0;i<NCHANNELS+1;i++) {
+	if (channeluse[i]==0)
+	    break;
+	lastchannel=(lastchannel+1)%NCHANNELS;
+    }
+    channel=lastchannel;
+    channeluse[channel]++;
+
     legdiam=INITLEGDIAM;
     legs[0]=circmodel(target1,false);
     legclasses[0]=target1->getClass();
@@ -34,6 +47,10 @@ Person::Person(int _id, const Vis &vis, const Target *target1, const Target *tar
     age=1;
     consecutiveInvisibleCount=0;
     totalVisibleCount=1;
+}
+
+Person::~Person() {
+    channeluse[channel]--;
 }
 
 bool Person::isDead() const {

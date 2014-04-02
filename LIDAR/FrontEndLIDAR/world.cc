@@ -1,3 +1,4 @@
+#include "lo/lo.h"
 #include "world.h"
 #include "likelihood.h"
 #include "vis.h"
@@ -6,6 +7,8 @@
 World::World() {
     lastframe=0;
     nextid=1;
+    starttime.tv_sec=0;
+    starttime.tv_usec=0;
 }
 
 void World::track(const Targets &targets, const Vis &vis, int frame, float fps) {
@@ -56,6 +59,51 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
 	dbg("World.track",2)  << "People at end of frame " <<  lastframe << ":" << std::endl;
 	for (unsigned int i=0;i<people.size();i++)
 	    dbg("World.track",2)  << people[i] << std::endl;
+    }
+}
+
+void World::sendMessages(const Destinations &dests, const struct timeval &acquired) {
+    dbg("World.sendMessages",5) << "ndest=" << dests.count() << std::endl;
+    bool sendstart=false;
+    if  (starttime.tv_sec==0) {
+	starttime=acquired;
+	sendstart=true;
+    }
+    double now=(acquired.tv_sec-starttime.tv_sec)+(acquired.tv_usec-starttime.tv_usec)*1e-6;
+    for (int i=0;i<dests.count();i++) {
+	char cbuf[10];
+	dbg("World.sendMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
+	sprintf(cbuf,"%d",dests.getPort(i));
+	lo_address addr = lo_address_new(dests.getHost(i), cbuf);
+	if (sendstart)
+	    lo_send(addr,"/pf/started","");
+	lo_send(addr,"/pf/frame","i",lastframe);
+	// Handle entries
+	std::set<int>exitids = lastid;
+	unsigned int priornpeople=lastid.size();
+	for (unsigned int p=0;p<people.size();p++){
+	   exitids.erase(people[i].getID());
+	    if ( lastid.count(people[i].getID()) == 0)
+		lo_send(addr,"/pf/entry","ifii",lastframe,now,people[i].getID(),people[i].getChannel());
+	    lastid.insert(people[i].getID());
+	}
+	// Handle exits
+	for (std::set<int>::iterator i=exitids.begin();i!=exitids.end();i++) {
+	    lo_send(addr,"/pf/exit","ifi",lastframe,now,*i);
+	    lastid.erase(people[*i].getID());
+	}
+
+	// Current size
+	if (people.size() != priornpeople)
+	    lo_send(addr,"/pf/set/npeople","i",people.size());
+
+	// Updates
+	for (unsigned int p=0;p<people.size();p++) {
+	    const Point *l =people[p].getLegs();
+	    float lspace=(l[1]-l[0]).norm();
+	    lo_send(addr, "/pf/update","ififfffffiii",lastframe,now,people[p].getID(),people[p].getPosition().X(),people[p].getPosition().Y(),people[p].getVelocity().X(),people[p].getVelocity().Y(),lspace+people[p].getLegDiam(),people[p].getLegDiam(),0,0,people[p].getChannel());
+	}
+	lo_address_free(addr);
     }
 }
 
