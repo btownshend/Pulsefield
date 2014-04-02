@@ -150,35 +150,54 @@ void Classifier::update(const SickIO &sick) {
     }
 
     // Split excessively large classes
-    for (unsigned int i=0;i<classes.size();i++)
-	if (classes[i]>MAXSPECIAL) {
-	    int prevpt=i;
+    std::set<unsigned int> uclasses=getUniqueClasses();
+    for (std::set<unsigned int>::iterator c=uclasses.begin();c!=uclasses.end();c++) {
+	unsigned int firstpt=getfirstindex(*c);
+	unsigned int lastpt=getlastindex(*c);
+	float dist=sick.distance(firstpt,lastpt);
+	if (sick.distance(firstpt,lastpt) > MAXCLASSSIZE) {
+	    dbg(dbgstr,20) << "Need to split class " << *c << " at " << firstpt << "-" << lastpt << " with size " << dist << " > " << MAXCLASSSIZE << std::endl;
+
+	    int prevpt=firstpt;
 	    float maxdelta=0;
-	    int bkpt=i;
-	    for (unsigned int j=i+1;j<classes.size();j++) {
-		if (classes[j]==classes[i]) {
+	    int pbkpt=-1;
+	    int bkpt=-1;
+	    for (unsigned int j=firstpt+1;j<=lastpt;j++) {
+		if (classes[j]==*c) {
+		    float d1=sick.distance(firstpt,prevpt);
+		    if (d1>MAXCLASSSIZE) {
+			if (bkpt<0) {
+			    dbg(dbgstr,1) << "Boundary case: class to split is close to 2*MAXCLASSSIZE -- fudging it by forming an oversize class of size " << d1 << std::endl;
+			    bkpt=j;
+			    pbkpt=prevpt;
+			    maxdelta=sick.distance(pbkpt,bkpt);
+			}
+			float db1=sick.distance(firstpt,pbkpt);
+			float db2=sick.distance(bkpt,lastpt);
+			// Class size exceeded, break at biggest jump so far
+			dbg(dbgstr,20) << "Splitting class " << *c << " into " << firstpt << "-" << pbkpt << " and " << bkpt << "-" << lastpt << " to give pieces of size " << db1 << " and " << db2 << " with  gap of " << maxdelta <<  std::endl;
+			for (unsigned int k=bkpt;k<=lastpt;k++)
+			    if (classes[k]==*c)
+				classes[k]=nextclass;
+			uclasses.insert(nextclass);
+			nextclass++;
+			break;
+		    }
 		    float delta=sick.distance(prevpt,j);
-		    if (delta>maxdelta) {
-			// Largest jump so far
+		    float d2=sick.distance(j,lastpt);
+		    dbg(dbgstr,20) << "Check splitting class " << *c << " into " << firstpt << "-" << prevpt << " and " << j << "-" << lastpt << " to give pieces of size " << d1 << " and " << d2 << " with  gap of " << delta <<  std::endl;
+		    if (delta>maxdelta && (d2 <= MAXCLASSSIZE || (d1+d2 > MAXCLASSSIZE*2))) {
+			// Largest jump so far that can make both pieces under MAXCLASSSIZE (if that is possible)
 			maxdelta=delta;
 			bkpt=j;
+			pbkpt=prevpt;
 		    }
 		    // Keep track of last point of this class (could be discontinuous)
 		    prevpt=j;
-		    float dist=sick.distance(i,j);
-		    if (dist>MAXCLASSSIZE) {
-			// Class size exceeded, break at biggest jump so far
-			dbg(dbgstr,20) << "Splitting class " << classes[i] << "@ " << i << "-" << j << " at " << bkpt << std::endl;
-			for (unsigned int k=bkpt;k<classes.size();k++)
-			    if (classes[k]==classes[i])
-				classes[k]=nextclass;
-			nextclass++;
-			i=bkpt;
-			break;
-		    }
 		}
 	    }
 	}
+    }
 
     // Compact class numbers
     std::vector<bool> present(nextclass,false);
