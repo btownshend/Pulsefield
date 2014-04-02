@@ -25,7 +25,6 @@ public:
     void track(const Targets &targets, const Vis &vis, int frame, float fps);
     void deleteLostPeople();
     mxArray *convertToMX() const;
-    friend std::ostream &operator<<(std::ostream &s, const World &w);
 };
 
 #endif  /* WORLD_H_ */
