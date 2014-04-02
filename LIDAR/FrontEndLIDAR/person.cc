@@ -325,10 +325,13 @@ Point Person::nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos) 
     Point bestpos;
     int besti,bestj;
     float res=vis.getSick()->getScanRes()*M_PI/180;
+    int minanglewidth=ceil(legdiam/(range*res));
+    dbg("Person.nearestShadowed",4) << "Searching for best shadow with maximum width of " << minanglewidth << " scan points" << std::endl;
+    assert(legdiam*HIDDENLEGSCALING/(minanglewidth*res) < range);
     for (unsigned int i=0;i<vis.getSick()->getNumMeasurements();i++) {
-	float minrange=vis.getSick()->getRange(0)[i];
-	for (unsigned int j=i+1;j<vis.getSick()->getNumMeasurements() && j<=i+(cpos2-cpos1);j++) {
-	    minrange=std::max(minrange,(float)vis.getSick()->getRange(0)[j]);
+	float minrange=vis.getSick()->getRange(0)[i]+legdiam/4;   // Add legdiam/4 to approx. offset from frontier correctly
+	for (unsigned int j=i+1;j<vis.getSick()->getNumMeasurements() && j<i+minanglewidth;j++) {
+	    minrange=std::max(minrange,(float)vis.getSick()->getRange(0)[j]+legdiam/4);
 	    float shadowrange=std::max((float)minrange,legdiam*HIDDENLEGSCALING/((j-i)*res));
 	    if (i==0 || j==vis.getSick()->getNumMeasurements()) {
 		// End scans -- object can be outside FOV partially
@@ -350,9 +353,9 @@ Point Person::nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos) 
 		break;
 	}
     }
-    float distmoved=(bestpos-targetpos).norm();
     dbg("Person.nearestShadowed",4) << "Best location for " << targetpos << " is in shadow " << besti << "-" << bestj << " at "
-				    << bestpos << " with a distance of " << distmoved << std::endl;
+				    << bestpos << " with a distance of " << bestdist << std::endl;
+    pos=adjustLegSep(bestpos,otherlegpos);
     return bestpos;
 }
 
