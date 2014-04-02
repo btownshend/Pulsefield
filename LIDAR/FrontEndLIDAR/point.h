@@ -26,10 +26,10 @@ class Point {
 	x=cos(theta+M_PI/2)*range; 
 	y=sin(theta+M_PI/2)*range;
     }
-    Point operator-(const Point &p2) { return Point(x-p2.X(),y-p2.Y()); }
-    Point operator+(const Point &p2) { return Point(x+p2.X(),y+p2.Y()); }
-    Point operator/(float s) { return Point(x/s,y/s); }
-    Point operator*(float s) { return Point(x*s,y*s); }
+    Point operator-(const Point &p2) const { return Point(x-p2.X(),y-p2.Y()); }
+    Point operator+(const Point &p2) const { return Point(x+p2.X(),y+p2.Y()); }
+    Point operator/(float s) const { return Point(x/s,y/s); }
+    Point operator*(float s) const { return Point(x*s,y*s); }
     float norm() const { return getRange(); }
     float dot(const Point &p2) const { return p2.X()*x+p2.Y()*y; }
     friend std::ostream& operator<<(std::ostream &s, const Point &p);
