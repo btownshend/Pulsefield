@@ -29,6 +29,9 @@ static const float MAXLEGDIAM=220;	// Maximum diameter of legs
 static const float MAXCLASSSIZE=300;	// Maximum size of a single class in meters before it needs to be split
 static const float MINTARGET=100;	// Minimum unshadowed target size (otherwise is noise)
 
+// ***** Assignment
+static const float MINFORCELIKE=-10;  // Minimum likelihood to force assigning a class to the only target that is possible (otherwise a track is formed)
+
 // ***** Tracking
 static const float INITIALPOSITIONVAR=100*100;  // Variance of initial position estimates
 static const float INITIALHIDDENVAR=300*300;  // Variance of initial position estimates when leg is not initially visible
