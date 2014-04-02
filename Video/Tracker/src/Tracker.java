@@ -21,7 +21,7 @@ public class Tracker extends PApplet {
 	NetAddress myRemoteLocation;
 	static float minx=-3.61f, maxx=3.61f, miny=-3.2f, maxy=3.2f;
 	static float rawminy=-3.61f, rawmaxy=3.61f, rawminx=0.63f, rawmaxx=7.04f;
-	static final float screenrotation=90f;   // Rotate raw coordinates CCW by this number of degrees
+	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
 	Visualizer vis[];
 	VisualizerGrid visAbleton;
 	VisualizerNavier visNavier;
