@@ -36,6 +36,7 @@ class Person {
 
     Point circmodel(const Target *t, bool update);
     Point nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos);
+    Point adjustLegSep(Point legtoadj, Point otherlegpos);
 public:
     Person(int _id, const Vis &vis, const Target *t1, const Target *t2);
     void getclasslike(const Targets &targets, const Vis &vis, Likelihood &likes, int tracknum);

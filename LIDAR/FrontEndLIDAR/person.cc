@@ -47,9 +47,12 @@ bool Person::isDead() const {
 
 std::ostream &operator<<(std::ostream &s, const Person &p) {
     s << "ID " << p.id 
+      << std::fixed << std::setprecision(0) 
       << ", position: " << p.position
       << ", legs: " << p.legs[0] << "+/-" << sqrt(p.posvar[0])
       << ", " << p.legs[1] << "+/-" << sqrt(p.posvar[1])
+      << ", diam: " << p.legdiam
+      << std::setprecision(2)
       << ", vel: " << p.velocity
       << ", age: " << p.age;
     return s;
@@ -67,7 +70,7 @@ void Person::predict(int nstep, float fps) {
 	posvar[i]=std::min(posvar[i],posvar[1-i]+MAXLEGSEP*MAXLEGSEP);
     // Check that they didn't get too close or too far apart
     float legsep=(legs[0]-legs[1]).norm();
-    if (legsep<legdiam) {
+    if (legsep<legdiam-0.1) {
 	dbg("Person.predict",1) << "legs are " << legsep << " apart (< " << legdiam << "), splitting" << std::endl;
 	Point vec;
 	if (legsep>0)
@@ -78,7 +81,7 @@ void Person::predict(int nstep, float fps) {
 	legs[0]=legs[0]+vec*(posvar[0]/(posvar[0]+posvar[1]));
 	legs[1]=legs[1]-vec*(posvar[1]/(posvar[0]+posvar[1]));
     }
-    if (legsep>MAXLEGSEP) {
+    if (legsep>MAXLEGSEP+0.1) {
 	dbg("Person.predict",1) << "legs are " << legsep << " apart (> " << MAXLEGSEP << "), moving together" << std::endl;
 	Point vec;
 	vec=(legs[0]-legs[1])*(MAXLEGSEP/legsep-1);
@@ -269,24 +272,31 @@ Point Person::circmodel(const Target *t,  bool update) {
     return result;
 }
 
-// Find a point in shadow that could be hiding a leg as close as possible to targetpos
-// Targetpos may be corrected to be in the range [legdiam,MAXLEGSEP] from otherlegpos
-Point Person::nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos) {
-    Point pos=targetpos;
+Point Person::adjustLegSep(Point legtoadj, Point otherlegpos) {
+    Point pos=legtoadj;
     float legsep=(otherlegpos-pos).norm();
     if (legsep==0) {
-	fprintf(stderr,"Both legs at same position in frame %d - splitting\n", vis.getSick()->getFrame());
-	targetpos.setX(targetpos.X()+legdiam);
+	dbg("Person.adjustLegSep",1) << "Both legs at same position  - splitting" << std::endl;
+	pos.setX(pos.X()+legdiam);
 	legsep=legdiam;
     }
-    if (legsep > MAXLEGSEP) {
+    if (legsep > MAXLEGSEP+.1) {
 	// Too far away
 	Point dir=(pos-otherlegpos)/legsep;
 	pos=otherlegpos+(dir*MAXLEGSEP);
+	dbg("Person.adjustLegSep",4) << "Legs too far apart (" << legsep << "): moving " << legtoadj << " to " << pos << std::endl;
     } else if  (legsep < legdiam) {
 	Point dir=(pos-otherlegpos)/legsep;
 	pos=otherlegpos+(dir*legdiam);
+	dbg("Person.adjustLegSep",4) << "Legs too close (" << legsep << "): moving " << legtoadj << " to " << pos << std::endl;
     }
+    return pos;
+}
+
+// Find a point in shadow that could be hiding a leg as close as possible to targetpos
+// Targetpos may be corrected to be in the range [legdiam,MAXLEGSEP] from otherlegpos
+Point Person::nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos) {
+    Point pos=adjustLegSep(targetpos,otherlegpos);
     float theta=pos.getTheta();
     float range=pos.getRange();
     const float anglewidth=legdiam/range*HIDDENLEGSCALING;   // Make it a little smaller to allow it to be hidden
