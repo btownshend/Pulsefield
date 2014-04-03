@@ -44,15 +44,15 @@ void Classifier::update(const SickIO &sick) {
     }
     const unsigned int *srange=sick.getRange(0);
     bg.update(sick);
-    std::vector<float> isbg = bg.isbg(sick);
+    bgprob = bg.isbg(sick);
     nextclass=MAXSPECIAL+1;
     for (unsigned int i=0;i<classes.size();i++) {
-	if (isbg[i]>MINBGFREQ) {
+	if (bgprob[i]>MINBGFREQ) {
 	    classes[i]=BACKGROUND;
 	    continue;
 	}
-	dbg(dbgstr,20) << "S[" << i << "] angle=" << std::fixed << std::setprecision(1) << sick.getAngle(i) << ", range=" << std::setprecision(0) << srange[i] << ", xy=" << sick.getPoint(i) << ", isbg=" << std::setprecision(3) << isbg[i] << " ";
-	if (isbg[i]>0 &&i>0 && i<classes.size()-1&&srange[i]<srange[i-1]-MAXLEGDIAM&&isbg[i-1]>MINBGFREQ&&srange[i]<srange[i+1]-MAXLEGDIAM&&isbg[i+1]>MINBGFREQ) {
+	dbg(dbgstr,20) << "S[" << i << "] angle=" << std::fixed << std::setprecision(1) << sick.getAngle(i) << ", range=" << std::setprecision(0) << srange[i] << ", xy=" << sick.getPoint(i) << ", bgprob=" << std::setprecision(3) << bgprob[i] << " ";
+	if (bgprob[i]>0 &&i>0 && i<classes.size()-1&&srange[i]<srange[i-1]-MAXLEGDIAM&&bgprob[i-1]>MINBGFREQ&&srange[i]<srange[i+1]-MAXLEGDIAM&&bgprob[i+1]>MINBGFREQ) {
 	    // isolated point, not shadowed on either side
 	    classes[i]=NOISE;
 	    dbgn(dbgstr,20) << "NOISE" << std::endl;
@@ -130,16 +130,16 @@ void Classifier::update(const SickIO &sick) {
 	float dist=sick.distance(firstindex,lastindex);
 	float scanwidth=(srange[firstindex]+srange[lastindex])/2.0*sick.getScanRes()*M_PI/180;
 	if (dist+scanwidth < MINTARGET) {
-	    float bgprob=0;
+	    float totalbgprob=0;
 	    float bgcnt=0;
 	    for (int i=firstindex;i<=lastindex;i++)
 		if (classes[i]==c) {
-		    bgprob+=isbg[i];
+		    totalbgprob+=bgprob[i];
 		    bgcnt++;
 		}
-	    bgprob/=bgcnt;
-	    dbg(dbgstr,20) << "Target class " << c << " (" << firstindex << ":" << lastindex << ") has size " << dist+scanwidth << "<" << MINTARGET << ", bgprob=" << bgprob;
-	    if (bgprob>0) {
+	    totalbgprob/=bgcnt;
+	    dbg(dbgstr,20) << "Target class " << c << " (" << firstindex << ":" << lastindex << ") has size " << dist+scanwidth << "<" << MINTARGET << ", totalbgprob=" << totalbgprob;
+	    if (totalbgprob>0) {
 		dbgn(dbgstr,20) << ": rejected; is probably noise" << std::endl;
 		for (int i=firstindex;i<=lastindex;i++)
 		    if (classes[i]==c)

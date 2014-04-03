@@ -9,7 +9,7 @@ void Vis::update(const SickIO *s) {
 }
 
 mxArray *Vis::convertToMX() const {
-    const char *fieldnames[]={"cframe","nmeasure","range","angle","frame","acquired","class","shadowed"};
+    const char *fieldnames[]={"cframe","nmeasure","range","angle","frame","acquired","class","shadowed","bgprob"};
     mxArray *vis = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
     mxArray *pFrame = mxCreateDoubleMatrix(1,1,mxREAL);
@@ -63,6 +63,13 @@ mxArray *Vis::convertToMX() const {
 	for (unsigned int j=0;j<shadowed[i].size();j++)
 	    *ldata++=shadowed[i][j];
     mxSetField(vis,0,"shadowed",pSh);
+
+    const std::vector<float> &bgprob=classifier.getBgProb();
+    mxArray *pBgprob = mxCreateDoubleMatrix(1,bgprob.size(),mxREAL);
+    data=mxGetPr(pBgprob);
+    for (unsigned int i=0;i<bgprob.size();i++)
+	*data++=bgprob[i];
+    mxSetField(vis,0,"bgprob",pBgprob);
 
     return vis;
 }

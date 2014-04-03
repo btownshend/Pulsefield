@@ -16,6 +16,7 @@
 class Classifier {
     Background bg;
     std::vector<unsigned int> classes;
+    std::vector<float> bgprob;
     std::vector<bool> shadowed[2];
     Targets targets;
     unsigned int nextclass;
@@ -33,6 +34,7 @@ public:
     // Get first,last index of given class; -1 if not found
     int getfirstindex(unsigned int c) const;
     int getlastindex(unsigned int c) const;
+    const std::vector<float> getBgProb() const { return bgprob; }
 };
 
 #endif  /* CLASSIFIER_H_ */
