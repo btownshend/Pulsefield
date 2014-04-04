@@ -3,6 +3,10 @@ classdef World < handle
     tracks;
     nextid;
     npeople;
+    assignments;	% vector of length of scan which indicates which ID and leg this scan is attributed to, 0 for background
+    like;		% NSCAN x NID x NLEGS: assignment likelihoods
+    bglike;		% Background likelihood
+    bestlike;		% NSCAN: best likelihood after assignment
     debug;
   end
   
@@ -39,6 +43,64 @@ classdef World < handle
       for i=1:length(obj.tracks)
         obj.tracks(i).predict(nsteps,fps);
       end
+    end
+    
+    function makeassignments(obj,vis) 
+    % Calculate likelihoods of each scan belonging to each track
+      params=getparams();
+      params.legdiamstd=0.05;
+      xy=range2xy(vis.angle,vis.range);
+      obj.like=nan(size(xy,1),length(obj.tracks),2);
+      obj.bglike=-log(vis.bgprob);
+      for f=1:size(xy,1)
+        for it=1:length(obj.tracks)
+          t=obj.tracks(it);
+          for i=1:2
+            dpt=sqrt((t.legs(i,1)-xy(f,1)).^2+(t.legs(i,2)-xy(f,2)).^2);
+            % This is a fudge since the DIAMETER is log-normal and the position itself is normal
+            obj.like(f,it,i)=normlike([t.legdiam/2,params.legdiamstd/2+t.posvar(i)],dpt);
+            % Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
+            dclr=segment2pt([0,0],xy(f,:),t.legs(i,:));
+            if dclr<dpt && obj.like(f,it,i)<5
+              clike=-log(normcdf(dclr,t.legdiam/2,params.legdiamstd/2+t.posvar(i)));
+              obj.like(f,it,i)=obj.like(f,it,i)+clike;
+            end
+          end
+        end
+        ptf=squeeze(obj.like(f,:,:));
+        ptf(2:end+1,:)=ptf;  % Shift to put background on front
+        ptf(1,1)=obj.bglike(f);
+        ptf(1,2)=inf;
+        [obj.bestlike(f),b]=min(ptf(:));
+        [ass,obj.assignments(f,2)]=ind2sub(size(ptf),b);
+        obj.assignments(f,1)=ass-1;  
+      end
+    end
+
+    function plotassignments(obj) 
+      setfig('classlike');clf;
+      for it=1:length(obj.tracks)
+        subplot(length(obj.tracks),1,it);
+        plot(obj.bglike,'k');
+        hold on;
+        plot(obj.like(:,it,1),'r');
+        plot(obj.like(:,it,2),'g');
+        title(sprintf('ID %d',obj.tracks(it).id));
+        c=axis;
+        axis([c(1),c(2),-1,30]);
+      end
+      setfig('plotassignments');clf;
+      subplot(311);
+      ids=[obj.tracks.id];
+      ids=[0,ids];	% 0=background
+      plot(ids(obj.assignments(:,1)+1));
+      title('ID of best like');
+      subplot(312);
+      plot(obj.assignments(:,2));
+      title('Leg of best like');
+      subplot(313);
+      plot(obj.bestlike);
+      title('Best likelihood');
     end
     
     function update(obj,vis,nsteps,fps)
