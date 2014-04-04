@@ -1,9 +1,5 @@
 % Discretize likelihood calculation to match scan to track
 function discretelike(vis,track)
-MAXMOVEMENT=1;
-DIAMSTD=0.05;
-SEPMU=0.3;
-SEPSIGMA=0.1;
 % Assume legdiam is log-normal (i.e. log(legdiam) ~ N(LOGDIAMMU,LOGDIAMSIGMA)
 LOGDIAMMU=log(track.legdiam);
 LOGDIAMSIGMA=log(1+DIAMSTD/track.legdiam);

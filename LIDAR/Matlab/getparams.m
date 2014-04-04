@@ -43,6 +43,11 @@ p=struct(...
 'velupdatetc',10,...		% Velocity update time constant in frames
 'veldamping',0.95,...		% Damping (multiplicative factor) for legvelocity when not visible
 'initialPositionVar',0.1^2,...  % Variance of initial position estimates
-'driftVar',0.1^2 ...  		% Additional variance of position estimates per step when they are estimated 
+'driftVar',0.1^2, ...  		% Additional variance of position estimates per step when they are estimated 
+... % ******** Discrete modeling
+'legdiamstd',0.05, ...		% Sigma for leg diameter
+'meanlegsep',0.3,...		% Mean leg separation
+'legsepstd',0.1,...		% Sigma for leg separation
+'sensorsigma',0.008...		% Sigma for sensor readings
 );
 
