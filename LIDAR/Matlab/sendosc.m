@@ -4,9 +4,9 @@ global firsttime
 params=getparams();
 
 if nargin<3 || firsttime==0
-  firsttime=snap.vis.when;
+  firsttime=snap.vis.acquired;
 end
-tm=(snap.vis.when-firsttime)*24*3600;
+tm=(snap.vis.acquired-firsttime)*24*3600;
 
 bxy=range2xy(snap.bg.angle,snap.bg.range(1,:));
 
