@@ -41,11 +41,13 @@ for i=1:length(tracker.tracks)
   % plot(t.updatedLoc(1),t.updatedLoc(2),['+',color]);
   plot(t.position(1),t.position(2),['x',color]);
   plot(t.legs(:,1),t.legs(:,2),['o',color]);
-  cnum=t.legclasses;
-  cnum(cnum==1)=10000;   % Different from any class
+  %  cnum=t.legclasses;
+  %  cnum(cnum==1)=10000;   % Different from any class
   %fprintf('class=(%d,%d), npts=(%d,%d)\n',cnum,sum(vis.class==cnum(1)),sum(vis.class==cnum(2)));
-  lsel=vis.class==cnum(1);
-  rsel=vis.class==cnum(2);
+  %  lsel=vis.class==cnum(1);
+  %  rsel=vis.class==cnum(2);
+  lsel=tracker.assignments(:,1)==i & tracker.assignments(:,2)==1;
+  rsel=tracker.assignments(:,1)==i & tracker.assignments(:,2)==2;
   plot(xy(lsel,1),xy(lsel,2),['<',color]);
   plot(xy(rsel,1),xy(rsel,2),['>',color]);
   plotted=plotted|lsel|rsel;

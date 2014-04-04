@@ -28,13 +28,7 @@ for i=1:length(tracker.tracks)
   tracker.tracks(i).debug=true;
 end
 
-tracker.makeassignments(vis);
-tracker.plotassignments();
-for i=1:length(tracker.tracks)
-  fsel=find(tracker.assignments(:,1)==i);
-  legs=tracker.assignments(fsel,2);
-  fprintf('Assigned %d,%d points to ID %d\n', sum(legs==1), sum(legs==2), tracker.tracks(i).id);
-  tracker.tracks(i)=discretelike(snap(index).vis,tracker.tracks(i),{fsel(legs==1),fsel(legs==2)});
-end
+tracker.update(vis,npredict,params.fps);
+%tracker.update(vis,0,params.fps);
 snap=struct('vis',vis,'tracker',tracker,'bg',snap(index).bg);
 plotsnap(snap);

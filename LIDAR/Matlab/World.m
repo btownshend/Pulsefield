@@ -7,6 +7,7 @@ classdef World < handle
     like;		% NSCAN x NID x NLEGS: assignment likelihoods
     bglike;		% Background likelihood
     bestlike;		% NSCAN: best likelihood after assignment
+    entrylike;		% NSCAN: entry likelihoods
     debug;
   end
   
@@ -36,7 +37,12 @@ classdef World < handle
       for i=1:length(obj.tracks)
         w.tracks=[w.tracks,obj.tracks(i).clone()];
       end
-      w.nextid=obj.nextid;
+      fn=fieldnames(obj);
+      for i=1:length(fn)
+        if ~strcmp(fn{i},'tracks')
+          w.(fn{i})=obj.(fn{i});
+        end
+      end
     end
       
     function predict(obj,nsteps,fps)
@@ -46,54 +52,61 @@ classdef World < handle
     end
     
     function makeassignments(obj,vis) 
-    % Calculate likelihoods of each scan belonging to each track
+    % Calculate likelihoods of each scan belonging to each track and assign to highest likelihood
       params=getparams();
       params.legdiamstd=0.05;
       xy=range2xy(vis.angle,vis.range);
       obj.like=nan(size(xy,1),length(obj.tracks),2);
       obj.bglike=-log(vis.bgprob);
       for f=1:size(xy,1)
+        ptf(1,1)=obj.entrylike(f);
+        ptf(2,1)=obj.bglike(f);
+        ptf(1:2,2)=inf;
         for it=1:length(obj.tracks)
           t=obj.tracks(it);
           for i=1:2
             dpt=sqrt((t.legs(i,1)-xy(f,1)).^2+(t.legs(i,2)-xy(f,2)).^2);
             % This is a fudge since the DIAMETER is log-normal and the position itself is normal
-            obj.like(f,it,i)=normlike([t.legdiam/2,params.legdiamstd/2+t.posvar(i)],dpt);
+            obj.like(f,it,i)=normlike([t.legdiam/2,sqrt((params.legdiamstd/2)^2+t.posvar(i))],dpt);
             % Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
             dclr=segment2pt([0,0],xy(f,:),t.legs(i,:));
             if dclr<dpt && obj.like(f,it,i)<5
-              clike=-log(normcdf(dclr,t.legdiam/2,params.legdiamstd/2+t.posvar(i)));
+              clike=-log(normcdf(dclr,t.legdiam/2,sqrt((params.legdiamstd/2)^2+t.posvar(i))));
               obj.like(f,it,i)=obj.like(f,it,i)+clike;
             end
           end
+          ptf(it+2,:)=obj.like(f,it,:);
         end
-        ptf=squeeze(obj.like(f,:,:));
-        ptf(2:end+1,:)=ptf;  % Shift to put background on front
-        ptf(1,1)=obj.bglike(f);
-        ptf(1,2)=inf;
         [obj.bestlike(f),b]=min(ptf(:));
         [ass,obj.assignments(f,2)]=ind2sub(size(ptf),b);
-        obj.assignments(f,1)=ass-1;  
+        obj.assignments(f,1)=ass-2;  
       end
     end
 
     function plotassignments(obj) 
-      setfig('classlike');clf;
-      for it=1:length(obj.tracks)
-        subplot(length(obj.tracks),1,it);
-        plot(obj.bglike,'k');
-        hold on;
-        plot(obj.like(:,it,1),'r');
-        plot(obj.like(:,it,2),'g');
-        title(sprintf('ID %d',obj.tracks(it).id));
-        c=axis;
-        axis([c(1),c(2),-1,30]);
+      if ~isempty(obj.tracks)
+        setfig('classlike');clf;
+        for it=1:length(obj.tracks)
+          subplot(length(obj.tracks),1,it);
+          plot(obj.bglike,'k');
+          plot(obj.entrylike,'m');
+          hold on;
+          plot(obj.like(:,it,1),'r');
+          plot(obj.like(:,it,2),'g');
+          title(sprintf('ID %d',obj.tracks(it).id));
+          c=axis;
+          axis([c(1),c(2),-1,30]);
+        end
       end
       setfig('plotassignments');clf;
       subplot(311);
-      ids=[obj.tracks.id];
-      ids=[0,ids];	% 0=background
-      plot(ids(obj.assignments(:,1)+1));
+      if ~isempty(obj.tracks)
+        ids=[obj.tracks.id];
+      else
+        ids=[];
+      end
+      ids=[-1,0,ids];	% -1=new, 0=background
+      plot(ids(obj.assignments(:,1)+2));
       title('ID of best like');
       subplot(312);
       plot(obj.assignments(:,2));
@@ -104,6 +117,71 @@ classdef World < handle
     end
     
     function update(obj,vis,nsteps,fps)
+      params=getparams();
+      obj.predict(nsteps,fps);
+      entryprob=1-poisspdf(0,params.entryrate/60*nsteps/fps);
+      obj.entrylike=-log(entryprob/length(vis.angle)*5)*ones(size(vis.angle));  % Like that a scan is a new entry (assumes 5 hits on avg)
+      if obj.debug
+        fprintf('\nWorld.update(vis,%d,%f)\n',nsteps,fps);
+        fprintf('Probability of an entry (anwhere) during this frame = %g, like=%.2f\n', entryprob,obj.entrylike(1));
+      end
+      while true   % Redo after adding new tracks
+        obj.makeassignments(vis);
+        obj.plotassignments();
+        unassigned=find(obj.assignments(:,1)==-1);
+        if length(unassigned)==0
+          break;
+        end
+        if obj.debug
+          fprintf('Have %d scan points unassigned\n', length(unassigned));
+        end
+        if length(unassigned)<params.mincreatehits
+          if obj.debug
+            fprintf('Need at least %d points to assign a new track -- skipping\n',params.mincreatehits);
+          end
+          break;
+        end
+        % Create a new track if we can find 2 points that are separated by ~meanlegsep
+        bestsep=1e10;
+        for i=1:length(unassigned)
+          for j=1:length(unassigned)
+            dist=norm(vis.xy(unassigned(i),:)-vis.xy(unassigned(j),:));
+            if abs(dist-params.meanlegsep)<abs(bestsep-params.meanlegsep)
+              bestsep=dist;
+              bestindices=unassigned([i,j]);
+            end
+          end
+        end
+        if abs(bestsep-params.meanlegsep)<params.legsepstd*2
+          if obj.debug
+            fprintf('Creating an initial track using scans %d,%d with separation %.2f\n',bestindices,bestsep);
+          end
+          newlegs(1,:)=vis.xy(bestindices(1),:);
+          newlegs(2,:)=vis.xy(bestindices(2),:);
+          obj.tracks=[obj.tracks,Person(obj.nextid,newlegs,obj.debug)];
+          obj.nextid=obj.nextid+1;
+        else
+          if obj.debug
+            fprintf('Not creating a track - no pair appropriately spaced: best separation=%f\n', bestsep);
+          end
+          break;
+        end
+      end
+        
+      for i=1:length(obj.tracks)
+        fsel=find(obj.assignments(:,1)==i);
+        legs=obj.assignments(fsel,2);
+        if obj.debug
+          fprintf('Assigned %d,%d points to ID %d\n', sum(legs==1), sum(legs==2), obj.tracks(i).id);
+        end
+        obj.tracks(i).update(vis,{fsel(legs==1),fsel(legs==2)},nsteps,fps);
+      end
+
+      obj.deleteLostPeople();
+    end
+    
+    % OBSOLETE
+    function oldupdate(obj,vis,nsteps,fps)
       params=getparams();
       obj.predict(nsteps,fps);
       
