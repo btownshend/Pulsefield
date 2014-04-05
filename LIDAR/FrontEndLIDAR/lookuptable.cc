@@ -30,7 +30,7 @@ LookupTable getLegSepLike(float sepmu,float sepsigma,float possigma) {
     }
     dbg("getLegSepLike",1) << "getLegSepLike(" << sepmu << "," << sepsigma << "," << possigma << "): Size=" << tbl.size() << ", total table coverage=" << tbl.sum()*(step*tstep) << std::endl;
     // Convert to log-like
-    for (int i=0;i<tbl.size();i++)
+    for (unsigned int i=0;i<tbl.size();i++)
 	if (tbl[i]==0)
 	    tbl[i]=-1000; // Avoid calling log with zero
 	else
