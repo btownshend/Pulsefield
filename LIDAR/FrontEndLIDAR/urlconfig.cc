@@ -38,7 +38,7 @@ URLConfig::URLConfig(const char *configFile) {
 	hosts[i]=new char[strlen(tmp_host)+1];
 	strcpy(hosts[i],tmp_host);
 
-	dbg("URLConfig",1) << "Set " << idents[i] << " to " <<  hosts[i] << ":" <<  ports[i]<< std::endl;
+	dbg("URLConfig",3) << "Set " << idents[i] << " to " <<  hosts[i] << ":" <<  ports[i]<< std::endl;
     }
     nurl=MAXURLS;
 }

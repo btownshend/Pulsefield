@@ -34,6 +34,7 @@ Chuck/audio.wav
 
 Chuck/audio (Capa's conflicted copy 2013-12-12).wav
 LIDAR/FrontEndLIDAR/frontend
+LIDAR/FrontEndLIDAR/FELidar-0.1
 
 *.bak
 
@@ -54,3 +55,7 @@ LIDAR/FrontEndLIDAR/Debug.out.old
 LIDAR/FrontEndLIDAR/20140402T150405.mov
 
 *.ps
+
+LIDAR/FrontEndLIDAR/PRIORREVS/frontend-0.1
+
+LIDAR/FrontEndLIDAR/Recordings

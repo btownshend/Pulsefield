@@ -30,15 +30,15 @@ std::vector<float> Background::isbg(const SickIO &sick) const {
 	    result[i]=0.0;
 	    for (int k=0;k<NRANGES-1;k++) {
 		// This is a background pixel if it matches the ranges of this scan's background
-		if (freq[k][i]>0 && abs(srange[i]-range[k][i]) < MINBGSEP )
+		if (freq[k][i]>0 && fabs(srange[i]-range[k][i]) < MINBGSEP )
 		    result[i]+=freq[k][i];
 	    }
 	    if (result[i]<MINBGFREQ) {
 		// No strong primary matches, If it matches adjacent scan backgrounds, consider that with a weighting
 		for (int k=0;k<NRANGES-1;k++) {
-		    if (i>0 && abs(srange[i]-range[k][i-1])<MINBGSEP) 
+		    if (i>0 && fabs(srange[i]-range[k][i-1])<MINBGSEP) 
 			result[i]+=freq[k][i-1]*ADJSCANBGWEIGHT;
-		    if (i+1<sick.getNumMeasurements() && abs(srange[i]-range[k][i+1])<MINBGSEP)
+		    if (i+1<sick.getNumMeasurements() && fabs(srange[i]-range[k][i+1])<MINBGSEP)
 			result[i]+=freq[k][i+1]*ADJSCANBGWEIGHT;
 		}
 	    }
@@ -75,7 +75,7 @@ void Background::update(const SickIO &sick) {
 	for (int k=0;k<NRANGES;k++) {
 	    freq[k][i]*=(1.0-1.0f/tc);
 	    // Note allow updates even if range>MAXRANGE, otherwise points slightly smaller than MAXRANGE get biased and have low freq
-	    if (abs(srange[i]-range[k][i]) < MINBGSEP) {
+	    if (fabs(srange[i]-range[k][i]) < MINBGSEP) {
 		range[k][i]=srange[i]*1.0f/tc + range[k][i]*(1-1.0f/tc);
 		freq[k][i]+=1.0f/tc;
 		// Swap ordering if needed

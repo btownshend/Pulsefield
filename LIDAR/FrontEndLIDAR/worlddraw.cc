@@ -35,7 +35,7 @@ void *World::runDisplay(void *arg) {
     while (1) {
 	XEvent e;
 	XNextEvent(world->dpy, &e);
-	dbg("World.initWindow",1) << "Got event " << e.type << std::endl;
+	dbg("World.initWindow",8) << "Got event " << e.type << std::endl;
 
 	switch (e.type) {
 	case ConfigureNotify:

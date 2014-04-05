@@ -10,6 +10,9 @@
 
 // Distances in mm unless otherwise noted
 
+// ******** Sensor
+static const float SENSORSIGMA=8;	// Sensor statistical error 
+
 // ******** Background
 static const int MINBGSEP=100;	// max distance to consider a scan point part of a nearby background
 static const float MINBGFREQ=0.05;	// Minimum frequency of a background to call it such unilaterally
@@ -48,10 +51,17 @@ static const float LEFTNESSTC=500;	// time constant for updating leftness
 static const float HIDDENPENALTY=3;	// loglike penalty when using a shadowed position for a leg
 static const float YOUNGPENALTY=5;	// loglike penalty applied to "young" tracks (<AGETHRESHOLD)
 static const float HIDDENLEGSCALING=0.8;  // Scale diameter of leg by this much when looking for a place it could be shadowed
+static const float MEANLEGSEP=300; 	// Mean leg separation
+static const float LEGSEPSTD=100;		// Sigma for leg separation
+static const float LEGDIAMSTD=50;		// Sigma for leg diameter
 
 // ******** Deleting tracks
 static const int INVISIBLEFORTOOLONG=50;	// Number of frames of invisible before deleting
 static const int AGETHRESHOLD=20;	// Age before considered reliable    
 static const float MINVISIBILITY=0.9;	// Minimum visibility to maintain new tracks (before ageThreshold reached)
+
+// ******* Entry Statistics
+static const float ENTRYRATE=1.0; 	// Entries per minute
+static const int MINCREATEHITS=5;	// Need this number of scan targets to create a new track
 
 #endif  /* PARAMETERS_H_ */

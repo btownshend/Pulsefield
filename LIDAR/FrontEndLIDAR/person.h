@@ -30,21 +30,22 @@ class Person {
     Point legs[2];
     Point prevlegs[2];
     Point legvelocity[2];
-    int  legclasses[2];
+    std::vector<int> scanpts[2];
     float posvar[2];
+    float prevposvar[2];
     float legdiam;
     float leftness;
+    // Keep the likelihood map so we can dump to matlab
+    std::vector<float> like[2];
+    int likenx, likeny;
+    Point minval, maxval;
 
-    Point circmodel(const Target *t, bool update);
-    Point nearestShadowed(const Vis &vis,Point otherlegpos,Point targetpos);
-    Point adjustLegSep(Point legtoadj, Point otherlegpos);
+    void init(int _id, const Point &leg1, const Point &leg2);
 public:
-    Person(int _id, const Vis &vis, const Target *t1, const Target *t2);
+    Person(int _id, const Point &leg1, const Point &leg2);
     ~Person();
-    void getclasslike(const Targets &targets, const Vis &vis, Likelihood &likes, int tracknum);
-    static void newclasslike(const Targets &targets, const Vis &vis, Likelihood &likes);
     void predict(int nstep, float fps);
-    void update(const Vis &vis, const Target *t1, const Target *t2, int nstep,float fps);
+    void update(const Vis &vis, const std::vector<int> fs[2], int nstep,float fps);
     void addToMX(mxArray *people, int index) const;
     friend std::ostream &operator<<(std::ostream &s, const Person &p);
     bool isDead() const;
@@ -55,6 +56,7 @@ public:
     const Point* getLegs() const { return legs; }
     float getLegDiam() const { return legdiam; }
     int getAge() const { return age; }
+    float getObsLike(const Point &pt, int leg) const;   // Get likelihood of an observed echo at pt hitting leg given current model
 };
 
 #endif  /* PERSON_H_ */

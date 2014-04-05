@@ -51,7 +51,7 @@ void Classifier::update(const SickIO &sick) {
 	    classes[i]=BACKGROUND;
 	    continue;
 	}
-	dbg(dbgstr,20) << "S[" << i << "] angle=" << std::fixed << std::setprecision(1) << sick.getAngle(i) << ", range=" << std::setprecision(0) << srange[i] << ", xy=" << sick.getPoint(i) << ", bgprob=" << std::setprecision(3) << bgprob[i] << " ";
+	dbg(dbgstr,20) << "S[" << i << "] angle=" << std::fixed << std::setprecision(1) << sick.getAngleDeg(i) << ", range=" << std::setprecision(0) << srange[i] << ", xy=" << sick.getPoint(i) << ", bgprob=" << std::setprecision(3) << bgprob[i] << " ";
 	if (bgprob[i]>0 &&i>0 && i<classes.size()-1&&srange[i]<srange[i-1]-MAXLEGDIAM&&bgprob[i-1]>MINBGFREQ&&srange[i]<srange[i+1]-MAXLEGDIAM&&bgprob[i+1]>MINBGFREQ) {
 	    // isolated point, not shadowed on either side
 	    classes[i]=NOISE;
@@ -246,10 +246,11 @@ void Classifier::update(const SickIO &sick) {
 		unsigned int j;
 		for (j=i+1;j<classes.size() && classes[i]==classes[j];j++)
 		    ;
-		if (j==i+1)
+		if (j==i+1) {
 		    dbgn("Classifier",2) << classes[i] << "@" << srange[i] << ": " << i <<  ", ";
-		else
+		} else {
 		    dbgn("Classifier",2) << classes[i] << "@" << srange[i] << ": " << i <<  "-" << j-1 << ", ";
+		}
 		i=j;
 	    }
 	dbgn("Classifier",2) << std::endl;

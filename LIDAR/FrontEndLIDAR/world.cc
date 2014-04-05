@@ -10,10 +10,46 @@ World::World() {
     nextid=1;
     starttime.tv_sec=0;
     starttime.tv_usec=0;
-    initWindow();
+    //    initWindow();
 }
 
-void World::track(const Targets &targets, const Vis &vis, int frame, float fps) {
+void World::makeAssignments(const Vis &vis, float entrylike) {
+    // Calculate likelihoods of each scan belonging to each track and assign to highest likelihood
+    const SickIO *sick=vis.getSick();
+    bestlike.resize(sick->getNumMeasurements());
+    assignments.resize(sick->getNumMeasurements());
+    legassigned.resize(sick->getNumMeasurements());
+
+    const Background *bg=vis.getClassifier()->getBackground();
+    const std::vector<float> &bgprob=bg->isbg(*sick);
+
+    for (unsigned int f=0;f<sick->getNumMeasurements();f++) {
+        bestlike[f]=entrylike;
+	assignments[f]=-2;
+	if (bgprob[f]>0) {
+	    float bglike=log(bgprob[f]);
+	    if (bglike > bestlike[f]) {
+		bestlike[f]=bglike;
+		assignments[f]=-1;
+	    }
+	}
+	for (unsigned int i=0;i<people.size();i++) {
+	    for (int leg=0;leg<2;leg++) {
+		// This is a fudge since the DIAMETER is log-normal and the position itself is normal
+		float like =people[i].getObsLike(sick->getPoint(f),leg);
+		if (like>bestlike[f]) {
+		    bestlike[f]=like;
+		    assignments[f]=i;
+		    legassigned[f]=leg;
+		}
+	    }
+	}
+	if (assignments[f]>=0)
+	    dbg("World.makeAssignments",2) << "Assigned scan " << f << " to track " << assignments[f] << "." << legassigned[f] << std::endl;
+    }
+}
+
+void World::track( const Vis &vis, int frame, float fps) {
     int nsteps;
     if (lastframe>0)
 	nsteps=frame-lastframe;
@@ -25,29 +61,60 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
     for (unsigned int i=0;i<people.size();i++)
 	people[i].predict(nsteps,fps);
 
-    // Assign current classes to tracks
-    Likelihood likes;
-    for (unsigned int i=0;i<people.size();i++)
-	people[i].getclasslike(targets,vis,likes,i);
+    int num_measurements=vis.getSick()->getNumMeasurements();
+    float entryprob=1-exp(-ENTRYRATE/60.0*nsteps/fps);
+    float entrylike=log(entryprob/num_measurements*5);  // Like that a scan is a new entry (assumes 5 hits on avg)
+    dbg("World.track",2) << "Tracking frame " << frame << ":  entrylike=" <<  entrylike << std::endl;
 
-    // Compute likelihoods of new tracks
-    Person::newclasslike(targets,vis,likes);
+    // Map scans to tracks
+    makeAssignments(vis,entrylike);
+    std::vector<int> unassigned;
+    for (unsigned int i=0;i<assignments.size();i++)
+	if (assignments[i]==-2)
+	    unassigned.push_back(i);
 
-    if (likes.size()>0) {
-	dbg("Likelihood",2) << "Frame " << frame << " likelihoods: \n" << likes;
+    if (unassigned.size()>0) {
+	dbg("World.track",2) << "Have " << unassigned.size() << " scan points unassigned." << std::endl;
+	if ((int)unassigned.size()<MINCREATEHITS) {
+	    dbg("World.track",3) <<  "'Need at least " << MINCREATEHITS << " points to assign a new track -- skipping" << std::endl;
+	} else {
+	    // Create a new track if we can find 2 points that are separated by ~meanlegsep
+	    float bestsep=1e10;
+	    int bestindices[2];
+	    for (std::vector<int>::iterator i=unassigned.begin();i!=unassigned.end();i++) {
+		for (std::vector<int>::iterator j=unassigned.begin();j!=unassigned.end();j++) {
+		    if (i==j)
+			continue;
+		    float dist=(vis.getSick()->getPoint(*i)-vis.getSick()->getPoint(*j)).norm();
+		    if (fabs(dist-MEANLEGSEP)<fabs(bestsep-MEANLEGSEP) ) {
+			bestsep=dist;
+			dbg("World.track",4) << "Unassigned points " << *i << " and " << *j << " are best separation so far at " << bestsep << std::endl;
+			bestindices[0]=*i;
+			bestindices[1]=*j;
+		    }
+		}
+	    }
+	    if (fabs(bestsep-MEANLEGSEP)<LEGSEPSTD*2 ) {
+		dbg("World.track",1) << "Creating an initial track using scans " << bestindices[0] << "," << bestindices[1] << " with separation " << bestsep << std::endl;
+		Point l1=vis.getSick()->getPoint(bestindices[0]);
+		Point l2=vis.getSick()->getPoint(bestindices[1]);
+		people.push_back(Person(nextid,l1,l2));
+		nextid++;
+		makeAssignments(vis,entrylike);// Redo after adding new tracks, but only do twice (allowing only 1 new person per frame) to limit cpu
+	    } else {
+		dbg("World.track",2) << "Not creating a track - no pair appropriately spaced: best separation=" << bestsep << std::endl;
+	    }
+	}
     }
 
-    // Greedy assignment
-    Likelihood result=likes.smartassign();
-    
     // Implement assignment
-    for (int i=0;i<result.size();i++) {
-	Assignment a=result[i];
-	if (a.track<0) {
-	    people.push_back(Person(nextid, vis, a.target1, a.target2));
-	    nextid++;
-	} else
-	    people[a.track].update(vis,a.target1,a.target2,nsteps,fps);
+    for (unsigned int i=0;i<people.size();i++) {
+	// Build list of points assigned to this person
+	std::vector<int> fs[2];
+	for (unsigned int j=0;j<assignments.size();j++)
+	    if (assignments[j]==i)
+		fs[legassigned[j]].push_back(j);
+	people[i].update(vis,fs,nsteps,fps);
     }
 
     // Delete lost people
@@ -62,10 +129,10 @@ void World::track(const Targets &targets, const Vis &vis, int frame, float fps) 
 	for (unsigned int i=0;i<people.size();i++)
 	    dbg("World.track",2)  << people[i] << std::endl;
     }
-    if (frame%1==0)
-	draw();
+    //    if (frame%1==0)
+    //draw();
 }
-
+        
 void World::sendMessages(const Destinations &dests, const struct timeval &acquired) {
     dbg("World.sendMessages",5) << "ndest=" << dests.count() << std::endl;
     bool sendstart=false;
@@ -135,7 +202,7 @@ mxArray *World::convertToMX() const {
     *(int *)mxGetPr(pNpeople) = people.size();
     mxSetField(world,0,"npeople",pNpeople);
 
-    const char *pfieldnames[]={"id","position","legs","prevlegs","legvelocity","legclasses","posvar","velocity","legdiam","leftness","age","consecutiveInvisibleCount","totalVisibleCount"};
+    const char *pfieldnames[]={"id","position","legs","prevlegs","legvelocity","scanpts","posvar","velocity","legdiam","leftness","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     mxArray *pPeople;
     if ((pPeople = mxCreateStructMatrix(1,people.size(),sizeof(pfieldnames)/sizeof(pfieldnames[0]),pfieldnames)) == NULL) {
 	fprintf(stderr,"Unable to create people matrix of size (1,%ld)\n",people.size());

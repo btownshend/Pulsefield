@@ -82,16 +82,19 @@ public:
 	}
 
 	// Get angle of measurement in degrees
-	float getAngle(int measurement)  const {
+	float getAngleDeg(int measurement)  const {
 	    return scanRes*(measurement-(num_measurements-1)/2.0);
+	}
+	float getAngleRad(int measurement) const {
+	    return getAngleDeg(measurement)*M_PI/180;
 	}
 
 	float getX(int measurement, int echo=0)  const {
-	    return cos(getAngle(measurement)*M_PI/180+M_PI/2)*range[echo][measurement];
+	    return cos(getAngleRad(measurement)+M_PI/2)*range[echo][measurement];
 	}
 
 	float getY(int measurement, int echo=0) const {
-	    return sin(getAngle(measurement)*M_PI/180+M_PI/2)*range[echo][measurement];
+	    return sin(getAngleRad(measurement)+M_PI/2)*range[echo][measurement];
 	}
 
 	Point getPoint(int measurement) const {

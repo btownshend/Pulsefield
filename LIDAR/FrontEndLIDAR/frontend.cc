@@ -250,7 +250,7 @@ void FrontEnd::processFrames() {
 	    sick[c]->clearValid();
 	}
 	vis->update(sick[0]);
-	world->track(vis->getClassifier()->getTargets(),*vis,frame,sick[0]->getScanFreq());
+	world->track(*vis,frame,sick[0]->getScanFreq());
 	world->sendMessages(dests,sick[0]->getAcquired());
 
 	sendOnce=0;
@@ -416,7 +416,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 
 	
 	vis->update(sick[0]);
-	world->track(vis->getClassifier()->getTargets(),*vis,cframe,sick[0]->getScanFreq());
+	world->track(*vis,cframe,sick[0]->getScanFreq());
 	world->sendMessages(dests,sick[0]->getAcquired());
 
 	if (matframes>0) {
