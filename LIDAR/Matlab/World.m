@@ -3,7 +3,7 @@ classdef World < handle
     tracks;
     nextid;
     npeople;
-    assignments;	% vector of length of scan which indicates which ID and leg this scan is attributed to, 0 for background
+    assignments;	% vector of length of scan which indicates which track and leg this scan is attributed to, 0 for background
     like;		% NSCAN x NID x NLEGS: assignment likelihoods
     bglike;		% Background likelihood
     bestlike;		% NSCAN: best likelihood after assignment
@@ -54,7 +54,6 @@ classdef World < handle
     function makeassignments(obj,vis) 
     % Calculate likelihoods of each scan belonging to each track and assign to highest likelihood
       params=getparams();
-      params.legdiamstd=0.05;
       xy=range2xy(vis.angle,vis.range);
       obj.like=nan(size(xy,1),length(obj.tracks),2);
       obj.bglike=-log(vis.bgprob);
@@ -70,7 +69,7 @@ classdef World < handle
             obj.like(f,it,i)=normlike([t.legdiam/2,sqrt((params.legdiamstd/2)^2+t.posvar(i))],dpt);
             % Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
             dclr=segment2pt([0,0],xy(f,:),t.legs(i,:));
-            if dclr<dpt && obj.like(f,it,i)<5
+            if dclr<dpt % && obj.like(f,it,i)<5
               clike=-log(normcdf(dclr,t.legdiam/2,sqrt((params.legdiamstd/2)^2+t.posvar(i))));
               obj.like(f,it,i)=obj.like(f,it,i)+clike;
             end
