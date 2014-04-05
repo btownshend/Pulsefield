@@ -172,11 +172,11 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
     dbg("Person.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
 
     // Make sure any potential measured point is also in the search
-    for (int i=0;i<fs[0].size();i++) {
+    for (unsigned int i=0;i<fs[0].size();i++) {
 	minval=minval.min(vis.getSick()->getPoint(fs[0][i]));
 	maxval=maxval.max(vis.getSick()->getPoint(fs[0][i]));
     }
-    for (int i=0;i<fs[1].size();i++) {
+    for (unsigned int i=0;i<fs[1].size();i++) {
 	minval=minval.min(vis.getSick()->getPoint(fs[1][i]));
 	maxval=maxval.max(vis.getSick()->getPoint(fs[1][i]));
     }
@@ -203,7 +203,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
     float maxtheta=std::max(std::max(theta[0],theta[1]),std::max(theta[2],theta[3]));
     std::vector<int> clearsel;
     dbg("Person.update",2) << "Clear paths for " << mintheta*180/M_PI << "-" << maxtheta*180/M_PI <<  " degrees:   ";
-    for (int i=0;i<vis.getSick()->getNumMeasurements();i++) {
+    for (unsigned int i=0;i<vis.getSick()->getNumMeasurements();i++) {
 	float angle=vis.getSick()->getAngleRad(i);
 	if (angle>=mintheta && angle<=maxtheta) {
 	    clearsel.push_back(i);
@@ -230,11 +230,11 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 		float adist=(legs[i]-pt).norm();
 		float apriori=log(normpdf(adist,0,apriorisigma)*1000);
 		float dclr=1e10;
-		for (int k=0;k<clearsel.size();k++)
+		for (unsigned int k=0;k<clearsel.size();k++)
 		    dclr=std::min(dclr,segment2pt(Point(0,0),vis.getSick()->getPoint(clearsel[k]),pt));
 		float clearlike=log(normcdf(log(dclr),LOGDIAMMU,LOGDIAMSIGMA));
 		float glike=0;
-		for (int k=0;k<fs[i].size();k++) {
+		for (unsigned int k=0;k<fs[i].size();k++) {
 		    float dpt=(vis.getSick()->getPoint(fs[i][k])-pt).norm();
 		    glike+=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA));
 		}
@@ -386,7 +386,7 @@ void Person::addToMX(mxArray *people, int index) const {
     for (int i=0;i<2;i++) {
 	mxArray *pScanpts = mxCreateDoubleMatrix(scanpts[i].size(),1,mxREAL);
 	data = mxGetPr(pScanpts);
-	for (int j=0;j<scanpts[i].size();j++)
+	for (unsigned int j=0;j<scanpts[i].size();j++)
 	    *data++=scanpts[i][j]+1;		// Need to change 0-based to 1-based
 	mxSetCell(pScanptsCA,i,pScanpts);
     }
@@ -403,9 +403,9 @@ void Person::addToMX(mxArray *people, int index) const {
     mxArray *pLikeCA=mxCreateCellMatrix(1,2);
     for (int i=0;i<2;i++) {
 	mxArray *pLike = mxCreateDoubleMatrix(likeny,likenx,mxREAL);
-	assert(like[i].size()==likenx*likeny);
+	assert((int)like[i].size()==likenx*likeny);
 	data = mxGetPr(pLike);
-	for (int j=0;j<like[i].size();j++) 
+	for (unsigned int j=0;j<like[i].size();j++) 
 	    *data++=-like[i][j];   // Use neg loglikes in the matlab version
 	mxSetCell(pLikeCA,i,pLike);
     }

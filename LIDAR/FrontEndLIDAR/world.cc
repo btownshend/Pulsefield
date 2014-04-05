@@ -116,7 +116,7 @@ void World::track( const Vis &vis, int frame, float fps) {
 	// Build list of points assigned to this person
 	std::vector<int> fs[2];
 	for (unsigned int j=0;j<assignments.size();j++)
-	    if (assignments[j]==i)
+	    if (assignments[j]==(int)i)
 		fs[legassigned[j]].push_back(j);
 	people[i].update(vis,fs,nsteps,fps);
     }
