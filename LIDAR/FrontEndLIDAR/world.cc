@@ -29,6 +29,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
     for (unsigned int f=0;f<sick->getNumMeasurements();f++) {
         bestlike[f]=entrylike;
 	assignments[f]=-2;
+	legassigned[f]=0;
 	if (bgprob[f]>0) {
 	    float bglike=log(bgprob[f]);
 	    if (bglike > bestlike[f]) {
