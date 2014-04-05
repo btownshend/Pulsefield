@@ -195,7 +195,7 @@ void World::sendMessages(const Destinations &dests, const struct timeval &acquir
 }
 
 mxArray *World::convertToMX() const {
-    const char *fieldnames[]={"tracks","nextid","npeople"};
+    const char *fieldnames[]={"tracks","nextid","npeople","assignments","bestlike"};
     mxArray *world = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
     mxArray *pNextid = mxCreateDoubleMatrix(1,1,mxREAL);
@@ -205,6 +205,21 @@ mxArray *World::convertToMX() const {
     mxArray *pNpeople = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);
     *(int *)mxGetPr(pNpeople) = people.size();
     mxSetField(world,0,"npeople",pNpeople);
+
+    mxArray *pAssignments = mxCreateNumericMatrix(assignments.size(),2,mxINT32_CLASS,mxREAL);
+    int *idata = (int *)mxGetPr(pAssignments);
+    for (unsigned int i=0;i<assignments.size();i++)
+	*idata=assignments[i];
+    assert(legassigned.size()==assignments.size());
+    for (unsigned int i=0;i<assignments.size();i++)
+	*idata++=legassigned[i];
+    mxSetField(world,0,"assignments",pAssignments);
+
+    mxArray *pBestlike = mxCreateDoubleMatrix(bestlike.size(),2,mxREAL);
+    double *data = mxGetPr(pBestlike);
+    for (unsigned int i=0;i<bestlike.size();i++)
+	*data++=bestlike[i];
+    mxSetField(world,0,"bestlike",pBestlike);
 
     const char *pfieldnames[]={"id","position","legs","prevlegs","legvelocity","scanpts","posvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     mxArray *pPeople;
