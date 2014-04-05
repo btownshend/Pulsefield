@@ -56,7 +56,7 @@ public:
     const Point* getLegs() const { return legs; }
     float getLegDiam() const { return legdiam; }
     int getAge() const { return age; }
-    float getObsLike(const Point &pt, int leg) const;   // Get likelihood of an observed echo at pt hitting leg given current model
+    float getObsLike(const Point &pt, int leg, int frame) const;   // Get likelihood of an observed echo at pt hitting leg given current model
 };
 
 #endif  /* PERSON_H_ */

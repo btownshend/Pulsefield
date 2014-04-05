@@ -180,18 +180,17 @@ classdef Person < handle
       end
       
       % Bound search by prior position + 2*sigma(position) + legdiam/2
-      minval=min(obj.legs)-2*sqrt(obj.posvar)-obj.legdiam/2;
-      maxval=max(obj.legs)+2*sqrt(obj.posvar)+obj.legdiam/2;
+      minval=min(obj.legs(1,:)-2*sqrt(obj.posvar(1)),obj.legs(2,:)-2*sqrt(obj.posvar(2)));
+      maxval=max(obj.legs(1,:)+2*sqrt(obj.posvar(1)),obj.legs(2,:)+2*sqrt(obj.posvar(2)));
       fboth=[fs{1};fs{2}];
       if ~isempty(fboth)
         % Make sure any potential measured point is also in the search
         minval=min(minval,min(xy(fboth,:),[],1));
         maxval=max(maxval,max(xy(fboth,:),[],1));
-        xyfar=range2xy(vis.angle(fboth),vis.range(fboth)+obj.legdiam);
-        minval=min(minval,min(xyfar,[],1));
-        maxval=max(maxval,max(xyfar,[],1));
       end
-
+      minval=minval-obj.legdiam/2;
+      maxval=maxval+obj.legdiam/2;
+      
       minval=floor(minval/step)*step;
       maxval=ceil(maxval/step)*step;
 
@@ -202,15 +201,16 @@ classdef Person < handle
       [theta(4),~]=xy2range([minval(1),maxval(2)]);
       clearsel=find(vis.angle>=min(theta) & vis.angle<=max(theta));
       if obj.debug
-        fprintf('Clear path for scans %d:%d\n',min(clearsel),max(clearsel));
+        fprintf('Clear path for angles %f:%f degrees; scans %d:%d\n',min(theta)*180/pi, max(theta)*180/pi, min(clearsel),max(clearsel));
       end
 
 
-      nx=round((maxval(1)-minval(1))/step+1);
+      nx=floor((maxval(1)-minval(1))/step+1.5);
       xvals=minval(1)+(0:nx-1)*step;
-      ny=round((maxval(2)-minval(2))/step+1);
+      ny=floor((maxval(2)-minval(2))/step+1.5);
       yvals=minval(2)+(0:ny-1)*step;
       if obj.debug
+        fprintf('Range = (%.3f,%.3f): (%.3f,%.3f)\n', minval, maxval);
         fprintf('Searching over a %.0f x %.0f grid with %d,%d points/leg diam=%.2f +/- *%.2f\n', nx,ny,length(fs{1}),length(fs{2}),obj.legdiam, exp(LOGDIAMSIGMA));
       end
 
@@ -293,7 +293,7 @@ classdef Person < handle
       end
       
       if doplot
-        setfig(sprintf('discretelike ID %d',obj.id));clf;
+        setfig(sprintf('Calc discretelike ID %d',obj.id));clf;
         [mx,my]=meshgrid(minval(2):step:maxval(2),minval(1):step:maxval(1));
         sym={'<','>'};
         for i=1:8
@@ -316,8 +316,8 @@ classdef Person < handle
           shading('interp');
           hold on;
           plot(xy(fs{lnum},1),xy(fs{lnum},2),['w',sym{lnum}]);
-          plot(best(lnum,1),best(lnum,2),'wo');
-          plot(obj.legs(lnum,1),obj.legs(lnum,2),'wx');
+          plot(best(lnum,1),best(lnum,2),'wx');
+          plot(obj.legs(lnum,1),obj.legs(lnum,2),'wo');
           title(sprintf('%s %d',ti,lnum));
           if mod(i-1,4)==1 || mod(i-1,4)==3
             caxis(min(like(:))+[0,30]);

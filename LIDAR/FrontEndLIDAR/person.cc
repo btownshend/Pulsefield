@@ -111,13 +111,6 @@ void Person::predict(int nstep, float fps) {
     dbg("Person.predict",2) << "After predict: " << *this << std::endl;
 }
 
-// Get log like of given x for a zero-mean gaussian with given variance
-float normloglike(float var, float x) {
-    float sigma=sqrt(var);
-    float z=x/sigma;
-    return -0.5*z*z-log(sqrt(2*M_PI)*sigma/1000);
-}
-
 // Calculate distance from a line segment define by two points and another point
 float  segment2pt(const Point &l1, const Point &l2, const Point &p) {
     Point D=l2-l1;
@@ -132,15 +125,19 @@ float  segment2pt(const Point &l1, const Point &l2, const Point &p) {
 }
 
 // Get likelihood of an observed echo at pt hitting leg given current model
-float Person::getObsLike(const Point &pt, int leg) const {
+float Person::getObsLike(const Point &pt, int leg, int frame) const {
     float dpt=(pt-legs[leg]).norm();
     float sigma=sqrt(pow(LEGDIAMSTD/2,2.0)+posvar[leg]);
-    float like=log(normpdf(dpt, legdiam/2,sigma));
+    float like=log(normpdf(dpt, legdiam/2,sigma)*1000);
     // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
     float dclr=segment2pt(Point(0.0,0.0),pt,legs[leg]);
+    if (frame==568)
+	dbg("Person.getObsLike",1) << "pt=" << pt << ", leg=" << legs[leg] << ", pt-leg=" << (pt-legs[leg]) << "dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
     if (dclr<dpt) {
 	float clike=log(normcdf(dclr,legdiam/2,sigma));
 	like+=clike;
+	if (frame==568)
+	    dbg("Person.getObsLike",1) << "clike=" << clike << ", like=" << like << std::endl;
     }
     return like;
 }
@@ -161,6 +158,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
     margin[1]=2*sqrt(posvar[1]);
     minval=(legs[0]-margin[0]).min(legs[1]-margin[1]);
     maxval=(legs[0]+margin[0]).max(legs[1]+margin[1]);
+    dbg("Person.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
 
     // Make sure any potential measured point is also in the search
     for (int i=0;i<fs[0].size();i++) {
@@ -171,14 +169,17 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 	minval=minval.min(vis.getSick()->getPoint(fs[1][i]));
 	maxval=maxval.max(vis.getSick()->getPoint(fs[1][i]));
     }
+    dbg("Person.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
+
     // Increase search by legdiam/2
     minval=minval-legdiam/2;
     maxval=maxval+legdiam/2;
+    dbg("Person.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
 
-    minval.setX((int)(minval.X()/step+0.5)*step);
-    minval.setY((int)(minval.Y()/step+0.5)*step);
-    maxval.setX((int)(maxval.X()/step+0.5)*step);
-    maxval.setY((int)(maxval.Y()/step+0.5)*step);
+    minval.setX(floor(minval.X()/step)*step);
+    minval.setY(floor(minval.Y()/step)*step);
+    maxval.setX(ceil(maxval.X()/step)*step);
+    maxval.setY(ceil(maxval.Y()/step)*step);
     dbg("Person.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
 
     // Find the rays that will hit this box
@@ -200,8 +201,8 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
     }
     dbgn("Person.update",2) << std::endl;
 
-    likenx=(int)((maxval.X()-minval.X())/step+1.99);
-    likeny=(int)((maxval.Y()-minval.Y())/step+1.99);
+    likenx=(int)((maxval.X()-minval.X())/step+1.5);
+    likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
     dbg("Person.update",2) << "Search over a " << likenx << " x " << likeny << " grid with " << fs[0].size() << "," << fs[1].size() << " points/leg, diam=" << legdiam << " +/- *" << exp(LOGDIAMSIGMA) << std::endl;
 
     // Compute likelihoods based on composite of apriori, contact measurements, and non-hitting rays
@@ -216,7 +217,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 		float y=minval.Y()+iy*step;
 		Point pt(x,y);
 		float adist=(legs[i]-pt).norm();
-		float apriori=log(normpdf(adist,0,apriorisigma));
+		float apriori=log(normpdf(adist,0,apriorisigma)*1000);
 		float dclr=1e10;
 		for (int k=0;k<clearsel.size();k++)
 		    dclr=std::min(dclr,segment2pt(Point(0,0),vis.getSick()->getPoint(clearsel[k]),pt));
@@ -232,7 +233,6 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 	    }
 	}
     }
-    dbg("Person.update",3) << "Finished initial likelihood computation" << std::endl;
 
     // Run computations based on grid of likelihoods
     // Need to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods
@@ -256,7 +256,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 		    // Won't add much!
 		    continue;
 		double prob=exp(like[i][ix*likeny+iy]);
-		if (isnan(prob) || !(prob>0) || (ix==17 && iy==17))
+		if (isnan(prob) || !(prob>0))
 		    dbg("Person.update",3) << "prob=" << prob << ", like=" << like[i][ix*likeny+iy] << std::endl;
 		assert(prob>0);
 		var+=prob*pow((pt-legs[i]).norm(),2.0);
@@ -266,7 +266,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 	}
 	assert(tprob>0);
 	posvar[i]=var/tprob;
-	dbg("Person.update",2) << "Leg[" << i << "]  MLE position= " << legs[i] << " +/- " << posvar[i] << " with like= " << *mle[i] << std::endl;
+	dbg("Person.update",5) << "Leg[" << i << "]  MLE position= " << legs[i] << " +/- " << posvar[i] << " with like= " << *mle[i] << std::endl;
 
 	if (pass==2) 
 	    // Don't add the seplike a second time!
@@ -288,7 +288,6 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 	    }
 	}
     }
-    dbg("Person.update",3) << "Finished separation like computation" << std::endl;
 
     // Copy in scanpts
     scanpts[0]=fs[0];
@@ -374,10 +373,10 @@ void Person::addToMX(mxArray *people, int index) const {
 
     mxArray *pScanptsCA=mxCreateCellMatrix(1,2);
     for (int i=0;i<2;i++) {
-	mxArray *pScanpts = mxCreateDoubleMatrix(1,scanpts[i].size(),mxREAL);
+	mxArray *pScanpts = mxCreateDoubleMatrix(scanpts[i].size(),1,mxREAL);
 	data = mxGetPr(pScanpts);
 	for (int j=0;j<scanpts[i].size();j++)
-	    *data++=scanpts[i][j];
+	    *data++=scanpts[i][j]+1;		// Need to change 0-based to 1-based
 	mxSetCell(pScanptsCA,i,pScanpts);
     }
     mxSetField(people,index,"scanpts",pScanptsCA);
@@ -396,7 +395,7 @@ void Person::addToMX(mxArray *people, int index) const {
 	assert(like[i].size()==likenx*likeny);
 	data = mxGetPr(pLike);
 	for (int j=0;j<like[i].size();j++) 
-	    *data++=like[i][j];
+	    *data++=-like[i][j];   // Use neg loglikes in the matlab version
 	mxSetCell(pLikeCA,i,pLike);
     }
     mxSetField(people,index,"like",pLikeCA);

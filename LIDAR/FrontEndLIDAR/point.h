@@ -21,7 +21,12 @@ class Point {
     void setX(float _x) { x=_x; }
     void setY(float _y) { y=_y; }
     float getRange() const { return sqrt(x*x+y*y); }
-    float getTheta() const { return atan2(y,x)-M_PI/2; }
+    float getTheta() const {
+	float th=atan2(y,x)-M_PI/2;
+	if (th<-M_PI)
+	    th+=2*M_PI;
+	return th;
+    }
     void setThetaRange(float theta, float range) {
 	x=cos(theta+M_PI/2)*range; 
 	y=sin(theta+M_PI/2)*range;

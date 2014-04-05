@@ -10,11 +10,14 @@ World::World() {
     nextid=1;
     starttime.tv_sec=0;
     starttime.tv_usec=0;
-    //    initWindow();
+    initWindow();
 }
 
 void World::makeAssignments(const Vis &vis, float entrylike) {
     // Calculate likelihoods of each scan belonging to each track and assign to highest likelihood
+    char dbgstr[100];
+    sprintf(dbgstr,"Frame.%d",vis.getSick()->getFrame());
+
     const SickIO *sick=vis.getSick();
     bestlike.resize(sick->getNumMeasurements());
     assignments.resize(sick->getNumMeasurements());
@@ -36,7 +39,8 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	for (unsigned int i=0;i<people.size();i++) {
 	    for (int leg=0;leg<2;leg++) {
 		// This is a fudge since the DIAMETER is log-normal and the position itself is normal
-		float like =people[i].getObsLike(sick->getPoint(f),leg);
+		float like =people[i].getObsLike(sick->getPoint(f),leg,vis.getSick()->getFrame());
+		dbg(dbgstr,3) << "For assigning scan " << f << " to P" << people[i].getID() << "." << leg << ", like=" << like << ", best so far=" << bestlike[f] << ", bgprob=" << bgprob[f] << ", entrylike=" << entrylike << std::endl;
 		if (like>bestlike[f]) {
 		    bestlike[f]=like;
 		    assignments[f]=i;
@@ -129,8 +133,8 @@ void World::track( const Vis &vis, int frame, float fps) {
 	for (unsigned int i=0;i<people.size();i++)
 	    dbg("World.track",2)  << people[i] << std::endl;
     }
-    //    if (frame%1==0)
-    //draw();
+    if (frame%1==0)
+	draw();
 }
         
 void World::sendMessages(const Destinations &dests, const struct timeval &acquired) {
