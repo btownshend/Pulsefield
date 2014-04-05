@@ -13,6 +13,7 @@ classdef Person < handle
                 %facing;  	% Vector pointing forward
     legdiam;	% Estimate of leg diameter in meters
     leftness;	% Fraction of time leg(1) is on the left side of direction of motion
+    maxlike;	% Maximum likelihood
     like;	% Cell array of likelihood matrices
     minval;	% Range of coordinates for likelihoods
     maxval;	
