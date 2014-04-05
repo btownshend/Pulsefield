@@ -170,19 +170,9 @@ classdef Person < handle
       LOGDIAMMU=log(obj.legdiam);
       LOGDIAMSIGMA=log(1+params.legdiamstd/obj.legdiam);
 
-      % Maximum likelihood of a scan line being part of this target to use it
-      MAXPTLIKE=20;
-
       xy=range2xy(vis.angle,vis.range);
       best=obj.legs;
       measvar=obj.posvar;
-      ldist=nan(2,size(xy,1));
-      for i=1:2
-        ldist(i,:)=sqrt((xy(:,1)-best(i,1)).^2+(xy(:,2)-best(i,2)).^2);
-      end
-      dist=min(ldist,[],1);
-      fsel=find(dist(1,:)<=params.maxmovement & vis.bgprob<0.05);
-
       step=0.02;
 
       if obj.debug
@@ -301,7 +291,7 @@ classdef Person < handle
         % Repeat above calculations after updating full to include seplike
         full=glike+apriori+seplike;
       end
-
+      
       if doplot
         setfig(sprintf('discretelike ID %d',obj.id));clf;
         [mx,my]=meshgrid(minval(2):step:maxval(2),minval(1):step:maxval(1));
