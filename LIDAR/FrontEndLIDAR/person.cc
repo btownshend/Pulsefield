@@ -134,11 +134,13 @@ float Person::getObsLike(const Point &pt, int leg, int frame) const {
     float sigma=sqrt(pow(LEGDIAMSTD/2,2.0)+posvar[leg]);
     float like=log(normpdf(dpt, legdiam/2,sigma)*1000);
     // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
+    // This is handled by calculating the probabily of the object overlapping the scan line prior to the endpoint.
     float dclr=segment2pt(Point(0.0,0.0),pt,legs[leg]);
     dbg(dbgstr,20) << "pt=" << pt << ", leg=" << legs[leg] << ", pt-leg=" << (pt-legs[leg]) << "dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
     if (dclr<dpt) {
-	float clike=log(normcdf(dclr,legdiam/2,sigma));
-	like+=clike;
+	float clike1=log(normcdf(dclr,legdiam/2,sigma));
+	float clike2= log(normcdf(dpt,legdiam/2,sigma));
+	like+=clike1-clike2;
 	dbg(dbgstr,20) << "clike=" << clike1 << "-" << clike2 << "=" << clike1-clike2 << ", like=" << like << std::endl;
     }
     return like;
@@ -240,6 +242,11 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
     for (int pass=0;pass<3;pass++) {
 	int i=pass%2;
 	mle[i]=std::max_element(like[i].begin(),like[i].end());
+	if (*mle[i] < -30) {
+	    dbg("Person.update",1) << "Very unlikely placement: leg[" << i << "]  MLE position= " << legs[i] << " +/- " << posvar[i] << " with like= " << *mle[i] << "-- not refining variance estimate" << std::endl;
+	    // Don't use this estimate to set the separation likelihood of the other leg
+	    continue;
+	}
 	int pos=distance(like[i].begin(),mle[i]);
 	int ix=pos/likeny;
 	int iy=pos-ix*likeny;
