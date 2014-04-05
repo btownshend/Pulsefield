@@ -73,7 +73,7 @@ classdef Person < handle
     end
 
     function s=tostring(obj)
-      s=sprintf('P%d at (%.2f,%.2f) with legs at (%.2f,%.2f)[%d], (%.2f,%.2f)[%d]; vel=(%.2f,%.2f),(%.2f,%.2f) posstd=(%.2f,%.2f), age=%d,cic=%d,tvc=%d', obj.id, obj.position,obj.legs(1,:), obj.legclasses(1), obj.legs(2,:),obj.legclasses(2), obj.legvelocity(1,:), obj.legvelocity(2,:),sqrt(obj.posvar),obj.age,obj.consecutiveInvisibleCount,obj.totalVisibleCount);
+      s=sprintf('P%d at (%.2f,%.2f) with legs at (%.2f,%.2f)[%d], (%.2f,%.2f)[%d]; vel=(%.2f,%.2f),(%.2f,%.2f) posstd=(%.2f,%.2f), age=%d,cic=%d,tvc=%d', obj.id, obj.position,obj.legs(1,:), length(obj.scanpts{1}), obj.legs(2,:),length(obj.scanpts{2}), obj.legvelocity(1,:), obj.legvelocity(2,:),sqrt(obj.posvar),obj.age,obj.consecutiveInvisibleCount,obj.totalVisibleCount);
     end
 
     function p=clone(obj)
