@@ -217,7 +217,6 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
     dbg("Person.update",2) << "Search over a " << likenx << " x " << likeny << " grid with " << fs[0].size() << "," << fs[1].size() << " points/leg, diam=" << legdiam << " +/- *" << exp(LOGDIAMSIGMA) << std::endl;
 
     // Compute likelihoods based on composite of apriori, contact measurements, and non-hitting rays
-    std::vector<float>::iterator mle[2];  // Maximum-likelihood estimaters
     like[0].resize(likenx*likeny);
     like[1].resize(likenx*likeny);
     for (int i=0;i<2;i++) {
@@ -247,6 +246,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 
     // Run computations based on grid of likelihoods
     // Need to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods
+    std::vector<float>::iterator mle[2];  // Maximum-likelihood estimaters
     for (int pass=0;pass<3;pass++) {
 	int i=pass%2;
 	mle[i]=std::max_element(like[i].begin(),like[i].end());
@@ -300,6 +300,9 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 	}
     }
 
+    // Overall likelihood
+    maxlike = *mle[0]+*mle[1];
+
     // Copy in scanpts
     scanpts[0]=fs[0];
     scanpts[1]=fs[1];
@@ -346,7 +349,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 }
 
 void Person::addToMX(mxArray *people, int index) const {
-    // const char *fieldnames[]={"id","position","legs","prevlegs","legvelocity","scanpts","posvar","velocity","legdiam","leftness","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
+    // const char *fieldnames[]={"id","position","legs","prevlegs","legvelocity","scanpts","posvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     // Note: for multidimensional arrays, first index changes most rapidly in accessing matlab data
     mxArray *pId = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);
     *(int *)mxGetPr(pId) = id;
@@ -410,6 +413,10 @@ void Person::addToMX(mxArray *people, int index) const {
 	mxSetCell(pLikeCA,i,pLike);
     }
     mxSetField(people,index,"like",pLikeCA);
+
+    mxArray *pMaxlike = mxCreateDoubleMatrix(1,1,mxREAL);
+    *mxGetPr(pMaxlike) = maxlike;
+    mxSetField(people,index,"maxlike",pMaxlike);
 
     mxArray *pPrevlegs = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pPrevlegs);

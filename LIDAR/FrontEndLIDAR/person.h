@@ -35,6 +35,7 @@ class Person {
     float prevposvar[2];
     float legdiam;
     float leftness;
+    float maxlike; 	   // Likelihood of maximum likelihood estimator
     // Keep the likelihood map so we can dump to matlab
     std::vector<float> like[2];
     int likenx, likeny;
