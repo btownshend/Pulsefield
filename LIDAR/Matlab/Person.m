@@ -13,6 +13,9 @@ classdef Person < handle
                 %facing;  	% Vector pointing forward
     legdiam;	% Estimate of leg diameter in meters
     leftness;	% Fraction of time leg(1) is on the left side of direction of motion
+    like;	% Cell array of likelihood matrices
+    minval;	% Range of coordinates for likelihoods
+    maxval;	
     age;
     consecutiveInvisibleCount;
     totalVisibleCount;
@@ -335,6 +338,9 @@ classdef Person < handle
       end 
 
       % Apply the new values
+      obj.like={squeeze(full(1,:,:)),squeeze(full(2,:,:))};
+      obj.minval=minval;
+      obj.maxval=maxval;
       obj.legs=best;
       obj.posvar=measvar;
       obj.legclasses=[length(fs{1}),length(fs{2})];
@@ -402,6 +408,39 @@ classdef Person < handle
         fprintf('Updated %s\n', obj.tostring());
       end
     end
+
+    function plotlike(obj,vis) 
+      setfig(sprintf('discretelike ID %d',obj.id));clf;
+      sym={'<','>'};
+      for i=1:2
+        subplot(1,2,i);
+        xvals=((1:size(obj.like{i},2))-1)*(obj.maxval(1)-obj.minval(1))/(size(obj.like{i},2)-1)+obj.minval(1);
+        yvals=((1:size(obj.like{i},1))-1)*(obj.maxval(2)-obj.minval(2))/(size(obj.like{i},1)-1)+obj.minval(2);
+        [mx,my]=meshgrid(xvals,yvals);
+        pcolor(mx,my,obj.like{i});
+        shading('interp');
+        hold on;
+        if nargin>=2
+          xy=range2xy(vis.angle,vis.range);
+          plot(xy(obj.scanpts{i},1),xy(obj.scanpts{i},2),['w',sym{i}]);
+        end
+        plot(obj.prevlegs(i,1),obj.prevlegs(i,2),'wo');
+        plot(obj.legs(i,1),obj.legs(i,2),'wx');
+        title(sprintf('Leg %d',i));
+        if min(obj.like{i})<-10
+          caxis(max(obj.like{i}(:))+[-30,0]);
+        else
+          caxis(min(obj.like{i}(:))+[0,30]);
+        end
+        colorbar
+        axis equal
+      end
+      if nargin>=2
+        suptitle(sprintf('ID %d Frame %d',obj.id,vis.frame));
+      else
+        suptitle(sprintf('ID %d',obj.id));
+      end
+    end 
 
 
     % OBSOLETE
