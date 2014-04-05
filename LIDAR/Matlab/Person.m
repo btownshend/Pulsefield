@@ -5,6 +5,7 @@ classdef Person < handle
     legs;   	% Coordinates of legs;  legs(1,:)=left, legs(2,:)=right
     prevlegs;	% Previous leg coordinates
     legvelocity;% Velocity of each leg
+    scanpts;	% Scan points used to build each leg scanpts{1} for the left, scanpts{2} for the right
     legclasses;	% Classes assigned to legs (was class numbers, is now number of scan points)
     posvar;	% Estimated variance of position of legs 
     prevposvar;	% Previous frame posvar - useful for calculating variance of instantaneous velocity
@@ -41,6 +42,7 @@ classdef Person < handle
       obj.legs=legs;
       obj.prevlegs=obj.legs;
       obj.legclasses=[1,1];
+      obj.scanpts={};
       obj.position=mean(obj.legs,1);
       obj.posvar=params.initialPositionVar*[1,1];
       obj.prevposvar=obj.posvar;
@@ -337,7 +339,8 @@ classdef Person < handle
       obj.posvar=measvar;
       obj.legclasses=[length(fs{1}),length(fs{2})];
       obj.position=mean(obj.legs,1);
-
+      obj.scanpts=fs;
+      
       if nstep>0
         % nstep=0 is used to refine estimates
 

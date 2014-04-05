@@ -78,7 +78,11 @@ for i=1:length(ids)
       loc(j,:,:)=snap(j).tracker.tracks(sel).legs;
       vel(j,:)=snap(j).tracker.tracks(sel).velocity;
       legvel(j,:,:)=snap(j).tracker.tracks(sel).legvelocity;
-      vis(j,:)=[snap(j).tracker.tracks(sel).legclasses]~=1;
+      if isprop(snap(j).tracker.tracks(sel),'scanpts')
+        vis(j,:)=~isempty(snap(j).tracker.tracks(sel).scanpts{1})||~isempty(snap(j).tracker.tracks(sel).scanpts{2});
+      else
+        vis(j,:)=[snap(j).tracker.tracks(sel).legclasses]>0;
+      end
     end
   end
   subplot(231);
