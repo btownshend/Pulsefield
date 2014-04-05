@@ -1,10 +1,13 @@
 #include <ostream>
 #include <math.h>
+#include <assert.h>
 #include "lookuptable.h"
 #include "normal.h"
 #include "dbg.h"
 
 LookupTable getLegSepLike(float sepmu,float sepsigma,float possigma) {
+    assert(sepsigma>0);
+    assert(possigma>0);
     const float LOGSEPMU=log(sepmu);
     const float LOGSEPSIGMA=log(1+sepsigma/sepmu);
     const int nstd=3;    // Run out this far on the individual distributions
