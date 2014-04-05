@@ -62,6 +62,25 @@ SickIO::~SickIO() {
 	}
 }
 
+void SickIO::set(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]){
+    id=_id;
+    frame=_frame;
+    acquired=_acquired;
+    num_measurements=_nmeasure;
+    nechoes=_nechoes;
+    scanRes=190.0/(num_measurements-1);
+
+    // Copy in data
+    for (int e=0;e<nechoes;e++)
+	for (int i=0;i<num_measurements;i++) {
+	    range[e][i]=_range[e][i];
+	    reflect[e][i]=_reflect[e][i];
+	    x[e][i]=cos(getAngleRad(i)+M_PI/2)*range[e][i];
+	    y[e][i]=sin(getAngleRad(i)+M_PI/2)*range[e][i];
+	}
+}
+
+
 void SickIO::updateScanFreqAndRes() {	
     dbg("SickIO.updateScanFreqAndRes",1) << "Updating device to scanFreq=" << scanFreq << "(" << sick_lms_5xx->IntToSickScanFreq(scanFreq) << "), scanRes="
 					 << scanRes << "(" << sick_lms_5xx->DoubleToSickScanRes(scanRes) << ")" << std::endl;
@@ -147,6 +166,13 @@ void SickIO::get() {
 				range[0], (nechoes>=2)?range[1]:NULL, (nechoes>=3)?range[2]:NULL, (nechoes>=4)?range[3]:NULL, (nechoes>=5)?range[4]:NULL,
 				captureRSSI?reflect[0]:NULL, (captureRSSI&&nechoes>=2)?reflect[1]:NULL, (captureRSSI&&nechoes>=3)?reflect[2]:NULL, (captureRSSI&&nechoes>=4)?reflect[3]:NULL, (captureRSSI&&nechoes>=5)?reflect[4]:NULL,
 				*((unsigned int *)&num_measurements),&status);
+		
+		// Compute x,y values
+		for (int i=0;i<num_measurements;i++)
+		    for (int e=0;e<nechoes;e++) {
+			x[e][i]=cos(getAngleRad(i)+M_PI/2)*range[e][i];
+			y[e][i]=sin(getAngleRad(i)+M_PI/2)*range[e][i];
+		    }
 	}
 
 	catch(const SickConfigException & sick_exception) {

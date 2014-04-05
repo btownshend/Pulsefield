@@ -24,6 +24,9 @@ private:
 	unsigned int range[MAXECHOES][MAXMEASUREMENTS];
 	unsigned int reflect[MAXECHOES][MAXMEASUREMENTS];
 	unsigned int status;
+	// Compute x,y based on acquired ranges
+	float x[MAXECHOES][MAXMEASUREMENTS];
+	float y[MAXECHOES][MAXMEASUREMENTS];
 	int num_measurements;
 	struct timeval acquired;
 	unsigned int frame;
@@ -45,20 +48,7 @@ public:
 	    scanFreq=50;
 	}
 	// Set values for faking
-	void set(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]){
-	    id=_id;
-	    frame=_frame;
-	    acquired=_acquired;
-	    num_measurements=_nmeasure;
-	    nechoes=_nechoes;
-	    for (int i=0;i<nechoes;i++)
-		for (int j=0;j<num_measurements;j++) {
-		    range[i][j]=_range[i][j];
-		    reflect[i][j]=_reflect[i][j];
-		}
-	    scanRes=190.0/(num_measurements-1);
-	}
-
+	void set(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]);
 	virtual ~SickIO();
 
 	void run();
@@ -90,11 +80,11 @@ public:
 	}
 
 	float getX(int measurement, int echo=0)  const {
-	    return cos(getAngleRad(measurement)+M_PI/2)*range[echo][measurement];
+	    return x[echo][measurement];
 	}
 
 	float getY(int measurement, int echo=0) const {
-	    return sin(getAngleRad(measurement)+M_PI/2)*range[echo][measurement];
+	    return y[echo][measurement];
 	}
 
 	Point getPoint(int measurement) const {
