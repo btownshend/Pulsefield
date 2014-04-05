@@ -65,6 +65,7 @@ std::ostream &operator<<(std::ostream &s, const Person &p) {
       << ", diam: " << p.legdiam
       << std::setprecision(2)
       << ", vel: " << p.velocity
+      << ", like: " << p.maxlike
       << ", age: " << p.age;
     return s;
 }
@@ -126,22 +127,32 @@ float  segment2pt(const Point &l1, const Point &l2, const Point &p) {
 
 // Get likelihood of an observed echo at pt hitting leg given current model
 float Person::getObsLike(const Point &pt, int leg, int frame) const {
+    char dbgstr[100];
+    sprintf(dbgstr,"Frame.%d",frame);
+
     float dpt=(pt-legs[leg]).norm();
     float sigma=sqrt(pow(LEGDIAMSTD/2,2.0)+posvar[leg]);
     float like=log(normpdf(dpt, legdiam/2,sigma)*1000);
     // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
     float dclr=segment2pt(Point(0.0,0.0),pt,legs[leg]);
-    if (frame==568)
-	dbg("Person.getObsLike",1) << "pt=" << pt << ", leg=" << legs[leg] << ", pt-leg=" << (pt-legs[leg]) << "dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
+    dbg(dbgstr,20) << "pt=" << pt << ", leg=" << legs[leg] << ", pt-leg=" << (pt-legs[leg]) << "dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
     if (dclr<dpt) {
 	float clike=log(normcdf(dclr,legdiam/2,sigma));
 	like+=clike;
-	if (frame==568)
-	    dbg("Person.getObsLike",1) << "clike=" << clike << ", like=" << like << std::endl;
+	dbg(dbgstr,20) << "clike=" << clike1 << "-" << clike2 << "=" << clike1-clike2 << ", like=" << like << std::endl;
     }
     return like;
 }
 
+inline std::ostream& operator << (std::ostream& os, const std::vector<int>& v) 
+{
+    os << "[";
+    for (std::vector<int>::const_iterator ii = v.begin(); ii != v.end(); ++ii) {
+        os << " " << *ii;
+    }
+    os << " ]";
+    return os;
+}
 
 void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,float fps) {
     // Assume legdiam is log-normal (i.e. log(legdiam) ~ N(LOGDIAMMU,LOGDIAMSIGMA)
@@ -150,7 +161,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 
     float step=20;
 
-    dbg("Person.update",2) << "Initial leg positions " << legs[0] << " and " << legs[1] << std::endl;
+    dbg("Person.update",2) << "Initial leg positions " << legs[0] << " and " << legs[1] << " fs=" << fs[0] << " , " << fs[1] << std::endl;
     
     // Bound search by prior position + 2*sigma(position) + legdiam/2
     float margin[2];
@@ -266,7 +277,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 	}
 	assert(tprob>0);
 	posvar[i]=var/tprob;
-	dbg("Person.update",5) << "Leg[" << i << "]  MLE position= " << legs[i] << " +/- " << posvar[i] << " with like= " << *mle[i] << std::endl;
+	dbg("Person.update",3) << "Leg[" << i << "]  MLE position= " << legs[i] << " +/- " << posvar[i] << " with like= " << *mle[i] << std::endl;
 
 	if (pass==2) 
 	    // Don't add the seplike a second time!
