@@ -144,16 +144,6 @@ float Person::getObsLike(const Point &pt, int leg, int frame) const {
     return like;
 }
 
-inline std::ostream& operator << (std::ostream& os, const std::vector<int>& v) 
-{
-    os << "[";
-    for (std::vector<int>::const_iterator ii = v.begin(); ii != v.end(); ++ii) {
-        os << " " << *ii;
-    }
-    os << " ]";
-    return os;
-}
-
 void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,float fps) {
     // Assume legdiam is log-normal (i.e. log(legdiam) ~ N(LOGDIAMMU,LOGDIAMSIGMA)
     const float LOGDIAMMU=log(legdiam);

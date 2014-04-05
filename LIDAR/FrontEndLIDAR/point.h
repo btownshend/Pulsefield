@@ -9,6 +9,7 @@
 #define POINT_H_
 
 #include <ostream>
+#include <vector>
 #include <math.h>
 
 class Point {
@@ -43,5 +44,26 @@ class Point {
     Point min(const Point &p2) const { return Point(std::min(x,p2.X()),std::min(y,p2.Y())); }
     Point max(const Point &p2) const { return Point(std::max(x,p2.X()),std::max(y,p2.Y())); }
 };
+
+// TODO Don't really belong here
+inline std::ostream& operator<< (std::ostream& os, const std::vector<int>& v) 
+{
+    os << "[";
+    for (std::vector<int>::const_iterator ii = v.begin(); ii != v.end(); ++ii) {
+        os << " " << *ii;
+    }
+    os << " ]";
+    return os;
+}
+
+inline std::ostream& operator<< (std::ostream& os, const std::vector<float>& v) 
+{
+    os << "[";
+    for (std::vector<float>::const_iterator ii = v.begin(); ii != v.end(); ++ii) {
+        os << " " << *ii;
+    }
+    os << " ]";
+    return os;
+}
 
 #endif  /* POINT_H_ */
