@@ -110,13 +110,70 @@ void World::track( const Vis &vis, int frame, float fps) {
     }
 
     // Implement assignment
-    for (unsigned int i=0;i<people.size();i++) {
+    for (unsigned int p=0;p<people.size();p++) {
 	// Build list of points assigned to this person
 	std::vector<int> fs[2];
 	for (unsigned int j=0;j<assignments.size();j++)
-	    if (assignments[j]==(int)i)
+	    if (assignments[j]==(int)p)
 		fs[legassigned[j]].push_back(j);
-	people[i].update(vis,fs,nsteps,fps);
+
+	// Reorganize split between two legs if needed (e.g. frame 958)
+	// TODO -- these splits don't take into account which prior position is closer so they result in leg swaps sometimes (e.g. frame 958 of *2923.ferec)
+	bool split=false;
+	for (int f=0;f<2;f++) {
+	    if (fs[f].size()>0 && fs[1-f].size()==0) {
+		// One empty, maybe we can move some over at a gap
+		if (fs[f].back()-fs[f].front()+1 != (int)fs[f].size()) {
+		    // Has a gap
+		    for (unsigned int i=1;i<fs[f].size();i++) 
+			if (fs[f][i]-fs[f][i-1] != 1) {
+			    for (unsigned int j=i;j<fs[f].size();j++)
+				fs[1-f].push_back(fs[f][j]);
+			    fs[f].resize(i);
+			    dbg("World.track",2) << "Splitting preliminary assignment for ID " << people[p].getID() << " at a gap into " << fs[0] << ", " << fs[1] << std::endl;
+			    split=true;
+			    break;
+			}
+		}
+	    }
+	    if (fs[f].size()>0 && fs[1-f].size()==0) {
+		// Still one empty, look for a large range jump
+		for (unsigned int i=1;i<fs[f].size();i++) { 
+		    float r=vis.getSick()->getRange(0)[fs[f][i]];
+		    float rprev=vis.getSick()->getRange(0)[fs[f][i-1]];
+		    float rjump=abs(r-rprev);
+		    if (rjump>INITLEGDIAM/2) {
+			for (unsigned int j=i;j<fs[f].size();j++)
+			    fs[1-f].push_back(fs[f][j]);
+			fs[f].resize(i);
+			dbg("World.track",2) << "Splitting preliminary assignment for ID " << people[p].getID() << " at a range jump of " << rjump << " from  " << rprev << " to " << r  << " into " << fs[0] << ", " << fs[1] << std::endl;
+			split=true;
+			break;
+		    }
+		}
+	    }
+	}
+	if (split) {
+	    // Check if they need to be swapped
+	    float swaplike=0;   // Compute difference in likelihood between matching as-is vs. matching swapped
+	    for (int f=0;f<2;f++)
+		for (int leg=0;leg<2;leg++) {
+		    for (unsigned int i=0;i<fs[f].size();i++) {
+			double like = people[i].getObsLike(vis.getSick()->getPoint(fs[f][i]),leg,vis.getSick()->getFrame());
+			if (leg==f)
+			    swaplike+=like;
+			else
+			    swaplike-=like;
+		    }
+		}
+	    dbg("World.track",2) << "Checking if should swap leg assignments, swaplike=" << swaplike << std::endl;
+	    if (swaplike < 0) {
+		std::swap(fs[0],fs[1]);
+		dbg("World.track",2) << "Swapped assignment for ID " << people[p].getID() << " into " << fs[0] << ", " << fs[1] << std::endl;
+	    }
+	}
+
+	people[p].update(vis,fs,nsteps,fps);
     }
 
     // Delete lost people
