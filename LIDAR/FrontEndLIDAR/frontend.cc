@@ -415,9 +415,20 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	sick[0]->set(cid,cframe, acquired,  nmeasure, nechoes, range,reflect);
 
 	
+	char dbgstr[100];
+	sprintf(dbgstr,"Frame.%d",sick[0]->getFrame());
+	bool tmpDebug=false;
+	if (DebugCheck(dbgstr,20)) {
+	    PushDebugSettings();
+	    SetDebug("20");
+	    tmpDebug=true;
+	}
 	vis->update(sick[0]);
 	world->track(*vis,cframe,sick[0]->getScanFreq());
 	world->sendMessages(dests,sick[0]->getAcquired());
+
+	if (tmpDebug)
+	    PopDebugSettings();
 
 	if (matframes>0) {
 	    snap->append(vis,world);

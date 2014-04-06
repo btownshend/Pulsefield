@@ -5,6 +5,7 @@
  * Wed Jun 8 17:03:07 EDT 1994
  *
  */
+#include <assert.h>
 #include <iostream>
 #include <fstream>
 #include <ostream>
@@ -116,7 +117,7 @@ struct DTable {
     DTable *next;
     char *str;
     int level;
-    static DTable *Root;
+    static DTable *Root,*PushedRoot;
     DTable(const char *s, int lvl);
     ~DTable();
 };
@@ -132,6 +133,7 @@ inline DTable::~DTable()
 }
 
 DTable *DTable::Root = 0;
+DTable *DTable::PushedRoot = 0;
 
 DTable::DTable(const char *s, int lvl)
 {
@@ -209,4 +211,18 @@ void SetDebug(const char* s, const char* dbgf)
 	    (void)new DTable(s,999);
 	}
     }
+}
+
+void PushDebugSettings() {
+    dbg("dbg.PushDebugSettings",1) << "Pushing settings" << std::endl;
+    assert (DTable::PushedRoot==0);
+    DTable::PushedRoot=DTable::Root;
+    DTable::Root=0;
+}
+
+void PopDebugSettings() {
+    assert (DTable::PushedRoot!=0);
+    DTable::Root=DTable::PushedRoot;
+    DTable::PushedRoot=0;
+    dbg("dbg.PopDebugSettings",1) << "Popped settings" << std::endl;
 }

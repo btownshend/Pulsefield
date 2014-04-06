@@ -15,9 +15,6 @@ World::World() {
 
 void World::makeAssignments(const Vis &vis, float entrylike) {
     // Calculate likelihoods of each scan belonging to each track and assign to highest likelihood
-    char dbgstr[100];
-    sprintf(dbgstr,"Frame.%d",vis.getSick()->getFrame());
-
     const SickIO *sick=vis.getSick();
     bestlike.resize(sick->getNumMeasurements());
     assignments.resize(sick->getNumMeasurements());
@@ -41,7 +38,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	    for (int leg=0;leg<2;leg++) {
 		// This is a fudge since the DIAMETER is log-normal and the position itself is normal
 		float like =people[i].getObsLike(sick->getPoint(f),leg,vis.getSick()->getFrame());
-		dbg(dbgstr,20) << "For assigning scan " << f << " to P" << people[i].getID() << "." << leg << ", like=" << like << ", best so far=" << bestlike[f] << ", bgprob=" << bgprob[f] << ", entrylike=" << entrylike << std::endl;
+		dbg("World.makeAssignments",20) << "For assigning scan " << f << " to P" << people[i].getID() << "." << leg << ", like=" << like << ", best so far=" << bestlike[f] << ", bgprob=" << bgprob[f] << ", entrylike=" << entrylike << std::endl;
 		if (like>bestlike[f]) {
 		    bestlike[f]=like;
 		    assignments[f]=i;

@@ -127,21 +127,18 @@ float  segment2pt(const Point &l1, const Point &l2, const Point &p) {
 
 // Get likelihood of an observed echo at pt hitting leg given current model
 float Person::getObsLike(const Point &pt, int leg, int frame) const {
-    char dbgstr[100];
-    sprintf(dbgstr,"Frame.%d",frame);
-
     float dpt=(pt-legs[leg]).norm();
     float sigma=sqrt(pow(LEGDIAMSTD/2,2.0)+posvar[leg]);
     float like=log(normpdf(dpt, legdiam/2,sigma)*1000);
     // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
     // This is handled by calculating the probabily of the object overlapping the scan line prior to the endpoint.
     float dclr=segment2pt(Point(0.0,0.0),pt,legs[leg]);
-    dbg(dbgstr,20) << "pt=" << pt << ", leg=" << legs[leg] << ", pt-leg=" << (pt-legs[leg]) << "dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
+    dbg("Person.getObsLike",20) << "pt=" << pt << ", leg=" << legs[leg] << ", pt-leg=" << (pt-legs[leg]) << "dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
     if (dclr<dpt) {
 	float clike1=log(normcdf(dclr,legdiam/2,sigma));
 	float clike2= log(normcdf(dpt,legdiam/2,sigma));
 	like+=clike1-clike2;
-	dbg(dbgstr,20) << "clike=" << clike1 << "-" << clike2 << "=" << clike1-clike2 << ", like=" << like << std::endl;
+	dbg("Person.getObsLike",20) << "clike=" << clike1 << "-" << clike2 << "=" << clike1-clike2 << ", like=" << like << std::endl;
     }
     return like;
 }

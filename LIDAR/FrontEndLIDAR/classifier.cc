@@ -31,9 +31,6 @@ int Classifier::getlastindex(unsigned int c) const {
 }
 
 void Classifier::update(const SickIO &sick) {
-    char dbgstr[100];
-    sprintf(dbgstr,"Frame.%d",sick.getFrame());
-
     targets.clear();
     classes.resize(sick.getNumMeasurements());
     shadowed[0].resize(sick.getNumMeasurements());
@@ -51,11 +48,11 @@ void Classifier::update(const SickIO &sick) {
 	    classes[i]=BACKGROUND;
 	    continue;
 	}
-	dbg(dbgstr,20) << "S[" << i << "] angle=" << std::fixed << std::setprecision(1) << sick.getAngleDeg(i) << ", range=" << std::setprecision(0) << srange[i] << ", xy=" << sick.getPoint(i) << ", bgprob=" << std::setprecision(3) << bgprob[i] << " ";
+	dbg("Classifier.update",20) << "S[" << i << "] angle=" << std::fixed << std::setprecision(1) << sick.getAngleDeg(i) << ", range=" << std::setprecision(0) << srange[i] << ", xy=" << sick.getPoint(i) << ", bgprob=" << std::setprecision(3) << bgprob[i] << " ";
 	if (bgprob[i]>0 &&i>0 && i<classes.size()-1&&srange[i]<srange[i-1]-MAXLEGDIAM&&bgprob[i-1]>MINBGFREQ&&srange[i]<srange[i+1]-MAXLEGDIAM&&bgprob[i+1]>MINBGFREQ) {
 	    // isolated point, not shadowed on either side
 	    classes[i]=NOISE;
-	    dbgn(dbgstr,20) << "NOISE" << std::endl;
+	    dbgn("Classifier.update",20) << "NOISE" << std::endl;
 	    continue;
 	}
 	// Check if close to a prior target
@@ -64,14 +61,14 @@ void Classifier::update(const SickIO &sick) {
 	    float dist=sick.distance(i,j);
 	    if (dist < MAXTGTSEP && classes[j]>MAXSPECIAL) {
 		classes[i]=classes[j];
-		dbgn(dbgstr,20) << "PRIOR " << classes[i]  << std::endl;
+		dbgn("Classifier.update",20) << "PRIOR " << classes[i]  << std::endl;
 		newclass=false;
 		break;
 	    }
 	    if (dist<= MAXLEGDIAM && classes[j]>MAXSPECIAL && classes[j]!=classes[i-1]) {
 		// Could be a leg visible on both sides of a closer leg
 		classes[i]=classes[j];
-		dbgn(dbgstr,20) << "SPLIT " << classes[i]  << std::endl;
+		dbgn("Classifier.update",20) << "SPLIT " << classes[i]  << std::endl;
 		newclass=false;
 		break;
 	    }
@@ -81,7 +78,7 @@ void Classifier::update(const SickIO &sick) {
 	}
 	if (newclass) {
 	    classes[i]=nextclass;
-	    dbgn(dbgstr,20) << "NEW " << classes[i]  << std::endl;
+	    dbgn("Classifier.update",20) << "NEW " << classes[i]  << std::endl;
 	    nextclass++;
 	}
     }
@@ -99,7 +96,7 @@ void Classifier::update(const SickIO &sick) {
 		if (classes[j]>MAXSPECIAL) {
 		    float delta=sick.distance(i,j);
 		    if (delta < 2*MAXTGTSEP) {
-			dbg(dbgstr,20) << "Reassigned singleton " << i << "(class " << classes[i]  << ") with delta=" << delta << " to class " << classes[j] << std::endl;
+			dbg("Classifier.update",20) << "Reassigned singleton " << i << "(class " << classes[i]  << ") with delta=" << delta << " to class " << classes[j] << std::endl;
 			classes[i]=classes[j];
 			break;
 		    }
@@ -138,14 +135,14 @@ void Classifier::update(const SickIO &sick) {
 		    bgcnt++;
 		}
 	    totalbgprob/=bgcnt;
-	    dbg(dbgstr,20) << "Target class " << c << " (" << firstindex << ":" << lastindex << ") has size " << dist+scanwidth << "<" << MINTARGET << ", totalbgprob=" << totalbgprob;
+	    dbg("Classifier.update",20) << "Target class " << c << " (" << firstindex << ":" << lastindex << ") has size " << dist+scanwidth << "<" << MINTARGET << ", totalbgprob=" << totalbgprob;
 	    if (totalbgprob>0) {
-		dbgn(dbgstr,20) << ": rejected; is probably noise" << std::endl;
+		dbgn("Classifier.update",20) << ": rejected; is probably noise" << std::endl;
 		for (int i=firstindex;i<=lastindex;i++)
 		    if (classes[i]==c)
 			classes[i]=NOISE;
 	    } else
-		dbgn(dbgstr,20) << ": kept" << std::endl;
+		dbgn("Classifier.update",20) << ": kept" << std::endl;
 	}
     }
 
@@ -156,7 +153,7 @@ void Classifier::update(const SickIO &sick) {
 	unsigned int lastpt=getlastindex(*c);
 	float dist=sick.distance(firstpt,lastpt);
 	if (sick.distance(firstpt,lastpt) > MAXCLASSSIZE) {
-	    dbg(dbgstr,20) << "Need to split class " << *c << " at " << firstpt << "-" << lastpt << " with size " << dist << " > " << MAXCLASSSIZE << std::endl;
+	    dbg("Classifier.update",20) << "Need to split class " << *c << " at " << firstpt << "-" << lastpt << " with size " << dist << " > " << MAXCLASSSIZE << std::endl;
 
 	    int prevpt=firstpt;
 	    float maxdelta=0;
@@ -167,7 +164,7 @@ void Classifier::update(const SickIO &sick) {
 		    float d1=sick.distance(firstpt,prevpt);
 		    if (d1>MAXCLASSSIZE) {
 			if (bkpt<0) {
-			    dbg(dbgstr,1) << "Boundary case: class to split is close to 2*MAXCLASSSIZE -- fudging it by forming an oversize class of size " << d1 << std::endl;
+			    dbg("Classifier.update",1) << "Boundary case: class to split is close to 2*MAXCLASSSIZE -- fudging it by forming an oversize class of size " << d1 << std::endl;
 			    bkpt=j;
 			    pbkpt=prevpt;
 			    maxdelta=sick.distance(pbkpt,bkpt);
@@ -175,7 +172,7 @@ void Classifier::update(const SickIO &sick) {
 			float db1=sick.distance(firstpt,pbkpt);
 			float db2=sick.distance(bkpt,lastpt);
 			// Class size exceeded, break at biggest jump so far
-			dbg(dbgstr,20) << "Splitting class " << *c << " into " << firstpt << "-" << pbkpt << " and " << bkpt << "-" << lastpt << " to give pieces of size " << db1 << " and " << db2 << " with  gap of " << maxdelta <<  std::endl;
+			dbg("Classifier.update",20) << "Splitting class " << *c << " into " << firstpt << "-" << pbkpt << " and " << bkpt << "-" << lastpt << " to give pieces of size " << db1 << " and " << db2 << " with  gap of " << maxdelta <<  std::endl;
 			for (unsigned int k=bkpt;k<=lastpt;k++)
 			    if (classes[k]==*c)
 				classes[k]=nextclass;
@@ -185,7 +182,7 @@ void Classifier::update(const SickIO &sick) {
 		    }
 		    float delta=sick.distance(prevpt,j);
 		    float d2=sick.distance(j,lastpt);
-		    dbg(dbgstr,20) << "Check splitting class " << *c << " into " << firstpt << "-" << prevpt << " and " << j << "-" << lastpt << " to give pieces of size " << d1 << " and " << d2 << " with  gap of " << delta <<  std::endl;
+		    dbg("Classifier.update",20) << "Check splitting class " << *c << " into " << firstpt << "-" << prevpt << " and " << j << "-" << lastpt << " to give pieces of size " << d1 << " and " << d2 << " with  gap of " << delta <<  std::endl;
 		    if (delta>maxdelta && (d2 <= MAXCLASSSIZE || (d1+d2 > MAXCLASSSIZE*2))) {
 			// Largest jump so far that can make both pieces under MAXCLASSSIZE (if that is possible)
 			maxdelta=delta;
