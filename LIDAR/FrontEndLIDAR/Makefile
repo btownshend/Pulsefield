@@ -15,7 +15,7 @@ CXX=g++
 #DEBUG=-g -Wall -Wno-c++11-extensions
 DEBUG=-g -Wall
 PROFILE=
-OPTIMIZE=
+OPTIMIZE=-O3
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/base/src -I$(SICKTOOLBOX)/lms5xx -I$(MATLABINC) -I$(CAIROINC) -I/opt/X11/include
 CFLAGS=$(DEBUG)  $(OPTIMIZE)
 LDFLAGS=-L$(LIBLO) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) -L$(CAIROLIBDIR)
@@ -43,7 +43,7 @@ frontend.o: ../../../OSC/liblo-0.26/lo/lo_types.h
 frontend.o: ../../../OSC/liblo-0.26/lo/lo_osc_types.h
 frontend.o: ../../../OSC/liblo-0.26/lo/lo_errors.h
 frontend.o: ../../../OSC/liblo-0.26/lo/lo_lowlevel.h
-frontend.o: ../../../OSC/liblo-0.26/lo/lo_macros.h defs.h dest.h urlconfig.h
+frontend.o: ../../../OSC/liblo-0.26/lo/lo_macros.h dest.h urlconfig.h
 frontend.o: sickio.h
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -71,7 +71,7 @@ main.o: ../../../OSC/liblo-0.26/lo/lo_types.h
 main.o: ../../../OSC/liblo-0.26/lo/lo_osc_types.h
 main.o: ../../../OSC/liblo-0.26/lo/lo_errors.h
 main.o: ../../../OSC/liblo-0.26/lo/lo_lowlevel.h
-main.o: ../../../OSC/liblo-0.26/lo/lo_macros.h defs.h dest.h dbg.h
+main.o: ../../../OSC/liblo-0.26/lo/lo_macros.h dest.h dbg.h
 urlconfig.o: dbg.h urlconfig.h
 sickio.o: sickio.h
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh

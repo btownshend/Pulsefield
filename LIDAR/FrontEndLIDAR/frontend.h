@@ -3,7 +3,6 @@
 
 #include <pthread.h>
 #include "lo/lo.h"
-#include "defs.h"
 #include "dest.h"
 
 class SickIO;
