@@ -42,7 +42,8 @@ hold on;
 xy=range2xy(vis.angle,vis.range);
 
 colors='rgbcmk';
-plotted=false(size(vis.class));
+isbg=tracker.assignments(:,1)==-1;
+plotted=false(size(isbg));
 for i=1:length(tracker.tracks)
   t=tracker.tracks(i);
   id=t.id;
@@ -69,7 +70,7 @@ for i=1:length(tracker.tracks)
   end
 end
 if sum(~plotted)>0
-  sel=~plotted & vis.class>MAXSPECIAL;
+  sel=~plotted & ~isbg;
   if sum(sel)>0
     fprintf('%d target points not matched to tracks\n', sum(sel));
   end
@@ -77,7 +78,6 @@ if sum(~plotted)>0
     plot(xy(sel,1),xy(sel,2),'.r');
     plot(xy(sel,1),xy(sel,2),'.k');
   end
-  sel=~plotted & vis.class>0&vis.class<=MAXSPECIAL;
 end
 
 c=axis;
@@ -96,7 +96,7 @@ bxy=range2xy(bg.angle,range);
 plot(bxy(:,1),bxy(:,2),'k');
 
 axis image;
-xyt=xy(vis.class>MAXSPECIAL,:);
+xyt=xy(~isbg,:);
 
 if args.crop
   ctr=(floor(c([1,3]))+ceil(c([2,4])))/2;
