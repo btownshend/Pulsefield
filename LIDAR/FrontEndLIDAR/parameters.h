@@ -14,6 +14,7 @@ static const int MAXGRIDPTS=1000;	// Maximum grid points during likelihood calcu
 
 // ******** Sensor
 static const float SENSORSIGMA=8;	// Sensor statistical error 
+static const double RANDOMPTPROB=1e-30;	// Probability any given scan point is random noise
 
 // ******** Background
 static const int MINBGSEP=100;	// max distance to consider a scan point part of a nearby background

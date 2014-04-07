@@ -144,6 +144,8 @@ float Person::getObsLike(const Point &pt, int leg, int frame) const {
 	like+=clike1-clike2;
 	dbg("Person.getObsLike",20) << "clike=" << clike1 << "-" << clike2 << "=" << clike1-clike2 << ", like=" << like << std::endl;
     }
+    like=std::max((float)log(RANDOMPTPROB),like);
+    assert(isfinite(like));
     return like;
 }
 
