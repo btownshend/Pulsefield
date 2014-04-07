@@ -242,7 +242,6 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 		    glike+=std::max(bglike[fs[i][k]],obslike);
 		}
 		like[i][ix*likeny+iy]=glike+clearlike+apriori;
-		// like[i][ix*likeny+iy]=std::max(MINLIKE,glike+clearlike+apriori);
 		//assert(isfinite(like[i][ix*likeny+iy]));
 		dbg("Person.update",20) << "like[" << i << "][" << ix << "," << iy << "] (x=" << x << ", y=" << y << ") = " << like[i][ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << std::endl;
 	    }
