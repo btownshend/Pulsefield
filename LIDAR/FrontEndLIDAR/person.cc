@@ -304,7 +304,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
     scanpts[1]=fs[1];
 
     // Update velocities
-    if (nstep>=0) {
+    if (nstep>0) {
 	if (fs[0].size()==0 && fs[1].size()==0) {
 	    // Both legs hidden, maintain both at average velocity (damped)
 	    legvelocity[0]=(legvelocity[0]+legvelocity[1])/2.0*VELDAMPING;
