@@ -263,10 +263,10 @@ mxArray *World::convertToMX() const {
 
     mxArray *pAssignments = mxCreateNumericMatrix(assignments.size(),2,mxINT32_CLASS,mxREAL);
     int *idata = (int *)mxGetPr(pAssignments);
-    for (unsigned int i=0;i<assignments.size();i++)
-	*idata=assignments[i];
     assert(legassigned.size()==assignments.size());
-    for (unsigned int i=0;i<assignments.size();i++)
+    for (unsigned int i=0;i<assignments.size();i++) 
+	*idata++=assignments[i];
+    for (unsigned int i=0;i<assignments.size();i++) 
 	*idata++=legassigned[i];
     mxSetField(world,0,"assignments",pAssignments);
 
