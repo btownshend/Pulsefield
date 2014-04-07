@@ -178,10 +178,21 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
     minval=minval-legdiam/2;
     maxval=maxval+legdiam/2;
 
+    // Initial estimate of grid size
+    likenx=(int)((maxval.X()-minval.X())/step+1.5);
+    likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
+    if (likenx*likeny > MAXGRIDPTS) {
+	step=step*sqrt(likenx*likeny*1.0/MAXGRIDPTS);
+	dbg("Person.update",1) << "Too many grid points (" << likenx << " x " << likeny << ") - increasing stepsize to  " << step << " mm" << std::endl;
+    }
+
     minval.setX(floor(minval.X()/step)*step);
     minval.setY(floor(minval.Y()/step)*step);
     maxval.setX(ceil(maxval.X()/step)*step);
     maxval.setY(ceil(maxval.Y()/step)*step);
+
+    likenx=(int)((maxval.X()-minval.X())/step+1.5);
+    likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
     dbg("Person.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
     dbg("Person.update",3) << "Search over a " << likenx << " x " << likeny << " grid with " << fs[0].size() << "," << fs[1].size() << " points/leg, diam=" << legdiam << " +/- *" << exp(LOGDIAMSIGMA) << std::endl;
 
@@ -204,9 +215,6 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
     }
     dbgn("Person.update",3) << std::endl;
 
-    likenx=(int)((maxval.X()-minval.X())/step+1.5);
-    likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
-    dbg("Person.update",2) << "Search over a " << likenx << " x " << likeny << " grid with " << fs[0].size() << "," << fs[1].size() << " points/leg, diam=" << legdiam << " +/- *" << exp(LOGDIAMSIGMA) << std::endl;
 
     // Compute likelihoods based on composite of apriori, contact measurements, and non-hitting rays
     like[0].resize(likenx*likeny);

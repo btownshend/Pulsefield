@@ -10,6 +10,8 @@
 
 // Distances in mm unless otherwise noted
 
+static const int MAXGRIDPTS=1000;	// Maximum grid points during likelihood calculation
+
 // ******** Sensor
 static const float SENSORSIGMA=8;	// Sensor statistical error 
 
