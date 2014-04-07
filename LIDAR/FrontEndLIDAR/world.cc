@@ -53,6 +53,12 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
     }
 
     dbg("World.makeAssignments",2) << "Assigned " << nassigned << " points to targets,  " << nbg  << " to background, and " << nentries << " to entries." << std::endl;
+    if (nbg < nassigned+nentries) {
+	dbg("World.makeAssignments",1) << "Only have " << nbg*1.0/(nbg+nassigned+nentries)*100 << "% of points assigned to background, using all points for update." << std::endl;
+	bg.update(*sick,assignments,true);
+    } else {
+	// Update background only with points assumed to be background
+	bg.update(*sick,assignments,true);
     }
 }
 
