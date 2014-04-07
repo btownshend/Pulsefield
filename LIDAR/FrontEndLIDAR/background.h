@@ -24,7 +24,7 @@ public:
     Background();
     // Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
     std::vector<float> isbg(const SickIO &sick) const;
-    void update(const SickIO &sick);
+    void update(const SickIO &sick, const std::vector<int> &assignments, bool all=false);
     mxArray *convertToMX() const;
 };
 

@@ -74,12 +74,14 @@ std::vector<float> Background::isbg(const SickIO &sick) const {
     return result;
 }
 
-void Background::update(const SickIO &sick) {
+void Background::update(const SickIO &sick, const std::vector<int> &assignments, bool all) {
     setup(sick);
     const unsigned int *srange = sick.getRange(0);
     nupdates++;
     float tc=std::min(nupdates,UPDATETC);  // Setup so that until we have UPDATETC frames, time constant weights all samples equally
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
+	if (assignments[i]!=-1 && !all)
+	    continue;
 	for (int k=0;k<NRANGES;k++) {
 	    freq[k][i]*=(1.0-1.0f/tc);
 	    // Note allow updates even if range>MAXRANGE, otherwise points slightly smaller than MAXRANGE get biased and have low freq
