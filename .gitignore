@@ -46,7 +46,6 @@ LIDAR/Matlab/SFUN.hold/
 LIDAR/Matlab/VISIONTB/
 *.mat
 
-*.mat
 
 LIDAR/FrontEndLIDAR/Debug.out
 
@@ -61,7 +60,4 @@ LIDAR/FrontEndLIDAR/PRIORREVS/frontend-0.1
 LIDAR/Recordings
 
 LIDAR/FrontEndLIDAR/mixtest
-
-LIDAR/Matlab/snap.mvi.avi
-
 *.avi
