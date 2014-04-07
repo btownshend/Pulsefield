@@ -20,24 +20,22 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
     assignments.resize(sick->getNumMeasurements());
     legassigned.resize(sick->getNumMeasurements());
 
-    const std::vector<float> &bgprob=bg->isbg(*sick);
-
+    int nassigned=0;
+    int nentries=0;
+    int nbg=0;
     for (unsigned int f=0;f<sick->getNumMeasurements();f++) {
         bestlike[f]=entrylike;
 	assignments[f]=-2;
 	legassigned[f]=0;
-	if (bgprob[f]>0) {
-	    float bglike=log(bgprob[f]);
-	    if (bglike > bestlike[f]) {
-		bestlike[f]=bglike;
-		assignments[f]=-1;
-	    }
+	if (bglike[f] > bestlike[f]) {
+	    bestlike[f]=bglike[f];
+	    assignments[f]=-1;
 	}
 	for (unsigned int i=0;i<people.size();i++) {
 	    for (int leg=0;leg<2;leg++) {
 		// This is a fudge since the DIAMETER is log-normal and the position itself is normal
 		float like =people[i].getObsLike(sick->getPoint(f),leg,vis.getSick()->getFrame());
-		dbg("World.makeAssignments",20) << "For assigning scan " << f << " to P" << people[i].getID() << "." << leg << ", like=" << like << ", best so far=" << bestlike[f] << ", bgprob=" << bgprob[f] << ", entrylike=" << entrylike << std::endl;
+		dbg("World.makeAssignments",20) << "For assigning scan " << f << " to P" << people[i].getID() << "." << leg << ", like=" << like << ", best so far=" << bestlike[f] << ", bglike=" << bglike[f] << ", entrylike=" << entrylike << std::endl;
 		if (like>bestlike[f]) {
 		    bestlike[f]=like;
 		    assignments[f]=i;
@@ -45,8 +43,16 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 		}
 	    }
 	}
-	if (assignments[f]>=0)
+	if (assignments[f]>=0) {
+	    nassigned++;
 	    dbg("World.makeAssignments",2) << "Assigned scan " << f << " to track " << assignments[f] << "." << legassigned[f] << std::endl;
+	} else if (assignments[f]==-2)
+	    nentries++;
+	else
+	    nbg++;
+    }
+
+    dbg("World.makeAssignments",2) << "Assigned " << nassigned << " points to targets,  " << nbg  << " to background, and " << nentries << " to entries." << std::endl;
     }
 }
 
@@ -66,6 +72,9 @@ void World::track( const Vis &vis, int frame, float fps) {
     float entryprob=1-exp(-ENTRYRATE/60.0*nsteps/fps);
     float entrylike=log(entryprob/num_measurements*5);  // Like that a scan is a new entry (assumes 5 hits on avg)
     dbg("World.track",2) << "Tracking frame " << frame << ":  entrylike=" <<  entrylike << std::endl;
+
+    // Calculate background likelihoods
+    bglike=bg.like(*vis.getSick());
 
     // Map scans to tracks
     makeAssignments(vis,entrylike);
@@ -187,8 +196,10 @@ void World::track( const Vis &vis, int frame, float fps) {
 	for (unsigned int i=0;i<people.size();i++)
 	    dbg("World.track",2)  << people[i] << std::endl;
     }
+
     if (frame%1==0)
 	draw();
+
 }
         
 void World::sendMessages(const Destinations &dests, const struct timeval &acquired) {

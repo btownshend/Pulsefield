@@ -27,6 +27,7 @@ class World {
     std::set<int> lastid;
 
     Background bg;		// Background model
+    std::vector<float> bglike;	// Current background likelihoods (regardless of assignment)
     std::vector<int> assignments;   // Which person is assigned to each scan line -- -1 for background, -2 for new track
     std::vector<unsigned int> legassigned;  		    // For each assignment, leg number assigned (0 or 1);  0 for assignments without legs (such as bg)
     std::vector<float> bestlike;					// Best likelihood for each scan line

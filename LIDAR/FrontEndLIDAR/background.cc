@@ -30,7 +30,7 @@ void Background::swap(int k, int i, int j) {
 }
 
 // Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
-std::vector<float> Background::isbg(const SickIO &sick) const {
+std::vector<float> Background::like(const SickIO &sick) const {
     ((Background *)this)->setup(sick);
     std::vector<float> result(sick.getNumMeasurements(),false);
     const unsigned int *srange = sick.getRange(0);
@@ -58,18 +58,21 @@ std::vector<float> Background::isbg(const SickIO &sick) const {
 		// Still no matches, check if is between this and adjacent background
 		if (i>0 && freq[0][i-1]>0 && (srange[i]>range[0][i] != srange[i]>range[0][i-1])) {
 		    result[i]=std::min(freq[0][i],freq[0][i-1])*INTERPSCANBGWEIGHT;
-		    dbg("Background.isbg",4) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i-1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
+		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i-1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
 		}
 		if (i+1<sick.getNumMeasurements() && freq[0][i+1]>0 && (srange[i]>range[0][i] != srange[i]>range[0][i+1])) {
 		    result[i]=std::min(freq[0][i],freq[0][i+1])*INTERPSCANBGWEIGHT;
-		    dbg("Background.isbg",4) << "Scan " << i << " at " << std::setprecision(0)  <<std::fixed <<  srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i+1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
+		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0)  <<std::fixed <<  srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i+1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
 		}
 	    }
 	    if (result[i]>1.0) {
-		dbg("Background.isbg",1) << "Scan " << i << " at " << srange[i] << " had prob " << result[i] << "; reducing to 1.0"  << std::endl;
+		dbg("Background.like",1) << "Scan " << i << " at " << srange[i] << " had prob " << result[i] << "; reducing to 1.0"  << std::endl;
 		result[i]=1.0;
 	    }
 	}
+	// TODO: This is not a correct likelihood -- need to have it reflect the p(obs|bg) in the same way that we have p(obs|target) so they can be compared
+	// For now, assume this probability occurs over a range of [-MINBGSEP,MINBGSEP], so pdf= prob/(2*MINBGSEP)  (in meters, since all the other PDF's are in meters)
+	result[i]=log(result[i]/(2.0*MINBGSEP/1000)); 
     }
     return result;
 }
