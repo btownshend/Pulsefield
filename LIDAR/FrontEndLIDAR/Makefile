@@ -16,12 +16,16 @@ CAIROINC=/opt/local/include/cairo
 CAIROLIBDIR=/opt/local/lib
 CAIROLIBES=-lcairo -lX11
 
+OPENCVINC=-I/opt/local/include/opencv2
+OPENCVLIBDIR=/opt/local/lib
+OPENCVLIBES=-lopencv_ml -lopencv_core
+
 CXX=g++
 #DEBUG=-g -Wall -Wno-c++11-extensions
 DEBUG=-g -Wall
 PROFILE=
 OPTIMIZE=-O3
-CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/base/src -I$(SICKTOOLBOX)/lms5xx -I$(MATLABINC) -I$(CAIROINC) -I/opt/X11/include
+CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/base/src -I$(SICKTOOLBOX)/lms5xx -I$(MATLABINC) -I$(CAIROINC) $(OPENCVINC) -I/opt/X11/include -Wno-overloaded-virtual
 CFLAGS=$(DEBUG)  $(OPTIMIZE)
 LDFLAGS=-L$(LIBLO) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) -L$(CAIROLIBDIR)
 LIBES=-llo $(SICKLIB) $(MATLABLIBES) $(CAIROLIBES) -g 
@@ -33,6 +37,9 @@ all: frontend
 
 frontend: $(CSRCS:.c=.o) $(CXXSRCS:.cc=.o) $(SICKLIB)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
+
+mixtest: mixtest.o gaussianmixture.o dbg.o
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)  -L$(OPENCVLIBDIR)  $(OPENCVLIBES) 
 
 depend:
 	/opt/local/bin/makedepend -Y -- $(CXXFLAGS) -- $(SRCS)
@@ -119,6 +126,7 @@ world.o: target.h point.h person.h
 world.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
 world.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 world.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h dest.h
+world.o: likelihood.h vis.h sickio.h
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
