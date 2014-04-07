@@ -80,7 +80,7 @@ void Person::predict(int nstep, float fps) {
 	legs[i].setY(legs[i].Y()+legvelocity[i].Y()*nstep/fps);
 
 	prevposvar[i]=posvar[i];
-	posvar[i]+=DRIFTVAR*nstep;
+	posvar[i]=std::min(posvar[i]+DRIFTVAR*nstep,MAXPOSITIONVAR);
     }
     // If one leg is locked down, then the other leg can't vary more than MAXLEGSEP
     for (int i=0;i<2;i++)

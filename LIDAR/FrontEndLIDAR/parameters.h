@@ -37,6 +37,7 @@ static const float MINFORCELIKE=-10;  // Minimum likelihood to force assigning a
 
 // ***** Tracking
 static const float INITIALPOSITIONVAR=100*100;  // Variance of initial position estimates
+static const float MAXPOSITIONVAR=1000*1000;  // Never let the position variance go above this during predictions
 static const float INITIALHIDDENVAR=300*300;  // Variance of initial position estimates when leg is not initially visible
 static const float MAXLEGSPEED=4000;	// Maximum speed of a leg in mm/s
 static const float MAXLEGSEP=400;	// Maximum separation of leg centers
