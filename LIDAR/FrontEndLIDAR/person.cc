@@ -1,4 +1,5 @@
 #include <vector>
+
 #include <string.h>
 #include <algorithm>
 #include "person.h"
@@ -67,6 +68,8 @@ std::ostream &operator<<(std::ostream &s, const Person &p) {
       << ", vel: " << p.velocity
       << ", like: " << p.maxlike
       << ", age: " << p.age;
+    if (p.consecutiveInvisibleCount > 0)
+	s << ",invis:" << p.consecutiveInvisibleCount;
     return s;
 }
 
@@ -130,6 +133,7 @@ float Person::getObsLike(const Point &pt, int leg, int frame) const {
     float dpt=(pt-legs[leg]).norm();
     float sigma=sqrt(pow(LEGDIAMSTD/2,2.0)+posvar[leg]);
     float like=log(normpdf(dpt, legdiam/2,sigma)*1000);
+
     // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
     // This is handled by calculating the probabily of the object overlapping the scan line prior to the endpoint.
     float dclr=segment2pt(Point(0.0,0.0),pt,legs[leg]);
@@ -150,7 +154,8 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 
     float step=20;
 
-    dbg("Person.update",2) << "Initial leg positions " << legs[0] << " and " << legs[1] << " fs=" << fs[0] << " , " << fs[1] << std::endl;
+    dbg("Person.update",2) << "Prior: " << *this << std::endl;
+    dbg("Person.update",2) << " fs=" << fs[0] << " , " << fs[1] << std::endl;
     
     // Bound search by prior position + 2*sigma(position) + legdiam/2
     float margin[2];
@@ -158,7 +163,6 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
     margin[1]=2*sqrt(posvar[1]);
     minval=(legs[0]-margin[0]).min(legs[1]-margin[1]);
     maxval=(legs[0]+margin[0]).max(legs[1]+margin[1]);
-    dbg("Person.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
 
     // Make sure any potential measured point is also in the search
     for (unsigned int i=0;i<fs[0].size();i++) {
@@ -169,18 +173,17 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 	minval=minval.min(vis.getSick()->getPoint(fs[1][i]));
 	maxval=maxval.max(vis.getSick()->getPoint(fs[1][i]));
     }
-    dbg("Person.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
 
     // Increase search by legdiam/2
     minval=minval-legdiam/2;
     maxval=maxval+legdiam/2;
-    dbg("Person.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
 
     minval.setX(floor(minval.X()/step)*step);
     minval.setY(floor(minval.Y()/step)*step);
     maxval.setX(ceil(maxval.X()/step)*step);
     maxval.setY(ceil(maxval.Y()/step)*step);
     dbg("Person.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
+    dbg("Person.update",3) << "Search over a " << likenx << " x " << likeny << " grid with " << fs[0].size() << "," << fs[1].size() << " points/leg, diam=" << legdiam << " +/- *" << exp(LOGDIAMSIGMA) << std::endl;
 
     // Find the rays that will hit this box
     float theta[4];
@@ -191,15 +194,15 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
     float mintheta=std::min(std::min(theta[0],theta[1]),std::min(theta[2],theta[3]));
     float maxtheta=std::max(std::max(theta[0],theta[1]),std::max(theta[2],theta[3]));
     std::vector<int> clearsel;
-    dbg("Person.update",2) << "Clear paths for " << mintheta*180/M_PI << "-" << maxtheta*180/M_PI <<  " degrees:   ";
+    dbg("Person.update",3) << "Clear paths for " << mintheta*180/M_PI << "-" << maxtheta*180/M_PI <<  " degrees:   ";
     for (unsigned int i=0;i<vis.getSick()->getNumMeasurements();i++) {
 	float angle=vis.getSick()->getAngleRad(i);
 	if (angle>=mintheta && angle<=maxtheta) {
 	    clearsel.push_back(i);
-	    dbgn("Person.update",2) << i << ",";
+	    dbgn("Person.update",3) << i << ",";
 	}
     }
-    dbgn("Person.update",2) << std::endl;
+    dbgn("Person.update",3) << std::endl;
 
     likenx=(int)((maxval.X()-minval.X())/step+1.5);
     likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
@@ -227,8 +230,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 		    glike+=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA));
 		}
 		like[i][ix*likeny+iy]=glike+clearlike+apriori;
-		if (like[i][ix*likeny+iy] > -20)
-		    dbg("Person.update",5) << "like[" << i << "][" << ix*likeny+iy << "] (x=" << x << ", y=" << y << ") = " << like[i][ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << std::endl;
+		dbg("Person.update",20) << "like[" << i << "][" << ix*likeny+iy << "] (x=" << x << ", y=" << y << ") = " << like[i][ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << std::endl;
 	    }
 	}
     }
@@ -340,6 +342,7 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 	totalVisibleCount++;
     }
     age++;
+    dbg("Person.update",2) << "Done: " << *this << std::endl;
 }
 
 void Person::addToMX(mxArray *people, int index) const {
