@@ -242,7 +242,9 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 		    glike+=std::max(bglike[fs[i][k]],obslike);
 		}
 		like[i][ix*likeny+iy]=glike+clearlike+apriori;
-		dbg("Person.update",20) << "like[" << i << "][" << ix*likeny+iy << "] (x=" << x << ", y=" << y << ") = " << like[i][ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << std::endl;
+		// like[i][ix*likeny+iy]=std::max(MINLIKE,glike+clearlike+apriori);
+		//assert(isfinite(like[i][ix*likeny+iy]));
+		dbg("Person.update",20) << "like[" << i << "][" << ix << "," << iy << "] (x=" << x << ", y=" << y << ") = " << like[i][ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << std::endl;
 	    }
 	}
     }
@@ -253,9 +255,9 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     for (int pass=0;pass<3;pass++) {
 	int i=pass%2;
 	mle[i]=std::max_element(like[i].begin(),like[i].end());
-	if (*mle[i] < -30) {
-	    dbg("Person.update",1) << "Very unlikely placement: leg[" << i << "]  MLE position= " << legs[i] << " +/- " << posvar[i] << " with like= " << *mle[i] << "-- not refining variance estimate" << std::endl;
-	    // Don't use this estimate to set the separation likelihood of the other leg
+	if (*mle[i] < MINLIKEFORUPDATES) {
+	    dbg("Person.update",1) << "Very unlikely placement: leg[" << i << "]  MLE position= " << legs[i] << " +/- " << posvar[i] << " with like= " << *mle[i] << "-- not updating estimates" << std::endl;
+	    // Don't use this estimate to set the new leg positions, the posvar, or the separation likelihood of the other leg
 	    continue;
 	}
 	int pos=distance(like[i].begin(),mle[i]);
@@ -315,39 +317,42 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     scanpts[0]=fs[0];
     scanpts[1]=fs[1];
 
-    // Update velocities
-    if (nstep>0) {
-	if (fs[0].size()==0 && fs[1].size()==0) {
-	    // Both legs hidden, maintain both at average velocity (damped)
-	    legvelocity[0]=(legvelocity[0]+legvelocity[1])/2.0*VELDAMPING;
-	    legvelocity[1]=legvelocity[0];
-	} else {
-	    for (int i=0;i<2;i++) {
-		if (fs[i].size()==0)
-		    legvelocity[i]=legvelocity[i]*VELDAMPING;
-		else
-		    legvelocity[i]=legvelocity[i]*(1-1/VELUPDATETC)+(legs[0]-prevlegs[0])/(nstep/fps)/VELUPDATETC;
+    if (maxlike>=MINLIKEFORUPDATES) {
+	// Update velocities
+	if (nstep>0) {
+	    if (fs[0].size()==0 && fs[1].size()==0) {
+		// Both legs hidden, maintain both at average velocity (damped)
+		legvelocity[0]=(legvelocity[0]+legvelocity[1])/2.0*VELDAMPING;
+		legvelocity[1]=legvelocity[0];
+	    } else {
+		for (int i=0;i<2;i++) {
+		    if (fs[i].size()==0)
+			legvelocity[i]=legvelocity[i]*VELDAMPING;
+		    else
+			legvelocity[i]=legvelocity[i]*(1-1/VELUPDATETC)+(legs[0]-prevlegs[0])/(nstep/fps)/VELUPDATETC;
+		}
 	    }
+	    // Reduce speed if over maximum
+	    for (int k=0;k<2;k++) {
+		float spd=legvelocity[k].norm();
+		if (spd>MAXLEGSPEED)
+		    legvelocity[k]=legvelocity[k]*(MAXLEGSPEED/spd);
+	    }
+	    // Average velocity of legs
+	    velocity=(legvelocity[0]+legvelocity[1])/2.0;
+	    assert(isfinite(velocity.X()) && isfinite(velocity.Y()));
 	}
-	// Reduce speed if over maximum
-	for (int k=0;k<2;k++) {
-	    float spd=legvelocity[k].norm();
-	    if (spd>MAXLEGSPEED)
-		legvelocity[k]=legvelocity[k]*(MAXLEGSPEED/spd);
-	}
-	// Average velocity of legs
-	velocity=(legvelocity[0]+legvelocity[1])/2.0;
+
+	// New position
+	position=(legs[0]+legs[1])/2.0;
+
+	// Leftness
+	Point legdiff=legs[1]-legs[0];
+	leftness=leftness*(1-1/LEFTNESSTC)+legdiff.dot(Point(-velocity.Y(),velocity.X()))/LEFTNESSTC;
     }
 
-    // New position
-    position=(legs[0]+legs[1])/2.0;
-
-    // Leftness
-    Point legdiff=legs[1]-legs[0];
-    leftness=leftness*(1-1/LEFTNESSTC)+legdiff.dot(Point(-velocity.Y(),velocity.X()))/LEFTNESSTC;
-
     // Age, visibility counters
-    if (fs[0].size()==0 && fs[1].size()==0) 
+    if ((fs[0].size()==0 && fs[1].size()==0)  || (maxlike<MINLIKEFORUPDATES))
 	consecutiveInvisibleCount++;
     else {
 	consecutiveInvisibleCount=0;

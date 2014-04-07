@@ -58,6 +58,7 @@ static const float HIDDENLEGSCALING=0.8;  // Scale diameter of leg by this much 
 static const float MEANLEGSEP=300; 	// Mean leg separation
 static const float LEGSEPSTD=100;		// Sigma for leg separation
 static const float LEGDIAMSTD=50;		// Sigma for leg diameter
+static const float MINLIKEFORUPDATES=-30;	  // Minimum likelihood of a target to use the current observations to update it
 
 // ******** Deleting tracks
 static const int INVISIBLEFORTOOLONG=50;	// Number of frames of invisible before deleting
