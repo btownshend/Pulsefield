@@ -70,7 +70,7 @@ static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv,
 static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->ping(msg,argv[0]->i); return 0; }
 
 FrontEnd::FrontEnd(int _nsick) {
-    dbg("FronEnd",1) << "FrontEnd::FrontEnd(" << _nsick << ")" << std::endl;
+    dbg("FrontEnd",1) << "FrontEnd::FrontEnd(" << _nsick << ")" << std::endl;
 
 	matframes=0;
 	frame = 0;
