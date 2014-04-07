@@ -21,7 +21,7 @@ static const int MINBGSEP=100;	// max distance to consider a scan point part of 
 static const float MINBGFREQ=0.05;	// Minimum frequency of a background to call it such unilaterally
 static const int UPDATETC=50*60;		// Background update freq (after initial averaging)
 static const unsigned int MINRANGE=100;	// minimum distance from LIDAR; ranges less than this are ignored
-static const unsigned int MAXRANGE=6000;	// maximum distance from LIDAR; ranges greater than this are ignored
+static const unsigned int MAXRANGE=12000;	// maximum distance from LIDAR; ranges greater than this are ignored
 static const float ADJSCANBGWEIGHT=0.2;	// scaling of background probability when applying an adjacent scan's background to a point
 static const float INTERPSCANBGWEIGHT=0.2;	// scaling of background probability when interpolating between adjacent scan backgrounds
 
