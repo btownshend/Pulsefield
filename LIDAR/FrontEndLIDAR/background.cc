@@ -8,6 +8,17 @@ Background::Background() {
     nupdates=0;
 }
 
+void Background::setup(const SickIO &sick) {
+    if (range[0].size() ==sick.getNumMeasurements())
+	return;
+    dbg("Background.setup",1) << "Setting up background vectors with " << sick.getNumMeasurements() << " entries." << std::endl;
+    for (int i=0;i<NRANGES;i++) {
+	range[i].resize(sick.getNumMeasurements());
+	freq[i].resize(sick.getNumMeasurements());
+    }
+    scanRes=sick.getScanRes();
+}
+
 void Background::swap(int k, int i, int j) {
     // Swap range[i][k] with range[j][k]
     float tmprange=range[i][k];
@@ -20,6 +31,7 @@ void Background::swap(int k, int i, int j) {
 
 // Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
 std::vector<float> Background::isbg(const SickIO &sick) const {
+    ((Background *)this)->setup(sick);
     std::vector<float> result(sick.getNumMeasurements(),false);
     const unsigned int *srange = sick.getRange(0);
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
@@ -63,12 +75,8 @@ std::vector<float> Background::isbg(const SickIO &sick) const {
 }
 
 void Background::update(const SickIO &sick) {
+    setup(sick);
     const unsigned int *srange = sick.getRange(0);
-    for (int i=0;i<NRANGES;i++) {
-	range[i].resize(sick.getNumMeasurements());
-	freq[i].resize(sick.getNumMeasurements());
-    }
-    scanRes=sick.getScanRes();
     nupdates++;
     float tc=std::min(nupdates,UPDATETC);  // Setup so that until we have UPDATETC frames, time constant weights all samples equally
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {

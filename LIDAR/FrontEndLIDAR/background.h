@@ -19,6 +19,7 @@ class Background {
     float scanRes;
 
     void swap(int k, int i, int j);
+    void setup(const SickIO &sick);
 public:
     Background();
     // Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
