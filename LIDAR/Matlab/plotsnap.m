@@ -1,6 +1,11 @@
 % Diagnostic plots/output
 function plotsnap(snap,varargin)
+params=getparams();
 defaults=struct('frame',[],...
+                'setfig',true,...
+                'maxrange',params.maxrange,...
+                'showhits',true,...
+                'crop',true,...
                 'debug',false...
                 );
 args=processargs(defaults,varargin);
@@ -13,6 +18,10 @@ if ~isempty(args.frame)
     fprintf('Frame not found\n');
     return;
   end
+  if length(index)>1
+    fprintf('Have %d copies of frame %d - showing first one\n', length(index), args.frame);
+    index=index(1);
+  end
   fprintf('Showing snap(%d)\n', index);
   snap=snap(index);
 elseif length(snap)>1
@@ -24,7 +33,10 @@ vis=snap.vis;
 tracker=snap.tracker;
 MAXSPECIAL=2;
 fprintf('\n');
-setfig(sprintf('Frame %d',snap.vis.frame));clf;
+if args.setfig
+  setfig(sprintf('Frame %d',snap.vis.frame));
+end
+clf;
 hold on;
 
 xy=range2xy(vis.angle,vis.range);
@@ -41,16 +53,11 @@ for i=1:length(tracker.tracks)
   % plot(t.updatedLoc(1),t.updatedLoc(2),['+',color]);
   plot(t.position(1),t.position(2),['x',color]);
   plot(t.legs(:,1),t.legs(:,2),['o',color]);
-  %  cnum=t.legclasses;
-  %  cnum(cnum==1)=10000;   % Different from any class
-  %fprintf('class=(%d,%d), npts=(%d,%d)\n',cnum,sum(vis.class==cnum(1)),sum(vis.class==cnum(2)));
-  %  lsel=vis.class==cnum(1);
-  %  rsel=vis.class==cnum(2);
-  lsel=tracker.assignments(:,1)==i & tracker.assignments(:,2)==1;
-  rsel=tracker.assignments(:,1)==i & tracker.assignments(:,2)==2;
-  plot(xy(lsel,1),xy(lsel,2),['<',color]);
-  plot(xy(rsel,1),xy(rsel,2),['>',color]);
-  plotted=plotted|lsel|rsel;
+  if args.showhits
+    plot(xy(t.scanpts{1},1),xy(t.scanpts{1},2),['>',color]);
+    plot(xy(t.scanpts{2},1),xy(t.scanpts{2},2),['<',color]);
+  end
+  plotted([t.scanpts{1};t.scanpts{2}])=true;
   for l=1:2
     % Draw legs
     leg=t.legs(l,:);
@@ -66,11 +73,14 @@ if sum(~plotted)>0
   if sum(sel)>0
     fprintf('%d target points not matched to tracks\n', sum(sel));
   end
-  plot(xy(sel,1),xy(sel,2),'.r');
+  if args.showhits
+    plot(xy(sel,1),xy(sel,2),'.r');
+    plot(xy(sel,1),xy(sel,2),'.k');
+  end
   sel=~plotted & vis.class>0&vis.class<=MAXSPECIAL;
-  plot(xy(sel,1),xy(sel,2),'.k');
 end
 
+c=axis;
 plot(xy(:,1),xy(:,2),'g');
 
 bfreq=bg.freq/max(sum(bg.freq(1:2,:),1));
@@ -85,14 +95,45 @@ range(maxb==3)=params.maxrange;
 bxy=range2xy(bg.angle,range);
 plot(bxy(:,1),bxy(:,2),'k');
 
-axis equal;
+axis image;
 xyt=xy(vis.class>MAXSPECIAL,:);
-if ~isempty(xyt)
-  c=[min(xyt(:,1)),max(xyt(:,1)),min(xyt(:,2)),max(xyt(:,2))];
+
+if args.crop
   ctr=(floor(c([1,3]))+ceil(c([2,4])))/2;
-  sz=max(ceil(c([2,4]))-floor(c([1,3])));
+  sz=max(ceil(2*c([2,4]))-floor(2*c([1,3])))/2;
   newc=[ctr(1)-sz/2,ctr(1)+sz/2,ctr(2)-sz/2,ctr(2)+sz/2];
   axis(newc);  % Zoom to ROI
+else
+  axis([-args.maxrange,args.maxrange,-1,args.maxrange]);
+end
+
+% Plot info along the left
+c=axis;
+lmargin=c(1)+(c(2)-c(1))/40;
+baseline=c(4)-(c(4)-c(3))/40;
+lastline=c(3)+(c(4)-c(3))/20;
+skip=(c(4)-c(3))/30;
+
+h=text(lmargin,lastline,sprintf('%s',datestr(snap.vis.acquired-7/24,'yyyy-mm-dd HH:MM:SS.FFF')));
+set(h,'FontSize',14);
+lastline=lastline+skip;
+h=text(lmargin,lastline,sprintf('Frame: %d',snap.vis.frame));
+set(h,'FontSize',18);
+lastline=lastline+skip;
+
+for i=1:length(tracker.tracks)
+  t=tracker.tracks(i);
+  color=colors(mod(t.id-1,length(colors))+1);
+  if t.consecutiveInvisibleCount>0
+    invcode=sprintf(' I=%d',t.consecutiveInvisibleCount);
+  else
+    invcode='';
+  end
+  h=text(lmargin,baseline,'O');
+  set(h,'Color',color);
+  h=text(lmargin,baseline,sprintf('    P%d: A=%d%s L=%.0f',t.id,t.age,invcode,t.maxlike));
+  set(h,'FontSize',14);
+  baseline=baseline-skip;
 end
 
 end
