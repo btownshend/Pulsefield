@@ -252,6 +252,8 @@ void FrontEnd::processFrames() {
 		reflect[i]=sick[c]->getReflect(i);
 	    }
 	    sendVisMessages(sick[c]->getId(),sick[c]->getFrame(),sick[c]->getAcquired(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
+	    if (recording)
+		recordFrame();
 	    // clear valid flag so another frame can be read
 	    sick[c]->clearValid();
 	}
@@ -260,8 +262,6 @@ void FrontEnd::processFrames() {
 	world->sendMessages(dests,sick[0]->getAcquired());
 
 	sendOnce=0;
-	if (recording)
-	    recordFrame();
 
 	frame=frame+1;
 }
