@@ -1,5 +1,0 @@
-person.cc:145:    like=std::max(log(RANDOMPTPROB),like);
-person.cc:234:		like[i][ix*likeny+iy]=std::max((float)log(RANDOMPTPROB),like[i][ix*likeny+iy]);
-parameters.h:15:static const double RANDOMPTPROB=1e-30;	// Probability any given scan point is random noise
-person.cc:145:    like=std::max(log(RANDOMPTPROB),like);
-person.cc:234:		like[i][ix*likeny+iy]=std::max((float)log(RANDOMPTPROB),like[i][ix*likeny+iy]);
