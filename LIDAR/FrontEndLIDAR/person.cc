@@ -149,7 +149,7 @@ float Person::getObsLike(const Point &pt, int leg, int frame) const {
     return like;
 }
 
-void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,float fps) {
+void Person::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs[2], int nstep,float fps) {
     // Assume legdiam is log-normal (i.e. log(legdiam) ~ N(LOGDIAMMU,LOGDIAMSIGMA)
     const float LOGDIAMMU=log(legdiam);
     const float LOGDIAMSIGMA=log(1+LEGDIAMSTD/legdiam);
@@ -237,7 +237,9 @@ void Person::update(const Vis &vis, const std::vector<int> fs[2], int nstep,floa
 		float glike=0;
 		for (unsigned int k=0;k<fs[i].size();k++) {
 		    float dpt=(vis.getSick()->getPoint(fs[i][k])-pt).norm();
-		    glike+=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA));
+		    // Take the most likely of the observation being background or this target 
+		    float obslike=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA));
+		    glike+=std::max(bglike[fs[i][k]],obslike);
 		}
 		like[i][ix*likeny+iy]=glike+clearlike+apriori;
 		dbg("Person.update",20) << "like[" << i << "][" << ix*likeny+iy << "] (x=" << x << ", y=" << y << ") = " << like[i][ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << std::endl;

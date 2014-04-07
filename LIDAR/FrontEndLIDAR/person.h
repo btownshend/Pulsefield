@@ -46,7 +46,7 @@ public:
     Person(int _id, const Point &leg1, const Point &leg2);
     ~Person();
     void predict(int nstep, float fps);
-    void update(const Vis &vis, const std::vector<int> fs[2], int nstep,float fps);
+    void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs[2], int nstep,float fps);
     void addToMX(mxArray *people, int index) const;
     friend std::ostream &operator<<(std::ostream &s, const Person &p);
     bool isDead() const;

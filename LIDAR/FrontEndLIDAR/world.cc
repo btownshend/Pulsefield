@@ -181,7 +181,7 @@ void World::track( const Vis &vis, int frame, float fps) {
 	    }
 	}
 
-	people[p].update(vis,fs,nsteps,fps);
+	people[p].update(vis,bglike,fs,nsteps,fps);
     }
 
     // Delete lost people
