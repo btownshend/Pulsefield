@@ -260,7 +260,7 @@ void World::sendMessages(const Destinations &dests, const struct timeval &acquir
 }
 
 mxArray *World::convertToMX() const {
-    const char *fieldnames[]={"tracks","nextid","npeople","assignments","bestlike"};
+    const char *fieldnames[]={"tracks","nextid","npeople","assignments","bglike","bestlike"};
     mxArray *world = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
     mxArray *pNextid = mxCreateDoubleMatrix(1,1,mxREAL);
@@ -285,6 +285,12 @@ mxArray *World::convertToMX() const {
     for (unsigned int i=0;i<bestlike.size();i++)
 	*data++=bestlike[i];
     mxSetField(world,0,"bestlike",pBestlike);
+
+    mxArray *pBglike = mxCreateDoubleMatrix(1,bglike.size(),mxREAL);
+    data=mxGetPr(pBglike);
+    for (unsigned int i=0;i<bglike.size();i++)
+	*data++=bglike[i];
+    mxSetField(world,0,"bglike",pBglike);
 
     const char *pfieldnames[]={"id","position","legs","prevlegs","legvelocity","scanpts","posvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     mxArray *pPeople;
