@@ -17,8 +17,10 @@ class Snapshot {
     std::vector<mxArray *>  vis;
     std::vector<mxArray *>  bg;
     std::vector<mxArray *> world;
+    int argc;
+    const char **argv;
 public:
-    Snapshot();
+    Snapshot(int argc, const char **argv);
     void append(const Vis *vis, const World *world);
     void save(const char *filename) const;
 };

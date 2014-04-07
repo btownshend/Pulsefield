@@ -4,7 +4,9 @@
 #include "snapshot.h"
 #include "vis.h"
 
-Snapshot::Snapshot() {
+Snapshot::Snapshot(int argc, const char **argv) {
+    this->argc=argc;
+    this->argv=argv;
 }
 
 void Snapshot::append(const Vis *v, const World *t) {
@@ -23,13 +25,25 @@ void Snapshot::save(const char *filename) const {
     
     const char *fieldnames[]={"vis","bg","tracker","classes"};
     mxArray *snap = mxCreateStructMatrix(vis.size(),1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
-
+    
     for (int i=0;i<(int)vis.size();i++) {
 	mxSetField(snap,i,"vis",vis[i]);
 	mxSetField(snap,i,"bg",bg[i]);
 	mxSetField(snap,i,"tracker",world[i]);
     }
     matPutVariable(pmat, "csnap",snap);
+
+    const char *fefieldnames[]={"args"};
+    mxArray *fe = mxCreateStructMatrix(1,1,sizeof(fefieldnames)/sizeof(fefieldnames[0]),fefieldnames);
+    mxArray *pArgs = mxCreateCellMatrix(argc,1);
+    for (int i=0;i<argc;i++) {
+	mxArray *str=mxCreateString(argv[i]);
+	mxSetCell(pArgs,i,str);
+    }
+    mxSetField(fe,0,"args",pArgs);
+    matPutVariable(pmat, "frontend",fe);
+    matPutVariable(pmat, "args",pArgs);
+    matPutVariable(pmat, "arg0",mxCreateString(argv[0]));
 
     if (matClose(pmat) != 0) 
 	fprintf(stderr,"Error closing MATLAB output file %s\n", filename);

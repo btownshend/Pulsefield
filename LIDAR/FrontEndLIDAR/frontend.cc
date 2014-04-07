@@ -82,8 +82,8 @@ FrontEnd::FrontEnd(int _nsick) {
 	    sick = new SickIO*[nsick];
 	
 	world = new World();
-	snap = new Snapshot();
 	vis = new Vis();
+	snap=NULL;  // If needed, set in matsave()
 	nechoes=1;
 	recording=false;
 	recordFD=NULL;
@@ -178,6 +178,12 @@ FrontEnd::~FrontEnd() {
     }
     delete [] sick;
     lo_server_free(s);
+}
+
+void FrontEnd::matsave(const char *filename, int frames,int argc, const char *argv[]) {
+    matfile=filename; 
+    matframes=frames;
+    snap = new Snapshot(argc,argv);
 }
 
 void FrontEnd::run() {

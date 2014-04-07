@@ -62,6 +62,6 @@ class FrontEnd {
     void rmDest(lo_message msg, int port);
     void rmAllDest();
     void ping(lo_message msg, int seqnum);
-    void matsave(const char *filename, int frames) {matfile=filename; matframes=frames;}
+    void matsave(const char *filename, int frames,int argc, const char *argv[]);
 };
 #endif

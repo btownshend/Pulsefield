@@ -32,6 +32,8 @@ int main(int argc, char *argv[])
     const char *matfile="frontend_dump.mat";
     int matframes=0;
     bool visoutput=false;
+    int argcorig=argc;
+    const char **argvorig=(const char **)argv;
 
     while ((ch=getopt(argc,argv,"d:sr:Rp:lx:m:M:V"))!=-1) {
 	switch (ch) {
@@ -81,7 +83,7 @@ int main(int argc, char *argv[])
     if (playFile) {
 	// Create a front end with no sensors so it doesn't access any devices
 	FrontEnd fe(0);
-	fe.matsave(matfile,matframes);
+	fe.matsave(matfile,matframes,argcorig,argvorig);
 	if (visoutput) 
 	    fe.getStat(FrontEnd::RANGE,0);
 	// Now playback file through it
