@@ -5,11 +5,10 @@ Vis::Vis() {
 
 void Vis::update(const SickIO *s) {
     sick=s;
-    classifier.update(*sick);
 }
 
 mxArray *Vis::convertToMX() const {
-    const char *fieldnames[]={"cframe","nmeasure","range","angle","frame","acquired","class","shadowed","bgprob"};
+    const char *fieldnames[]={"cframe","nmeasure","range","angle","frame","acquired"};
     mxArray *vis = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
     mxArray *pFrame = mxCreateDoubleMatrix(1,1,mxREAL);
@@ -46,30 +45,6 @@ mxArray *Vis::convertToMX() const {
     for (unsigned int i=0;i<sick->getNumMeasurements();i++)
 	*data++=(i-(sick->getNumMeasurements()-1)/2.0)*sick->getScanRes()*M_PI/180;
     mxSetField(vis,0,"angle",pAngle);
-
-    std::vector<unsigned int> classes=classifier.getclasses();
-    mxArray *pCl = mxCreateNumericMatrix(classes.size(),1,mxUINT16_CLASS,mxREAL);
-    assert(pCl!=NULL);
-    unsigned short *sdata=(unsigned short *)mxGetPr(pCl);
-    for (unsigned int i=0;i<classes.size();i++)
-	*sdata++=classes[i];
-    mxSetField(vis,0,"class",pCl);
-
-    const std::vector<bool> shadowed[2]={ classifier.getshadowed(0), classifier.getshadowed(1)};
-    mxArray *pSh = mxCreateLogicalMatrix(shadowed[0].size(),2);
-    assert(pSh!=NULL);
-    mxLogical *ldata=mxGetLogicals(pSh);
-    for (unsigned int i=0;i<2;i++)
-	for (unsigned int j=0;j<shadowed[i].size();j++)
-	    *ldata++=shadowed[i][j];
-    mxSetField(vis,0,"shadowed",pSh);
-
-    const std::vector<float> &bgprob=classifier.getBgProb();
-    mxArray *pBgprob = mxCreateDoubleMatrix(1,bgprob.size(),mxREAL);
-    data=mxGetPr(pBgprob);
-    for (unsigned int i=0;i<bgprob.size();i++)
-	*data++=bgprob[i];
-    mxSetField(vis,0,"bgprob",pBgprob);
 
     return vis;
 }

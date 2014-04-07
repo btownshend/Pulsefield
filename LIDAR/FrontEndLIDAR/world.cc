@@ -20,7 +20,6 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
     assignments.resize(sick->getNumMeasurements());
     legassigned.resize(sick->getNumMeasurements());
 
-    const Background *bg=vis.getClassifier()->getBackground();
     const std::vector<float> &bgprob=bg->isbg(*sick);
 
     for (unsigned int f=0;f<sick->getNumMeasurements();f++) {

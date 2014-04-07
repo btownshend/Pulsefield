@@ -8,12 +8,14 @@
 #ifndef WORLD_H_
 #define WORLD_H_
 
+#include <set>
+#include <vector>
 #include <ostream>
 #include <cairo-xlib.h>
-#include "classifier.h"
 #include "target.h"
 #include "person.h"
 #include "dest.h"
+#include "background.h"
 
 class Vis;
 typedef struct _cairo_surface cairo_surface_t;
@@ -24,6 +26,7 @@ class World {
     std::vector<Person> people;
     std::set<int> lastid;
 
+    Background bg;		// Background model
     std::vector<int> assignments;   // Which person is assigned to each scan line -- -1 for background, -2 for new track
     std::vector<unsigned int> legassigned;  		    // For each assignment, leg number assigned (0 or 1);  0 for assignments without legs (such as bg)
     std::vector<float> bestlike;					// Best likelihood for each scan line
@@ -45,6 +48,8 @@ public:
     // Drawing routines
     void initWindow();
     void draw() const;
+
+    const Background &getBackground() const { return bg; }
 };
 
 #endif  /* WORLD_H_ */

@@ -1,8 +1,8 @@
 #include <set>
 #include <ostream>
+#include <iomanip>
 
 #include "likelihood.h"
-#include "classifier.h"
 #include "target.h"
 #include "parameters.h"
 #include "dbg.h"

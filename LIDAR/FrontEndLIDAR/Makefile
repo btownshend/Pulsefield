@@ -1,16 +1,21 @@
 BASEDIR=../../..
+
 LIBLO=$(BASEDIR)/OSC/liblo-0.26
+
 #MATLAB=/Applications/MATLAB_R2013a.app
 MATLAB=/Applications/MATLAB_R2014a.app
 MATLABINC=$(MATLAB)/extern/include
 MATLABLIBDIR=$(MATLAB)/bin/maci64
 MATLABLIBES=-lmx -lmat
+
 SICKTOOLBOX=$(BASEDIR)/sicktoolbox/trunk/c++/drivers
 SICKLIBDIR=$(SICKTOOLBOX)/lms5xx/sicklms5xx/.libs
 SICKLIB=$(SICKLIBDIR)/libsicklms5xx.a 
+
 CAIROINC=/opt/local/include/cairo
 CAIROLIBDIR=/opt/local/lib
 CAIROLIBES=-lcairo -lX11
+
 CXX=g++
 #DEBUG=-g -Wall -Wno-c++11-extensions
 DEBUG=-g -Wall
@@ -20,7 +25,7 @@ CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/ba
 CFLAGS=$(DEBUG)  $(OPTIMIZE)
 LDFLAGS=-L$(LIBLO) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) -L$(CAIROLIBDIR)
 LIBES=-llo $(SICKLIB) $(MATLABLIBES) $(CAIROLIBES) -g 
-CXXSRCS=frontend.cc dest.cc main.cc urlconfig.cc sickio.cc background.cc world.cc classifier.cc snapshot.cc vis.cc person.cc target.cc likelihood.cc dbg.cc point.cc worlddraw.cc lookuptable.cc
+CXXSRCS=frontend.cc dest.cc main.cc urlconfig.cc sickio.cc background.cc world.cc snapshot.cc vis.cc person.cc target.cc likelihood.cc dbg.cc point.cc worlddraw.cc lookuptable.cc 
 CSRCS=
 SRCS=$(CXXSRCS) $(CSRCS)
 all: frontend
@@ -62,8 +67,7 @@ frontend.o: /opt/local/include/cairo/cairo-features.h
 frontend.o: /opt/local/include/cairo/cairo-deprecated.h
 frontend.o: /opt/X11/include/X11/Xlib.h /opt/X11/include/X11/X.h
 frontend.o: /opt/X11/include/X11/Xfuncproto.h /opt/X11/include/X11/Xosdefs.h
-frontend.o: classifier.h background.h target.h person.h snapshot.h vis.h
-frontend.o: dbg.h
+frontend.o: target.h person.h snapshot.h vis.h dbg.h
 dest.o: dest.h dbg.h
 main.o: frontend.h ../../../OSC/liblo-0.26/lo/lo.h
 main.o: ../../../OSC/liblo-0.26/lo/lo_endian.h
@@ -111,7 +115,10 @@ world.o: /opt/local/include/cairo/cairo-features.h
 world.o: /opt/local/include/cairo/cairo-deprecated.h
 world.o: /opt/X11/include/X11/Xlib.h /opt/X11/include/X11/X.h
 world.o: /opt/X11/include/X11/Xfuncproto.h /opt/X11/include/X11/Xosdefs.h
-world.o: classifier.h background.h sickio.h
+world.o: target.h point.h person.h
+world.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
+world.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+world.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h dest.h
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -119,22 +126,7 @@ world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuff
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-world.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-world.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-world.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h point.h
-world.o: target.h person.h dest.h likelihood.h vis.h dbg.h parameters.h
-classifier.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-classifier.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-classifier.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-classifier.o: classifier.h background.h sickio.h
-classifier.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
-classifier.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
-classifier.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
-classifier.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBufferMonitor.hh
-classifier.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
-classifier.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
-classifier.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-classifier.o: point.h target.h parameters.h dbg.h
+world.o: dbg.h parameters.h
 snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
 snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
@@ -153,8 +145,7 @@ snapshot.o: /opt/local/include/cairo/cairo-features.h
 snapshot.o: /opt/local/include/cairo/cairo-deprecated.h
 snapshot.o: /opt/X11/include/X11/Xlib.h /opt/X11/include/X11/X.h
 snapshot.o: /opt/X11/include/X11/Xfuncproto.h /opt/X11/include/X11/Xosdefs.h
-snapshot.o: classifier.h background.h target.h person.h dest.h snapshot.h
-snapshot.o: vis.h
+snapshot.o: target.h person.h dest.h snapshot.h vis.h
 vis.o: vis.h sickio.h
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -166,7 +157,6 @@ vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 vis.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
 vis.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 vis.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h point.h
-vis.o: classifier.h background.h target.h
 person.o: person.h /Applications/MATLAB_R2014a.app/extern/include/mat.h
 person.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 person.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h point.h
@@ -178,21 +168,9 @@ person.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuf
 person.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-person.o: classifier.h background.h parameters.h likelihood.h dbg.h normal.h
-person.o: lookuptable.h
+person.o: parameters.h likelihood.h dbg.h normal.h lookuptable.h
 target.o: target.h point.h
-likelihood.o: likelihood.h classifier.h background.h sickio.h
-likelihood.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
-likelihood.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
-likelihood.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
-likelihood.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBufferMonitor.hh
-likelihood.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
-likelihood.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
-likelihood.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-likelihood.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-likelihood.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-likelihood.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-likelihood.o: point.h target.h parameters.h dbg.h
+likelihood.o: likelihood.h target.h point.h parameters.h dbg.h
 dbg.o: dbg.h
 point.o: point.h
 worlddraw.o: /opt/local/include/cairo/cairo.h
@@ -202,16 +180,9 @@ worlddraw.o: /opt/local/include/cairo/cairo-deprecated.h
 worlddraw.o: /opt/local/include/cairo/cairo-xlib.h
 worlddraw.o: /opt/X11/include/X11/Xlib.h /opt/X11/include/X11/X.h
 worlddraw.o: /opt/X11/include/X11/Xfuncproto.h /opt/X11/include/X11/Xosdefs.h
-worlddraw.o: world.h classifier.h background.h sickio.h
-worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
-worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
-worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
-worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBufferMonitor.hh
-worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
-worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
-worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
+worlddraw.o: world.h target.h point.h person.h
 worlddraw.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
 worlddraw.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-worlddraw.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-worlddraw.o: point.h target.h person.h dest.h dbg.h parameters.h
+worlddraw.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h dest.h
+worlddraw.o: dbg.h parameters.h
 lookuptable.o: lookuptable.h normal.h dbg.h
