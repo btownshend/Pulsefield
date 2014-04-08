@@ -20,7 +20,7 @@ OPENCVINC=-I/opt/local/include/opencv2
 OPENCVLIBDIR=/opt/local/lib
 OPENCVLIBES=-lopencv_ml -lopencv_core
 
-CXX=g++
+CXX=/opt/local/bin/g++
 #DEBUG=-g -Wall -Wno-c++11-extensions
 DEBUG=-g -Wall
 PROFILE=
