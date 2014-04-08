@@ -10,6 +10,7 @@
 
 #include <ostream>
 #include <mat.h>
+#include "lo/lo.h"
 #include "point.h"
 #include "target.h"
 
@@ -57,6 +58,8 @@ public:
     float getLegDiam() const { return legdiam; }
     int getAge() const { return age; }
     float getObsLike(const Point &pt, int leg, int frame) const;   // Get likelihood of an observed echo at pt hitting leg given current model
+    // Send /pf/ OSC messages
+    void sendMessages(lo_address &addr, int frame, double now);
 };
 
 #endif  /* PERSON_H_ */

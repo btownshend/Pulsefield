@@ -254,11 +254,8 @@ void World::sendMessages(const Destinations &dests, const struct timeval &acquir
 
 	// Updates
 	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
-	    if (p->getAge() >= AGETHRESHOLD) {
-		const Point *l =p->getLegs();
-		float lspace=(l[1]-l[0]).norm();
-		lo_send(addr, "/pf/update","ififfffffiii",lastframe,now,p->getID(),p->getPosition().X()/1000,p->getPosition().Y()/1000,p->getVelocity().X(),p->getVelocity().Y(),(lspace+p->getLegDiam())/1000,p->getLegDiam()/1000,0,0,p->getChannel());
-	    }
+	    if (p->getAge() >= AGETHRESHOLD)
+		p->sendMessages(addr,lastframe,now);
 	}
 	lo_address_free(addr);
     }

@@ -360,6 +360,20 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     dbg("Person.update",2) << "Done: " << *this << std::endl;
 }
 
+// Send /pf/ OSC messages
+void Person::sendMessages(lo_address &addr, int frame, double now) {
+    float lspace=(legs[1]-legs[0]).norm();
+    if (lo_send(addr, "/pf/update","ififfffffiii",frame,now,id,position.X()/1000,position.Y()/1000,velocity.X(),velocity.Y(),(lspace+legdiam)/1000,legdiam/1000,0,0,channel) < 0)
+	    std::cerr << "Failed send of /pf/update to OSC port" << std::endl;
+    for (int i=0;i<2;i++) {
+	float legleft=leftness;
+	if (i==1)
+	    legleft=-leftness;
+	if (lo_send(addr,"/pf/leg","iiifffffffffff",frame,i+1,2,legs[i].X(),legs[i].Y(),posvar[i],posvar[i],legvelocity[i].X(),legvelocity[i].Y(),0.0f,0.0f,legdiam,0.0f,legleft)<0)
+	    std::cerr << "Failed send of /pf/leg to OSC port" << std::endl;
+    }
+}
+
 void Person::addToMX(mxArray *people, int index) const {
     // const char *fieldnames[]={"id","position","legs","prevlegs","legvelocity","scanpts","posvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     // Note: for multidimensional arrays, first index changes most rapidly in accessing matlab data
