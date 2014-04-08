@@ -1,6 +1,5 @@
 #include "lo/lo.h"
 #include "world.h"
-#include "likelihood.h"
 #include "vis.h"
 #include "dbg.h"
 #include "parameters.h"

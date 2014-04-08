@@ -14,7 +14,6 @@
 #include "target.h"
 
 class Vis;
-class Likelihood;
 
 class Person {
     // Overall 

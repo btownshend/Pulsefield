@@ -5,7 +5,6 @@
 #include "person.h"
 #include "vis.h"
 #include "parameters.h"
-#include "likelihood.h"
 #include "dbg.h"
 #include "normal.h"
 #include "lookuptable.h"
