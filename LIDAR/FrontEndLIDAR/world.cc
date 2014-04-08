@@ -95,7 +95,7 @@ void World::track( const Vis &vis, int frame, float fps) {
 	} else {
 	    // Create a new track if we can find 2 points that are separated by ~meanlegsep
 	    float bestsep=1e10;
-	    int bestindices[2];
+	    int bestindices[2]={0,0};
 	    for (std::vector<int>::iterator i=unassigned.begin();i!=unassigned.end();i++) {
 		for (std::vector<int>::iterator j=unassigned.begin();j!=unassigned.end();j++) {
 		    if (i==j)

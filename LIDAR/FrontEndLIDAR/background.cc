@@ -56,11 +56,11 @@ std::vector<float> Background::like(const SickIO &sick) const {
 	    }
 	    if (result[i]==0 && freq[0][i]>0) {
 		// Still no matches, check if is between this and adjacent background
-		if (i>0 && freq[0][i-1]>0 && (srange[i]>range[0][i] != srange[i]>range[0][i-1])) {
+		if (i>0 && freq[0][i-1]>0 && ((srange[i]>range[0][i]) != (srange[i]>range[0][i-1]))) {
 		    result[i]=std::min(freq[0][i],freq[0][i-1])*INTERPSCANBGWEIGHT;
 		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i-1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
 		}
-		if (i+1<sick.getNumMeasurements() && freq[0][i+1]>0 && (srange[i]>range[0][i] != srange[i]>range[0][i+1])) {
+	if (i+1<sick.getNumMeasurements() && freq[0][i+1]>0 && ((srange[i]>range[0][i]) != (srange[i]>range[0][i+1]))) {
 		    result[i]=std::min(freq[0][i],freq[0][i+1])*INTERPSCANBGWEIGHT;
 		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0)  <<std::fixed <<  srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i+1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
 		}

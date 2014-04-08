@@ -12,7 +12,7 @@
 //#include <stdio.h>
 //#include <stdlib.h>
 //#include <assert.h>
-//#include <string.h>
+#include <string.h>
 extern "C" {
     //#include <sys/time.h>
 }

@@ -208,7 +208,7 @@ void FrontEnd::run() {
 		timeout.tv_sec=0;
 		retval = select(maxfd + 1, &rfds, NULL, NULL, &timeout);
 		gettimeofday(&ts2,0);
-		dbg("FrontEnd.run",5) << "Select done after " <<  std::setprecision(3) << (ts2.tv_usec-ts1.tv_usec)/1000.0+(ts2.tv_sec-ts1.tv_sec)*1000 << " msec., rfds=0x" << std::setbase(16) << *(unsigned long *)&rfds << std::setbase(10) << std::endl;
+		dbg("FrontEnd.run",5) << "Select done after " <<  std::setprecision(3) << (ts2.tv_usec-ts1.tv_usec)/1000.0+(ts2.tv_sec-ts1.tv_sec)*1000 << " msec." << std::endl;
 		if (retval == -1) {
 			perror("select() error: ");
 			exit(1);
@@ -356,6 +356,8 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 
     struct timeval lastfile;
     struct timeval lastnow;
+    gettimeofday(&lastnow,0);
+    lastfile=lastnow;
     int frameStep=0;
     int lastcframe=-1;
 
