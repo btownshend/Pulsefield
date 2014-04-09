@@ -1,4 +1,5 @@
 #include "vis.h"
+#include "parameters.h"
 
 Vis::Vis() {
 }

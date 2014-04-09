@@ -208,14 +208,13 @@ void World::track( const Vis &vis, int frame, float fps) {
 }
         
 void World::sendMessages(const Destinations &dests, const struct timeval &acquired) {
-    dbg("World.sendMessages",5) << "ndest=" << dests.count() << std::endl;
-    bool sendstart=false;
+    dbg("World.sendMessages",5) << "ndest=" << dests.size() << std::endl;
     if  (starttime.tv_sec==0) {
 	starttime=acquired;
 	sendstart=true;
     }
     double now=(acquired.tv_sec-starttime.tv_sec)+(acquired.tv_usec-starttime.tv_usec)*1e-6;
-    for (int i=0;i<dests.count();i++) {
+    for (int i=0;i<dests.size();i++) {
 	char cbuf[10];
 	dbg("World.sendMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 	sprintf(cbuf,"%d",dests.getPort(i));

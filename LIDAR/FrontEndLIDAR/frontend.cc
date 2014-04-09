@@ -14,6 +14,7 @@
 #include "snapshot.h"
 #include "vis.h"
 #include "dbg.h"
+#include "parameters.h"
 
 // MATLAB I/O
 #include "mat.h"
@@ -269,9 +270,9 @@ void FrontEnd::processFrames() {
 void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
     if (! (sendOnce & (RANGE|REFLECT)))
 	return;
-    dbg("FrontEnd.sendVisMessages",5) << "sendOnce=0x" << std::setbase(16) << sendOnce << std::setbase(10)  << ", ndest=" << dests.count() << std::endl;
+    dbg("FrontEnd.sendVisMessages",5) << "sendOnce=0x" << std::setbase(16) << sendOnce << std::setbase(10)  << ", ndest=" << dests.size() << std::endl;
 
-	for (int i=0;i<dests.count();i++) {
+	for (int i=0;i<dests.size();i++) {
 		char cbuf[10];
 		dbg("FrontEnd.sendVisMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 		sprintf(cbuf,"%d",dests.getPort(i));
@@ -471,7 +472,7 @@ void FrontEnd::startStop(bool start) {
 	}
 
 	// Send status update message
-	for (int i=0;i<dests.count();i++) {
+	for (int i=0;i<dests.size();i++) {
 		char cbuf[10];
 		sprintf(cbuf,"%d",dests.getPort(i));
 		lo_address addr = lo_address_new(dests.getHost(i), cbuf);
@@ -547,7 +548,7 @@ void FrontEnd::rmAllDest() {
 void FrontEnd::ping(lo_message msg, int seqnum) {
 	char *host=lo_url_get_hostname(lo_address_get_url(lo_message_get_source(msg)));
 	printf("Got ping from %s\n",host);
-	for (int i=0;i<dests.count();i++) {
+	for (int i=0;i<dests.size();i++) {
 		char cbuf[10];
 		sprintf(cbuf,"%d",dests.getPort(i));
 		lo_address addr = lo_address_new(dests.getHost(i), cbuf);
