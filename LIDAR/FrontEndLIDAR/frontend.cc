@@ -114,7 +114,7 @@ FrontEnd::FrontEnd(int _nsick,int argc, const char *argv[]) {
 	/* Start sending data to Matlab */
 	const int clientPort=urls.getPort("VD");
 	const char *clientHost=urls.getHost("VD");
-	dests.add(clientHost, clientPort);
+	addDest(clientHost, clientPort);
 
 	/* Start cameras */
 	printf("Initializing with %d sensors...",nsick);fflush(stdout);
@@ -526,13 +526,31 @@ void FrontEnd::getStat(long int stat, int mode) {
 		sendOnce |= stat;
 }
 
+void FrontEnd::sendInitialMessages(const char *host, int port) const {
+    dbg("FrontEnd.sendInitialMessages",2) << "Sending initial messages to " << host << ":" << port << std::endl;
+    char cbuf[10];
+    sprintf(cbuf,"%d",port);
+    lo_address addr = lo_address_new(host, cbuf);
+    lo_send(addr,"/pf/started","");
+    std::string allargs=arglist[0];
+    for (unsigned int i=1;i<arglist.size();i++)
+	allargs+=" "+arglist[i];
+    lo_send(addr,"/pf/set/source","s",allargs.c_str());
+    lo_send(addr,"/pf/set/minx","f",-(float)MAXRANGE/UNITSPERM);
+    lo_send(addr,"/pf/set/maxx","f",MAXRANGE/UNITSPERM);
+    lo_send(addr,"/pf/set/miny","f",0.0);
+    lo_send(addr,"/pf/set/maxy","f",MAXRANGE/UNITSPERM);
+}
+
 void FrontEnd::addDest(const char *host, int port) {
 	dests.add(host,port);
+	sendInitialMessages(host,port);
 }
 
 void FrontEnd::addDest(lo_message msg, int port) {
 	char *host=lo_url_get_hostname(lo_address_get_url(lo_message_get_source(msg)));
 	addDest(host,port);
+	sendInitialMessages(host,port);
 }
 
 void FrontEnd::rmDest(const char *host, int port) {

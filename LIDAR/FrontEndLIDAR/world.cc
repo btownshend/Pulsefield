@@ -211,7 +211,6 @@ void World::sendMessages(const Destinations &dests, const struct timeval &acquir
     dbg("World.sendMessages",5) << "ndest=" << dests.size() << std::endl;
     if  (starttime.tv_sec==0) {
 	starttime=acquired;
-	sendstart=true;
     }
     double now=(acquired.tv_sec-starttime.tv_sec)+(acquired.tv_usec-starttime.tv_usec)*1e-6;
     for (int i=0;i<dests.size();i++) {
@@ -219,13 +218,6 @@ void World::sendMessages(const Destinations &dests, const struct timeval &acquir
 	dbg("World.sendMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 	sprintf(cbuf,"%d",dests.getPort(i));
 	lo_address addr = lo_address_new(dests.getHost(i), cbuf);
-	if (sendstart) {
-	    lo_send(addr,"/pf/started","");
-	    lo_send(addr,"/pf/set/minx","f",-(float)MAXRANGE/1000.0);
-	    lo_send(addr,"/pf/set/maxx","f",MAXRANGE/1000.0);
-	    lo_send(addr,"/pf/set/miny","f",0.0);
-	    lo_send(addr,"/pf/set/maxy","f",MAXRANGE/1000.0);
-	}
 	lo_send(addr,"/pf/frame","i",lastframe);
 	// Handle entries
 	std::set<int>exitids = lastid;

@@ -1,6 +1,8 @@
 #ifndef _FRONTEND_H_
 #define _FRONTEND_H_
 
+#include <vector>
+#include <string>
 #include <pthread.h>
 #include "lo/lo.h"
 #include "dest.h"
@@ -40,6 +42,8 @@ class FrontEnd {
     const char *matfile;
     std::vector<std::string> arglist;
 
+    // Startup messages to OSC
+    void sendInitialMessages(const char *host, int port) const;
  public:
     enum { RANGE=0x10, REFLECT=0x20, PF=0x40 };  // Bitmasks of what to send in next message group
 
