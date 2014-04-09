@@ -241,7 +241,7 @@ void World::sendMessages(const Destinations &dests, const struct timeval &acquir
 
 	// Current size
 	if (activePeople != priornpeople)
-	    lo_send(addr,"/pf/set/npeople","i",people.size());
+	    lo_send(addr,"/pf/set/npeople","i",activePeople);
 
 	// Updates
 	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
