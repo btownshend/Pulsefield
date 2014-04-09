@@ -20,9 +20,6 @@ class LookupTable {
 	step=(_maxx-_minx)/nstep;
 	values.resize(nstep);
     }
-    float getNextX() const {
-	return minx+step*values.size();
-    }
     float &operator[](int i) { return values[i]; }
     void push_back(float y) {
 	values.push_back(y);
