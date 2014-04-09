@@ -1,0 +1,6 @@
+- update legdiam (and perhaps legdiam sigma?)
+- make legsep a per-person value
+- better modeling of velocities
+  - currently using instantaneous velocity which varies wildly
+  - should use Kalman Filter
+  - can then use velocity and its sigma from state and statevar data
