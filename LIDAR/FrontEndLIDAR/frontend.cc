@@ -70,8 +70,11 @@ static int rmDestPort_handler(const char *path, const char *types, lo_arg **argv
 static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->rmAllDest(); return 0; }
 static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->ping(msg,argv[0]->i); return 0; }
 
-FrontEnd::FrontEnd(int _nsick) {
+FrontEnd::FrontEnd(int _nsick,int argc, const char *argv[]) {
     dbg("FrontEnd",1) << "FrontEnd::FrontEnd(" << _nsick << ")" << std::endl;
+
+    for (int i=0;i<argc;i++)
+	arglist.push_back(argv[i]);
 
 	matframes=0;
 	frame = 0;
@@ -181,10 +184,10 @@ FrontEnd::~FrontEnd() {
     lo_server_free(s);
 }
 
-void FrontEnd::matsave(const char *filename, int frames,int argc, const char *argv[]) {
+void FrontEnd::matsave(const char *filename, int frames) {
     matfile=filename; 
     matframes=frames;
-    snap = new Snapshot(argc,argv);
+    snap = new Snapshot(arglist);
 }
 
 void FrontEnd::run() {

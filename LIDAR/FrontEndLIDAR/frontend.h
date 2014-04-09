@@ -38,10 +38,12 @@ class FrontEnd {
     static void *processIncoming(void *arg);
     int matframes;
     const char *matfile;
+    std::vector<std::string> arglist;
+
  public:
     enum { RANGE=0x10, REFLECT=0x20, PF=0x40 };  // Bitmasks of what to send in next message group
 
-    FrontEnd(int nsick);
+    FrontEnd(int nsick,int argc, const char **argv);
     ~FrontEnd();
 
     void run();
@@ -62,6 +64,6 @@ class FrontEnd {
     void rmDest(lo_message msg, int port);
     void rmAllDest();
     void ping(lo_message msg, int seqnum);
-    void matsave(const char *filename, int frames,int argc, const char *argv[]);
+    void matsave(const char *filename, int frames);
 };
 #endif

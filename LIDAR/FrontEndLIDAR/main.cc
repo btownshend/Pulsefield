@@ -82,8 +82,8 @@ int main(int argc, char *argv[])
 
     if (playFile) {
 	// Create a front end with no sensors so it doesn't access any devices
-	FrontEnd fe(0);
-	fe.matsave(matfile,matframes,argcorig,argvorig);
+	FrontEnd fe(0,argcorig,argvorig);
+	fe.matsave(matfile,matframes);
 	if (visoutput) 
 	    fe.getStat(FrontEnd::RANGE,0);
 	// Now playback file through it
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 	exit(0);
     }
 
-    FrontEnd fe(nsick);
+    FrontEnd fe(nsick,argcorig,argvorig);
     printf("FrontEnd::FrontEnd() done\n");
     if (visoutput) 
 	fe.getStat(FrontEnd::RANGE,0);

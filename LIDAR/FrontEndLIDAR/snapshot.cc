@@ -4,9 +4,8 @@
 #include "snapshot.h"
 #include "vis.h"
 
-Snapshot::Snapshot(int argc, const char **argv) {
-    this->argc=argc;
-    this->argv=argv;
+Snapshot::Snapshot(const std::vector<std::string> &arglist) {
+    this->arglist=arglist;
 }
 
 void Snapshot::append(const Vis *v, const World *t) {
@@ -35,15 +34,13 @@ void Snapshot::save(const char *filename) const {
 
     const char *fefieldnames[]={"args"};
     mxArray *fe = mxCreateStructMatrix(1,1,sizeof(fefieldnames)/sizeof(fefieldnames[0]),fefieldnames);
-    mxArray *pArgs = mxCreateCellMatrix(argc,1);
-    for (int i=0;i<argc;i++) {
-	mxArray *str=mxCreateString(argv[i]);
+    mxArray *pArgs = mxCreateCellMatrix(arglist.size(),1);
+    for (unsigned int i=0;i<arglist.size();i++) {
+	mxArray *str=mxCreateString(arglist[i].c_str());
 	mxSetCell(pArgs,i,str);
     }
     mxSetField(fe,0,"args",pArgs);
     matPutVariable(pmat, "frontend",fe);
-    matPutVariable(pmat, "args",pArgs);
-    matPutVariable(pmat, "arg0",mxCreateString(argv[0]));
 
     if (matClose(pmat) != 0) 
 	fprintf(stderr,"Error closing MATLAB output file %s\n", filename);
