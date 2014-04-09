@@ -4,6 +4,7 @@
 #include "lookuptable.h"
 #include "normal.h"
 #include "dbg.h"
+#include "parameters.h"
 
 LookupTable getLegSepLike(float sepmu,float sepsigma,float possigma) {
     assert(sepsigma>0);
@@ -24,7 +25,7 @@ LookupTable getLegSepLike(float sepmu,float sepsigma,float possigma) {
 	//	dbg("getLegSepLike",1) << "p(sep=" << truesep << ")=" << sepprob << std::endl;
 	for (int ix=0;ix<nstep;ix++) {
 	    float x=ix*step;
-	    double prob=normpdf(x-truesep,0,possigma)*1000*sepprob;
+	    double prob=normpdf(x-truesep,0,possigma)*UNITSPERM*sepprob;
 	    tbl[ix]+=prob;
 	}
     }

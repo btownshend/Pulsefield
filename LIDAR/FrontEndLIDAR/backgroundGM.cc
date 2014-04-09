@@ -51,7 +51,7 @@ mxArray *Background::convertToMX() const {
     for (int j=0;j<mixtures.size();j++) {
 	std::vector<float> means = mixtures[j].getMeans();
 	for (unsigned int i=0;i<mixtures[0].getNumMixtures();i++)
-	    data[i*mixtures.size()+j]=means[i]/1000.0;
+	    data[i*mixtures.size()+j]=means[i]/UNITSPERM;
     }
     mxSetField(bg,0,"range",pRange);
 
@@ -68,7 +68,7 @@ mxArray *Background::convertToMX() const {
     for (int j=0;j<mixtures.size();j++) {
 	std::vector<float> weights = mixtures[j].getWeights();
 	for (unsigned int i=0;i<mixtures[0].getNumMixtures();i++)
-	    data[i*mixtures.size()+j]=weights[i]/1000.0;
+	    data[i*mixtures.size()+j]=weights[i]/UNITSPERM;
     }
     mxSetField(bg,0,"freq",pFreq);
 

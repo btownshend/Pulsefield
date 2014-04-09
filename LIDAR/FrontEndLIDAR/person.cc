@@ -131,7 +131,7 @@ float  segment2pt(const Point &l1, const Point &l2, const Point &p) {
 float Person::getObsLike(const Point &pt, int leg, int frame) const {
     float dpt=(pt-legs[leg]).norm();
     float sigma=sqrt(pow(LEGDIAMSTD/2,2.0)+posvar[leg]);
-    float like=log(normpdf(dpt, legdiam/2,sigma)*1000);
+    float like=log(normpdf(dpt, legdiam/2,sigma)*UNITSPERM);
 
     // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
     // This is handled by calculating the probabily of the object overlapping the scan line prior to the endpoint.
@@ -228,7 +228,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 		float y=minval.Y()+iy*step;
 		Point pt(x,y);
 		float adist=(legs[i]-pt).norm();
-		float apriori=log(normpdf(adist,0,apriorisigma)*1000);
+		float apriori=log(normpdf(adist,0,apriorisigma)*UNITSPERM);
 		float dclr=1e10;
 		for (unsigned int k=0;k<clearsel.size();k++)
 		    dclr=std::min(dclr,segment2pt(Point(0,0),vis.getSick()->getPoint(clearsel[k]),pt));
@@ -383,8 +383,8 @@ void Person::addToMX(mxArray *people, int index) const {
 
     mxArray *pPosition = mxCreateDoubleMatrix(1,2,mxREAL);
     double *data = mxGetPr(pPosition);
-    data[0]=position.X()/1000;
-    data[1]=position.Y()/1000;
+    data[0]=position.X()/UNITSPERM;
+    data[1]=position.Y()/UNITSPERM;
     mxSetField(people,index,"position",pPosition);
 
     mxArray *pPosvar = mxCreateDoubleMatrix(1,2,mxREAL);
@@ -395,20 +395,20 @@ void Person::addToMX(mxArray *people, int index) const {
 
     mxArray *pVelocity = mxCreateDoubleMatrix(1,2,mxREAL);
     data = mxGetPr(pVelocity);
-    data[0]=velocity.X()/1000;
-    data[1]=velocity.Y()/1000;
+    data[0]=velocity.X()/UNITSPERM;
+    data[1]=velocity.Y()/UNITSPERM;
     mxSetField(people,index,"velocity",pVelocity);
 
     mxArray *pMinval = mxCreateDoubleMatrix(1,2,mxREAL);
     data = mxGetPr(pMinval);
-    data[0]=minval.X()/1000;
-    data[1]=minval.Y()/1000;
+    data[0]=minval.X()/UNITSPERM;
+    data[1]=minval.Y()/UNITSPERM;
     mxSetField(people,index,"minval",pMinval);
 
     mxArray *pMaxval = mxCreateDoubleMatrix(1,2,mxREAL);
     data = mxGetPr(pMaxval);
-    data[0]=maxval.X()/1000;
-    data[1]=maxval.Y()/1000;
+    data[0]=maxval.X()/UNITSPERM;
+    data[1]=maxval.Y()/UNITSPERM;
     mxSetField(people,index,"maxval",pMaxval);
 
     mxArray *pScanptsCA=mxCreateCellMatrix(1,2);
@@ -423,10 +423,10 @@ void Person::addToMX(mxArray *people, int index) const {
 
     mxArray *pLegs = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pLegs);
-    *data++=legs[0].X()/1000;
-    *data++=legs[1].X()/1000;
-    *data++=legs[0].Y()/1000;
-    *data++=legs[1].Y()/1000;
+    *data++=legs[0].X()/UNITSPERM;
+    *data++=legs[1].X()/UNITSPERM;
+    *data++=legs[0].Y()/UNITSPERM;
+    *data++=legs[1].Y()/UNITSPERM;
     mxSetField(people,index,"legs",pLegs);
 
     mxArray *pLikeCA=mxCreateCellMatrix(1,2);
@@ -446,18 +446,18 @@ void Person::addToMX(mxArray *people, int index) const {
 
     mxArray *pPrevlegs = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pPrevlegs);
-    *data++=prevlegs[0].X()/1000;
-    *data++=prevlegs[1].X()/1000;
-    *data++=prevlegs[0].Y()/1000;
-    *data++=prevlegs[1].Y()/1000;
+    *data++=prevlegs[0].X()/UNITSPERM;
+    *data++=prevlegs[1].X()/UNITSPERM;
+    *data++=prevlegs[0].Y()/UNITSPERM;
+    *data++=prevlegs[1].Y()/UNITSPERM;
     mxSetField(people,index,"prevlegs",pPrevlegs);
 
     mxArray *pLegvel = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pLegvel);
-    *data++=legvelocity[0].X()/1000;
-    *data++=legvelocity[1].X()/1000;
-    *data++=legvelocity[0].Y()/1000;
-    *data++=legvelocity[1].Y()/1000;
+    *data++=legvelocity[0].X()/UNITSPERM;
+    *data++=legvelocity[1].X()/UNITSPERM;
+    *data++=legvelocity[0].Y()/UNITSPERM;
+    *data++=legvelocity[1].Y()/UNITSPERM;
     mxSetField(people,index,"legvelocity",pLegvel);
 
     mxArray *pLeftness = mxCreateDoubleMatrix(1,1,mxREAL);
@@ -465,7 +465,7 @@ void Person::addToMX(mxArray *people, int index) const {
     mxSetField(people,index,"leftness",pLeftness);
 
     mxArray *pLegdiam = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(pLegdiam) = legdiam/1000;
+    *mxGetPr(pLegdiam) = legdiam/UNITSPERM;
     mxSetField(people,index,"legdiam",pLegdiam);
 
     mxArray *pAge = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);

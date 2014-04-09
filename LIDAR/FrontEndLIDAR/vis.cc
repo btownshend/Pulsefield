@@ -35,7 +35,7 @@ mxArray *Vis::convertToMX() const {
     for (unsigned int j=0;j<sick->getNumEchoes();j++) {
 	const unsigned int *range=sick->getRange(j);
 	for (unsigned int i=0;i<sick->getNumMeasurements();i++)
-	    *data++=range[i]/1000.0;
+	    *data++=range[i]/UNITSPERM;
     }
     mxSetField(vis,0,"range",pRange);
 
