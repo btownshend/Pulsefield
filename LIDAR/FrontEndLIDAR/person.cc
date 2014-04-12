@@ -285,7 +285,11 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	}
 	assert(tprob>0);
 	posvar[i]=var/tprob;
-	dbg("Person.update",3) << "Leg[" << i << "]  MLE position= " << legs[i] << " +/- " << posvar[i] << " with like= " << *mle[i] << std::endl;
+	if (posvar[i]< SENSORSIGMA*SENSORSIGMA) {
+	    dbg("Person.update",3) << "Calculated posvar for leg[" << i << "] is too low (" << sqrt(posvar[i]) << "), setting to " << SENSORSIGMA << std::endl;
+	    posvar[i]= SENSORSIGMA*SENSORSIGMA;
+	}
+	dbg("Person.update",3) << "Leg[" << i << "]  MLE position= " << legs[i] << " +/- " << sqrt(posvar[i]) << " with like= " << *mle[i] << std::endl;
 
 	if (pass==2) 
 	    // Don't add the seplike a second time!
