@@ -11,7 +11,7 @@
 // Distances in mm unless otherwise noted
 
 static const int MAXGRIDPTS=1000;	// Maximum grid points during likelihood calculation
-static const int UNITSPERM=1000;		// Internal units per meter
+static const float UNITSPERM=1000.0;		// Internal units per meter
 
 // ******** Sensor
 static const float SENSORSIGMA=8;	// Sensor statistical error 
