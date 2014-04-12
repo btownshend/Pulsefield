@@ -295,19 +295,36 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	    // Don't add the seplike a second time!
 	    break;
 
-	// Calculate separation likelihood using other leg at MLE with computed variance
-	LookupTable legSepLike = getLegSepLike(MEANLEGSEP,LEGSEPSTD,sqrt(posvar[i]));
-
-	for (int ix=0;ix<likenx;ix++) {
-	    float x=minval.X()+ix*step;
-	    for (int iy=0;iy<likeny;iy++) {
-		float y=minval.Y()+iy*step;
-		Point pt(x,y);
-		float d=(legs[i]-pt).norm();
-		float seplike=legSepLike.lookup(d);
-		if (isnan(seplike))
-		    dbg("Person.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", seplike=" << seplike << std::endl;
-		like[1-i][ix*likeny+iy]+=seplike;   // It is the likelihood of the OTHER leg that we are modifying here
+	if (sqrt(posvar[i]) > MEANLEGSEP+LEGSEPSTD) {
+	    dbg("Person.update",3) << "Using simplified model for legsep like from leg " << i << " since posvar=" << sqrt(posvar[i]) << " > " << MEANLEGSEP+LEGSEPSTD << std::endl;
+	    // Can compute just using fixed leg separation of MEANLEGSEP since the spread in possible leg separations is not going to make much difference when the position is poorly determined
+	    for (int ix=0;ix<likenx;ix++) {
+		float x=minval.X()+ix*step;
+		for (int iy=0;iy<likeny;iy++) {
+		    float y=minval.Y()+iy*step;
+		    Point pt(x,y);
+		    float d=(legs[i]-pt).norm();
+		    float seplike=log(normpdf(d,MEANLEGSEP,sqrt(posvar[i]+LEGSEPSTD*LEGSEPSTD))*UNITSPERM);
+		    if (isnan(seplike))
+			dbg("Person.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", seplike=" << seplike << std::endl;
+		    like[1-i][ix*likeny+iy]+=seplike;   // It is the likelihood of the OTHER leg that we are modifying here
+		}
+	    }
+	} else {
+	    // Calculate separation likelihood using other leg at MLE with computed variance
+	    LookupTable legSepLike = getLegSepLike(MEANLEGSEP,LEGSEPSTD,sqrt(posvar[i]));
+	    
+	    for (int ix=0;ix<likenx;ix++) {
+		float x=minval.X()+ix*step;
+		for (int iy=0;iy<likeny;iy++) {
+		    float y=minval.Y()+iy*step;
+		    Point pt(x,y);
+		    float d=(legs[i]-pt).norm();
+		    float seplike=legSepLike.lookup(d);
+		    if (isnan(seplike))
+			dbg("Person.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", seplike=" << seplike << std::endl;
+		    like[1-i][ix*likeny+iy]+=seplike;   // It is the likelihood of the OTHER leg that we are modifying here
+		}
 	    }
 	}
     }
