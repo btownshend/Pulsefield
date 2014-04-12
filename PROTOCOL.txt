@@ -1,0 +1,70 @@
+Objectives:
+     - transmit real time data to MAX/SC/LiveOSC/ChucK/Java efficiently
+     - everything should be possible (ie. send all locations, velocities, etc)
+     - easy to use in applications
+
+Design:
+     - use OSC message prefixes
+     - can use OSC-Select in max to route
+     - can overlay processed data (such as step seq notes), to allow easier interfacing to some blocks
+
+OSC Messages from PF (vision tracker)
+
+/pf/started - when PF starts 
+
+/pf/stopped - when PF stops
+
+/pf/frame samp - new frame
+     samp - sample number
+
+/pf/update samp t target x y vx vy major minor groupid groupsize channel
+	   - update position of target
+     samp - sample number
+     t - time of sample (elapsed time in seconds since beginning of run)
+     target - UID of target
+     x,y - position within field in meters
+     vx,vy - estimate of velocity in m/s
+     major,minor - major/minor axis size in m
+     groupid - id number of group
+     groupsize - number of people in group
+     channel - channel number assigned
+     
+/pf/leg samp target leg nlegs x y ex ey vx vy evx evy diam sigmadiam leftness 
+     samp - sample number 
+     target - UID of target
+     leg - leg number (1..nlegs)
+     nlegs - number of legs target is modeled with (usually 2, but could be 1 if they are inseparable)
+     x,y - position within field in m
+     sx,sy - standard error of measurement (SEM) of position, in meters 
+     vx,vy - estimate of velocity of leg in m/s
+     svx,svy - SEM of velocity, in meters/second
+     diam - estimated mean diameter of leg
+     sigmadiam - estimated sigma (sqrt(variance)) of diameter -- not the SEM, but how much it varies
+     leftness - measure of how likely this leg is the left leg based on past movements, <0 is left leg, >0 is right leg
+
+/pf/entry samp t target channel - new target entered PF
+     sent before first /pf/update message for that target
+     samp - sample number
+     t - time of sample (elapsed time in seconds since beginning of run)
+     target - UID of target
+     channel - channel number assigned
+
+/pf/exit samp t target - target exitted PF
+     samp - sample number
+     t - time of sample (elapsed time in seconds since beginning of run)
+     target - UID of target
+
+/pf/set/parameter value - send value of various parameters
+     minx, miny, maxx, maxy - bounds of PF in units
+     npeople - number of people currently present
+
+/pf/pass/obj - commands to pass through to another object type
+
+
+OSC Messages to PF:
+/pf/dump - ask PF to send setup
+
+/pf/adddest host port - add destination for data stream
+
+/pf/rmdest host port - remove destination
+
