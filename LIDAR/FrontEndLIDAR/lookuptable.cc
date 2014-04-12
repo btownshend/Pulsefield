@@ -11,14 +11,16 @@ LookupTable getLegSepLike(float sepmu,float sepsigma,float possigma) {
     assert(possigma>0);
     const float LOGSEPMU=log(sepmu);
     const float LOGSEPSIGMA=log(1+sepsigma/sepmu);
-    const int nstd=3;    // Run out this far on the individual distributions
-    const float step=10;
-    float maxtruelegsep=sepmu*exp(nstd*LOGSEPSIGMA);
-    float mintruelegsep=sepmu/exp(nstd*LOGSEPSIGMA);
-    float maxobslegsep=maxtruelegsep+nstd*possigma;
-    int nstep=(int)(maxobslegsep/step+0.5);
+    static const float nstd=2.5;    // Run out this far on the individual distributions - should give 0.9752 coverage
+    const float maxtruelegsep=sepmu*exp(nstd*LOGSEPSIGMA);
+    const float mintruelegsep=sepmu/exp(nstd*LOGSEPSIGMA);
+    const float maxobslegsep=std::max(maxtruelegsep,sepmu+nstd*possigma);
+    float step=10;  // Step size in mm
+    const int nstep=std::min(50,(int)(maxobslegsep/step+0.5));
+    step=maxobslegsep/nstep;
     LookupTable tbl(0,maxobslegsep,nstep);
-    const float tstep=(log(maxtruelegsep)-log(mintruelegsep))/100;
+    static const int ntstep=30;
+    const float tstep=(log(maxtruelegsep)-log(mintruelegsep))/ntstep;
     for (float logsep=log(mintruelegsep);logsep<log(maxtruelegsep);logsep+=tstep) {
 	float truesep=exp(logsep);
 	float sepprob=normpdf(logsep,LOGSEPMU,LOGSEPSIGMA);
@@ -29,7 +31,7 @@ LookupTable getLegSepLike(float sepmu,float sepsigma,float possigma) {
 	    tbl[ix]+=prob;
 	}
     }
-    dbg("getLegSepLike",1) << "getLegSepLike(" << sepmu << "," << sepsigma << "," << possigma << "): Size=" << tbl.size() << ", total table coverage=" << tbl.sum()*(step*tstep) << std::endl;
+    dbg("getLegSepLike",1) << "getLegSepLike(" << sepmu << "," << sepsigma << "," << possigma << "): Size=" << tbl.size() << ", with " << nstep*ntstep << " inner loops, total table coverage=" << tbl.sum()*(step*tstep)/UNITSPERM << ", ends=" << tbl[0]*(step*tstep)/UNITSPERM << "," << tbl[tbl.size()-1]*(step*tstep)/UNITSPERM << std::endl;
     // Convert to log-like
     for (unsigned int i=0;i<tbl.size();i++)
 	if (tbl[i]==0)

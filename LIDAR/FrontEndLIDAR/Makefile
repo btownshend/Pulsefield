@@ -75,6 +75,7 @@ frontend.o: /opt/local/include/cairo/cairo-deprecated.h
 frontend.o: /opt/X11/include/X11/Xlib.h /opt/X11/include/X11/X.h
 frontend.o: /opt/X11/include/X11/Xfuncproto.h /opt/X11/include/X11/Xosdefs.h
 frontend.o: target.h person.h background.h snapshot.h vis.h dbg.h
+frontend.o: parameters.h
 dest.o: dest.h dbg.h
 main.o: frontend.h ../../../OSC/liblo-0.26/lo/lo.h
 main.o: ../../../OSC/liblo-0.26/lo/lo_endian.h
@@ -172,6 +173,7 @@ vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 vis.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
 vis.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 vis.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h point.h
+vis.o: parameters.h
 person.o: person.h /Applications/MATLAB_R2014a.app/extern/include/mat.h
 person.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 person.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
@@ -221,4 +223,4 @@ worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 worlddraw.o: dbg.h parameters.h
-lookuptable.o: lookuptable.h normal.h dbg.h
+lookuptable.o: lookuptable.h normal.h dbg.h parameters.h
