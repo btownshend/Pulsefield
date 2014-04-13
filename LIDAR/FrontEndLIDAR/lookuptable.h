@@ -15,6 +15,10 @@ class LookupTable {
     float minx,step;
     std::vector<float> values;
  public:
+    LookupTable() {
+	minx=0;
+	step=0;
+    }
     LookupTable(float _minx, float _maxx, int nstep) {
 	minx=_minx;
 	step=(_maxx-_minx)/nstep;
