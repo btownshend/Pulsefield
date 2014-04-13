@@ -32,7 +32,7 @@ void Background::swap(int k, int i, int j) {
 // Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
 std::vector<float> Background::like(const SickIO &sick) const {
     ((Background *)this)->setup(sick);
-    std::vector<float> result(sick.getNumMeasurements(),false);
+    std::vector<float> result(sick.getNumMeasurements(),0.0);
     const unsigned int *srange = sick.getRange(0);
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
 	if (srange[i]>=MAXRANGE || srange[i]<MINRANGE)
@@ -86,17 +86,19 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	if (assignments[i]!=-1 && !all)
 	    continue;
 	for (int k=0;k<NRANGES;k++) {
-	    freq[k][i]*=(1.0-1.0f/tc);
 	    // Note allow updates even if range>MAXRANGE, otherwise points slightly smaller than MAXRANGE get biased and have low freq
 	    if (fabs(srange[i]-range[k][i]) < MINBGSEP) {
 		range[k][i]=srange[i]*1.0f/tc + range[k][i]*(1-1.0f/tc);
-		freq[k][i]+=1.0f/tc;
+		freq[k][i]+=(1.0f-freq[k][i])/tc;
 		// Swap ordering if needed
 		for (int kk=k;kk>0;kk--)
 		    if  (freq[kk][i] > freq[kk-1][i])
 			swap(i,kk,kk-1);
 		    else
 			break;
+		// Decrement the rest
+		for (int kk=k+1;kk<NRANGES;kk++)
+		    freq[kk][i]-=(freq[kk][i]/tc);
 		break;
 	    } else if (k==NRANGES-1 && srange[i]<MAXRANGE && srange[i]>=MINRANGE) {
 		// No matches, inside active area; reset last range value 
@@ -107,6 +109,8 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 			swap(i,kk,kk-1);
 		    else
 			break;
+	    } else {
+		freq[k][i]-=(freq[k][i]/tc);
 	    }
 	}
     }
