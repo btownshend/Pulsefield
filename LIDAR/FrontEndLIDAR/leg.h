@@ -34,6 +34,7 @@ class Leg {
     void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, int nstep,float fps, const LegStats &ls, const Leg *otherLeg=0);
     void updateVisibility();
     void sendMessages(lo_address &addr, int frame, int id, int legnum) const;
+    bool isVisible() const { return consecutiveInvisibleCount==0; }
 };
 
 #endif /* LEG_H_ */

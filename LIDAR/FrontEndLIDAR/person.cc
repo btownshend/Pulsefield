@@ -114,7 +114,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     legs[0].updateVisibility();
     legs[1].updateVisibility();
 
-    if (fs[0].size()==0 && fs[1].size()==0) {
+    if (~legs[0].isVisible() && ~legs[1].isVisible()) {
 	// Both legs hidden, maintain both at average velocity (already damped by legs.updat())
 	legs[0].velocity=(legs[0].velocity+legs[1].velocity)/2.0;
 	legs[1].velocity=legs[0].velocity;
@@ -127,16 +127,15 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     // New position
     position=(legs[0].position+legs[1].position)/2.0;
 
-    // Leftness
+    // Other stats to update
     legStats.update(*this);
  
     // Age, visibility counters
-    if (legs[0].consecutiveInvisibleCount > 0 && legs[1].consecutiveInvisibleCount > 0)
-	consecutiveInvisibleCount++;
-    else {
+    if (legs[0].isVisible() || legs[1].isVisible()) {
 	consecutiveInvisibleCount=0;
 	totalVisibleCount++;
-    }
+    } else 
+	consecutiveInvisibleCount++;
     age++;
     dbg("Person.update",2) << "Done: " << *this << std::endl;
 }
