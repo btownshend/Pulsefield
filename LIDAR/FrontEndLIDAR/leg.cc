@@ -167,8 +167,9 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    float glike=0;
 	    for (unsigned int k=0;k<fs.size();k++) {
 		float dpt=(vis.getSick()->getPoint(fs[k])-pt).norm();
+		// Scale it so it is a density per meter in the area of the mean
+		float obslike=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA)*(UNITSPERM/ls.getDiam()));
 		// Take the most likely of the observation being background or this target 
-		float obslike=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA));
 		glike+=std::max(bglike[fs[k]],obslike);
 	    }
 
