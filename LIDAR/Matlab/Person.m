@@ -405,8 +405,8 @@ classdef Person < handle
       sym={'<','>'};
       for i=1:2
         subplot(1,2,i);
-        xvals=((1:size(obj.like{i},2))-1)*(obj.maxval(1)-obj.minval(1))/(size(obj.like{i},2)-1)+obj.minval(1);
-        yvals=((1:size(obj.like{i},1))-1)*(obj.maxval(2)-obj.minval(2))/(size(obj.like{i},1)-1)+obj.minval(2);
+        xvals=((1:size(obj.like{i},2))-1)*(obj.maxval(i,1)-obj.minval(i,1))/(size(obj.like{i},2)-1)+obj.minval(i,1);
+        yvals=((1:size(obj.like{i},1))-1)*(obj.maxval(i,2)-obj.minval(i,2))/(size(obj.like{i},1)-1)+obj.minval(i,2);
         [mx,my]=meshgrid(xvals,yvals);
         pcolor(mx,my,obj.like{i});
         shading('interp');
@@ -425,6 +425,7 @@ classdef Person < handle
         end
         colorbar
         axis equal
+        axis([min(obj.minval(:,1)),max(obj.maxval(:,1)),min(obj.minval(:,2)),max(obj.maxval(:,2))]);
       end
       if nargin>=2
         suptitle(sprintf('ID %d Frame %d',obj.id,vis.frame));
