@@ -361,10 +361,9 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	reflectref[i]=reflect[i];
     }
 
-    struct timeval lastfile;
-    struct timeval lastnow;
-    gettimeofday(&lastnow,0);
-    lastfile=lastnow;
+    struct timeval startfile;
+    struct timeval starttime;
+    gettimeofday(&starttime,0);
     int frameStep=0;
     int lastcframe=-1;
 
@@ -376,6 +375,10 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	    printf("EOF on %s\n",filename);
 	    break;
 	}
+	if (lastcframe==-1) 
+	    // Initialize file start time for reference
+	    startfile=acquired;
+
 	if (cframe!=lastcframe+1 && lastcframe!=-1)
 	    fprintf(stderr,"Input file skips frames %d-%d\n",lastcframe+1,cframe-1);
 
@@ -395,14 +398,10 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	struct timeval now;
 	gettimeofday(&now,0);
 	
-	long int waittime=(acquired.tv_sec-lastfile.tv_sec-(now.tv_sec-lastnow.tv_sec))*1000000+(acquired.tv_usec-lastfile.tv_usec-(now.tv_usec-lastnow.tv_usec));
-	waittime=waittime*speedFactor;
-	if (waittime >1000 && waittime<1000000) {
+	long int waittime=(acquired.tv_sec-startfile.tv_sec-speedFactor*(now.tv_sec-starttime.tv_sec))*1000000+(acquired.tv_usec-startfile.tv_usec-speedFactor*(now.tv_usec-starttime.tv_usec));
+	if (waittime >1000) {
 	    usleep(waittime);
 	}
-
-	lastnow=now;
-	lastfile=acquired;
 
 	assert(nechoes>=1 && nechoes<=SickIO::MAXECHOES);
 	assert(nmeasure>0 && nmeasure<=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS);
