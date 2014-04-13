@@ -109,9 +109,10 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	// TODO only if leg[1] adjusted, then do first leg again
 	dbg("Person.update",2) << "Re-running update of leg[0] since leg[1] position changed." << std::endl;
 	legs[0].update(vis,bglike,fs[0],nstep,fps,legStats,&legs[1]);
-	if (legs[0].consecutiveInvisibleCount > 0)
-	    legs[0].consecutiveInvisibleCount--;  // Need to back out double increment of this
     }
+    // Update visibility counters
+    legs[0].updateVisibility();
+    legs[1].updateVisibility();
 
     if (fs[0].size()==0 && fs[1].size()==0) {
 	// Both legs hidden, maintain both at average velocity (already damped by legs.updat())

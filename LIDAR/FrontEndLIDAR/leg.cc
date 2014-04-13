@@ -195,13 +195,8 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     if (maxlike < MINLIKEFORUPDATES) {
 	dbg("Leg.update",1) << "Very unlikely placement: MLE position= " << position << " +/- " << posvar << " with like= " << maxlike << "-- not updating estimates" << std::endl;
 	// Don't use this estimate to set the new leg positions, velocities, etc
-	consecutiveInvisibleCount++;
 	return;
-    }  else if (fs.size() == 0)
-	consecutiveInvisibleCount++;  
-    else 
-	consecutiveInvisibleCount=0;
-	
+    }
 
     // Use iterator position to figure out location of MLE
     int pos=distance(like.begin(),mle);
@@ -252,6 +247,12 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     }
 }
 
+void Leg::updateVisibility() {
+    if (maxlike < MINLIKEFORUPDATES || scanpts.size()==0)
+	consecutiveInvisibleCount++;
+    else 
+	consecutiveInvisibleCount=0;
+}
 void Leg::sendMessages(lo_address &addr, int frame, int id, int legnum) const {
     if (lo_send(addr,"/pf/leg","iiiiffffffffi",frame,id,legnum,2,
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,
