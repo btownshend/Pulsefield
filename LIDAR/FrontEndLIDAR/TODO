@@ -4,3 +4,6 @@
   - currently using instantaneous velocity which varies wildly
   - should use Kalman Filter
   - can then use velocity and its sigma from state and statevar data
+- swaplike may be wrong -- see frame 319 -- looks like wrong assignment
+- add grouping
+- add /pf/set/starttime
