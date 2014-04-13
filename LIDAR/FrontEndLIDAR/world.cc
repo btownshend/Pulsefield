@@ -73,7 +73,7 @@ void World::track( const Vis &vis, int frame, float fps) {
 
     int num_measurements=vis.getSick()->getNumMeasurements();
     float entryprob=1-exp(-ENTRYRATE/60.0*nsteps/fps);
-    float entrylike=log(entryprob/num_measurements*5);  // Like that a scan is a new entry (assumes 5 hits on avg)
+    float entrylike=log(entryprob/num_measurements*10);  // Like that a scan is a new entry (assumes 10 hits on avg)
     dbg("World.track",2) << "Tracking frame " << frame << ":  entrylike=" <<  entrylike << std::endl;
 
     // Calculate background likelihoods
@@ -118,6 +118,7 @@ void World::track( const Vis &vis, int frame, float fps) {
 		people.push_back(newPerson);
 		dbg("World.track",1) << "New person: " << newPerson << std::endl;
 		nextid++;
+		entrylike=entrylike+log(100);   // Lot more likely that other hits are an entry
 		makeAssignments(vis,entrylike);// Redo after adding new tracks, but only do twice (allowing only 1 new person per frame) to limit cpu
 	    } else {
 		dbg("World.track",2) << "Not creating a track - no pair appropriately spaced: best separation=" << bestsep << std::endl;
