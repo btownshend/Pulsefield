@@ -81,7 +81,19 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
     setup(sick);
     const unsigned int *srange = sick.getRange(0);
     nupdates++;
-    float tc=std::min(nupdates,UPDATETC);  // Setup so that until we have UPDATETC frames, time constant weights all samples equally
+    if (nupdates<BGINITFRAMES) {
+	// Fast adaptation for BGINITFRAMES
+	for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
+	    freq[0][i]=1;
+	    if (srange[i]>range[0][i]-MINBGSEP)
+		range[0][i]=(srange[i]+range[0][i])/2;
+	    for (int k=1;k<NRANGES;k++)
+		freq[k][i]=0;
+	}
+	return;
+    }
+
+    float tc=UPDATETC;
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
 	if (assignments[i]!=-1 && !all)
 	    continue;

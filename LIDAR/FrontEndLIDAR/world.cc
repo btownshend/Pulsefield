@@ -86,7 +86,7 @@ void World::track( const Vis &vis, int frame, float fps) {
 	if (assignments[i]==-2)
 	    unassigned.push_back(i);
 
-    if (unassigned.size()>0) {
+    if (unassigned.size()>0 && frame>BGINITFRAMES) {
 	dbg("World.track",2) << "Have " << unassigned.size() << " scan points unassigned." << std::endl;
 	if ((int)unassigned.size()<MINCREATEHITS) {
 	    dbg("World.track",3) <<  "'Need at least " << MINCREATEHITS << " points to assign a new track -- skipping" << std::endl;
