@@ -92,7 +92,7 @@ public class Tracker extends PApplet {
 		vis[7]=new VisualizerGuitar(this,synth);
 		vis[8]=new VisualizerDot(this);
 		vis[9]=new VisualizerChuck(this);
-		setapp(8);
+		setapp(1);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
