@@ -109,7 +109,7 @@ void World::track( const Vis &vis, int frame, float fps) {
 		    }
 		}
 	    }
-	    if (fabs(bestsep-MEANLEGSEP)<LEGSEPSTD*2 ) {
+	    if (fabs(bestsep-MEANLEGSEP)<LEGSEPSIGMA*2 ) {
 		dbg("World.track",1) << "Creating an initial track using scans " << bestindices[0] << "," << bestindices[1] << " with separation " << bestsep << std::endl;
 		Point l1=vis.getSick()->getPoint(bestindices[0]);
 		Point l2=vis.getSick()->getPoint(bestindices[1]);

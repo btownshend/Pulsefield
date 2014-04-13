@@ -28,7 +28,6 @@ static const unsigned int MAXRANGE=12000;	// maximum distance from LIDAR; ranges
 static const float ADJSCANBGWEIGHT=0.2;	// scaling of background probability when applying an adjacent scan's background to a point
 static const float INTERPSCANBGWEIGHT=0.2;	// scaling of background probability when interpolating between adjacent scan backgrounds
 
-
 // ***** Assignment
 static const float MINFORCELIKE=-10;  // Minimum likelihood to force assigning a class to the only target that is possible (otherwise a track is formed)
 
@@ -40,16 +39,17 @@ static const float MAXLEGSPEED=4000;	// Maximum speed of a leg in mm/s
 static const float MAXLEGSEP=400;	// Maximum separation of leg centers
 static const float VELUPDATETC=10;	// Velocity update time constant in frames
 static const float VELDAMPING=0.95;	// Damping (multiplicative factor) for legvelocity when not visible
-static const float LEGDIAMTC=100; 	// Time constant for updating diameter estimate of leg
 static const float DRIFTVAR=100*100;	// Additional variance of position estimates per step when they are estimated 
-static const float LEFTNESSTC=500;	// time constant for updating leftness
 static const float MINLIKEFORUPDATES=-30;	  // Minimum likelihood of a target to use the current observations to update it
 
 // ******** Leg statistics 
 static const float INITLEGDIAM=200;	// Initial diameter of legs
-static const float LEGDIAMSTD=50;		// Sigma for leg diameter
+static const float LEGDIAMSIGMA=50;		// Sigma for leg diameter
 static const float MEANLEGSEP=300; 	// Mean leg separation
-static const float LEGSEPSTD=100;		// Sigma for leg separation
+static const float LEGSEPSIGMA=100;		// Sigma for leg separation
+static const float FACINGSEM=20.0*M_PI/180; 	// SEM for facing direction 
+static const float LEGDIAMTC=100; 	// Time constant for updating diameter estimate of leg
+static const float LEFTNESSTC=500;	// time constant for updating leftness
 
 // ******** Deleting tracks
 static const int INVISIBLEFORTOOLONG=50;	// Number of frames of invisible before deleting

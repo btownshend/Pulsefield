@@ -13,8 +13,12 @@ static int channeluse[NCHANNELS];
 
 LegStats::LegStats() {
     diam=INITLEGDIAM;
+    diamSigma=LEGDIAMSIGMA;
     sep=MEANLEGSEP;
+    sepSigma=LEGSEPSIGMA;
     leftness=0.0;
+    facing=0.0;
+    facingSEM=FACINGSEM;
 }
 
 void LegStats::update(const Person &p) {
@@ -165,7 +169,7 @@ float Person::getObsLike(const Point &pt, int leg, int frame) const {
 // Get likelihood of an observed echo at pt hitting leg given current model
 float Leg::getObsLike(const Point &pt, int frame,const LegStats &ls) const {
     float dpt=(pt-position).norm();
-    float sigma=sqrt(pow(LEGDIAMSTD/2,2.0)+posvar);
+    float sigma=sqrt(pow(ls.getDiamSigma()/2,2.0)+posvar);
     float like=log(normpdf(dpt, ls.getDiam()/2,sigma)*UNITSPERM);
 
     // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
@@ -228,7 +232,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 
     // Assume legdiam is log-normal (i.e. log(legdiam) ~ N(LOGDIAMMU,LOGDIAMSIGMA)
     const float LOGDIAMMU=log(ls.getDiam());
-    const float LOGDIAMSIGMA=log(1+LEGDIAMSTD/ls.getDiam());
+    const float LOGDIAMSIGMA=log(1+ls.getDiamSigma()/ls.getDiam());
 
     dbg("Leg.update",2) << "Prior: " << *this << std::endl;
     dbg("Leg.update",2) << " fs=" << fs << std::endl;
@@ -293,10 +297,10 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 
     if (otherLeg!=NULL) {
 	// Calculate separation likelihood using other leg at MLE with computed variance
-	if (sqrt(otherLeg->posvar) > MEANLEGSEP+LEGSEPSTD) {
-	    legSepLike = getLegSepLike(MEANLEGSEP,LEGSEPSTD,sqrt(posvar));
-	    dbg("Person.update",3) << "Using simplified model for legsep like since other leg posvar=" << sqrt(otherLeg->posvar) << " > " << MEANLEGSEP+LEGSEPSTD << std::endl;
-	    // Can compute just using fixed leg separation of MEANLEGSEP since the spread in possible leg separations is not going to make much difference when the position is poorly determined
+	if (sqrt(otherLeg->posvar) > ls.getDiam()+ls.getSepSigma()) {
+	    legSepLike = getLegSepLike(ls.getDiam(),ls.getSepSigma(),sqrt(posvar));
+	    dbg("Person.update",3) << "Using simplified model for legsep like since other leg posvar=" << sqrt(otherLeg->posvar) << " > " << ls.getDiam()+ls.getSepSigma() << std::endl;
+	    // Can compute just using fixed leg separation of ls.getDiam() since the spread in possible leg separations is not going to make much difference when the position is poorly determined
 	    useSepLikeLookup=true;
 	}
     }
@@ -338,7 +342,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 		    if (useSepLikeLookup)
 			seplike=legSepLike.lookup(d);
 		    else
-			seplike=log(normpdf(d,MEANLEGSEP,sqrt(otherLeg->posvar+LEGSEPSTD*LEGSEPSTD))*UNITSPERM);
+			seplike=log(normpdf(d,ls.getDiam(),sqrt(otherLeg->posvar+ls.getSepSigma()*ls.getSepSigma()))*UNITSPERM);
 		    if (isnan(seplike))
 			dbg("Leg.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", seplike=" << seplike << std::endl;
 	    }
@@ -434,12 +438,12 @@ void Person::sendMessages(lo_address &addr, int frame, double now) const {
 	    std::cerr << "Failed send of /pf/update to OSC port" << std::endl;
     if (lo_send(addr, "/pf/body","ififffffffffffffffi",frame,now,id,
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,
-		0.0f,0.0f,
+		posvar,posvar,
 		velocity.norm()/UNITSPERM,0.0f,
 		velocity.getTheta()*180.0/M_PI,0.0f,
-		facing,0.0f,
-		legStats.getDiam()/UNITSPERM,0.0f,
-		legStats.getSep()/UNITSPERM,0.0f,
+		legStats.getFacing(),legStats.getFacingSEM(),
+		legStats.getDiam()/UNITSPERM,legStats.getDiamSigma()/UNITSPERM,
+		legStats.getSep()/UNITSPERM,legStats.getSepSigma()/UNITSPERM,
 		legStats.getLeftness(),
 		consecutiveInvisibleCount) < 0)
 	    std::cerr << "Failed send of /pf/body to OSC port" << std::endl;
