@@ -52,5 +52,6 @@ void LegStats::update(const Person &p) {
 void LegStats::updateDiameter(float newDiam, float newDiamSEM) {
     // TODO: track diamSigma
     diam = diam*(1-1/LEGSTATSTC) + newDiam/LEGSTATSTC;
+    dbg("LegStats.updateDiameter",3) << "newDiam=" << newDiam << ", updated diam=" << diam << ", sigma=" << diamSigma << std::endl;
 }
 

@@ -263,7 +263,19 @@ void Leg::updateDiameterEstimates(const Vis &vis, LegStats &ls) const {
     if (scanpts.size() >= 5 && (scanpts[scanpts.size()-1]-scanpts[0])==(int)(scanpts.size()-1)) {
 	dbg("Leg.updateDiameterEstimates",3) << "Updating leg diameter using " << scanpts.size() << " scan points" << std::endl;
 	// check that the leg is clearly in the foreground
-	//	if (vis.getSick()->getRange()[ <     }
+	const unsigned int *srange=vis.getSick()->getRange(0);
+	unsigned int firstScan=scanpts[0];
+	if (firstScan>0 && srange[firstScan-1]<srange[firstScan]+4*ls.getDiam()) {
+	    dbg("Leg.updateDiameterEstimates",3) << "Left edge too close to background: " << srange[firstScan-1] << "<" << srange[firstScan]+4*ls.getDiam() << std::endl;
+	    return;
+	}
+	unsigned int lastScan=scanpts[scanpts.size()-1];
+	if (lastScan<vis.getSick()->getNumMeasurements()-1 && srange[lastScan+1]<srange[lastScan]+4*ls.getDiam()) {
+	    dbg("Leg.updateDiameterEstimates",3) << "Right edge too close to background: " << srange[lastScan+1] << "<" << srange[lastScan]+4*ls.getDiam() <<  std::endl;
+	    return;
+	}
+	float diamEstimate = (vis.getSick()->getPoint(lastScan)-vis.getSick()->getPoint(firstScan)).norm();
+	ls.updateDiameter(diamEstimate,diamEstimate/scanpts.size());   // TODO- improve estimate
     }
 }
 
