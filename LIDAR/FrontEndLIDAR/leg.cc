@@ -28,7 +28,8 @@ Leg::Leg() {
 std::ostream &operator<<(std::ostream &s, const Leg &l) {
     s << std::fixed << std::setprecision(0)
       << "legpos: " << l.position << "+/-" << sqrt(l.posvar)
-      << " maxlike=" << l.maxlike;
+      << " maxlike=" << l.maxlike
+      << std::setprecision(3);
     return s;
 }
 
@@ -184,7 +185,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 
 	    like[ix*likeny+iy]=glike+clearlike+apriori+seplike;
 	    //assert(isfinite(like[ix*likeny+iy]));
-	    dbg("Leg.update",20) << "like[" << ix << "," << iy << "] (x=" << x << ", y=" << y << ") = " << like[ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << std::endl;
+	    dbg("Leg.update",20) << "like[" << ix << "," << iy << "] (x=" << x << ", y=" << y << ") L= " << std::setprecision(1) << like[ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << ", S=" << seplike << std::endl << std::setprecision(3);
 	}
     }
 

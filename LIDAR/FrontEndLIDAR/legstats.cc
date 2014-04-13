@@ -18,7 +18,8 @@ LegStats::LegStats() {
 std::ostream &operator<<(std::ostream &s, const LegStats &ls) {
     s << std::fixed << std::setprecision(0)
       << "diam:  " << ls.diam
-      << ",sep: " << ls.sep;
+      << ",sep: " << ls.sep
+      << std::setprecision(3);
     return s;
 }
 

@@ -209,13 +209,13 @@ void FrontEnd::run() {
 		int maxfd=1;
 
 		gettimeofday(&ts1,0);
-		dbg("FrontEnd.run",5) << "At select after " <<  std::setprecision(3) << (ts1.tv_usec-ts2.tv_usec)/1000.0+(ts1.tv_sec-ts2.tv_sec)*1000 << " msec." << std::endl;
+		dbg("FrontEnd.run",5) << "At select after "  << (ts1.tv_usec-ts2.tv_usec)/1000.0+(ts1.tv_sec-ts2.tv_sec)*1000 << " msec." << std::endl;
 		struct timeval timeout;
 		timeout.tv_usec=1000;
 		timeout.tv_sec=0;
 		retval = select(maxfd + 1, &rfds, NULL, NULL, &timeout);
 		gettimeofday(&ts2,0);
-		dbg("FrontEnd.run",5) << "Select done after " <<  std::setprecision(3) << (ts2.tv_usec-ts1.tv_usec)/1000.0+(ts2.tv_sec-ts1.tv_sec)*1000 << " msec." << std::endl;
+		dbg("FrontEnd.run",5) << "Select done after " << (ts2.tv_usec-ts1.tv_usec)/1000.0+(ts2.tv_sec-ts1.tv_sec)*1000 << " msec." << std::endl;
 		if (retval == -1) {
 			perror("select() error: ");
 			exit(1);

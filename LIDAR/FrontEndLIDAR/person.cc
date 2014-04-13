@@ -54,7 +54,8 @@ std::ostream &operator<<(std::ostream &s, const Person &p) {
       << ", " << p.legStats
       << std::setprecision(2)
       << ", vel: " << p.velocity
-      << ", age: " << p.age;
+      << ", age: " << p.age
+      << std::setprecision(3);
     if (p.consecutiveInvisibleCount > 0)
 	s << ",invis:" << p.consecutiveInvisibleCount;
     return s;
