@@ -56,7 +56,7 @@ classdef World < handle
       params=getparams();
       xy=range2xy(vis.angle,vis.range);
       obj.like=nan(size(xy,1),length(obj.tracks),2);
-      obj.bglike=-log(vis.bgprob);
+      %      obj.bglike=-log(vis.bgprob);   % Set during upate in C++ version
       for f=1:size(xy,1)
         ptf(1,1)=obj.entrylike(f);
         ptf(2,1)=obj.bglike(f);
