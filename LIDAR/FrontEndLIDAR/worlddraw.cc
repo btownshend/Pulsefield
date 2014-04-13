@@ -75,10 +75,10 @@ void World::draw() const {
      cairo_set_line_width(cr,2*pixel);
      for (std::vector<Person>::const_iterator p=people.begin();p!=people.end();p++){
 	 if (p->getAge() >= AGETHRESHOLD) {
-	     const Point *legs=p->getLegs();
 	     for (int i=0;i<2;i++) {
+		 const Point &leg=p->getLeg(i).getPosition();
 		 cairo_new_sub_path(cr);
-		 cairo_arc(cr,legs[i].X(), MAXRANGE-legs[i].Y(),p->getLegDiam()/2.0,0.0,2*M_PI);
+		 cairo_arc(cr,leg.X(), MAXRANGE-leg.Y(),p->getLegStats().getDiam()/2.0,0.0,2*M_PI);
 		 cairo_close_path(cr);
 		 cairo_fill(cr);
 	     }

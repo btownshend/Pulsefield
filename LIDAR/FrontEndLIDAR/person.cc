@@ -9,11 +9,39 @@
 #include "normal.h"
 #include "lookuptable.h"
 
-static const int NCHANNELS=16;
 static int channeluse[NCHANNELS];
 
-void Person::init(int _id, const Point &leg1, const Point &leg2) {
+LegStats::LegStats() {
+    diam=INITLEGDIAM;
+    sep=MEANLEGSEP;
+    leftness=0.0;
+}
+
+void LegStats::update(const Person &p) {
+    Point legdiff=p.getLeg(1).getPosition()-p.getLeg(0).getPosition();
+    leftness=leftness*(1-1/LEFTNESSTC)+legdiff.dot(Point(-p.getVelocity().Y(),p.getVelocity().X()))/LEFTNESSTC;
+    // TODO: update other stats
+}
+
+Leg::Leg(const Point &pt) {
+    position=pt;
+    prevPosition=pt;
+    posvar=INITIALPOSITIONVAR;
+    prevposvar=posvar;
+    consecutiveInvisibleCount=0;
+}
+
+// Empty constructor used to initialize array, gets overwritten using above ctor subsequently
+Leg::Leg() {
+    ;
+}
+
+Person::Person(int _id, const Point &leg1, const Point &leg2) {
     id=_id;
+    // Assign legs
+    legs[0]=Leg(leg1);
+    legs[1]=Leg(leg2);
+
     // Find a free channel, or advance to next one if none free
     channel=0;
     for (int i=0;i<NCHANNELS;i++) {
@@ -24,23 +52,10 @@ void Person::init(int _id, const Point &leg1, const Point &leg2) {
     }
     channeluse[channel]++;
 
-    legdiam=INITLEGDIAM;
-    legs[0]=leg1;
-    legs[1]=leg2;
-    position=(legs[0]+legs[1])/2;
-    for (int i=0;i<2;i++) {
-	prevlegs[i]=legs[i];
-	posvar[i]=INITIALPOSITIONVAR;
-	prevposvar[i]=posvar[i];
-    }
-    leftness=0.0;
+    position=(leg1+leg2)/2;
     age=1;
     consecutiveInvisibleCount=0;
     totalVisibleCount=1;
-}
-
-Person::Person(int _id, const Point &leg1, const Point &leg2) {
-    init(_id,leg1,leg2);
 }
 
 Person::~Person() {
@@ -56,61 +71,76 @@ bool Person::isDead() const {
     return result;
 }
 
+std::ostream &operator<<(std::ostream &s, const Leg &l) {
+    s << std::fixed << std::setprecision(0)
+      << "legpos: " << l.position << "+/-" << sqrt(l.posvar)
+      << " maxlike=" << l.maxlike;
+    return s;
+}
+
+std::ostream &operator<<(std::ostream &s, const LegStats &ls) {
+    s << std::fixed << std::setprecision(0)
+      << "diam:  " << ls.diam
+      << ",sep: " << ls.sep;
+    return s;
+}
+
 std::ostream &operator<<(std::ostream &s, const Person &p) {
     s << "ID " << p.id 
       << std::fixed << std::setprecision(0) 
       << ", position: " << p.position
-      << ", legs: " << p.legs[0] << "+/-" << sqrt(p.posvar[0])
-      << ", " << p.legs[1] << "+/-" << sqrt(p.posvar[1])
-      << ", diam: " << p.legdiam
+      << ", leg1: " << p.legs[0]
+      << ", leg2: " << p.legs[1]
+      << ", " << p.legStats
       << std::setprecision(2)
       << ", vel: " << p.velocity
-      << ", like: " << p.maxlike
       << ", age: " << p.age;
     if (p.consecutiveInvisibleCount > 0)
 	s << ",invis:" << p.consecutiveInvisibleCount;
     return s;
 }
 
+void Leg::predict(int nstep, float fps) {
+    prevPosition=position;
+    position.setX(position.X()+velocity.X()*nstep/fps);
+    position.setY(position.Y()+velocity.Y()*nstep/fps);
+    prevposvar=posvar;
+    posvar=std::min(posvar+DRIFTVAR*nstep,MAXPOSITIONVAR);
+}
+
 void Person::predict(int nstep, float fps) {
     if (nstep==0)
 	return;
 
-    for (int i=0;i<2;i++) {
-	prevlegs[i]=legs[i];
-	legs[i].setX(legs[i].X()+legvelocity[i].X()*nstep/fps);
-	legs[i].setY(legs[i].Y()+legvelocity[i].Y()*nstep/fps);
+    for (int i=0;i<2;i++) 
+	legs[i].predict(nstep,fps);
 
-	prevposvar[i]=posvar[i];
-	posvar[i]=std::min(posvar[i]+DRIFTVAR*nstep,MAXPOSITIONVAR);
-    }
     // If one leg is locked down, then the other leg can't vary more than MAXLEGSEP
     for (int i=0;i<2;i++)
-	posvar[i]=std::min(posvar[i],posvar[1-i]+MAXLEGSEP*MAXLEGSEP);
+	legs[i].posvar=std::min(legs[i].posvar,legs[1-i].posvar+MAXLEGSEP*MAXLEGSEP);
+
     // Check that they didn't get too close or too far apart
-    float legsep=(legs[0]-legs[1]).norm();
-    if (legsep<legdiam-0.1) {
-	dbg("Person.predict",1) << "legs are " << legsep << " apart (< " << legdiam << "), splitting" << std::endl;
+    float legsep=(legs[0].position-legs[1].position).norm();
+    if (legsep<legStats.getDiam()-0.1) {
+	dbg("Person.predict",1) << "legs are " << legsep << " apart (< " << legStats.getDiam() << "), splitting" << std::endl;
 	Point vec;
 	if (legsep>0)
-	    vec=(legs[0]-legs[1])*(legdiam/legsep-1);
+	    vec=(legs[0].position-legs[1].position)*(legStats.getDiam()/legsep-1);
 	else
-	    vec=Point(legdiam,0);
+	    vec=Point(legStats.getDiam(),0);
 
-	legs[0]=legs[0]+vec*(posvar[0]/(posvar[0]+posvar[1]));
-	legs[1]=legs[1]-vec*(posvar[1]/(posvar[0]+posvar[1]));
+	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
+	legs[0].position=legs[0].position-vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
     }
     if (legsep>MAXLEGSEP+0.1) {
 	dbg("Person.predict",1) << "legs are " << legsep << " apart (> " << MAXLEGSEP << "), moving together" << std::endl;
 	Point vec;
-	vec=(legs[0]-legs[1])*(MAXLEGSEP/legsep-1);
-	legs[0]=legs[0]+vec*(posvar[0]/(posvar[0]+posvar[1]));
-	legs[1]=legs[1]-vec*(posvar[1]/(posvar[0]+posvar[1]));
+	vec=(legs[0].position-legs[1].position)*(MAXLEGSEP/legsep-1);
+	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
+	legs[0].position=legs[0].position-vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
     }
-    position.setX((legs[0].X()+legs[1].X())/2.0);
-    position.setY((legs[0].Y()+legs[1].Y())/2.0);
-    velocity.setX((legvelocity[0].X()+legvelocity[1].X())/2.0);
-    velocity.setY((legvelocity[0].Y()+legvelocity[1].Y())/2.0);
+    position=(legs[0].position+legs[1].position)/2;
+    velocity=(legs[0].velocity+legs[1].velocity)/2;
     dbg("Person.predict",2) << "After predict: " << *this << std::endl;
 }
 
@@ -129,17 +159,22 @@ float  segment2pt(const Point &l1, const Point &l2, const Point &p) {
 
 // Get likelihood of an observed echo at pt hitting leg given current model
 float Person::getObsLike(const Point &pt, int leg, int frame) const {
-    float dpt=(pt-legs[leg]).norm();
-    float sigma=sqrt(pow(LEGDIAMSTD/2,2.0)+posvar[leg]);
-    float like=log(normpdf(dpt, legdiam/2,sigma)*UNITSPERM);
+    return legs[leg].getObsLike(pt,frame,legStats);
+}
+
+// Get likelihood of an observed echo at pt hitting leg given current model
+float Leg::getObsLike(const Point &pt, int frame,const LegStats &ls) const {
+    float dpt=(pt-position).norm();
+    float sigma=sqrt(pow(LEGDIAMSTD/2,2.0)+posvar);
+    float like=log(normpdf(dpt, ls.getDiam()/2,sigma)*UNITSPERM);
 
     // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
     // This is handled by calculating the probabily of the object overlapping the scan line prior to the endpoint.
-    float dclr=segment2pt(Point(0.0,0.0),pt,legs[leg]);
-    dbg("Person.getObsLike",20) << "pt=" << pt << ", leg=" << legs[leg] << ", pt-leg=" << (pt-legs[leg]) << "dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
+    float dclr=segment2pt(Point(0.0,0.0),pt,position);
+    dbg("Person.getObsLike",20) << "pt=" << pt << ", leg=" << position << ", pt-leg=" << (pt-position) << "dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
     if (dclr<dpt) {
-	float clike1=log(normcdf(dclr,legdiam/2,sigma));
-	float clike2= log(normcdf(dpt,legdiam/2,sigma));
+	float clike1=log(normcdf(dclr,ls.getDiam()/2,sigma));
+	float clike2= log(normcdf(dpt,ls.getDiam()/2,sigma));
 	like+=clike1-clike2;
 	dbg("Person.getObsLike",20) << "clike=" << clike1 << "-" << clike2 << "=" << clike1-clike2 << ", like=" << like << std::endl;
     }
@@ -149,42 +184,78 @@ float Person::getObsLike(const Point &pt, int leg, int frame) const {
 }
 
 void Person::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs[2], int nstep,float fps) {
+    // Need to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods
+    legs[0].update(vis,bglike,fs[0],nstep,fps,legStats,0);
+    legs[1].update(vis,bglike,fs[1],nstep,fps,legStats,&legs[0]);
+    if (true) {
+	// TODO only if leg[1] adjusted, then do first leg again
+	dbg("Person.update",2) << "Re-running update of leg[0] since leg[1] position changed." << std::endl;
+	legs[0].update(vis,bglike,fs[0],nstep,fps,legStats,&legs[1]);
+	if (legs[0].consecutiveInvisibleCount > 0)
+	    legs[0].consecutiveInvisibleCount--;  // Need to back out double increment of this
+    }
+
+    if (fs[0].size()==0 && fs[1].size()==0) {
+	// Both legs hidden, maintain both at average velocity (already damped by legs.updat())
+	legs[0].velocity=(legs[0].velocity+legs[1].velocity)/2.0;
+	legs[1].velocity=legs[0].velocity;
+    }
+
+    // Average velocity of legs
+    velocity=(legs[0].velocity+legs[1].velocity)/2.0;
+    assert(isfinite(velocity.X()) && isfinite(velocity.Y()));
+
+    // New position
+    position=(legs[0].position+legs[1].position)/2.0;
+
+    // Leftness
+    legStats.update(*this);
+ 
+    // Age, visibility counters
+    if (legs[0].consecutiveInvisibleCount > 0 && legs[1].consecutiveInvisibleCount > 0)
+	consecutiveInvisibleCount++;
+    else {
+	consecutiveInvisibleCount=0;
+	totalVisibleCount++;
+    }
+    age++;
+    dbg("Person.update",2) << "Done: " << *this << std::endl;
+}
+
+void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, int nstep,float fps, const LegStats &ls, const Leg *otherLeg) {
+    // Copy in scanpts
+    scanpts=fs;
+
     // Assume legdiam is log-normal (i.e. log(legdiam) ~ N(LOGDIAMMU,LOGDIAMSIGMA)
-    const float LOGDIAMMU=log(legdiam);
-    const float LOGDIAMSIGMA=log(1+LEGDIAMSTD/legdiam);
+    const float LOGDIAMMU=log(ls.getDiam());
+    const float LOGDIAMSIGMA=log(1+LEGDIAMSTD/ls.getDiam());
 
-    float step=20;
-
-    dbg("Person.update",2) << "Prior: " << *this << std::endl;
-    dbg("Person.update",2) << " fs=" << fs[0] << " , " << fs[1] << std::endl;
+    dbg("Leg.update",2) << "Prior: " << *this << std::endl;
+    dbg("Leg.update",2) << " fs=" << fs << std::endl;
     
     // Bound search by prior position + 2*sigma(position) + legdiam/2
-    float margin[2];
-    margin[0]=2*sqrt(posvar[0]);
-    margin[1]=2*sqrt(posvar[1]);
-    minval=(legs[0]-margin[0]).min(legs[1]-margin[1]);
-    maxval=(legs[0]+margin[0]).max(legs[1]+margin[1]);
+    float margin;
+    margin=2*sqrt(posvar);
+    minval=position-margin;
+    maxval=position+margin;
 
     // Make sure any potential measured point is also in the search
-    for (unsigned int i=0;i<fs[0].size();i++) {
-	minval=minval.min(vis.getSick()->getPoint(fs[0][i]));
-	maxval=maxval.max(vis.getSick()->getPoint(fs[0][i]));
-    }
-    for (unsigned int i=0;i<fs[1].size();i++) {
-	minval=minval.min(vis.getSick()->getPoint(fs[1][i]));
-	maxval=maxval.max(vis.getSick()->getPoint(fs[1][i]));
+    for (unsigned int i=0;i<fs.size();i++) {
+	minval=minval.min(vis.getSick()->getPoint(fs[i]));
+	maxval=maxval.max(vis.getSick()->getPoint(fs[i]));
     }
 
     // Increase search by legdiam/2
-    minval=minval-legdiam/2;
-    maxval=maxval+legdiam/2;
+    minval=minval-ls.getDiam()/2;
+    maxval=maxval+ls.getDiam()/2;
 
     // Initial estimate of grid size
+    float step=20;
     likenx=(int)((maxval.X()-minval.X())/step+1.5);
     likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
     if (likenx*likeny > MAXGRIDPTS) {
 	step=step*sqrt(likenx*likeny*1.0/MAXGRIDPTS);
-	dbg("Person.update",1) << "Too many grid points (" << likenx << " x " << likeny << ") - increasing stepsize to  " << step << " mm" << std::endl;
+	dbg("Leg.update",1) << "Too many grid points (" << likenx << " x " << likeny << ") - increasing stepsize to  " << step << " mm" << std::endl;
     }
 
     minval.setX(floor(minval.X()/step)*step);
@@ -194,8 +265,8 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 
     likenx=(int)((maxval.X()-minval.X())/step+1.5);
     likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
-    dbg("Person.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
-    dbg("Person.update",3) << "Search over a " << likenx << " x " << likeny << " grid with " << fs[0].size() << "," << fs[1].size() << " points/leg, diam=" << legdiam << " +/- *" << exp(LOGDIAMSIGMA) << std::endl;
+    dbg("Leg.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
+    dbg("Leg.update",3) << "Search over a " << likenx << " x " << likeny << " grid with " << fs.size() << " points, diam=" << ls.getDiam() << " +/- *" << exp(LOGDIAMSIGMA) << std::endl;
 
     // Find the rays that will hit this box
     float theta[4];
@@ -206,197 +277,178 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     float mintheta=std::min(std::min(theta[0],theta[1]),std::min(theta[2],theta[3]));
     float maxtheta=std::max(std::max(theta[0],theta[1]),std::max(theta[2],theta[3]));
     std::vector<int> clearsel;
-    dbg("Person.update",3) << "Clear paths for " << mintheta*180/M_PI << "-" << maxtheta*180/M_PI <<  " degrees:   ";
+    dbg("Leg.update",3) << "Clear paths for " << mintheta*180/M_PI << "-" << maxtheta*180/M_PI <<  " degrees:   ";
     for (unsigned int i=0;i<vis.getSick()->getNumMeasurements();i++) {
 	float angle=vis.getSick()->getAngleRad(i);
 	if (angle>=mintheta && angle<=maxtheta) {
 	    clearsel.push_back(i);
-	    dbgn("Person.update",3) << i << ",";
+	    dbgn("Leg.update",3) << i << ",";
 	}
     }
-    dbgn("Person.update",3) << std::endl;
+    dbgn("Leg.update",3) << std::endl;
 
+
+    bool useSepLikeLookup=false;
+    LookupTable legSepLike;
+
+    if (otherLeg!=NULL) {
+	// Calculate separation likelihood using other leg at MLE with computed variance
+	if (sqrt(otherLeg->posvar) > MEANLEGSEP+LEGSEPSTD) {
+	    legSepLike = getLegSepLike(MEANLEGSEP,LEGSEPSTD,sqrt(posvar));
+	    dbg("Person.update",3) << "Using simplified model for legsep like since other leg posvar=" << sqrt(otherLeg->posvar) << " > " << MEANLEGSEP+LEGSEPSTD << std::endl;
+	    // Can compute just using fixed leg separation of MEANLEGSEP since the spread in possible leg separations is not going to make much difference when the position is poorly determined
+	    useSepLikeLookup=true;
+	}
+    }
 
     // Compute likelihoods based on composite of apriori, contact measurements, and non-hitting rays
-    like[0].resize(likenx*likeny);
-    like[1].resize(likenx*likeny);
-    for (int i=0;i<2;i++) {
-	float apriorisigma=sqrt(posvar[i]+SENSORSIGMA*SENSORSIGMA);
-	for (int ix=0;ix<likenx;ix++) {
-	    float x=minval.X()+ix*step;
-	    for (int iy=0;iy<likeny;iy++) {
-		float y=minval.Y()+iy*step;
-		Point pt(x,y);
-		float adist=(legs[i]-pt).norm();
-		float apriori=log(normpdf(adist,0,apriorisigma)*UNITSPERM);
-		float dclr=1e10;
-		for (unsigned int k=0;k<clearsel.size();k++)
-		    dclr=std::min(dclr,segment2pt(Point(0,0),vis.getSick()->getPoint(clearsel[k]),pt));
-		float clearlike=log(normcdf(log(dclr),LOGDIAMMU,LOGDIAMSIGMA));
-		float glike=0;
-		for (unsigned int k=0;k<fs[i].size();k++) {
-		    float dpt=(vis.getSick()->getPoint(fs[i][k])-pt).norm();
-		    // Take the most likely of the observation being background or this target 
-		    float obslike=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA));
-		    glike+=std::max(bglike[fs[i][k]],obslike);
-		}
-		like[i][ix*likeny+iy]=glike+clearlike+apriori;
-		//assert(isfinite(like[i][ix*likeny+iy]));
-		dbg("Person.update",20) << "like[" << i << "][" << ix << "," << iy << "] (x=" << x << ", y=" << y << ") = " << like[i][ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << std::endl;
+    like.resize(likenx*likeny);
+
+    float apriorisigma=sqrt(posvar+SENSORSIGMA*SENSORSIGMA);
+    for (int ix=0;ix<likenx;ix++) {
+	float x=minval.X()+ix*step;
+	for (int iy=0;iy<likeny;iy++) {
+	    float y=minval.Y()+iy*step;
+	    Point pt(x,y);
+	    float adist=(position-pt).norm();
+
+	    // a priori likelihood
+	    float apriori=log(normpdf(adist,0,apriorisigma)*UNITSPERM);
+
+	    // Likelihood with respect to unobstructed paths (leg can't be in these paths)
+	    float dclr=1e10;
+	    for (unsigned int k=0;k<clearsel.size();k++)
+		dclr=std::min(dclr,segment2pt(Point(0,0),vis.getSick()->getPoint(clearsel[k]),pt));
+	    float clearlike=log(normcdf(log(dclr),LOGDIAMMU,LOGDIAMSIGMA));
+
+	    // Likelihood with respect to positive hits
+	    float glike=0;
+	    for (unsigned int k=0;k<fs.size();k++) {
+		float dpt=(vis.getSick()->getPoint(fs[k])-pt).norm();
+		// Take the most likely of the observation being background or this target 
+		float obslike=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA));
+		glike+=std::max(bglike[fs[k]],obslike);
 	    }
-	}
-    }
 
-    // Run computations based on grid of likelihoods
-    // Need to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods
-    std::vector<float>::iterator mle[2];  // Maximum-likelihood estimaters
-    for (int pass=0;pass<3;pass++) {
-	int i=pass%2;
-	mle[i]=std::max_element(like[i].begin(),like[i].end());
-	if (*mle[i] < MINLIKEFORUPDATES) {
-	    dbg("Person.update",1) << "Very unlikely placement: leg[" << i << "]  MLE position= " << legs[i] << " +/- " << posvar[i] << " with like= " << *mle[i] << "-- not updating estimates" << std::endl;
-	    // Don't use this estimate to set the new leg positions, the posvar, or the separation likelihood of the other leg
-	    continue;
-	}
-	int pos=distance(like[i].begin(),mle[i]);
-	int ix=pos/likeny;
-	int iy=pos-ix*likeny;
-	legs[i]=Point(minval.X()+ix*step,minval.Y()+iy*step);
-
-	// Calculate variance (actual mean-square distance from MLE)
-	double var=0;
-	double tprob=0;
-	for (int ix=0;ix<likenx;ix++) {
-	    float x=minval.X()+ix*step;
-	    for (int iy=0;iy<likeny;iy++) {
-		float y=minval.Y()+iy*step;
-		Point pt(x,y);
-		if (like[i][ix*likeny+iy]<-50)
-		    // Won't add much!
-		    continue;
-		double prob=exp(like[i][ix*likeny+iy]);
-		if (isnan(prob) || !(prob>0))
-		    dbg("Person.update",3) << "prob=" << prob << ", like=" << like[i][ix*likeny+iy] << std::endl;
-		assert(prob>0);
-		var+=prob*pow((pt-legs[i]).norm(),2.0);
-		assert(~isnan(var));
-		tprob+=prob;
-	    }
-	}
-	assert(tprob>0);
-	posvar[i]=var/tprob;
-	if (posvar[i]< SENSORSIGMA*SENSORSIGMA) {
-	    dbg("Person.update",3) << "Calculated posvar for leg[" << i << "] is too low (" << sqrt(posvar[i]) << "), setting to " << SENSORSIGMA << std::endl;
-	    posvar[i]= SENSORSIGMA*SENSORSIGMA;
-	}
-	dbg("Person.update",3) << "Leg[" << i << "]  MLE position= " << legs[i] << " +/- " << sqrt(posvar[i]) << " with like= " << *mle[i] << std::endl;
-
-	if (pass==2) 
-	    // Don't add the seplike a second time!
-	    break;
-
-	if (sqrt(posvar[i]) > MEANLEGSEP+LEGSEPSTD) {
-	    dbg("Person.update",3) << "Using simplified model for legsep like from leg " << i << " since posvar=" << sqrt(posvar[i]) << " > " << MEANLEGSEP+LEGSEPSTD << std::endl;
-	    // Can compute just using fixed leg separation of MEANLEGSEP since the spread in possible leg separations is not going to make much difference when the position is poorly determined
-	    for (int ix=0;ix<likenx;ix++) {
-		float x=minval.X()+ix*step;
-		for (int iy=0;iy<likeny;iy++) {
-		    float y=minval.Y()+iy*step;
-		    Point pt(x,y);
-		    float d=(legs[i]-pt).norm();
-		    float seplike=log(normpdf(d,MEANLEGSEP,sqrt(posvar[i]+LEGSEPSTD*LEGSEPSTD))*UNITSPERM);
-		    if (isnan(seplike))
-			dbg("Person.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", seplike=" << seplike << std::endl;
-		    like[1-i][ix*likeny+iy]+=seplike;   // It is the likelihood of the OTHER leg that we are modifying here
-		}
-	    }
-	} else {
-	    // Calculate separation likelihood using other leg at MLE with computed variance
-	    LookupTable legSepLike = getLegSepLike(MEANLEGSEP,LEGSEPSTD,sqrt(posvar[i]));
-	    
-	    for (int ix=0;ix<likenx;ix++) {
-		float x=minval.X()+ix*step;
-		for (int iy=0;iy<likeny;iy++) {
-		    float y=minval.Y()+iy*step;
-		    Point pt(x,y);
-		    float d=(legs[i]-pt).norm();
-		    float seplike=legSepLike.lookup(d);
-		    if (isnan(seplike))
-			dbg("Person.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", seplike=" << seplike << std::endl;
-		    like[1-i][ix*likeny+iy]+=seplike;   // It is the likelihood of the OTHER leg that we are modifying here
-		}
-	    }
-	}
-    }
-
-    // Overall likelihood
-    maxlike = *mle[0]+*mle[1];
-
-    // Copy in scanpts
-    scanpts[0]=fs[0];
-    scanpts[1]=fs[1];
-
-    if (maxlike>=MINLIKEFORUPDATES) {
-	// Update velocities
-	if (nstep>0) {
-	    if (fs[0].size()==0 && fs[1].size()==0) {
-		// Both legs hidden, maintain both at average velocity (damped)
-		legvelocity[0]=(legvelocity[0]+legvelocity[1])/2.0*VELDAMPING;
-		legvelocity[1]=legvelocity[0];
-	    } else {
-		for (int i=0;i<2;i++) {
-		    if (fs[i].size()==0)
-			legvelocity[i]=legvelocity[i]*VELDAMPING;
+	    // Likelihood with respect to separation from other leg (if it is set and has low variance)
+	    float seplike=0;
+	    if (otherLeg!=NULL) {
+		// Update likelihood using separtion from other leg
+		    float d=(otherLeg->position-pt).norm();
+		    if (useSepLikeLookup)
+			seplike=legSepLike.lookup(d);
 		    else
-			legvelocity[i]=legvelocity[i]*(1-1/VELUPDATETC)+(legs[0]-prevlegs[0])/(nstep/fps)/VELUPDATETC;
-		}
+			seplike=log(normpdf(d,MEANLEGSEP,sqrt(otherLeg->posvar+LEGSEPSTD*LEGSEPSTD))*UNITSPERM);
+		    if (isnan(seplike))
+			dbg("Leg.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", seplike=" << seplike << std::endl;
 	    }
-	    // Reduce speed if over maximum
-	    for (int k=0;k<2;k++) {
-		float spd=legvelocity[k].norm();
-		if (spd>MAXLEGSPEED)
-		    legvelocity[k]=legvelocity[k]*(MAXLEGSPEED/spd);
-	    }
-	    // Average velocity of legs
-	    velocity=(legvelocity[0]+legvelocity[1])/2.0;
-	    assert(isfinite(velocity.X()) && isfinite(velocity.Y()));
+
+	    like[ix*likeny+iy]=glike+clearlike+apriori+seplike;
+	    //assert(isfinite(like[ix*likeny+iy]));
+	    dbg("Leg.update",20) << "like[" << ix << "," << iy << "] (x=" << x << ", y=" << y << ") = " << like[ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << std::endl;
 	}
-
-	// New position
-	position=(legs[0]+legs[1])/2.0;
-
-	// Leftness
-	Point legdiff=legs[1]-legs[0];
-	leftness=leftness*(1-1/LEFTNESSTC)+legdiff.dot(Point(-velocity.Y(),velocity.X()))/LEFTNESSTC;
     }
 
-    // Age, visibility counters
-    if ((fs[0].size()==0 && fs[1].size()==0)  || (maxlike<MINLIKEFORUPDATES))
+    // Find iterator that points to maximum of MLE
+    std::vector<float>::iterator mle=std::max_element(like.begin(),like.end());
+    maxlike=*mle;
+
+    if (maxlike < MINLIKEFORUPDATES) {
+	dbg("Leg.update",1) << "Very unlikely placement: MLE position= " << position << " +/- " << posvar << " with like= " << maxlike << "-- not updating estimates" << std::endl;
+	// Don't use this estimate to set the new leg positions, velocities, etc
 	consecutiveInvisibleCount++;
-    else {
+	return;
+    }  else if (fs.size() == 0)
+	consecutiveInvisibleCount++;  
+    else 
 	consecutiveInvisibleCount=0;
-	totalVisibleCount++;
+	
+
+    // Use iterator position to figure out location of MLE
+    int pos=distance(like.begin(),mle);
+    int ix=pos/likeny;
+    int iy=pos-ix*likeny;
+    position=Point(minval.X()+ix*step,minval.Y()+iy*step);
+
+    // Calculate variance (actual mean-square distance from MLE)
+    double var=0;
+    double tprob=0;
+    for (int ix=0;ix<likenx;ix++) {
+	float x=minval.X()+ix*step;
+	for (int iy=0;iy<likeny;iy++) {
+	    float y=minval.Y()+iy*step;
+	    Point pt(x,y);
+	    if (like[ix*likeny+iy]<-50)
+		// Won't add much!
+		continue;
+	    double prob=exp(like[ix*likeny+iy]);
+	    if (isnan(prob) || !(prob>0))
+		dbg("Leg.update",3) << "prob=" << prob << ", like=" << like[ix*likeny+iy] << std::endl;
+	    assert(prob>0);
+	    var+=prob*pow((pt-position).norm(),2.0);
+	    assert(~isnan(var));
+	    tprob+=prob;
+	}
     }
-    age++;
-    dbg("Person.update",2) << "Done: " << *this << std::endl;
+    assert(tprob>0);
+    posvar=var/tprob;
+    if (posvar< SENSORSIGMA*SENSORSIGMA) {
+	dbg("Leg.update",3) << "Calculated posvar for leg is too low (" << sqrt(posvar) << "), setting to " << SENSORSIGMA << std::endl;
+	posvar= SENSORSIGMA*SENSORSIGMA;
+    }
+
+    dbg("Leg.update",3) << "Leg MLE position= " << position << " +/- " << sqrt(posvar) << " with like= " << *mle << std::endl;
+
+    if (nstep>0) {
+	// Update velocities
+	if (fs.size()==0)
+	    velocity=velocity*VELDAMPING;
+	else
+	    velocity=velocity*(1-1/VELUPDATETC)+(position-prevPosition)/(nstep/fps)/VELUPDATETC;
+
+	// Reduce speed if over maximum
+	float spd=velocity.norm();
+	if (spd>MAXLEGSPEED)
+	    velocity=velocity*(MAXLEGSPEED/spd);
+    }
+}
+
+void Leg::sendMessages(lo_address &addr, int frame, int id, int legnum) const {
+    if (lo_send(addr,"/pf/leg","iiiiffffffffi",frame,id,legnum,2,
+		position.X()/UNITSPERM,position.Y()/UNITSPERM,
+		sqrt(posvar)/UNITSPERM,sqrt(posvar)/UNITSPERM,
+		velocity.norm()/UNITSPERM,0.0f,
+		velocity.getTheta()*180.0/M_PI,0.0f,
+		consecutiveInvisibleCount)<0)
+	std::cerr << "Failed send of /pf/leg to OSC port" << std::endl;
 }
 
 // Send /pf/ OSC messages
-void Person::sendMessages(lo_address &addr, int frame, double now) {
-    float lspace=(legs[1]-legs[0]).norm();
-    if (lo_send(addr, "/pf/update","ififfffffiii",frame,now,id,position.X()/UNITSPERM,position.Y()/UNITSPERM,velocity.X()/UNITSPERM,velocity.Y()/UNITSPERM,(lspace+legdiam)/UNITSPERM,legdiam/UNITSPERM,0,0,channel) < 0)
+void Person::sendMessages(lo_address &addr, int frame, double now) const {
+    if (lo_send(addr, "/pf/update","ififfffffiii",frame,now,id,
+		position.X()/UNITSPERM,position.Y()/UNITSPERM,
+		velocity.X()/UNITSPERM,velocity.Y()/UNITSPERM,
+		(legStats.getSep()+legStats.getDiam())/UNITSPERM,legStats.getDiam()/UNITSPERM,
+		0,0,
+		channel) < 0)
 	    std::cerr << "Failed send of /pf/update to OSC port" << std::endl;
-    for (int i=0;i<2;i++) {
-	float legleft=leftness;
-	if (i==1)
-	    legleft=-leftness;
-	if (lo_send(addr,"/pf/leg","iiiifffffffffff",frame,id,i+1,2,legs[i].X()/UNITSPERM,legs[i].Y()/UNITSPERM,posvar[i]/(UNITSPERM*UNITSPERM),posvar[i]/(UNITSPERM*UNITSPERM),legvelocity[i].X()/UNITSPERM,legvelocity[i].Y()/UNITSPERM,0.0f,0.0f,legdiam/UNITSPERM,0.0f,legleft)<0)
-	    std::cerr << "Failed send of /pf/leg to OSC port" << std::endl;
-    }
+    if (lo_send(addr, "/pf/body","ififffffffffffffffi",frame,now,id,
+		position.X()/UNITSPERM,position.Y()/UNITSPERM,
+		0.0f,0.0f,
+		velocity.norm()/UNITSPERM,0.0f,
+		velocity.getTheta()*180.0/M_PI,0.0f,
+		facing,0.0f,
+		legStats.getDiam()/UNITSPERM,0.0f,
+		legStats.getSep()/UNITSPERM,0.0f,
+		legStats.getLeftness(),
+		consecutiveInvisibleCount) < 0)
+	    std::cerr << "Failed send of /pf/body to OSC port" << std::endl;
+    for (int i=0;i<2;i++)
+	legs[i].sendMessages(addr,frame,id,i);
 }
 
 void Person::addToMX(mxArray *people, int index) const {
-    // const char *fieldnames[]={"id","position","legs","prevlegs","legvelocity","scanpts","posvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
+    // const char *fieldnames[]={"id","position","legs","prevlegs","legvelocity","scanpts","posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     // Note: for multidimensional arrays, first index changes most rapidly in accessing matlab data
     mxArray *pId = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);
     *(int *)mxGetPr(pId) = id;
@@ -410,9 +462,15 @@ void Person::addToMX(mxArray *people, int index) const {
 
     mxArray *pPosvar = mxCreateDoubleMatrix(1,2,mxREAL);
     data = mxGetPr(pPosvar);
-    data[0]=posvar[0]/1e6;
-    data[1]=posvar[1]/1e6;
+    data[0]=legs[0].posvar/1e6;
+    data[1]=legs[1].posvar/1e6;
     mxSetField(people,index,"posvar",pPosvar);
+
+    mxArray *pPrevposvar = mxCreateDoubleMatrix(1,2,mxREAL);
+    data = mxGetPr(pPrevposvar);
+    data[0]=legs[0].prevposvar/1e6;
+    data[1]=legs[1].prevposvar/1e6;
+    mxSetField(people,index,"prevposvar",pPrevposvar);
 
     mxArray *pVelocity = mxCreateDoubleMatrix(1,2,mxREAL);
     data = mxGetPr(pVelocity);
@@ -420,73 +478,77 @@ void Person::addToMX(mxArray *people, int index) const {
     data[1]=velocity.Y()/UNITSPERM;
     mxSetField(people,index,"velocity",pVelocity);
 
-    mxArray *pMinval = mxCreateDoubleMatrix(1,2,mxREAL);
+    mxArray *pMinval = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pMinval);
-    data[0]=minval.X()/UNITSPERM;
-    data[1]=minval.Y()/UNITSPERM;
+    for (int i=0;i<2;i++) 
+	*data++=legs[i].minval.X()/UNITSPERM;
+    for (int i=0;i<2;i++) 
+	*data++=legs[i].minval.Y()/UNITSPERM;
     mxSetField(people,index,"minval",pMinval);
 
-    mxArray *pMaxval = mxCreateDoubleMatrix(1,2,mxREAL);
+    mxArray *pMaxval = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pMaxval);
-    data[0]=maxval.X()/UNITSPERM;
-    data[1]=maxval.Y()/UNITSPERM;
+    for (int i=0;i<2;i++) 
+	*data++=legs[i].maxval.X()/UNITSPERM;
+    for (int i=0;i<2;i++) 
+	*data++=legs[i].maxval.Y()/UNITSPERM;
     mxSetField(people,index,"maxval",pMaxval);
 
     mxArray *pScanptsCA=mxCreateCellMatrix(1,2);
     for (int i=0;i<2;i++) {
-	mxArray *pScanpts = mxCreateDoubleMatrix(scanpts[i].size(),1,mxREAL);
+	mxArray *pScanpts = mxCreateDoubleMatrix(legs[i].scanpts.size(),1,mxREAL);
 	data = mxGetPr(pScanpts);
-	for (unsigned int j=0;j<scanpts[i].size();j++)
-	    *data++=scanpts[i][j]+1;		// Need to change 0-based to 1-based
+	for (unsigned int j=0;j<legs[i].scanpts.size();j++)
+	    *data++=legs[i].scanpts[j]+1;		// Need to change 0-based to 1-based
 	mxSetCell(pScanptsCA,i,pScanpts);
     }
     mxSetField(people,index,"scanpts",pScanptsCA);
 
     mxArray *pLegs = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pLegs);
-    *data++=legs[0].X()/UNITSPERM;
-    *data++=legs[1].X()/UNITSPERM;
-    *data++=legs[0].Y()/UNITSPERM;
-    *data++=legs[1].Y()/UNITSPERM;
+    *data++=legs[0].position.X()/UNITSPERM;
+    *data++=legs[1].position.X()/UNITSPERM;
+    *data++=legs[0].position.Y()/UNITSPERM;
+    *data++=legs[1].position.Y()/UNITSPERM;
     mxSetField(people,index,"legs",pLegs);
 
     mxArray *pLikeCA=mxCreateCellMatrix(1,2);
     for (int i=0;i<2;i++) {
-	mxArray *pLike = mxCreateDoubleMatrix(likeny,likenx,mxREAL);
-	assert((int)like[i].size()==likenx*likeny);
+	mxArray *pLike = mxCreateDoubleMatrix(legs[i].likeny,legs[i].likenx,mxREAL);
+	assert((int)legs[i].like.size()==legs[i].likenx*legs[i].likeny);
 	data = mxGetPr(pLike);
-	for (unsigned int j=0;j<like[i].size();j++) 
-	    *data++=-like[i][j];   // Use neg loglikes in the matlab version
+	for (unsigned int j=0;j<legs[i].like.size();j++) 
+	    *data++=-legs[i].like[j];   // Use neg loglikes in the matlab version
 	mxSetCell(pLikeCA,i,pLike);
     }
     mxSetField(people,index,"like",pLikeCA);
 
     mxArray *pMaxlike = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(pMaxlike) = maxlike;
+    *mxGetPr(pMaxlike) = legs[0].maxlike+legs[1].maxlike;
     mxSetField(people,index,"maxlike",pMaxlike);
 
     mxArray *pPrevlegs = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pPrevlegs);
-    *data++=prevlegs[0].X()/UNITSPERM;
-    *data++=prevlegs[1].X()/UNITSPERM;
-    *data++=prevlegs[0].Y()/UNITSPERM;
-    *data++=prevlegs[1].Y()/UNITSPERM;
+    *data++=legs[0].prevPosition.X()/UNITSPERM;
+    *data++=legs[1].prevPosition.X()/UNITSPERM;
+    *data++=legs[0].prevPosition.Y()/UNITSPERM;
+    *data++=legs[1].prevPosition.Y()/UNITSPERM;
     mxSetField(people,index,"prevlegs",pPrevlegs);
 
     mxArray *pLegvel = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pLegvel);
-    *data++=legvelocity[0].X()/UNITSPERM;
-    *data++=legvelocity[1].X()/UNITSPERM;
-    *data++=legvelocity[0].Y()/UNITSPERM;
-    *data++=legvelocity[1].Y()/UNITSPERM;
+    *data++=legs[0].velocity.X()/UNITSPERM;
+    *data++=legs[1].velocity.X()/UNITSPERM;
+    *data++=legs[0].velocity.Y()/UNITSPERM;
+    *data++=legs[1].velocity.Y()/UNITSPERM;
     mxSetField(people,index,"legvelocity",pLegvel);
 
     mxArray *pLeftness = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(pLeftness) = leftness;
+    *mxGetPr(pLeftness) = legStats.getLeftness();
     mxSetField(people,index,"leftness",pLeftness);
 
     mxArray *pLegdiam = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(pLegdiam) = legdiam/UNITSPERM;
+    *mxGetPr(pLegdiam) = legStats.getDiam()/UNITSPERM;
     mxSetField(people,index,"legdiam",pLegdiam);
 
     mxArray *pAge = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);

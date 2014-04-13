@@ -15,6 +15,47 @@
 #include "target.h"
 
 class Vis;
+class Person;
+
+// Statistics shared between 2 legs
+class LegStats {
+    float diam;
+    float sep; 	// average leg separation in meters
+    float leftness;
+ public:
+    LegStats();
+    float getDiam() const { return diam; }
+    float getSep() const { return sep; }
+    float getLeftness() const { return leftness; }
+    void update(const Person &p);
+    friend std::ostream &operator<<(std::ostream &s, const LegStats &ls);
+};
+
+class Leg {
+    friend Person;
+    Point position;
+    float posvar;
+    Point prevPosition;
+    float prevposvar;
+    Point velocity;
+    std::vector<int> scanpts;
+    float maxlike; 	   // Likelihood of maximum likelihood estimator
+    int consecutiveInvisibleCount;
+    // Keep the likelihood map so we can dump to matlab
+    std::vector<float> like;
+    int likenx, likeny;
+    Point minval, maxval;
+    void init(const Point &pt);
+ public:
+    Leg();
+    Leg(const Point &pos);
+    friend std::ostream &operator<<(std::ostream &s, const Leg &l);
+    float getObsLike(const Point &pt, int frame,const LegStats &ls) const;
+    Point getPosition() const { return position; }
+    void predict(int nstep, float fps);
+    void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, int nstep,float fps, const LegStats &ls, const Leg *otherLeg=0);
+    void sendMessages(lo_address &addr, int frame, int id, int legnum) const;
+};
 
 class Person {
     // Overall 
@@ -22,26 +63,17 @@ class Person {
     int channel;
     Point position;
     Point velocity;
+
+    // Aging, visibility
     int age;
     int consecutiveInvisibleCount;
     int totalVisibleCount;
 
-    // Leg positions, etc
-    Point legs[2];
-    Point prevlegs[2];
-    Point legvelocity[2];
-    std::vector<int> scanpts[2];
-    float posvar[2];
-    float prevposvar[2];
-    float legdiam;
-    float leftness;
-    float maxlike; 	   // Likelihood of maximum likelihood estimator
-    // Keep the likelihood map so we can dump to matlab
-    std::vector<float> like[2];
-    int likenx, likeny;
-    Point minval, maxval;
+    // Leg positions, stats
+    Leg legs[2];
+    LegStats legStats;
 
-    void init(int _id, const Point &leg1, const Point &leg2);
+    float facing;	// Direction in radians they are facing
 public:
     Person(int _id, const Point &leg1, const Point &leg2);
     ~Person();
@@ -54,12 +86,13 @@ public:
     int getChannel() const { return channel; }
     Point getPosition() const { return position; }
     Point getVelocity() const { return velocity; }
-    const Point* getLegs() const { return legs; }
-    float getLegDiam() const { return legdiam; }
+    const Leg &getLeg(int i) const { return legs[i]; }
+    float getMaxLike() const { return legs[0].maxlike+legs[1].maxlike; }
+    const LegStats &getLegStats() const { return legStats; }
     int getAge() const { return age; }
     float getObsLike(const Point &pt, int leg, int frame) const;   // Get likelihood of an observed echo at pt hitting leg given current model
     // Send /pf/ OSC messages
-    void sendMessages(lo_address &addr, int frame, double now);
+    void sendMessages(lo_address &addr, int frame, double now) const;
 };
 
 #endif  /* PERSON_H_ */
