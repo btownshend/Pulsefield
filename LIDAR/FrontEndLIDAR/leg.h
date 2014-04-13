@@ -33,6 +33,7 @@ class Leg {
     void predict(int nstep, float fps);
     void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, int nstep,float fps, const LegStats &ls, const Leg *otherLeg=0);
     void updateVisibility();
+    void updateDiameterEstimates(const Vis &vis, LegStats &ls) const;   // Update given legstats diameter if possible
     void sendMessages(lo_address &addr, int frame, int id, int legnum) const;
     bool isVisible() const { return consecutiveInvisibleCount==0; }
 };

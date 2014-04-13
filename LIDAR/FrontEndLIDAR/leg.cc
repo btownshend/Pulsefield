@@ -253,6 +253,16 @@ void Leg::updateVisibility() {
     else 
 	consecutiveInvisibleCount=0;
 }
+
+void Leg::updateDiameterEstimates(const Vis &vis, LegStats &ls) const {
+    // Update diameter estimate
+    if (scanpts.size() >= 5 && (scanpts[scanpts.size()-1]-scanpts[0])==(int)(scanpts.size()-1)) {
+	dbg("Leg.updateDiameterEstimates",3) << "Updating leg diameter using " << scanpts.size() << " scan points" << std::endl;
+	// check that the leg is clearly in the foreground
+	//	if (vis.getSick()->getRange()[ <     }
+    }
+}
+
 void Leg::sendMessages(lo_address &addr, int frame, int id, int legnum) const {
     if (lo_send(addr,"/pf/leg","iiiiffffffffi",frame,id,legnum,2,
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,

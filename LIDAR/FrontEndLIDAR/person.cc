@@ -114,6 +114,10 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     legs[0].updateVisibility();
     legs[1].updateVisibility();
 
+    // Update leg diameter estimates in legStats
+    legs[0].updateDiameterEstimates(vis,legStats);
+    legs[1].updateDiameterEstimates(vis,legStats);
+
     if (~legs[0].isVisible() && ~legs[1].isVisible()) {
 	// Both legs hidden, maintain both at average velocity (already damped by legs.updat())
 	legs[0].velocity=(legs[0].velocity+legs[1].velocity)/2.0;

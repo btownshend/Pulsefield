@@ -9,7 +9,7 @@ class Person;
 class LegStats {
     float diam,diamSigma;
     float sep,sepSigma; 	// average leg separation in meters
-    float leftness;
+    float leftness;			// Leftness is >0 when leg0 is the left leg
     float facing,facingSEM;	// Direction in radians they are facing
  public:
     LegStats();
@@ -22,6 +22,7 @@ class LegStats {
     float getFacingSEM() const { return facingSEM; }
 
     void update(const Person &p);
+    void updateDiameter(float newDiam, float newDiamSEM);
     friend std::ostream &operator<<(std::ostream &s, const LegStats &ls);
 };
 
