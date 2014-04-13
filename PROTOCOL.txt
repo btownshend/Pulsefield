@@ -10,17 +10,39 @@ Design:
 
 OSC Messages from PF (vision tracker)
 
+Notes:
+     - All dimensions in meters, speeds in m/s
+     - (x,y) positions are relative to sensor;
+	(0,1) is 1m directly in front of sensor,
+	(1,0) is 1m to the right of sensor (from the sensor's point of view)
+     - Headings are in degrees from -180 to +180
+        0 degrees is in the (0,1) direction (directly away from sensor)
+	heading of -90 degrees is in the (1,0) direction
+	heading of +90 degrees is in the (-1,0) direction
+	e.g.   vx=-speed*sin(heading), vy=speed*cos(heading)
+     - Positions are instanteous best estimates
+     - Velocities, speeds, headings, legsizes, etc are time-averaged best estimates over previous several frames
+     - Grouping is based on proximity
+        - formed when people approach within 'groupdist' meters of someone else (based on body position)
+	- broken when people are separated by more then 'ungroupdist' meters
+     - Channels are assigned sequentially such that:
+        - channel numbers 0..numchannels-1
+	- new person gets lowest unused channel number if one available
+	- if more than numchannels people, then lowest channel with only 1 person is assigned (etc for 2,3.. people/channel)
+     - setup messages are only sent when PF first starts or when a new destination is added
+     - it is possible that frames are skipped; listeners should be robust against lost messages, etc.
+
 /pf/started - when PF starts 
 
 /pf/stopped - when PF stops
 
-/pf/frame samp - new frame
+/pf/frame samp - new frame (sent before any other messages for the frame)
      samp - sample number
 
 /pf/update samp t target x y vx vy major minor groupid groupsize channel
 	   - update position of target
      samp - sample number
-     t - time of sample (elapsed time in seconds since beginning of run)
+     t - time of sample (elapsed time in seconds since beginning of run) 
      target - UID of target
      x,y - position within field in meters
      vx,vy - estimate of velocity in m/s
@@ -29,18 +51,33 @@ OSC Messages from PF (vision tracker)
      groupsize - number of people in group
      channel - channel number assigned
      
-/pf/leg samp target leg nlegs x y ex ey vx vy evx evy diam sigmadiam leftness 
+/pf/leg samp target leg nlegs x y ex ey spd espd heading eheading diam sigmadiam sep sigmasep leftness visibility 
      samp - sample number 
      target - UID of target
-     leg - leg number (1..nlegs)
+     leg - leg number (0..nlegs-1)
      nlegs - number of legs target is modeled with (usually 2, but could be 1 if they are inseparable)
      x,y - position within field in m
-     sx,sy - standard error of measurement (SEM) of position, in meters 
-     vx,vy - estimate of velocity of leg in m/s
-     svx,svy - SEM of velocity, in meters/second
+     ex,ey - standard error of measurement (SEM) of position, in meters 
+     spd, heading - estimate of speed of leg in m/s, heading in degrees
+     espd, eheading - SEM of spd, heading
+     visibility - number of frames since a positive fix was found for this leg
+
+/pf/body samp t target x y ex ey spd espd heading eheading facing efacing diam sigmadiam sep sigmasep leftness visibility
+     samp - sample number 
+     t - time of sample (elapsed time in seconds since beginning of run) 
+     target - UID of target
+     x,y - position of person within field in m
+     ex,ey - standard error of measurement (SEM) of position, in meters 
+     spd, heading - estimate of speed of person in m/s, heading in degrees
+     espd, eheading - SEM of spd, heading
+     facing - direction person is facing in degees
+     efacing - SEM of facing direction
      diam - estimated mean diameter of leg
      sigmadiam - estimated sigma (sqrt(variance)) of diameter -- not the SEM, but how much it varies
+     sep - estimated mean separation of leg from other leg (or centroid if more than 2 legs)
+     sigmasep - estimated sigma (sqrt(variance)) of sep -- not the SEM, but how much it varies
      leftness - measure of how likely this leg is the left leg based on past movements, <0 is left leg, >0 is right leg
+     visibility - number of frames since a positive fix was found for either leg
 
 /pf/entry samp t target channel - new target entered PF
      sent before first /pf/update message for that target
@@ -54,17 +91,27 @@ OSC Messages from PF (vision tracker)
      t - time of sample (elapsed time in seconds since beginning of run)
      target - UID of target
 
-/pf/set/parameter value - send value of various parameters
+/pf/set/parameter value - value of various parameters sent from tracker to applications
      minx, miny, maxx, maxy - bounds of PF in units
-     npeople - number of people currently present
+     npeople - number of people currently present (sent each time this number changes)
+     groupdist - distance used for forming groups
+     ungroupdist - distance for breaking groups
+     numchannels - number of channels
+     fps - frames per second
+     source - string describing where the data came from
 
 /pf/pass/obj - commands to pass through to another object type
 
 
 OSC Messages to PF:
 /pf/dump - ask PF to send setup
+	 (not currently implemented)
 
 /pf/adddest host port - add destination for data stream
+      all data is broadcast to all known destinations
 
 /pf/rmdest host port - remove destination
 
+/ping code - request /ack response with same code from tracker
+      e.g. app sends '/ping 45' and server will broadcast '/ack 45'
+      the code allows app to be sure its getting an answer to the ping it sent
