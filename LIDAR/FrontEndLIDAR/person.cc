@@ -8,7 +8,6 @@
 #include "normal.h"
 #include "lookuptable.h"
 
-static int channeluse[NCHANNELS];
 
 Person::Person(int _id, const Point &leg1, const Point &leg2) {
     id=_id;
@@ -17,14 +16,9 @@ Person::Person(int _id, const Point &leg1, const Point &leg2) {
     legs[1]=Leg(leg2);
 
     // Find a free channel, or advance to next one if none free
-    channel=0;
-    for (int i=0;i<NCHANNELS;i++) {
-	if (channeluse[i]==0) {
-	    channel=i;
-	    break;
-	}
-    }
-    channeluse[channel]++;
+    static int lastchannel=0;
+    channel=lastchannel+1;
+    lastchannel = (lastchannel+1)%NCHANNELS;
 
     position=(leg1+leg2)/2;
     age=1;
@@ -33,7 +27,6 @@ Person::Person(int _id, const Point &leg1, const Point &leg2) {
 }
 
 Person::~Person() {
-    channeluse[channel]--;
 }
 
 bool Person::isDead() const {
