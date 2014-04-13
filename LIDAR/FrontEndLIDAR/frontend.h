@@ -59,6 +59,7 @@ class FrontEnd {
     // Handlers for OSC messages
     void startStop(bool start);
     void setFPS(int fps);
+    int getFPS() const;
     void setRes(int camera,const char *res);
     void getStat(long int stat,int mode);   // Set flag to return a particular piece of data next frame
     void setEchoes(int echoes);

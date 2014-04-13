@@ -494,6 +494,12 @@ void FrontEnd::setFPS(int fps) {
 		sick[i]->setScanFreq(fps);
 }
 
+int FrontEnd::getFPS() const {
+    if (nsick>0)
+	return sick[0]->getScanFreq();
+    fprintf(stderr,"Warning: assuming recorded file is at 50 FPS\n");
+    return 50;
+}
 
 void FrontEnd::setRes(int sickid, const char *res) {
     dbg("FrontEnd.setRes",1) << "Setting sensors " << sickid << " to resolution " << res  << " degrees." << std::endl;
@@ -540,6 +546,10 @@ void FrontEnd::sendInitialMessages(const char *host, int port) const {
     lo_send(addr,"/pf/set/maxx","f",MAXRANGE/UNITSPERM);
     lo_send(addr,"/pf/set/miny","f",0.0);
     lo_send(addr,"/pf/set/maxy","f",MAXRANGE/UNITSPERM);
+    lo_send(addr,"/pf/set/groupdist","f",GROUPDIST/UNITSPERM);
+    lo_send(addr,"/pf/set/ungroupdist","f",UNGROUPDIST/UNITSPERM);
+    lo_send(addr,"/pf/set/numchannels","i",NCHANNELS);
+    lo_send(addr,"/pf/set/fps","f",getFPS()*1.0f);
 }
 
 void FrontEnd::addDest(const char *host, int port) {
