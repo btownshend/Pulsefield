@@ -72,6 +72,7 @@ std::vector<float> Background::like(const SickIO &sick) const {
 	}
 	// TODO: This is not a correct likelihood -- need to have it reflect the p(obs|bg) in the same way that we have p(obs|target) so they can be compared
 	// For now, assume this probability occurs over a range of [-MINBGSEP,MINBGSEP], so pdf= prob/(2*MINBGSEP)  (in meters, since all the other PDF's are in meters)
+	// Problem is that even for very low probs (e.g. .002), likelihood is >>entrylikelihood
 	result[i]=log(result[i]/(2.0*MINBGSEP/UNITSPERM)); 
     }
     return result;
