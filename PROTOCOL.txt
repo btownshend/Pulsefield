@@ -92,7 +92,8 @@ Notes:
      target - UID of target
 
 /pf/set/parameter value - value of various parameters sent from tracker to applications
-     minx, miny, maxx, maxy - bounds of PF in units
+     protoversion - protocol version (string) 
+     minx, miny, maxx, maxy - bounds of PF in meters
      npeople - number of people currently present (sent each time this number changes)
      groupdist - distance used for forming groups
      ungroupdist - distance for breaking groups

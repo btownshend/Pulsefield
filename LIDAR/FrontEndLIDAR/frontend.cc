@@ -537,6 +537,7 @@ void FrontEnd::sendInitialMessages(const char *host, int port) const {
     char cbuf[10];
     sprintf(cbuf,"%d",port);
     lo_address addr = lo_address_new(host, cbuf);
+    lo_send(addr,"/pf/set/protoversion","s",PROTOVERSION);
     lo_send(addr,"/pf/started","");
     std::string allargs=arglist[0];
     for (unsigned int i=1;i<arglist.size();i++)

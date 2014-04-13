@@ -10,6 +10,8 @@
 
 // Distances in mm unless otherwise noted
 
+static const char PROTOVERSION[]="2.1";	 // Protocol version
+
 static const int MAXGRIDPTS=1000;	// Maximum grid points during likelihood calculation
 static const float UNITSPERM=1000.0;		// Internal units per meter
 
