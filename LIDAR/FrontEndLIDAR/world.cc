@@ -111,7 +111,12 @@ void World::track( const Vis &vis, int frame, float fps) {
 		dbg("World.track",1) << "Creating an initial track using scans " << bestindices[0] << "," << bestindices[1] << " with separation " << bestsep << std::endl;
 		Point l1=vis.getSick()->getPoint(bestindices[0]);
 		Point l2=vis.getSick()->getPoint(bestindices[1]);
-		people.push_back(Person(nextid,l1,l2));
+		// Move the points out by legdiam/2 so they make sense
+		l1=l1*((l1.norm()+INITLEGDIAM/2)/l1.norm());
+		l2=l2*((l2.norm()+INITLEGDIAM/2)/l2.norm());
+		Person newPerson = Person(nextid,l1,l2);
+		people.push_back(newPerson);
+		dbg("World.track",1) << "New person: " << newPerson << std::endl;
 		nextid++;
 		makeAssignments(vis,entrylike);// Redo after adding new tracks, but only do twice (allowing only 1 new person per frame) to limit cpu
 	    } else {

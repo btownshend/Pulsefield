@@ -81,8 +81,10 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 
     // Make sure any potential measured point is also in the search
     for (unsigned int i=0;i<fs.size();i++) {
-	minval=minval.min(vis.getSick()->getPoint(fs[i]));
-	maxval=maxval.max(vis.getSick()->getPoint(fs[i]));
+	Point pt=vis.getSick()->getPoint(fs[i]);
+	pt=pt*(1+ls.getDiam()/2/pt.norm());	// Move to expected position of leg
+	minval=minval.min(pt);
+	maxval=maxval.max(pt);
     }
 
     // Increase search by legdiam/2
