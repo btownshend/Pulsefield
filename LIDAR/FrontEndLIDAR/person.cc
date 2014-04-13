@@ -428,15 +428,16 @@ void Leg::sendMessages(lo_address &addr, int frame, int id, int legnum) const {
 }
 
 // Send /pf/ OSC messages
-void Person::sendMessages(lo_address &addr, int frame, double now) const {
-    if (lo_send(addr, "/pf/update","ififfffffiii",frame,now,id,
+void Person::sendMessages(lo_address &addr, int frame) const {
+    if (lo_send(addr, "/pf/update","iiffffffiii",frame,id,
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,
 		velocity.X()/UNITSPERM,velocity.Y()/UNITSPERM,
 		(legStats.getSep()+legStats.getDiam())/UNITSPERM,legStats.getDiam()/UNITSPERM,
 		0,0,
 		channel) < 0)
 	    std::cerr << "Failed send of /pf/update to OSC port" << std::endl;
-    if (lo_send(addr, "/pf/body","ififffffffffffffffi",frame,now,id,
+    float posvar=sqrt((legs[0].posvar+legs[1].posvar)/2);
+    if (lo_send(addr, "/pf/body","iifffffffffffffffi",frame,id,
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,
 		posvar,posvar,
 		velocity.norm()/UNITSPERM,0.0f,
