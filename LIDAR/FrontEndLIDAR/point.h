@@ -66,4 +66,6 @@ inline std::ostream& operator<< (std::ostream& os, const std::vector<float>& v)
     return os;
 }
 
+float  segment2pt(const Point &l1, const Point &l2, const Point &p);
+
 #endif  /* POINT_H_ */
