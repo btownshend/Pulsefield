@@ -21,6 +21,7 @@ end
 
 %tracker=multiObjectTracking();
 tracker=World();
+tracker.debug=true;
 bg=[];
 iswaiting=false;
 snap=[];
