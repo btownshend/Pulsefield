@@ -135,8 +135,8 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 
     if (otherLeg!=NULL) {
 	// Calculate separation likelihood using other leg at MLE with computed variance
-	if (sqrt(otherLeg->posvar) > ls.getDiam()+ls.getSepSigma()) {
-	    legSepLike = getLegSepLike(ls.getDiam(),ls.getSepSigma(),sqrt(posvar));
+	if (sqrt(otherLeg->posvar) > ls.getSep()+ls.getSepSigma()) {
+	    legSepLike = getLegSepLike(ls.getSep(),ls.getSepSigma(),sqrt(posvar));
 	    dbg("Leg.update",3) << "Using simplified model for legsep like since other leg posvar=" << sqrt(otherLeg->posvar) << " > " << ls.getDiam()+ls.getSepSigma() << std::endl;
 	    // Can compute just using fixed leg separation of ls.getDiam() since the spread in possible leg separations is not going to make much difference when the position is poorly determined
 	    useSepLikeLookup=true;
@@ -180,7 +180,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 		    if (useSepLikeLookup)
 			seplike=legSepLike.lookup(d);
 		    else
-			seplike=log(normpdf(d,ls.getDiam(),sqrt(otherLeg->posvar+ls.getSepSigma()*ls.getSepSigma()))*UNITSPERM);
+			seplike=log(normpdf(d,ls.getSep(),sqrt(otherLeg->posvar+ls.getSepSigma()*ls.getSepSigma()))*UNITSPERM);
 		    if (isnan(seplike))
 			dbg("Leg.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", seplike=" << seplike << std::endl;
 	    }
