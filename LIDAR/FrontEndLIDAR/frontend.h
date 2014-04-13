@@ -27,6 +27,9 @@ class FrontEnd {
     int frame;
     long int sendOnce, sendAlways;
 
+    // Start time of run (used to set zero reference)
+    struct timeval starttime;
+
     // Process all frames
     void processFrames();   
     // Send out low-level vis messages for given sick data
@@ -44,6 +47,8 @@ class FrontEnd {
 
     // Startup messages to OSC
     void sendInitialMessages(const char *host, int port) const;
+    // Current messages
+    void sendMessages();
  public:
     enum { RANGE=0x10, REFLECT=0x20, PF=0x40 };  // Bitmasks of what to send in next message group
 

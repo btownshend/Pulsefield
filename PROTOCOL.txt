@@ -101,6 +101,7 @@ Notes:
      numchannels - number of channels
      fps - frames per second
      source - string describing where the data came from
+     starttime - time in UTC corresponding to sample time 0 above (OSC Time tag semantics, but as two integers)
 
 /pf/pass/obj - commands to pass through to another object type
 

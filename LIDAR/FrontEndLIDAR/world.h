@@ -32,7 +32,6 @@ class World {
     std::vector<unsigned int> legassigned;  		    // For each assignment, leg number assigned (0 or 1);  0 for assignments without legs (such as bg)
     std::vector<float> bestlike;					// Best likelihood for each scan line
 
-    struct timeval starttime;
     Display *dpy;
     cairo_surface_t *surface;
     pthread_t displayThread;
@@ -43,7 +42,7 @@ public:
     // Track people and send update messages
     void track( const Vis &vis, int frame, float fps);
     void deleteLostPeople();
-    void sendMessages(const Destinations &dests, const struct timeval &acquired);
+    void sendMessages(const Destinations &dests, double now);
     mxArray *convertToMX() const;
 
     // Drawing routines

@@ -76,6 +76,9 @@ FrontEnd::FrontEnd(int _nsick,int argc, const char *argv[]) {
     for (int i=0;i<argc;i++)
 	arglist.push_back(argv[i]);
 
+    starttime.tv_sec=0;
+    starttime.tv_usec=0;
+
 	matframes=0;
 	frame = 0;
 	nsick=_nsick;
@@ -263,7 +266,7 @@ void FrontEnd::processFrames() {
 	}
 	vis->update(sick[0]);
 	world->track(*vis,frame,sick[0]->getScanFreq());
-	world->sendMessages(dests,sick[0]->getAcquired());
+	sendMessages();
 
 	sendOnce=0;
 
@@ -437,7 +440,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	}
 	vis->update(sick[0]);
 	world->track(*vis,cframe,sick[0]->getScanFreq());
-	world->sendMessages(dests,sick[0]->getAcquired());
+	sendMessages();
 
 	if (tmpDebug)
 	    PopDebugSettings();
@@ -551,11 +554,27 @@ void FrontEnd::sendInitialMessages(const char *host, int port) const {
     lo_send(addr,"/pf/set/ungroupdist","f",UNGROUPDIST/UNITSPERM);
     lo_send(addr,"/pf/set/numchannels","i",NCHANNELS);
     lo_send(addr,"/pf/set/fps","f",getFPS()*1.0f);
+    if (starttime.tv_sec != 0) {
+	lo_timetag startTag;
+	startTag.sec=starttime.tv_sec;
+	startTag.frac=(uint32_t)(starttime.tv_usec*pow(2.0,32.0)/1e6);
+	lo_send(addr,"/pf/set/starttime","ii",startTag.sec,startTag.frac);  // Use ints instead of timetag since dumpOSC doesn't support timetags
+    }
+}
+
+void FrontEnd::sendMessages() {
+    struct timeval acquired=sick[0]->getAcquired();
+    if  (starttime.tv_sec==0) {
+	    starttime=acquired;
+	    for (int i=0;i<dests.size();i++)
+		sendInitialMessages(dests.getHost(i),dests.getPort(i));
+    }
+    double elapsed=(acquired.tv_sec-starttime.tv_sec)+(acquired.tv_usec-starttime.tv_usec)*1e-6;
+    world->sendMessages(dests,elapsed);
 }
 
 void FrontEnd::addDest(const char *host, int port) {
 	dests.add(host,port);
-	sendInitialMessages(host,port);
 }
 
 void FrontEnd::addDest(lo_message msg, int port) {
