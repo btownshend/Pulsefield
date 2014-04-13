@@ -22,7 +22,7 @@ void Snapshot::save(const char *filename) const {
 	return;
     }
     
-    const char *fieldnames[]={"vis","bg","tracker","classes"};
+    const char *fieldnames[]={"vis","bg","tracker"};
     mxArray *snap = mxCreateStructMatrix(vis.size(),1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
     
     for (int i=0;i<(int)vis.size();i++) {
