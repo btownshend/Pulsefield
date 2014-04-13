@@ -153,10 +153,10 @@ void Person::sendMessages(lo_address &addr, int frame) const {
     float posvar=sqrt((legs[0].posvar+legs[1].posvar)/2);
     if (lo_send(addr, "/pf/body","iifffffffffffffffi",frame,id,
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,
-		posvar,posvar,
+		posvar/UNITSPERM,posvar/UNITSPERM,
 		velocity.norm()/UNITSPERM,0.0f,
 		velocity.getTheta()*180.0/M_PI,0.0f,
-		legStats.getFacing(),legStats.getFacingSEM(),
+		legStats.getFacing()*180.0/M_PI,legStats.getFacingSEM()*180.0/M_PI,
 		legStats.getDiam()/UNITSPERM,legStats.getDiamSigma()/UNITSPERM,
 		legStats.getSep()/UNITSPERM,legStats.getSepSigma()/UNITSPERM,
 		legStats.getLeftness(),
