@@ -145,8 +145,8 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 }
 
 // Send /pf/ OSC messages
-void Person::sendMessages(lo_address &addr, int frame) const {
-    if (lo_send(addr, "/pf/update","iiffffffiii",frame,id,
+void Person::sendMessages(lo_address &addr, int frame, double now) const {
+    if (lo_send(addr, "/pf/update","ififfffffiii",frame,now,id,
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,
 		velocity.X()/UNITSPERM,velocity.Y()/UNITSPERM,
 		(legStats.getSep()+legStats.getDiam())/UNITSPERM,legStats.getDiam()/UNITSPERM,

@@ -212,7 +212,7 @@ void World::sendMessages(const Destinations &dests, double now) {
 	dbg("World.sendMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 	sprintf(cbuf,"%d",dests.getPort(i));
 	lo_address addr = lo_address_new(dests.getHost(i), cbuf);
-	lo_send(addr,"/pf/frame","if",lastframe,now);
+	lo_send(addr,"/pf/frame","i",lastframe);
 	// Handle entries
 	std::set<int>exitids = lastid;
 	unsigned int priornpeople=lastid.size();
@@ -222,14 +222,14 @@ void World::sendMessages(const Destinations &dests, double now) {
 		activePeople++;
 		exitids.erase(p->getID());
 		if ( lastid.count(p->getID()) == 0)
-		    lo_send(addr,"/pf/entry","iii",lastframe,p->getID(),p->getChannel());
+		    lo_send(addr,"/pf/entry","ifii",lastframe,now,p->getID(),p->getChannel());
 		lastid.insert(p->getID());
 	    }
 	}
 
 	// Handle exits
 	for (std::set<int>::iterator p=exitids.begin();p!=exitids.end();p++) {
-	    lo_send(addr,"/pf/exit","ii",lastframe,*p);
+	    lo_send(addr,"/pf/exit","ifi",lastframe,now,*p);
 	    lastid.erase(*p);
 	}
 
@@ -240,7 +240,7 @@ void World::sendMessages(const Destinations &dests, double now) {
 	// Updates
 	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
 	    if (p->getAge() >= AGETHRESHOLD)
-		p->sendMessages(addr,lastframe);
+		p->sendMessages(addr,lastframe,now);
 	}
 	lo_address_free(addr);
     }

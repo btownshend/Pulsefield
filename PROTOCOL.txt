@@ -39,9 +39,8 @@ Notes:
 
 /pf/stopped - when PF stops
 
-/pf/frame samp t - new frame (sent before any other messages for the frame)
+/pf/frame samp - new frame (sent before any other messages for the frame)
      samp - sample number
-     t - time of sample (elapsed time in seconds since beginning of run) 
 
 /pf/update samp t target x y vx vy major minor groupid groupsize channel
 	   - update position of target
@@ -82,14 +81,16 @@ Notes:
      leftness - measure of how likely this leg is the left leg based on past movements, <0 is left leg, >0 is right leg
      visibility - number of frames since a positive fix was found for either leg
 
-/pf/entry samp target channel - new target entered PF
+/pf/entry samp t target channel - new target entered PF
      sent before first /pf/update message for that target
      samp - sample number
+     t - time of sample (elapsed time in seconds since beginning of run)
      target - UID of target
      channel - channel number assigned
 
-/pf/exit samp target - target exitted PF
+/pf/exit samp t target - target exitted PF
      samp - sample number
+     t - time of sample (elapsed time in seconds since beginning of run)
      target - UID of target
 
 /pf/set/parameter value - value of various parameters sent from tracker to applications
