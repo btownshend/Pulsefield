@@ -114,10 +114,16 @@ FrontEnd::FrontEnd(int _nsick,int argc, const char *argv[]) {
 	}
 	printf("Started server on port %d\n", serverPort);
 
-	/* Start sending data to Matlab */
-	const int clientPort=urls.getPort("VD");
-	const char *clientHost=urls.getHost("VD");
-	addDest(clientHost, clientPort);
+	/* Start sending data to hardwired OSC destinations */
+	const char *targets[]={"VD","WES","LAN"};
+	for (unsigned int i=0;i<sizeof(targets)/sizeof(targets[0]);i++) {
+	    int clientPort=urls.getPort(targets[i]);
+	    const char *clientHost=urls.getHost(targets[i]);
+	    if (clientHost==0 || clientPort==-1)
+		fprintf(stderr,"Unable to location %s in urlconfig.txt\n", targets[i]);
+	    else
+		addDest(clientHost, clientPort);
+	}
 
 	/* Start cameras */
 	printf("Initializing with %d sensors...",nsick);fflush(stdout);
