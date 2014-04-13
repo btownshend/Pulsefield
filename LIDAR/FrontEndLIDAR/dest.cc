@@ -1,68 +1,46 @@
-#include <stdio.h>
+#include <iostream>
 #include <string.h>
 #include "dest.h"
 #include "dbg.h"
 
+std::ostream& operator<<(std::ostream &s, const Destination &d) {
+    s << d.host << ":" << d.port;
+    return s;
+}
+
 Destinations::Destinations() {
-    ndest=0; maxdest=0;
-    hosts = (char **)0;
-    ports = (int *)0;
 }
 
 Destinations::~Destinations() {
     removeAll();
-    if (maxdest>0) {
-	delete [] hosts;
-	delete [] ports;
-    }
 }
 
 void Destinations::add(const char *host, int port) {
-    for (int i=0;i<ndest;i++)
-	if (strcmp(hosts[i],host)==0 && ports[i]==port)   {
+    for (unsigned int i=0;i<dests.size();i++)
+	if (strcmp(dests[i].host.c_str(),host)==0 && dests[i].port==port)   {
 	    dbg("Destinations.add",1) << "Already have " << host << ":" << port << " as a destination" << std::endl;
 	    return;
 	}
-	    
-    if (ndest==maxdest) {
-	// Reallocate space
-	maxdest=maxdest+10;
-	char **newhosts=new char *[maxdest];
-	memcpy(newhosts,hosts,sizeof(*hosts)*ndest);
-	if (hosts)
-	    delete [] hosts;
-	hosts=newhosts;
-	int *newports = new int[maxdest];
-	memcpy(newports, ports, sizeof(*ports)*ndest);
-	if (ports)
-	    delete [] ports;
-	ports=newports;
-    }
-    hosts[ndest]=new char[strlen(host)+1];
-    strcpy(hosts[ndest],host);
-    ports[ndest]=port;
-    dbg("Destinations.add",1) << "Added destination " << host << ":" << port << std::endl;
-    ndest++;
+    Destination d(host,port);
+    dests.push_back(d);
+    dbg("Destinations.add",1) << "Added destination " << d << std::endl;
 }
 
 void Destinations::remove(const char *host, int port) {
-    for (int i=0;i<ndest;i++)
-	if (strcmp(hosts[i],host)==0 && ports[i]==port)  {
-	    for (int j=i;j<ndest+1;j++) {
-		hosts[j]=hosts[j+1];
-		ports[j]=ports[j+1];
-	    }
-	    ndest--;
-	    delete [] hosts[ndest];
+    for (unsigned int i=0;i<dests.size();i++)
+	if (strcmp(dests[i].host.c_str(),host)==0 && dests[i].port==port)  {
+	    remove(i);
 	    i--;
-	    dbg("Destinations.remove",1) << "Removed destination " << host << ":" << port << std::endl;
-	    printf("Removed destination %s:%d\n", host,port);
 	}
 }
 	
+void Destinations::remove(int i) {
+    dbg("Destinations.remove",1) << "Removed destination " << dests[i] << std::endl;
+    std::cout << "Removed destination " << dests[i] << std::endl;
+    dests.erase(dests.begin()+i);
+}
+	
 void Destinations::removeAll() {
-    for (int i=0;i<ndest;i++) 
-	delete [] hosts[i];
-    ndest=0;
+    dests.clear();
     dbg("Destinations.removeAll",1) << "Removed all destinations." << std::endl;
 }

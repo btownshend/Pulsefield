@@ -286,6 +286,6 @@ void Leg::sendMessages(lo_address &addr, int frame, int id, int legnum) const {
 		velocity.norm()/UNITSPERM,0.0f,
 		velocity.getTheta()*180.0/M_PI,0.0f,
 		consecutiveInvisibleCount)<0)
-	std::cerr << "Failed send of /pf/leg to OSC port" << std::endl;
+	std::cerr << "Failed send of /pf/leg to " << lo_address_get_url(addr) << std::endl;
 }
 

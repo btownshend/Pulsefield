@@ -211,14 +211,21 @@ void World::track( const Vis &vis, int frame, float fps) {
 
 }
         
-void World::sendMessages(const Destinations &dests, double now) {
+void World::sendMessages(Destinations &dests, double now) {
     dbg("World.sendMessages",5) << "ndest=" << dests.size() << std::endl;
     for (int i=0;i<dests.size();i++) {
 	char cbuf[10];
 	dbg("World.sendMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 	sprintf(cbuf,"%d",dests.getPort(i));
 	lo_address addr = lo_address_new(dests.getHost(i), cbuf);
-	lo_send(addr,"/pf/frame","i",lastframe);
+	if (lo_send(addr,"/pf/frame","i",lastframe) < 0) {
+	    std::cerr << "Failed send of /pf/frame to " << lo_address_get_url(addr) << std::endl;
+	    dests.setFailed(i);
+	    if (dests.getFailCount(i) > 100)
+		dests.remove(i);
+	    continue;
+	}
+	dests.setSucceeded(i);
 	// Handle entries
 	std::set<int>exitids = lastid;
 	unsigned int priornpeople=lastid.size();

@@ -42,7 +42,7 @@ public:
     // Track people and send update messages
     void track( const Vis &vis, int frame, float fps);
     void deleteLostPeople();
-    void sendMessages(const Destinations &dests, double now);
+    void sendMessages(Destinations &dests, double now);
     mxArray *convertToMX() const;
 
     // Drawing routines

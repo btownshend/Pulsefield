@@ -152,8 +152,10 @@ void Person::sendMessages(lo_address &addr, int frame, double now) const {
 		velocity.X()/UNITSPERM,velocity.Y()/UNITSPERM,
 		(legStats.getSep()+legStats.getDiam())/UNITSPERM,legStats.getDiam()/UNITSPERM,
 		0,0,
-		channel) < 0)
-	    std::cerr << "Failed send of /pf/update to OSC port" << std::endl;
+		channel) < 0) {
+	std::cerr << "Failed send of /pf/update to " << lo_address_get_url(addr) << std::endl;
+	return;
+    }
     float posvar=sqrt((legs[0].posvar+legs[1].posvar)/2);
     if (lo_send(addr, "/pf/body","iifffffffffffffffi",frame,id,
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,
@@ -165,7 +167,7 @@ void Person::sendMessages(lo_address &addr, int frame, double now) const {
 		legStats.getSep()/UNITSPERM,legStats.getSepSigma()/UNITSPERM,
 		legStats.getLeftness(),
 		consecutiveInvisibleCount) < 0)
-	    std::cerr << "Failed send of /pf/body to OSC port" << std::endl;
+	std::cerr << "Failed send of /pf/body to " << lo_address_get_url(addr) << std::endl;
     for (int i=0;i<2;i++)
 	legs[i].sendMessages(addr,frame,id,i);
 }
