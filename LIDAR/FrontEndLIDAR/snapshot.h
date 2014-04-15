@@ -22,6 +22,7 @@ public:
     Snapshot(const std::vector<std::string> &arglist);
     void append(const Vis *vis, const World *world);
     void save(const char *filename) const;
+    void clear();
 };
 
 #endif  /* SNAPSHOT_H_ */

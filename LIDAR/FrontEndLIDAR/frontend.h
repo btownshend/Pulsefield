@@ -42,7 +42,7 @@ class FrontEnd {
     pthread_t incomingThread;
     static void *processIncoming(void *arg);
     int matframes;
-    const char *matfile;
+    std::string matfile;
     std::vector<std::string> arglist;
 
     // Startup messages to OSC
@@ -74,6 +74,6 @@ class FrontEnd {
     void rmDest(lo_message msg, int port);
     void rmAllDest();
     void ping(lo_message msg, int seqnum);
-    void matsave(const char *filename, int frames);
+    void matsave(const std::string &filename, int frames);
 };
 #endif

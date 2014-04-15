@@ -8,6 +8,12 @@ Snapshot::Snapshot(const std::vector<std::string> &arglist) {
     this->arglist=arglist;
 }
 
+void Snapshot::clear() {
+    vis.clear();
+    bg.clear();
+    world.clear();
+}
+
 void Snapshot::append(const Vis *v, const World *t) {
     vis.push_back(v->convertToMX());
     bg.push_back(t->getBackground().convertToMX());

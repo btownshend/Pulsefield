@@ -15,8 +15,8 @@ void usage(int argc,char *argv[]) {
     fprintf(stderr,"\t\t-s\tsingle-step playback\n");
     fprintf(stderr,"\t\t-l\tloop file continuously\n");
     fprintf(stderr,"\t\t-x x\tslow down playback by a factor of k use -x 0 to run at max speed\n");
-    fprintf(stderr,"\t-m matframes\tsave given number of frames to frontend_dump.mat file and exit\n");
-    fprintf(stderr,"\t\t-M file\tspecify mat-file name\n");
+    fprintf(stderr,"\t-m matframes\tsave given number of frames to frontend_dump.mat file and exit (or 0 to do all)\n");
+    fprintf(stderr,"\t\t-M file\tspecify mat-file name (without suffix)\n");
     fprintf(stderr,"\t-V\t\tenable /vis messages\n");
     exit(1);
 }
@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
     bool loop=false;
     bool singlestep=false;
     float speedFactor =1.0f;
-    const char *matfile="frontend_dump.mat";
-    int matframes=0;
+    std::string matfile;
+    int matframes=-1;
     bool visoutput=false;
     int argcorig=argc;
     const char **argvorig=(const char **)argv;
@@ -83,7 +83,17 @@ int main(int argc, char *argv[])
     if (playFile) {
 	// Create a front end with no sensors so it doesn't access any devices
 	FrontEnd fe(0,argcorig,argvorig);
-	fe.matsave(matfile,matframes);
+	if (matframes >= 0){
+	    if (matfile.empty()) {
+		// Use playback file as filename
+		matfile=playFile;
+		// Remove suffix
+		unsigned int dot = matfile.find_last_of(".");
+		if (dot!=std::string::npos)
+		    matfile.resize(dot);
+	    }
+	    fe.matsave(matfile,matframes);
+	}
 	if (visoutput) 
 	    fe.getStat(FrontEnd::RANGE,0);
 	// Now playback file through it

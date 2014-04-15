@@ -193,7 +193,7 @@ FrontEnd::~FrontEnd() {
     lo_server_free(s);
 }
 
-void FrontEnd::matsave(const char *filename, int frames) {
+void FrontEnd::matsave(const std::string &filename, int frames) {
     matfile=filename; 
     matframes=frames;
     snap = new Snapshot(arglist);
@@ -372,10 +372,11 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
     gettimeofday(&starttime,0);
     int frameStep=0;
     int lastcframe=-1;
+    int cframe;
 
     while (true) {
 	sendOnce |= sendAlways;
-	int cid,cframe,nechoes,nmeasure;
+	int cid,nechoes,nmeasure;
 	struct timeval acquired;
 	if (EOF==fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&cframe,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure)) {
 	    printf("EOF on %s\n",filename);
@@ -450,18 +451,30 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	if (tmpDebug)
 	    PopDebugSettings();
 
-	if (matframes>0) {
+	if (!matfile.empty()) {
 	    snap->append(vis,world);
 	    
-	    if (cframe==matframes) {
-		snap->save(matfile);
+	    if (matframes>0 && cframe>=matframes)
+		// Do final output below
 		break;
+
+	    if (cframe%2000 == 0) {
+		// Break up the output
+		char tmpfile[1000];
+		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),cframe);
+		snap->save(tmpfile);
+		snap->clear();
 	    }
 	}
 
 	sendOnce=0;
     }
     fclose(fd);
+    if (!matfile.empty()) {
+	char tmpfile[1000];
+	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),cframe);
+	snap->save(tmpfile);
+    }
     return 0;
 }
 
