@@ -41,7 +41,7 @@ hold on;
 
 xy=range2xy(vis.angle,vis.range);
 
-colors='rgbcmk';
+colors='rbcmy';
 isbg=tracker.assignments(:,1)==-1;
 plotted=false(size(isbg));
 for i=1:length(tracker.tracks)
@@ -81,18 +81,23 @@ if sum(~plotted)>0
 end
 
 c=axis;
-plot(xy(:,1),xy(:,2),'g');
 
-bfreq=bg.freq/max(sum(bg.freq(1:2,:),1));
-bfreq(3,:)=1-sum(bfreq(1:2,:),1);
-[~,maxb]=max(bfreq,[],1);
-range=[];
-for i=1:length(maxb)
-  range(i)=bg.range(maxb(i),i);
+bxy=[];
+vxy=[];
+divergence=0.011;
+for i=1:length(vis.angle)
+  if (bg.freq(1,i)<0.01) || abs(vis.range(i)-bg.range(1,i))>0.1
+    vxy(end+1,:)=range2xy(vis.angle(i)-divergence,vis.range(i));
+    vxy(end+1,:)=range2xy(vis.angle(i)+divergence,vis.range(i));
+    vxy(end+1,:)=nan;
+  end
+  if (bg.freq(1,i)>0.01)
+    bxy(end+1,:)=range2xy(bg.angle(i)-divergence,bg.range(1,i));
+    bxy(end+1,:)=range2xy(bg.angle(i)+divergence,bg.range(1,i));
+    bxy(end+1,:)=nan;
+  end
 end
-params=getparams();
-range(maxb==3)=params.maxrange;
-bxy=range2xy(bg.angle,range);
+plot(vxy(:,1),vxy(:,2),'g');
 plot(bxy(:,1),bxy(:,2),'k');
 
 axis image;
