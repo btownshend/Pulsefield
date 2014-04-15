@@ -1,14 +1,18 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "frontend.h"
 #include "dbg.h"
+#include "parameters.h"
 
 static int nsick=1;
+unsigned int MAXRANGE=12000;
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr, "Usage: %s [-R | -r recordfile | -p playfile [-s] [-l] [-x slowfactor] [-m matframes [-M matfile ]] ] [-V]\n",argv[0]);
+    fprintf(stderr, "Usage: %s [-D maxrange] [-R | -r recordfile | -p playfile [-s] [-l] [-x slowfactor] [-m matframes [-M matfile ]] ] [-V]\n",argv[0]);
+    fprintf(stderr,"\t-D maxrange\t\tset maximum range in meters\n");
     fprintf(stderr,"\t-R\t\trecord into default filename based on current date and time\n");
     fprintf(stderr,"\t-r file\t\trecord into given file\n");
     fprintf(stderr,"\t-p file\t\tplayback from given file\n");
@@ -35,10 +39,13 @@ int main(int argc, char *argv[])
     int argcorig=argc;
     const char **argvorig=(const char **)argv;
 
-    while ((ch=getopt(argc,argv,"d:sr:Rp:lx:m:M:V"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:D:sr:Rp:lx:m:M:V"))!=-1) {
 	switch (ch) {
 	case 'd':
 	    SetDebug(optarg);
+	    break;
+	case 'D':
+	    MAXRANGE=(int)(atof(optarg)*1000);
 	    break;
 	case 's':
 	    singlestep=true;
