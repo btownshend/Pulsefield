@@ -206,7 +206,7 @@ void World::track( const Vis &vis, int frame, float fps) {
 	    dbg("World.track",2)  << people[i] << std::endl;
     }
 
-    if (frame%1==0)
+    if (frame%2==0)
 	draw();
 
 }
