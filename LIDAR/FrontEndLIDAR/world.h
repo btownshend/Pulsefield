@@ -48,6 +48,7 @@ public:
     // Drawing routines
     void initWindow();
     void draw() const;
+    void drawinfo(cairo_t *cr, float left,  float top, float width, float height) const;
 
     const Background &getBackground() const { return bg; }
 };
