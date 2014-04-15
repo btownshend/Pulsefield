@@ -7,3 +7,4 @@
 - swaplike may be wrong -- see frame 319 -- looks like wrong assignment
 - add grouping
 - add background outline on realtime display
+- figure out better way to align video with tracking

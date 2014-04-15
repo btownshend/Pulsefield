@@ -26,6 +26,9 @@ public:
     std::vector<float> like(const SickIO &sick) const;
     void update(const SickIO &sick, const std::vector<int> &assignments, bool all=false);
     mxArray *convertToMX() const;
+    const std::vector<float> &getRange(int i) const { return range[i]; }
+    const std::vector<float> &getFreq(int i) const { return freq[i]; }
+    float getScanRes() const { return scanRes; }
 };
 
 #endif  /* BACKGROUND_H_ */
