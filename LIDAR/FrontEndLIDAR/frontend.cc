@@ -560,10 +560,10 @@ void FrontEnd::sendInitialMessages(const char *host, int port) const {
     lo_send(addr,"/pf/set/numchannels","i",NCHANNELS);
     lo_send(addr,"/pf/set/fps","f",getFPS()*1.0f);
     if (starttime.tv_sec != 0) {
-	lo_timetag startTag;
-	startTag.sec=starttime.tv_sec;
-	startTag.frac=(uint32_t)(starttime.tv_usec*pow(2.0,32.0)/1e6);
-	lo_send(addr,"/pf/set/starttime","ii",startTag.sec,startTag.frac);  // Use ints instead of timetag since dumpOSC doesn't support timetags
+	//	lo_timetag startTag;
+	//startTag.sec=starttime.tv_sec;
+	//startTag.frac=(uint32_t)((float)starttime.tv_usec*pow(2.0,32.0)/1e6);
+	lo_send(addr,"/pf/set/starttime","ii",starttime.tv_sec,starttime.tv_usec);  // Use ints instead of timetag since dumpOSC doesn't support timetags
     }
 }
 
