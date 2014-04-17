@@ -106,6 +106,8 @@ Notes:
 
 /pf/pass/obj - commands to pass through to another object type
 
+/ack code - response to /ping
+     code - same code value as in /ping message
 
 OSC Messages to PF:
 /pf/dump - ask PF to send setup
@@ -119,3 +121,10 @@ OSC Messages to PF:
 /ping code - request /ack response with same code from tracker
       e.g. app sends '/ping 45' and server will broadcast '/ack 45'
       the code allows app to be sure its getting an answer to the ping it sent
+
+
+Client Recommendations:
+As a general procedure for dealing with dropped packets,a client can:
+- when it receives /pf/update (or leg, body), update an internal data structure with the new data (so it will still be reasonable if you miss a frame)
+- if it receives an update for an id you don't have, assume a /pf/entry was missed
+- if it receives an /pf/set/npeople with a smaller number than you currently have, assume you missed a /pf/exit.   Easiest way to do that is to drop everybody and then let subsequent updates re-add them.
