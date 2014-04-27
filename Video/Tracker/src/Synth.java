@@ -58,7 +58,7 @@ public class Synth {
 			playing.get(channel).get(pitch).cancel();
 		// Check again in case there was a race
 		if (playing.get(channel).get(pitch)!=null) {
-			System.out.println("Already playing note "+pitch+" on channel "+channel+", removing pending note-off");
+			//System.out.println("Already playing note "+pitch+" on channel "+channel+", removing pending note-off");
 			playing.get(channel).get(pitch).cancel();
 		} else {
 			myBus.sendNoteOn(channel,pitch,velocity);
@@ -66,7 +66,7 @@ public class Synth {
 		NoteOff noteOff=new NoteOff(this, pitch,64,channel);
 		playing.get(channel).put(pitch, noteOff);
 		timer.schedule(noteOff, delay);
-		System.out.println("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to channel "+channel);
+		//System.out.println("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to channel "+channel);
 	}
 
 	public void endnote(int channel, int pitch, int velocity) {
@@ -74,7 +74,7 @@ public class Synth {
 			System.out.println("Received endnote for note that isn't playing; channel="+channel+", pitch="+pitch);
 		myBus.sendNoteOff(channel, pitch, velocity);
 		playing.get(channel).remove(pitch);
-		System.out.println("Sent note off "+pitch+", vel="+velocity+" , to channel "+channel+", now have "+playing.get(channel).size()+" notes playing on this channel");
+		//System.out.println("Sent note off "+pitch+", vel="+velocity+" , to channel "+channel+", now have "+playing.get(channel).size()+" notes playing on this channel");
 	}
 
 	public MidiProgram getMidiProgam(int ch) {
