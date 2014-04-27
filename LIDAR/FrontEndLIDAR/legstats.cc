@@ -46,6 +46,14 @@ void LegStats::update(const Person &p) {
 	float cursep=(p.getLeg(0).getPosition()-p.getLeg(1).getPosition()).norm();
 	sep = sep*(1-1/LEGSTATSTC) + cursep/LEGSTATSTC;
 	// TODO: track sepSigma
+	if (sep>MEANLEGSEP*2) {
+	    dbg("LegStats",1) << "Leg separation too high at " << sep << "; reducing to " << MEANLEGSEP*2 << std::endl;
+	    sep=MEANLEGSEP*2;
+	}
+	if (sep<MEANLEGSEP/2) {
+	    dbg("LegStats",1) << "Leg separation too low at " << sep << "; increasing to " << MEANLEGSEP/2 << std::endl;
+	    sep=MEANLEGSEP/2;
+	}
     }
 }
 
