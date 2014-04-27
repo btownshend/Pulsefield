@@ -558,8 +558,16 @@ void FrontEnd::sendInitialMessages(const char *host, int port) const {
     char cbuf[10];
     sprintf(cbuf,"%d",port);
     lo_address addr = lo_address_new(host, cbuf);
-    lo_send(addr,"/pf/set/protoversion","s",PROTOVERSION);
     lo_send(addr,"/pf/started","");
+    sendSetupMessages(host,port);
+}
+
+void FrontEnd::sendSetupMessages(const char *host, int port) const {
+    dbg("FrontEnd.sendSetupMessages",2) << "Sending setup messages to " << host << ":" << port << std::endl;
+    char cbuf[10];
+    sprintf(cbuf,"%d",port);
+    lo_address addr = lo_address_new(host, cbuf);
+    lo_send(addr,"/pf/set/protoversion","s",PROTOVERSION);
     std::string allargs=arglist[0];
     for (unsigned int i=1;i<arglist.size();i++)
 	allargs+=" "+arglist[i];
@@ -587,6 +595,12 @@ void FrontEnd::sendMessages() {
 	    for (int i=0;i<dests.size();i++)
 		sendInitialMessages(dests.getHost(i),dests.getPort(i));
     }
+    if (frame%200 == 0) {
+	// Send setup messages every 200 frames
+	for (int i=0;i<dests.size();i++)
+	    sendSetupMessages(dests.getHost(i),dests.getPort(i));
+    }
+
     double elapsed=(acquired.tv_sec-starttime.tv_sec)+(acquired.tv_usec-starttime.tv_usec)*1e-6;
     world->sendMessages(dests,elapsed);
 }
@@ -598,7 +612,7 @@ void FrontEnd::addDest(const char *host, int port) {
 void FrontEnd::addDest(lo_message msg, int port) {
 	char *host=lo_url_get_hostname(lo_address_get_url(lo_message_get_source(msg)));
 	addDest(host,port);
-	sendInitialMessages(host,port);
+	sendSetupMessages(host,port);
 }
 
 void FrontEnd::rmDest(const char *host, int port) {

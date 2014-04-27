@@ -47,6 +47,7 @@ class FrontEnd {
 
     // Startup messages to OSC
     void sendInitialMessages(const char *host, int port) const;
+    void sendSetupMessages(const char *host, int port) const;
     // Current messages
     void sendMessages();
  public:
