@@ -14,6 +14,7 @@ public class Tracker extends PApplet {
 	private static boolean present = false;
 	private static boolean autocycle = false;
 	
+	private static boolean starting = true;   // Disable bad OSC messages before setup
 	private static final long serialVersionUID = 1L;
 	int tick=0;
 	private float avgFrameRate=0;
@@ -110,6 +111,9 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "pfstopped", "/pf/stopped");	
 		oscP5.plug(this, "tempo", "/tempo");
 		oscP5.plug(this, "ping", "/ping");
+		
+		PApplet.println("Setup complete");
+		starting = false;
 	}
 
 	public void tempo(float t) {
@@ -235,7 +239,11 @@ public class Tracker extends PApplet {
 
 	/* incoming osc message are forwarded to the oscEvent method. */
 	synchronized public void oscEvent(OscMessage theOscMessage) {
-		if (theOscMessage.addrPattern().startsWith("/video/app/buttons") == true)
+		if (starting)
+			return;
+		if (theOscMessage.isPlugged() == true) 
+			; // Handled elsewhere
+		else if (theOscMessage.addrPattern().startsWith("/video/app/buttons") == true)
 			vsetapp(theOscMessage);
 		else if (theOscMessage.addrPattern().startsWith("/grid")) {
 			visAbleton.handleMessage(theOscMessage);
@@ -247,7 +255,9 @@ public class Tracker extends PApplet {
 			visDDR.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
 			synth.handleMessage(theOscMessage);
-		} else if (theOscMessage.isPlugged() == false) {
+		} else if (theOscMessage.addrPattern().startsWith("/pf/set")) {
+			PApplet.println("Unhandled set message: "+theOscMessage.addrPattern());
+		} else {
 			PApplet.print("### Received an unhandled message: ");
 			theOscMessage.print();
 		}  /* print the address pattern and the typetag of the received OscMessage */
