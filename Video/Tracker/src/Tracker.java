@@ -92,11 +92,13 @@ public class Tracker extends PApplet {
 		vis[7]=new VisualizerGuitar(this,synth);
 		vis[8]=new VisualizerDot(this);
 		vis[9]=new VisualizerChuck(this);
-		setapp(1);
+		setapp(0);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
 		oscP5.plug(this, "pfupdate", "/pf/update");
+		oscP5.plug(this, "pfleg", "/pf/leg");
+		oscP5.plug(this, "pfbody", "/pf/body");
 		oscP5.plug(this, "pfsetnpeople", "/pf/set/npeople");
 		oscP5.plug(this, "pfexit", "/pf/exit");
 		oscP5.plug(this, "pfentry", "/pf/entry");
@@ -312,22 +314,37 @@ public class Tracker extends PApplet {
 		} */
 		// NOTE: Need to map xvelocity,yvelocity before using them!
 
-		if (xpos<Tracker.rawminx) {
+		if (xpos<Tracker.rawminx-1) {
 			PApplet.println("Got xpos ("+xpos+") less than minx ("+Tracker.rawminx+")");
 		}
-		if (xpos>Tracker.rawmaxx) {
+		if (xpos>Tracker.rawmaxx+1) {
 			PApplet.println("Got xpos ("+xpos+") greater than maxx ("+Tracker.rawmaxx+")");
 		}
-		if (ypos<Tracker.rawminy) {
+		if (ypos<Tracker.rawminy-1) {
 			PApplet.println("Got ypos ("+ypos+") less than miny ("+Tracker.rawminy+")");
 		}
-		if (ypos>Tracker.rawmaxy) {
+		if (ypos>Tracker.rawmaxy+1) {
 			PApplet.println("Got ypos ("+ypos+") greater than maxy ("+Tracker.rawmaxy+"),");
 		}
 
 		positions.move(id, channel, normalizePosition(mapPosition(xpos, ypos)), groupid, groupsize, elapsed);
 	}
 	
+	synchronized public void pfbody(int sampnum,int id,
+			float x,float y,float ex,float ey,
+			float spd,float espd,float heading,float eheading,
+			float facing,float efacing,
+			float diam,float sigmadiam,
+			float sep,float sigmasep,
+			float leftness,int visibility) {
+
+	}
+	synchronized public void pfleg(int sampnum,int id,int leg,int nlegs,
+			float x,float y,float ex,float ey,
+			float spd,float espd,float heading,float eheading,
+			int visibility) {
+	
+	}
 	public void pfsetminx(float minx) {  
 		Tracker.rawminx=minx;
 		resetcoords();
