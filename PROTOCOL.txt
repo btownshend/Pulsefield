@@ -1,5 +1,5 @@
 Pulsefield OSC Protocol
-Version 2.1
+Version 2.1.1
 
 Objectives:
      - transmit real time data to MAX/SC/LiveOSC/ChucK/Java efficiently
@@ -54,7 +54,7 @@ Notes:
      groupsize - number of people in group
      channel - channel number assigned
      
-/pf/leg samp target leg nlegs x y ex ey spd espd heading eheading diam sigmadiam sep sigmasep leftness visibility 
+/pf/leg samp target leg nlegs x y ex ey spd espd heading eheading visibility 
      samp - sample number 
      target - UID of target
      leg - leg number (0..nlegs-1)
@@ -74,11 +74,11 @@ Notes:
      espd, eheading - SEM of spd, heading
      facing - direction person is facing in degees
      efacing - SEM of facing direction
-     diam - estimated mean diameter of leg
+     diam - estimated mean diameter of legs
      sigmadiam - estimated sigma (sqrt(variance)) of diameter -- not the SEM, but how much it varies
-     sep - estimated mean separation of leg from other leg (or centroid if more than 2 legs)
+     sep - estimated mean separation of legs
      sigmasep - estimated sigma (sqrt(variance)) of sep -- not the SEM, but how much it varies
-     leftness - measure of how likely this leg is the left leg based on past movements, <0 is left leg, >0 is right leg
+     leftness - measure of how likely leg 0 is the left leg based on past movements, <0 is left leg, >0 is right leg
      visibility - number of frames since a positive fix was found for either leg
 
 /pf/entry samp t target channel - new target entered PF
@@ -110,11 +110,11 @@ Notes:
      code - same code value as in /ping message
 
 OSC Messages to PF:
-/pf/dump - ask PF to send setup
-	 (not currently implemented)
+/pf/dump - ask PF to resend setup
 
-/pf/adddest host port - add destination for data stream
+/pf/adddest host port fps - add destination for data stream
       all data is broadcast to all known destinations
+      fps - requested frame rate
 
 /pf/rmdest host port - remove destination
 
