@@ -67,7 +67,7 @@ abstract public class Synth {
 		NoteOff noteOff=new NoteOff(this, pitch,64,track);
 		playing.get(track).put(pitch, noteOff);
 		timer.schedule(noteOff, delay);
-		System.out.println("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to track "+track+" for channel "+channel);
+		//System.out.println("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to track "+track+" for channel "+channel);
 	}
 
 	public void endnote(int track, int pitch, int velocity) {

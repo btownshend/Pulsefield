@@ -156,7 +156,7 @@ public class Ableton {
 	}
 
 	void deviceParam(int track, int device, int parameter, float value, String name) {
-		PApplet.println("Track "+track+" device "+device+" parameter "+parameter+"("+name+"): "+value);
+		//PApplet.println("Track "+track+" device "+device+" parameter "+parameter+"("+name+"): "+value);
 	}
 	/** Handle Ableton clip info message
 	 * @param track Track number
@@ -287,7 +287,7 @@ public class Ableton {
 		msg.add(parameter);
 		msg.add(value);
 		sendMessage(msg);
-		System.out.println("/live/device track="+track+", dev="+device+", param="+parameter+", value="+value);
+		//System.out.println("/live/device track="+track+", dev="+device+", param="+parameter+", value="+value);
 	}
 
 	public void updateMacros(Positions allpos) {
