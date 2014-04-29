@@ -45,7 +45,9 @@ abstract public class Synth {
 
 	public void play(int id, int pitch, int velocity, int duration,
 			int channel) {
-		assert(channel>=0 && channel<16);
+		if(channel<0 && channel>=16) {
+			System.err.println("Warning: Bad channel: "+channel);
+		}
 		TrackSet ts=Ableton.getInstance().trackSet;
 		if (ts==null) {
 			System.err.println("synth.play: no trackSet");
