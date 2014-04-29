@@ -3,12 +3,12 @@ import oscP5.OscMessage;
 import oscP5.OscP5;
 import processing.core.PApplet;
 
-public class Max extends MidiSynth {
+public class Max extends Synth {
 	OscP5 oscP5;
 	NetAddress MXaddr;
 
 	Max(PApplet parent, OscP5 oscP5, NetAddress MXaddr) {
-		super(parent);
+		super();
 		this.oscP5=oscP5;
 		this.MXaddr=MXaddr;
 		System.out.println("MXaddr="+MXaddr);
