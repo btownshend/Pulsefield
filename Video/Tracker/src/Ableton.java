@@ -50,9 +50,11 @@ class TrackSet {
 		armed=false;
 	}
 	int getMIDIChannel(int channel) {
+		//System.out.println("getMIDIChannel("+channel+")->"+(channel%numTracks));
 		return channel%numTracks;
 	}
 	int getTrack(int channel) {
+		//System.out.println("getTrack("+channel+")->"+((channel%numTracks)+firstTrack));
 		return (channel%numTracks)+firstTrack;
 	}
 }
@@ -278,7 +280,7 @@ public class Ableton {
 		msg.add(parameter);
 		msg.add(value);
 		sendMessage(msg);
-
+		System.out.println("/live/device track="+track+", dev="+device+", param="+parameter+", value="+value);
 	}
 
 	public void updateMacros(Positions allpos) {

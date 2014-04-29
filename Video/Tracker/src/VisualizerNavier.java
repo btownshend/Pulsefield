@@ -142,15 +142,10 @@ class VisualizerNavier extends Visualizer {
 
 	public void update(PApplet parent, Positions p) {
 		Ableton.getInstance().updateMacros(p);
-		TrackSet ts=Ableton.getInstance().trackSet;
-		if (ts==null)
-			return;
 		for (Position pos: p.positions.values()) {
 			//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
-			if (pos.avgspeed.mag() > 0.1) {
-				int cnum=ts.getMIDIChannel(pos.channel);
-				synth.play(pos.id,cnum+35,127,480,cnum);
-			}
+			if (pos.avgspeed.mag() > 0.1)
+				synth.play(pos.id,pos.channel+35,127,480,pos.channel);
 		}
 		long t1=System.nanoTime();
 		int n = NavierStokesSolver.N;

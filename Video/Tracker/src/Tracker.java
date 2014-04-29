@@ -36,7 +36,7 @@ public class Tracker extends PApplet {
 	Positions positions;
 	Ableton ableton;
 	boolean useMAX;
-	Synth synth;
+	MidiSynth synth;
 	TouchOSC touchOSC;
 	int mouseID;
 	String configFile;
@@ -73,12 +73,13 @@ public class Tracker extends PApplet {
 		MAX = new NetAddress(config.getHost("MAX"), config.getPort("MAX"));
 		ableton = new Ableton(oscP5, AL);
 		touchOSC = new TouchOSC(oscP5, TO);
-		useMAX=false;
+		useMAX=true;
 
 		if (useMAX)
 			synth = new Max(this,oscP5, MAX);
 		else
-			synth = new Synth(this);
+			synth = new MidiSynth(this);
+		synth.play(0,64,100,100,1);
 		Scale scale=new Scale("Major","C");
 		
 		// Visualizers
@@ -93,7 +94,7 @@ public class Tracker extends PApplet {
 		vis[7]=new VisualizerGuitar(this,synth);
 		vis[8]=new VisualizerDot(this);
 		vis[9]=new VisualizerChuck(this);
-		setapp(0);
+		setapp(1);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");

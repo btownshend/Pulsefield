@@ -22,15 +22,10 @@ public class VisualizerPads extends VisualizerPS {
 	public void update(PApplet parent, Positions allpos) {
 		super.update(parent,allpos);
 		Ableton.getInstance().updateMacros(allpos);
-		TrackSet ts=Ableton.getInstance().trackSet;
-		if (ts==null)
-			return;
 		for (Position pos: allpos.positions.values()) {
 			//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
-			if (pos.avgspeed.mag() > 0.1) {
-				int cnum=ts.getMIDIChannel(pos.channel);
-				synth.play(pos.id,cnum+35,127,480,cnum);
-			}
+			if (pos.avgspeed.mag() > 0.1)
+				synth.play(pos.id,pos.channel+35,127,480,pos.channel);
 		}
 	}
 }
