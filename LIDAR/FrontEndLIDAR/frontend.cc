@@ -518,7 +518,7 @@ void FrontEnd::setFPS(int fps) {
 int FrontEnd::getFPS() const {
     if (nsick>0)
 	return sick[0]->getScanFreq();
-    fprintf(stderr,"Warning: assuming recorded file is at 50 FPS\n");
+    //fprintf(stderr,"Warning: assuming recorded file is at 50 FPS\n");
     return 50;
 }
 
