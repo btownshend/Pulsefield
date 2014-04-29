@@ -302,8 +302,8 @@ public class Ableton {
 				c=new ControlValues(p.origin);
 			}
 
-			int ccx=(int)((p.origin.x+1)/2*127);
-			int ccy=(int)((p.origin.y+1)/2*127);
+			int ccx=(int)((p.origin.x+1)/2*127);ccx=(ccx<0)? 0:(ccx>127?127:ccx);
+			int ccy=(int)((p.origin.y+1)/2*127);ccy=(ccy<0)? 0:(ccy>127?127:ccy);
 			int ccdx=(int)((p.avgspeed.x*3+1)/2*127); ccdx=(ccdx<0)? 0:(ccdx>127?127:ccdx);
 			int ccdy=(int)((p.avgspeed.y*3+1)/2*127);ccdy=(ccdy<0)? 0:(ccdy>127?127:ccdy);
 			int ccspeed=(int)(p.avgspeed.mag()*2*127);ccspeed=(ccspeed<0)? 0:(ccspeed>127?127:ccspeed);
