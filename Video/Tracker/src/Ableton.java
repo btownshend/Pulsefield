@@ -246,6 +246,7 @@ public class Ableton {
 	/** Set a MIDI track set
 	 * @param name of track set as defined in constructor
 	 */
+	@SuppressWarnings("unused")
 	public TrackSet setTrackSet(String name) {
 		PApplet.println("Setting Ableton track set to "+name);
 		TrackSet ts = null;
@@ -255,20 +256,23 @@ public class Ableton {
 				System.err.println("No track set called: "+name);
 			}
 		}
-		// Disarm all other tracksets
-		for (TrackSet others: tracksets.values()) {
-			if (others!=ts) {
-				for (int i=others.firstTrack;i<others.firstTrack+others.numTracks;i++)
-					arm(i,false);
-				others.armed=false;
+		// No longer need to arm/disarm since we're sending OSC notes directly to the tracks
+		if (false)  {
+			// Disarm all other tracksets
+			for (TrackSet others: tracksets.values()) {
+				if (others!=ts) {
+					for (int i=others.firstTrack;i<others.firstTrack+others.numTracks;i++)
+						arm(i,false);
+					others.armed=false;
+				}
 			}
+			if (ts!=null) {
+				// Arm this trackset
+				for (int i=ts.firstTrack;i<ts.firstTrack+ts.numTracks;i++)
+					arm(i,true);
+				ts.armed=true;
+			} 
 		}
-		if (ts!=null) {
-			// Arm this trackset
-			for (int i=ts.firstTrack;i<ts.firstTrack+ts.numTracks;i++)
-				arm(i,true);
-			ts.armed=true;
-		} 
 		trackSet=ts;
 		return ts;
 	}
