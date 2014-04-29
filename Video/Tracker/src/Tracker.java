@@ -241,7 +241,7 @@ public class Tracker extends PApplet {
 			vsetapp(theOscMessage);
 		else if (theOscMessage.addrPattern().startsWith("/grid")) {
 			visAbleton.handleMessage(theOscMessage);
-		} else if (theOscMessage.addrPattern().startsWith("/live")) {
+		} else if (theOscMessage.addrPattern().startsWith("/live") || theOscMessage.addrPattern().startsWith("/remix/error")) {
 			ableton.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/video/navier")) {
 			visNavier.handleMessage(theOscMessage);
@@ -250,7 +250,7 @@ public class Tracker extends PApplet {
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
 			synth.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/pf/set")) {
-			PApplet.println("Unhandled set message: "+theOscMessage.addrPattern());
+			// PApplet.println("Unhandled set message: "+theOscMessage.addrPattern());
 		} else {
 			PApplet.print("### Received an unhandled message: ");
 			theOscMessage.print();

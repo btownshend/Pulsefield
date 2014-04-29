@@ -112,7 +112,10 @@ public class Ableton {
 		//PApplet.println("Ableton message: "+msg.toString());
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
-		if (!components[1].equals("live")) 
+		if (components[1].equals("remix")) {
+			System.err.println("/remix:"+ msg.toString());
+			System.exit(1);
+		} else if (!components[1].equals("live")) 
 			PApplet.println("Ableton: Expected /live messages, got "+msg.toString());
 		else if (components.length==3 && components[2].equals("beat")) {
 			int b=msg.get(0).intValue();
