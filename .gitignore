@@ -70,3 +70,7 @@ LIDAR/FrontEndLIDAR/debug.out.1
 Video/Tracker/lib/themidibus-*
 
 Laser/test
+
+Laser/Debug.out
+
+Laser/osclaser
