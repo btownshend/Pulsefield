@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
     Laser laser;
     laser.open();
     laser.update();
-    OSCHandler osc(0,laser);
+    OSCHandler osc(0,&laser);
     // while (true) {
     // 	laser.update();
     // 	sleep(1);

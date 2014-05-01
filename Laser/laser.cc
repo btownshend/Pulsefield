@@ -10,10 +10,11 @@ int Laser::startBlank=10;
 
 Laser::Laser() {
     static const int NP=100;
-    drawCircle(Point(0,0),20000,NP);
-    drawCircle(Point(0,0),10000,NP);
-    drawCircle(Point(10000,0),10000,NP);
-    drawCircle(Point(-10000,0),10000,NP);
+    drawCircle(Point(0,0),32767,NP);
+    drawCircle(Point(32000,32000),767,NP);
+    drawCircle(Point(-32000,32000),767,NP);
+    drawCircle(Point(-32000,-32000),767,NP);
+    drawCircle(Point(32000,-32000),767,NP);
 }
 
 void Laser::setPoints(const std::vector<etherdream_point> &_points) {

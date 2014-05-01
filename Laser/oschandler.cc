@@ -11,6 +11,8 @@
 #include <dbg.h>
 #include "oschandler.h"
 #include "urlconfig.h"
+#include "laser.h"
+#include "point.h"
 
 int debug=1;
 
@@ -56,10 +58,12 @@ static int rmDest_handler(const char *path, const char *types, lo_arg **argv, in
 static int rmDestPort_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->rmDest(msg,argv[0]->i); return 0; }
 static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->rmAllDest(); return 0; }
 static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->ping(msg,argv[0]->i); return 0; }
+static int circle_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(msg,argv[0]->i,argv[1]->i,argv[2]->i); return 0; }
 
-OSCHandler::OSCHandler(int _unit, Laser &laser) {
+OSCHandler::OSCHandler(int _unit, Laser *_laser) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler(" << _unit << ")" << std::endl;
     unit=_unit;
+    laser=_laser;
 
 	URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
 
@@ -100,6 +104,7 @@ OSCHandler::OSCHandler(int _unit, Laser &laser) {
 	lo_server_add_method(s,"/laser/stop","",stop_handler,this);
 
 	lo_server_add_method(s,"/laser/set/fps","i",setFPS_handler,this);
+	lo_server_add_method(s,"/laser/circle","iii",circle_handler,this);
 	lo_server_add_method(s,"/ping","i",ping_handler,this);
 
 
@@ -200,4 +205,9 @@ void OSCHandler::ping(lo_message msg, int seqnum) {
 		lo_send(addr,"/ack","i",seqnum);
 		lo_address_free(addr);
 	}
+}
+
+void OSCHandler::circle(lo_message msg, int x, int y, int r) {
+    laser->drawCircle(Point(x,y),r,100);
+    laser->update();
 }

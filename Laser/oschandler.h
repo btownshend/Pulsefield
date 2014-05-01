@@ -9,6 +9,7 @@
 class Laser;
 
 class OSCHandler {
+    Laser *laser;
     int serverPort;
 
     int unit;
@@ -19,7 +20,7 @@ class OSCHandler {
     static void *processIncoming(void *arg);
 
  public:
-    OSCHandler(int unit, Laser &laser);
+    OSCHandler(int unit, Laser *_laser);
     ~OSCHandler();
 
     void run();
@@ -32,6 +33,7 @@ class OSCHandler {
     void setFPS(int fps);
     int getFPS() const;
     void ping(lo_message msg, int seqnum);
+    void circle(lo_message msg, int x, int y, int r);
 
     // Destination handling
     void addDest(const char *host, int port);
