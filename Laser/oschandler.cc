@@ -58,7 +58,9 @@ static int rmDest_handler(const char *path, const char *types, lo_arg **argv, in
 static int rmDestPort_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->rmDest(msg,argv[0]->i); return 0; }
 static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->rmAllDest(); return 0; }
 static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->ping(msg,argv[0]->i); return 0; }
-static int circle_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(msg,argv[0]->i,argv[1]->i,argv[2]->i); return 0; }
+static int circle_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(msg,argv[0]->f,argv[1]->f,argv[2]->f,argv[3]->f,argv[4]->f,argv[5]->f); return 0; }
+static int line_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->line(msg,argv[0]->f,argv[1]->f,argv[2]->f,argv[3]->f,argv[4]->f,argv[5]->f,argv[6]->f); return 0; }
+static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(msg,argv[0]->i); return 0; }
 
 OSCHandler::OSCHandler(int _unit, Laser *_laser) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler(" << _unit << ")" << std::endl;
@@ -104,7 +106,9 @@ OSCHandler::OSCHandler(int _unit, Laser *_laser) {
 	lo_server_add_method(s,"/laser/stop","",stop_handler,this);
 
 	lo_server_add_method(s,"/laser/set/fps","i",setFPS_handler,this);
-	lo_server_add_method(s,"/laser/circle","iii",circle_handler,this);
+	lo_server_add_method(s,"/laser/circle","ffffff",circle_handler,this);
+	lo_server_add_method(s,"/laser/line","fffffff",line_handler,this);
+	lo_server_add_method(s,"/laser/update","i",update_handler,this);
 	lo_server_add_method(s,"/ping","i",ping_handler,this);
 
 
@@ -207,7 +211,16 @@ void OSCHandler::ping(lo_message msg, int seqnum) {
 	}
 }
 
-void OSCHandler::circle(lo_message msg, int x, int y, int r) {
-    laser->drawCircle(Point(x,y),r,100);
-    laser->update();
+void OSCHandler::circle(lo_message msg, float x, float y, float radius, float r, float g, float b ) {
+    drawing.drawCircle(Point(x,y),radius,Color(r,g,b));
+}
+
+void OSCHandler::line(lo_message msg, float x1, float y1, float x2, float y2, float r, float g, float b) {
+    drawing.drawLine(Point(x1,y1),Point(x2,y2),Color(r,g,b));
+}
+
+void OSCHandler::update(lo_message msg, int nPoints ) {
+    std::vector<etherdream_point> pts=drawing.getPoints(nPoints);
+    laser->update(pts);
+    drawing.clear();
 }

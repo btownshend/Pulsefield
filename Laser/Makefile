@@ -11,7 +11,7 @@ LDFLAGS=-L$(LIBLO)
 LIBES=-llo
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES)
 CFLAGS=$(DEBUG) $(OPTIMZIE)
-CXXSRCS=oschandler.cc main.cc  dbg.cc dest.cc urlconfig.cc laser.cc point.cc
+CXXSRCS=oschandler.cc main.cc  dbg.cc dest.cc urlconfig.cc laser.cc point.cc drawing.cc
 CSRCS=$(EDL)/etherdream.c
 SRCS=$(CXXSRCS) $(CSRCS)
 
@@ -37,16 +37,26 @@ oschandler.o: ../../OSC/liblo-0.26/lo/lo_osc_types.h
 oschandler.o: ../../OSC/liblo-0.26/lo/lo_errors.h
 oschandler.o: ../../OSC/liblo-0.26/lo/lo_lowlevel.h
 oschandler.o: ../../OSC/liblo-0.26/lo/lo_macros.h
-oschandler.o: ../LIDAR/FrontEndLIDAR/dest.h
+oschandler.o: ../LIDAR/FrontEndLIDAR/dest.h drawing.h
+oschandler.o: ../LIDAR/FrontEndLIDAR/point.h
+oschandler.o: etherdream/driver/libetherdream/etherdream.h
+oschandler.o: etherdream/common/protocol.h laser.h
 oschandler.o: ../LIDAR/FrontEndLIDAR/urlconfig.h
-main.o: Laser.h oschandler.h ../../OSC/liblo-0.26/lo/lo.h
+main.o: Laser.h etherdream/driver/libetherdream/etherdream.h
+main.o: etherdream/common/protocol.h ../LIDAR/FrontEndLIDAR/point.h
+main.o: oschandler.h ../../OSC/liblo-0.26/lo/lo.h
 main.o: ../../OSC/liblo-0.26/lo/lo_endian.h
 main.o: ../../OSC/liblo-0.26/lo/lo_types.h
 main.o: ../../OSC/liblo-0.26/lo/lo_osc_types.h
 main.o: ../../OSC/liblo-0.26/lo/lo_errors.h
 main.o: ../../OSC/liblo-0.26/lo/lo_lowlevel.h
 main.o: ../../OSC/liblo-0.26/lo/lo_macros.h ../LIDAR/FrontEndLIDAR/dest.h
+main.o: drawing.h laser.h ../LIDAR/FrontEndLIDAR/dbg.h
 laser.o: etherdream/driver/libetherdream/etherdream.h
-laser.o: etherdream/common/protocol.h laser.h
+laser.o: etherdream/common/protocol.h laser.h ../LIDAR/FrontEndLIDAR/point.h
+laser.o: ../LIDAR/FrontEndLIDAR/dbg.h
+drawing.o: drawing.h ../LIDAR/FrontEndLIDAR/point.h
+drawing.o: etherdream/driver/libetherdream/etherdream.h
+drawing.o: etherdream/common/protocol.h laser.h ../LIDAR/FrontEndLIDAR/dbg.h
 etherdream/driver/libetherdream/etherdream.o: etherdream/driver/libetherdream/etherdream.h
 etherdream/driver/libetherdream/etherdream.o: etherdream/common/protocol.h

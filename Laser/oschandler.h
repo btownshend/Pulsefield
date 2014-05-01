@@ -5,10 +5,12 @@
 #include <pthread.h>
 #include "lo/lo.h"
 #include "dest.h"
+#include "drawing.h"
 
 class Laser;
 
 class OSCHandler {
+    Drawing drawing;
     Laser *laser;
     int serverPort;
 
@@ -33,7 +35,9 @@ class OSCHandler {
     void setFPS(int fps);
     int getFPS() const;
     void ping(lo_message msg, int seqnum);
-    void circle(lo_message msg, int x, int y, int r);
+    void circle(lo_message msg, float x, float y, float radius, float r, float g, float b);
+    void line(lo_message msg, float x1, float y1, float x2, float y2, float r, float g, float b);
+    void update(lo_message msg, int nPoints);
 
     // Destination handling
     void addDest(const char *host, int port);

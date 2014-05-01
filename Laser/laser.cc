@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 #include <math.h>
 
 #include "etherdream.h"
@@ -6,21 +7,10 @@
 #include "dbg.h"
 #include "point.h"
 
-int Laser::startBlank=10;
+const int Laser::MAXSLEWDISTANCE=65535/20;
+const int Laser::PPS=30000;
 
 Laser::Laser() {
-    static const int NP=100;
-    drawCircle(Point(0,0),32767,NP);
-    drawCircle(Point(32000,32000),767,NP);
-    drawCircle(Point(-32000,32000),767,NP);
-    drawCircle(Point(-32000,-32000),767,NP);
-    drawCircle(Point(32000,-32000),767,NP);
-}
-
-void Laser::setPoints(const std::vector<etherdream_point> &_points) {
-    dbg("Laser.setPoint",2) << "Setting to " << _points.size() << " new points" << std::endl;
-    points=_points;
-    update();
 }
 
 int Laser::open() {
@@ -48,41 +38,12 @@ int Laser::open() {
     return 0;
 }
 
-void Laser::clear() {
-    dbg("Laser.clear",2) << "clear()" << std::endl;
-    points.clear();
-}
-
-uint16_t colorsin(float pos) {
-	int res = (sin(pos) + 1) * 32768;
-	if (res < 0) return 0;
-	if (res > 65535) return 65535;
-	return res;
-}
-
-void Laser::drawCircle(Point center, float r, int npts) {
-    dbg("Laser.drawCircle",2) << "drawCircle(" << center << "," << r << "," << npts << ")" << std::endl;
-    int oldsize=points.size();
-    points.resize(points.size()+npts+startBlank);
-    struct etherdream_point *pt = &points[oldsize];
-    for (int i=0;i<startBlank;i++,pt++) {
-	pt->x=center.X();
-	pt->y=r+center.Y();
-	pt->g=0;
-	pt->r=0;
-	pt->b=0;
+void Laser::update(const std::vector<etherdream_point> points) {
+    if (points.size() < 2)  {
+	std::cerr << "Laser::update: not enough points (" << points.size() << ") -- not updating" << std::endl;
+	return;
     }
-    for (int i = 0; i < npts; i++,pt++) {
-	float ip = i * 2.0 * M_PI /npts;
-	pt->x = sin(ip) * r + center.X(); 
-	pt->y = cos(ip) * r + center.Y(); 
-	pt->g = 65535;
-	pt->r=pt->g;
-	pt->b=pt->g;
-    }
-}
 
-void Laser::update() {
     if (d==0) {
 	std::cerr << "Laser not open" << std::endl;
 	return;
@@ -94,3 +55,20 @@ void Laser::update() {
     if (res != 0)
 	printf("write %d\n", res);
 }
+
+// Get number of needed blanks for given slew
+std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdream_point final) {
+    std::vector<etherdream_point>  result;
+    // Calculate distance in device coords
+    int devdist=std::max(abs(initial.x-final.x),abs(initial.y-final.y));
+    if (devdist>0) {
+	int nblanks=std::ceil(devdist/MAXSLEWDISTANCE)+10;
+	dbg("Drawing.getPoints",2) << "Inserting " << nblanks << " for a slew of distance " << devdist << " from " << initial.x << "," << initial.y << " to " << final.x << "," << final.y << std::endl;
+	etherdream_point blank=final;
+	blank.r=0; blank.g=0;blank.b=0;
+	for (int i=0;i<nblanks;i++) 
+	    result.push_back(blank);
+    }
+    return result;
+}
+
