@@ -74,7 +74,7 @@ void Person::predict(int nstep, float fps) {
     // Check that they didn't get too close or too far apart
     float legsep=(legs[0].position-legs[1].position).norm();
     if (legsep<legStats.getDiam()-0.1) {
-	dbg("Person.predict",1) << "legs are " << legsep << " apart (< " << legStats.getDiam() << "), splitting" << std::endl;
+	dbg("Person.predict",2) << "legs are " << legsep << " apart (< " << legStats.getDiam() << "), splitting" << std::endl;
 	Point vec;
 	if (legsep>0)
 	    vec=(legs[0].position-legs[1].position)*(legStats.getDiam()/legsep-1);
@@ -85,7 +85,7 @@ void Person::predict(int nstep, float fps) {
 	legs[0].position=legs[0].position-vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
     }
     if (legsep>MAXLEGSEP+0.1) {
-	dbg("Person.predict",1) << "legs are " << legsep << " apart (> " << MAXLEGSEP << "), moving together" << std::endl;
+	dbg("Person.predict",2) << "legs are " << legsep << " apart (> " << MAXLEGSEP << "), moving together" << std::endl;
 	Point vec;
 	vec=(legs[0].position-legs[1].position)*(MAXLEGSEP/legsep-1);
 	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));

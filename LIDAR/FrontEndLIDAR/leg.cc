@@ -70,8 +70,8 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     const float LOGDIAMMU=log(ls.getDiam());
     const float LOGDIAMSIGMA=log(1+ls.getDiamSigma()/ls.getDiam());
 
-    dbg("Leg.update",2) << "Prior: " << *this << std::endl;
-    dbg("Leg.update",2) << " fs=" << fs << std::endl;
+    dbg("Leg.update",5) << "Prior: " << *this << std::endl;
+    dbg("Leg.update",5) << " fs=" << fs << std::endl;
     
     // Bound search by prior position + 2*sigma(position) + legdiam/2
     float margin;
@@ -97,7 +97,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
     if (likenx*likeny > MAXGRIDPTS) {
 	step=step*sqrt(likenx*likeny*1.0/MAXGRIDPTS);
-	dbg("Leg.update",1) << "Too many grid points (" << likenx << " x " << likeny << ") - increasing stepsize to  " << step << " mm" << std::endl;
+	dbg("Leg.update",3) << "Too many grid points (" << likenx << " x " << likeny << ") - increasing stepsize to  " << step << " mm" << std::endl;
     }
 
     minval.setX(floor(minval.X()/step)*step);
@@ -107,8 +107,8 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 
     likenx=(int)((maxval.X()-minval.X())/step+1.5);
     likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
-    dbg("Leg.update",3) << "Search box = " << minval << " : " << maxval << std::endl;
-    dbg("Leg.update",3) << "Search over a " << likenx << " x " << likeny << " grid with " << fs.size() << " points, diam=" << ls.getDiam() << " +/- *" << exp(LOGDIAMSIGMA) << std::endl;
+    dbg("Leg.update",4) << "Search box = " << minval << " : " << maxval << std::endl;
+    dbg("Leg.update",4) << "Search over a " << likenx << " x " << likeny << " grid with " << fs.size() << " points, diam=" << ls.getDiam() << " +/- *" << exp(LOGDIAMSIGMA) << std::endl;
 
     // Find the rays that will hit this box
     float theta[4];
@@ -197,7 +197,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     maxlike=*mle;
 
     if (maxlike < MINLIKEFORUPDATES) {
-	dbg("Leg.update",1) << "Very unlikely placement: MLE position= " << position << " +/- " << posvar << " with like= " << maxlike << "-- not updating estimates" << std::endl;
+	dbg("Leg.update",1) << "Very unlikely placement: MLE position= " << position << " +/- " << sqrt(posvar) << " with like= " << maxlike << "-- not updating estimates" << std::endl;
 	// Don't use this estimate to set the new leg positions, velocities, etc
 	return;
     }

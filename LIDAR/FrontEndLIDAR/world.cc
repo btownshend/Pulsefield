@@ -11,6 +11,7 @@ World::World() {
 }
 
 void World::makeAssignments(const Vis &vis, float entrylike) {
+    dbg("World.makeAssignments",3) << "makeAssignments(entrylike= " << entrylike << ")" << std::endl;
     // Calculate likelihoods of each scan belonging to each track and assign to highest likelihood
     const SickIO *sick=vis.getSick();
     bestlike.resize(sick->getNumMeasurements());
@@ -42,16 +43,16 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	}
 	if (assignments[f]>=0) {
 	    nassigned++;
-	    dbg("World.makeAssignments",2) << "Assigned scan " << f << " to track " << assignments[f] << "." << legassigned[f] << std::endl;
+	    dbg("World.makeAssignments",5) << "Assigned scan " << f << " to track " << assignments[f] << "." << legassigned[f] << std::endl;
 	} else if (assignments[f]==-2)
 	    nentries++;
 	else
 	    nbg++;
     }
 
-    dbg("World.makeAssignments",2) << "Assigned " << nassigned << " points to targets,  " << nbg  << " to background, and " << nentries << " to entries." << std::endl;
+    dbg("World.makeAssignments",3) << "Assigned " << nassigned << " points to targets,  " << nbg  << " to background, and " << nentries << " to entries." << std::endl;
     if (nbg < nassigned+nentries) {
-	dbg("World.makeAssignments",1) << "Only have " << nbg*1.0/(nbg+nassigned+nentries)*100 << "% of points assigned to background, using all points for update." << std::endl;
+	dbg("World.makeAssignments",2) << "Only have " << nbg*1.0/(nbg+nassigned+nentries)*100 << "% of points assigned to background, using all points for update." << std::endl;
 	bg.update(*sick,assignments,true);
     } else {
 	// Update background only with points assumed to be background
@@ -74,7 +75,7 @@ void World::track( const Vis &vis, int frame, float fps) {
     int num_measurements=vis.getSick()->getNumMeasurements();
     float entryprob=1-exp(-ENTRYRATE/60.0*nsteps/fps);
     float entrylike=log(entryprob/num_measurements*10);  // Like that a scan is a new entry (assumes 10 hits on avg)
-    dbg("World.track",2) << "Tracking frame " << frame << ":  entrylike=" <<  entrylike << std::endl;
+    dbg("World.track",2) << "Tracking frame " << frame << std::endl;
 
     // Calculate background likelihoods
     bglike=bg.like(*vis.getSick());

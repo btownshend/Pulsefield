@@ -31,7 +31,7 @@ LookupTable getLegSepLike(float sepmu,float sepsigma,float possigma) {
 	    tbl[ix]+=prob;
 	}
     }
-    dbg("getLegSepLike",1) << "getLegSepLike(" << sepmu << "," << sepsigma << "," << possigma << "): Size=" << tbl.size() << ", with " << nstep*ntstep << " inner loops, total table coverage=" << tbl.sum()*(step*tstep)/UNITSPERM << ", ends=" << tbl[0]*(step*tstep)/UNITSPERM << "," << tbl[tbl.size()-1]*(step*tstep)/UNITSPERM << std::endl;
+    dbg("getLegSepLike",5) << "getLegSepLike(" << sepmu << "," << sepsigma << "," << possigma << "): Size=" << tbl.size() << ", with " << nstep*ntstep << " inner loops, total table coverage=" << tbl.sum()*(step*tstep)/UNITSPERM << ", ends=" << tbl[0]*(step*tstep)/UNITSPERM << "," << tbl[tbl.size()-1]*(step*tstep)/UNITSPERM << std::endl;
     // Convert to log-like
     for (unsigned int i=0;i<tbl.size();i++)
 	if (tbl[i]==0)
