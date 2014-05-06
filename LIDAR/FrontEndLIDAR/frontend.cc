@@ -371,25 +371,24 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
     struct timeval starttime;
     gettimeofday(&starttime,0);
     int frameStep=0;
-    int lastcframe=-1;
-    int cframe;
+    int lastframe=-1;
 
     while (true) {
 	sendOnce |= sendAlways;
 	int cid,nechoes,nmeasure;
 	struct timeval acquired;
-	if (EOF==fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&cframe,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure)) {
+	if (EOF==fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&frame,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure)) {
 	    printf("EOF on %s\n",filename);
 	    break;
 	}
-	if (lastcframe==-1) 
+	if (lastframe==-1) 
 	    // Initialize file start time for reference
 	    startfile=acquired;
 
-	if (cframe!=lastcframe+1 && lastcframe!=-1)
-	    fprintf(stderr,"Input file skips frames %d-%d\n",lastcframe+1,cframe-1);
+	if (frame!=lastframe+1 && lastframe!=-1)
+	    fprintf(stderr,"Input file skips frames %d-%d\n",lastframe+1,frame-1);
 
-	lastcframe=cframe;
+	lastframe=frame;
 	while (singleStep && frameStep<=0) {
 	    printf("Num frames to step? ");
 	    char buf[100];
@@ -427,13 +426,13 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	    for (int i=0;i<nmeasure;i++)
 		fscanf(fd,"%d ",&reflect[e][i]);
 	}
-	if (cframe%100==0)
-	    printf("Playing frame %d\n",cframe);
-	sendVisMessages(cid,cframe, acquired,  nmeasure, nechoes, &rangeref[0], &reflectref[0]);
+	if (frame%100==0)
+	    printf("Playing frame %d\n",frame);
+	sendVisMessages(cid,frame, acquired,  nmeasure, nechoes, &rangeref[0], &reflectref[0]);
 	if (!sick[0])
 	    sick[0]=new SickIO();
 	
-	sick[0]->set(cid,cframe, acquired,  nmeasure, nechoes, range,reflect);
+	sick[0]->set(cid,frame, acquired,  nmeasure, nechoes, range,reflect);
 
 	
 	char dbgstr[100];
@@ -445,7 +444,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	    tmpDebug=true;
 	}
 	vis->update(sick[0]);
-	world->track(*vis,cframe,sick[0]->getScanFreq());
+	world->track(*vis,frame,sick[0]->getScanFreq());
 	sendMessages();
 
 	if (tmpDebug)
@@ -454,14 +453,14 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	if (!matfile.empty()) {
 	    snap->append(vis,world);
 	    
-	    if (matframes>0 && cframe>=matframes)
+	    if (matframes>0 && frame>=matframes)
 		// Do final output below
 		break;
 
-	    if (cframe%2000 == 0) {
+	    if (frame%2000 == 0) {
 		// Break up the output
 		char tmpfile[1000];
-		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),cframe);
+		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),frame);
 		snap->save(tmpfile);
 		snap->clear();
 	    }
@@ -472,7 +471,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
     fclose(fd);
     if (!matfile.empty()) {
 	char tmpfile[1000];
-	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),cframe);
+	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),frame);
 	snap->save(tmpfile);
     }
     return 0;
