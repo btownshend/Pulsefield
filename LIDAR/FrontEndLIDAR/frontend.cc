@@ -602,7 +602,9 @@ void FrontEnd::sendMessages() {
     }
 
     double elapsed=(acquired.tv_sec-starttime.tv_sec)+(acquired.tv_usec-starttime.tv_usec)*1e-6;
-    world->sendMessages(dests,elapsed);
+    if (frame%2 == 0)
+	// Downsample to 25 fps
+	world->sendMessages(dests,elapsed);
 }
 
 void FrontEnd::addDest(const char *host, int port) {
