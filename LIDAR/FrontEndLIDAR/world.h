@@ -12,7 +12,6 @@
 #include <vector>
 #include <ostream>
 #include <cairo-xlib.h>
-#include "target.h"
 #include "person.h"
 #include "dest.h"
 #include "background.h"

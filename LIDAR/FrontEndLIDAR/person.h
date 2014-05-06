@@ -12,7 +12,6 @@
 #include <mat.h>
 #include "lo/lo.h"
 #include "point.h"
-#include "target.h"
 #include "legstats.h"
 #include "leg.h"
 
