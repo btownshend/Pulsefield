@@ -272,7 +272,7 @@ std::set<int> World::getConnected(int i, std::set<int> current) {
 	    current=getConnected(j,current);
 	}
     }
-    dbg("World.getConnected",2) << "getConnected(" << i << ") -> " << current.size() << std::endl;
+    dbg("World.getConnected",10) << "getConnected(" << i << ") -> " << current.size() << std::endl;
     return current;
 }
 
@@ -317,19 +317,19 @@ void World::updateGroups() {
 		    if (people[*c].getGroupID() != gid || people[*c].getGroupSize() != connected.size()) {
 			if (people[*c].isGrouped())  {
 			    if (people[*c].getGroupID()==gid) {
-				dbg("World.updateGroups",1) << "Update group size for  person " << people[*c].getID()  << " to " << connected.size() << std::endl;
+				dbg("World.updateGroups",2) << "Update group size for  person " << people[*c].getID()  << " to " << connected.size() << std::endl;
 			    } else {
-				dbg("World.updateGroups",1) << "Moving  person " << people[*c].getID()  << " from group " << people[*c].getGroupID() << " to group " << gid << std::endl;
+				dbg("World.updateGroups",2) << "Moving  person " << people[*c].getID()  << " from group " << people[*c].getGroupID() << " to group " << gid << std::endl;
 			    }
 			} else {
-			    dbg("World.updateGroups",1) << "Assigning  person " << people[*c].getID()  << " to group " << gid << std::endl;
+			    dbg("World.updateGroups",2) << "Assigning  person " << people[*c].getID()  << " to group " << gid << std::endl;
 			}
 			people[*c].setGroupID(gid,connected.size());
 		    }
 		}
 	    } else if (people[i].isGrouped()) {
 		// Unconnected person
-		dbg("World.updateGroups",1) << "Ungrouping person " << people[i].getID() << " from group " << people[i].getGroupID() << std::endl;
+		dbg("World.updateGroups",2) << "Ungrouping person " << people[i].getID() << " from group " << people[i].getGroupID() << std::endl;
 		people[i].setGroupID(-1,1);
 	    }
 	}

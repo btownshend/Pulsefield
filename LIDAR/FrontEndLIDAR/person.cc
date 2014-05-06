@@ -30,8 +30,6 @@ Person::Person(int _id, const Point &leg1, const Point &leg2) {
 }
 
 Person::~Person() {
-    if (groupid!=-1)
-	std::cerr << "Warning: deleting person " << id << " who is still a member of group " << groupid << std::endl;
 }
 
 bool Person::isDead() const {
