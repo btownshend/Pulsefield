@@ -65,7 +65,7 @@ Notes:
      espd, eheading - SEM of spd, heading
      visibility - number of frames since a positive fix was found for this leg
 
-/pf/body samp target x y ex ey spd espd heading eheading facing efacing diam sigmadiam sep sigmasep leftness visibility
+/pf/body samp target x y ex ey spd espd heading eheading facing efacing legdiam sigmadiam sep sigmasep leftness visibility
      samp - sample number 
      target - UID of target
      x,y - position of person within field in m
@@ -74,9 +74,9 @@ Notes:
      espd, eheading - SEM of spd, heading
      facing - direction person is facing in degees
      efacing - SEM of facing direction
-     diam - estimated mean diameter of legs
+     legdiam - estimated mean diameter of legs (both are the same)
      sigmadiam - estimated sigma (sqrt(variance)) of diameter -- not the SEM, but how much it varies
-     sep - estimated mean separation of legs
+     sep - estimated mean separation of legs (center-to-center)
      sigmasep - estimated sigma (sqrt(variance)) of sep -- not the SEM, but how much it varies
      leftness - measure of how likely leg 0 is the left leg based on past movements, <0 is left leg, >0 is right leg
      visibility - number of frames since a positive fix was found for either leg
