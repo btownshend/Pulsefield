@@ -11,7 +11,7 @@ public class Tracker extends PApplet {
 	/**
 	 * 
 	 */
-	private static boolean present = false;
+	private static boolean present = true;
 	private static boolean autocycle = false;
 	
 	private static boolean starting = true;   // Disable bad OSC messages before setup
@@ -53,7 +53,7 @@ public class Tracker extends PApplet {
 			System.exit(1);
 		}
 
-		size(1280,800, OPENGL);
+		size(1024,768, OPENGL);
 		frameRate(30);
 		mouseID=90;
 		cycler=new AutoCycler();
@@ -91,7 +91,7 @@ public class Tracker extends PApplet {
 		vis[7]=new VisualizerGuitar(this,synth);
 		vis[8]=new VisualizerDot(this);
 		vis[9]=new VisualizerChuck(this);
-		setapp(1);
+		setapp(8);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
@@ -226,7 +226,7 @@ public class Tracker extends PApplet {
 
 	public static void main(String args[]) {
 		if (present)
-			PApplet.main(new String[] { "--present","--display=1","Tracker"});
+			PApplet.main(new String[] { "--present","--display=0","Tracker"});
 		else
 			PApplet.main(new String[] { "Tracker" });
 	}
