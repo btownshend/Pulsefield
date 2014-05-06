@@ -24,9 +24,14 @@ Person::Person(int _id, const Point &leg1, const Point &leg2) {
     age=1;
     consecutiveInvisibleCount=0;
     totalVisibleCount=1;
+
+    groupid=-1;
+    groupsize=1;
 }
 
 Person::~Person() {
+    if (groupid!=-1)
+	std::cerr << "Warning: deleting person " << id << " who is still a member of group " << groupid << std::endl;
 }
 
 bool Person::isDead() const {
@@ -40,6 +45,7 @@ bool Person::isDead() const {
 
 std::ostream &operator<<(std::ostream &s, const Person &p) {
     s << "ID " << p.id 
+      << ", GID:" << p.groupid
       << std::fixed << std::setprecision(0) 
       << ", position: " << p.position
       << ", leg1: " << p.legs[0]
@@ -135,6 +141,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     } else 
 	consecutiveInvisibleCount++;
     age++;
+
     dbg("Person.update",2) << "Done: " << *this << std::endl;
 }
 
@@ -144,7 +151,7 @@ void Person::sendMessages(lo_address &addr, int frame, double now) const {
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,
 		velocity.X()/UNITSPERM,velocity.Y()/UNITSPERM,
 		(legStats.getSep()+legStats.getDiam())/UNITSPERM,legStats.getDiam()/UNITSPERM,
-		0,0,
+		groupid,groupsize,
 		channel) < 0) {
 	std::cerr << "Failed send of /pf/update to " << lo_address_get_url(addr) << std::endl;
 	return;

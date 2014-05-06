@@ -200,6 +200,9 @@ void World::track( const Vis &vis, int frame, float fps) {
 	    i--;
 	}
 
+    // Track groups
+    updateGroups();
+
     if (DebugCheck("World.track",2) && people.size() > 0) {
 	dbg("World.track",2)  << "People at end of frame " <<  lastframe << ":" << std::endl;
 	for (unsigned int i=0;i<people.size();i++)
@@ -256,6 +259,79 @@ void World::sendMessages(Destinations &dests, double now) {
 		p->sendMessages(addr,lastframe,now);
 	}
 	lo_address_free(addr);
+    }
+}
+
+// Get all other people that are connected by <=maxdist to person i
+std::set<int> World::getConnected(int i, std::set<int> current) {
+    current.insert(i);
+    for (unsigned int j=0;j<people.size();j++)  {
+	float d=(people[i].getPosition() - people[j].getPosition()).norm();
+	if (current.count(j)==0 && (d <= GROUPDIST || (d<=UNGROUPDIST && people[i].isGrouped() && people[i].getGroupID()==people[j].getGroupID()))) {
+	    current=getConnected(j,current);
+	}
+    }
+    dbg("World.getConnected",2) << "getConnected(" << i << ") -> " << current.size() << std::endl;
+    return current;
+}
+
+// Update groups
+void World::updateGroups() {
+    // Check if any groups should be broken
+    // Occurs when a person is more than UNGROUPDIST from anyone else in the group
+    // Pass over multiple times until groupings stabilize
+    std::vector<int> membership(people.size(),-1);
+    std::set<int> usedGroups;
+
+    // Find next group ID to use
+    int nextGroupID=0;
+    for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++)
+	if (p->getGroupID() >= nextGroupID)
+	    nextGroupID=p->getGroupID()+1;
+
+    for (unsigned int i=0;i<people.size();i++) {
+	if (membership[i]==-1) {
+	    // Person is in a group, but not yet accounted for
+	    // Find their connected set (none of these will be accounted for yet)
+	    std::set<int> connected = getConnected(i,std::set<int>());
+	    if (connected.size() > 1) {
+		int gid=-1;
+		for (std::set<int>::iterator c=connected.begin();c!=connected.end();c++) {
+		    if (people[*c].isGrouped() && usedGroups.count(people[*c].getGroupID())==0) {
+			gid=people[*c].getGroupID();
+			break;
+		    }
+		}
+
+		if (gid==-1) {
+		    // Need to allocate a new groupid
+		    gid=nextGroupID;
+		    nextGroupID++;
+		}
+		usedGroups.insert(gid);
+		// Assign it
+		for (std::set<int>::iterator c=connected.begin();c!=connected.end();c++) {
+		    assert(membership[*c]==-1);
+		    membership[*c]=gid;
+		    if (people[*c].getGroupID() != gid || people[*c].getGroupSize() != connected.size()) {
+			if (people[*c].isGrouped())  {
+			    if (people[*c].getGroupID()==gid) {
+				dbg("World.updateGroups",1) << "Update group size for  person " << people[*c].getID()  << " to " << connected.size() << std::endl;
+			    } else {
+				dbg("World.updateGroups",1) << "Moving  person " << people[*c].getID()  << " from group " << people[*c].getGroupID() << " to group " << gid << std::endl;
+			    }
+			} else {
+			    dbg("World.updateGroups",1) << "Assigning  person " << people[*c].getID()  << " to group " << gid << std::endl;
+			}
+			people[*c].setGroupID(gid,connected.size());
+		    }
+		}
+	    } else if (people[i].isGrouped()) {
+		// Unconnected person
+		dbg("World.updateGroups",1) << "Ungrouping person " << people[i].getID() << " from group " << people[i].getGroupID() << std::endl;
+		people[i].setGroupID(-1,1);
+	    }
+	}
     }
 }
 

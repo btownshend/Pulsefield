@@ -37,6 +37,7 @@ class World {
     pthread_t displayThread;
     static void *runDisplay(void *w);
     void makeAssignments(const Vis &vis, float entrylike);
+    std::set<int>  getConnected(int i, std::set<int> current);
 public:
     World();
     // Track people and send update messages
@@ -44,6 +45,9 @@ public:
     void deleteLostPeople();
     void sendMessages(Destinations &dests, double now);
     mxArray *convertToMX() const;
+
+    // Update groups
+   void updateGroups();
 
     // Drawing routines
     void initWindow();

@@ -52,7 +52,7 @@ Notes:
      major,minor - major/minor axis size in m
      groupid - id number of group
      groupsize - number of people in group
-     channel - channel number assigned
+     channel - channel number assigned (from 0..numchannels-1; see /pf/set messages)
      
 /pf/leg samp target leg nlegs x y ex ey spd espd heading eheading visibility 
      samp - sample number 

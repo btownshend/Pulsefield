@@ -25,6 +25,10 @@ class Person {
     Point position;
     Point velocity;
 
+    // Grouping
+    int groupid;
+    int groupsize;
+
     // Aging, visibility
     int age;
     int consecutiveInvisibleCount;
@@ -49,6 +53,10 @@ public:
     float getMaxLike() const { return legs[0].maxlike+legs[1].maxlike; }
     const LegStats &getLegStats() const { return legStats; }
     int getAge() const { return age; }
+    int getGroupID() const { return groupid; }
+    unsigned int getGroupSize() const { return groupsize; }
+    void setGroupID(int gid, unsigned int gsize) { groupid=gid; groupsize=gsize; }
+    bool isGrouped() const { return groupid!=-1; }
     float getObsLike(const Point &pt, int leg, int frame) const;   // Get likelihood of an observed echo at pt hitting leg given current model
     // Send /pf/ OSC messages
     void sendMessages(lo_address &addr, int frame, double now) const;
