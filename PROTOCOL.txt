@@ -1,5 +1,5 @@
 Pulsefield OSC Protocol
-Version 2.1.1
+Version 2.2
 
 Objectives:
      - transmit real time data to MAX/SC/LiveOSC/ChucK/Java efficiently
@@ -50,8 +50,7 @@ Notes:
      x,y - position within field in meters
      vx,vy - estimate of velocity in m/s
      major,minor - major/minor axis size in m
-     groupid - id number of group (-1 if not in any group), groups start at 0 and new groups are assigned as 1 higher than the highest current group.  
-		Groups are formed when people are within 'groupdist' of another person and are broken when more than 'ungroupdist' (See /pf/set messages)
+     groupid - id number of group (0 if not in any group), groups start at 1 and new groups are assigned as 1 higher than the highest current group. Groups are formed when people are within 'groupdist' of another person and are broken when more than 'ungroupdist' (See /pf/set messages)
      groupsize - number of people in group (including this person, so always at least 1)
      channel - channel number assigned (from 1..numchannels; see /pf/set messages)
      
@@ -82,6 +81,20 @@ Notes:
      leftness - measure of how likely leg 0 is the left leg based on past movements, <0 is left leg, >0 is right leg
      visibility - number of frames since a positive fix was found for either leg
 
+/pf/group samp gid gsize duration diameter
+     samp - sample number
+     gid - group ID (used in individual /pf/update messages)
+     gsize - number of people in group
+     duration - time since first formed in seconds
+     diameter - current diameter (mean distance of individuals from centroid)
+
+/pf/geo samp target fromcenter fromothers fromexit
+     samp - sample number 
+     target - UID of target
+     fromcenter -This person's distance from geographic center of everyone (in meters)
+     fromnearest - This person's distance from the nearest other person (-1 if nobody else)
+     fromexit - This person's distance from nearest exit from tracked area
+
 /pf/entry samp t target channel - new target entered PF
      sent before first /pf/update message for that target
      samp - sample number
@@ -104,8 +117,6 @@ Notes:
      fps - frames per second
      source - string describing where the data came from
      starttime - time in UTC corresponding to sample time 0 above (OSC Time tag semantics, but as two integers)
-
-/pf/pass/obj - commands to pass through to another object type
 
 /ack code - response to /ping
      code - same code value as in /ping message
