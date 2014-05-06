@@ -50,8 +50,9 @@ Notes:
      x,y - position within field in meters
      vx,vy - estimate of velocity in m/s
      major,minor - major/minor axis size in m
-     groupid - id number of group
-     groupsize - number of people in group
+     groupid - id number of group (-1 if not in any group), groups start at 0 and new groups are assigned as 1 higher than the highest current group.  
+		Groups are formed when people are within 'groupdist' of another person and are broken when more than 'ungroupdist' (See /pf/set messages)
+     groupsize - number of people in group (including this person, so always at least 1)
      channel - channel number assigned (from 0..numchannels-1; see /pf/set messages)
      
 /pf/leg samp target leg nlegs x y ex ey spd espd heading eheading visibility 
