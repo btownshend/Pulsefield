@@ -29,7 +29,7 @@ Notes:
         - formed when people approach within 'groupdist' meters of someone else (based on body position)
 	- broken when people are separated by more then 'ungroupdist' meters
      - Channels are assigned sequentially such that:
-        - channel numbers 0..numchannels-1
+        - channel numbers 1..numchannels
 	- new person gets lowest unused channel number if one available
 	- if more than numchannels people, then lowest channel with only 1 person is assigned (etc for 2,3.. people/channel)
      - setup messages are only sent when PF first starts or when a new destination is added
@@ -53,7 +53,7 @@ Notes:
      groupid - id number of group (-1 if not in any group), groups start at 0 and new groups are assigned as 1 higher than the highest current group.  
 		Groups are formed when people are within 'groupdist' of another person and are broken when more than 'ungroupdist' (See /pf/set messages)
      groupsize - number of people in group (including this person, so always at least 1)
-     channel - channel number assigned (from 0..numchannels-1; see /pf/set messages)
+     channel - channel number assigned (from 1..numchannels; see /pf/set messages)
      
 /pf/leg samp target leg nlegs x y ex ey spd espd heading eheading visibility 
      samp - sample number 

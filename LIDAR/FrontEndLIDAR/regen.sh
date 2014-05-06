@@ -15,7 +15,7 @@ PID=$!
 sleep 2
 
 # Start frontend
-./frontend -d1 -x1 -p "$recdir/$base.ferec" 
+./frontend -d2 -x1 -p "$recdir/$base.ferec" 
 
 # Kill OSC program
 kill $!
