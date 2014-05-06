@@ -38,6 +38,8 @@ class OSCHandler {
     void circle(lo_message msg, float x, float y, float radius, float r, float g, float b);
     void line(lo_message msg, float x1, float y1, float x2, float y2, float r, float g, float b);
     void update(lo_message msg, int nPoints);
+    void map(lo_message msg, float x1, float y1, float x2, float y2);
+    void setTransform(lo_message msg);
 
     // Destination handling
     void addDest(const char *host, int port);

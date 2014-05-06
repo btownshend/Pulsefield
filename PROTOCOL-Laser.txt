@@ -1,0 +1,56 @@
+CRS OSC Protocol for laser displays
+Version 0.1
+
+Objectives:
+     - transmit display information to laser display
+     - should be possible to display needed geometries
+     - allows for laser driver to optimize conversion of figures into points for display
+     - easy to use in applications
+
+Design:
+     - set of geometric primitives
+     - coordinates are all in real space (x,y,z) in meters
+          - z=0 is floor
+	  - (x,y) origin determined elsewhere (for CRS, by position of LIDAR)
+
+
+Notes:
+     - (x,y) positions are relative to LIDAR sensor;
+	(0,1) is 1m directly in front of sensor,
+	(1,0) is 1m to the right of sensor (from the sensor's point of view)
+     - colors are triplets of float numbers from 0.0-1.0  (red,green,blue)
+          - for green animation laser, laser is on if green>0.5, off otherwise
+
+/laser/start - start laser display
+/laser/stop - stop laser display
+/laser/line x1 y1 z1 x2 y2 z2 red green blue
+/laser/arc cx cy cz x1 y1 z1 deg red green blue
+	   - draw an arc
+     cx,cy,cz - center of arc
+     x1,y1,z1 - initial position on arc	  
+     deg - number of degrees to move along arc (360 for full circle)
+     red,green,blue - color
+
+/laser/set/style attribute value
+		 Set drawing style; applies to all subsequent drawing up until next /laser/update
+     attribute - string attribute name
+     value - float value for attribute
+
+/laser/update npoints
+	      Send current drawing to laser, clear geomtries styles
+     npoints - attempt to use this many points in drawing
+
+/laser/set/scanner PPS blankcount
+	Set scanner parameters
+     PPS - points per second (default: 30000)
+     blankstart - points to blank after slewing
+     blankend - points to blank before slewing
+     colorskew - number of points late that color information takes effect after corresponding points (default: 0)
+
+/ping code - request /ack response with same code
+      e.g. app sends '/ping 45' and server will broadcast '/ack 45'
+      the code allows app to be sure its getting an answer to the ping it sent
+
+OSC Messages From Laser:
+/ack code - response to /ping
+     code - same code value as in /ping message

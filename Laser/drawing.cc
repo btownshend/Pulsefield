@@ -1,6 +1,8 @@
+#include <iostream>
 #include <cmath>
 #include "drawing.h"
 #include "dbg.h"
+#include "opencv2/imgproc/imgproc.hpp"
 
 std::ostream& operator<<(std::ostream& s, const Color &col) {
     return s << "[" << col.r << "," << col.g << "," << col.b << "]";
@@ -12,13 +14,28 @@ Transform::Transform() {
 }
 
 void Transform::clear() {
-    transform[0]=1; transform[1]=0; transform[2]=0;
-    transform[3]=0; transform[4]=1; transform[5]=0;
+    transform=cv::Mat::eye(3,3,CV_32F);
+}
+
+// Find the perspective transform that best matches the 3 points loaded
+void Transform::setTransform() {
+    if (floorpts.size() != 4) {
+	std::cerr << "setTransform() called after " <<floorpts.size() << " points added -- must be exactly 4" << std::endl;
+    } else {
+	transform=cv::getPerspectiveTransform(floorpts,devpts);
+    }
+    floorpts.clear();
+    devpts.clear();
 }
 
 etherdream_point Transform::mapToDevice(Point floorPt,Color c) const {
     etherdream_point p;
-    int x=round(floorPt.X()*transform[0]+floorPt.Y()*transform[1]+transform[2]);
+    std::vector<cv::Point2f> src(1);
+    src[0].x=floorPt.X();
+    src[0].y=floorPt.Y();
+    std::vector<cv::Point2f> dst;
+    cv::perspectiveTransform(src,dst,transform);
+    int x=round(dst[0].x);
     if (x<-32768)
 	p.x=-32768;
     else if (x>32767)
@@ -26,7 +43,7 @@ etherdream_point Transform::mapToDevice(Point floorPt,Color c) const {
     else
 	p.x=x;
 
-    int y=round(floorPt.X()*transform[3]+floorPt.Y()*transform[4]+transform[5]);
+    int y=round(dst[0].y);
     if (y<-32768)
 	p.y=-32768;
     else if (y>32767)
@@ -63,8 +80,9 @@ std::vector<etherdream_point> Circle::getPoints(float pointSpacing,const Transfo
 	initphase=0;
     else {
 	// Find phase closest to prior point
-	initphase=atan2(priorPoint->y-devcenter.y,priorPoint->x-devcenter.x);
-	dbg("Circle.getPoints",3) << "Initial phase = " << initphase << std::endl;
+	Point delta(priorPoint->x-devcenter.x,priorPoint->y-devcenter.y);
+	initphase=atan2(delta.Y(),delta.X());
+	dbg("Circle.getPoints",3) << "Delta=" << delta << ", initial phase = " << initphase << std::endl;
     }
     for (int i = 0; i < npoints; i++,pt++) {
 	float phase = i * 2.0 * M_PI /(npoints-1)+initphase;

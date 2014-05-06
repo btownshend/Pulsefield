@@ -60,6 +60,8 @@ static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv,
 static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->ping(msg,argv[0]->i); return 0; }
 static int circle_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(msg,argv[0]->f,argv[1]->f,argv[2]->f,argv[3]->f,argv[4]->f,argv[5]->f); return 0; }
 static int line_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->line(msg,argv[0]->f,argv[1]->f,argv[2]->f,argv[3]->f,argv[4]->f,argv[5]->f,argv[6]->f); return 0; }
+static int map_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->map(msg,argv[0]->f,argv[1]->f,argv[2]->f,argv[3]->f); return 0; }
+static int setTransform_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setTransform(msg); return 0; }
 static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(msg,argv[0]->i); return 0; }
 
 OSCHandler::OSCHandler(int _unit, Laser *_laser) {
@@ -108,6 +110,8 @@ OSCHandler::OSCHandler(int _unit, Laser *_laser) {
 	lo_server_add_method(s,"/laser/set/fps","i",setFPS_handler,this);
 	lo_server_add_method(s,"/laser/circle","ffffff",circle_handler,this);
 	lo_server_add_method(s,"/laser/line","fffffff",line_handler,this);
+	lo_server_add_method(s,"/laser/map","ffff",map_handler,this);
+	lo_server_add_method(s,"/laser/settransform","",setTransform_handler,this);
 	lo_server_add_method(s,"/laser/update","i",update_handler,this);
 	lo_server_add_method(s,"/ping","i",ping_handler,this);
 
@@ -217,6 +221,14 @@ void OSCHandler::circle(lo_message msg, float x, float y, float radius, float r,
 
 void OSCHandler::line(lo_message msg, float x1, float y1, float x2, float y2, float r, float g, float b) {
     drawing.drawLine(Point(x1,y1),Point(x2,y2),Color(r,g,b));
+}
+
+void OSCHandler::map(lo_message msg, float x1, float y1, float x2, float y2) {
+    drawing.addToMap(Point(x1,y1),Point(x2,y2));
+}
+
+void OSCHandler::setTransform(lo_message msg) {
+    drawing.setTransform();
 }
 
 void OSCHandler::update(lo_message msg, int nPoints ) {

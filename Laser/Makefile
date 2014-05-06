@@ -3,14 +3,16 @@ UTIL=../LIDAR/FrontEndLIDAR    # For dbg
 VPATH=.:$(UTIL)
 LIBLO=$(BASEDIR)/OSC/liblo-0.26
 
+OPENCV=-lopencv_imgproc -lopencv_core 
+
 ED=etherdream
 EDL=$(ED)/driver/libetherdream
 INCLUDES=-I$(ED)/driver/libetherdream -I$(ED)/common -I$(UTIL) -I$(LIBLO)
 DEBUG=-g -Wall
 LDFLAGS=-L$(LIBLO)
-LIBES=-llo
+LIBES=-llo $(OPENCV)
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES)
-CFLAGS=$(DEBUG) $(OPTIMZIE)
+CFLAGS=$(DEBUG) $(OPTIMIZE)
 CXXSRCS=oschandler.cc main.cc  dbg.cc dest.cc urlconfig.cc laser.cc point.cc drawing.cc
 CSRCS=$(EDL)/etherdream.c
 SRCS=$(CXXSRCS) $(CSRCS)

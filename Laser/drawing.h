@@ -5,6 +5,7 @@
 #include "etherdream.h"
 #include "laser.h"
 #include "dbg.h"
+#include "opencv2/core/core.hpp"
 
 class Color {
     float r,g,b;
@@ -19,16 +20,23 @@ class Color {
 
 // Transformation between floor (meter) space and device (-32767:32767) space
 class Transform {
-    std::vector<float> transform;  // Dx=t[0]*x+t[1]*y+t[2]; Dy=t[3]*x+t[4]*y+t[5];
+    cv::Mat transform; 
+    std::vector<cv::Point2f> floorpts, devpts;
  public:
     Transform();
     void clear();
-    void set(std::vector<float> t) { transform=t; }
     // Set transform based on floor space coordinates of particular device space points
     void set(std::vector<Point> devPts, std::vector<Point> floorPts);
     // Mapping, if out-of-range, return clipped point
     etherdream_point mapToDevice(Point floorPt,Color c) const;
     std::vector<etherdream_point> mapToDevice(std::vector<Point> floorPts,Color c) const;
+
+    // Computer transform matrix from set of points already provided
+    void setTransform();
+    void addToMap(Point devSpace, Point floorSpace) {
+	floorpts.push_back(cv::Point2f(floorSpace.X(), floorSpace.Y()));
+	devpts.push_back(cv::Point2f(devSpace.X(), devSpace.Y()));
+    }
 };
 
 class Primitive {
@@ -72,8 +80,12 @@ class Drawing {
     Drawing() { ; }
 
     // Set transform matrix
-    void setTransform(const Transform &t) {
-	transform=t;
+    void setTransform() {
+	transform.setTransform();
+    }
+
+    void addToMap(Point devSpace, Point floorSpace) {
+	transform.addToMap(devSpace,floorSpace);
     }
 
     // Number of primitives (which gives number of jumps)
