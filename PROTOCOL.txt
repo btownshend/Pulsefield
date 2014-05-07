@@ -81,11 +81,12 @@ Notes:
      leftness - measure of how likely leg 0 is the left leg based on past movements, <0 is left leg, >0 is right leg
      visibility - number of frames since a positive fix was found for either leg
 
-/pf/group samp gid gsize duration diameter
+/pf/group samp gid gsize duration centroidX centroidY diameter
      samp - sample number
      gid - group ID (used in individual /pf/update messages)
      gsize - number of people in group
      duration - time since first formed in seconds
+     centroidX, centroidY - location of centroid of group
      diameter - current diameter (mean distance of individuals from centroid)
 
 /pf/geo samp target fromcenter fromothers fromexit

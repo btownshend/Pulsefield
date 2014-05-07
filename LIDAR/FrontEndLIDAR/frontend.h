@@ -25,6 +25,7 @@ class FrontEnd {
     lo_server s;
     
     int frame;
+    struct timeval currenttime; 	// Time of last acquired frame (set either during realtime operation or by using stored acquired time when reading from a file)
     long int sendOnce, sendAlways;
 
     // Start time of run (used to set zero reference)
@@ -49,7 +50,7 @@ class FrontEnd {
     void sendInitialMessages(const char *host, int port) const;
     void sendSetupMessages(const char *host, int port) const;
     // Current messages
-    void sendMessages();
+    void sendMessages(double elapsed);
  public:
     enum { RANGE=0x10, REFLECT=0x20, PF=0x40 };  // Bitmasks of what to send in next message group
 

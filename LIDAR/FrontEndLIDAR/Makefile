@@ -18,7 +18,7 @@ CAIROLIBES=-lcairo -lX11
 
 OPENCVINC=-I/opt/local/include/opencv2
 OPENCVLIBDIR=/opt/local/lib
-OPENCVLIBES=-lopencv_ml -lopencv_core
+OPENCVLIBES=-lopencv_ml -lopencv_video -lopencv_core
 
 CXX=/opt/local/bin/g++
 #DEBUG=-g -Wall -Wno-c++11-extensions
@@ -28,8 +28,8 @@ OPTIMIZE=-O3
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/base/src -I$(SICKTOOLBOX)/lms5xx -I$(MATLABINC) -I$(CAIROINC) $(OPENCVINC) -I/opt/X11/include -Wno-overloaded-virtual
 CFLAGS=$(DEBUG)  $(OPTIMIZE)
 LDFLAGS=-L$(LIBLO) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) -L$(CAIROLIBDIR)
-LIBES=-llo $(SICKLIB) $(MATLABLIBES) $(CAIROLIBES) -g 
-CXXSRCS=frontend.cc dest.cc main.cc urlconfig.cc sickio.cc background.cc world.cc snapshot.cc vis.cc person.cc dbg.cc point.cc worlddraw.cc lookuptable.cc  leg.cc legstats.cc
+LIBES=-llo $(SICKLIB) $(MATLABLIBES) $(CAIROLIBES) -L$(OPENCVLIBDIR) $(OPENCVLIBES) -g 
+CXXSRCS=frontend.cc dest.cc main.cc urlconfig.cc sickio.cc background.cc world.cc snapshot.cc vis.cc person.cc dbg.cc point.cc worlddraw.cc lookuptable.cc  leg.cc legstats.cc groups.cc
 CSRCS=
 SRCS=$(CXXSRCS) $(CSRCS)
 all: frontend
@@ -74,8 +74,9 @@ frontend.o: /opt/local/include/cairo/cairo-features.h
 frontend.o: /opt/local/include/cairo/cairo-deprecated.h
 frontend.o: /opt/X11/include/X11/Xlib.h /opt/X11/include/X11/X.h
 frontend.o: /opt/X11/include/X11/Xfuncproto.h /opt/X11/include/X11/Xosdefs.h
-frontend.o: person.h legstats.h leg.h background.h snapshot.h vis.h dbg.h
-frontend.o: parameters.h
+frontend.o: person.h legstats.h leg.h kalmanfilter.h
+frontend.o: /opt/local/include/opencv2/video/tracking.hpp background.h
+frontend.o: groups.h snapshot.h vis.h dbg.h parameters.h
 dest.o: dest.h dbg.h
 main.o: frontend.h ../../../OSC/liblo-0.26/lo/lo.h
 main.o: ../../../OSC/liblo-0.26/lo/lo_endian.h
@@ -126,7 +127,9 @@ world.o: /opt/X11/include/X11/Xfuncproto.h /opt/X11/include/X11/Xosdefs.h
 world.o: person.h /Applications/MATLAB_R2014a.app/extern/include/mat.h
 world.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 world.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h point.h
-world.o: legstats.h leg.h dest.h background.h sickio.h
+world.o: legstats.h leg.h kalmanfilter.h
+world.o: /opt/local/include/opencv2/video/tracking.hpp dest.h background.h
+world.o: sickio.h
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -134,7 +137,7 @@ world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuff
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-world.o: vis.h dbg.h parameters.h
+world.o: groups.h vis.h dbg.h parameters.h
 snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
 snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
@@ -159,8 +162,9 @@ snapshot.o: ../../../OSC/liblo-0.26/lo/lo_types.h
 snapshot.o: ../../../OSC/liblo-0.26/lo/lo_osc_types.h
 snapshot.o: ../../../OSC/liblo-0.26/lo/lo_errors.h
 snapshot.o: ../../../OSC/liblo-0.26/lo/lo_lowlevel.h
-snapshot.o: ../../../OSC/liblo-0.26/lo/lo_macros.h legstats.h leg.h dest.h
-snapshot.o: background.h snapshot.h vis.h
+snapshot.o: ../../../OSC/liblo-0.26/lo/lo_macros.h legstats.h leg.h
+snapshot.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
+snapshot.o: dest.h background.h groups.h snapshot.h vis.h
 vis.o: vis.h sickio.h
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -183,7 +187,8 @@ person.o: ../../../OSC/liblo-0.26/lo/lo_osc_types.h
 person.o: ../../../OSC/liblo-0.26/lo/lo_errors.h
 person.o: ../../../OSC/liblo-0.26/lo/lo_lowlevel.h
 person.o: ../../../OSC/liblo-0.26/lo/lo_macros.h point.h legstats.h leg.h
-person.o: vis.h sickio.h
+person.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp vis.h
+person.o: sickio.h
 person.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -191,7 +196,7 @@ person.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuf
 person.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-person.o: parameters.h dbg.h normal.h lookuptable.h
+person.o: parameters.h dbg.h normal.h lookuptable.h groups.h
 dbg.o: dbg.h
 point.o: point.h
 worlddraw.o: /opt/local/include/cairo/cairo.h
@@ -212,6 +217,7 @@ worlddraw.o: ../../../OSC/liblo-0.26/lo/lo_osc_types.h
 worlddraw.o: ../../../OSC/liblo-0.26/lo/lo_errors.h
 worlddraw.o: ../../../OSC/liblo-0.26/lo/lo_lowlevel.h
 worlddraw.o: ../../../OSC/liblo-0.26/lo/lo_macros.h point.h legstats.h leg.h
+worlddraw.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
 worlddraw.o: dest.h background.h sickio.h
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -220,7 +226,7 @@ worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-worlddraw.o: dbg.h parameters.h
+worlddraw.o: groups.h dbg.h parameters.h
 lookuptable.o: lookuptable.h normal.h dbg.h parameters.h
 leg.o: ../../../OSC/liblo-0.26/lo/lo.h ../../../OSC/liblo-0.26/lo/lo_endian.h
 leg.o: ../../../OSC/liblo-0.26/lo/lo_types.h
@@ -228,6 +234,7 @@ leg.o: ../../../OSC/liblo-0.26/lo/lo_osc_types.h
 leg.o: ../../../OSC/liblo-0.26/lo/lo_errors.h
 leg.o: ../../../OSC/liblo-0.26/lo/lo_lowlevel.h
 leg.o: ../../../OSC/liblo-0.26/lo/lo_macros.h legstats.h leg.h point.h
+leg.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
 leg.o: parameters.h dbg.h normal.h vis.h sickio.h
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -250,4 +257,17 @@ legstats.o: ../../../OSC/liblo-0.26/lo/lo_osc_types.h
 legstats.o: ../../../OSC/liblo-0.26/lo/lo_errors.h
 legstats.o: ../../../OSC/liblo-0.26/lo/lo_lowlevel.h
 legstats.o: ../../../OSC/liblo-0.26/lo/lo_macros.h point.h legstats.h leg.h
+legstats.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
 legstats.o: parameters.h dbg.h
+groups.o: groups.h ../../../OSC/liblo-0.26/lo/lo.h
+groups.o: ../../../OSC/liblo-0.26/lo/lo_endian.h
+groups.o: ../../../OSC/liblo-0.26/lo/lo_types.h
+groups.o: ../../../OSC/liblo-0.26/lo/lo_osc_types.h
+groups.o: ../../../OSC/liblo-0.26/lo/lo_errors.h
+groups.o: ../../../OSC/liblo-0.26/lo/lo_lowlevel.h
+groups.o: ../../../OSC/liblo-0.26/lo/lo_macros.h person.h
+groups.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
+groups.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+groups.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h point.h
+groups.o: legstats.h leg.h kalmanfilter.h
+groups.o: /opt/local/include/opencv2/video/tracking.hpp dbg.h

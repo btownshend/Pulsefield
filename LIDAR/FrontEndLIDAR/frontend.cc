@@ -255,6 +255,15 @@ void *FrontEnd::processIncoming(void *arg) {
 
 void FrontEnd::processFrames() {
     dbg("FrontEnd.processFrame",1) << "Processing frame " << frame << std::endl;
+	
+	char dbgstr[100];
+	sprintf(dbgstr,"Frame.%d",sick[0]->getFrame());
+	bool tmpDebug=false;
+	if (DebugCheck(dbgstr,20)) {
+	    PushDebugSettings();
+	    SetDebug("20");
+	    tmpDebug=true;
+	}
 
 	sendOnce |= sendAlways;
 	for (int c=0;c<nsick;c++) {
@@ -270,13 +279,18 @@ void FrontEnd::processFrames() {
 	    // clear valid flag so another frame can be read
 	    sick[c]->clearValid();
 	}
+	currenttime=sick[0]->getAcquired();
+	if (starttime.tv_sec==0)
+	    starttime=currenttime;
 	vis->update(sick[0]);
-	world->track(*vis,frame,sick[0]->getScanFreq());
-	sendMessages();
-
+	double elapsed=(currenttime.tv_sec-starttime.tv_sec)+(currenttime.tv_usec-starttime.tv_usec)*1e-6;
+	world->track(*vis,frame,sick[0]->getScanFreq(),elapsed);
+	sendMessages(elapsed);
 	sendOnce=0;
-
 	frame=frame+1;
+
+	if (tmpDebug)
+	    PopDebugSettings();
 }
 
 void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
@@ -360,12 +374,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
     }
     unsigned int range[SickIO::MAXECHOES][SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
     unsigned int reflect[SickIO::MAXECHOES][SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
-    const unsigned int *rangeref[SickIO::MAXECHOES];
-    const unsigned int *reflectref[SickIO::MAXECHOES];
-    for (int i=0;i<SickIO::MAXECHOES;i++) {
-	rangeref[i]=range[i];
-	reflectref[i]=reflect[i];
-    }
 
     struct timeval startfile;
     struct timeval starttime;
@@ -374,7 +382,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
     int lastframe=-1;
 
     while (true) {
-	sendOnce |= sendAlways;
 	int cid,nechoes,nmeasure;
 	struct timeval acquired;
 	if (EOF==fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&frame,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure)) {
@@ -428,27 +435,11 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	}
 	if (frame%100==0)
 	    printf("Playing frame %d\n",frame);
-	sendVisMessages(cid,frame, acquired,  nmeasure, nechoes, &rangeref[0], &reflectref[0]);
 	if (!sick[0])
 	    sick[0]=new SickIO();
 	
 	sick[0]->set(cid,frame, acquired,  nmeasure, nechoes, range,reflect);
-
-	
-	char dbgstr[100];
-	sprintf(dbgstr,"Frame.%d",sick[0]->getFrame());
-	bool tmpDebug=false;
-	if (DebugCheck(dbgstr,20)) {
-	    PushDebugSettings();
-	    SetDebug("20");
-	    tmpDebug=true;
-	}
-	vis->update(sick[0]);
-	world->track(*vis,frame,sick[0]->getScanFreq());
-	sendMessages();
-
-	if (tmpDebug)
-	    PopDebugSettings();
+	processFrames();
 
 	if (!matfile.empty()) {
 	    snap->append(vis,world);
@@ -466,7 +457,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	    }
 	}
 
-	sendOnce=0;
     }
     fclose(fd);
     if (!matfile.empty()) {
@@ -587,12 +577,12 @@ void FrontEnd::sendSetupMessages(const char *host, int port) const {
     }
 }
 
-void FrontEnd::sendMessages() {
-    struct timeval acquired=sick[0]->getAcquired();
-    if  (starttime.tv_sec==0) {
-	    starttime=acquired;
+void FrontEnd::sendMessages(double elapsed) {
+    static bool firsttime=true;
+    if  (firsttime) {
 	    for (int i=0;i<dests.size();i++)
 		sendInitialMessages(dests.getHost(i),dests.getPort(i));
+	    firsttime=false;
     }
     if (frame%200 == 0) {
 	// Send setup messages every 200 frames
@@ -600,7 +590,6 @@ void FrontEnd::sendMessages() {
 	    sendSetupMessages(dests.getHost(i),dests.getPort(i));
     }
 
-    double elapsed=(acquired.tv_sec-starttime.tv_sec)+(acquired.tv_usec-starttime.tv_usec)*1e-6;
     if (frame%2 == 0)
 	// Downsample to 25 fps
 	world->sendMessages(dests,elapsed);

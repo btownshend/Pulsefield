@@ -5,8 +5,7 @@
  *      Author: bst
  */
 
-#ifndef PERSON_H_
-#define PERSON_H_
+#pragma once
 
 #include <ostream>
 #include <mat.h>
@@ -16,6 +15,7 @@
 #include "leg.h"
 
 class Vis;
+class Group;
 
 class Person {
     // Overall 
@@ -25,8 +25,7 @@ class Person {
     Point velocity;
 
     // Grouping
-    int groupid;
-    int groupsize;
+    Group *group;   // Current group or null if ungrouped
 
     // Aging, visibility
     int age;
@@ -52,14 +51,11 @@ public:
     float getMaxLike() const { return legs[0].maxlike+legs[1].maxlike; }
     const LegStats &getLegStats() const { return legStats; }
     int getAge() const { return age; }
-    int getGroupID() const { return groupid; }
-    unsigned int getGroupSize() const { return groupsize; }
-    void setGroupID(int gid, unsigned int gsize) { groupid=gid; groupsize=gsize; }
-    bool isGrouped() const { return groupid!=-1; }
+    Group *getGroup() const { return group; }
+    void addToGroup(Group *g);
+    void unGroup();
+    bool isGrouped() const { return group!=NULL; }
     float getObsLike(const Point &pt, int leg, int frame) const;   // Get likelihood of an observed echo at pt hitting leg given current model
     // Send /pf/ OSC messages
     void sendMessages(lo_address &addr, int frame, double now) const;
 };
-
-#endif  /* PERSON_H_ */
- 

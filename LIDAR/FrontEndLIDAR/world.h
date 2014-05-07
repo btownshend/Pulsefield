@@ -15,6 +15,7 @@
 #include "person.h"
 #include "dest.h"
 #include "background.h"
+#include "groups.h"
 
 class Vis;
 typedef struct _cairo_surface cairo_surface_t;
@@ -23,6 +24,7 @@ class World {
     int lastframe;
     int nextid;
     std::vector<Person> people;
+    Groups groups;
     std::set<int> lastid;
 
     Background bg;		// Background model
@@ -36,17 +38,13 @@ class World {
     pthread_t displayThread;
     static void *runDisplay(void *w);
     void makeAssignments(const Vis &vis, float entrylike);
-    std::set<int>  getConnected(int i, std::set<int> current);
 public:
     World();
     // Track people and send update messages
-    void track( const Vis &vis, int frame, float fps);
+    void track( const Vis &vis, int frame, float fps,double elapsed);
     void deleteLostPeople();
-    void sendMessages(Destinations &dests, double now);
+    void sendMessages(Destinations &dests, double elapsed);
     mxArray *convertToMX() const;
-
-    // Update groups
-   void updateGroups();
 
     // Drawing routines
     void initWindow();

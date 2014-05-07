@@ -7,6 +7,7 @@
 #include "dbg.h"
 #include "normal.h"
 #include "lookuptable.h"
+#include "groups.h"
 
 
 Person::Person(int _id, const Point &leg1, const Point &leg2) {
@@ -25,11 +26,12 @@ Person::Person(int _id, const Point &leg1, const Point &leg2) {
     consecutiveInvisibleCount=0;
     totalVisibleCount=1;
 
-    groupid=-1;
-    groupsize=1;
+    group=NULL;
 }
 
 Person::~Person() {
+    if (group!=NULL)
+	group->remove(id);
 }
 
 bool Person::isDead() const {
@@ -42,9 +44,10 @@ bool Person::isDead() const {
 }
 
 std::ostream &operator<<(std::ostream &s, const Person &p) {
-    s << "ID " << p.id 
-      << ", GID:" << p.groupid
-      << std::fixed << std::setprecision(0) 
+    s << "ID " << p.id ;
+    if (p.group != NULL)
+	s << ", GID:" << p.group->getID();
+    s << std::fixed << std::setprecision(0) 
       << ", position: " << p.position
       << ", leg1: " << p.legs[0]
       << ", leg2: " << p.legs[1]
@@ -124,7 +127,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 
     // Average velocity of legs
     velocity=(legs[0].velocity+legs[1].velocity)/2.0;
-    assert(isfinite(velocity.X()) && isfinite(velocity.Y()));
+    assert(std::isfinite(velocity.X()) && std::isfinite(velocity.Y()));
 
     // New position
     position=(legs[0].position+legs[1].position)/2.0;
@@ -145,6 +148,12 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 
 // Send /pf/ OSC messages
 void Person::sendMessages(lo_address &addr, int frame, double now) const {
+    int groupid=0; 
+    int groupsize=1;
+    if (group) {
+	groupid = group->getID();
+	groupsize = group->size();
+    }
     if (lo_send(addr, "/pf/update","ififfffffiii",frame,now,id,
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,
 		velocity.X()/UNITSPERM,velocity.Y()/UNITSPERM,
@@ -168,6 +177,14 @@ void Person::sendMessages(lo_address &addr, int frame, double now) const {
 	std::cerr << "Failed send of /pf/body to " << lo_address_get_url(addr) << std::endl;
     for (int i=0;i<2;i++)
 	legs[i].sendMessages(addr,frame,id,i);
+}
+
+void Person::addToGroup(Group *g) {
+    group=g; group->add(id);
+}
+
+void Person::unGroup() {
+    group->remove(id); group=NULL;
 }
 
 void Person::addToMX(mxArray *people, int index) const {

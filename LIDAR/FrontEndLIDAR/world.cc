@@ -1,10 +1,12 @@
+#include <algorithm>
+
 #include "lo/lo.h"
 #include "world.h"
 #include "vis.h"
 #include "dbg.h"
 #include "parameters.h"
 
-World::World() {
+World::World(): groups(GROUPDIST,UNGROUPDIST) {
     lastframe=0;
     nextid=1;
     initWindow();
@@ -60,7 +62,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
     }
 }
 
-void World::track( const Vis &vis, int frame, float fps) {
+void World::track( const Vis &vis, int frame, float fps,double elapsed) {
     int nsteps;
     if (lastframe>0)
 	nsteps=frame-lastframe;
@@ -202,7 +204,7 @@ void World::track( const Vis &vis, int frame, float fps) {
 	}
 
     // Track groups
-    updateGroups();
+    groups.update(people,elapsed);
 
     if (DebugCheck("World.track",2) && people.size() > 0) {
 	dbg("World.track",2)  << "People at end of frame " <<  lastframe << ":" << std::endl;
@@ -215,7 +217,7 @@ void World::track( const Vis &vis, int frame, float fps) {
 
 }
         
-void World::sendMessages(Destinations &dests, double now) {
+void World::sendMessages(Destinations &dests, double elapsed) {
     dbg("World.sendMessages",5) << "ndest=" << dests.size() << std::endl;
     for (int i=0;i<dests.size();i++) {
 	char cbuf[10];
@@ -239,14 +241,14 @@ void World::sendMessages(Destinations &dests, double now) {
 		activePeople++;
 		exitids.erase(p->getID());
 		if ( lastid.count(p->getID()) == 0)
-		    lo_send(addr,"/pf/entry","ifii",lastframe,now,p->getID(),p->getChannel());
+		    lo_send(addr,"/pf/entry","ifii",lastframe,elapsed,p->getID(),p->getChannel());
 		lastid.insert(p->getID());
 	    }
 	}
 
 	// Handle exits
 	for (std::set<int>::iterator p=exitids.begin();p!=exitids.end();p++) {
-	    lo_send(addr,"/pf/exit","ifi",lastframe,now,*p);
+	    lo_send(addr,"/pf/exit","ifi",lastframe,elapsed,*p);
 	    lastid.erase(*p);
 	}
 
@@ -257,82 +259,38 @@ void World::sendMessages(Destinations &dests, double now) {
 	// Updates
 	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
 	    if (p->getAge() >= AGETHRESHOLD)
-		p->sendMessages(addr,lastframe,now);
+		p->sendMessages(addr,lastframe,elapsed);
 	}
-	lo_address_free(addr);
-    }
-}
+	// Groups
+	groups.sendMessages(addr,lastframe,elapsed);
 
-// Get all other people that are connected by <=maxdist to person i
-std::set<int> World::getConnected(int i, std::set<int> current) {
-    current.insert(i);
-    for (unsigned int j=0;j<people.size();j++)  {
-	float d=(people[i].getPosition() - people[j].getPosition()).norm();
-	if (current.count(j)==0 && (d <= GROUPDIST || (d<=UNGROUPDIST && people[i].isGrouped() && people[i].getGroupID()==people[j].getGroupID()))) {
-	    current=getConnected(j,current);
-	}
-    }
-    dbg("World.getConnected",10) << "getConnected(" << i << ") -> " << current.size() << std::endl;
-    return current;
-}
+	// Geo
+	Point center;  // Center of all participants
+	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++)
+	    center=center+p->getPosition();
+	center=center/people.size();
+	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++) {
+	    float centerDist=(p->getPosition()-center).norm();
+	    float otherDist=-1;
+	    for (std::vector<Person>::iterator p2=people.begin();p2!=people.end();p2++) {
+		float dist = (p2->getPosition()-p->getPosition()).norm();
+		if (dist>0.001 && (dist<otherDist || otherDist==-1))
+		    otherDist=dist;
+	    }
+	    float exitDist=std::max(0.0f,MAXRANGE-p->getPosition().norm());   // Distance to be out of range
+	    if (p->getPosition().Y() < exitDist)
+		exitDist=std::max(0.0f,p->getPosition().Y());  // Distance to pass behind sensor
 
-// Update groups
-void World::updateGroups() {
-    // Check if any groups should be broken
-    // Occurs when a person is more than UNGROUPDIST from anyone else in the group
-    // Pass over multiple times until groupings stabilize
-    std::vector<int> membership(people.size(),-1);
-    std::set<int> usedGroups;
-
-    // Find next group ID to use
-    int nextGroupID=0;
-    for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++)
-	if (p->getGroupID() >= nextGroupID)
-	    nextGroupID=p->getGroupID()+1;
-
-    for (unsigned int i=0;i<people.size();i++) {
-	if (membership[i]==-1) {
-	    // Person is in a group, but not yet accounted for
-	    // Find their connected set (none of these will be accounted for yet)
-	    std::set<int> connected = getConnected(i,std::set<int>());
-	    if (connected.size() > 1) {
-		int gid=-1;
-		for (std::set<int>::iterator c=connected.begin();c!=connected.end();c++) {
-		    if (people[*c].isGrouped() && usedGroups.count(people[*c].getGroupID())==0) {
-			gid=people[*c].getGroupID();
-			break;
-		    }
-		}
-
-		if (gid==-1) {
-		    // Need to allocate a new groupid
-		    gid=nextGroupID;
-		    nextGroupID++;
-		}
-		usedGroups.insert(gid);
-		// Assign it
-		for (std::set<int>::iterator c=connected.begin();c!=connected.end();c++) {
-		    assert(membership[*c]==-1);
-		    membership[*c]=gid;
-		    if (people[*c].getGroupID() != gid || people[*c].getGroupSize() != connected.size()) {
-			if (people[*c].isGrouped())  {
-			    if (people[*c].getGroupID()==gid) {
-				dbg("World.updateGroups",2) << "Update group size for  person " << people[*c].getID()  << " to " << connected.size() << std::endl;
-			    } else {
-				dbg("World.updateGroups",2) << "Moving  person " << people[*c].getID()  << " from group " << people[*c].getGroupID() << " to group " << gid << std::endl;
-			    }
-			} else {
-			    dbg("World.updateGroups",2) << "Assigning  person " << people[*c].getID()  << " to group " << gid << std::endl;
-			}
-			people[*c].setGroupID(gid,connected.size());
-		    }
-		}
-	    } else if (people[i].isGrouped()) {
-		// Unconnected person
-		dbg("World.updateGroups",2) << "Ungrouping person " << people[i].getID() << " from group " << people[i].getGroupID() << std::endl;
-		people[i].setGroupID(-1,1);
+	    if (otherDist>0)
+		otherDist/=UNITSPERM;
+	    if (lo_send(addr, "/pf/geo","iifff",lastframe,p->getID(),centerDist/UNITSPERM,otherDist,exitDist/UNITSPERM) < 0) {
+		std::cerr << "Failed send of /pf/geo to " << lo_address_get_url(addr) << std::endl;
+		return;
 	    }
 	}
+
+	// Done!
+	lo_address_free(addr);
     }
 }
 
