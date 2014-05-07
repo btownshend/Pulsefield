@@ -9,7 +9,7 @@ class LegStats;
 class Vis;
 
 class Leg {
-    friend Person;
+    friend class Person;
     Point position;
     float posvar;
     Point prevPosition;
