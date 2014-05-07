@@ -1,5 +1,5 @@
-#ifndef DEST_H_
-#define DEST_H_
+#pragma once
+
 #include <ostream>
 #include <string>
 #include <vector>
@@ -36,5 +36,3 @@ class Destinations {
     void setSucceeded(int i) {dests[i].failcount=0;}
     int getFailCount(int i) const { return dests[i].failcount; }
 };
-
-#endif  /* DEST_H_ */

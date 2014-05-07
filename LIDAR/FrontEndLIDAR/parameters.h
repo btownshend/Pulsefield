@@ -5,8 +5,7 @@
  *      Author: bst
  */
 
-#ifndef PARAMETERS_H_
-#define PARAMETERS_H_
+#pragma once
 
 #include <math.h>
 
@@ -69,4 +68,3 @@ static const float UNGROUPDIST=1000;	// Distance to break a group
 
 // ******** Channels
 static const int NCHANNELS=16;
-#endif  /* PARAMETERS_H_ */

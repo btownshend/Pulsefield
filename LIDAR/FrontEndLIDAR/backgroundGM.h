@@ -5,8 +5,8 @@
  *      Author: bst
  */
 
-#ifndef BACKGROUND_H_
-#define BACKGROUND_H_
+#pragma once
+
 #include <vector>
 #include "sickio.h"
 #include "gaussianmixture.h"
@@ -24,4 +24,3 @@ public:
     mxArray *convertToMX() const;
 };
 
-#endif  /* BACKGROUND_H_ */

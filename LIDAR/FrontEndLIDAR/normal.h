@@ -1,5 +1,4 @@
-#ifndef NORMAL_H_
-#define NORMAL_H_
+#pragma once
 
 #include <math.h>
 
@@ -14,4 +13,3 @@ inline double normpdf(double value, double mu=0.0, double sigma=1.0) {
     double z=(value-mu)/sigma;
     return inv_sqrt_2pi / sigma*exp(-0.5 * z * z);
 }
-#endif /* NORMAL_H_ */

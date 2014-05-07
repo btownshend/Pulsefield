@@ -1,6 +1,4 @@
-#ifndef DBG_H
-#define DBG_H
-
+#pragma once
 #include <ostream>
 
 static const char *debugFile="Debug.out";
@@ -36,4 +34,3 @@ std::ostream& DbgFile(const char *fname, const char *dstr, int level);
 // Output to file without prefix
 #define dbgfn(fname,fn,level) if (DebugCheck((fn),(level))) DbgFile((fname),(fn),(level))
 
-#endif /* !DBG_H */

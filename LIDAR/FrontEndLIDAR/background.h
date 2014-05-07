@@ -5,8 +5,7 @@
  *      Author: bst
  */
 
-#ifndef BACKGROUND_H_
-#define BACKGROUND_H_
+#pragma once
 #include <vector>
 #include "sickio.h"
 
@@ -30,5 +29,3 @@ public:
     const std::vector<float> &getFreq(int i) const { return freq[i]; }
     float getScanRes() const { return scanRes; }
 };
-
-#endif  /* BACKGROUND_H_ */

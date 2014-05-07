@@ -5,8 +5,8 @@
  *      Author: bst
  */
 
-#ifndef VIS_H_
-#define VIS_H_
+#pragma once
+
 #include "sickio.h"
 
 class Vis {
@@ -20,5 +20,3 @@ public:
 
     const SickIO *getSick() const { return sick; }
 };
-
-#endif  /* VIS_H_ */

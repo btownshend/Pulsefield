@@ -5,8 +5,7 @@
  *      Author: bst
  */
 
-#ifndef POINT_H_
-#define POINT_H_
+#pragma once
 
 #include <ostream>
 #include <vector>
@@ -67,5 +66,3 @@ inline std::ostream& operator<< (std::ostream& os, const std::vector<float>& v)
 }
 
 float  segment2pt(const Point &l1, const Point &l2, const Point &p);
-
-#endif  /* POINT_H_ */

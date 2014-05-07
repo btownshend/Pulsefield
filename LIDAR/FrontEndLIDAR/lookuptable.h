@@ -5,8 +5,8 @@
  *      Author: bst
  */
 
-#ifndef LOOKUPTABLE_H_
-#define LOOKUPTABLE_H_
+#pragma once
+
 #include <vector>
 #include <numeric>
 
@@ -44,4 +44,3 @@ class LookupTable {
 
 // Get a lookup table for the distribution of leg separation probabilities assuming position is zero-mean gaussian and separation is log-normal with given statistics
 LookupTable getLegSepLike(float sepmu,float sepsigma,float possigma);
-#endif  /* LOOKUPTABLE_H_ */

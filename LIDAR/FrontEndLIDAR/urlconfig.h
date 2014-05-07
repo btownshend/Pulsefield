@@ -1,5 +1,4 @@
-#ifndef URLCONFIG_H
-#define URLCONFIG_H
+#pragma once
 
 #define MAXURLS 100
 
@@ -21,4 +20,3 @@ class URLConfig {
     // Get filename
     const char *getFilename() const { return filename; }
 };
-#endif

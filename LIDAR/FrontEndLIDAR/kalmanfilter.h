@@ -1,5 +1,4 @@
-#ifndef _KALMANFILTER_H_
-#define _KALMANFILTER_H_
+#pragma once
 
 #include <video/tracking.hpp>
 #include "point.h"
@@ -23,5 +22,4 @@ class KalmanFilter {
     }
 }
 
-#endif  /* KALMANFILTER_H_ */
  

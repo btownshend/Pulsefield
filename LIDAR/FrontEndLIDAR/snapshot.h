@@ -5,8 +5,7 @@
  *      Author: bst
  */
 
-#ifndef SNAPSHOT_H_
-#define SNAPSHOT_H_
+#pragma once
 
 #include <vector>
 
@@ -24,5 +23,3 @@ public:
     void save(const char *filename) const;
     void clear();
 };
-
-#endif  /* SNAPSHOT_H_ */

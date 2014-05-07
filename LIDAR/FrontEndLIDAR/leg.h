@@ -1,5 +1,4 @@
-#ifndef LEG_H_
-#define LEG_H_
+#pragma once
 
 #include <ostream>
 #include <vector>
@@ -37,5 +36,3 @@ class Leg {
     void sendMessages(lo_address &addr, int frame, int id, int legnum) const;
     bool isVisible() const { return consecutiveInvisibleCount==0; }
 };
-
-#endif /* LEG_H_ */

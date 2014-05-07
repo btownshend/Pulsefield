@@ -1,5 +1,4 @@
-#ifndef _FRONTEND_H_
-#define _FRONTEND_H_
+#pragma once
 
 #include <vector>
 #include <string>
@@ -78,4 +77,3 @@ class FrontEnd {
     void ping(lo_message msg, int seqnum);
     void matsave(const std::string &filename, int frames);
 };
-#endif

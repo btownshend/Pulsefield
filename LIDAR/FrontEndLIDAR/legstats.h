@@ -1,5 +1,4 @@
-#ifndef LEGSTATS_H_
-#define LEGSTATS_H_
+#pragma once
 
 #include <ostream>
 
@@ -25,5 +24,3 @@ class LegStats {
     void updateDiameter(float newDiam, float newDiamSEM);
     friend std::ostream &operator<<(std::ostream &s, const LegStats &ls);
 };
-
-#endif /* LEGSTATS_H_ */

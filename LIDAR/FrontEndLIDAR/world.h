@@ -5,8 +5,7 @@
  *      Author: bst
  */
 
-#ifndef WORLD_H_
-#define WORLD_H_
+#pragma once
 
 #include <set>
 #include <vector>
@@ -53,5 +52,3 @@ public:
 
     const Background &getBackground() const { return bg; }
 };
-
-#endif  /* WORLD_H_ */

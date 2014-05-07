@@ -5,8 +5,8 @@
  *      Author: bst
  */
 
-#ifndef SICKIO_H_
-#define SICKIO_H_
+#pragma once
+
 #include <math.h>
 #include <pthread.h>
 #include <sicklms5xx/SickLMS5xx.hh>
@@ -141,5 +141,3 @@ public:
 	    return scanRes;
 	}
 };
-
-#endif /* SICKIO_H_ */

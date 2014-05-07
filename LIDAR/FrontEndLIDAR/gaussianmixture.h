@@ -5,8 +5,7 @@
  *      Author: bst
  */
 
-#ifndef GAUSSIANMIXTURE_H_
-#define GAUSSIANMIXTURE_H_
+#pragma once
 
 #include <ostream>
 #include <list>
@@ -35,5 +34,3 @@ public:
     int getNumMixtures() const { return numMixtures; }
     friend std::ostream &operator<<(std::ostream &s, const GaussianMixture &g);
 };
-
-#endif  /* GAUSSIANMIXTURE_H_ */
