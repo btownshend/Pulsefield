@@ -46,7 +46,7 @@ Notes:
 	   - update position of target
      samp - sample number
      t - time of sample (elapsed time in seconds since beginning of run) 
-     target - UID of target
+     target - UID of target, always increments for next new person without resetting
      x,y - position within field in meters
      vx,vy - estimate of velocity in m/s
      major,minor - major/minor axis size in m
@@ -83,7 +83,7 @@ Notes:
 
 /pf/group samp gid gsize duration centroidX centroidY diameter
      samp - sample number
-     gid - group ID (used in individual /pf/update messages)
+     gid - group ID (used in individual /pf/update messages), always increments for new group without resetting
      gsize - number of people in group
      duration - time since first formed in seconds
      centroidX, centroidY - location of centroid of group

@@ -33,10 +33,10 @@ class Groups {
     const float groupDist, unGroupDist;
     std::set<Group*> groups;
     std::set<int> getConnected(int i, std::set<int> current,const std::vector<Person> &people);
-    int nextID() const;
+    int nextID;
     Group *newGroup(double elapsed);
  public:
- Groups(float _groupDist, float _unGroupDist): groupDist(_groupDist),unGroupDist(_unGroupDist) { ; }
+    Groups(float _groupDist, float _unGroupDist): groupDist(_groupDist),unGroupDist(_unGroupDist) { nextID=1; }
     void update(std::vector<Person> &people, double now);
     void sendMessages(lo_address &addr, int frame, double now) const;
 };

@@ -25,15 +25,8 @@ std::set<int> Groups::getConnected(int i, std::set<int> current,const std::vecto
     return current;
 }
 
-int Groups::nextID() const {
-    int id=1;
-    for (std::set<Group*>::iterator g=groups.begin();g!=groups.end(); g++)
-	id=std::max((*g)->getID()+1,id);
-    return id;
-}
-
 Group *Groups::newGroup(double elapsed) {
-    Group *grp=new Group(nextID(),elapsed);
+    Group *grp=new Group(nextID++,elapsed);
     dbg("Groups",2) << "Create new group " << grp->getID() << std::endl;
     groups.insert(grp);
     return grp;
