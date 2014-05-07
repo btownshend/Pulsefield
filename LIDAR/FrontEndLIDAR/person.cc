@@ -49,8 +49,8 @@ std::ostream &operator<<(std::ostream &s, const Person &p) {
 	s << ", GID:" << p.group->getID();
     s << std::fixed << std::setprecision(0) 
       << ", position: " << p.position
-      << ", leg1: " << p.legs[0]
-      << ", leg2: " << p.legs[1]
+      << ", leg1:  {" << p.legs[0] << "}"
+      << ", leg2: {" << p.legs[1] << "}"
       << ", " << p.legStats
       << std::setprecision(2)
       << ", vel: " << p.velocity
@@ -119,8 +119,9 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     legs[0].updateDiameterEstimates(vis,legStats);
     legs[1].updateDiameterEstimates(vis,legStats);
 
-    if (~legs[0].isVisible() && ~legs[1].isVisible()) {
+    if (!legs[0].isVisible() && !legs[1].isVisible()) {
 	// Both legs hidden, maintain both at average velocity (already damped by legs.updat())
+	dbg("Person.update",2) << "Person " << id << ": both legs hidden" << std::endl;
 	legs[0].velocity=(legs[0].velocity+legs[1].velocity)/2.0;
 	legs[1].velocity=legs[0].velocity;
     }
@@ -188,7 +189,7 @@ void Person::unGroup() {
 }
 
 void Person::addToMX(mxArray *people, int index) const {
-    // const char *fieldnames[]={"id","position","legs","prevlegs","legvelocity","scanpts","posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
+    // const char *fieldnames[]={"id","position","legs","legsmeas","prevlegs","legvelocity","scanpts","posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     // Note: for multidimensional arrays, first index changes most rapidly in accessing matlab data
     mxArray *pId = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);
     *(int *)mxGetPr(pId) = id;
@@ -243,6 +244,14 @@ void Person::addToMX(mxArray *people, int index) const {
 	mxSetCell(pScanptsCA,i,pScanpts);
     }
     mxSetField(people,index,"scanpts",pScanptsCA);
+
+    mxArray *pMeasLegs = mxCreateDoubleMatrix(2,2,mxREAL);
+    data = mxGetPr(pMeasLegs);
+    *data++=legs[0].measurement.X()/UNITSPERM;
+    *data++=legs[1].measurement.X()/UNITSPERM;
+    *data++=legs[0].measurement.Y()/UNITSPERM;
+    *data++=legs[1].measurement.Y()/UNITSPERM;
+    mxSetField(people,index,"legsmeas",pMeasLegs);
 
     mxArray *pLegs = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pLegs);

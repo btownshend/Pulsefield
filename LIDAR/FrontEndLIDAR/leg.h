@@ -3,6 +3,7 @@
 #include <ostream>
 #include <vector>
 #include "point.h"
+#include "kalmanfilter.h"
 
 class Person;
 class LegStats;
@@ -10,7 +11,8 @@ class Vis;
 
 class Leg {
     friend class Person;
-    Point position;
+    Point measurement;  // Current measurement
+    Point position;   // Smoothed estimate of position
     float posvar;
     Point prevPosition;
     float prevposvar;
@@ -23,6 +25,7 @@ class Leg {
     int likenx, likeny;
     Point minval, maxval;
     void init(const Point &pt);
+    KalmanFilter kf;
  public:
     Leg();
     Leg(const Point &pos);

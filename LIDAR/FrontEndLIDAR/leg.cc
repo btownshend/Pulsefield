@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <cmath>
 #include <math.h>
 #include <assert.h>
 #include <algorithm>
@@ -12,7 +13,7 @@
 #include "vis.h"
 #include "lookuptable.h"
 
-Leg::Leg(const Point &pt) {
+Leg::Leg(const Point &pt): kf(pt) {
     position=pt;
     prevPosition=pt;
     posvar=INITIALPOSITIONVAR;
@@ -21,14 +22,15 @@ Leg::Leg(const Point &pt) {
 }
 
 // Empty constructor used to initialize array, gets overwritten using above ctor subsequently
-Leg::Leg() {
+Leg::Leg():kf() {
     ;
 }
 
 std::ostream &operator<<(std::ostream &s, const Leg &l) {
     s << std::fixed << std::setprecision(0)
-      << "legpos: " << l.position << "+/-" << sqrt(l.posvar)
-      << " maxlike=" << l.maxlike
+      << "pos: " << l.position << "+/-" << sqrt(l.posvar)
+      << ", vel: " << l.velocity
+      << ", maxlike=" << l.maxlike
       << std::setprecision(3);
     return s;
 }
@@ -39,6 +41,15 @@ void Leg::predict(int nstep, float fps) {
     position.setY(position.Y()+velocity.Y()*nstep/fps);
     prevposvar=posvar;
     posvar=std::min(posvar+DRIFTVAR*nstep,MAXPOSITIONVAR);
+    for (int i=0;i<nstep;i++) {
+	Point vel=kf.getVelocity(fps);
+	if (vel.norm() > MAXLEGSPEED) {
+	    dbg("Leg.predict",2) << "Reducing leg speed from " << vel.norm() << " to " << MAXLEGSPEED << std::endl;
+	    kf.setVelocity(fps,vel*MAXLEGSPEED/vel.norm());
+	}
+	Point kfp=kf.predict();
+	dbg("Leg.predict",5) << "predict(old)= " << position << ", predict(kf)=" << kfp << ", velocityy=" << kf.getVelocity(fps) << std::endl;
+    }
 }
 
 // Get likelihood of an observed echo at pt hitting leg given current model
@@ -58,7 +69,7 @@ float Leg::getObsLike(const Point &pt, int frame,const LegStats &ls) const {
 	dbg("Leg.getObsLike",20) << "clike=" << clike1 << "-" << clike2 << "=" << clike1-clike2 << ", like=" << like << std::endl;
     }
     like=std::max((float)log(RANDOMPTPROB),like);
-    assert(isfinite(like));
+    assert(std::isfinite(like));
     return like;
 }
 
@@ -70,7 +81,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     const float LOGDIAMMU=log(ls.getDiam());
     const float LOGDIAMSIGMA=log(1+ls.getDiamSigma()/ls.getDiam());
 
-    dbg("Leg.update",5) << "Prior: " << *this << std::endl;
+    dbg("Leg.update",5) << "nstep=" << nstep << ", prior: " << *this << std::endl;
     dbg("Leg.update",5) << " fs=" << fs << std::endl;
     
     // Bound search by prior position + 2*sigma(position) + legdiam/2
@@ -182,7 +193,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 			seplike=legSepLike.lookup(d);
 		    else
 			seplike=log(normpdf(d,ls.getSep(),sqrt(otherLeg->posvar+ls.getSepSigma()*ls.getSepSigma()))*UNITSPERM);
-		    if (isnan(seplike))
+		    if (std::isnan(seplike))
 			dbg("Leg.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", seplike=" << seplike << std::endl;
 	    }
 
@@ -206,7 +217,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     int pos=distance(like.begin(),mle);
     int ix=pos/likeny;
     int iy=pos-ix*likeny;
-    position=Point(minval.X()+ix*step,minval.Y()+iy*step);
+    measurement=Point(minval.X()+ix*step,minval.Y()+iy*step);
 
     // Calculate variance (actual mean-square distance from MLE)
     double var=0;
@@ -220,11 +231,11 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 		// Won't add much!
 		continue;
 	    double prob=exp(like[ix*likeny+iy]);
-	    if (isnan(prob) || !(prob>0))
+	    if (std::isnan(prob) || !(prob>0))
 		dbg("Leg.update",3) << "prob=" << prob << ", like=" << like[ix*likeny+iy] << std::endl;
 	    assert(prob>0);
-	    var+=prob*pow((pt-position).norm(),2.0);
-	    assert(~isnan(var));
+	    var+=prob*pow((pt-measurement).norm(),2.0);
+	    assert(~std::isnan(var));
 	    tprob+=prob;
 	}
     }
@@ -235,20 +246,26 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	posvar= SENSORSIGMA*SENSORSIGMA;
     }
 
-    dbg("Leg.update",3) << "Leg MLE position= " << position << " +/- " << sqrt(posvar) << " with like= " << *mle << std::endl;
+    dbg("Leg.update",3) << "Leg MLE measurement= " << measurement << " +/- " << sqrt(posvar) << " with like= " << *mle << std::endl;
 
     if (nstep>0) {
 	// Update velocities
 	if (fs.size()==0)
 	    velocity=velocity*VELDAMPING;
 	else
-	    velocity=velocity*(1-1/VELUPDATETC)+(position-prevPosition)/(nstep/fps)/VELUPDATETC;
+	    velocity=velocity*(1-1/VELUPDATETC)+(measurement-prevPosition)/(nstep/fps)/VELUPDATETC;
 
 	// Reduce speed if over maximum
 	float spd=velocity.norm();
 	if (spd>MAXLEGSPEED)
 	    velocity=velocity*(MAXLEGSPEED/spd);
     }
+
+    Point p=kf.correct(measurement,Point(1,1)*posvar);
+    dbg("Leg.update",5) << std::setprecision(0) << "Measurement=" << measurement << " +/- " << sqrt(posvar) << ", velocity=" << velocity <<  ", KF position=" << p << ", vel=" << kf.getVelocity(fps) << std::endl << std::setprecision(3);
+
+    position=kf.getPosition();
+    velocity=kf.getVelocity(fps);
 }
 
 void Leg::updateVisibility() {

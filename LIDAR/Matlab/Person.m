@@ -3,6 +3,7 @@ classdef Person < handle
     id; 	% ID of person
     position; 	% Position of core (hips)
     legs;   	% Coordinates of legs;  legs(1,:)=left, legs(2,:)=right
+    legsmeas;	% Measurement of legs (before any smoothing)
     prevlegs;	% Previous leg coordinates
     legvelocity;% Velocity of each leg
     scanpts;	% Scan points used to build each leg scanpts{1} for the left, scanpts{2} for the right

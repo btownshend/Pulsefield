@@ -135,7 +135,7 @@ for i=1:length(ids)
   subplot(236)
   [~,spd1]=cart2pol(legvel(:,1,1),legvel(:,1,2));
   [~,spd2]=cart2pol(legvel(:,2,1),legvel(:,2,2));
-  plot(frame,spd1,[color,'-']);
+  plot(frame,spd1,[color,'--']);
   hold on;
   plot(frame,spd2,[color,'-']);
   plot(frame(vis(:,1)),spd1(vis(:,1)),[color,'.']);
