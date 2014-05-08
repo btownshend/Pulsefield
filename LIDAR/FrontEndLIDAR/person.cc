@@ -181,10 +181,12 @@ void Person::sendMessages(lo_address &addr, int frame, double now) const {
 }
 
 void Person::addToGroup(Group *g) {
+    assert(group==NULL);
     group=g; group->add(id);
 }
 
 void Person::unGroup() {
+    assert(group!=NULL);
     group->remove(id); group=NULL;
 }
 
