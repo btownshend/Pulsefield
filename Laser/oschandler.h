@@ -21,6 +21,8 @@ class OSCHandler {
     pthread_t incomingThread;
     static void *processIncoming(void *arg);
 
+    Color currentColor;
+    float currentDensity;
  public:
     OSCHandler(int unit, Laser *_laser);
     ~OSCHandler();
@@ -32,19 +34,32 @@ class OSCHandler {
     }
     // Handlers for OSC messages
     void startStop(bool start);
-    void setFPS(int fps);
-    int getFPS() const;
-    void ping(lo_message msg, int seqnum);
-    void circle(lo_message msg, float x, float y, float radius, float r, float g, float b);
-    void line(lo_message msg, float x1, float y1, float x2, float y2, float r, float g, float b);
-    void update(lo_message msg, int nPoints);
-    void map(lo_message msg, float x1, float y1, float x2, float y2);
-    void setTransform(lo_message msg);
-
     // Destination handling
     void addDest(const char *host, int port);
     void addDest(lo_message msg, int port);
     void rmDest(const char *host, int port);
     void rmDest(lo_message msg, int port);
     void rmAllDest();
+    void ping(lo_message msg, int seqnum);
+
+    // Laser settings
+    void setPPS(int pps);
+    void setBlanking(int before, int after);
+    void setSkew(int s);
+
+    // Attributes
+    void setColor(Color c);
+    void setDensity(float d);
+    void setAttribute(const char *attr, float value);
+
+    // Primitives
+    void circle(Point center, float radius);
+    void arc(Point center, Point perim,  float angleCW);
+    void line(Point p1, Point p2);
+    void cubic(Point p1, Point p2, Point p3, Point p4);
+
+    void update(int nPoints);
+    void map(Point world, Point local);
+    void setTransform();
+
 };

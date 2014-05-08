@@ -51,23 +51,42 @@ static int quit_handler(const char *, const char *, lo_arg **, int, lo_message ,
 static int start_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->startStop(true); return 0; }
 static int stop_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->startStop(false); return 0; }
 
-static int setFPS_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setFPS(argv[0]->i); return 0; }
+// Link management
 static int addDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->addDest(&argv[0]->s,argv[1]->i); return 0; }
 static int addDestPort_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->addDest(msg,argv[0]->i); return 0; }
 static int rmDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->rmDest(&argv[0]->s,argv[1]->i); return 0; }
 static int rmDestPort_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->rmDest(msg,argv[0]->i); return 0; }
 static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->rmAllDest(); return 0; }
 static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->ping(msg,argv[0]->i); return 0; }
-static int circle_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(msg,argv[0]->f,argv[1]->f,argv[2]->f,argv[3]->f,argv[4]->f,argv[5]->f); return 0; }
-static int line_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->line(msg,argv[0]->f,argv[1]->f,argv[2]->f,argv[3]->f,argv[4]->f,argv[5]->f,argv[6]->f); return 0; }
-static int map_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->map(msg,argv[0]->f,argv[1]->f,argv[2]->f,argv[3]->f); return 0; }
-static int setTransform_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setTransform(msg); return 0; }
-static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(msg,argv[0]->i); return 0; }
 
-OSCHandler::OSCHandler(int _unit, Laser *_laser) {
+// Laser settings
+static int setPPS_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPPS(argv[0]->f); return 0; }
+static int setBlanking_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setBlanking(argv[0]->i,argv[0]->i); return 0; }
+static int setSkew_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setSkew(argv[0]->i); return 0; }
+
+// Attributes
+static int setColor_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setColor(Color(argv[0]->f,argv[1]->f,argv[2]->f)); return 0; }
+static int setDensity_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setDensity(argv[0]->f); return 0; }
+static int setAttribute_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setAttribute(&argv[0]->s,argv[1]->f); return 0; }
+
+// Primitives
+static int circle_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(argv[0]->f,argv[1]->f),argv[2]->f); return 0; }
+static int arc_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->arc(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),argv[4]->f); return 0; }
+static int cubic_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->cubic(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f),Point(argv[6]->f,argv[7]->f)); return 0; }
+static int line_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->line(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f)); return 0; }
+
+// Transforms
+static int map_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->map(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f)); return 0; }
+static int setTransform_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setTransform(); return 0; }
+
+// Draw
+static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(argv[0]->i); return 0; }
+
+OSCHandler::OSCHandler(int _unit, Laser *_laser): currentColor(1.0,1.0,1.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler(" << _unit << ")" << std::endl;
     unit=_unit;
     laser=_laser;
+    currentDensity=1.0;
 
 	URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
 
@@ -107,20 +126,38 @@ OSCHandler::OSCHandler(int _unit, Laser *_laser) {
 	lo_server_add_method(s,"/laser/start","",start_handler,this);
 	lo_server_add_method(s,"/laser/stop","",stop_handler,this);
 
-	lo_server_add_method(s,"/laser/set/fps","i",setFPS_handler,this);
-	lo_server_add_method(s,"/laser/circle","ffffff",circle_handler,this);
-	lo_server_add_method(s,"/laser/line","fffffff",line_handler,this);
-	lo_server_add_method(s,"/laser/map","ffff",map_handler,this);
-	lo_server_add_method(s,"/laser/settransform","",setTransform_handler,this);
-	lo_server_add_method(s,"/laser/update","i",update_handler,this);
-	lo_server_add_method(s,"/ping","i",ping_handler,this);
-
-
+	/* Link management */
 	lo_server_add_method(s,"/laser/dest/add","si",addDest_handler,this);
 	lo_server_add_method(s,"/laser/dest/add/port","i",addDestPort_handler,this);
 	lo_server_add_method(s,"/laser/dest/remove","si",rmDest_handler,this);
 	lo_server_add_method(s,"/laser/dest/remove/port","i",rmDestPort_handler,this);
 	lo_server_add_method(s,"/laser/dest/clear","",rmAllDest_handler,this);
+	lo_server_add_method(s,"/ping","i",ping_handler,this);
+
+	/* Attributes */
+	lo_server_add_method(s,"/laser/set/color","fff",setColor_handler,this);
+	lo_server_add_method(s,"/laser/set/density","f",setDensity_handler,this);
+	lo_server_add_method(s,"/laser/set/attribute","sf",setAttribute_handler,this);
+
+	/* Laser settings */
+	lo_server_add_method(s,"/laser/set/pps","f",setPPS_handler,this);
+	lo_server_add_method(s,"/laser/set/blanking","ii",setBlanking_handler,this);
+	lo_server_add_method(s,"/laser/set/skew","i",setSkew_handler,this);
+
+	/* Primitives */
+	lo_server_add_method(s,"/laser/circle","fff",circle_handler,this);
+	lo_server_add_method(s,"/laser/arc","fffff",arc_handler,this);
+	lo_server_add_method(s,"/laser/bezier/cubic","ffffffff",cubic_handler,this);
+	lo_server_add_method(s,"/laser/line","ffff",line_handler,this);
+
+	/* Transforms */
+	lo_server_add_method(s,"/laser/map","ffff",map_handler,this);
+	lo_server_add_method(s,"/laser/settransform","",setTransform_handler,this);
+
+	/* Draw */
+	lo_server_add_method(s,"/laser/update","i",update_handler,this);
+
+
 
 	/* add method that will match any path and args if they haven't been caught above */
 	lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
@@ -171,15 +208,20 @@ void OSCHandler::startStop(bool start) {
 }
 
 
-void OSCHandler::setFPS(int fps) {
-    dbg("OSCHandler.setFPS",1) << "Setting FPS to " << fps << " FPS" << std::endl;
+void OSCHandler::setPPS(int pps) {
+    dbg("OSCHandler.setPPS",1) << "Setting PPS to " << pps << " PPS" << std::endl;
+    // TODO:
 }
 
-int OSCHandler::getFPS() const {
-    //fprintf(stderr,"Warning: assuming recorded file is at 50 FPS\n");
-    return 50;
+void OSCHandler::setBlanking(int before, int after) {
+    dbg("OSCHandler.setBlanking",1) << "Setting blanking to " <<before << ", " << after << std::endl;
+    // TODO:
 }
 
+void OSCHandler::setSkew(int skew) {
+    dbg("OSCHandler.setSkew",1) << "Setting skew to " << skew  << std::endl;
+    // TODO:
+}
 
 void OSCHandler::addDest(const char *host, int port) {
 	dests.add(host,port);
@@ -215,23 +257,43 @@ void OSCHandler::ping(lo_message msg, int seqnum) {
 	}
 }
 
-void OSCHandler::circle(lo_message msg, float x, float y, float radius, float r, float g, float b ) {
-    drawing.drawCircle(Point(x,y),radius,Color(r,g,b));
+void OSCHandler::setColor(Color c ) {
+    currentColor=c;
 }
 
-void OSCHandler::line(lo_message msg, float x1, float y1, float x2, float y2, float r, float g, float b) {
-    drawing.drawLine(Point(x1,y1),Point(x2,y2),Color(r,g,b));
+void OSCHandler::setDensity(float d ) {
+    currentDensity=d;
 }
 
-void OSCHandler::map(lo_message msg, float x1, float y1, float x2, float y2) {
-    drawing.addToMap(Point(x1,y1),Point(x2,y2));
+void OSCHandler::setAttribute(const char *attr, float value ) {
+    // TODO
 }
 
-void OSCHandler::setTransform(lo_message msg) {
+void OSCHandler::circle(Point center, float radius ) {
+    drawing.drawCircle(center,radius,currentColor);
+}
+
+void OSCHandler::arc(Point center, Point pt, float angle ) {
+    drawing.drawArc(center,pt,angle,currentColor);
+}
+
+void OSCHandler::line(Point p1, Point p2) {
+    drawing.drawLine(p1,p2,currentColor);
+}
+
+void OSCHandler::cubic(Point p1, Point p2, Point p3, Point p4) {
+    drawing.drawCubic(p1,p2,p3,p4,currentColor);
+}
+
+void OSCHandler::map(Point p1, Point p2) {
+    drawing.addToMap(p1,p2);
+}
+
+void OSCHandler::setTransform() {
     drawing.setTransform();
 }
 
-void OSCHandler::update(lo_message msg, int nPoints ) {
+void OSCHandler::update(int nPoints ) {
     std::vector<etherdream_point> pts=drawing.getPoints(nPoints);
     laser->update(pts);
     drawing.clear();

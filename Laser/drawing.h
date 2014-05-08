@@ -5,6 +5,7 @@
 #include "etherdream.h"
 #include "laser.h"
 #include "dbg.h"
+#include "bezier.h"
 #include "opencv2/core/core.hpp"
 
 class Color {
@@ -65,12 +66,28 @@ class Circle: public Primitive {
     float getLength() const { return radius*2*M_PI; }
 };
 
+class Arc: public Primitive {
+    Point center, p;
+    float angle;
+ public:
+    Arc(Point _center, Point _p, float _angle, Color c): Primitive(c) { center=_center; p=_p; angle=_angle; }
+    // TODO
+};
+
 class Line:public Primitive {
     Point p1,p2;
  public:
     Line(Point _p1, Point _p2, Color c): Primitive(c) { p1=_p1; p2=_p2;  }
     std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
     float getLength() const { return (p1-p2).norm(); }
+};
+
+class Cubic:public Primitive {
+    Bezier b;
+ public:
+    Cubic(const std::vector<Point> &pts, Color c): Primitive(c), b(pts) {;}
+    std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
+    float getLength() const { return b.getLength(); }
 };
 
 class Drawing {
@@ -114,10 +131,24 @@ class Drawing {
 	elements.push_back(new Circle(center,r,c));
     }
 
-    // Add a line to current drawing!
+    // Add a arc to current drawing
+    void drawArc(Point center, Point p, float angle, Color c) {
+	dbg("Drawing.drawArc",2) << "center=" << center << ", Point =" << p << ", angleCW=" << angle << ", color=" << c << std::endl;
+	elements.push_back(new Arc(center,p,angle,c));
+    }
+
+    // Add a line to current drawing
     void drawLine(Point p1, Point p2, Color c) {
 	elements.push_back(new Line(p1,p2,c));
     }
+
+    // Add a cubic to current drawing
+    void drawCubic(Point p1, Point p2, Point p3, Point p4, Color c) {
+	std::vector<Point> pts;
+	pts[0]=p1;pts[1]=p2;pts[2]=p3;pts[3]=p4;
+	elements.push_back(new Cubic(pts,c));
+    }
+
 
     // Convert drawing into a set of etherdream points
     // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
