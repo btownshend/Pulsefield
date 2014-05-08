@@ -1,0 +1,38 @@
+Calibration Method
+
+- separate module which sends commands to laser driver
+- should be able to calibrate one laser while others are still operating
+
+0.  Overall settings of calibrator
+    - extent of active area
+    - could read from LIDAR
+
+1.  Take laser off line
+    /laser/offline,unit
+2.  Load current mapping
+    	 - world, laser coords of 4 control points
+2.  Draw test pattern using laser absolute coordinates
+    /laser/testpattern x1,y1,x2,y2,x3,y3,x4,y4
+    - draws rectangle at maximum extent
+    - target points at control points
+3.  Interactive nudge to move/update test points, set their world coordinates entering coordinates
+
+Options:  1..4  select control point
+    arrows: move laser coords for given control
+    's': save current settings
+    'l': load settings from file
+    'w': prompt for world coords of control point
+    'g': switch to world grid mode (regular lines in grid space)
+    'c': select laser unit and put into calibration mode
+    'r': all lasers in run mode
+
+
+Command line options:
+	-f configname
+	-n nlasers	(can get this from laser server -- should match config file)
+	-s host:port OSC address of laser server
+
+
+LIDAR:
+Should have an unscaled affine transform (rotation, translation only) for laser coords to map them to positions in room
+- could set by specifying two corners of room 
