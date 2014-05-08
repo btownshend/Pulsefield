@@ -61,10 +61,14 @@ void Groups::update(std::vector<Person> &people, double elapsed) {
 		    scanned[*c]=true;
 		    if (!people[*c].isGrouped()) {
 			dbg("Groups.update",2) << "Assigning  person " << people[*c].getID()  << " to " << *grp << std::endl;
+			people[*c].addToGroup(grp);
 		    } else if (people[*c].getGroup() != grp) {
 			dbg("Groups.update",2) << "Moving  person " << people[*c].getID()  << " from  " << *people[*c].getGroup() << " to " << *grp << std::endl;
+			people[*c].unGroup();
+			people[*c].addToGroup(grp);
+		    } else {
+			dbg("Groups.update",2) << "Leaving  person " << people[*c].getID()  << " in " << *grp << std::endl;
 		    }
-		    people[*c].addToGroup(grp);
 		    centroid=centroid+people[*c].getPosition();
 		}
 		centroid = centroid/connected.size();
