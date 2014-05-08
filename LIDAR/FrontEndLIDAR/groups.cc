@@ -1,10 +1,12 @@
+#include <iostream>
+
 #include "groups.h"
 #include "person.h"
 #include "dbg.h"
 #include "parameters.h"
 
 std::ostream &operator<<(std::ostream &s, const Group &g) {
-    s << "GID: " << g.gid;
+    s << "GID: " << g.gid << ", size=" << g.members.size();
     return s;
 }
 
@@ -57,7 +59,17 @@ void Groups::update(std::vector<Person> &people, double elapsed) {
 		// Assign it
 		Point centroid;
 		for (std::set<int>::iterator c=connected.begin();c!=connected.end();c++) {
-		    assert(!scanned[*c]);
+		    if (scanned[*c]) {
+			assert(people[i].isGrouped() && people[*c].isGrouped());   // This can only happen if both were in groups
+			dbg("Groups.update",2) << "Hit already scanned point; need to merge groups " << *people[i].getGroup() << " and " << *people[*c].getGroup() << std::endl;
+			Group *oldgrp=people[i].getGroup();
+			for (unsigned int j=0;j<people.size();j++) 
+			    if (people[j].getGroup() == oldgrp) {
+				dbg("Groups.update",2) << "Moving person " << people[j].getID() << " to " << *people[*c].getGroup() << std::endl;
+				people[j].unGroup();
+				people[j].addToGroup(people[*c].getGroup());
+			    }
+		    }
 		    scanned[*c]=true;
 		    if (!people[*c].isGrouped()) {
 			dbg("Groups.update",2) << "Assigning  person " << people[*c].getID()  << " to " << *grp << std::endl;
@@ -95,6 +107,7 @@ void Groups::update(std::vector<Person> &people, double elapsed) {
 	// Copy next position so we can safely delete g
 	std::set<Group *>::iterator nextIt = g; nextIt++;
 	if ((*g)->size() == 0) {
+	    dbg("Groups.update",2) << "Delete group " << *(*g) << std::endl;
 	    delete (*g);
 	    groups.erase(g);
 	}
