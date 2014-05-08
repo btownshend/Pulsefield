@@ -1,3 +1,4 @@
+CXX=/opt/local/bin/g++
 BASEDIR=../..
 UTIL=../LIDAR/FrontEndLIDAR    # For dbg
 VPATH=.:$(UTIL)
@@ -13,7 +14,7 @@ LDFLAGS=-L$(LIBLO)
 LIBES=-llo $(OPENCV)
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES)
 CFLAGS=$(DEBUG) $(OPTIMIZE)
-CXXSRCS=oschandler.cc main.cc  dbg.cc dest.cc urlconfig.cc laser.cc point.cc drawing.cc
+CXXSRCS=oschandler.cc main.cc  dbg.cc dest.cc urlconfig.cc laser.cc point.cc drawing.cc bezier.cc
 CSRCS=$(EDL)/etherdream.c
 SRCS=$(CXXSRCS) $(CSRCS)
 
@@ -21,6 +22,9 @@ osclaser: $(CSRCS:.c=.o) $(CXXSRCS:.cc=.o)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
 
 test: test.o $(CSRCS:.c=.o)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
+
+beziertest: bezier.o beziertest.o point.o dbg.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
 
 clean:
