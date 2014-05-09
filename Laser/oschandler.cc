@@ -12,6 +12,7 @@
 #include "oschandler.h"
 #include "urlconfig.h"
 #include "laser.h"
+#include "video.h"
 #include "point.h"
 
 int debug=1;
@@ -82,10 +83,11 @@ static int setTransform_handler(const char *path, const char *types, lo_arg **ar
 // Draw
 static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(argv[0]->i); return 0; }
 
-OSCHandler::OSCHandler(int _unit, Laser *_laser): currentColor(1.0,1.0,1.0) {
+OSCHandler::OSCHandler(int _unit, Laser *_laser, Video *_video): currentColor(1.0,1.0,1.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler(" << _unit << ")" << std::endl;
     unit=_unit;
     laser=_laser;
+    video=_video;
     currentDensity=1.0;
 
 	URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
@@ -296,5 +298,6 @@ void OSCHandler::setTransform() {
 void OSCHandler::update(int nPoints ) {
     std::vector<etherdream_point> pts=drawing.getPoints(nPoints);
     laser->update(pts);
+    video->update(pts);
     drawing.clear();
 }

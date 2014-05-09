@@ -1,4 +1,5 @@
-#include "Laser.h"
+#include "laser.h"
+#include "video.h"
 #include "oschandler.h"
 #include "dbg.h"
 
@@ -27,6 +28,9 @@ int main(int argc, char *argv[]) {
 
     Laser laser;
     laser.open();
-    OSCHandler osc(0,&laser);
+    Video video;
+    video.open();
+
+    OSCHandler osc(0,&laser,&video);
     osc.wait();
 }

@@ -1,9 +1,10 @@
 #pragma once
+
 #include <vector>
 #include "etherdream.h"
-#include "point.h"
+#include "displaydevice.h"
 
-class Laser {
+class Laser: public DisplayDevice  {
     static const int MAXSLEWDISTANCE;  // Maximum distance mirrors can move in 1 point time
     static const int PPS;
     struct etherdream *d;

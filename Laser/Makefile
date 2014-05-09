@@ -2,19 +2,24 @@ CXX=/opt/local/bin/g++
 BASEDIR=../..
 UTIL=../LIDAR/FrontEndLIDAR    # For dbg
 VPATH=.:$(UTIL)
-LIBLO=$(BASEDIR)/OSC/liblo-0.26
+#LIBLO=$(BASEDIR)/OSC/liblo-0.26
 
 OPENCV=-lopencv_imgproc -lopencv_core 
 
+CAIROINC=/opt/local/include/cairo
+CAIROLIBDIR=/opt/local/lib
+CAIROLIBES=-lcairo -lX11
+
+
 ED=etherdream
 EDL=$(ED)/driver/libetherdream
-INCLUDES=-I$(ED)/driver/libetherdream -I$(ED)/common -I$(UTIL) -I$(LIBLO)
+INCLUDES=-I$(ED)/driver/libetherdream -I$(ED)/common -I$(UTIL) -I$(CAIROINC)
 DEBUG=-g -Wall
-LDFLAGS=-L$(LIBLO)
-LIBES=-llo $(OPENCV)
+LDFLAGS=-L$(CAIROLIBDIR)
+LIBES=-llo $(OPENCV) $(CAIROLIBES)
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES)
 CFLAGS=$(DEBUG) $(OPTIMIZE)
-CXXSRCS=oschandler.cc main.cc  dbg.cc dest.cc urlconfig.cc laser.cc point.cc drawing.cc bezier.cc
+CXXSRCS=oschandler.cc main.cc  dbg.cc dest.cc urlconfig.cc laser.cc point.cc drawing.cc bezier.cc video.cc
 CSRCS=$(EDL)/etherdream.c
 SRCS=$(CXXSRCS) $(CSRCS)
 
@@ -46,23 +51,43 @@ oschandler.o: ../../OSC/liblo-0.26/lo/lo_macros.h
 oschandler.o: ../LIDAR/FrontEndLIDAR/dest.h drawing.h
 oschandler.o: ../LIDAR/FrontEndLIDAR/point.h
 oschandler.o: etherdream/driver/libetherdream/etherdream.h
-oschandler.o: etherdream/common/protocol.h laser.h
-oschandler.o: ../LIDAR/FrontEndLIDAR/urlconfig.h
-main.o: Laser.h etherdream/driver/libetherdream/etherdream.h
-main.o: etherdream/common/protocol.h ../LIDAR/FrontEndLIDAR/point.h
-main.o: oschandler.h ../../OSC/liblo-0.26/lo/lo.h
-main.o: ../../OSC/liblo-0.26/lo/lo_endian.h
+oschandler.o: etherdream/common/protocol.h laser.h displaydevice.h bezier.h
+oschandler.o: ../LIDAR/FrontEndLIDAR/urlconfig.h video.h
+oschandler.o: /opt/local/include/cairo/cairo-xlib.h
+oschandler.o: /opt/local/include/cairo/cairo.h
+oschandler.o: /opt/local/include/cairo/cairo-version.h
+oschandler.o: /opt/local/include/cairo/cairo-features.h
+oschandler.o: /opt/local/include/cairo/cairo-deprecated.h
+main.o: laser.h etherdream/driver/libetherdream/etherdream.h
+main.o: etherdream/common/protocol.h displaydevice.h video.h
+main.o: /opt/local/include/cairo/cairo-xlib.h
+main.o: /opt/local/include/cairo/cairo.h
+main.o: /opt/local/include/cairo/cairo-version.h
+main.o: /opt/local/include/cairo/cairo-features.h
+main.o: /opt/local/include/cairo/cairo-deprecated.h oschandler.h
+main.o: ../../OSC/liblo-0.26/lo/lo.h ../../OSC/liblo-0.26/lo/lo_endian.h
 main.o: ../../OSC/liblo-0.26/lo/lo_types.h
 main.o: ../../OSC/liblo-0.26/lo/lo_osc_types.h
 main.o: ../../OSC/liblo-0.26/lo/lo_errors.h
 main.o: ../../OSC/liblo-0.26/lo/lo_lowlevel.h
 main.o: ../../OSC/liblo-0.26/lo/lo_macros.h ../LIDAR/FrontEndLIDAR/dest.h
-main.o: drawing.h laser.h ../LIDAR/FrontEndLIDAR/dbg.h
+main.o: drawing.h ../LIDAR/FrontEndLIDAR/point.h ../LIDAR/FrontEndLIDAR/dbg.h
+main.o: bezier.h
 laser.o: etherdream/driver/libetherdream/etherdream.h
-laser.o: etherdream/common/protocol.h laser.h ../LIDAR/FrontEndLIDAR/point.h
-laser.o: ../LIDAR/FrontEndLIDAR/dbg.h
+laser.o: etherdream/common/protocol.h laser.h displaydevice.h
+laser.o: ../LIDAR/FrontEndLIDAR/dbg.h ../LIDAR/FrontEndLIDAR/point.h
 drawing.o: drawing.h ../LIDAR/FrontEndLIDAR/point.h
 drawing.o: etherdream/driver/libetherdream/etherdream.h
-drawing.o: etherdream/common/protocol.h laser.h ../LIDAR/FrontEndLIDAR/dbg.h
+drawing.o: etherdream/common/protocol.h laser.h displaydevice.h
+drawing.o: ../LIDAR/FrontEndLIDAR/dbg.h bezier.h
+bezier.o: bezier.h ../LIDAR/FrontEndLIDAR/point.h
+bezier.o: ../LIDAR/FrontEndLIDAR/dbg.h
+video.o: /opt/local/include/cairo/cairo.h
+video.o: /opt/local/include/cairo/cairo-version.h
+video.o: /opt/local/include/cairo/cairo-features.h
+video.o: /opt/local/include/cairo/cairo-deprecated.h
+video.o: /opt/local/include/cairo/cairo-xlib.h video.h displaydevice.h
+video.o: etherdream/driver/libetherdream/etherdream.h
+video.o: etherdream/common/protocol.h ../LIDAR/FrontEndLIDAR/dbg.h
 etherdream/driver/libetherdream/etherdream.o: etherdream/driver/libetherdream/etherdream.h
 etherdream/driver/libetherdream/etherdream.o: etherdream/common/protocol.h

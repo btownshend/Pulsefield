@@ -8,10 +8,12 @@
 #include "drawing.h"
 
 class Laser;
+class Video;
 
 class OSCHandler {
     Drawing drawing;
     Laser *laser;
+    Video *video;
     int serverPort;
 
     int unit;
@@ -24,7 +26,7 @@ class OSCHandler {
     Color currentColor;
     float currentDensity;
  public:
-    OSCHandler(int unit, Laser *_laser);
+    OSCHandler(int unit, Laser *_laser, Video *_video);
     ~OSCHandler();
 
     void run();
