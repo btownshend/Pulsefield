@@ -1,6 +1,7 @@
 #pragma once 
 #include <ostream>
 #include <vector>
+
 #include "point.h"
 #include "etherdream.h"
 #include "laser.h"
@@ -51,6 +52,9 @@ protected:
     virtual std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
 	return std::vector<etherdream_point>(0);
     }
+    // Convert from a Point vector to an etherdream vector, applying the current transform
+    std::vector<etherdream_point> convert(const std::vector<Point> &pts, const Transform &transform) const;
+
     virtual float getLength() const { return 0.0; }
 };
 
@@ -71,7 +75,7 @@ class Arc: public Primitive {
     float angle;
  public:
     Arc(Point _center, Point _p, float _angle, Color c): Primitive(c) { center=_center; p=_p; angle=_angle; }
-    // TODO
+    std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
 };
 
 class Line:public Primitive {
@@ -93,6 +97,7 @@ class Cubic:public Primitive {
 class Drawing {
     std::vector<Primitive *> elements;
     Transform transform;	// 3x3 transformation matrix; maps floor position in meters to device coords
+
  public:
     Drawing() { ; }
 
@@ -148,7 +153,6 @@ class Drawing {
 	pts[0]=p1;pts[1]=p2;pts[2]=p3;pts[3]=p4;
 	elements.push_back(new Cubic(pts,c));
     }
-
 
     // Convert drawing into a set of etherdream points
     // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)

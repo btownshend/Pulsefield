@@ -117,6 +117,24 @@ std::vector<etherdream_point> Line::getPoints(float pointSpacing,const Transform
 }
 
 
+std::vector<etherdream_point> Cubic::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
+    std::vector<Point> pts = b.interpolate(pointSpacing);
+    return convert(pts,transform);
+}
+
+std::vector<etherdream_point> Primitive::convert(const std::vector<Point> &pts, const Transform &transform) const {
+    std::vector<etherdream_point> result(pts.size());
+    for (unsigned int i = 0; i < pts.size(); i++) {
+	result[i] = transform.mapToDevice(pts[i],c);
+    }
+    return result;
+}
+
+std::vector<etherdream_point> Arc::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
+    assert(0);   // TODO
+}
+
+
 // Convert to points using given floorspace spacing
 std::vector<etherdream_point> Drawing::getPoints(float spacing) const {
     dbg("Drawing.getPoints",2) << "getPoints(" << spacing << ")" << std::endl;
