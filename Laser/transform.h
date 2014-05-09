@@ -17,11 +17,14 @@ class Transform {
     void set(std::vector<Point> devPts, std::vector<Point> floorPts);
     // Mapping, if out-of-range, return clipped point
     etherdream_point mapToDevice(Point floorPt,const Color &c) const;
+    Point mapToDevice(Point floorPt) const;
+
     // Inverse mapping from laser to world
     Point mapToWorld(etherdream_point p) const;
 
-    std::vector<etherdream_point> mapToDevice(std::vector<Point> floorPts,Color c) const;
-    std::vector<Point> mapToWorld(std::vector<etherdream_point> pts) const;
+    std::vector<etherdream_point> mapToDevice(const std::vector<Point> &floorPts,Color c) const;
+    std::vector<Point> mapToDevice(const std::vector<Point> &floorPts) const;
+    std::vector<Point> mapToWorld(const std::vector<etherdream_point> &pts) const;
 
     // Computer transform matrix from set of points already provided
     void setTransform();

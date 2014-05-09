@@ -317,18 +317,42 @@ void OSCHandler::setTransform(int unit) {
 
 void OSCHandler::update() {
     lasers.render(drawing);
+    std::vector<Point> bounds(4);
+    bounds[0]=Point(minx,miny);
+    bounds[1]=Point(maxx,miny);
+    bounds[2]=Point(maxx,maxy);
+    bounds[3]=Point(minx,maxy);
+    video->setBounds(bounds);
     video->update();
     drawing.clear();
 }
 
 void OSCHandler::pfframe() {
+    // Set video bounds
     // Setup dummy mapping
     for  (unsigned int i=0;i<lasers.size();i++) {
 	Transform t;
-	t.addToMap(Point(-32767,-32767),Point(minx,miny));
-	t.addToMap(Point(32767,-32767),Point(maxx,miny));
-	t.addToMap(Point(-32767,32767),Point(minx,maxy));
-	t.addToMap(Point(32767,32767),Point(maxx,maxy));
+	if (i==0) {
+	    t.addToMap(Point(-32767,-32767),Point((minx+0.5)/3,miny+0.5));
+	    t.addToMap(Point(32767,-32767),Point(maxx/3,miny+0.5));
+	    t.addToMap(Point(-32767,32767),Point((minx+0.5),maxy+1));
+	    t.addToMap(Point(32767,32767),Point((maxx+1),maxy+1));
+	} else if (i==1) {
+	    t.addToMap(Point(-32767,-32767),Point((minx+0.5),miny+0.5));
+	    t.addToMap(Point(32767,-32767),Point((maxx+1),miny+0.5));
+	    t.addToMap(Point(-32767,32767),Point((minx+0.5)/3,maxy+1));
+	    t.addToMap(Point(32767,32767),Point((maxx+1)/3,maxy+1));
+	} else if (i==2) {
+	    t.addToMap(Point(-32767,-32767),Point((minx+0.5),miny+0.5));
+	    t.addToMap(Point(32767,-32767),Point((maxx+1),miny+0.5));
+	    t.addToMap(Point(-32767,32767),Point((minx+0.5),maxy/3));
+	    t.addToMap(Point(32767,32767),Point((maxx+1),maxy+1));
+	} else if (i==3) {
+	    t.addToMap(Point(-32767,-32767),Point((minx+0.5),miny+0.5));
+	    t.addToMap(Point(32767,-32767),Point((maxx+1),miny+0.5));
+	    t.addToMap(Point(-32767,32767),Point((minx+0.5),maxy+1));
+	    t.addToMap(Point(32767,32767),Point((maxx+1),maxy/3));
+	}
 	t.setTransform();
 	lasers.getLaser(i)->setTransform(t);
     }

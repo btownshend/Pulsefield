@@ -9,10 +9,20 @@
 
 static const int MAXSLEWDISTANCE=65535/20;
 
-Laser::Laser(int _unit) {
+Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     unit=_unit;
     PPS=30000;
     npoints=600;
+    if (unit==0)
+	labelColor=Color(1.0,0.0,0.0);
+    else if (unit==1)
+	labelColor=Color(0.0,1.0,0.0);
+    else if (unit==2)
+	labelColor=Color(0.0,0.0,1.0);
+    else if (unit==3)
+	labelColor=Color(0.5,0.5,0.0);
+    else
+	labelColor=Color(((unit+1)%3)/2.0,((unit+1)%5)/4.0,((unit+1)%7)/6.0);
 }
 
 int Laser::open() {

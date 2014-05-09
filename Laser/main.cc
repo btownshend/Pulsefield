@@ -6,6 +6,7 @@
 void usage(int argc,char *argv[]) {
     fprintf(stderr, "Usage: %s [-n nlaser] [-d debug]\n",argv[0]);
     fprintf(stderr,"\t-d debug\t\tset debug option (e.g -d4, -dLaser:4)\n");
+    fprintf(stderr,"\t-n nlaser\t\tnumber of laser devices\n");
     exit(1);
 }
 
@@ -13,7 +14,7 @@ int main(int argc, char *argv[]) {
     int ch;
     int nlaser=4;
 
-    while ((ch=getopt(argc,argv,"d:"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:n:"))!=-1) {
 	switch (ch) {
 	case 'n':
 	    nlaser=atoi(optarg);

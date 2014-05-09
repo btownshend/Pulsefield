@@ -11,6 +11,8 @@ class Laser: public DisplayDevice  {
     struct etherdream *d;
     std::vector<etherdream_point> pts;
     int unit;
+    Color labelColor;
+    Color maxColor;
  public:
     Laser(int unit);
     int open();
@@ -19,6 +21,9 @@ class Laser: public DisplayDevice  {
     const std::vector<etherdream_point> &getPoints() const { return pts; }
     void setPoints(int _npoints) { npoints=_npoints; }
     void render(const Drawing &drawing);
+    Color getLabelColor() const { return labelColor; }
+    Color getMaxColor() const { return maxColor; }
+    int getUnit() const { return unit; }
 };
 
 class Lasers {
@@ -30,6 +35,7 @@ public:
     void refresh();
     void render(const Drawing &_drawing) { drawing=_drawing; refresh(); }
     Laser *getLaser(int unit) { return lasers[unit]; }
+    const Laser *getLaser(int unit) const { return lasers[unit]; }
     unsigned int size() const { return lasers.size(); }
 };
 

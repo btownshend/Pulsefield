@@ -60,6 +60,16 @@ etherdream_point Transform::mapToDevice(Point floorPt,const Color &c) const {
     return p;
 }
 
+Point Transform::mapToDevice(Point floorPt) const {
+    Point p;
+    std::vector<cv::Point2f> src(1);
+    src[0].x=floorPt.X();
+    src[0].y=floorPt.Y();
+    std::vector<cv::Point2f> dst;
+    cv::perspectiveTransform(src,dst,transform);
+    return Point(dst[0].x,dst[0].y);
+}
+
 Point Transform::mapToWorld(etherdream_point p) const {
     std::vector<cv::Point2f> src(1);
     src[0].x=p.x;
@@ -72,14 +82,21 @@ Point Transform::mapToWorld(etherdream_point p) const {
     return result;
 }
 
-std::vector<etherdream_point> Transform::mapToDevice(std::vector<Point> floorPts,Color c) const {
+std::vector<etherdream_point> Transform::mapToDevice(const std::vector<Point> &floorPts,Color c) const {
     std::vector<etherdream_point> result(floorPts.size());
     for (unsigned int i=0;i<floorPts.size();i++)
 	result[i]=mapToDevice(floorPts[i],c);
     return result;
 }
 
-std::vector<Point> Transform::mapToWorld(std::vector<etherdream_point> pts) const {
+std::vector<Point> Transform::mapToDevice(const std::vector<Point> &floorPts) const {
+    std::vector<Point> result(floorPts.size());
+    for (unsigned int i=0;i<floorPts.size();i++)
+	result[i]=mapToDevice(floorPts[i]);
+    return result;
+}
+
+std::vector<Point> Transform::mapToWorld(const std::vector<etherdream_point> &pts) const {
     std::vector<Point> result(pts.size());
     for (unsigned int i=0;i<pts.size();i++)
 	result[i]=mapToWorld(pts[i]);
