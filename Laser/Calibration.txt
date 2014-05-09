@@ -35,4 +35,8 @@ Command line options:
 
 LIDAR:
 Should have an unscaled affine transform (rotation, translation only) for laser coords to map them to positions in room
-- could set by specifying two corners of room 
+- could set by specifying two corners of room, use range data to locate
+- or just allow rotation to align to grid of room
+- or more general
+- calibrator can ask for background ranges
+

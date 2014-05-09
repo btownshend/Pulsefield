@@ -11,6 +11,6 @@ class Laser: public DisplayDevice  {
  public:
     Laser();
     int open();
-    void update(const std::vector<etherdream_point> points);
+    void update(const std::vector<etherdream_point> &points);
     static std::vector<etherdream_point> getBlanks(etherdream_point initial, etherdream_point final);
 };

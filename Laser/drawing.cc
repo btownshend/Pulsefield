@@ -2,68 +2,9 @@
 #include <cmath>
 #include "drawing.h"
 #include "dbg.h"
-#include "opencv2/imgproc/imgproc.hpp"
 
 std::ostream& operator<<(std::ostream& s, const Color &col) {
     return s << "[" << col.r << "," << col.g << "," << col.b << "]";
-}
-
-Transform::Transform() {
-    transform.resize(6);
-    clear();
-}
-
-void Transform::clear() {
-    transform=cv::Mat::eye(3,3,CV_32F);
-}
-
-// Find the perspective transform that best matches the 3 points loaded
-void Transform::setTransform() {
-    if (floorpts.size() != 4) {
-	std::cerr << "setTransform() called after " <<floorpts.size() << " points added -- must be exactly 4" << std::endl;
-    } else {
-	transform=cv::getPerspectiveTransform(floorpts,devpts);
-    }
-    floorpts.clear();
-    devpts.clear();
-}
-
-etherdream_point Transform::mapToDevice(Point floorPt,Color c) const {
-    etherdream_point p;
-    std::vector<cv::Point2f> src(1);
-    src[0].x=floorPt.X();
-    src[0].y=floorPt.Y();
-    std::vector<cv::Point2f> dst;
-    cv::perspectiveTransform(src,dst,transform);
-    int x=round(dst[0].x);
-    if (x<-32768)
-	p.x=-32768;
-    else if (x>32767)
-	p.x=32767;
-    else
-	p.x=x;
-
-    int y=round(dst[0].y);
-    if (y<-32768)
-	p.y=-32768;
-    else if (y>32767)
-	p.y=32767;
-    else
-	p.y=y;
-
-    p.r=(int)(c.red() * 65535);
-    p.g=(int)(c.green() * 65535);
-    p.b=(int)(c.blue() * 65535);
-
-    dbg("Transform.mapToDevice",4) << floorPt << " -> " << "[" << p.x << "," <<p.y << "]" << std::endl;
-    return p;
-}
-
-std::vector<etherdream_point> Transform::mapToDevice(std::vector<Point> floorPts,Color c) const {
-    std::vector<etherdream_point> result(floorPts.size());
-    for (unsigned int i=0;i<floorPts.size();i++)
-	result[i]=mapToDevice(floorPts[i],c);
-    return result;
 }
 
 std::vector<etherdream_point> Circle::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
@@ -154,7 +95,7 @@ std::vector<etherdream_point> Drawing::getPoints(float spacing) const {
     }
     // Add blanks for final skew back to start of figure
     if (result.size()>0) {
-	std::vector<etherdream_point> blanks = Laser::getBlanks(result.front(),result.back());
+	std::vector<etherdream_point> blanks = Laser::getBlanks(result.back(),result.front());
 	result.insert(result.end(), blanks.begin(), blanks.end());
     }
     dbg("Drawing.getPoints",2) << "Converted to " << result.size() << " points." << std::endl;

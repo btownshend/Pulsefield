@@ -38,7 +38,7 @@ int Laser::open() {
     return 0;
 }
 
-void Laser::update(const std::vector<etherdream_point> points) {
+void Laser::update(const std::vector<etherdream_point> &points) {
     if (points.size() < 2)  {
 	std::cerr << "Laser::update: not enough points (" << points.size() << ") -- not updating" << std::endl;
 	return;

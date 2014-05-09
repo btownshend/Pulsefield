@@ -26,7 +26,7 @@ static int generic_handler(const char *path, const char *types, lo_arg **argv,in
 	int i;
 	fprintf(stderr, "Unhandled Message Rcvd: %s (", path);
 	for (i=0; i<argc; i++) {
-		printf("%c",types[i]);
+	    fprintf(stderr,"%c",types[i]);
 	}
 	fprintf(stderr, "): ");
 	for (i=0; i<argc; i++) {
@@ -81,12 +81,22 @@ static int setTransform_handler(const char *path, const char *types, lo_arg **ar
 // Draw
 static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(argv[0]->i); return 0; }
 
+// pf 
+static int pfupdate_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(argv[3]->f,argv[4]->f),.30); return 0; }
+static int pfframe_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfframe(); return 0; }
+static int pfsetminx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->minx=argv[0]->f; return 0; }
+static int pfsetminy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->miny=argv[0]->f; return 0; }
+static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->maxx=argv[0]->f; return 0; }
+static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->maxy=argv[0]->f; return 0; }
+
 OSCHandler::OSCHandler(int _unit, Laser *_laser, Video *_video): currentColor(1.0,1.0,1.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler(" << _unit << ")" << std::endl;
     unit=_unit;
     laser=_laser;
     video=_video;
     currentDensity=1.0;
+    minx=-5; maxx=5;
+    miny=0; maxy=0;
 
 	URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
 
@@ -158,6 +168,13 @@ OSCHandler::OSCHandler(int _unit, Laser *_laser, Video *_video): currentColor(1.
 	lo_server_add_method(s,"/laser/update","i",update_handler,this);
 
 
+	/* PF */
+	lo_server_add_method(s,"/pf/frame","i",pfframe_handler,this);
+	lo_server_add_method(s,"/pf/update","ififfffffiii",pfupdate_handler,this);
+	lo_server_add_method(s,"/pf/set/minx","f",pfsetminx_handler,this);
+	lo_server_add_method(s,"/pf/set/maxx","f",pfsetmaxx_handler,this);
+	lo_server_add_method(s,"/pf/set/miny","f",pfsetminy_handler,this);
+	lo_server_add_method(s,"/pf/set/maxy","f",pfsetmaxy_handler,this);
 
 	/* add method that will match any path and args if they haven't been caught above */
 	lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
@@ -295,7 +312,20 @@ void OSCHandler::setTransform() {
 
 void OSCHandler::update(int nPoints ) {
     std::vector<etherdream_point> pts=drawing.getPoints(nPoints);
-    laser->update(pts);
-    video->update(pts);
+    if (pts.size()>=2) {
+	laser->update(pts);
+	video->update(pts,drawing.getTransform());
+    }
     drawing.clear();
+}
+
+void OSCHandler::pfframe() {
+    // Setup mapping
+    drawing.addToMap(Point(-32767,-32767),Point(minx,maxy));
+    drawing.addToMap(Point(32767,-32767),Point(maxx,maxy));
+    drawing.addToMap(Point(-32767,32767),Point(minx,miny));
+    drawing.addToMap(Point(32767,32767),Point(maxx,miny));
+    drawing.setTransform();
+    // Update
+    update(500);
 }

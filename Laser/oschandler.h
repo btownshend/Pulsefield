@@ -25,6 +25,7 @@ class OSCHandler {
 
     Color currentColor;
     float currentDensity;
+
  public:
     OSCHandler(int unit, Laser *_laser, Video *_video);
     ~OSCHandler();
@@ -64,4 +65,7 @@ class OSCHandler {
     void map(Point world, Point local);
     void setTransform();
 
+    // /pf/frame
+    float minx,maxx,miny,maxy;
+    void pfframe();
 };

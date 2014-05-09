@@ -7,7 +7,7 @@
 #include "laser.h"
 #include "dbg.h"
 #include "bezier.h"
-#include "opencv2/core/core.hpp"
+#include "transform.h"
 
 class Color {
     float r,g,b;
@@ -18,27 +18,6 @@ class Color {
     float green() const { return g; }
     float blue() const { return b; }
     friend std::ostream& operator<<(std::ostream& s, const Color &col);
-};
-
-// Transformation between floor (meter) space and device (-32767:32767) space
-class Transform {
-    cv::Mat transform; 
-    std::vector<cv::Point2f> floorpts, devpts;
- public:
-    Transform();
-    void clear();
-    // Set transform based on floor space coordinates of particular device space points
-    void set(std::vector<Point> devPts, std::vector<Point> floorPts);
-    // Mapping, if out-of-range, return clipped point
-    etherdream_point mapToDevice(Point floorPt,Color c) const;
-    std::vector<etherdream_point> mapToDevice(std::vector<Point> floorPts,Color c) const;
-
-    // Computer transform matrix from set of points already provided
-    void setTransform();
-    void addToMap(Point devSpace, Point floorSpace) {
-	floorpts.push_back(cv::Point2f(floorSpace.X(), floorSpace.Y()));
-	devpts.push_back(cv::Point2f(devSpace.X(), devSpace.Y()));
-    }
 };
 
 class Primitive {
@@ -106,6 +85,8 @@ class Drawing {
 	transform.setTransform();
     }
 
+    const Transform &getTransform() const { return transform; }
+
     void addToMap(Point devSpace, Point floorSpace) {
 	transform.addToMap(devSpace,floorSpace);
     }
@@ -149,7 +130,7 @@ class Drawing {
 
     // Add a cubic to current drawing
     void drawCubic(Point p1, Point p2, Point p3, Point p4, Color c) {
-	std::vector<Point> pts;
+	std::vector<Point> pts(4);
 	pts[0]=p1;pts[1]=p2;pts[2]=p3;pts[3]=p4;
 	elements.push_back(new Cubic(pts,c));
     }

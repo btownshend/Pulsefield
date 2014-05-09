@@ -1,5 +1,13 @@
 # Draw a pattern
 replayOSC -h 127.0.0.1 7780 <<EOF
+/laser/set/color 0.0 1.0 0.0
+/laser/circle 0.0 0.0 5000.0 
+/laser/circle 10000.0 0.0 5000.0
+/laser/circle 10000.0 10000.0 5000.0
+/laser/bezier/cubic  10000.0 10000.0 15000.0 15000.0 20000.0 15000.0 20000.0 5000.0
+/laser/update 500
+EOF
+exit
 /laser/map 0.0 0.0 0.0 0.0
 /laser/map 20000.0 0.0 -15.0 0.0
 /laser/map 20000.0 20000.0 -26.0 48.0
@@ -15,13 +23,6 @@ replayOSC -h 127.0.0.1 7780 <<EOF
 #/laser/circle -30.0 0.0 20.0 0.0 1.0 1.0
 #/laser/circle 30.0 0.0 20.0 0.0 1.0 1.0
 /laser/update 1000
-EOF
-zz
-/laser/circle 0.0 0.0 5000.0 0.0 1.0 1.0
-/laser/circle 10000.0 0.0 5000.0 0.0 1.0 1.0
-/laser/circle 10000.0 10000.0 5000.0 0.0 1.0 1.0
-/laser/circle 0.0 10000.0 5000.0 0.0 1.0 1.0
-/laser/update 500
 EOF
 zz
 /laser/circle 0.0 0.0 5000.0 0.0 1.0 1.0

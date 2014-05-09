@@ -19,9 +19,11 @@ LDFLAGS=-L$(CAIROLIBDIR)
 LIBES=-llo $(OPENCV) $(CAIROLIBES)
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES)
 CFLAGS=$(DEBUG) $(OPTIMIZE)
-CXXSRCS=oschandler.cc main.cc  dbg.cc dest.cc urlconfig.cc laser.cc point.cc drawing.cc bezier.cc video.cc
+CXXSRCS=oschandler.cc main.cc  dbg.cc dest.cc urlconfig.cc laser.cc point.cc drawing.cc bezier.cc video.cc transform.cc
 CSRCS=$(EDL)/etherdream.c
 SRCS=$(CXXSRCS) $(CSRCS)
+
+all: osclaser
 
 osclaser: $(CSRCS:.c=.o) $(CXXSRCS:.cc=.o)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
@@ -33,7 +35,7 @@ beziertest: bezier.o beziertest.o point.o dbg.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
 
 clean:
-	rm *.o
+	-rm *.o
 
 depend:
 	/opt/local/bin/makedepend -Y -- $(CXXFLAGS) -- $(SRCS)
