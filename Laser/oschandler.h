@@ -6,13 +6,13 @@
 #include "lo/lo.h"
 #include "dest.h"
 #include "drawing.h"
+#include "laser.h"
 
-class Laser;
 class Video;
 
 class OSCHandler {
     Drawing drawing;
-    Laser *laser;
+    Lasers lasers;
     Video *video;
     int serverPort;
 
@@ -25,9 +25,9 @@ class OSCHandler {
 
     Color currentColor;
     float currentDensity;
-
+    int npoints;
  public:
-    OSCHandler(int unit, Laser *_laser, Video *_video);
+    OSCHandler(const Lasers &lasers, Video *video);
     ~OSCHandler();
 
     void run();
@@ -46,9 +46,10 @@ class OSCHandler {
     void ping(lo_message msg, int seqnum);
 
     // Laser settings
-    void setPPS(int pps);
-    void setBlanking(int before, int after);
-    void setSkew(int s);
+    void setPPS(int unit,int pps);
+    void setPoints(int unit,int points);	// Target points per frame
+    void setBlanking(int unit,int before, int after);
+    void setSkew(int unit, int s);
 
     // Attributes
     void setColor(Color c);
@@ -61,9 +62,9 @@ class OSCHandler {
     void line(Point p1, Point p2);
     void cubic(Point p1, Point p2, Point p3, Point p4);
 
-    void update(int nPoints);
-    void map(Point world, Point local);
-    void setTransform();
+    void update();
+    void map(int unit, Point world, Point local);
+    void setTransform(int unit);
 
     // /pf/frame
     float minx,maxx,miny,maxy;

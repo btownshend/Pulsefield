@@ -7,10 +7,12 @@
 #include "dbg.h"
 #include "point.h"
 
-const int Laser::MAXSLEWDISTANCE=65535/20;
-const int Laser::PPS=30000;
+static const int MAXSLEWDISTANCE=65535/20;
 
-Laser::Laser() {
+Laser::Laser(int _unit) {
+    unit=_unit;
+    PPS=30000;
+    npoints=600;
 }
 
 int Laser::open() {
@@ -31,16 +33,20 @@ int Laser::open() {
 	printf("%d: Ether Dream %06lx\n", i,etherdream_get_id(etherdream_get(i)));
     }
 
-    d = etherdream_get(0);
-    printf("Connecting...\n");
+    if (cc<=unit) {
+	printf("Requested laser unit %d, but only have %d lasers\n", unit, cc);
+	return -1;
+    }
+    d = etherdream_get(unit);
+    printf("Connecting to laser %d...\n",unit);
     if (etherdream_connect(d) < 0)
 	return -1;
     return 0;
 }
 
-void Laser::update(const std::vector<etherdream_point> &points) {
-    if (points.size() < 2)  {
-	std::cerr << "Laser::update: not enough points (" << points.size() << ") -- not updating" << std::endl;
+void Laser::update() {
+    if (pts.size() < 2)  {
+	std::cerr << "Laser::update: not enough points (" << pts.size() << ") -- not updating" << std::endl;
 	return;
     }
 
@@ -50,8 +56,8 @@ void Laser::update(const std::vector<etherdream_point> &points) {
     }
     dbg("Laser.update",1) << "Wait for ready." << std::endl;
     etherdream_wait_for_ready(d);
-    dbg("Laser.update",1) << "Sending " << points.size() << " points" << std::endl;
-    int res = etherdream_write(d,points.data(), points.size(), PPS, -1);
+    dbg("Laser.update",1) << "Sending " << pts.size() << " points" << std::endl;
+    int res = etherdream_write(d,pts.data(), pts.size(), PPS, -1);
     if (res != 0)
 	printf("write %d\n", res);
 }
@@ -70,5 +76,30 @@ std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdr
 	    result.push_back(blank);
     }
     return result;
+}
+
+
+void Laser::render(const Drawing &drawing) {
+    pts=drawing.getPoints(npoints,transform);
+    dbg("Laser.render",2) << "Rendered drawing into " << pts.size() << " points." << std::endl;
+    if (pts.size()>=2)
+	update();
+}
+
+Lasers::Lasers(int nlasers): lasers(nlasers) {
+    for (unsigned int i=0;i<lasers.size();i++) {
+	lasers[i]=new Laser(i);
+	lasers[i]->open();
+    }
+}
+
+Lasers::~Lasers() {
+    for (unsigned int i=0;i<lasers.size();i++)
+	delete lasers[i];
+}
+
+void Lasers::refresh() {
+    for (unsigned int i=0;i<lasers.size();i++)
+	lasers[i]->render(drawing);
 }
 

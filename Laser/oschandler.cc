@@ -59,9 +59,10 @@ static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv,
 static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->ping(msg,argv[0]->i); return 0; }
 
 // Laser settings
-static int setPPS_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPPS(argv[0]->f); return 0; }
-static int setBlanking_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setBlanking(argv[0]->i,argv[0]->i); return 0; }
-static int setSkew_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setSkew(argv[0]->i); return 0; }
+static int setPPS_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPPS(argv[0]->i,argv[1]->f); return 0; }
+static int setBlanking_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setBlanking(argv[0]->i,argv[1]->i,argv[2]->i); return 0; }
+static int setPoints_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPoints(argv[0]->i,argv[1]->i); return 0; }
+static int setSkew_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setSkew(argv[0]->i,argv[1]->i); return 0; }
 
 // Attributes
 static int setColor_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setColor(Color(argv[0]->f,argv[1]->f,argv[2]->f)); return 0; }
@@ -75,11 +76,11 @@ static int cubic_handler(const char *path, const char *types, lo_arg **argv, int
 static int line_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->line(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f)); return 0; }
 
 // Transforms
-static int map_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->map(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f)); return 0; }
-static int setTransform_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setTransform(); return 0; }
+static int map_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->map(argv[0]->i,Point(argv[1]->f,argv[2]->f),Point(argv[3]->f,argv[4]->f)); return 0; }
+static int setTransform_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setTransform(argv[0]->i); return 0; }
 
 // Draw
-static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(argv[0]->i); return 0; }
+static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(); return 0; }
 
 // pf 
 static int pfupdate_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(argv[3]->f,argv[4]->f),.30); return 0; }
@@ -89,12 +90,10 @@ static int pfsetminy_handler(const char *path, const char *types, lo_arg **argv,
 static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->maxx=argv[0]->f; return 0; }
 static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->maxy=argv[0]->f; return 0; }
 
-OSCHandler::OSCHandler(int _unit, Laser *_laser, Video *_video): currentColor(1.0,1.0,1.0) {
-    dbg("OSCHandler",1) << "OSCHandler::OSCHandler(" << _unit << ")" << std::endl;
-    unit=_unit;
-    laser=_laser;
-    video=_video;
+OSCHandler::OSCHandler(const Lasers &_lasers, Video *_video) : lasers(_lasers), video(_video),  currentColor(1.0,1.0,1.0) {
+    dbg("OSCHandler",1) << "OSCHandler::OSCHandler()" << std::endl;
     currentDensity=1.0;
+    npoints=600;
     minx=-5; maxx=5;
     miny=0; maxy=0;
 
@@ -150,9 +149,10 @@ OSCHandler::OSCHandler(int _unit, Laser *_laser, Video *_video): currentColor(1.
 	lo_server_add_method(s,"/laser/set/attribute","sf",setAttribute_handler,this);
 
 	/* Laser settings */
-	lo_server_add_method(s,"/laser/set/pps","f",setPPS_handler,this);
-	lo_server_add_method(s,"/laser/set/blanking","ii",setBlanking_handler,this);
-	lo_server_add_method(s,"/laser/set/skew","i",setSkew_handler,this);
+	lo_server_add_method(s,"/laser/set/pps","if",setPPS_handler,this);
+	lo_server_add_method(s,"/laser/set/points","if",setPoints_handler,this);
+	lo_server_add_method(s,"/laser/set/blanking","iii",setBlanking_handler,this);
+	lo_server_add_method(s,"/laser/set/skew","ii",setSkew_handler,this);
 
 	/* Primitives */
 	lo_server_add_method(s,"/laser/circle","fff",circle_handler,this);
@@ -161,11 +161,11 @@ OSCHandler::OSCHandler(int _unit, Laser *_laser, Video *_video): currentColor(1.
 	lo_server_add_method(s,"/laser/line","ffff",line_handler,this);
 
 	/* Transforms */
-	lo_server_add_method(s,"/laser/map","ffff",map_handler,this);
-	lo_server_add_method(s,"/laser/settransform","",setTransform_handler,this);
+	lo_server_add_method(s,"/laser/map","iffff",map_handler,this);
+	lo_server_add_method(s,"/laser/settransform","i",setTransform_handler,this);
 
 	/* Draw */
-	lo_server_add_method(s,"/laser/update","i",update_handler,this);
+	lo_server_add_method(s,"/laser/update","",update_handler,this);
 
 
 	/* PF */
@@ -225,17 +225,22 @@ void OSCHandler::startStop(bool start) {
 }
 
 
-void OSCHandler::setPPS(int pps) {
+void OSCHandler::setPPS(int unit, int pps) {
     dbg("OSCHandler.setPPS",1) << "Setting PPS to " << pps << " PPS" << std::endl;
     // TODO:
 }
 
-void OSCHandler::setBlanking(int before, int after) {
+void OSCHandler::setPoints(int unit, int n) {
+    dbg("OSCHandler.setPPS",1) << "Setting points/frame to " << n << std::endl;
+    lasers.getLaser(unit)->setPoints(n);
+}
+
+void OSCHandler::setBlanking(int unit, int before, int after) {
     dbg("OSCHandler.setBlanking",1) << "Setting blanking to " <<before << ", " << after << std::endl;
     // TODO:
 }
 
-void OSCHandler::setSkew(int skew) {
+void OSCHandler::setSkew(int unit, int skew) {
     dbg("OSCHandler.setSkew",1) << "Setting skew to " << skew  << std::endl;
     // TODO:
 }
@@ -302,30 +307,31 @@ void OSCHandler::cubic(Point p1, Point p2, Point p3, Point p4) {
     drawing.drawCubic(p1,p2,p3,p4,currentColor);
 }
 
-void OSCHandler::map(Point p1, Point p2) {
-    drawing.addToMap(p1,p2);
+void OSCHandler::map(int unit, Point p1, Point p2) {
+    lasers.getLaser(unit)->addToMap(p1,p2);
 }
 
-void OSCHandler::setTransform() {
-    drawing.setTransform();
+void OSCHandler::setTransform(int unit) {
+    lasers.getLaser(unit)->setTransform();
 }
 
-void OSCHandler::update(int nPoints ) {
-    std::vector<etherdream_point> pts=drawing.getPoints(nPoints);
-    if (pts.size()>=2) {
-	laser->update(pts);
-	video->update(pts,drawing.getTransform());
-    }
+void OSCHandler::update() {
+    lasers.render(drawing);
+    video->update();
     drawing.clear();
 }
 
 void OSCHandler::pfframe() {
-    // Setup mapping
-    drawing.addToMap(Point(-32767,-32767),Point(minx,maxy));
-    drawing.addToMap(Point(32767,-32767),Point(maxx,maxy));
-    drawing.addToMap(Point(-32767,32767),Point(minx,miny));
-    drawing.addToMap(Point(32767,32767),Point(maxx,miny));
-    drawing.setTransform();
+    // Setup dummy mapping
+    for  (unsigned int i=0;i<lasers.size();i++) {
+	Transform t;
+	t.addToMap(Point(-32767,-32767),Point(minx,miny));
+	t.addToMap(Point(32767,-32767),Point(maxx,miny));
+	t.addToMap(Point(-32767,32767),Point(minx,maxy));
+	t.addToMap(Point(32767,32767),Point(maxx,maxy));
+	t.setTransform();
+	lasers.getLaser(i)->setTransform(t);
+    }
     // Update
-    update(500);
+    update();
 }

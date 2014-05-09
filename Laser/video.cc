@@ -10,7 +10,7 @@
 const int MAXVALUE=32767;
 const float titleHeight=15;   // in pixels
 
-Video::Video() {
+Video::Video(const Lasers & _lasers): lasers(_lasers) {
     ;
 }
 
@@ -65,7 +65,7 @@ void *Video::runDisplay(void *arg) {
 	    cairo_xlib_surface_set_size(world->surface,e.xconfigure.width, e.xconfigure.height);
 	case MapNotify:
 	case Expose:
-	    //world->draw();
+	    world->update();
 	    break;
 	}
     }
@@ -162,17 +162,24 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
      cairo_stroke(cr);
 
      // Draw points
-     cairo_set_line_width(cr,1*pixel);
-     etherdream_point lastpt = points[points.size()-1];
-     for (unsigned int i=0;i<points.size();i++) {
-	 etherdream_point pt = points[i];
-	 cairo_set_source_rgb (cr,pt.r/65535.0,pt.g/65535.0,pt.b/65535.0);
-	 cairo_move_to(cr, lastpt.x,lastpt.y);
-	 cairo_line_to(cr, pt.x, pt.y);
-	 cairo_stroke(cr);
-	 lastpt=pt;
+     dbg("Video.drawDevice",2) << "Drawing " << points.size() << " points" << std::endl;
+     if (points.size()>1) {
+	 cairo_set_line_width(cr,1*pixel);
+	 etherdream_point lastpt = points[points.size()-1];
+	 short minx=32767;
+	 short maxx=-32768;
+	 for (unsigned int i=0;i<points.size();i++) {
+	     etherdream_point pt = points[i];
+	     cairo_set_source_rgb (cr,pt.r/65535.0,pt.g/65535.0,pt.b/65535.0);
+	     cairo_move_to(cr, lastpt.x,lastpt.y);
+	     cairo_line_to(cr, pt.x, pt.y);
+	     cairo_stroke(cr);
+	     lastpt=pt;
+	     minx=std::min(minx,pt.x);
+	     maxx=std::max(maxx,pt.x);
+	 }
+	 dbg("Video.drawDevice",2) << "XRange: [" << minx << "," << maxx << "]" << std::endl;
      }
-
     cairo_restore(cr);
 }
 
@@ -221,36 +228,39 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
      dbg("Video.drawWorld",3) << "scale=" << scale << ", pixel=" << pixel << std::endl;
      cairo_translate(cr,-(minLeft+maxRight)/2,-(minBottom+maxTop)/2);
 
-     // Draw bounding box
-     cairo_set_line_width(cr,1*pixel);
-     cairo_set_source_rgb (cr,1.0,1.0,1.0);
-     cairo_move_to(cr,worldTL.X(),worldTL.Y());
-     cairo_line_to(cr,worldTR.X(),worldTR.Y());
-     cairo_line_to(cr,worldBR.X(),worldBR.Y());
-     cairo_line_to(cr,worldBL.X(),worldBL.Y());
-     cairo_line_to(cr,worldTL.X(),worldTL.Y());
-     cairo_stroke(cr);
-
-     // Draw points
-     cairo_set_line_width(cr,1*pixel);
-     etherdream_point lastpt = points[points.size()-1];
-     Point lastwpt=transform.mapToWorld(lastpt);
-     for (unsigned int i=0;i<points.size();i++) {
-	 etherdream_point pt = points[i];
-	 Point wpt=transform.mapToWorld(pt);
-	 dbg("Video.drawWorld",4) << "dev=[" <<  pt.x << "," << pt.y << "], world=" << wpt << std::endl;
-	 cairo_set_source_rgb (cr,pt.r/65535.0,pt.g/65535.0,pt.b/65535.0);
-	 cairo_move_to(cr, lastwpt.X(),lastwpt.Y());
-	 cairo_line_to(cr, wpt.X(), wpt.Y());
+     if (false) {
+	 // Draw bounding box
+	 cairo_set_line_width(cr,1*pixel);
+	 cairo_set_source_rgb (cr,1.0,1.0,1.0);
+	 cairo_move_to(cr,worldTL.X(),worldTL.Y());
+	 cairo_line_to(cr,worldTR.X(),worldTR.Y());
+	 cairo_line_to(cr,worldBR.X(),worldBR.Y());
+	 cairo_line_to(cr,worldBL.X(),worldBL.Y());
+	 cairo_line_to(cr,worldTL.X(),worldTL.Y());
 	 cairo_stroke(cr);
-	 lastwpt=wpt;
      }
 
+     // Draw points
+     if (points.size() > 1) {
+	 cairo_set_line_width(cr,1*pixel);
+	 etherdream_point lastpt = points[points.size()-1];
+	 Point lastwpt=transform.mapToWorld(lastpt);
+	 for (unsigned int i=0;i<points.size();i++) {
+	     etherdream_point pt = points[i];
+	     Point wpt=transform.mapToWorld(pt);
+	     dbg("Video.drawWorld",4) << "dev=[" <<  pt.x << "," << pt.y << "], world=" << wpt << std::endl;
+	     cairo_set_source_rgb (cr,pt.r/65535.0,pt.g/65535.0,pt.b/65535.0);
+	     cairo_move_to(cr, lastwpt.X(),lastwpt.Y());
+	     cairo_line_to(cr, wpt.X(), wpt.Y());
+	     cairo_stroke(cr);
+	     lastwpt=wpt;
+	 }
+     }
     cairo_restore(cr);
 }
 
 // Draw given point set using device coords, and, in another frame, with device coordinates mapped back to world coords
-void Video::update(const std::vector<etherdream_point> &points, const Transform &transform) {
+void Video::update() {
     if (surface==NULL)
 	return;
     cairo_surface_flush(surface);
@@ -263,23 +273,27 @@ void Video::update(const std::vector<etherdream_point> &points, const Transform 
      cairo_paint(cr);
 
      // Draw info display
-     const float rows[]={0.85,0.15};
-     const float columns[]={0.25, 0.25, 0.5 };
+     const double rows[]={0.85*height,0.15*height};
+     const double columns[]={0.5*width, 0.5*width };
 
-     drawDevice(cr, 0.0f, 0.0f, width*columns[0], rows[0]*height/2,points,1);
-     drawDevice(cr, columns[0]*width, 0.0f, width*columns[1], rows[0]*height/2,points,2);
-     drawDevice(cr, 0.0f, rows[0]/2*height, width*columns[0], rows[0]*height/2,points,3);
-     drawDevice(cr, columns[0]*width, rows[0]/2*height, width*columns[1], rows[0]*height/2,points,4);
+     int nrow=(int)((lasers.size()+1)/2);
+     int ncol=std::min(2,(int)lasers.size());
+     int i=0;
 
-     drawWorld(cr,width*(columns[0]+columns[1]),0.0f,width*columns[2],rows[0]*height,points,transform);
+     for (int row=0;row<nrow;row++) {
+	 for (int col=0;col<ncol;col++) {
+	     if (i>=(int)lasers.size())
+		 break;
+	     dbg("Video.update",2) << "Drawing laser " << i << " at row " << row << "/" << nrow << ", col " << col << "/" << ncol << std::endl;
+	     drawDevice(cr, col*columns[0]/ncol, row*rows[0]/nrow, columns[0]/ncol, rows[0]/nrow,lasers.getLaser(i)->getPoints(),i);
+	     drawWorld(cr,columns[0],0.0f,columns[1],rows[0],lasers.getLaser(i)->getPoints(),lasers.getLaser(i)->getTransform());
+	     i++;
+	 }
+     }
 
-     drawInfo(cr,0.0f,rows[0]*height,width,rows[1]*height);
+     drawInfo(cr,0.0f,rows[0],width,rows[1]);
 
      cairo_show_page(cr);
      cairo_destroy(cr);
      XFlush(dpy);
-}
-
-void Video::update(const std::vector<etherdream_point> &points) {
-    update(points,Transform());
 }

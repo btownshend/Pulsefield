@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cmath>
 #include "drawing.h"
+#include "transform.h"
+#include "laser.h"
 #include "dbg.h"
 
 std::ostream& operator<<(std::ostream& s, const Color &col) {
@@ -77,7 +79,7 @@ std::vector<etherdream_point> Arc::getPoints(float pointSpacing,const Transform 
 
 
 // Convert to points using given floorspace spacing
-std::vector<etherdream_point> Drawing::getPoints(float spacing) const {
+std::vector<etherdream_point> Drawing::getPoints(float spacing,const Transform &transform) const {
     dbg("Drawing.getPoints",2) << "getPoints(" << spacing << ")" << std::endl;
     std::vector<etherdream_point>  result;
     for (unsigned int i=0;i<elements.size();i++) {
@@ -107,8 +109,8 @@ std::vector<etherdream_point> Drawing::getPoints(float spacing) const {
 
 // Convert drawing into a set of etherdream points
 // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
-std::vector<etherdream_point> Drawing::getPoints(int targetNumPoints) const {
-    std::vector<etherdream_point> result = getPoints(getLength()/targetNumPoints);
+std::vector<etherdream_point> Drawing::getPoints(int targetNumPoints,const Transform &transform) const {
+    std::vector<etherdream_point> result = getPoints(getLength()/targetNumPoints,transform);
     dbg("Drawing.getPoints",2) << "Initial point count = " << result.size() << " compared to planned " << targetNumPoints << " for " << elements.size() << " elements." << std::endl;
     if (targetNumPoints < (int)result.size()) {
 	// Redo with a reduced number of desired points (to account for inserted blanks)
@@ -118,7 +120,7 @@ std::vector<etherdream_point> Drawing::getPoints(int targetNumPoints) const {
 	    dbg("Drawing.getPoints",2) << "Fully compensating for blanks would not leave enough points" << std::endl;
 	    requestPoints = targetNumPoints/2;
 	}
-	result = getPoints(getLength()/requestPoints);
+	result = getPoints(getLength()/requestPoints,transform);
 	dbg("Drawing.getPoints",2) << "Final point count = " << result.size() << std::endl;
     }
     return result;

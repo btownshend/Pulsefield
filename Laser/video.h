@@ -1,5 +1,6 @@
 #include <cairo-xlib.h>
 #include "displaydevice.h"
+#include "laser.h"
 
 class Transform;
 
@@ -14,13 +15,14 @@ class Video: public DisplayDevice {
     void drawWorld(cairo_t *cr, float left, float top, float width, float height, const std::vector<etherdream_point> &points, const Transform &transform) const;
     void drawText(cairo_t *cr, float left,  float top, float width, float height,const char *msg) const;
     void drawInfo(cairo_t *cr, float left,  float top, float width, float height) const;
+
+    Lasers lasers;
  public:
     // Local window routines
-    Video();
+    Video(const Lasers &lasers);
     ~Video();
 
     int open();
-    void update(const std::vector<etherdream_point> &points, const Transform &transform);
-    void update(const std::vector<etherdream_point> &points);
+    void update();
 };
 
