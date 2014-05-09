@@ -11,7 +11,7 @@ void usage(int argc,char *argv[]) {
 
 int main(int argc, char *argv[]) {
     int ch;
-    while ((ch=getopt(argc,argv,"d:D:sr:Rp:lx:m:M:V"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:"))!=-1) {
 	switch (ch) {
 	case 'd':
 	    SetDebug(optarg);

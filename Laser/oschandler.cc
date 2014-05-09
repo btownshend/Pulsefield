@@ -15,8 +15,6 @@
 #include "video.h"
 #include "point.h"
 
-int debug=1;
-
 static void error(int num, const char *msg, const char *path)
 {
 	fprintf(stderr,"liblo server error %d in path %s: %s\n", num, path, msg);
