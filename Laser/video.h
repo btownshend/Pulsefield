@@ -47,6 +47,7 @@ class Video: public DisplayDevice {
     pthread_mutex_t mutex;
     void lock();
     void unlock();
+    int frame;
  public:
     // Local window routines
     Video(const Lasers &lasers);
@@ -55,5 +56,6 @@ class Video: public DisplayDevice {
     int open();
     void update();
     void setBounds(const std::vector<Point> &_bounds) { bounds=_bounds; }
+    void setFrame(int _frame) { frame=_frame;}
 };
 

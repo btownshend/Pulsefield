@@ -71,5 +71,5 @@ class OSCHandler {
 
     // /pf/frame
     float minx,maxx,miny,maxy;
-    void pfframe();
+    void pfframe(int frame);
 };

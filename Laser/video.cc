@@ -194,13 +194,13 @@ void Video::drawInfo(cairo_t *cr, float left,  float top, float width, float hei
 
      curline+=lineskip*3;
      cairo_move_to (cr, leftmargin, curline);curline+=lineskip;
-     msg << "Test";
+     msg << frame;
      cairo_set_font_size (cr, 40);
      cairo_show_text (cr, msg.str().c_str()); 
 
      cairo_set_font_size (cr, 10);
 
-     for (unsigned int i=0;i<4;i++) {
+     for (unsigned int i=0;i<0;i++) {
 	 cairo_move_to (cr, leftmargin, curline);curline+=lineskip;
 	 msg.str("Line ");
 	 msg << i;

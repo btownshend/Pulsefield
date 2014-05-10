@@ -89,7 +89,7 @@ static int update_handler(const char *path, const char *types, lo_arg **argv, in
 
 // pf 
 static int pfupdate_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(argv[3]->f,argv[4]->f),.30); return 0; }
-static int pfframe_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfframe(); return 0; }
+static int pfframe_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfframe(argv[0]->i); return 0; }
 static int pfsetminx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->minx=argv[0]->f; return 0; }
 static int pfsetminy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->miny=argv[0]->f; return 0; }
 static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->maxx=argv[0]->f; return 0; }
@@ -375,7 +375,8 @@ void OSCHandler::update() {
     dirty=true;
 }
 
-void OSCHandler::pfframe() {
+void OSCHandler::pfframe(int frame) {
+    video->setFrame(frame);
     if (false) {
     // Set video bounds
     // Setup dummy mapping
