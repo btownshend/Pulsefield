@@ -364,6 +364,7 @@ void OSCHandler::setTransform(int unit) {
 }
 
 void OSCHandler::update() {
+    video->lock();
     lasers.render(drawing);
     std::vector<Point> bounds(4);
     bounds[0]=Point(minx,miny);
@@ -373,6 +374,7 @@ void OSCHandler::update() {
     video->setBounds(bounds);
     drawing.clear();
     dirty=true;
+    video->unlock();
 }
 
 void OSCHandler::pfframe(int frame) {

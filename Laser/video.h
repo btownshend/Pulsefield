@@ -45,8 +45,6 @@ class Video: public DisplayDevice {
     static XRefs xrefs;
     
     pthread_mutex_t mutex;
-    void lock();
-    void unlock();
     int frame;
  public:
     // Local window routines
@@ -57,5 +55,7 @@ class Video: public DisplayDevice {
     void update();
     void setBounds(const std::vector<Point> &_bounds) { bounds=_bounds; }
     void setFrame(int _frame) { frame=_frame;}
+    void lock();
+    void unlock();
 };
 
