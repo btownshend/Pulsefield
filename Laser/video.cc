@@ -11,6 +11,7 @@ const int MAXVALUE=32767;
 const float titleHeight=15;   // in pixels
 
 Video::Video(const Lasers & _lasers): lasers(_lasers), bounds(4) {
+    pthread_mutex_init(&mutex,NULL);
     // Default bounds for world view
     bounds[0]=Point(-6,0);
     bounds[1]=Point(6,0);
@@ -19,7 +20,7 @@ Video::Video(const Lasers & _lasers): lasers(_lasers), bounds(4) {
 }
 
 Video::~Video() {
-    ; // TODO
+    pthread_mutex_destroy(&mutex);
 }
 
 int Video::open() {
@@ -53,25 +54,106 @@ void *Video::runDisplay(void *arg) {
     while (1) {
 	XEvent e;
 	XNextEvent(world->dpy, &e);
-	dbg("Video.runDisplay",8) << "Got event " << e.type << std::endl;
+	dbg("Video.runDisplay",2) << "Got event " << e.type << std::endl;
+	world->lock();
 
 	switch (e.type) {
 	case ButtonPress:
 	    std::cout << "Button Pressed:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
+	    xrefs.markClosest(Point(e.xbutton.x,e.xbutton.y));
 	    break;
 	case ButtonRelease:
 	    std::cout << "Button Released:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
+	    xrefs.update(Point(e.xbutton.x,e.xbutton.y),true);
 	    break;
 	case MotionNotify:
-	    std::cout << "Motion:  " << e.xmotion.x << ", " << e.xmotion.y << std::endl;
+	    std::cout << "Motion:  " << e.xmotion.x << ", " << e.xmotion.y << " with " << XPending(world->dpy) << " events queued" << std::endl;
+	    xrefs.update(Point(e.xbutton.x,e.xbutton.y),false);
 	    break;
 	case ConfigureNotify:
 	    cairo_xlib_surface_set_size(world->surface,e.xconfigure.width, e.xconfigure.height);
+	    break;
 	case MapNotify:
 	case Expose:
-	    world->update();
 	    break;
 	}
+	world->unlock();
+
+	if (XPending(world->dpy)==0)
+	    world->update();
+    }
+}
+
+XRefs Video::xrefs;
+
+// Mark the point closest to winpt for updating it (i.e. when mouse clicked)
+void XRefs::markClosest(Point winpt) {
+    if (clickedEntry!=-1) {
+	dbg("XRefs.markClosest",1) << "Button already pressed, not re-marking" << std::endl;
+	return;
+    }
+    float dist=1e99;
+    for (unsigned int i=0;i<xref.size();i++)  {
+	float d=(winpt-xref[i].winpos).norm();
+	if (d<dist) {
+	    dist=d;
+	    clickedEntry=i;
+	}
+    }
+    if (clickedEntry>=0) 
+	dbg("XRefs.markClosest",1) << "Click at " << winpt << "; closest = " << clickedEntry << ": " << xref[clickedEntry].winpos << std::endl; 
+}
+
+XRef *XRefs::lookup(Laser *laser, int anchorNumber, bool dev) { 
+    dbg("XRefs.lookup",3) << "lookup(" << laser->getUnit() << "," << anchorNumber << "," << dev << ")  N=" << xref.size() << " -> ";
+    for (unsigned int i=0;i<xref.size();i++)  {
+	XRef *x=&xref[i];
+	if (x->laser==laser && x->anchorNumber==anchorNumber && x->dev==dev) {
+	    dbgn("XRefs.lookup",3) << i << std::endl;
+	    return x;
+	}
+    }
+    dbgn("XRefs.lookup",3) << "NULL" << std::endl;
+    return NULL;
+}
+
+void XRefs::update(Point newpos, bool clear) {
+    if (clickedEntry<0) {
+	dbg("Xrefs.update",1) << "update() with no clicked entry" << std::endl;
+	return;
+    }
+    assert(clickedEntry<(int)xref.size());
+    dbg("XRefs.update",1) << "Moved point " << clickedEntry << " from " << xref[clickedEntry].winpos << " to " << newpos << std::endl;
+    xref[clickedEntry].winpos=newpos;
+    xref[clickedEntry].reset=true;
+    if (clear)
+	clickedEntry=-1;
+}
+
+	     
+// Update table with given xref and modify underlying Laser struct if reset is set
+void XRefs::refresh(cairo_t *cr, Laser *laser, int anchorNumber, bool dev, Point pos) {
+    XRef *entry=lookup(laser,anchorNumber,dev);
+    if (entry!=NULL && entry->reset) {
+	// Move point
+	double wx=entry->winpos.X();
+	double wy=entry->winpos.Y();
+	cairo_device_to_user(cr,&wx,&wy);
+	dbg("XRefs.refresh",1) << "Found xref entry; moving laser " << entry->laser->getUnit() << " anchor " << anchorNumber
+			       << " to " << Point(wx,wy) << std::endl;
+	if (entry->dev)
+	    entry->laser->getTransform().setDevPoint(anchorNumber,Point(wx,wy));
+	else
+	    entry->laser->getTransform().setFloorPoint(anchorNumber,Point(wx,wy));
+	entry->laser->getTransform().recompute();
+	entry->reset=false;
+    } else  {
+	double wx=pos.X(), wy=pos.Y();
+	cairo_user_to_device(cr,&wx,&wy);
+	if (entry==NULL)
+	    xref.push_back(XRef(laser,anchorNumber,dev,Point(wx,wy)));
+	else
+	    entry->winpos=Point(wx,wy);
     }
 }
 
@@ -129,7 +211,7 @@ void Video::drawInfo(cairo_t *cr, float left,  float top, float width, float hei
 }
 
 // Draw in device coodinates
-void Video::drawDevice(cairo_t *cr, float left, float top, float width, float height, const Laser *laser) const {
+void Video::drawDevice(cairo_t *cr, float left, float top, float width, float height, Laser *laser)  {
     const std::vector<etherdream_point> &points = laser->getPoints();
     cairo_save(cr);
     cairo_translate(cr,left,top);
@@ -176,6 +258,18 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
      cairo_line_to(cr,-MAXVALUE,-MAXVALUE);
      cairo_stroke(cr);
 
+     // Draw anchor points
+     for (unsigned int i=0;i<4;i++) {
+	 Point pt=laser->getTransform().getDevPoint(i);
+	 //	 Color c=Color::getBasicColor(i);
+	 //	 cairo_set_source_rgb (cr,c.red(), c.green(), c.blue());
+	 cairo_move_to(cr,pt.X(),pt.Y());
+	 cairo_arc(cr,pt.X(),pt.Y(),10*pixel,-i*M_PI/2,-i*M_PI/2+3*M_PI/2);
+	 cairo_line_to(cr,pt.X(),pt.Y());
+	 cairo_stroke(cr);
+	 xrefs.refresh(cr,laser,i,true,pt);
+     }
+
      // Draw points
      dbg("Video.drawDevice",2) << "Drawing " << points.size() << " points" << std::endl;
      Color maxColor=laser->getMaxColor();
@@ -200,7 +294,7 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
 }
 
 // Draw in world coodinates
-void Video::drawWorld(cairo_t *cr, float left, float top, float width, float height, const Lasers &lasers) const {
+void Video::drawWorld(cairo_t *cr, float left, float top, float width, float height, Lasers &lasers)  {
     cairo_save(cr);
     cairo_translate(cr,left,top);
     cairo_rectangle(cr,0.0,0.0,width,height);
@@ -250,7 +344,7 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
      cairo_set_operator(cr,CAIRO_OPERATOR_ADD);   // Add colors
 
      for (unsigned int m=0;m<lasers.size();m++) {
-	 const Laser *laser=lasers.getLaser(m);
+	 Laser *laser=lasers.getLaser(m);
 	 const std::vector<etherdream_point> &points=laser->getPoints();
 	 const Transform &transform=laser->getTransform();
 
@@ -278,6 +372,18 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	 cairo_line_to(cr,worldTL.X(),worldTL.Y());
 	 cairo_stroke(cr);
 
+	 // Draw anchor points
+	 for (unsigned int i=0;i<4;i++) {
+	     Point pt=laser->getTransform().getFloorPoint(i);
+	     //Color c=Color::getBasicColor(i);
+	     //	     cairo_set_source_rgb (cr,c.red(), c.green(), c.blue());
+	     cairo_move_to(cr,pt.X(),pt.Y());
+	     cairo_arc(cr,pt.X(),pt.Y(),10*pixel,-i*M_PI/2,-i*M_PI/2+3*M_PI/2);
+	     cairo_line_to(cr,pt.X(),pt.Y());
+	     cairo_stroke(cr);
+	     xrefs.refresh(cr,laser,i,false,pt);
+	 }
+
 	 // Draw points
 	 if (points.size() > 1) {
 	     cairo_set_line_width(cr,1*pixel);
@@ -303,6 +409,8 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 void Video::update() {
     if (surface==NULL)
 	return;
+    lock();
+
     cairo_surface_flush(surface);
     float width=cairo_xlib_surface_get_width(surface);
     float height=cairo_xlib_surface_get_height(surface);
@@ -335,4 +443,16 @@ void Video::update() {
      cairo_show_page(cr);
      cairo_destroy(cr);
      XFlush(dpy);
+     unlock();
+}
+
+void Video::lock() {
+    dbg("Video.lock",5) << "lock req" << std::endl;
+    pthread_mutex_lock(&mutex);
+    dbg("Video.lock",5) << "lock acquired" << std::endl;
+}
+
+void Video::unlock() {
+    dbg("Video.unlock",5) << "unlock" << std::endl;
+    pthread_mutex_unlock(&mutex);
 }

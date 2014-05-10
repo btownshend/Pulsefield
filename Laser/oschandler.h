@@ -21,11 +21,14 @@ class OSCHandler {
     lo_server s;
     
     pthread_t incomingThread;
-    static void *processIncoming(void *arg);
+    void processIncoming();
+    static void *processIncoming(void *arg);  // Static version of pthread_create
 
     Color currentColor;
     float currentDensity;
     int npoints;
+
+    bool dirty;
  public:
     OSCHandler(const Lasers &lasers, Video *video);
     ~OSCHandler();
@@ -63,7 +66,7 @@ class OSCHandler {
     void cubic(Point p1, Point p2, Point p3, Point p4);
 
     void update();
-    void map(int unit, Point world, Point local);
+    void map(int unit, int pt, Point world, Point local);
     void setTransform(int unit);
 
     // /pf/frame

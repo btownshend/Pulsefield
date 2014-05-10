@@ -13,8 +13,7 @@ class Transform {
  public:
     Transform();
     void clear();
-    // Set transform based on floor space coordinates of particular device space points
-    void set(std::vector<Point> devPts, std::vector<Point> floorPts);
+
     // Mapping, if out-of-range, return clipped point
     etherdream_point mapToDevice(Point floorPt,const Color &c) const;
     Point mapToDevice(Point floorPt) const;
@@ -26,11 +25,14 @@ class Transform {
     std::vector<Point> mapToDevice(const std::vector<Point> &floorPts) const;
     std::vector<Point> mapToWorld(const std::vector<etherdream_point> &pts) const;
 
-    // Computer transform matrix from set of points already provided
-    void setTransform();
-    void addToMap(Point devSpace, Point floorSpace) {
-	floorpts.push_back(cv::Point2f(floorSpace.X(), floorSpace.Y()));
-	devpts.push_back(cv::Point2f(devSpace.X(), devSpace.Y()));
-    }
+    // Compute transform matrix from set of points already provided
+    void recompute();
+
+    // Setup mapping
+    // Point indices are order based on laser positions: BL, BR, TR, TL
+    Point getFloorPoint(int i) const { assert(i>=0&&i<(int)floorpts.size()); return Point(floorpts[i].x,floorpts[i].y); }
+    Point getDevPoint(int i) const { assert(i>=0&&i<(int)floorpts.size()); return Point(devpts[i].x,devpts[i].y); }
+    void setFloorPoint(int i, Point floorpt) { assert(i>=0&&i<(int)floorpts.size()); floorpts[i].x=floorpt.X(), floorpts[i].y=floorpt.Y();  }
+    void setDevPoint(int i, Point devpt) { assert(i>=0&&i<(int)floorpts.size()); devpts[i].x=devpt.X(); devpts[i].y=devpt.Y();  }
 };
 

@@ -18,6 +18,7 @@ class Color {
     float green() const { return g; }
     float blue() const { return b; }
     friend std::ostream& operator<<(std::ostream& s, const Color &col);
+    static Color getBasicColor(int i);   // Get color #i for graphic distinct colors
 };
 
 class Primitive {

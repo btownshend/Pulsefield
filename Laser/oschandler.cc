@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <set>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -23,6 +24,9 @@ static void error(int num, const char *msg, const char *path)
 /* catch any incoming messages and display them. returning 1 means that the
  * message has not been fully handled and the server should try other methods */
 static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message , void *) {
+    static std::set<std::string> noted;  // Already noted
+    if (noted.count(path) == 0) {
+	noted.insert(path);
 	int i;
 	fprintf(stderr, "Unhandled Message Rcvd: %s (", path);
 	for (i=0; i<argc; i++) {
@@ -35,7 +39,8 @@ static int generic_handler(const char *path, const char *types, lo_arg **argv,in
 	}
 	fprintf(stderr,"\n");
 	fflush(stderr);
-	return 1;
+    }
+    return 1;
 }
 
 static bool doQuit = false;
@@ -76,7 +81,7 @@ static int cubic_handler(const char *path, const char *types, lo_arg **argv, int
 static int line_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->line(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f)); return 0; }
 
 // Transforms
-static int map_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->map(argv[0]->i,Point(argv[1]->f,argv[2]->f),Point(argv[3]->f,argv[4]->f)); return 0; }
+static int map_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->map(argv[0]->i,argv[1]->i,Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f)); return 0; }
 static int setTransform_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setTransform(argv[0]->i); return 0; }
 
 // Draw
@@ -96,6 +101,7 @@ OSCHandler::OSCHandler(const Lasers &_lasers, Video *_video) : lasers(_lasers), 
     npoints=600;
     minx=-5; maxx=5;
     miny=0; maxy=0;
+    dirty=true;
 
 	URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
 
@@ -161,7 +167,7 @@ OSCHandler::OSCHandler(const Lasers &_lasers, Video *_video) : lasers(_lasers), 
 	lo_server_add_method(s,"/laser/line","ffff",line_handler,this);
 
 	/* Transforms */
-	lo_server_add_method(s,"/laser/map","iffff",map_handler,this);
+	lo_server_add_method(s,"/laser/map","iiffff",map_handler,this);
 	lo_server_add_method(s,"/laser/settransform","i",setTransform_handler,this);
 
 	/* Draw */
@@ -181,7 +187,7 @@ OSCHandler::OSCHandler(const Lasers &_lasers, Video *_video) : lasers(_lasers), 
 
 	/* Start incoming message processing */
 	dbg("OSCHandler",1) << "Creating thread for incoming messages (server=" << s << ")..." << std::flush;
-	int rc=pthread_create(&incomingThread, NULL, processIncoming, (void *)s);
+	int rc=pthread_create(&incomingThread, NULL, processIncoming, (void *)this);
 	if (rc) {
 	    fprintf(stderr,"pthread_create failed with error code %d\n", rc);
 	    exit(1);
@@ -199,13 +205,25 @@ OSCHandler::~OSCHandler() {
 
 // Processing incoming OSC messages in a separate thread
 void *OSCHandler::processIncoming(void *arg) {
-    lo_server s = (lo_server)arg;
+    OSCHandler *handler = (OSCHandler *)arg;
+    handler->processIncoming();
+    return NULL;
+}
+
+
+void OSCHandler::processIncoming() {
     dbg("OSCHandler.processIncoming",1) << "Started: s=" << std::setbase(16) << s << std::setbase(10) << std::endl;
     // Process all queued messages
-    while (lo_server_recv(s) != 0)
+    while (true) {
+	if  (lo_server_recv_noblock(s,1) == 0)
+	    // Update video only when nothing in queue
+	    if (dirty) {
+		video->update();
+		dirty=false;
+	    }
 	if (doQuit)
 	    break;
-    return NULL;
+    }
 }
 
 void OSCHandler::startStop(bool start) {
@@ -226,21 +244,37 @@ void OSCHandler::startStop(bool start) {
 
 
 void OSCHandler::setPPS(int unit, int pps) {
+    if (unit<0 || unit>=(int)lasers.size()) {
+	dbg("OSCHandler.setPPS",1)  << "Bad unit: " << unit << std::endl;
+	return;
+    }
     dbg("OSCHandler.setPPS",1) << "Setting PPS to " << pps << " PPS" << std::endl;
     // TODO:
 }
 
 void OSCHandler::setPoints(int unit, int n) {
+    if (unit<0 || unit>=(int)lasers.size()) {
+	dbg("OSCHandler.setPoints",1)  << "Bad unit: " << unit << std::endl;
+	return;
+    }
     dbg("OSCHandler.setPPS",1) << "Setting points/frame to " << n << std::endl;
     lasers.getLaser(unit)->setPoints(n);
 }
 
 void OSCHandler::setBlanking(int unit, int before, int after) {
+    if (unit<0 || unit>=(int)lasers.size()) {
+	dbg("OSCHandler.setBlanking",1)  << "Bad unit: " << unit << std::endl;
+	return;
+    }
     dbg("OSCHandler.setBlanking",1) << "Setting blanking to " <<before << ", " << after << std::endl;
     // TODO:
 }
 
 void OSCHandler::setSkew(int unit, int skew) {
+    if (unit<0 || unit>=(int)lasers.size()) {
+	dbg("OSCHandler.setSkew",1)  << "Bad unit: " << unit << std::endl;
+	return;
+    }
     dbg("OSCHandler.setSkew",1) << "Setting skew to " << skew  << std::endl;
     // TODO:
 }
@@ -307,12 +341,26 @@ void OSCHandler::cubic(Point p1, Point p2, Point p3, Point p4) {
     drawing.drawCubic(p1,p2,p3,p4,currentColor);
 }
 
-void OSCHandler::map(int unit, Point p1, Point p2) {
-    lasers.getLaser(unit)->addToMap(p1,p2);
+void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
+    if (unit<0 || unit>=(int)lasers.size()) {
+	dbg("OSCHandler.map",1)  << "Bad unit: " << unit << std::endl;
+	return;
+    }
+    if (pt<0 || pt>3) {
+	dbg("OSCHandler.map",1)  << "Invalid point: " << pt << std::endl;
+	return;
+    }
+    
+    lasers.getLaser(unit)->getTransform().setFloorPoint(pt,floorpt);
+    lasers.getLaser(unit)->getTransform().setDevPoint(pt,devpt);
 }
 
 void OSCHandler::setTransform(int unit) {
-    lasers.getLaser(unit)->setTransform();
+    if (unit<0 || unit>=(int)lasers.size()) {
+	dbg("OSCHandler.setTransform",1)  << "Bad unit: " << unit << std::endl;
+	return;
+    }
+    lasers.getLaser(unit)->getTransform().recompute();
 }
 
 void OSCHandler::update() {
@@ -323,38 +371,37 @@ void OSCHandler::update() {
     bounds[2]=Point(maxx,maxy);
     bounds[3]=Point(minx,maxy);
     video->setBounds(bounds);
-    video->update();
     drawing.clear();
+    dirty=true;
 }
 
 void OSCHandler::pfframe() {
+    if (false) {
     // Set video bounds
     // Setup dummy mapping
-    for  (unsigned int i=0;i<lasers.size();i++) {
-	Transform t;
-	if (i==0) {
-	    t.addToMap(Point(-32767,-32767),Point((minx+0.5)/3,miny+0.5));
-	    t.addToMap(Point(32767,-32767),Point(maxx/3,miny+0.5));
-	    t.addToMap(Point(-32767,32767),Point((minx+0.5),maxy+1));
-	    t.addToMap(Point(32767,32767),Point((maxx+1),maxy+1));
-	} else if (i==1) {
-	    t.addToMap(Point(-32767,-32767),Point((minx+0.5),miny+0.5));
-	    t.addToMap(Point(32767,-32767),Point((maxx+1),miny+0.5));
-	    t.addToMap(Point(-32767,32767),Point((minx+0.5)/3,maxy+1));
-	    t.addToMap(Point(32767,32767),Point((maxx+1)/3,maxy+1));
-	} else if (i==2) {
-	    t.addToMap(Point(-32767,-32767),Point((minx+0.5),miny+0.5));
-	    t.addToMap(Point(32767,-32767),Point((maxx+1),miny+0.5));
-	    t.addToMap(Point(-32767,32767),Point((minx+0.5),maxy/3));
-	    t.addToMap(Point(32767,32767),Point((maxx+1),maxy+1));
-	} else if (i==3) {
-	    t.addToMap(Point(-32767,-32767),Point((minx+0.5),miny+0.5));
-	    t.addToMap(Point(32767,-32767),Point((maxx+1),miny+0.5));
-	    t.addToMap(Point(-32767,32767),Point((minx+0.5),maxy+1));
-	    t.addToMap(Point(32767,32767),Point((maxx+1),maxy/3));
-	}
-	t.setTransform();
-	lasers.getLaser(i)->setTransform(t);
+    map(0,0,Point(-32767,32767),Point((minx+0.5),maxy+1));
+    map(0,1,Point(32767,32767),Point((maxx+1),maxy+1));
+    map(0,2,Point(32767,-32767),Point(maxx/3,miny+0.5));
+    map(0,3,Point(-32767,-32767),Point((minx+0.5)/3,miny+0.5));
+    setTransform(0);
+
+    map(1,0,Point(-32767,-32767),Point((minx+0.5),miny+0.5));
+    map(1,1,Point(32767,-32767),Point((maxx+1),miny+0.5));
+    map(1,2,Point(-32767,32767),Point((minx+0.5)/3,maxy+1));
+    map(1,3,Point(32767,32767),Point((maxx+1)/3,maxy+1));
+    setTransform(1);
+
+    map(2,0,Point(-32767,-32767),Point((minx+0.5),miny+0.5));
+    map(2,1,Point(32767,-32767),Point((maxx+1),miny+0.5));
+    map(2,2,Point(-32767,32767),Point((minx+0.5),maxy/3));
+    map(2,3,Point(32767,32767),Point((maxx+1),maxy+1));
+    setTransform(2);
+
+    map(3,0,Point(-32767,-32767),Point((minx+0.5),miny+0.5));
+    map(3,1,Point(32767,-32767),Point((maxx+1),miny+0.5));
+    map(3,2,Point(-32767,32767),Point((minx+0.5),maxy+1));
+    map(3,3,Point(32767,32767),Point((maxx+1),maxy/3));
+    setTransform(3);
     }
     // Update
     update();

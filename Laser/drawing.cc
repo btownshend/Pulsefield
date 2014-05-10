@@ -9,6 +9,19 @@ std::ostream& operator<<(std::ostream& s, const Color &col) {
     return s << "[" << col.r << "," << col.g << "," << col.b << "]";
 }
 
+Color Color::getBasicColor(int i) {
+    if (i==0)
+	return Color(1.0,0.0,0.0);
+    else if (i==1)
+	return Color(0.0,1.0,0.0);
+    else if (i==2)
+	return Color(0.0,0.0,1.0);
+    else if (i==3)
+	return Color(0.5,0.5,0.0);
+    else
+	return Color(((i+1)%3)/2.0,((i+1)%5)/4.0,((i+1)%7)/6.0);
+}
+
 std::vector<etherdream_point> Circle::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
     int npoints=std::ceil(getLength()/pointSpacing)+1;
     if (npoints < 5) {
@@ -102,6 +115,10 @@ std::vector<etherdream_point> Drawing::getPoints(float spacing,const Transform &
     }
     dbg("Drawing.getPoints",2) << "Converted to " << result.size() << " points." << std::endl;
     for (unsigned int i=0;i<result.size();i++) {
+	if (i==5) {
+	    dbg("Drawing.getPoints",5)  << "...";
+	    break;
+	}
 	dbg("Drawing.getPoints",5)  << "pt[" << i << "] = " << result[i].x << "," << result[i].y << " G=" << result[i].g << std::endl;
     }
     return result;

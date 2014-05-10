@@ -4,29 +4,37 @@
 #include "transform.h"
 #include "drawing.h"
 
-Transform::Transform() {
+Transform::Transform(): floorpts(4), devpts(4) {
     clear();
 }
 
 void Transform::clear() {
-    transform=cv::Mat::eye(3,3,CV_32F);
-    invTransform=cv::Mat::eye(3,3,CV_32F);
+    // Default mapping
+    // Point indices are order based on laser positions: BL, BR, TR, TL
+    floorpts[0]=cv::Point2f(-3,3);
+    devpts[0]=cv::Point2f(-32767,32768);
+    floorpts[1]=cv::Point2f(3,3);
+    devpts[1]=cv::Point2f(32767,32768);
+    floorpts[2]=cv::Point2f(3,0);
+    devpts[2]=cv::Point2f(32767,-32768);
+    floorpts[3]=cv::Point2f(-3,0);
+    devpts[3]=cv::Point2f(-32767,-32768);
+
+    recompute();
 }
 
 // Find the perspective transform that best matches the 3 points loaded
-void Transform::setTransform() {
-    dbg("Transform.setTransform",1) << "Set transform using mapping: " << std::endl;
+void Transform::recompute() {
+    dbg("Transform.recompute",1) << "Set transform using mapping: " << std::endl;
     for (unsigned int i=0;i<floorpts.size();i++) {
-	dbg("Transform.setTransform",1) << "W@" << floorpts[i] << "->D@" << devpts[i] << std::endl;
+	dbg("Transform.recompute",1) << "W@" << floorpts[i] << "->D@" << devpts[i] << std::endl;
     }
     if (floorpts.size() != 4) {
-	std::cerr << "setTransform() called after " <<floorpts.size() << " points added -- must be exactly 4" << std::endl;
+	std::cerr << "recompute() called after " <<floorpts.size() << " points added -- must be exactly 4" << std::endl;
     } else {
 	transform=cv::getPerspectiveTransform(floorpts,devpts);
 	invTransform=cv::getPerspectiveTransform(devpts,floorpts);
     }
-    floorpts.clear();
-    devpts.clear();
 }
 
 etherdream_point Transform::mapToDevice(Point floorPt,const Color &c) const {

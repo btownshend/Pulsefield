@@ -13,16 +13,7 @@ Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     unit=_unit;
     PPS=30000;
     npoints=600;
-    if (unit==0)
-	labelColor=Color(1.0,0.0,0.0);
-    else if (unit==1)
-	labelColor=Color(0.0,1.0,0.0);
-    else if (unit==2)
-	labelColor=Color(0.0,0.0,1.0);
-    else if (unit==3)
-	labelColor=Color(0.5,0.5,0.0);
-    else
-	labelColor=Color(((unit+1)%3)/2.0,((unit+1)%5)/4.0,((unit+1)%7)/6.0);
+    labelColor=Color::getBasicColor(unit);
 }
 
 int Laser::open() {
@@ -61,7 +52,7 @@ void Laser::update() {
     }
 
     if (d==0) {
-	std::cerr << "Laser not open" << std::endl;
+	// std::cerr << "Laser not open" << std::endl;
 	return;
     }
     dbg("Laser.update",1) << "Wait for ready." << std::endl;

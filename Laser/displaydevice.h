@@ -11,17 +11,10 @@ class DisplayDevice {
     virtual ~DisplayDevice() {;}
     virtual int open() = 0;
 
-    // Set transform matrix
-    void setTransform() {
-	transform.setTransform();
-    }
     void setTransform(const Transform &t) {
 	transform=t;
     }
 
     const Transform &getTransform() const { return transform; }
-
-    void addToMap(Point devSpace, Point floorSpace) {
-	transform.addToMap(devSpace,floorSpace);
-    }
+    Transform &getTransform()  { return transform; }
 };
