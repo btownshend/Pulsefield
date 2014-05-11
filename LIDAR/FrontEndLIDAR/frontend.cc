@@ -384,10 +384,16 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
     while (true) {
 	int cid,nechoes,nmeasure;
 	struct timeval acquired;
-	if (EOF==fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&frame,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure)) {
+	int nread;
+	if (EOF==(nread=fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&frame,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure))) {
 	    printf("EOF on %s\n",filename);
 	    break;
 	}
+	if (nread!=6)  {
+	    std::cerr << "Error scaning input file, read " << nread << " entries when 6 were expected" << std::endl;
+	    return -1;
+	}
+	    
 	if (lastframe==-1) 
 	    // Initialize file start time for reference
 	    startfile=acquired;
