@@ -37,6 +37,10 @@ public:
     Laser *getLaser(int unit) { return lasers[unit]; }
     const Laser *getLaser(int unit) const { return lasers[unit]; }
     unsigned int size() const { return lasers.size(); }
+
+    // Save/load all transforms of all lasers
+    void saveTransforms(std::ostream &s) const;
+    void loadTransforms(std::istream &s);
 };
 
 

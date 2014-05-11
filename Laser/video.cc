@@ -60,6 +60,28 @@ void *Video::runDisplay(void *arg) {
 	world->lock();
 
 	switch (e.type) {
+	case KeyPress:
+	    {
+		const char *filename="transforms.save";
+		KeySym key;
+		const int bufsize=20;
+		char buffer[bufsize];
+		int charcount = XLookupString(&e.xkey,buffer,bufsize,&key,NULL);
+		dbg("Video.runDisplay",2)  << "Key Pressed:  code=" << e.xkey.keycode << ", sym=" << key << ", keycount=" << charcount << std::endl;
+		if (key==XK_s) {
+		    dbg("Video.runDisplay",1) << "Saving transforms in " << filename << std::endl;
+		    world->newMessage() << "Saved transforms in " << filename;
+		    std::ofstream ofs(filename);
+		    world->save(ofs);
+		}
+		if (key==XK_l) {
+		    dbg("Video.runDisplay",1) << "Loading transforms from " << filename << std::endl;
+		    world->newMessage() << "Loaded transforms from " << filename;
+		    std::ifstream ifs(filename);
+		    world->load(ifs);
+		}
+	    }
+	    break;
 	case ButtonPress:
 	    std::cout << "Button Pressed:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
 	    xrefs.markClosest(Point(e.xbutton.x,e.xbutton.y));

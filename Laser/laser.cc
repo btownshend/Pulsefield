@@ -105,3 +105,12 @@ void Lasers::refresh() {
 	lasers[i]->render(drawing);
 }
 
+void Lasers::saveTransforms(std::ostream &s)  const {
+    for (unsigned int i=0;i<lasers.size();i++)
+	lasers[i]->getTransform().save(s);
+}
+
+void Lasers::loadTransforms(std::istream &s) {
+    for (unsigned int i=0;i<lasers.size();i++)
+	lasers[i]->getTransform().load(s);
+}

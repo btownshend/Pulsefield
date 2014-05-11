@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include "opencv2/core/core.hpp"
 #include "point.h"
 #include "etherdream.h"
@@ -34,5 +35,9 @@ class Transform {
     Point getDevPoint(int i) const { assert(i>=0&&i<(int)floorpts.size()); return Point(devpts[i].x,devpts[i].y); }
     void setFloorPoint(int i, Point floorpt) { assert(i>=0&&i<(int)floorpts.size()); floorpts[i].x=floorpt.X(), floorpts[i].y=floorpt.Y();  }
     void setDevPoint(int i, Point devpt) { assert(i>=0&&i<(int)floorpts.size()); devpts[i].x=devpt.X(); devpts[i].y=devpt.Y();  }
+
+    // Load/save 
+    void save(std::ostream &s) const;
+    void load(std::istream &s);
 };
 

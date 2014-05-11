@@ -40,6 +40,7 @@ class Point {
     float norm() const { return getRange(); }
     float dot(const Point &p2) const { return p2.X()*x+p2.Y()*y; }
     friend std::ostream& operator<<(std::ostream &s, const Point &p);
+    friend std::istream& operator>>(std::istream &s,  Point &p);
     Point min(const Point &p2) const { return Point(std::min(x,p2.X()),std::min(y,p2.Y())); }
     Point max(const Point &p2) const { return Point(std::max(x,p2.X()),std::max(y,p2.Y())); }
 };

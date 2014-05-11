@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include "opencv2/imgproc/imgproc.hpp"
 
 #include "transform.h"
@@ -109,5 +110,18 @@ std::vector<Point> Transform::mapToWorld(const std::vector<etherdream_point> &pt
     for (unsigned int i=0;i<pts.size();i++)
 	result[i]=mapToWorld(pts[i]);
     return result;
+}
+
+void Transform::save(std::ostream &s) const {
+    dbg("Transform.save",1) << "Saving transform" << std::endl;
+    for (unsigned int i=0;i<floorpts.size();i++) 
+	s << std::fixed <<  std::setprecision(3) << floorpts[i].x << " " << floorpts[i].y << " " << std::setprecision(0) << devpts[i].x << " " << devpts[i].y << " " << std::endl << std::setprecision(3);;
+}
+
+void Transform::load(std::istream &s) {
+    dbg("Transform.load",1) << "Loading transform" << std::endl;
+    for (unsigned int i=0;i<floorpts.size();i++) 
+	s >> floorpts[i].x >> floorpts[i].y  >> devpts[i].x >> devpts[i].y;
+    recompute();
 }
 

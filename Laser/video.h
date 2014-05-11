@@ -57,5 +57,7 @@ class Video: public DisplayDevice {
     void setFrame(int _frame) { frame=_frame;}
     void lock();
     void unlock();
+    void save(std::ostream &s) const { lasers.saveTransforms(s); }
+    void load(std::istream &s) { lasers.loadTransforms(s); }
 };
 
