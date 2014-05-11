@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 #include <fstream>
 #include <cairo.h>
 #include <cairo-xlib.h>
@@ -58,9 +59,9 @@ void *Video::runDisplay(void *arg) {
     while (1) {
 	XEvent e;
 	
-	dbg("Video.runDisplay",2) << "Event  wait for display " << world->dpy << std::endl;
+	dbg("Video.runDisplay",5) << "Event  wait for display " << world->dpy << std::endl;
 	XNextEvent(world->dpy, &e);
-	dbg("Video.runDisplay",2) << "Got event " << e.type << std::endl;
+	dbg("Video.runDisplay",5) << "Got event " << e.type << std::endl;
 	world->lock();
 
 	switch (e.type) {
@@ -71,7 +72,7 @@ void *Video::runDisplay(void *arg) {
 		const int bufsize=20;
 		char buffer[bufsize];
 		int charcount = XLookupString(&e.xkey,buffer,bufsize,&key,NULL);
-		dbg("Video.runDisplay",2)  << "Key Pressed:  code=" << e.xkey.keycode << ", sym=" << key << ", keycount=" << charcount << std::endl;
+		dbg("Video.runDisplay",5)  << "Key Pressed:  code=" << e.xkey.keycode << ", sym=" << key << ", keycount=" << charcount << std::endl;
 		if (key==XK_s) {
 		    dbg("Video.runDisplay",1) << "Saving transforms in " << filename << std::endl;
 		    world->newMessage() << "Saved transforms in " << filename;
@@ -87,15 +88,15 @@ void *Video::runDisplay(void *arg) {
 	    }
 	    break;
 	case ButtonPress:
-	    std::cout << "Button Pressed:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
+	    dbg("Video.runDisplay",5)  << "Button Pressed:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
 	    xrefs.markClosest(Point(e.xbutton.x,e.xbutton.y));
 	    break;
 	case ButtonRelease:
-	    std::cout << "Button Released:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
+	    dbg("Video.runDisplay",5)  << "Button Released:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
 	    xrefs.update(Point(e.xbutton.x,e.xbutton.y),true);
 	    break;
 	case MotionNotify:
-	    std::cout << "Motion:  " << e.xmotion.x << ", " << e.xmotion.y << " with " << XPending(world->dpy) << " events queued" << std::endl;
+	    dbg("Video.runDisplay",5)  << "Motion:  " << e.xmotion.x << ", " << e.xmotion.y << " with " << XPending(world->dpy) << " events queued" << std::endl;
 	    xrefs.update(Point(e.xbutton.x,e.xbutton.y),false);
 	    break;
 	case ConfigureNotify:
@@ -170,7 +171,7 @@ void XRefs::refresh(cairo_t *cr, Laser *laser,  Video &video, int anchorNumber, 
 	dbg("XRefs.refresh",1) << "Found xref entry; moving laser " << entry->laser->getUnit() << " anchor " << anchorNumber
 			       << " to " << Point(wx,wy) << std::endl;
 	if (entry->dev) {
-	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " device anchor " << anchorNumber << " to " << Point(wx,wy) << std::endl;
+	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " device anchor " << anchorNumber << " to " << std::setprecision(0) << Point(wx,wy) << std::endl << std::setprecision(3);
 	    entry->laser->getTransform().setDevPoint(anchorNumber,Point(std::min(32767.0,std::max(-32768.0,wx)),std::min(32767.0,std::max(-32768.0,wy))));
 	} else {
 	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " world anchor " << anchorNumber << " to " << Point(wx,wy) << std::endl;
