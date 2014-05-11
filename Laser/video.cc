@@ -1,7 +1,9 @@
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <cairo.h>
 #include <cairo-xlib.h>
+#include <X11/Xutil.h>
 #include "video.h"
 #include "point.h"
 #include "transform.h"
@@ -13,10 +15,12 @@ const float titleHeight=15;   // in pixels
 Video::Video(const Lasers & _lasers): lasers(_lasers), bounds(4) {
     pthread_mutex_init(&mutex,NULL);
     // Default bounds for world view
-    bounds[0]=Point(-6,0);
-    bounds[1]=Point(6,0);
-    bounds[2]=Point(6,6);
-    bounds[3]=Point(-6,6);
+    std::vector<Point> bnds(4);  // Temporary bounds
+    bnds[0]=Point(-6,0);
+    bnds[1]=Point(6,0);
+    bnds[2]=Point(6,6);
+    bnds[3]=Point(-6,6);
+    setBounds(bnds);
 }
 
 Video::~Video() {
@@ -215,29 +219,23 @@ void Video::drawInfo(cairo_t *cr, float left,  float top, float width, float hei
     cairo_clip(cr);
 
     const float leftmargin=5;
-    const float firstline=8;
-    const float lineskip=15;
-    float curline=firstline;
-
+    const float msgmargin=width/4;
+    const float baseline=height-5;
+    
     cairo_select_font_face (cr, "serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
 
-     std::ostringstream msg;
+     std::ostringstream fmsg;
 
-     curline+=lineskip*3;
-     cairo_move_to (cr, leftmargin, curline);curline+=lineskip;
-     msg << frame;
+     cairo_move_to (cr, leftmargin, baseline);
+     fmsg << frame;
      cairo_set_font_size (cr, 40);
-     cairo_show_text (cr, msg.str().c_str()); 
+     cairo_show_text (cr, fmsg.str().c_str()); 
 
-     cairo_set_font_size (cr, 10);
+     cairo_set_font_size (cr, 12);
 
-     for (unsigned int i=0;i<0;i++) {
-	 cairo_move_to (cr, leftmargin, curline);curline+=lineskip;
-	 msg.str("Line ");
-	 msg << i;
-	 cairo_show_text (cr, msg.str().c_str());
-     }
+     cairo_move_to (cr, msgmargin, baseline);
+     cairo_show_text (cr, msg.str().c_str());
 
      cairo_restore(cr);
 }
@@ -252,7 +250,7 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
 
     if (height>titleHeight*4) {
 	std::ostringstream msg;
-	msg << "Laser " << laser->getUnit();
+	msg << "Laser " << laser->getUnit() << ": " << laser->getPoints().size();
 	drawText(cr,0,0,width,titleHeight,msg.str().c_str());
 	cairo_translate(cr,0,titleHeight);
 	height-=titleHeight;
@@ -333,7 +331,9 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
     cairo_clip(cr);
 
     if (height>titleHeight*4) {
-	drawText(cr,0,0,width,titleHeight,"World");
+	std::ostringstream msg;
+	msg << "World";
+	drawText(cr,0,0,width,titleHeight,msg.str().c_str());
 	cairo_translate(cr,0,titleHeight);
 	height-=titleHeight;
     }

@@ -48,6 +48,8 @@ class Video: public DisplayDevice {
     
     pthread_mutex_t mutex;
     int frame;
+    
+    std::ostringstream msg; // Message for display in bottom of window
  public:
     // Local window routines
     Video(const Lasers &lasers);
@@ -62,5 +64,6 @@ class Video: public DisplayDevice {
     void unlock();
     void save(std::ostream &s) const { lasers.saveTransforms(s); }
     void load(std::istream &s) { lasers.loadTransforms(s); }
+    std::ostream &newMessage() { msg.str(""); return msg; }
 };
 
