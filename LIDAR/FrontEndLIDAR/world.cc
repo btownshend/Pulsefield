@@ -219,79 +219,89 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
         
 void World::sendMessages(Destinations &dests, double elapsed) {
     dbg("World.sendMessages",5) << "ndest=" << dests.size() << std::endl;
+    std::vector<lo_address> addr(dests.size());
     for (int i=0;i<dests.size();i++) {
 	char cbuf[10];
 	dbg("World.sendMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 	sprintf(cbuf,"%d",dests.getPort(i));
-	lo_address addr = lo_address_new(dests.getHost(i), cbuf);
-	if (lo_send(addr,"/pf/frame","i",lastframe) < 0) {
-	    std::cerr << "Failed send of /pf/frame to " << lo_address_get_url(addr) << std::endl;
+	addr[i] = lo_address_new(dests.getHost(i), cbuf);
+	if (lo_send(addr[i],"/pf/frame","i",lastframe) < 0) {
+	    std::cerr << "Failed send of /pf/frame to " << lo_address_get_url(addr[i]) << std::endl;
 	    dests.setFailed(i);
 	    if (dests.getFailCount(i) > 100)
 		dests.remove(i);
 	    continue;
 	}
 	dests.setSucceeded(i);
-	// Handle entries
-	std::set<int>exitids = lastid;
-	unsigned int priornpeople=lastid.size();
-	unsigned activePeople=0;
-	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
-	    if (p->getAge() >= AGETHRESHOLD) {
-		activePeople++;
-		exitids.erase(p->getID());
-		if ( lastid.count(p->getID()) == 0)
-		    lo_send(addr,"/pf/entry","ifii",lastframe,elapsed,p->getID(),p->getChannel());
-		lastid.insert(p->getID());
+    }
+
+    // Handle entries
+    std::set<int>exitids = lastid;
+    unsigned int priornpeople=lastid.size();
+    unsigned activePeople=0;
+    for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
+	if (p->getAge() >= AGETHRESHOLD) {
+	    activePeople++;
+	    exitids.erase(p->getID());
+	    if ( lastid.count(p->getID()) == 0) {
+		for (unsigned int i=0;i<addr.size();i++)
+		    lo_send(addr[i],"/pf/entry","ifii",lastframe,elapsed,p->getID(),p->getChannel());
 	    }
+	    lastid.insert(p->getID());
 	}
+    }
 
-	// Handle exits
-	for (std::set<int>::iterator p=exitids.begin();p!=exitids.end();p++) {
-	    lo_send(addr,"/pf/exit","ifi",lastframe,elapsed,*p);
-	    lastid.erase(*p);
+    // Handle exits
+    for (std::set<int>::iterator p=exitids.begin();p!=exitids.end();p++) {
+	for (unsigned int i=0;i<addr.size();i++)
+	    lo_send(addr[i],"/pf/exit","ifi",lastframe,elapsed,*p);
+	lastid.erase(*p);
+    }
+
+    // Current size
+    if (activePeople != priornpeople)
+	for (unsigned int i=0;i<addr.size();i++)
+	    lo_send(addr[i],"/pf/set/npeople","i",activePeople);
+
+    // Updates
+    for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
+	if (p->getAge() >= AGETHRESHOLD)
+	    for (unsigned int i=0;i<addr.size();i++)
+		p->sendMessages(addr[i],lastframe,elapsed);
+    }
+    // Groups
+    for (unsigned int i=0;i<addr.size();i++)
+	groups.sendMessages(addr[i],lastframe,elapsed);
+
+    // Geo
+    Point center;  // Center of all participants
+    for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++)
+	center=center+p->getPosition();
+    center=center/people.size();
+    for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++) {
+	float centerDist=(p->getPosition()-center).norm();
+	float otherDist=-1;
+	for (std::vector<Person>::iterator p2=people.begin();p2!=people.end();p2++) {
+	    float dist = (p2->getPosition()-p->getPosition()).norm();
+	    if (dist>0.001 && (dist<otherDist || otherDist==-1))
+		otherDist=dist;
 	}
+	float exitDist=std::max(0.0f,MAXRANGE-p->getPosition().norm());   // Distance to be out of range
+	if (p->getPosition().Y() < exitDist)
+	    exitDist=std::max(0.0f,p->getPosition().Y());  // Distance to pass behind sensor
 
-	// Current size
-	if (activePeople != priornpeople)
-	    lo_send(addr,"/pf/set/npeople","i",activePeople);
-
-	// Updates
-	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
-	    if (p->getAge() >= AGETHRESHOLD)
-		p->sendMessages(addr,lastframe,elapsed);
-	}
-	// Groups
-	groups.sendMessages(addr,lastframe,elapsed);
-
-	// Geo
-	Point center;  // Center of all participants
-	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++)
-	    center=center+p->getPosition();
-	center=center/people.size();
-	for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++) {
-	    float centerDist=(p->getPosition()-center).norm();
-	    float otherDist=-1;
-	    for (std::vector<Person>::iterator p2=people.begin();p2!=people.end();p2++) {
-		float dist = (p2->getPosition()-p->getPosition()).norm();
-		if (dist>0.001 && (dist<otherDist || otherDist==-1))
-		    otherDist=dist;
-	    }
-	    float exitDist=std::max(0.0f,MAXRANGE-p->getPosition().norm());   // Distance to be out of range
-	    if (p->getPosition().Y() < exitDist)
-		exitDist=std::max(0.0f,p->getPosition().Y());  // Distance to pass behind sensor
-
-	    if (otherDist>0)
-		otherDist/=UNITSPERM;
-	    if (lo_send(addr, "/pf/geo","iifff",lastframe,p->getID(),centerDist/UNITSPERM,otherDist,exitDist/UNITSPERM) < 0) {
-		std::cerr << "Failed send of /pf/geo to " << lo_address_get_url(addr) << std::endl;
+	if (otherDist>0)
+	    otherDist/=UNITSPERM;
+	for (unsigned int i=0;i<addr.size();i++)
+	    if (lo_send(addr[i], "/pf/geo","iifff",lastframe,p->getID(),centerDist/UNITSPERM,otherDist,exitDist/UNITSPERM) < 0) {
+		std::cerr << "Failed send of /pf/geo to " << lo_address_get_url(addr[i]) << std::endl;
 		return;
 	    }
-	}
-
-	// Done!
-	lo_address_free(addr);
     }
+
+    // Done!
+    for (unsigned int i=0;i<addr.size();i++)
+	lo_address_free(addr[i]);
 }
 
 mxArray *World::convertToMX() const {
