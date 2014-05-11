@@ -221,6 +221,12 @@ void World::sendMessages(Destinations &dests, double elapsed) {
     dbg("World.sendMessages",5) << "ndest=" << dests.size() << std::endl;
     std::vector<lo_address> addr(dests.size());
     for (int i=0;i<dests.size();i++) {
+	if (dests.getFailCount(i) > 0) {
+	    if (lastframe%1000 == 0)
+		std::cerr << "Retrying previously failed destination " << lo_address_get_url(addr[i]) << std::endl;
+	    else
+		continue;
+	}
 	char cbuf[10];
 	dbg("World.sendMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 	sprintf(cbuf,"%d",dests.getPort(i));
@@ -228,8 +234,6 @@ void World::sendMessages(Destinations &dests, double elapsed) {
 	if (lo_send(addr[i],"/pf/frame","i",lastframe) < 0) {
 	    std::cerr << "Failed send of /pf/frame to " << lo_address_get_url(addr[i]) << std::endl;
 	    dests.setFailed(i);
-	    if (dests.getFailCount(i) > 100)
-		dests.remove(i);
 	    continue;
 	}
 	dests.setSucceeded(i);
