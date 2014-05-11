@@ -126,7 +126,7 @@ class Drawing {
 
     // Convert drawing into a set of etherdream points
     // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
-    std::vector<etherdream_point> getPoints(int targetNumPoints,const Transform &transform) const;
+    std::vector<etherdream_point> getPoints(int targetNumPoints,const Transform &transform, float &spacing) const;
 
     // Convert to points using given floorspace spacing
     std::vector<etherdream_point> getPoints(float spacing,const Transform &transform) const;

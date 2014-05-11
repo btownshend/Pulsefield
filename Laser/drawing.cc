@@ -127,8 +127,9 @@ std::vector<etherdream_point> Drawing::getPoints(float spacing,const Transform &
 
 // Convert drawing into a set of etherdream points
 // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
-std::vector<etherdream_point> Drawing::getPoints(int targetNumPoints,const Transform &transform) const {
-    std::vector<etherdream_point> result = getPoints(getLength()/targetNumPoints,transform);
+std::vector<etherdream_point> Drawing::getPoints(int targetNumPoints,const Transform &transform, float &spacing) const {
+    spacing=getLength()/targetNumPoints;
+    std::vector<etherdream_point> result = getPoints(spacing,transform);
     dbg("Drawing.getPoints",2) << "Initial point count = " << result.size() << " compared to planned " << targetNumPoints << " for " << elements.size() << " elements." << std::endl;
     if (targetNumPoints < (int)result.size()) {
 	// Redo with a reduced number of desired points (to account for inserted blanks)
@@ -138,7 +139,8 @@ std::vector<etherdream_point> Drawing::getPoints(int targetNumPoints,const Trans
 	    dbg("Drawing.getPoints",2) << "Fully compensating for blanks would not leave enough points" << std::endl;
 	    requestPoints = targetNumPoints/2;
 	}
-	result = getPoints(getLength()/requestPoints,transform);
+	spacing=getLength()/targetNumPoints;
+	result = getPoints(spacing,transform);
 	dbg("Drawing.getPoints",2) << "Final point count = " << result.size() << std::endl;
     }
     return result;

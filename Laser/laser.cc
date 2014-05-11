@@ -82,8 +82,8 @@ std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdr
 
 
 void Laser::render(const Drawing &drawing) {
-    pts=drawing.getPoints(npoints,transform);
-    dbg("Laser.render",2) << "Rendered drawing into " << pts.size() << " points." << std::endl;
+    pts=drawing.getPoints(npoints,transform,spacing);
+    dbg("Laser.render",2) << "Rendered drawing into " << pts.size() << " points with a spacing of " << spacing << std::endl;
     if (pts.size()>=2)
 	update();
 }
