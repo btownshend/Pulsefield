@@ -130,4 +130,7 @@ class Drawing {
 
     // Convert to points using given floorspace spacing
     std::vector<etherdream_point> getPoints(float spacing,const Transform &transform) const;
+
+    // Prune points that are not visible
+    std::vector<etherdream_point> prune(const std::vector<etherdream_point> pts) const;
 };

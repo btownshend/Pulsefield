@@ -67,11 +67,15 @@ void Laser::update() {
 // Get number of needed blanks for given slew
 std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdream_point final) {
     std::vector<etherdream_point>  result;
+    if (initial.r==0 &&initial.g==0 && initial.b==0 && final.r==0 &&final.g==0 && final.b==0) {
+	dbg("Drawing.getBlanks",2) << "No blanks needed; initial or final are already blanked" << std::endl;
+	return result;
+    }
     // Calculate distance in device coords
     int devdist=std::max(abs(initial.x-final.x),abs(initial.y-final.y));
     if (devdist>0) {
 	int nblanks=std::ceil(devdist/MAXSLEWDISTANCE)+10;
-	dbg("Drawing.getPoints",2) << "Inserting " << nblanks << " for a slew of distance " << devdist << " from " << initial.x << "," << initial.y << " to " << final.x << "," << final.y << std::endl;
+	dbg("Drawing.getBlanks",2) << "Inserting " << nblanks << " for a slew of distance " << devdist << " from " << initial.x << "," << initial.y << " to " << final.x << "," << final.y << std::endl;
 	etherdream_point blank=final;
 	blank.r=0; blank.g=0;blank.b=0;
 	for (int i=0;i<nblanks;i++) 
