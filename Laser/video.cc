@@ -46,7 +46,7 @@ void *Video::runDisplay(void *arg) {
 
     Window w;
     w = XCreateSimpleWindow(world->dpy, RootWindow(world->dpy, 0),0, 0, 800, 400, 0, 0, BlackPixel(world->dpy, 0));
-    XSelectInput(world->dpy, w, StructureNotifyMask | ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask);
+    XSelectInput(world->dpy, w, StructureNotifyMask | ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask);
     XMapWindow(world->dpy, w);
 
     world->surface = cairo_xlib_surface_create(world->dpy, w, DefaultVisual(world->dpy, 0), 800, 400);
@@ -156,7 +156,7 @@ void XRefs::update(Point newpos, bool clear) {
 
 	     
 // Update table with given xref and modify underlying Laser struct if reset is set
-void XRefs::refresh(cairo_t *cr, Laser *laser, int anchorNumber, bool dev, Point pos) {
+void XRefs::refresh(cairo_t *cr, Laser *laser,  Video &video, int anchorNumber, bool dev, Point pos) {
     XRef *entry=lookup(laser,anchorNumber,dev);
     if (entry!=NULL && entry->reset) {
 	// Move point
@@ -165,10 +165,13 @@ void XRefs::refresh(cairo_t *cr, Laser *laser, int anchorNumber, bool dev, Point
 	cairo_device_to_user(cr,&wx,&wy);
 	dbg("XRefs.refresh",1) << "Found xref entry; moving laser " << entry->laser->getUnit() << " anchor " << anchorNumber
 			       << " to " << Point(wx,wy) << std::endl;
-	if (entry->dev)
-	    entry->laser->getTransform().setDevPoint(anchorNumber,Point(wx,wy));
-	else
-	    entry->laser->getTransform().setFloorPoint(anchorNumber,Point(wx,wy));
+	if (entry->dev) {
+	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " device anchor " << anchorNumber << " to " << Point(wx,wy) << std::endl;
+	    entry->laser->getTransform().setDevPoint(anchorNumber,Point(std::min(32767.0,std::max(-32768.0,wx)),std::min(32767.0,std::max(-32768.0,wy))));
+	} else {
+	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " world anchor " << anchorNumber << " to " << Point(wx,wy) << std::endl;
+	    entry->laser->getTransform().setFloorPoint(anchorNumber,video.constrainPoint(Point(wx,wy)));
+	}
 	entry->laser->getTransform().recompute();
 	entry->reset=false;
     } else  {
@@ -179,6 +182,11 @@ void XRefs::refresh(cairo_t *cr, Laser *laser, int anchorNumber, bool dev, Point
 	else
 	    entry->winpos=Point(wx,wy);
     }
+}
+
+// Constrain a point to be within bounds
+Point Video::constrainPoint(Point p) const{ 
+    return Point(std::min(maxRight,std::max(minLeft,p.X())),std::min(maxTop,std::max(minBottom,p.Y())));
 }
 
 // Draw text
@@ -291,7 +299,7 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
 	 cairo_arc(cr,pt.X(),pt.Y(),10*pixel,-i*M_PI/2,-i*M_PI/2+3*M_PI/2);
 	 cairo_line_to(cr,pt.X(),pt.Y());
 	 cairo_stroke(cr);
-	 xrefs.refresh(cr,laser,i,true,pt);
+	 xrefs.refresh(cr,laser,*this,i,true,pt);
      }
 
      // Draw points
@@ -338,17 +346,6 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 
      dbg("Video.drawWorld",3) << "width=" << width << ", height=" << height << std::endl;
 
-     assert(bounds.size()>=2);
-     float minLeft=bounds[0].X();
-     float maxRight=bounds[0].X();
-     float minBottom=bounds[0].Y();
-     float maxTop=bounds[0].Y();
-     for (unsigned int i=1;i<bounds.size();i++) {
-	 minLeft=std::min(minLeft, bounds[i].X());
-	 maxRight=std::max(maxRight, bounds[i].Y());
-	 minBottom=std::min(minBottom, bounds[i].Y());
-	 maxTop=std::max(maxTop, bounds[i].X());
-     }
      cairo_translate(cr,width/2.0,height/2.0);
 
      float scale=std::min((float)width/(maxRight-minLeft),(float)height/(maxTop-minBottom));
@@ -405,7 +402,7 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	     cairo_arc(cr,pt.X(),pt.Y(),10*pixel,-i*M_PI/2,-i*M_PI/2+3*M_PI/2);
 	     cairo_line_to(cr,pt.X(),pt.Y());
 	     cairo_stroke(cr);
-	     xrefs.refresh(cr,laser,i,false,pt);
+	     xrefs.refresh(cr,laser,*this,i,false,pt);
 	 }
 
 	 // Draw points
@@ -479,4 +476,19 @@ void Video::lock() {
 void Video::unlock() {
     dbg("Video.unlock",5) << "unlock" << std::endl;
     pthread_mutex_unlock(&mutex);
+}
+
+void Video::setBounds(const std::vector<Point> &_bounds) {
+     assert(_bounds.size()>=2);
+    bounds=_bounds;
+    minLeft=bounds[0].X();
+    maxRight=bounds[0].X();
+    minBottom=bounds[0].Y();
+    maxTop=bounds[0].Y();
+    for (unsigned int i=1;i<bounds.size();i++) {
+	minLeft=std::min(minLeft, bounds[i].X());
+	maxRight=std::max(maxRight, bounds[i].Y());
+	minBottom=std::min(minBottom, bounds[i].Y());
+	maxTop=std::max(maxTop, bounds[i].X());
+    }
 }

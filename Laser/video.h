@@ -3,6 +3,7 @@
 #include "laser.h"
 
 class Transform;
+class Video;
 
 // Cross reference to locate points in window when mouse is clicked
 class XRef {
@@ -24,7 +25,7 @@ class XRefs {
     void update(Point newpos, bool clear);
     XRef *lookup(Laser *laser, int anchorNumber, bool dev);
     void push_back(const XRef &xr) { xref.push_back(xr); }
-    void refresh(cairo_t *cr, Laser *laser, int anchorNumber, bool dev, Point pos);
+    void refresh(cairo_t *cr, Laser *laser, Video &video, int anchorNumber, bool dev, Point pos);
     void clear() { clickedEntry=-1; xref.clear(); }
 };
 
@@ -41,7 +42,8 @@ class Video: public DisplayDevice {
     void drawInfo(cairo_t *cr, float left,  float top, float width, float height) const;
 
     Lasers lasers;
-    std::vector<Point> bounds;
+    std::vector<Point> bounds;  // Polygonal bounds of active area
+    float minLeft, maxRight, minBottom, maxTop;   // Bounding box
     static XRefs xrefs;
     
     pthread_mutex_t mutex;
@@ -53,7 +55,8 @@ class Video: public DisplayDevice {
 
     int open();
     void update();
-    void setBounds(const std::vector<Point> &_bounds) { bounds=_bounds; }
+    void setBounds(const std::vector<Point> &_bounds);
+    Point constrainPoint(Point p) const;
     void setFrame(int _frame) { frame=_frame;}
     void lock();
     void unlock();
