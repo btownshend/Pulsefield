@@ -53,6 +53,8 @@ void *Video::runDisplay(void *arg) {
 
     while (1) {
 	XEvent e;
+	
+	dbg("Video.runDisplay",2) << "Event  wait for display " << world->dpy << std::endl;
 	XNextEvent(world->dpy, &e);
 	dbg("Video.runDisplay",2) << "Got event " << e.type << std::endl;
 	world->lock();

@@ -75,6 +75,7 @@ std::vector<etherdream_point> Line::getPoints(float pointSpacing,const Transform
 
 std::vector<etherdream_point> Cubic::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
     std::vector<Point> pts = b.interpolate(pointSpacing);
+    dbg("Cubic.getPoints",2) << "Converted to " << pts.size() << " points." << std::endl;
     return convert(pts,transform);
 }
 

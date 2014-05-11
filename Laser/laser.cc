@@ -57,8 +57,9 @@ void Laser::update() {
     }
     dbg("Laser.update",1) << "Wait for ready." << std::endl;
     etherdream_wait_for_ready(d);
-    dbg("Laser.update",1) << "Sending " << pts.size() << " points" << std::endl;
+    dbg("Laser.update",1) << "Sending " << pts.size() << " points at " << PPS << " pps"  << std::endl;
     int res = etherdream_write(d,pts.data(), pts.size(), PPS, -1);
+    dbg("Laser.update",1) << "Finished writing to etherdream, res=" << res << std::endl;
     if (res != 0)
 	printf("write %d\n", res);
 }

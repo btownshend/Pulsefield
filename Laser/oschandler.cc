@@ -364,6 +364,7 @@ void OSCHandler::setTransform(int unit) {
 }
 
 void OSCHandler::update() {
+    dbg("OSCHandler.update",1) << "Got update with " << drawing.getNumElements() << " elements" << std::endl;
     video->lock();
     lasers.render(drawing);
     std::vector<Point> bounds(4);
@@ -378,6 +379,7 @@ void OSCHandler::update() {
 }
 
 void OSCHandler::pfframe(int frame) {
+    dbg("OSCHandler.pfframe",1) << "Frame " << frame << std::endl;
     video->setFrame(frame);
     if (false) {
     // Set video bounds
