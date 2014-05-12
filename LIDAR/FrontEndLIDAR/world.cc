@@ -219,23 +219,24 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
         
 void World::sendMessages(Destinations &dests, double elapsed) {
     dbg("World.sendMessages",5) << "ndest=" << dests.size() << std::endl;
-    std::vector<lo_address> addr(dests.size());
+    std::vector<lo_address> addr;
     for (int i=0;i<dests.size();i++) {
 	if (dests.getFailCount(i) > 0) {
 	    if (lastframe%1000 == 0)
-		std::cerr << "Retrying previously failed destination " << lo_address_get_url(addr[i]) << std::endl;
+		std::cerr << "Retrying previously failed destination " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 	    else
 		continue;
 	}
 	char cbuf[10];
 	dbg("World.sendMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 	sprintf(cbuf,"%d",dests.getPort(i));
-	addr[i] = lo_address_new(dests.getHost(i), cbuf);
-	if (lo_send(addr[i],"/pf/frame","i",lastframe) < 0) {
-	    std::cerr << "Failed send of /pf/frame to " << lo_address_get_url(addr[i]) << std::endl;
+	lo_address a=lo_address_new(dests.getHost(i), cbuf);
+	if (lo_send(a,"/pf/frame","i",lastframe) < 0) {
+	    std::cerr << "Failed send of /pf/frame to " << lo_address_get_url(a) << std::endl;
 	    dests.setFailed(i);
 	    continue;
 	}
+	addr.push_back(a);
 	dests.setSucceeded(i);
     }
 
