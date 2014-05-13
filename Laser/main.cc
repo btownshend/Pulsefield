@@ -33,10 +33,16 @@ int main(int argc, char *argv[]) {
 	usage(argc,argv);
 
     
+    dbg("main",1) << "Creating lasers" << std::endl;
     Lasers lasers(nlaser);
+    dbg("main",1) << "Creating video" << std::endl;
     Video video(lasers);
+    dbg("main",1) << "Opening video" << std::endl;
     video.open();
-
+    dbg("main",1) << "Creating OSCHandler" << std::endl;
     OSCHandler osc(lasers,&video);
+
+    dbg("main",1) << "Wait forever..." << std::endl;
     osc.wait();
+    dbg("main",1) << "Returned from wait forever." << std::endl;
 }

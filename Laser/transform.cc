@@ -36,6 +36,7 @@ void Transform::recompute() {
 	transform=cv::getPerspectiveTransform(floorpts,devpts);
 	invTransform=cv::getPerspectiveTransform(devpts,floorpts);
     }
+    dbg("Transform.recompute",1) << "Done" << std::endl;
 }
 
 etherdream_point Transform::mapToDevice(Point floorPt,const Color &c) const {
