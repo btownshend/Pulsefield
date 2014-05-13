@@ -24,6 +24,7 @@ Video::Video(const Lasers & _lasers): lasers(_lasers), bounds(4) {
     setBounds(bnds);
     msg << "Initialized";
     dirty=true;
+    dpy=NULL;
 }
 
 Video::~Video() {
@@ -46,6 +47,8 @@ void *Video::runDisplay(void *arg) {
     SetDebug("pthread:video");
 
     Video *world=(Video *)arg;
+
+    world->lock();       // Make sure nothing happens during setup
     dbg("Video.runDisplay",1) << "Thread running" << std::endl;
     world->dpy = XOpenDisplay(NULL);
     if (world->dpy == NULL) {
@@ -57,6 +60,9 @@ void *Video::runDisplay(void *arg) {
     XMapWindow(world->dpy, world->window);
 
     world->surface = cairo_xlib_surface_create(world->dpy, world->window, DefaultVisual(world->dpy, 0), 800, 400);
+
+    // Ready to begin
+    world->unlock();
 
     while (1) {
 	XEvent e;
@@ -122,7 +128,7 @@ void *Video::runDisplay(void *arg) {
 	}
 	world->unlock();
 
-	if (XPending(world->dpy)==0)
+	if (XPending(world->dpy)==0 && world->dirty) 
 	    world->update();
     }
 }
@@ -503,6 +509,7 @@ void Video::update() {
      cairo_show_page(cr);
      cairo_destroy(cr);
      XFlush(dpy);
+     dirty=false;   // No longer dirty
      unlock();
 }
 
