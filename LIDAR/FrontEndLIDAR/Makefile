@@ -22,9 +22,10 @@ OPENCVINC=-I/opt/local/include/opencv2
 OPENCVLIBDIR=/opt/local/lib
 OPENCVLIBES=-lopencv_ml -lopencv_video -lopencv_core
 
-CXX=/opt/local/bin/g++
-#DEBUG=-g -Wall -Wno-c++11-extensions
-DEBUG=-g -ggdb -Wall -D_GLIBCXX_DEBUG
+#CXX=/opt/local/bin/g++
+#DEBUG=-g -ggdb -Wall -D_GLIBCXX_DEBUG
+CXX=clang++
+DEBUG=-g  -Wall
 PROFILE=
 #OPTIMIZE=-O3
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/base/src -I$(SICKTOOLBOX)/lms5xx -I$(MATLABINC) -I$(CAIROINC) $(OPENCVINC) -I/opt/X11/include -Wno-overloaded-virtual
