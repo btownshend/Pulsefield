@@ -179,7 +179,8 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 	    for (int f=0;f<2;f++)
 		for (int leg=0;leg<2;leg++) {
 		    for (unsigned int i=0;i<fs[f].size();i++) {
-			float like = people[i].getObsLike(vis.getSick()->getPoint(fs[f][i]),leg,vis.getSick()->getFrame());
+			Point sickpt=vis.getSick()->getPoint(fs[f][i]);
+			float like = people[p].getObsLike(sickpt,leg,vis.getSick()->getFrame());
 			if (leg==f)
 			    swaplike+=like;
 			else
