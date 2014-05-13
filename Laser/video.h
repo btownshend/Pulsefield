@@ -32,6 +32,8 @@ class XRefs {
 class Video: public DisplayDevice {
     // Support for screen drawing to monitor operation
     Display *dpy;
+    Window window;
+
     cairo_surface_t *surface;
     pthread_t displayThread;
     static void *runDisplay(void *w);
