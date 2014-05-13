@@ -22,9 +22,9 @@ OPENCVLIBES=-lopencv_ml -lopencv_video -lopencv_core
 
 CXX=/opt/local/bin/g++
 #DEBUG=-g -Wall -Wno-c++11-extensions
-DEBUG=-g -Wall
+DEBUG=-g -ggdb -Wall -D_GLIBCXX_DEBUG
 PROFILE=
-OPTIMIZE=-O3
+#OPTIMIZE=-O3
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/base/src -I$(SICKTOOLBOX)/lms5xx -I$(MATLABINC) -I$(CAIROINC) $(OPENCVINC) -I/opt/X11/include -Wno-overloaded-virtual
 CFLAGS=$(DEBUG)  $(OPTIMIZE)
 LDFLAGS=-L$(LIBLO) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) -L$(CAIROLIBDIR)
@@ -265,9 +265,11 @@ groups.o: ../../../OSC/liblo-0.26/lo/lo_types.h
 groups.o: ../../../OSC/liblo-0.26/lo/lo_osc_types.h
 groups.o: ../../../OSC/liblo-0.26/lo/lo_errors.h
 groups.o: ../../../OSC/liblo-0.26/lo/lo_lowlevel.h
-groups.o: ../../../OSC/liblo-0.26/lo/lo_macros.h person.h
+groups.o: ../../../OSC/liblo-0.26/lo/lo_macros.h point.h person.h
 groups.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
 groups.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-groups.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h point.h
+groups.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
 groups.o: legstats.h leg.h kalmanfilter.h
-groups.o: /opt/local/include/opencv2/video/tracking.hpp dbg.h
+groups.o: /opt/local/include/opencv2/video/tracking.hpp dbg.h parameters.h
+kalmanfilter.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
+kalmanfilter.o: point.h

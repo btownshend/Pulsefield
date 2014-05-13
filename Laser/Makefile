@@ -1,7 +1,7 @@
 CXX=/opt/local/bin/g++
 BASEDIR=../..
-UTIL=../LIDAR/FrontEndLIDAR    # For dbg
-VPATH=.:$(UTIL)
+FRONTEND=../LIDAR/FrontEndLIDAR    # For dbg
+VPATH=.:$(FRONTEND)
 #LIBLO=$(BASEDIR)/OSC/liblo-0.26
 
 OPENCV=-lopencv_imgproc -lopencv_core 
@@ -13,19 +13,21 @@ CAIROLIBES=-lcairo -lX11
 
 ED=etherdream
 EDL=$(ED)/driver/libetherdream
-INCLUDES=-I$(ED)/driver/libetherdream -I$(ED)/common -I$(UTIL) -I$(CAIROINC)
-DEBUG=-ggdb -Wall
+INCLUDES=-I$(ED)/driver/libetherdream -I$(ED)/common -I$(FRONTEND) -I$(CAIROINC)
+DEBUG=-g -ggdb -Wall -D_GLIBCXX_DEBUG
 LDFLAGS=-L$(CAIROLIBDIR) -ggdb
 LIBES=-llo $(OPENCV) $(CAIROLIBES)
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES)
 CFLAGS=$(DEBUG) $(OPTIMIZE)
-CXXSRCS=oschandler.cc main.cc  dbg.cc dest.cc urlconfig.cc laser.cc point.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc
+CXXSRCS=oschandler.cc main.cc  laser.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc
+FESRCS=dbg.cc dest.cc urlconfig.cc point.cc
 #CSRCS=$(EDL)/etherdream.c
-SRCS=$(CXXSRCS) $(CSRCS)
+SRCS=$(CXXSRCS) $(CSRCS) $(FESRCS)
 
 all: osclaser
+	echo For debugging malloc, use: export  DYLD_INSERT_LIBRARIES=/usr/lib/libgmalloc.dylib
 
-osclaser: $(CSRCS:.c=.o) $(CXXSRCS:.cc=.o)
+osclaser: $(CSRCS:.c=.o) $(CXXSRCS:.cc=.o)  $(FESRCS:.cc=.o)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
 
 test: test.o $(CSRCS:.c=.o)
@@ -85,5 +87,5 @@ transform.o: transform.h ../LIDAR/FrontEndLIDAR/point.h
 transform.o: etherdream/driver/libetherdream/etherdream.h
 transform.o: etherdream/common/protocol.h drawing.h
 transform.o: ../LIDAR/FrontEndLIDAR/dbg.h bezier.h
-etherdream/driver/libetherdream/etherdream.o: etherdream/driver/libetherdream/etherdream.h
-etherdream/driver/libetherdream/etherdream.o: etherdream/common/protocol.h
+etherdream_bst.o: etherdream/driver/libetherdream/etherdream.h
+etherdream_bst.o: etherdream/common/protocol.h ../LIDAR/FrontEndLIDAR/dbg.h
