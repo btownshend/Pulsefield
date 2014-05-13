@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 		// Use playback file as filename
 		matfile=playFile;
 		// Remove suffix
-		unsigned int dot = matfile.find_last_of(".");
+		int dot = matfile.find_last_of(".");
 		if (dot!=std::string::npos)
 		    matfile.resize(dot);
 	    }
