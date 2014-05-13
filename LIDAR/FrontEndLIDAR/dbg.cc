@@ -44,7 +44,7 @@ std::ostream& DbgFmt(std::ostream &s, const char* dstr, int level)
 	    sprintf(buf,"T%d",(int)threadMap.size());
 	    threadMap[self]=buf;
 	}
-	sprintf(buf,"%8.8s: ",threadMap[self]);
+	sprintf(buf,"%8.8s: ",threadMap[self].c_str());
 	s << buf;
     }
     s << dstr;
@@ -196,10 +196,13 @@ int DebugCheck(const char* dstr,int level)
 // If 's' is an integer, then it serves as a default
 void SetDebug(const char* s, const char* dbgf)
 {
-    if (dbgf__)
-      delete dbgf__;
-    dbgf__=new char[strlen(dbgf)];
-    strcpy(dbgf__,dbgf);
+    if (dbgf!=NULL) {
+	char *old=dbgf__;
+	dbgf__=new char[strlen(dbgf)+1];
+	strcpy(dbgf__,dbgf);
+	if (old)
+	    delete old;
+    }
     if (strncmp(s,"TIMING",6) == 0) {
 	// Special case so we don't clog debug table
 	PrintTiming = 1;
