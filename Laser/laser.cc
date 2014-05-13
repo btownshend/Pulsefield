@@ -47,12 +47,12 @@ int Laser::open() {
 
 void Laser::update() {
     if (pts.size() < 2)  {
-	std::cerr << "Laser::update: not enough points (" << pts.size() << ") -- not updating" << std::endl;
+	dbg("Laser.update",1) << "Laser::update: not enough points (" << pts.size() << ") -- not updating" << std::endl;
 	return;
     }
 
     if (d==0) {
-	// std::cerr << "Laser not open" << std::endl;
+	dbg("Laser.update",1) << "Laser not open" << std::endl;
 	return;
     }
     dbg("Laser.update",1) << "Wait for ready." << std::endl;

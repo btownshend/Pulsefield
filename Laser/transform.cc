@@ -31,7 +31,7 @@ void Transform::recompute() {
 	dbg("Transform.recompute",1) << "W@" << floorpts[i] << "->D@" << devpts[i] << std::endl;
     }
     if (floorpts.size() != 4) {
-	std::cerr << "recompute() called after " <<floorpts.size() << " points added -- must be exactly 4" << std::endl;
+	dbg("Transform.recompute",0) << "recompute() called after " <<floorpts.size() << " points added -- must be exactly 4" << std::endl;
     } else {
 	transform=cv::getPerspectiveTransform(floorpts,devpts);
 	invTransform=cv::getPerspectiveTransform(devpts,floorpts);
