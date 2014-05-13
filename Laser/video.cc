@@ -65,6 +65,7 @@ void *Video::runDisplay(void *arg) {
 	dbg("Video.runDisplay",5) << "Got event " << e.type << std::endl;
 
 	world->lock();
+	dbg("Video.runDisplay",5) << "Got lock" << std::endl;
 
 	switch (e.type) {
 	case KeyPress:
