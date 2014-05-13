@@ -11,9 +11,9 @@ class DisplayDevice {
     virtual ~DisplayDevice() {;}
     virtual int open() = 0;
 
-    void setTransform(const Transform &t) {
-	transform=t;
-    }
+    //    void setTransform(const Transform &t) {
+    //	transform=t;
+    // }
 
     const Transform &getTransform() const { return transform; }
     Transform &getTransform()  { return transform; }

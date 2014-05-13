@@ -67,7 +67,7 @@ class OSCHandler {
 
     void update();
     void map(int unit, int pt, Point world, Point local);
-    void setTransform(int unit);
+    //    void setTransform(int unit);
 
     // /pf/frame
     float minx,maxx,miny,maxy;

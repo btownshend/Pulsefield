@@ -82,7 +82,7 @@ static int line_handler(const char *path, const char *types, lo_arg **argv, int 
 
 // Transforms
 static int map_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->map(argv[0]->i,argv[1]->i,Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f)); return 0; }
-static int setTransform_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setTransform(argv[0]->i); return 0; }
+//static int setTransform_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setTransform(argv[0]->i); return 0; }
 
 // Draw
 static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(); return 0; }
@@ -168,7 +168,7 @@ OSCHandler::OSCHandler(const Lasers &_lasers, Video *_video) : lasers(_lasers), 
 
 	/* Transforms */
 	lo_server_add_method(s,"/laser/map","iiffff",map_handler,this);
-	lo_server_add_method(s,"/laser/settransform","i",setTransform_handler,this);
+	//	lo_server_add_method(s,"/laser/settransform","i",setTransform_handler,this);
 
 	/* Draw */
 	lo_server_add_method(s,"/laser/update","",update_handler,this);
@@ -356,13 +356,13 @@ void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
     lasers.getLaser(unit)->getTransform().setDevPoint(pt,devpt);
 }
 
-void OSCHandler::setTransform(int unit) {
-    if (unit<0 || unit>=(int)lasers.size()) {
-	dbg("OSCHandler.setTransform",1)  << "Bad unit: " << unit << std::endl;
-	return;
-    }
-    lasers.getLaser(unit)->getTransform().recompute();
-}
+//void OSCHandler::setTransform(int unit) {
+//    if (unit<0 || unit>=(int)lasers.size()) {
+//	dbg("OSCHandler.setTransform",1)  << "Bad unit: " << unit << std::endl;
+//	return;
+//    }
+//    lasers.getLaser(unit)->getTransform().recompute();
+//}
 
 void OSCHandler::update() {
     dbg("OSCHandler.update",1) << "Got update with " << drawing.getNumElements() << " elements" << std::endl;
