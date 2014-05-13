@@ -7,7 +7,7 @@
 class Destinations;
 
 class Destination {
-    friend Destinations;
+    friend class Destinations;
     std::string host;
     int port;
     int failcount;
