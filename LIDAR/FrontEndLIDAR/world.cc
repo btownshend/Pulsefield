@@ -222,7 +222,8 @@ void World::sendMessages(Destinations &dests, double elapsed) {
     std::vector<lo_address> addr;
     for (int i=0;i<dests.size();i++) {
 	if (dests.getFailCount(i) > 0) {
-	    if (lastframe%1000 == 0)
+	    if (lastframe%3000 == 0)
+		// Return each minute
 		std::cerr << "Retrying previously failed destination " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 	    else
 		continue;
@@ -237,6 +238,9 @@ void World::sendMessages(Destinations &dests, double elapsed) {
 	    continue;
 	}
 	addr.push_back(a);
+	if (dests.getFailCount(i) > 0) {
+	    std::cerr << "Previously failed destination, " << dests.getHost(i) << ":" << dests.getPort(i) << " is accepting packets again" << std::endl;
+	}
 	dests.setSucceeded(i);
     }
 
