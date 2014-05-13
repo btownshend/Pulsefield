@@ -30,6 +30,7 @@ private:
 	int num_measurements;
 	struct timeval acquired;
 	unsigned int frame;
+	unsigned int overwrittenframes;  // Number of overwritten frames since last message
 	bool valid;
 	pthread_t runThread;
 	int nechoes;

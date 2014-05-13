@@ -30,6 +30,7 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	 */
 	id=_id;
 	frame=0;
+	overwrittenframes=0;
 	valid=false;
 	num_measurements=0;
 	status=0;
@@ -194,7 +195,11 @@ void SickIO::get() {
 
 	gettimeofday(&acquired,0);
 	if (valid)
-	    fprintf(stderr,"Warning, frame %d overwritten before being retrieved\n", frame);
+	    overwrittenframes++;
+	if (frame%1000 == 0 && overwrittenframes>0) {
+	    fprintf(stderr,"Warning: %d of last 1000 frames overwritten before being retrieved\n", overwrittenframes);
+	    overwrittenframes=0;
+	}
 	frame++;
 	valid=true;
 	if (frame%100==0)
