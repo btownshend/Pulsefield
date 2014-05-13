@@ -55,6 +55,10 @@ void *Video::runDisplay(void *arg) {
 	std::cerr <<  "Error: Can't open display. Is DISPLAY set?" << std::endl;
 	return NULL;
     }
+    if (!XInitThreads()) {
+	std::cerr << "Unable to set XLib to multithreaded operation" << std::endl;
+	return NULL;
+    }
     world->window = XCreateSimpleWindow(world->dpy, RootWindow(world->dpy, 0),0, 0, 800, 400, 0, 0, BlackPixel(world->dpy, 0));
     XSelectInput(world->dpy, world->window, StructureNotifyMask | ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask);
     XMapWindow(world->dpy, world->window);
