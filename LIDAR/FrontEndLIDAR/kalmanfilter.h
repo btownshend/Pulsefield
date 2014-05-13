@@ -1,6 +1,6 @@
 #pragma once
 
-#include <video/tracking.hpp>
+#include <opencv2/video/tracking.hpp>
 #include "point.h"
 
 // Wrapper around openCV Kalman filter class for doing constant-velocity tracking in two dimensions with different measurement variances for each frame
