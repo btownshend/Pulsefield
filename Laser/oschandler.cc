@@ -382,33 +382,7 @@ void OSCHandler::update() {
 void OSCHandler::pfframe(int frame) {
     dbg("OSCHandler.pfframe",1) << "Frame " << frame << std::endl;
     video->setFrame(frame);
-    if (false) {
-    // Set video bounds
-    // Setup dummy mapping
-    map(0,0,Point(-32767,32767),Point((minx+0.5),maxy+1));
-    map(0,1,Point(32767,32767),Point((maxx+1),maxy+1));
-    map(0,2,Point(32767,-32767),Point(maxx/3,miny+0.5));
-    map(0,3,Point(-32767,-32767),Point((minx+0.5)/3,miny+0.5));
-    setTransform(0);
 
-    map(1,0,Point(-32767,-32767),Point((minx+0.5),miny+0.5));
-    map(1,1,Point(32767,-32767),Point((maxx+1),miny+0.5));
-    map(1,2,Point(-32767,32767),Point((minx+0.5)/3,maxy+1));
-    map(1,3,Point(32767,32767),Point((maxx+1)/3,maxy+1));
-    setTransform(1);
-
-    map(2,0,Point(-32767,-32767),Point((minx+0.5),miny+0.5));
-    map(2,1,Point(32767,-32767),Point((maxx+1),miny+0.5));
-    map(2,2,Point(-32767,32767),Point((minx+0.5),maxy/3));
-    map(2,3,Point(32767,32767),Point((maxx+1),maxy+1));
-    setTransform(2);
-
-    map(3,0,Point(-32767,-32767),Point((minx+0.5),miny+0.5));
-    map(3,1,Point(32767,-32767),Point((maxx+1),miny+0.5));
-    map(3,2,Point(-32767,32767),Point((minx+0.5),maxy+1));
-    map(3,3,Point(32767,32767),Point((maxx+1),maxy/3));
-    setTransform(3);
-    }
     // Update
     update();
 }
