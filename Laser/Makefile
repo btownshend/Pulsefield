@@ -1,4 +1,5 @@
-CXX=/opt/local/bin/g++
+#CXX=/opt/local/bin/g++
+CXX=clang++
 BASEDIR=../..
 FRONTEND=../LIDAR/FrontEndLIDAR    # For dbg
 VPATH=.:$(FRONTEND)
@@ -14,7 +15,9 @@ CAIROLIBES=-lcairo -lX11
 ED=etherdream
 EDL=$(ED)/driver/libetherdream
 INCLUDES=-I$(ED)/driver/libetherdream -I$(ED)/common -I$(FRONTEND) -I$(CAIROINC)
-DEBUG=-g -ggdb -Wall -D_GLIBCXX_DEBUG
+#DEBUG=-g -ggdb -Wall -D_GLIBCXX_DEBUG
+DEBUG=-g  -Wall
+#OPTIMIZE=-O3
 LDFLAGS=-L$(CAIROLIBDIR) -ggdb
 LIBES=-llo $(OPENCV) $(CAIROLIBES)
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES)
@@ -38,6 +41,11 @@ beziertest: bezier.o beziertest.o point.o dbg.o
 
 clean:
 	-rm *.o
+
+vectest: vectest.o
+	$(CXX) $(LDFLAGS) -o $@ $^
+
+vectest.o: Makefile
 
 depend:
 	/opt/local/bin/makedepend -Y -- $(CXXFLAGS) -- $(SRCS)
