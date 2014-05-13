@@ -1,9 +1,9 @@
 #CXX=/opt/local/bin/g++
 CXX=clang++
 BASEDIR=../..
-FRONTEND=../LIDAR/FrontEndLIDAR    # For dbg
-VPATH=.:$(FRONTEND)
 #LIBLO=$(BASEDIR)/OSC/liblo-0.26
+UTIL=../LIDAR/Util
+VPATH=.:$(UTIL)
 
 OPENCV=-lopencv_imgproc -lopencv_core 
 
@@ -14,7 +14,7 @@ CAIROLIBES=-lcairo -lX11
 
 ED=etherdream
 EDL=$(ED)/driver/libetherdream
-INCLUDES=-I$(ED)/driver/libetherdream -I$(ED)/common -I$(FRONTEND) -I$(CAIROINC)
+INCLUDES=-I$(ED)/driver/libetherdream -I$(ED)/common -I$(UTIL) -I$(CAIROINC) -I$(OPENCVINC)
 #DEBUG=-g -ggdb -Wall -D_GLIBCXX_DEBUG
 DEBUG=-g  -Wall
 #OPTIMIZE=-O3

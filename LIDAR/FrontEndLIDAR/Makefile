@@ -1,6 +1,8 @@
 BASEDIR=../../..
 
 LIBLO=$(BASEDIR)/OSC/liblo-0.26
+UTIL=../Util
+VPATH=.:$(UTIL)
 
 #MATLAB=/Applications/MATLAB_R2013a.app
 MATLAB=/Applications/MATLAB_R2014a.app
