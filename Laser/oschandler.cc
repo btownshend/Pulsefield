@@ -88,7 +88,7 @@ static int map_handler(const char *path, const char *types, lo_arg **argv, int a
 static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(); return 0; }
 
 // pf 
-static int pfupdate_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(argv[3]->f,argv[4]->f),.30); return 0; }
+static int pfupdate_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(-argv[3]->f,argv[4]->f),.30); return 0; }
 static int pfframe_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfframe(argv[0]->i); return 0; }
 static int pfsetminx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->minx=argv[0]->f; return 0; }
 static int pfsetminy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->miny=argv[0]->f; return 0; }
@@ -366,17 +366,20 @@ void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
 
 void OSCHandler::update() {
     dbg("OSCHandler.update",1) << "Got update with " << drawing.getNumElements() << " elements" << std::endl;
-    video->lock();
-    lasers.render(drawing);
     std::vector<Point> bounds(4);
     bounds[0]=Point(minx,miny);
     bounds[1]=Point(maxx,miny);
     bounds[2]=Point(maxx,maxy);
     bounds[3]=Point(minx,maxy);
+
+    // Lock since this changes lasers which video accesses
+    video->lock();  // TODO: Maybe this should be locks on the lasers
+    lasers.render(drawing);
     video->setBounds(bounds);
-    drawing.clear();
-    dirty=true;
+    video->setDirty();
     video->unlock();
+
+    drawing.clear();
 }
 
 void OSCHandler::pfframe(int frame) {

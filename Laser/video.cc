@@ -23,6 +23,7 @@ Video::Video(const Lasers & _lasers): lasers(_lasers), bounds(4) {
     bnds[3]=Point(-6,6);
     setBounds(bnds);
     msg << "Initialized";
+    dirty=true;
 }
 
 Video::~Video() {
@@ -43,6 +44,7 @@ int Video::open() {
 
 void *Video::runDisplay(void *arg) {
     SetDebug("pthread:video");
+
     Video *world=(Video *)arg;
     dbg("Video.runDisplay",1) << "Thread running" << std::endl;
     world->dpy = XOpenDisplay(NULL);
@@ -50,12 +52,11 @@ void *Video::runDisplay(void *arg) {
 	std::cerr <<  "Error: Can't open display. Is DISPLAY set?" << std::endl;
 	return NULL;
     }
-    Window w;
-    w = XCreateSimpleWindow(world->dpy, RootWindow(world->dpy, 0),0, 0, 800, 400, 0, 0, BlackPixel(world->dpy, 0));
-    XSelectInput(world->dpy, w, StructureNotifyMask | ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask);
-    XMapWindow(world->dpy, w);
+    world->window = XCreateSimpleWindow(world->dpy, RootWindow(world->dpy, 0),0, 0, 800, 400, 0, 0, BlackPixel(world->dpy, 0));
+    XSelectInput(world->dpy, world->window, StructureNotifyMask | ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask);
+    XMapWindow(world->dpy, world->window);
 
-    world->surface = cairo_xlib_surface_create(world->dpy, w, DefaultVisual(world->dpy, 0), 800, 400);
+    world->surface = cairo_xlib_surface_create(world->dpy, world->window, DefaultVisual(world->dpy, 0), 800, 400);
 
     while (1) {
 	XEvent e;
@@ -92,21 +93,31 @@ void *Video::runDisplay(void *arg) {
 	    break;
 	case ButtonPress:
 	    dbg("Video.runDisplay",5)  << "Button Pressed:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
+	    world->dirty=true;
 	    xrefs.markClosest(Point(e.xbutton.x,e.xbutton.y));
 	    break;
 	case ButtonRelease:
 	    dbg("Video.runDisplay",5)  << "Button Released:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
+	    world->dirty=true;
 	    xrefs.update(Point(e.xbutton.x,e.xbutton.y),true);
 	    break;
 	case MotionNotify:
 	    dbg("Video.runDisplay",5)  << "Motion:  " << e.xmotion.x << ", " << e.xmotion.y << " with " << XPending(world->dpy) << " events queued" << std::endl;
+	    world->dirty=true;
 	    xrefs.update(Point(e.xbutton.x,e.xbutton.y),false);
 	    break;
 	case ConfigureNotify:
 	    cairo_xlib_surface_set_size(world->surface,e.xconfigure.width, e.xconfigure.height);
+	    world->dirty=true;
 	    break;
 	case MapNotify:
+	    world->dirty=true;
+	    break;
 	case Expose:
+	    dbg("Video.runDisplay",5)  << "Expose" << std::endl;
+	    break;
+	case ClientMessage:
+	    dbg("Video.runDisplay",5)  << "Client message" << std::endl;
 	    break;
 	}
 	world->unlock();
@@ -117,6 +128,30 @@ void *Video::runDisplay(void *arg) {
 }
 
 XRefs Video::xrefs;
+
+
+// Mark a window as dirty and notify x server
+void Video::setDirty() {
+    dirty=true;
+    if (dpy!=NULL) {
+	XEvent ev;
+	ev.type=Expose;
+	ev.xexpose.display=dpy;
+	ev.xexpose.window=window;
+	ev.xexpose.send_event=1;
+	ev.xexpose.x=0;
+	ev.xexpose.y=0;
+	ev.xexpose.width=1;
+	ev.xexpose.height=1;
+	ev.xexpose.count=1;
+	dbg("Video.setDirty",5) << "Sending Client event" << std::endl;
+	Status st=XSendEvent(dpy,window,True,0,&ev);
+	if (st != 0) {
+	    dbg("Video.setDirty",5) << "XSendEvent failed" << std::endl;
+	}
+	XFlush(dpy);
+    }
+}
 
 // Mark the point closest to winpt for updating it (i.e. when mouse clicked)
 void XRefs::markClosest(Point winpt) {
