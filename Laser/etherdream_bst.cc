@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include "etherdream.h"
+#include "dbg.h"
 
 
-
-static FILE *trace_fp = NULL;
 #if __MACH__
 static long long timer_start, timer_freq_numer, timer_freq_denom;
 #else
@@ -56,41 +56,13 @@ static void microsleep(long long us) {
     nanosleep(&ns, NULL);
 }
 
-/* trace(d, fmt, ...)
- *
- * Utility function for logging.
- */
-static void trace(struct etherdream *d, const char *fmt, ...) {
-	if (!trace_fp)
-		return;
-
-	char buf[120];
-
-	long long v = microseconds();
-	int len;
-
-	if (d)
-		len = snprintf(buf, sizeof buf, "[%d.%06d] %06lx ",
-			(int)(v / 1000000), (int)(v % 1000000), d->dac_id);
-	else
-		len = snprintf(buf, sizeof buf, "[%d.%06d]        ",
-			(int)(v / 1000000), (int)(v % 1000000));
-
-	va_list args;
-	va_start(args, fmt);
-	vsnprintf(buf + len, sizeof buf - len, fmt, args);
-	va_end(args);
-
-	fputs(buf, trace_fp);
-}
 
 /* log_socket_error(d, call)
  *
  * Log an error in a socket call.
  */
 static void log_socket_error(struct etherdream *d, const char *call) {
-	trace(d, "!! socket error in %s: %d: %s\n",
-		call, errno, strerror(errno));
+    dbg("Etherdream",1) << "Socket error in " << call << ": " << errno << ": " << strerror(errno) << std::endl;
 }
 
 /* wait_for_fd_activity(d, usec, writable)
@@ -125,8 +97,8 @@ static int read_bytes(struct etherdream *d, char *buf, int len) {
 		if (res < 0)
 			return res;
 		if (res == 0) {
-			trace(d, "!! Read from DAC timed out.\n");
-			return -1;
+		    dbg("Etherdream.read_bytes",1) << "Read from DAC timed out" << std::endl;
+		    return -1;
 		}
 
 		res = recv(d->conn.dc_sock,
@@ -163,7 +135,7 @@ static int send_all(struct etherdream *d, const char *data, int len) {
 		if (res < 0)
 			return -1;
 		if (res == 0) {
-			trace(d, "write timed out\n");
+		    dbg("Etherdream.send_all",1) << "write timed out" << std::endl;
 		}
 
 		res = send(d->conn.dc_sock, data, len, 0);
@@ -201,14 +173,9 @@ static int read_resp(struct etherdream *d) {
 static void dump_resp(struct etherdream *d) {
 	struct etherdream_conn *conn = &d->conn;
 	struct dac_status *st = &conn->resp.dac_status;
-	trace(d, "-- Protocol %d / LE %d / playback %d / source %d\n",
-		0 /* st->protocol */, st->light_engine_state,
-		st->playback_state, st->source);
-	trace(d, "-- Flags: LE %x, playback %x, source %x\n",
-		st->light_engine_flags, st->playback_flags,
-		st->source_flags);
-	trace(d, "-- Buffer: %d points, %d pps, %d total played\n",
-		st->buffer_fullness, st->point_rate, st->point_count);
+	dbg("Etherdream",1) << "Protocol " << 0 << "/ LE " << (int)st->light_engine_state << " / playback " << (int)st->playback_state << " / source " << (int)st->source << std::endl;
+	dbg("Etherdream",1) << "Flags: LE " << std::hex <<  st->light_engine_flags << ", playback " <<  st->playback_flags << ", source " << st->source_flags << std::endl <<  std::dec;
+	dbg("Etherdream",1) << "Buffer :" << st->buffer_fullness << " points, " <<  st->point_rate << " pps , " <<  st->point_count << " total played" << std::endl;
 }
 
 /* dac_connect(d, host, port)
@@ -250,7 +217,7 @@ static int dac_connect(struct etherdream *d) {
 	    return -1;
 	}
 	if (res == 0) {
-	    trace(d, "Connection to %s timed out.\n", inet_ntoa(d->addr));
+	    dbg("Etherdream.dac_connect",1) <<  "Connection to " << inet_ntoa(d->addr) << " timed out" << std::endl;
 	    close(d->conn.dc_sock);
 	    return -1;
 	}
@@ -308,7 +275,7 @@ static int dac_connect(struct etherdream *d) {
 		strcpy(d->version, "[old]");
 	}
 
-	trace(d, "DAC version %.*s\n", sizeof(d->version), d->version);
+	dbg("Etherdream.dac_connect",1) <<  "DAC vesrion " << d->version << std::endl;
 	return 0;
 }
 
@@ -324,7 +291,8 @@ static int check_data_response(struct etherdream *d) {
 
 	if (conn->resp.command == 'd') {
 		if (conn->ackbuf_prod == conn->ackbuf_cons) {
-			trace(d, "!! protocol error: unexpected data ack\n");
+		    dbg("Etherdream.check_data_response",0) <<  "Protocol error: unexpected data ack (" << conn->ackbuf_prod << " != " << conn->ackbuf_cons << ")" << std::endl;
+		    assert(0);
 			return -1;
 		}
 		conn->unacked_points -= conn->ackbuf[conn->ackbuf_cons];
@@ -334,9 +302,7 @@ static int check_data_response(struct etherdream *d) {
 	}
 
 	if (conn->resp.response != 'a' && conn->resp.response != 'I') {
-		trace(d, "!! protocol error: ACK for '%c' got '%c' (%d)\n",
-			conn->resp.command,
-			conn->resp.response, conn->resp.response);
+	    dbg("Etherdream.check_data_response",0) <<  "Protocol error: ack for '" << conn->resp.command << "' got '" << conn->resp.response << "' (" << (int)conn->resp.response << ")" << std::endl;
 		return -1;
 	}
 
@@ -368,11 +334,12 @@ static int dac_get_acks(struct etherdream *d, int wait) {
  */
 static int dac_send_data(struct etherdream *d, struct dac_point *data,
                          int npoints, int rate) {
+    dbg("Etherdream.dac_send_data",5) <<  "dac_send_data(d,data," << npoints << "," << rate << ")" << std::endl;
 	int res;
 	const struct dac_status *st = &d->conn.resp.dac_status;
 
 	if (st->playback_state == 0) {
-		trace(d, "L: Sending prepare command...\n");
+	    dbg("Etherdream.dac_send_data",1) <<  "Sending prepare command..." << std::endl;
 		char c = 'p';
 		if ((res = send_all(d, &c, sizeof c)) < 0)
 			return res;
@@ -383,12 +350,12 @@ static int dac_send_data(struct etherdream *d, struct dac_point *data,
 		while (d->conn.pending_meta_acks)
 			dac_get_acks(d, 1500);
 
-		trace(d, "L: prepare ACKed\n");
+		dbg("Etherdream.dac_send_data",1) <<  "prepare ACKed" << std::endl;
 	}
 
 	if (st->buffer_fullness > 1600 && st->playback_state == 1 \
 	    && !d->conn.dc_begin_sent) {
-		trace(d, "L: Sending begin command...\n");
+		dbg("Etherdream.dac_send_data",1) <<  "Sending begin command" << std::endl;
 
 		struct begin_command b;
 		b.command = 'b';
@@ -432,9 +399,6 @@ static int dac_send_data(struct etherdream *d, struct dac_point *data,
 	return 0;
 }
 
-#define SHOULD_TRACE() (expected_fullness < DEBUG_THRESHOLD_POINTS \
-           || d->conn.resp.dac_status.buffer_fullness < DEBUG_THRESHOLD_POINTS)
-
 /* dac_loop(dv)
  *
  * Main thread function for sending data to the DAC.
@@ -450,7 +414,7 @@ static void *dac_loop(void *dv) {
 		/* Wait for us to have data */
 		int state;
 		while ((state = d->state) == ST_READY) {
-//			trace(d, "L: waiting\n");   // MEMO
+		dbg("Etherdream.dac_loop",2) <<  "waiting" << std::endl;
 			pthread_cond_wait(&d->loop_cond, &d->mutex);
 		}
 
@@ -494,14 +458,8 @@ static void *dac_loop(void *dv) {
 			int diff = MIN_SEND_POINTS - cap;
 			int wait_time = 500 + (1000000L * diff / b->pps);
 
-			if (SHOULD_TRACE())
-				trace(d, "L: st %d om %d; b %d + %d - %d = %d"
-					" -> c %d, wait %d us\n",
-					d->conn.resp.dac_status.playback_state,
-					d->conn.pending_meta_acks,
-					d->conn.resp.dac_status.buffer_fullness,
-					d->conn.unacked_points, expected_used,
-					expected_fullness, cap, wait_time);
+			dbg("Etherdream.dac_loop",2) <<  "st " << (int)d->conn.resp.dac_status.playback_state << " om " << d->conn.pending_meta_acks << "; "
+				      << "b " << d->conn.resp.dac_status.buffer_fullness << " + " << d->conn.unacked_points << " - " << expected_used << " = " << expected_fullness << " -> c  " << cap << ", wait " << wait_time << " usec" << std::endl;
 
 			microsleep(wait_time);
 
@@ -520,14 +478,8 @@ static void *dac_loop(void *dv) {
 		if (cap > 80)
 			cap = 80;
 
-		if (SHOULD_TRACE())
-			trace(d, "L: st %d om %d; b %d + %d - %d = %d"
-				" -> write %d\n",
-				d->conn.resp.dac_status.playback_state,
-				d->conn.pending_meta_acks,
-				d->conn.resp.dac_status.buffer_fullness,
-				d->conn.unacked_points, expected_used,
-				expected_fullness, cap);
+		dbg("Etherdream.dac_loop",2) <<  "st " << (int)d->conn.resp.dac_status.playback_state << " om " << d->conn.pending_meta_acks << "; "
+					     << "b " << d->conn.resp.dac_status.buffer_fullness << " + " << d->conn.unacked_points << " - " << expected_used << " = " << expected_fullness << " -> write  " << cap << std::endl;
 
 		res = dac_send_data(d, b->data + b->idx, cap, b->pps);
 		if (res < 0)
@@ -557,7 +509,7 @@ static void *dac_loop(void *dv) {
 			pthread_cond_broadcast(&d->loop_cond);
 		} else if (b->repeatcount >= 0) {
 			/* Stop playing until we get a new frame. */
-//			trace(d, "L: returning to idle\n"); // MEMO
+		    dbg("Etherdream.dac_loop",2) <<  "returning to idle" << std::endl;
 			d->state = ST_READY;
 		} else {
 			/* repeatcount is negative and there's no new frame,
@@ -565,7 +517,7 @@ static void *dac_loop(void *dv) {
 		}
 	}
 
-	trace(d, "L: Shutting down.\n");
+	dbg("Etherdream.dac_loop",1) <<  "shutting down" << std::endl;
 	d->state = ST_SHUTDOWN;
 	return 0;
 }
@@ -578,7 +530,7 @@ int etherdream_connect(struct etherdream *d) {
 
 	// Connect to the DAC
 	if (dac_connect(d) < 0) {
-		trace(d, "!! DAC connection failed.\n");
+	    dbg("Etherdream.connect",0) <<  "DAC connection failed" << std::endl;
 		return -1;
 	}
 
@@ -586,11 +538,11 @@ int etherdream_connect(struct etherdream *d) {
 
 	int res = pthread_create(&d->workerthread, NULL, dac_loop, d);
 	if (res) {
-		trace(d, "!! Begin thread error: %s\n", strerror(res));
-		return -1;
+	    dbg("Etherdream.connect",0) <<  "Begin thread error: " <<  strerror(res) << std::endl;
+	    return -1;
 	}
 
-	trace(d, "Ready.\n");
+	dbg("Etherdream.connect",1) <<  "Ready" << std::endl;
 
 	return 0;
 }
@@ -634,7 +586,7 @@ int etherdream_write(struct etherdream *d, const struct etherdream_point *pts,
 	/* If not ready for a new frame, bail */
 	if (d->frame_buffer_fullness == BUFFER_NFRAMES) {
 		pthread_mutex_unlock(&d->mutex);
-		trace(d, "M: NOT READY: %d points, %d reps\n", npts, reps);
+		dbg("Etherdream.write",1) <<  "NOT READY: " << npts << " points, " << reps << " reps" << std::endl;
 		return -1;
 	}
 
@@ -643,7 +595,7 @@ int etherdream_write(struct etherdream *d, const struct etherdream_point *pts,
 
 	pthread_mutex_unlock(&d->mutex);
 
-	// trace(d, "M: Writing: %d points, %d reps, %d pps\n", npts, reps, pps);
+	dbg("Etherdream.write",3) <<  "Writing: " << npts << " points, " << reps << " reps, " << pps << " pps" << std::endl;
 
 	/* XXX: automatically pad out small frames */
 
@@ -742,7 +694,7 @@ static void *watch_for_dacs(void *arg) {
 		return NULL;
 	}
 
-	trace(NULL, "_: listening for DACs...\n");
+	dbg("Etherdream.wait_for_dacs",1) <<  "Listing for DACs..." << std::endl;
 
 	while (1) {
 		struct sockaddr_in src;
@@ -775,8 +727,8 @@ static void *watch_for_dacs(void *arg) {
 		struct etherdream *new_dac;
 		new_dac = (etherdream *)malloc(sizeof (struct etherdream));
 		if (!new_dac) {
-			trace(NULL, "!! malloc(struct etherdream) failed\n");
-			continue;
+		    dbg("Etherdream.wait_for_dacs",0) <<  "malloc(struct etherdream) failed" << std::endl;
+		    continue;
 		}
 
 		memset(new_dac, 0, sizeof *new_dac);
@@ -790,8 +742,8 @@ static void *watch_for_dacs(void *arg) {
 		                | buf.mac_address[5];
 		new_dac->sw_revision = buf.sw_revision;
 		new_dac->state = ST_DISCONNECTED;
-
-		trace(NULL, "_: Found new DAC: %s\n", inet_ntoa(src.sin_addr));
+		
+		dbg("Etherdream.wait_for_dacs",1) <<  "Found new DAC: " <<  inet_ntoa(src.sin_addr) << std::endl;
 
 		pthread_mutex_lock(&dac_list_lock);
 		new_dac->next = dac_list;
@@ -799,7 +751,7 @@ static void *watch_for_dacs(void *arg) {
 		pthread_mutex_unlock(&dac_list_lock);
 	}
 
-	trace(NULL, "_: Exiting\n");
+	dbg("Etherdream.wait_for_dacs",1) <<  "Exiting" << std::endl;
 	return NULL;
 }
 
@@ -819,17 +771,12 @@ int etherdream_lib_start(void) {
 	clock_gettime(CLOCK_REALTIME, &start_time);
 #endif
 
-	// Set up the logging fd (just stderr for now)
-	trace_fp = stderr;
-	fprintf(trace_fp, "----------\n");
-	fflush(trace_fp);
-	trace(NULL, "== libetherdream started ==\n");
+	dbg("Etherdream.lib_start",1) <<  "Started" << std::endl;
 
 	pthread_mutex_init(&dac_list_lock, NULL);
 
 	pthread_t watcher_thread;
 	pthread_create(&watcher_thread, NULL, watch_for_dacs, NULL);
-
 	return 0;
 }
 
@@ -848,7 +795,7 @@ int etherdream_dac_count(void) {
 	}
 
 	pthread_mutex_unlock(&dac_list_lock);
-	trace(NULL, "== etherdream_lib_get_dac_count(): %d\n", count);
+	dbg("Etherdream.dac_count",1) <<  "count = " << count << std::endl;
 	return count;
 }
 
