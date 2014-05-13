@@ -60,8 +60,9 @@ void Groups::update(std::vector<Person> &people, double elapsed) {
 		Point centroid;
 		for (std::set<int>::iterator c=connected.begin();c!=connected.end();c++) {
 		    if (scanned[*c]) {
+			dbg("Groups.update",2) << "Hit already scanned person " << people[*c] << " that is connected to " << people[i] << "; need to merge groups " << *people[i].getGroup() << " and " << *people[*c].getGroup() << std::endl;
 			assert(people[i].isGrouped() && people[*c].isGrouped());   // This can only happen if both were in groups
-			dbg("Groups.update",2) << "Hit already scanned point; need to merge groups " << *people[i].getGroup() << " and " << *people[*c].getGroup() << std::endl;
+			assert(people[i].getGroup() != people[*c].getGroup());
 			Group *oldgrp=people[i].getGroup();
 			for (unsigned int j=0;j<people.size();j++) 
 			    if (people[j].getGroup() == oldgrp) {
