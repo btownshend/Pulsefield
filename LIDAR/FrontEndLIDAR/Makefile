@@ -3,7 +3,6 @@ BASEDIR=../../..
 UTIL=../Util
 VPATH=.:$(UTIL)
 
-#MATLAB=/Applications/MATLAB_R2013a.app
 LIBLOLIBDIR=/opt/local/lib
 
 MATLAB=/Applications/MATLAB_R2014a.app
@@ -19,7 +18,7 @@ CAIROINC=/opt/local/include/cairo
 CAIROLIBDIR=/opt/local/lib
 CAIROLIBES=-lcairo -lX11
 
-OPENCVINC=-I/opt/local/include/opencv2
+OPENCVINC=-I/opt/local/include
 OPENCVLIBDIR=/opt/local/lib
 OPENCVLIBES=-lopencv_ml -lopencv_video -lopencv_core
 
@@ -29,7 +28,7 @@ CXX=clang++
 DEBUG=-g  -Wall
 PROFILE=
 #OPTIMIZE=-O3
-CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/base/src -I$(SICKTOOLBOX)/lms5xx -I$(MATLABINC) -I$(CAIROINC) $(OPENCVINC) -I/opt/X11/include -Wno-overloaded-virtual
+CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(UTIL) -I$(SICKTOOLBOX)/lms5xx -I$(SICKTOOLBOX)/base/src -I$(MATLABINC) -I$(CAIROINC) $(OPENCVINC) -I/opt/X11/include -Wno-overloaded-virtual
 CFLAGS=$(DEBUG)  $(OPTIMIZE)
 LDFLAGS=-L$(LIBLOLIBDIR) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) -L$(CAIROLIBDIR)
 LIBES=-llo $(SICKLIB) $(MATLABLIBES) $(CAIROLIBES) -L$(OPENCVLIBDIR) $(OPENCVLIBES) -g 
