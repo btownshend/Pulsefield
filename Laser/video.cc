@@ -22,6 +22,7 @@ Video::Video(const Lasers & _lasers): lasers(_lasers), bounds(4) {
     bnds[2]=Point(6,6);
     bnds[3]=Point(-6,6);
     setBounds(bnds);
+    msg << "Initialized";
 }
 
 Video::~Video() {
@@ -46,10 +47,9 @@ void *Video::runDisplay(void *arg) {
     dbg("Video.runDisplay",1) << "Thread running" << std::endl;
     world->dpy = XOpenDisplay(NULL);
     if (world->dpy == NULL) {
-	fprintf(stderr, "Error: Can't open display. Is DISPLAY set?\n");
+	std::cerr <<  "Error: Can't open display. Is DISPLAY set?" << std::endl;
 	return NULL;
     }
-
     Window w;
     w = XCreateSimpleWindow(world->dpy, RootWindow(world->dpy, 0),0, 0, 800, 400, 0, 0, BlackPixel(world->dpy, 0));
     XSelectInput(world->dpy, w, StructureNotifyMask | ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask);
@@ -63,6 +63,7 @@ void *Video::runDisplay(void *arg) {
 	dbg("Video.runDisplay",5) << "Event  wait for display " << world->dpy << std::endl;
 	XNextEvent(world->dpy, &e);
 	dbg("Video.runDisplay",5) << "Got event " << e.type << std::endl;
+
 	world->lock();
 
 	switch (e.type) {
