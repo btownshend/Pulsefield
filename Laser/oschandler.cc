@@ -205,6 +205,7 @@ OSCHandler::~OSCHandler() {
 
 // Processing incoming OSC messages in a separate thread
 void *OSCHandler::processIncoming(void *arg) {
+    SetDebug("pthread:OSCHandler");
     OSCHandler *handler = (OSCHandler *)arg;
     handler->processIncoming();
     return NULL;

@@ -5,28 +5,27 @@
  * Wed Jun 8 17:03:07 EDT 1994
  *
  */
+#include <map>
 #include <assert.h>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <ostream>
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <assert.h>
 #include <string.h>
-extern "C" {
-    //#include <sys/time.h>
-}
-//#include <ctype.h>
+#include <pthread.h>
 #include "dbg.h"
 
 static int PrintTiming = 0;
+static int PrintThread = 0;
+
+static std::map<pthread_t,std::string> threadMap;
 
 #if !defined(sgi) && !defined(M_I86) && !defined(__sparc)
 extern "C" int gettimeofday (struct timeval *tp, struct timezone *tzp);
 #endif
 
 // the default debug file output
-char *dbgf__;
+char *dbgf__=0;
 
 std::ostream& DbgFmt(std::ostream &s, const char* dstr, int level)
 {
@@ -37,6 +36,16 @@ std::ostream& DbgFmt(std::ostream &s, const char* dstr, int level)
 	rt.tv_sec = rt.tv_sec%1000;
 	sprintf(fullfmt,"%4ld.%03ld: ",(long)rt.tv_sec,(long)rt.tv_usec/1000);
 	s << fullfmt;
+    }
+    if (PrintThread) {
+	char buf[100];
+	pthread_t self=pthread_self();
+	if (threadMap.count(self)==0) {
+	    sprintf(buf,"T%d",(int)threadMap.size());
+	    threadMap[self]=buf;
+	}
+	sprintf(buf,"%8.8s: ",threadMap[self]);
+	s << buf;
     }
     s << dstr;
     int i;
@@ -166,6 +175,8 @@ DTable::DTable(const char *s, int lvl)
 //
 int DebugCheck(const char* dstr,int level)
 {
+    if (level<=0)
+	return 1;
     register const char *s, *q;
     for (DTable *p = DTable::Root; p; p=p->next) {
 	if (*p->str == 0) {
@@ -192,6 +203,20 @@ void SetDebug(const char* s, const char* dbgf)
     if (strncmp(s,"TIMING",6) == 0) {
 	// Special case so we don't clog debug table
 	PrintTiming = 1;
+	return;
+    }
+    if (strncmp(s,"THREAD",6) == 0) {
+	// Special case so we don't clog debug table
+	PrintThread = 1;
+	return;
+    }
+    if (strncmp(s,"pthread:",8) == 0) {
+	if (strlen(s)>8) {
+	    // Use remainder as thread name
+	    pthread_t self=pthread_self();
+	    dbg("SetDebug",1) << "Set thread name to " << &s[8] << std::endl;
+	    threadMap[self]=std::string(&s[8]);
+	}
 	return;
     }
 

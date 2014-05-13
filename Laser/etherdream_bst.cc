@@ -444,6 +444,7 @@ static void *dac_loop(void *dv) {
 	int res = 0;
 
 	pthread_mutex_lock(&d->mutex);
+	SetDebug("pthread:EDWorker");
 
 	while (1) {
 		/* Wait for us to have data */
@@ -715,6 +716,7 @@ int etherdream_stop(struct etherdream *d) {
  * broadcasts from Ether Dream boards on the network and adds them to our list.
  */
 static void *watch_for_dacs(void *arg) {
+	SetDebug("pthread:EDWatcher");
 	(void)arg;
 
 	int sock = socket(AF_INET, SOCK_DGRAM, 0);

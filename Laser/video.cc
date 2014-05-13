@@ -41,6 +41,7 @@ int Video::open() {
 }
 
 void *Video::runDisplay(void *arg) {
+    SetDebug("pthread:video");
     Video *world=(Video *)arg;
     dbg("Video.runDisplay",1) << "Thread running" << std::endl;
     world->dpy = XOpenDisplay(NULL);
