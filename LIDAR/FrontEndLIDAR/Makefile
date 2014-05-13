@@ -1,10 +1,11 @@
 BASEDIR=../../..
 
-LIBLO=$(BASEDIR)/OSC/liblo-0.26
 UTIL=../Util
 VPATH=.:$(UTIL)
 
 #MATLAB=/Applications/MATLAB_R2013a.app
+LIBLOLIBDIR=/opt/local/lib
+
 MATLAB=/Applications/MATLAB_R2014a.app
 MATLABINC=$(MATLAB)/extern/include
 MATLABLIBDIR=$(MATLAB)/bin/maci64
@@ -30,7 +31,7 @@ PROFILE=
 #OPTIMIZE=-O3
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(LIBLO) -I$(SICKTOOLBOX)/base/src -I$(SICKTOOLBOX)/lms5xx -I$(MATLABINC) -I$(CAIROINC) $(OPENCVINC) -I/opt/X11/include -Wno-overloaded-virtual
 CFLAGS=$(DEBUG)  $(OPTIMIZE)
-LDFLAGS=-L$(LIBLO) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) -L$(CAIROLIBDIR)
+LDFLAGS=-L$(LIBLOLIBDIR) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) -L$(CAIROLIBDIR)
 LIBES=-llo $(SICKLIB) $(MATLABLIBES) $(CAIROLIBES) -L$(OPENCVLIBDIR) $(OPENCVLIBES) -g 
 CXXSRCS=frontend.cc dest.cc main.cc urlconfig.cc sickio.cc background.cc world.cc snapshot.cc vis.cc person.cc dbg.cc point.cc worlddraw.cc lookuptable.cc  leg.cc legstats.cc groups.cc kalmanfilter.cc
 CSRCS=
