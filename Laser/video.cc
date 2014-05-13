@@ -288,9 +288,9 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
     cairo_clip(cr);
 
     if (height>titleHeight*4) {
-	std::ostringstream msg;
-	msg << std::fixed << "Laser " << laser->getUnit() << ": " << laser->getPoints().size() << " @ " << std::setprecision(1) << laser->getSpacing()*1000 << std::setprecision(3);
-	drawText(cr,0,0,width,titleHeight,msg.str().c_str());
+	std::ostringstream msg2;
+	msg2 << std::fixed << "Laser " << laser->getUnit() << ": " << laser->getPoints().size() << " @ " << std::setprecision(1) << laser->getSpacing()*1000 << std::setprecision(3);
+	drawText(cr,0,0,width,titleHeight,msg2.str().c_str());
 	cairo_translate(cr,0,titleHeight);
 	height-=titleHeight;
     }
@@ -370,9 +370,9 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
     cairo_clip(cr);
 
     if (height>titleHeight*4) {
-	std::ostringstream msg;
-	msg << "World";
-	drawText(cr,0,0,width,titleHeight,msg.str().c_str());
+	std::ostringstream msg2;
+	msg2 << "World";
+	drawText(cr,0,0,width,titleHeight,msg2.str().c_str());
 	cairo_translate(cr,0,titleHeight);
 	height-=titleHeight;
     }
