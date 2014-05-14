@@ -14,7 +14,10 @@ const int MAXVALUE=32767;
 const float titleHeight=15;   // in pixels
 
 Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(4) {
-    pthread_mutex_init(&mutex,NULL);
+    if (pthread_mutex_init(&mutex,NULL)) {
+	std::cerr << "Failed to create video mutex" << std:: endl;
+	exit(1);
+    }
     // Default bounds for world view
     std::vector<Point> bnds(4);  // Temporary bounds
     bnds[0]=Point(-6,0);
@@ -28,7 +31,7 @@ Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(4) {
 }
 
 Video::~Video() {
-    pthread_mutex_destroy(&mutex);
+    (void)pthread_mutex_destroy(&mutex);
 }
 
 int Video::open() {
@@ -525,13 +528,19 @@ void Video::update() {
 
 void Video::lock() {
     dbg("Video.lock",5) << "lock req" << std::endl;
-    pthread_mutex_lock(&mutex);
+    if (pthread_mutex_lock(&mutex)) {
+	std::cerr << "Failed call to pthread_mutex_lock" << std::endl;
+	exit(1);
+    }
     dbg("Video.lock",5) << "lock acquired" << std::endl;
 }
 
 void Video::unlock() {
     dbg("Video.unlock",5) << "unlock" << std::endl;
-    pthread_mutex_unlock(&mutex);
+    if (pthread_mutex_unlock(&mutex)) {
+	std::cerr << "Failed call to pthread_mutex_lock" << std::endl;
+	exit(1);
+    }
 }
 
 void Video::setBounds(const std::vector<Point> &_bounds) {
