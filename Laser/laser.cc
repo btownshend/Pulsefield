@@ -101,6 +101,7 @@ void Laser::render(const Drawing &drawing) {
 }
 
 Lasers::Lasers(int nlasers): lasers(nlasers) {
+    dbg("Lasers.Lasers",1) << "Constructing " << nlasers << " lasers." << std::endl;
     for (unsigned int i=0;i<lasers.size();i++) {
 	lasers[i]=std::shared_ptr<Laser>(new Laser(i));
 	lasers[i]->open();
@@ -121,25 +122,24 @@ int Lasers::render() {
 	dbg("Lasers.render",5) << "Not dirty" << std::endl;
 	return 0;
     }
-    Drawing dtmp=drawing; // Copy in case there are updates
-    needsRender=false;   // TODO: Should be atomic with prior statement
     lock();
+    needsRender=false;
     for (unsigned int i=0;i<lasers.size();i++)
-	lasers[i]->render(dtmp);
+	lasers[i]->render(drawing);
     dbg("Lasers.render",1) << "Render done" << std::endl;
+    unlock();
     return 1;
 }
 
 void Lasers::setDrawing(const Drawing &_drawing) {
     if (_drawing.getFrame() == drawing.getFrame()) {
 	dbg("Lasers.setDrawing",1) << "Multiple drawings for same frame: " << drawing.getFrame() << std::endl;
-	return;
     }
     lock();
     drawing=_drawing;
-    dbg("Lasers.setDrawing",2) << "Frame=" << drawing.getFrame() << std::endl;
     needsRender=true;
     unlock();
+    dbg("Lasers.setDrawing",2) << "Frame=" << drawing.getFrame() << std::endl;
 }
 
 void Lasers::saveTransforms(std::ostream &s)  const {
