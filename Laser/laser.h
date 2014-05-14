@@ -36,7 +36,8 @@ public:
     Lasers(int nunits);
     ~Lasers();
     int render();  // Refresh; return 1 if anything changed
-    void setDrawing(const Drawing &_drawing) { drawing=_drawing; needsRender=true; }
+    void setDrawing(const Drawing &_drawing);
+    int getDrawingFrame() const { return drawing.getFrame(); }
     std::shared_ptr<Laser>  getLaser(int unit) { return lasers[unit]; }
     std::shared_ptr<const Laser> getLaser(int unit) const  { return lasers[unit]; }
     unsigned int size() const { return lasers.size(); }

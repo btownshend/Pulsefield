@@ -49,7 +49,6 @@ class Video: public DisplayDevice {
     static XRefs xrefs;
     
     pthread_mutex_t mutex;
-    int frame;
     
     std::ostringstream msg; // Message for display in bottom of window
     bool dirty;
@@ -62,7 +61,6 @@ class Video: public DisplayDevice {
     void update();
     void setBounds(const std::vector<Point> &_bounds);
     Point constrainPoint(Point p) const;
-    void setFrame(int _frame) { frame=_frame;}
     void lock();
     void unlock();
     void save(std::ostream &s) const { lasers.saveTransforms(s); }

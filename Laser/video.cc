@@ -277,7 +277,7 @@ void Video::drawInfo(cairo_t *cr, float left,  float top, float width, float hei
      std::ostringstream fmsg;
 
      cairo_move_to (cr, leftmargin, baseline);
-     fmsg << frame;
+     fmsg << lasers.getDrawingFrame();
      cairo_set_font_size (cr, 40);
      cairo_show_text (cr, fmsg.str().c_str()); 
 

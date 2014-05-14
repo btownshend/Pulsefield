@@ -384,8 +384,9 @@ void OSCHandler::update() {
 
 void OSCHandler::pfframe(int frame) {
     dbg("OSCHandler.pfframe",1) << "Frame " << frame << std::endl;
-    video->setFrame(frame);
-
-    // Update
+    // Update lasers
     update();
+
+    // Set current frame number
+    drawing.setFrame(frame);
 }

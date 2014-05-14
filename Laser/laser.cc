@@ -124,6 +124,16 @@ int Lasers::render() {
     return 1;
 }
 
+void Lasers::setDrawing(const Drawing &_drawing) {
+    if (_drawing.getFrame() == drawing.getFrame()) {
+	dbg("Lasers.setDrawing",1) << "Multiple drawings for same frame: " << drawing.getFrame() << std::endl;
+	return;
+    }
+    drawing=_drawing;
+    dbg("Lasers.setDrawing",2) << "Frame=" << drawing.getFrame() << std::endl;
+    needsRender=true;
+}
+
 void Lasers::saveTransforms(std::ostream &s)  const {
     for (unsigned int i=0;i<lasers.size();i++)
 	lasers[i]->getTransform().save(s);

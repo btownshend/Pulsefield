@@ -76,9 +76,12 @@ class Cubic:public Primitive {
 
 class Drawing {
     std::vector<std::shared_ptr<Primitive> > elements;
-
+    int frame;  // Frame number that this drawing corresponds to (or -1 if unknonw)
  public:
-    Drawing() { ; }
+    Drawing() { frame=-1; }
+
+    void setFrame(int _frame) { frame=_frame; }
+    int getFrame() const { return frame; }
 
     // Number of primitives (which gives number of jumps)
     int getNumElements() const { return elements.size(); }
