@@ -48,15 +48,6 @@ static void microsleep(long long us) {
     nanosleep(&ns, NULL);
 }
 
-
-/* log_socket_error(d, call)
- *
- * Log an error in a socket call.
- */
-static void log_socket_error(struct etherdream *d, const char *call) {
-    dbg("Etherdream",1) << "Socket error in " << call << ": " << errno << ": " << strerror(errno) << std::endl;
-}
-
 /* wait_for_fd_activity(d, usec, writable)
  *
  * Wait for activity (if writable is 0, then readable or error; if writable
@@ -73,7 +64,7 @@ static int wait_for_fd_activity(struct etherdream *d, int usec, int writable) {
     int res = select(d->conn.dc_sock + 1, (writable ? NULL : &set),(writable ? &set : NULL), &set, &tv);
 	
     if (res < 0)
-	log_socket_error(d, "select");
+	dbg("Etherdream.wait_for_fd_activity",1) << "Socket error in select: " << errno << ": " << strerror(errno) << std::endl;
 
     return res;
 }
@@ -98,7 +89,7 @@ static int read_bytes(struct etherdream *d, char *buf, int len) {
 		   len - d->conn.dc_read_buf_size, 0);
 
 	if (res <= 0) {
-	    log_socket_error(d, "recv");
+	    dbg("Etherdream.read_bytes",1) << "Socket error in recv: " << errno << ": " << strerror(errno) << std::endl;
 	    return -1;
 	}
 
@@ -133,7 +124,7 @@ static int send_all(struct etherdream *d, const char *data, int len) {
 	res = send(d->conn.dc_sock, data, len, 0);
 
 	if (res < 0) {
-	    log_socket_error(d, "send");
+	    dbg("Etherdream.send_all",1) << "Socket error in send: " << errno << ": " << strerror(errno) << std::endl;
 	    return -1;
 	}
 
@@ -204,7 +195,7 @@ static int dac_connect(struct etherdream *d) {
     // Open socket
     conn->dc_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (conn->dc_sock < 0) {
-	log_socket_error(d, "socket");
+	dbg("Etherdream.dac_connect",1) << "Socket error in socket: " << errno << ": " << strerror(errno) << std::endl;
 	return -1;
     }
 
@@ -219,7 +210,7 @@ static int dac_connect(struct etherdream *d) {
     // Because the socket is nonblocking, this will always error...
     connect(conn->dc_sock, (struct sockaddr *)&addr, (int)sizeof addr);
     if (errno != EINPROGRESS) {
-	log_socket_error(d, "connect");
+	dbg("Etherdream.dac_connect",1) << "Socket error in connect: " << errno << ": " << strerror(errno) << std::endl;
 	close(d->conn.dc_sock);
 	return -1;
     }
@@ -241,14 +232,14 @@ static int dac_connect(struct etherdream *d) {
     unsigned int len = sizeof error;
     if (getsockopt(conn->dc_sock, SOL_SOCKET, SO_ERROR, (char *)&error,
 		   &len) < 0) {
-	log_socket_error(d, "getsockopt");
+	dbg("Etherdream.dac_connect",1) << "Socket error in getsockopt: " << errno << ": " << strerror(errno) << std::endl;
 	close(d->conn.dc_sock);
 	return -1;
     }
 
     if (error) {
 	errno = error;
-	log_socket_error(d, "connect");
+	dbg("Etherdream.dac_connect",1) << "Socket error indicated by getsockopt: " << errno << ": " << strerror(errno) << std::endl;
 	close(d->conn.dc_sock);
 	return -1;
     }
@@ -256,7 +247,7 @@ static int dac_connect(struct etherdream *d) {
     int ndelay = 1;
     if (setsockopt(conn->dc_sock, IPPROTO_TCP, TCP_NODELAY,
 		   (char *)&ndelay, sizeof(ndelay)) < 0) {
-	log_socket_error(d, "setsockopt TCP_NODELAY");
+	dbg("Etherdream.dac_connect",1) << "Socket error in setsockopt: " << errno << ": " << strerror(errno) << std::endl;
 	close(d->conn.dc_sock);
 	return -1;
     }
@@ -687,14 +678,14 @@ static void *watch_for_dacs(void *arg) {
 
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock < 0) {
-	log_socket_error(NULL, "socket");
+	dbg("Etherdream.watch_for_dacs",1) << "Socket error in socket: " << errno << ": " << strerror(errno) << std::endl;
 	return NULL;
     }
 
     int opt = 1;
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt,
 		   sizeof opt) < 0) {
-	log_socket_error(NULL, "setsockopt SO_REUSEADDR");
+	dbg("Etherdream.watch_for_dacs",1) << "Socket error in setsockopt: " << errno << ": " << strerror(errno) << std::endl;
 	return NULL;
     }
 
@@ -704,7 +695,7 @@ static void *watch_for_dacs(void *arg) {
     addr.sin_port = htons(7654);
 
     if (bind(sock, (struct sockaddr *)&addr, sizeof addr) < 0) {
-	log_socket_error(NULL, "bind");
+	dbg("Etherdream.watch_for_dacs",1) << "Socket error in bind: " << errno << ": " << strerror(errno) << std::endl;
 	return NULL;
     }
 
@@ -717,7 +708,7 @@ static void *watch_for_dacs(void *arg) {
 	int len = recvfrom(sock, (char *)&buf, sizeof buf, 0,
 			   (struct sockaddr *)&src, &srclen);
 	if (len < 0) {
-	    log_socket_error(NULL, "recvfrom");
+	    dbg("Etherdream.watch_for_dacs",1) << "Socket error in recvfrom: " << errno << ": " << strerror(errno) << std::endl;
 	    return NULL;
 	}
 
