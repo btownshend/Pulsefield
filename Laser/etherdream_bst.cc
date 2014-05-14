@@ -661,8 +661,10 @@ int etherdream_write(struct etherdream *d, const struct etherdream_point *pts,
                      int npts, int pps, int reps) {
 
     /* Limit maximum frame size */
-    if (npts > BUFFER_POINTS_PER_FRAME)
+    if (npts > BUFFER_POINTS_PER_FRAME) {
+	dbg("Etherdream.write",1) << "Too many points (" << npts << "), truncating to " << BUFFER_POINTS_PER_FRAME << std::endl;
 	npts = BUFFER_POINTS_PER_FRAME;
+    }
 
     /* Ignore 0-repeat frames */
     if (!reps)
