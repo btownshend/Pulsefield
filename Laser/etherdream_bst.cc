@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <strstream>
 #include "etherdream.h"
 #include "dbg.h"
 
@@ -166,6 +167,27 @@ static int read_resp(struct etherdream *d) {
 	return 0;
 }
 
+static std::string desc_lestate(uint8_t light_engine_state) {
+    std::ostrstream r;
+    if (light_engine_state == 0)
+	r<<"Ready. ";
+    if (light_engine_state & 0x1)
+	r<<"[0]: Emergency stop occurred due to E-Stop packet or invalid command. ";
+    if (light_engine_state & 0x2)
+	r<<"[1]: Emergency stop occurred due to E-Stop input to projector. ";
+    if (light_engine_state & 0x4)
+	r<<"[2]: Emergency stop input to projector is currently active. ";
+    if (light_engine_state & 0x8)
+	r<<"[3]: Emergency stop occurred due to overtemperature condition. ";
+    if (light_engine_state & 0x10)
+	r<<"[4]: Overtemperature condition is currently active. ";
+    if (light_engine_state & 0x20)
+	r<<"[5]: Emergency stop occurred due to loss of Ethernet link. ";
+    if (light_engine_state & 0xc0)
+	r<<"[15:5]: Future use.";
+    return r.str();
+}
+
 /* dump_resp(d)
  *
  * Dump the last response received from d.
@@ -173,7 +195,8 @@ static int read_resp(struct etherdream *d) {
 static void dump_resp(struct etherdream *d) {
 	struct etherdream_conn *conn = &d->conn;
 	struct dac_status *st = &conn->resp.dac_status;
-	dbg("Etherdream",1) << "Protocol " << 0 << "/ LE " << (int)st->light_engine_state << " / playback " << (int)st->playback_state << " / source " << (int)st->source << std::endl;
+	dbg("Etherdream",1) << "Protocol " << (int)st->protocol
+			    << "Light-engine:  " << desc_lestate(st->light_engine_state) << " / playback " << (int)st->playback_state << " / source " << (int)st->source << std::endl;
 	dbg("Etherdream",1) << "Flags: LE " << std::hex <<  st->light_engine_flags << ", playback " <<  st->playback_flags << ", source " << st->source_flags << std::endl <<  std::dec;
 	dbg("Etherdream",1) << "Buffer :" << st->buffer_fullness << " points, " <<  st->point_rate << " pps , " <<  st->point_count << " total played" << std::endl;
 }
