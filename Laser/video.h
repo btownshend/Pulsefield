@@ -39,11 +39,11 @@ class Video: public DisplayDevice {
     static void *runDisplay(void *w);
 
     void drawDevice(cairo_t *cr, float left, float top, float width, float height, std::shared_ptr<Laser>laser);
-    void drawWorld(cairo_t *cr, float left, float top, float width, float height, Lasers &lasers);
+    void drawWorld(cairo_t *cr, float left, float top, float width, float height);
     void drawText(cairo_t *cr, float left,  float top, float width, float height,const char *msg) const;
     void drawInfo(cairo_t *cr, float left,  float top, float width, float height) const;
 
-    Lasers lasers;
+    std::shared_ptr<Lasers> lasers;
     std::vector<Point> bounds;  // Polygonal bounds of active area
     float minLeft, maxRight, minBottom, maxTop;   // Bounding box
     static XRefs xrefs;
@@ -54,7 +54,7 @@ class Video: public DisplayDevice {
     bool dirty;
  public:
     // Local window routines
-    Video(const Lasers &lasers);
+    Video(std::shared_ptr<Lasers> lasers);
     ~Video();
 
     int open();
@@ -63,8 +63,8 @@ class Video: public DisplayDevice {
     Point constrainPoint(Point p) const;
     void lock();
     void unlock();
-    void save(std::ostream &s) const { lasers.saveTransforms(s); }
-    void load(std::istream &s) { lasers.loadTransforms(s); }
+    void save(std::ostream &s) const { lasers->saveTransforms(s); }
+    void load(std::istream &s) { lasers->loadTransforms(s); }
     std::ostream &newMessage() { msg.str(""); return msg; }
 
     // Display needs refresh

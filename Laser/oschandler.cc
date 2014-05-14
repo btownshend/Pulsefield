@@ -95,7 +95,7 @@ static int pfsetminy_handler(const char *path, const char *types, lo_arg **argv,
 static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxX(argv[0]->f); return 0; }
 static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxY(argv[0]->f); return 0; }
 
-OSCHandler::OSCHandler(const Lasers &_lasers, Video *_video) : lasers(_lasers), video(_video),  currentColor(1.0,1.0,1.0) {
+OSCHandler::OSCHandler(std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _video) : lasers(_lasers), video(_video),  currentColor(1.0,1.0,1.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler()" << std::endl;
     currentDensity=1.0;
     npoints=600;
@@ -245,7 +245,7 @@ void OSCHandler::startStop(bool start) {
 
 
 void OSCHandler::setPPS(int unit, int pps) {
-    if (unit<0 || unit>=(int)lasers.size()) {
+    if (unit<0 || unit>=(int)lasers->size()) {
 	dbg("OSCHandler.setPPS",1)  << "Bad unit: " << unit << std::endl;
 	return;
     }
@@ -254,16 +254,16 @@ void OSCHandler::setPPS(int unit, int pps) {
 }
 
 void OSCHandler::setPoints(int unit, int n) {
-    if (unit<0 || unit>=(int)lasers.size()) {
+    if (unit<0 || unit>=(int)lasers->size()) {
 	dbg("OSCHandler.setPoints",1)  << "Bad unit: " << unit << std::endl;
 	return;
     }
     dbg("OSCHandler.setPPS",1) << "Setting points/frame to " << n << std::endl;
-    lasers.getLaser(unit)->setPoints(n);
+    lasers->getLaser(unit)->setPoints(n);
 }
 
 void OSCHandler::setBlanking(int unit, int before, int after) {
-    if (unit<0 || unit>=(int)lasers.size()) {
+    if (unit<0 || unit>=(int)lasers->size()) {
 	dbg("OSCHandler.setBlanking",1)  << "Bad unit: " << unit << std::endl;
 	return;
     }
@@ -272,7 +272,7 @@ void OSCHandler::setBlanking(int unit, int before, int after) {
 }
 
 void OSCHandler::setSkew(int unit, int skew) {
-    if (unit<0 || unit>=(int)lasers.size()) {
+    if (unit<0 || unit>=(int)lasers->size()) {
 	dbg("OSCHandler.setSkew",1)  << "Bad unit: " << unit << std::endl;
 	return;
     }
@@ -343,7 +343,7 @@ void OSCHandler::cubic(Point p1, Point p2, Point p3, Point p4) {
 }
 
 void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
-    if (unit<0 || unit>=(int)lasers.size()) {
+    if (unit<0 || unit>=(int)lasers->size()) {
 	dbg("OSCHandler.map",1)  << "Bad unit: " << unit << std::endl;
 	return;
     }
@@ -352,16 +352,16 @@ void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
 	return;
     }
     
-    lasers.getLaser(unit)->getTransform().setFloorPoint(pt,floorpt);
-    lasers.getLaser(unit)->getTransform().setDevPoint(pt,devpt);
+    lasers->getLaser(unit)->getTransform().setFloorPoint(pt,floorpt);
+    lasers->getLaser(unit)->getTransform().setDevPoint(pt,devpt);
 }
 
 //void OSCHandler::setTransform(int unit) {
-//    if (unit<0 || unit>=(int)lasers.size()) {
+//    if (unit<0 || unit>=(int)lasers->size()) {
 //	dbg("OSCHandler.setTransform",1)  << "Bad unit: " << unit << std::endl;
 //	return;
 //    }
-//    lasers.getLaser(unit)->getTransform().recompute();
+//    lasers->getLaser(unit)->getTransform().recompute();
 //}
 
 void OSCHandler::update() {

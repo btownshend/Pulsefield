@@ -13,7 +13,7 @@
 const int MAXVALUE=32767;
 const float titleHeight=15;   // in pixels
 
-Video::Video(const Lasers & _lasers): lasers(_lasers), bounds(4) {
+Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(4) {
     pthread_mutex_init(&mutex,NULL);
     // Default bounds for world view
     std::vector<Point> bnds(4);  // Temporary bounds
@@ -277,7 +277,8 @@ void Video::drawInfo(cairo_t *cr, float left,  float top, float width, float hei
      std::ostringstream fmsg;
 
      cairo_move_to (cr, leftmargin, baseline);
-     fmsg << lasers.getDrawingFrame();
+     dbg("Video.drawInfo",3) << "Frame=" << lasers->getDrawingFrame() << std::endl;
+     fmsg << lasers->getDrawingFrame();
      cairo_set_font_size (cr, 40);
      cairo_show_text (cr, fmsg.str().c_str()); 
 
@@ -373,7 +374,7 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
 }
 
 // Draw in world coodinates
-void Video::drawWorld(cairo_t *cr, float left, float top, float width, float height, Lasers &lasers)  {
+void Video::drawWorld(cairo_t *cr, float left, float top, float width, float height)  {
     cairo_save(cr);
     cairo_translate(cr,left,top);
     cairo_rectangle(cr,0.0,0.0,width,height);
@@ -413,8 +414,8 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 
      cairo_set_operator(cr,CAIRO_OPERATOR_ADD);   // Add colors
 
-     for (unsigned int m=0;m<lasers.size();m++) {
-	 std::shared_ptr<Laser> laser=lasers.getLaser(m);
+     for (unsigned int m=0;m<lasers->size();m++) {
+	 std::shared_ptr<Laser> laser=lasers->getLaser(m);
 	 const std::vector<etherdream_point> &points=laser->getPoints();
 	 const Transform &transform=laser->getTransform();
 
@@ -494,20 +495,20 @@ void Video::update() {
      const double rows[]={0.85*height,0.15*height};
      const double columns[]={0.5*width, 0.5*width };
 
-     int nrow=(int)((lasers.size()+1)/2);
-     int ncol=std::min(2,(int)lasers.size());
+     int nrow=(int)((lasers->size()+1)/2);
+     int ncol=std::min(2,(int)lasers->size());
      int i=0;
 
      for (int row=0;row<nrow;row++) {
 	 for (int col=0;col<ncol;col++) {
-	     if (i>=(int)lasers.size())
+	     if (i>=(int)lasers->size())
 		 break;
 	     dbg("Video.update",2) << "Drawing laser " << i << " at row " << row << "/" << nrow << ", col " << col << "/" << ncol << std::endl;
-	     drawDevice(cr, col*columns[0]/ncol, row*rows[0]/nrow, columns[0]/ncol, rows[0]/nrow,lasers.getLaser(i));
+	     drawDevice(cr, col*columns[0]/ncol, row*rows[0]/nrow, columns[0]/ncol, rows[0]/nrow,lasers->getLaser(i));
 	     i++;
 	 }
      }
-     drawWorld(cr,columns[0],0.0f,columns[1],rows[0],lasers);
+     drawWorld(cr,columns[0],0.0f,columns[1],rows[0]);
      drawInfo(cr,0.0f,rows[0],width,rows[1]);
 
      cairo_show_page(cr);

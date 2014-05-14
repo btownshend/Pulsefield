@@ -34,13 +34,13 @@ int main(int argc, char *argv[]) {
 
     
     dbg("main",1) << "Creating lasers" << std::endl;
-    Lasers lasers(nlaser);
+    std::shared_ptr<Lasers> lasers(new Lasers(nlaser));
     dbg("main",1) << "Creating video" << std::endl;
-    Video video(lasers);
+    std::shared_ptr<Video> video(new Video(lasers));
     dbg("main",1) << "Opening video" << std::endl;
-    video.open();
+    video->open();
     dbg("main",1) << "Creating OSCHandler" << std::endl;
-    OSCHandler osc(lasers,&video);
+    OSCHandler osc(lasers,video);
 
     dbg("main",1) << "Wait forever..." << std::endl;
     osc.wait();

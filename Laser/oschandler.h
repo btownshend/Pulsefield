@@ -12,8 +12,8 @@ class Video;
 
 class OSCHandler {
     Drawing drawing;
-    Lasers lasers;
-    Video *video;
+    std::shared_ptr<Lasers> lasers;
+    std::shared_ptr<Video> video;
     int serverPort;
 
     int unit;
@@ -33,7 +33,7 @@ class OSCHandler {
 
     bool dirty;
  public:
-    OSCHandler(const Lasers &lasers, Video *video);
+    OSCHandler(std::shared_ptr<Lasers> lasers, std::shared_ptr<Video> video);
     ~OSCHandler();
 
     void run();
