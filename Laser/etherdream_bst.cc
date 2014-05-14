@@ -114,7 +114,7 @@ static int read_bytes(struct etherdream *d, char *buf, int len) {
  * send times out (will also log error).
  */
 static int send_all(struct etherdream *d, const char *data, int len) {
-    dbg("Etherdream.send_all",5) << "Sending " << len << " byte command '" << data[0] << "' (" << (int)data[0] << ")" << std::endl;
+    dbg("Etherdream.send_all",5) << "Sending " << len << " bytes starting with command '" << data[0] << "' (" << (int)data[0] << ")" << std::endl;
     do {
 	int res = wait_for_fd_activity(d, 100000, 1);
 	if (res < 0)
