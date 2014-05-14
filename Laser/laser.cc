@@ -86,6 +86,14 @@ std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdr
 
 
 void Laser::render(const Drawing &drawing) {
+    if (d!=0) {
+	int fullness=etherdream_getfullness(d);
+	dbg("Laser.render",2) << "Fullness=" << fullness << std::endl;
+	if (fullness>1) {
+	    dbg("Laser.render",2) << "Etherdream already busy enough with " << fullness << " frames -- not rendering new drawing " << std::endl;
+	    return;   
+	}
+    }
     pts=drawing.getPoints(npoints,transform,spacing);
     dbg("Laser.render",2) << "Rendered drawing into " << pts.size() << " points with a spacing of " << spacing << std::endl;
     if (pts.size()>=2)

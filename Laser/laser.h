@@ -34,8 +34,8 @@ class Lasers {
 public:
     Lasers(int nunits);
     ~Lasers();
-    void refresh();
     void render(const Drawing &_drawing) { drawing=_drawing; refresh(); }
+    int refresh();  // Refresh; return 1 if anything changed
     std::shared_ptr<Laser>  getLaser(int unit) { return lasers[unit]; }
     std::shared_ptr<const Laser> getLaser(int unit) const  { return lasers[unit]; }
     unsigned int size() const { return lasers.size(); }
