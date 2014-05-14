@@ -2,7 +2,7 @@
 #include <cmath>
 #include <math.h>
 
-#include "etherdream.h"
+#include "etherdream_bst.h"
 #include "laser.h"
 #include "dbg.h"
 #include "point.h"

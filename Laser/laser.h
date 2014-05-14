@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "etherdream.h"
+#include "etherdream_bst.h"
 #include "displaydevice.h"
 #include "drawing.h"
 

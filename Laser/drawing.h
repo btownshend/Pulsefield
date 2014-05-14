@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "point.h"
-#include "etherdream.h"
+#include "etherdream_bst.h"
 #include "dbg.h"
 #include "bezier.h"
 

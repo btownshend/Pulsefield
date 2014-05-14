@@ -3,7 +3,7 @@
 #include <iostream>
 #include "opencv2/core/core.hpp"
 #include "point.h"
-#include "etherdream.h"
+#include "etherdream_bst.h"
 
 class Color;
 

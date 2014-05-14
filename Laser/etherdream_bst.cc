@@ -19,7 +19,7 @@
 
 #include <assert.h>
 #include <strstream>
-#include "etherdream.h"
+#include "etherdream_bst.h"
 #include "dbg.h"
 
 // See http://ether-dream.com/protocol.html  for protocol documentation
