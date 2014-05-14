@@ -75,6 +75,7 @@ static int wait_for_fd_activity(struct etherdream *d, int usec, int writable) {
  * success, -1 on error (will also log error).
  */ 
 static int read_bytes(struct etherdream *d, char *buf, int len) {
+    dbg("Etherdream.read_bytes",5) << "Read " << len << " bytes." << std::endl;
     while (d->conn.dc_read_buf_size < len) {
 	int res = wait_for_fd_activity(d, DEFAULT_TIMEOUT, 0);
 	if (res < 0)
@@ -113,6 +114,7 @@ static int read_bytes(struct etherdream *d, char *buf, int len) {
  * send times out (will also log error).
  */
 static int send_all(struct etherdream *d, const char *data, int len) {
+    dbg("Etherdream.send_all",5) << "Sending " << len << " byte command '" << data[0] << "' (" << (int)data[0] << ")" << std::endl;
     do {
 	int res = wait_for_fd_activity(d, 100000, 1);
 	if (res < 0)
@@ -142,32 +144,31 @@ static int send_all(struct etherdream *d, const char *data, int len) {
  */
 static int read_resp(struct etherdream *d) {
     int res = read_bytes(d, (char *)&d->conn.resp, sizeof(d->conn.resp));
-    if (res < 0)
+    if (res < 0) {
+	dbg("Etherdream.read_resp",1) << "read_bytes() -> " << res << std::endl;
 	return res;
-
+    }
+    dbg("Etherdream.read_resp",4) << "Got response: ";
+    switch (d->conn.resp.response) {
+    case 'a':
+	dbgn("Etherdream.read_resp",4) << "ACK";
+	break;
+    case 'F':
+	dbgn("Etherdream.read_resp",4) << "NAK (Full)";
+	break;
+    case 'I':
+	dbgn("Etherdream.read_resp",4) << "NAK (Invalid)";
+	break;
+    case '!':
+	dbgn("Etherdream.read_resp",4) << "NAK (Emergency Stop)";
+	break;
+    default:
+	dbgn("Etherdream.read_resp",4) << "Unknown code: " << (int)d->conn.resp.response;
+    }
+    dbgn("Etherdream.read_resp",4) << " to command " << (int)d->conn.resp.command << std::endl;
+    
     d->conn.dc_last_ack_time = microseconds();
     return 0;
-}
-
-static std::string desc_lestate(uint8_t light_engine_state) {
-    std::ostrstream r;
-    if (light_engine_state == 0)
-	r<<"Ready. ";
-    if (light_engine_state & 0x1)
-	r<<"[0]: Emergency stop occurred due to E-Stop packet or invalid command. ";
-    if (light_engine_state & 0x2)
-	r<<"[1]: Emergency stop occurred due to E-Stop input to projector. ";
-    if (light_engine_state & 0x4)
-	r<<"[2]: Emergency stop input to projector is currently active. ";
-    if (light_engine_state & 0x8)
-	r<<"[3]: Emergency stop occurred due to overtemperature condition. ";
-    if (light_engine_state & 0x10)
-	r<<"[4]: Overtemperature condition is currently active. ";
-    if (light_engine_state & 0x20)
-	r<<"[5]: Emergency stop occurred due to loss of Ethernet link. ";
-    if (light_engine_state & 0xc0)
-	r<<"[15:5]: Future use.";
-    return r.str();
 }
 
 /* dump_resp(d)
@@ -177,10 +178,85 @@ static std::string desc_lestate(uint8_t light_engine_state) {
 static void dump_resp(struct etherdream *d) {
     struct etherdream_conn *conn = &d->conn;
     struct dac_status *st = &conn->resp.dac_status;
-    dbg("Etherdream",1) << "Protocol " << (int)st->protocol
-			<< "Light-engine:  " << desc_lestate(st->light_engine_state) << " / playback " << (int)st->playback_state << " / source " << (int)st->source << std::endl;
-    dbg("Etherdream",1) << "Flags: LE " << std::hex <<  st->light_engine_flags << ", playback " <<  st->playback_flags << ", source " << st->source_flags << std::endl <<  std::dec;
-    dbg("Etherdream",1) << "Buffer :" << st->buffer_fullness << " points currently buffered, " <<  st->point_rate << " pps , " <<  st->point_count << " total points played" << std::endl;
+    std::ostrstream s;
+    s << "Protocol " << (int)st->protocol;
+    s << ", Light-engine: ";
+    switch (st->light_engine_state) {
+    case 0:
+	s << "Ready";
+	break;
+    case 1:
+	s << "Warmup";
+	break;
+    case 2:
+	s << "Cooldown";
+	break;
+    case 3:
+	s << "Emergency Stop";
+	break;
+    default:
+	s << "Bad state: " << (int)st->light_engine_state;
+    }
+    if (st->light_engine_flags != 0) {
+	s << " (Flags: ";
+	if (st->light_engine_flags & 0x1)
+	    s<<"[0]: Emergency stop occurred due to E-Stop packet or invalid command. ";
+	if (st->light_engine_flags & 0x2)
+	    s<<"[1]: Emergency stop occurred due to E-Stop input to projector. ";
+	if (st->light_engine_flags & 0x4)
+	    s<<"[2]: Emergency stop input to projector is currently active. ";
+	if (st->light_engine_flags & 0x8)
+	    s<<"[3]: Emergency stop occurred due to overtemperature condition. ";
+	if (st->light_engine_flags & 0x10)
+	    s<<"[4]: Overtemperature condition is currently active. ";
+	if (st->light_engine_flags & 0x20)
+	    s<<"[5]: Emergency stop occurred due to loss of Ethernet link. ";
+	if (st->light_engine_flags & ~0x3f)
+	    s<<"[15:5]: Future use: " << std::hex << st->light_engine_flags << std::dec;
+	s << ")";
+    }
+    s << "; Playback: ";
+    switch (st->playback_state) {
+    case 0:
+	s << "Idle";
+	break;
+    case 1:
+	s << "Prepared";
+	break;
+    case 2:
+	s << "Playing";
+	break;
+    default:
+	s << "Bad state: " << (int)st->playback_state;
+    }
+    if (st->playback_flags != 0) {
+	s << " (Flags: ";
+	if (st->playback_flags & 0x1)
+	    s<<"[0]: Shutter open. ";
+	if (st->playback_flags & 0x2)
+	    s<<"[1]: Underflow. ";
+	if (st->playback_flags & 0x4)
+	    s<<"[2]: E-Stop. ";
+	if (st->playback_flags & ~0x7)
+	    s<<"[15:5]: Future use: " << std::hex << st->playback_flags << std::dec;
+	s << ")";
+    }
+    s << "; Source: ";
+    switch (st->source) {
+    case 0:
+	s << "Network";
+	break;
+    case 1:
+	s << "ILDA playback from SD";
+	break;
+    case 2:
+	s << "Internal abstract generator";
+	break;
+    }
+    if (st->source_flags!=0)
+	s << " (Flags: " << std::hex << st->source_flags << std::dec << s << ")";
+    s << "; Buffer fullness:" << st->buffer_fullness << "  (points currently buffered), " <<  st->point_rate << " pps , " <<  st->point_count << " total points played. ";
+    dbg("Etherdream.dump_resp",4) << s.str() << std::endl;
 }
 
 /* dac_connect(d, host, port)
@@ -253,11 +329,14 @@ static int dac_connect(struct etherdream *d) {
     }
 
     // After we connect, the DAC will send an initial status response
+    dbg("Etherdream.dac_connect",2) << "Retrieving initial status response" << std::endl;
     if (read_resp(d) < 0) {
 	close(d->conn.dc_sock);
 	return -1;
     }
+    dump_resp(d);
 
+    dbg("Etherdream.dac_connect",2) << "Command: p (enter prepared state)" << std::endl;
     char c = 'p';
     send_all(d, &c, 1);
 
@@ -269,6 +348,7 @@ static int dac_connect(struct etherdream *d) {
 
     if (d->sw_revision >= 2) {
 	c = 'v';
+	dbg("Etherdream.dac_connect",2) << "Command: v" << std::endl;
 	if (send_all(d, &c, 1) < 0) {
 	    close(d->conn.dc_sock);
 	    return -1;
@@ -280,7 +360,7 @@ static int dac_connect(struct etherdream *d) {
 	strcpy(d->version, "[old]");
     }
 
-    dbg("Etherdream.dac_connect",1) <<  "DAC vesrion " << d->version << std::endl;
+    dbg("Etherdream.dac_connect",1) <<  "DAC version " << d->version << std::endl;
     return 0;
 }
 
@@ -344,7 +424,7 @@ static int dac_send_data(struct etherdream *d, struct dac_point *data,
     const struct dac_status *st = &d->conn.resp.dac_status;
 
     if (st->playback_state == 0) {
-	dbg("Etherdream.dac_send_data",1) <<  "Sending prepare command..." << std::endl;
+	dbg("Etherdream.dac_send_data",2) << "Command: p (enter prepared state)" << std::endl;
 	char c = 'p';
 	if ((res = send_all(d, &c, sizeof c)) < 0)
 	    return res;
@@ -360,12 +440,12 @@ static int dac_send_data(struct etherdream *d, struct dac_point *data,
 
     if (st->buffer_fullness > 1600 && st->playback_state == 1 \
 	&& !d->conn.dc_begin_sent) {
-	dbg("Etherdream.dac_send_data",1) <<  "Sending begin command" << std::endl;
 
 	struct begin_command b;
 	b.command = 'b';
 	b.point_rate = rate;
 	b.low_water_mark = 0;
+	dbg("Etherdream.dac_send_data",1) <<  "Command: b(point_rate=" << b.point_rate << ", low_water_mark=" <<  b.low_water_mark << ")  Begin" << std::endl;
 	if ((res = send_all(d, (const char *)&b, sizeof b)) < 0)
 	    return res;
 
@@ -379,9 +459,11 @@ static int dac_send_data(struct etherdream *d, struct dac_point *data,
     if (npoints <= 0)
 	return 0;
 
+    dbg("Etherdream.dac_send_data",1) <<  "Command: q(point_rate=" << rate << ") Queue Rate Change" << std::endl;
     d->conn.dc_local_buffer.queue.command = 'q';
     d->conn.dc_local_buffer.queue.point_rate = rate;
 
+    dbg("Etherdream.dac_send_data",1) <<  "Command: d(npoints=" << npoints << ") Write Data" << std::endl;
     d->conn.dc_local_buffer.header.command = 'd';
     d->conn.dc_local_buffer.header.npoints = npoints;
 
