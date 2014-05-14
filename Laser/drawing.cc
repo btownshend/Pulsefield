@@ -96,6 +96,9 @@ std::vector<etherdream_point> Arc::getPoints(float pointSpacing,const Transform 
 std::vector<etherdream_point> Drawing::getPoints(float spacing,const Transform &transform) const {
     dbg("Drawing.getPoints",2) << "getPoints(" << spacing << ")" << std::endl;
     std::vector<etherdream_point>  result;
+    if (elements.size()==0)
+	return result;
+
     for (unsigned int i=0;i<elements.size();i++) {
 	std::vector<etherdream_point> newpoints;
 	if (result.size()>0)
@@ -155,6 +158,9 @@ std::vector<etherdream_point> Drawing::prune(const std::vector<etherdream_point>
 // Convert drawing into a set of etherdream points
 // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
 std::vector<etherdream_point> Drawing::getPoints(int targetNumPoints,const Transform &transform, float &spacing) const {
+    if (elements.size()==0)
+	return std::vector<etherdream_point>();
+
     spacing=getLength()/targetNumPoints;
     std::vector<etherdream_point> result = getPoints(spacing,transform);
     std::vector<etherdream_point> pruned = prune(result);
