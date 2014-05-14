@@ -31,11 +31,12 @@ class Laser: public DisplayDevice  {
 class Lasers {
     std::vector<std::shared_ptr<Laser> > lasers;
     Drawing drawing;
+    bool needsRender;
 public:
     Lasers(int nunits);
     ~Lasers();
-    void render(const Drawing &_drawing) { drawing=_drawing; refresh(); }
-    int refresh();  // Refresh; return 1 if anything changed
+    int render();  // Refresh; return 1 if anything changed
+    void setDrawing(const Drawing &_drawing) { drawing=_drawing; needsRender=true; }
     std::shared_ptr<Laser>  getLaser(int unit) { return lasers[unit]; }
     std::shared_ptr<const Laser> getLaser(int unit) const  { return lasers[unit]; }
     unsigned int size() const { return lasers.size(); }

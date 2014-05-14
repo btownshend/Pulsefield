@@ -105,14 +105,23 @@ Lasers::Lasers(int nlasers): lasers(nlasers) {
 	lasers[i]=std::shared_ptr<Laser>(new Laser(i));
 	lasers[i]->open();
     }
+    needsRender=true;
 }
 
 Lasers::~Lasers() {
 }
 
-void Lasers::refresh() {
+int Lasers::render() {
+    if (!needsRender) {
+	dbg("Lasers.render",1) << "Not dirty" << std::endl;
+	return 0;
+    }
+    Drawing dtmp=drawing; // Copy in case there are updates
+    needsRender=false;   // TODO: Should be atomic with prior statement
     for (unsigned int i=0;i<lasers.size();i++)
-	lasers[i]->render(drawing);
+	lasers[i]->render(dtmp);
+    dbg("Lasers.render",1) << "Render done" << std::endl;
+    return 1;
 }
 
 void Lasers::saveTransforms(std::ostream &s)  const {
@@ -123,4 +132,5 @@ void Lasers::saveTransforms(std::ostream &s)  const {
 void Lasers::loadTransforms(std::istream &s) {
     for (unsigned int i=0;i<lasers.size();i++)
 	lasers[i]->getTransform().load(s);
+    needsRender=true;
 }
