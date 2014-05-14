@@ -101,7 +101,6 @@ OSCHandler::OSCHandler(std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _
     npoints=600;
     minx=-5; maxx=5;
     miny=0; maxy=0;
-    dirty=true;
 
 	URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
 
@@ -216,12 +215,13 @@ void OSCHandler::processIncoming() {
     dbg("OSCHandler.processIncoming",1) << "Started: s=" << std::setbase(16) << s << std::setbase(10) << std::endl;
     // Process all queued messages
     while (true) {
-	if  (lo_server_recv_noblock(s,1) == 0)
-	    // Update video only when nothing in queue
-	    if (dirty) {
-		video->update();
-		dirty=false;
-	    }
+	// TODO: Should set timeout to 0 if geometry is dirty, longer timeout if its clean
+	if  (lo_server_recv_noblock(s,1) == 0) {
+	    // Render lasrs only when nothing in queue
+	    if (lasers->render())
+		// If they've changed, mark the video for update too
+		video->setDirty();
+	}
 	if (doQuit)
 	    break;
     }
@@ -365,11 +365,8 @@ void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
 //}
 
 void OSCHandler::update() {
-    video->lock();  // TODO: Maybe this should be locks on the lasers
-    lasers.render(drawing);
-    video->setDirty();
-    video->unlock();
     dbg("OSCHandler.update",1) << "Got update for drawing frame " << drawing.getFrame() << " with " << drawing.getNumElements() << " elements" << std::endl;
+    lasers->setDrawing(drawing);
 
     drawing.clear();
 }
