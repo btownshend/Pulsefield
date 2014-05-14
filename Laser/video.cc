@@ -156,7 +156,7 @@ void Video::setDirty() {
 	ev.xexpose.count=1;
 	dbg("Video.setDirty",5) << "Sending Client event" << std::endl;
 	Status st=XSendEvent(dpy,window,True,0,&ev);
-	if (st != 0) {
+	if (st == 0) {
 	    dbg("Video.setDirty",5) << "XSendEvent failed" << std::endl;
 	}
 	XFlush(dpy);
