@@ -106,9 +106,14 @@ Lasers::Lasers(int nlasers): lasers(nlasers) {
 	lasers[i]->open();
     }
     needsRender=true;
+    if (pthread_mutex_init(&mutex,NULL)) {
+	std::cerr<<"Failed to create lasers mutex" << std:: endl;
+	exit(1);
+    }
 }
 
 Lasers::~Lasers() {
+    (void)pthread_mutex_destroy(&mutex);
 }
 
 int Lasers::render() {
@@ -118,6 +123,7 @@ int Lasers::render() {
     }
     Drawing dtmp=drawing; // Copy in case there are updates
     needsRender=false;   // TODO: Should be atomic with prior statement
+    lock();
     for (unsigned int i=0;i<lasers.size();i++)
 	lasers[i]->render(dtmp);
     dbg("Lasers.render",1) << "Render done" << std::endl;
@@ -129,9 +135,11 @@ void Lasers::setDrawing(const Drawing &_drawing) {
 	dbg("Lasers.setDrawing",1) << "Multiple drawings for same frame: " << drawing.getFrame() << std::endl;
 	return;
     }
+    lock();
     drawing=_drawing;
     dbg("Lasers.setDrawing",2) << "Frame=" << drawing.getFrame() << std::endl;
     needsRender=true;
+    unlock();
 }
 
 void Lasers::saveTransforms(std::ostream &s)  const {
@@ -144,3 +152,21 @@ void Lasers::loadTransforms(std::istream &s) {
 	lasers[i]->getTransform().load(s);
     needsRender=true;
 }
+
+void Lasers::lock() {
+    dbg("Lasers.lock",5) << "lock req" << std::endl;
+    if (pthread_mutex_lock(&mutex)) {
+	std::cerr << "Failed call to pthread_mutex_lock" << std::endl;
+	exit(1);
+    }
+    dbg("Lasers.lock",5) << "lock acquired" << std::endl;
+}
+
+void Lasers::unlock() {
+    dbg("Lasers.unlock",5) << "unlock" << std::endl;
+    if (pthread_mutex_unlock(&mutex)) {
+	std::cerr << "Failed call to pthread_mutex_lock" << std::endl;
+	exit(1);
+    }
+}
+

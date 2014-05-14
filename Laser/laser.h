@@ -32,6 +32,8 @@ class Lasers {
     std::vector<std::shared_ptr<Laser> > lasers;
     Drawing drawing;
     bool needsRender;
+    // Locking
+    pthread_mutex_t mutex;
 public:
     Lasers(int nunits);
     ~Lasers();
@@ -41,6 +43,10 @@ public:
     std::shared_ptr<Laser>  getLaser(int unit) { return lasers[unit]; }
     std::shared_ptr<const Laser> getLaser(int unit) const  { return lasers[unit]; }
     unsigned int size() const { return lasers.size(); }
+
+    // Locking
+    void lock();
+    void unlock();
 
     // Save/load all transforms of all lasers
     void saveTransforms(std::ostream &s) const;

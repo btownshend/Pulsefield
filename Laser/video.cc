@@ -414,6 +414,7 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 
      cairo_set_operator(cr,CAIRO_OPERATOR_ADD);   // Add colors
 
+     lasers->lock();
      for (unsigned int m=0;m<lasers->size();m++) {
 	 std::shared_ptr<Laser> laser=lasers->getLaser(m);
 	 const std::vector<etherdream_point> &points=laser->getPoints();
@@ -473,6 +474,7 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	     }
 	 }
      }
+     lasers->unlock();
     cairo_restore(cr);
 }
 
@@ -499,6 +501,7 @@ void Video::update() {
      int ncol=std::min(2,(int)lasers->size());
      int i=0;
 
+     lasers->lock();
      for (int row=0;row<nrow;row++) {
 	 for (int col=0;col<ncol;col++) {
 	     if (i>=(int)lasers->size())
@@ -508,6 +511,8 @@ void Video::update() {
 	     i++;
 	 }
      }
+     lasers->unlock();
+
      drawWorld(cr,columns[0],0.0f,columns[1],rows[0]);
      drawInfo(cr,0.0f,rows[0],width,rows[1]);
 
