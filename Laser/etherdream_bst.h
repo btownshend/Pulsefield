@@ -161,6 +161,12 @@ int etherdream_connect(struct etherdream *d);
  */
 int etherdream_is_ready(struct etherdream *d);
 
+ /* etherdream_getfullness
+  * 
+  * Return number of buffers of data queued for processing
+  */
+int etherdream_getfullness(struct etherdream *d);
+
 /* etherdream_wait_for_ready(d)
  *
  * Block the invoking thread until more data can be written to d. Returns 0 on

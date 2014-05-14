@@ -725,6 +725,13 @@ int etherdream_is_ready(struct etherdream *d) {
     return ready;
 }
 
+int etherdream_getfullness(struct etherdream *d) {
+    pthread_mutex_lock(&d->mutex);
+    int fullness = d->frame_buffer_fullness;
+    pthread_mutex_unlock(&d->mutex);
+    return fullness;
+}
+
 /* etherdream_wait_for_ready(d)
  *
  * Documented in etherdream.h.
