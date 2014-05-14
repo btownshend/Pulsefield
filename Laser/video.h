@@ -48,23 +48,25 @@ class Video: public DisplayDevice {
     float minLeft, maxRight, minBottom, maxTop;   // Bounding box
     static XRefs xrefs;
     
+    // Locking
     pthread_mutex_t mutex;
+    void lock();
+    void unlock();
     
     std::ostringstream msg; // Message for display in bottom of window
     bool dirty;
+    void update();
+    void save(std::ostream &s) const { lasers->saveTransforms(s); }
+    void load(std::istream &s) { lasers->loadTransforms(s); }
  public:
     // Local window routines
     Video(std::shared_ptr<Lasers> lasers);
     ~Video();
 
     int open();
-    void update();
     void setBounds(const std::vector<Point> &_bounds);
+
     Point constrainPoint(Point p) const;
-    void lock();
-    void unlock();
-    void save(std::ostream &s) const { lasers->saveTransforms(s); }
-    void load(std::istream &s) { lasers->loadTransforms(s); }
     std::ostream &newMessage() { msg.str(""); return msg; }
 
     // Display needs refresh
