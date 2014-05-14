@@ -1,6 +1,7 @@
 /* Ether Dream interface library
  *
  * Copyright 2011-2012 Jacob Potter
+ * Modified 2014 Brent Townshend
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of either the GNU General Public License version 2
@@ -23,11 +24,7 @@
 
 // See http://ether-dream.com/protocol.html  for protocol documentation
 
-#if __MACH__
 static long long timer_start, timer_freq_numer, timer_freq_denom;
-#else
-static struct timespec start_time;
-#endif
 static pthread_mutex_t dac_list_lock;
 static struct etherdream *dac_list = NULL;
 
@@ -36,15 +33,8 @@ static struct etherdream *dac_list = NULL;
  * Return the number of microseconds since library initialization.
  */
 static long long microseconds(void) {
-#if __MACH__
     long long time_diff = mach_absolute_time() - timer_start;
     return time_diff * timer_freq_numer / timer_freq_denom;
-#else
-    struct timespec t;
-    clock_gettime(CLOCK_REALTIME, &t);
-    return (t.tv_sec - start_time.tv_sec) * 1000000 +
-	(t.tv_nsec - start_time.tv_nsec) / 1000;
-#endif
 }
 
 /* microsleep(us)
@@ -785,15 +775,11 @@ static void *watch_for_dacs(void *arg) {
  */
 int etherdream_lib_start(void) {
     // Get high-resolution timer info
-#if __MACH__
     timer_start = mach_absolute_time();
     mach_timebase_info_data_t timebase_info;
     mach_timebase_info(&timebase_info);
     timer_freq_numer = timebase_info.numer;
     timer_freq_denom = timebase_info.denom * 1000;
-#else
-    clock_gettime(CLOCK_REALTIME, &start_time);
-#endif
 
     dbg("Etherdream.lib_start",1) <<  "Started" << std::endl;
 
