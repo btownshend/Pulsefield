@@ -376,8 +376,11 @@ void OSCHandler::update() {
 
 void OSCHandler::pfframe(int frame) {
     dbg("OSCHandler.pfframe",1) << "Frame " << frame << std::endl;
-    // Update lasers
-    update();
+    if (drawing.getFrame() > 0) {
+	dbg("OSCHandler.pfframe",1) << "Received /pf/frame when drawing contains " << drawing.getNumElements() << " elements.  Assuming /update missing." << std::endl;
+	// Update lasers
+	update();
+    }
 
     // Set current frame number
     drawing.setFrame(frame);

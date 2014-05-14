@@ -76,7 +76,7 @@ class Cubic:public Primitive {
 
 class Drawing {
     std::vector<std::shared_ptr<Primitive> > elements;
-    int frame;  // Frame number that this drawing corresponds to (or -1 if unknonw)
+    int frame;  // Frame number that this drawing corresponds to (or -1 if unknown)
  public:
     Drawing() { frame=-1; }
 
@@ -98,7 +98,9 @@ class Drawing {
 
     // Clear drawing
     void clear() {
+	dbg("Drawing.clear",1) << "Clearing " << elements.size() << " elements from frame " << frame << std::endl;
 	elements.clear();  
+	frame=-1;
     }
 
     // Add a circle to current drawing
