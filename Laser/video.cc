@@ -63,7 +63,8 @@ void *Video::runDisplay(void *arg) {
 	return NULL;
     }
     world->window = XCreateSimpleWindow(world->dpy, RootWindow(world->dpy, 0),0, 0, 800, 400, 0, 0, BlackPixel(world->dpy, 0));
-    XSelectInput(world->dpy, world->window, StructureNotifyMask | ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask);
+    long eventMask= StructureNotifyMask | ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask;
+    XSelectInput(world->dpy, world->window,eventMask);
     XMapWindow(world->dpy, world->window);
 
     world->surface = cairo_xlib_surface_create(world->dpy, world->window, DefaultVisual(world->dpy, 0), 800, 400);
@@ -74,69 +75,74 @@ void *Video::runDisplay(void *arg) {
     while (1) {
 	XEvent e;
 	
-	dbg("Video.runDisplay",5) << "Event  wait for display " << world->dpy << std::endl;
-	XNextEvent(world->dpy, &e);
-	dbg("Video.runDisplay",5) << "Got event " << e.type << std::endl;
+	dbg("Video.runDisplay",5) << "Check for events for display " << world->dpy << std::endl;
+	XFlush(world->dpy);
+	Bool hasEvent=XCheckMaskEvent(world->dpy, eventMask, &e);
+	if (hasEvent) {
+	    dbg("Video.runDisplay",5) << "Got event " << e.type << std::endl;
 
-	world->lock();
-	dbg("Video.runDisplay",5) << "Got lock" << std::endl;
+	    world->lock();
+	    dbg("Video.runDisplay",5) << "Got lock" << std::endl;
 
-	switch (e.type) {
-	case KeyPress:
-	    {
-		const char *filename="transforms.save";
-		KeySym key;
-		const int bufsize=20;
-		char buffer[bufsize];
-		int charcount = XLookupString(&e.xkey,buffer,bufsize,&key,NULL);
-		dbg("Video.runDisplay",5)  << "Key Pressed:  code=" << e.xkey.keycode << ", sym=" << key << ", keycount=" << charcount << std::endl;
-		if (key==XK_s) {
-		    dbg("Video.runDisplay",1) << "Saving transforms in " << filename << std::endl;
-		    world->newMessage() << "Saved transforms in " << filename;
-		    std::ofstream ofs(filename);
-		    world->save(ofs);
+	    switch (e.type) {
+	    case KeyPress:
+		{
+		    const char *filename="transforms.save";
+		    KeySym key;
+		    const int bufsize=20;
+		    char buffer[bufsize];
+		    int charcount = XLookupString(&e.xkey,buffer,bufsize,&key,NULL);
+		    dbg("Video.runDisplay",5)  << "Key Pressed:  code=" << e.xkey.keycode << ", sym=" << key << ", keycount=" << charcount << std::endl;
+		    if (key==XK_s) {
+			dbg("Video.runDisplay",1) << "Saving transforms in " << filename << std::endl;
+			world->newMessage() << "Saved transforms in " << filename;
+			std::ofstream ofs(filename);
+			world->save(ofs);
+		    }
+		    if (key==XK_l) {
+			dbg("Video.runDisplay",1) << "Loading transforms from " << filename << std::endl;
+			world->newMessage() << "Loaded transforms from " << filename;
+			std::ifstream ifs(filename);
+			world->load(ifs);
+		    }
 		}
-		if (key==XK_l) {
-		    dbg("Video.runDisplay",1) << "Loading transforms from " << filename << std::endl;
-		    world->newMessage() << "Loaded transforms from " << filename;
-		    std::ifstream ifs(filename);
-		    world->load(ifs);
-		}
+		break;
+	    case ButtonPress:
+		dbg("Video.runDisplay",5)  << "Button Pressed:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
+		world->dirty=true;
+		xrefs.markClosest(Point(e.xbutton.x,e.xbutton.y));
+		break;
+	    case ButtonRelease:
+		dbg("Video.runDisplay",5)  << "Button Released:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
+		xrefs.update(Point(e.xbutton.x,e.xbutton.y),true);
+		world->dirty=true;
+		break;
+	    case MotionNotify:
+		dbg("Video.runDisplay",5)  << "Motion:  " << e.xmotion.x << ", " << e.xmotion.y << " with " << XPending(world->dpy) << " events queued" << std::endl;
+		world->dirty=true;
+		xrefs.update(Point(e.xbutton.x,e.xbutton.y),false);
+		break;
+	    case ConfigureNotify:
+		cairo_xlib_surface_set_size(world->surface,e.xconfigure.width, e.xconfigure.height);
+		world->dirty=true;
+		break;
+	    case MapNotify:
+		world->dirty=true;
+		break;
+	    case Expose:
+		dbg("Video.runDisplay",5)  << "Expose" << std::endl;
+		break;
+	    case ClientMessage:
+		dbg("Video.runDisplay",5)  << "Client message" << std::endl;
+		break;
 	    }
-	    break;
-	case ButtonPress:
-	    dbg("Video.runDisplay",5)  << "Button Pressed:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
-	    world->dirty=true;
-	    xrefs.markClosest(Point(e.xbutton.x,e.xbutton.y));
-	    break;
-	case ButtonRelease:
-	    dbg("Video.runDisplay",5)  << "Button Released:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
-	    world->dirty=true;
-	    xrefs.update(Point(e.xbutton.x,e.xbutton.y),true);
-	    break;
-	case MotionNotify:
-	    dbg("Video.runDisplay",5)  << "Motion:  " << e.xmotion.x << ", " << e.xmotion.y << " with " << XPending(world->dpy) << " events queued" << std::endl;
-	    world->dirty=true;
-	    xrefs.update(Point(e.xbutton.x,e.xbutton.y),false);
-	    break;
-	case ConfigureNotify:
-	    cairo_xlib_surface_set_size(world->surface,e.xconfigure.width, e.xconfigure.height);
-	    world->dirty=true;
-	    break;
-	case MapNotify:
-	    world->dirty=true;
-	    break;
-	case Expose:
-	    dbg("Video.runDisplay",5)  << "Expose" << std::endl;
-	    break;
-	case ClientMessage:
-	    dbg("Video.runDisplay",5)  << "Client message" << std::endl;
-	    break;
+	    world->unlock();
+	} else {
+	    dbg("Video.runDisplay",5) << "No events" << std::endl;
+	    if (world->dirty)
+		world->update();
+	    usleep(1000);
 	}
-	world->unlock();
-
-	if (XPending(world->dpy)==0 && world->dirty) 
-	    world->update();
     }
 }
 
@@ -145,25 +151,27 @@ XRefs Video::xrefs;
 
 // Mark a window as dirty and notify x server
 void Video::setDirty() {
+    lock();
     dirty=true;
-    if (dpy!=NULL) {
-	XEvent ev;
-	ev.type=Expose;
-	ev.xexpose.display=dpy;
-	ev.xexpose.window=window;
-	ev.xexpose.send_event=1;
-	ev.xexpose.x=0;
-	ev.xexpose.y=0;
-	ev.xexpose.width=1;
-	ev.xexpose.height=1;
-	ev.xexpose.count=1;
-	dbg("Video.setDirty",5) << "Sending Client event" << std::endl;
-	Status st=XSendEvent(dpy,window,True,0,&ev);
-	if (st == 0) {
-	    dbg("Video.setDirty",5) << "XSendEvent failed" << std::endl;
-	}
-	XFlush(dpy);
-    }
+    // if (dpy!=NULL) {
+    // 	XEvent ev;
+    // 	ev.type=Expose;
+    // 	ev.xexpose.display=dpy;
+    // 	ev.xexpose.window=window;
+    // 	ev.xexpose.send_event=1;
+    // 	ev.xexpose.x=0;
+    // 	ev.xexpose.y=0;
+    // 	ev.xexpose.width=1;
+    // 	ev.xexpose.height=1;
+    // 	ev.xexpose.count=1;
+    // 	dbg("Video.setDirty",5) << "Sending Client event" << std::endl;
+    // 	Status st=XSendEvent(dpy,window,True,0,&ev);
+    // 	if (st == 0) {
+    // 	    dbg("Video.setDirty",5) << "XSendEvent failed" << std::endl;
+    // 	}
+    // 	XFlush(dpy);
+    // }
+    unlock();
 }
 
 // Mark the point closest to winpt for updating it (i.e. when mouse clicked)
@@ -521,7 +529,6 @@ void Video::update() {
 
      cairo_show_page(cr);
      cairo_destroy(cr);
-     XFlush(dpy);
      dirty=false;   // No longer dirty
      unlock();
 }
