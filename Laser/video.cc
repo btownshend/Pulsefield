@@ -181,7 +181,7 @@ void XRefs::markClosest(Point winpt) {
 	dbg("XRefs.markClosest",1) << "Click at " << winpt << "; closest = " << clickedEntry << ": " << xref[clickedEntry].winpos << std::endl; 
 }
 
-XRef *XRefs::lookup(Laser *laser, int anchorNumber, bool dev) { 
+XRef *XRefs::lookup(std::shared_ptr<Laser>laser, int anchorNumber, bool dev) { 
     dbg("XRefs.lookup",3) << "lookup(" << laser->getUnit() << "," << anchorNumber << "," << dev << ")  N=" << xref.size() << " -> ";
     for (unsigned int i=0;i<xref.size();i++)  {
 	XRef *x=&xref[i];
@@ -209,7 +209,7 @@ void XRefs::update(Point newpos, bool clear) {
 
 	     
 // Update table with given xref and modify underlying Laser struct if reset is set
-void XRefs::refresh(cairo_t *cr, Laser *laser,  Video &video, int anchorNumber, bool dev, Point pos) {
+void XRefs::refresh(cairo_t *cr, std::shared_ptr<Laser>laser,  Video &video, int anchorNumber, bool dev, Point pos) {
     XRef *entry=lookup(laser,anchorNumber,dev);
     if (entry!=NULL && entry->reset) {
 	// Move point
@@ -290,7 +290,7 @@ void Video::drawInfo(cairo_t *cr, float left,  float top, float width, float hei
 }
 
 // Draw in device coodinates
-void Video::drawDevice(cairo_t *cr, float left, float top, float width, float height, Laser *laser)  {
+void Video::drawDevice(cairo_t *cr, float left, float top, float width, float height, std::shared_ptr<Laser>laser)  {
     const std::vector<etherdream_point> &points = laser->getPoints();
     cairo_save(cr);
     cairo_translate(cr,left,top);
@@ -414,7 +414,7 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
      cairo_set_operator(cr,CAIRO_OPERATOR_ADD);   // Add colors
 
      for (unsigned int m=0;m<lasers.size();m++) {
-	 Laser *laser=lasers.getLaser(m);
+	 std::shared_ptr<Laser> laser=lasers.getLaser(m);
 	 const std::vector<etherdream_point> &points=laser->getPoints();
 	 const Transform &transform=laser->getTransform();
 

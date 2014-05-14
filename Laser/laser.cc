@@ -94,14 +94,12 @@ void Laser::render(const Drawing &drawing) {
 
 Lasers::Lasers(int nlasers): lasers(nlasers) {
     for (unsigned int i=0;i<lasers.size();i++) {
-	lasers[i]=new Laser(i);
+	lasers[i]=std::shared_ptr<Laser>(new Laser(i));
 	lasers[i]->open();
     }
 }
 
 Lasers::~Lasers() {
-    for (unsigned int i=0;i<lasers.size();i++)
-	delete lasers[i];
 }
 
 void Lasers::refresh() {

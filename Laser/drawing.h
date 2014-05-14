@@ -75,7 +75,7 @@ class Cubic:public Primitive {
 };
 
 class Drawing {
-    std::vector<Primitive *> elements;
+    std::vector<std::shared_ptr<Primitive> > elements;
 
  public:
     Drawing() { ; }
@@ -95,33 +95,31 @@ class Drawing {
 
     // Clear drawing
     void clear() {
-	for (unsigned int i=0;i<elements.size();i++)
-	    delete elements[i];
 	elements.clear();  
     }
 
     // Add a circle to current drawing
     void drawCircle(Point center, float r, Color c) {
 	dbg("Drawing.drawCircle",2) << "center=" << center << ", radius=" << r << ", color=" << c << std::endl;
-	elements.push_back(new Circle(center,r,c));
+	elements.push_back(std::shared_ptr<Primitive>(new Circle(center,r,c)));
     }
 
     // Add a arc to current drawing
     void drawArc(Point center, Point p, float angle, Color c) {
 	dbg("Drawing.drawArc",2) << "center=" << center << ", Point =" << p << ", angleCW=" << angle << ", color=" << c << std::endl;
-	elements.push_back(new Arc(center,p,angle,c));
+	elements.push_back(std::shared_ptr<Primitive>(new Arc(center,p,angle,c)));
     }
 
     // Add a line to current drawing
     void drawLine(Point p1, Point p2, Color c) {
-	elements.push_back(new Line(p1,p2,c));
+	elements.push_back(std::shared_ptr<Primitive>(new Line(p1,p2,c)));
     }
 
     // Add a cubic to current drawing
     void drawCubic(Point p1, Point p2, Point p3, Point p4, Color c) {
 	std::vector<Point> pts(4);
 	pts[0]=p1;pts[1]=p2;pts[2]=p3;pts[3]=p4;
-	elements.push_back(new Cubic(pts,c));
+	elements.push_back(std::shared_ptr<Primitive>(new Cubic(pts,c)));
     }
 
     // Convert drawing into a set of etherdream points

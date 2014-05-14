@@ -29,15 +29,15 @@ class Laser: public DisplayDevice  {
 };
 
 class Lasers {
-    std::vector<Laser*> lasers;
+    std::vector<std::shared_ptr<Laser> > lasers;
     Drawing drawing;
 public:
     Lasers(int nunits);
     ~Lasers();
     void refresh();
     void render(const Drawing &_drawing) { drawing=_drawing; refresh(); }
-    Laser *getLaser(int unit) { return lasers[unit]; }
-    const Laser *getLaser(int unit) const { return lasers[unit]; }
+    std::shared_ptr<Laser>  getLaser(int unit) { return lasers[unit]; }
+    std::shared_ptr<const Laser> getLaser(int unit) const  { return lasers[unit]; }
     unsigned int size() const { return lasers.size(); }
 
     // Save/load all transforms of all lasers
