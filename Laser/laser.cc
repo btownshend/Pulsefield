@@ -113,7 +113,7 @@ Lasers::~Lasers() {
 
 int Lasers::render() {
     if (!needsRender) {
-	dbg("Lasers.render",1) << "Not dirty" << std::endl;
+	dbg("Lasers.render",5) << "Not dirty" << std::endl;
 	return 0;
     }
     Drawing dtmp=drawing; // Copy in case there are updates

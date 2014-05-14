@@ -365,11 +365,11 @@ void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
 //}
 
 void OSCHandler::update() {
-    dbg("OSCHandler.update",1) << "Got update with " << drawing.getNumElements() << " elements" << std::endl;
     video->lock();  // TODO: Maybe this should be locks on the lasers
     lasers.render(drawing);
     video->setDirty();
     video->unlock();
+    dbg("OSCHandler.update",1) << "Got update for drawing frame " << drawing.getFrame() << " with " << drawing.getNumElements() << " elements" << std::endl;
 
     drawing.clear();
 }

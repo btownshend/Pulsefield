@@ -182,15 +182,15 @@ void XRefs::markClosest(Point winpt) {
 }
 
 XRef *XRefs::lookup(std::shared_ptr<Laser>laser, int anchorNumber, bool dev) { 
-    dbg("XRefs.lookup",3) << "lookup(" << laser->getUnit() << "," << anchorNumber << "," << dev << ")  N=" << xref.size() << " -> ";
+    dbg("XRefs.lookup",6) << "lookup(" << laser->getUnit() << "," << anchorNumber << "," << dev << ")  N=" << xref.size() << " -> ";
     for (unsigned int i=0;i<xref.size();i++)  {
 	XRef *x=&xref[i];
 	if (x->laser==laser && x->anchorNumber==anchorNumber && x->dev==dev) {
-	    dbgn("XRefs.lookup",3) << i << std::endl;
+	    dbgn("XRefs.lookup",6) << i << std::endl;
 	    return x;
 	}
     }
-    dbgn("XRefs.lookup",3) << "NULL" << std::endl;
+    dbgn("XRefs.lookup",6) << "NULL" << std::endl;
     return NULL;
 }
 
