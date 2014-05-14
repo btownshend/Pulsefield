@@ -90,10 +90,10 @@ static int update_handler(const char *path, const char *types, lo_arg **argv, in
 // pf 
 static int pfupdate_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(-argv[3]->f,argv[4]->f),.30); return 0; }
 static int pfframe_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfframe(argv[0]->i); return 0; }
-static int pfsetminx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->minx=argv[0]->f; return 0; }
-static int pfsetminy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->miny=argv[0]->f; return 0; }
-static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->maxx=argv[0]->f; return 0; }
-static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->maxy=argv[0]->f; return 0; }
+static int pfsetminx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMinX(argv[0]->f);  return 0; }
+static int pfsetminy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMinY(argv[0]->f); return 0; }
+static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxX(argv[0]->f); return 0; }
+static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxY(argv[0]->f); return 0; }
 
 OSCHandler::OSCHandler(const Lasers &_lasers, Video *_video) : lasers(_lasers), video(_video),  currentColor(1.0,1.0,1.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler()" << std::endl;
@@ -366,16 +366,8 @@ void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
 
 void OSCHandler::update() {
     dbg("OSCHandler.update",1) << "Got update with " << drawing.getNumElements() << " elements" << std::endl;
-    std::vector<Point> bounds(4);
-    bounds[0]=Point(minx,miny);
-    bounds[1]=Point(maxx,miny);
-    bounds[2]=Point(maxx,maxy);
-    bounds[3]=Point(minx,maxy);
-
-    // Lock since this changes lasers which video accesses
     video->lock();  // TODO: Maybe this should be locks on the lasers
     lasers.render(drawing);
-    video->setBounds(bounds);
     video->setDirty();
     video->unlock();
 
@@ -389,4 +381,15 @@ void OSCHandler::pfframe(int frame) {
 
     // Set current frame number
     drawing.setFrame(frame);
+}
+
+// Called when any of the bounds have been possibly changed
+void OSCHandler::updateBounds() {
+    std::vector<Point> bounds(4);
+    bounds[0]=Point(minx,miny);
+    bounds[1]=Point(maxx,miny);
+    bounds[2]=Point(maxx,maxy);
+    bounds[3]=Point(minx,maxy);
+
+    video->setBounds(bounds);  /// This will handle checking if there is any real change
 }

@@ -530,6 +530,21 @@ void Video::unlock() {
 
 void Video::setBounds(const std::vector<Point> &_bounds) {
      assert(_bounds.size()>=2);
+     if (bounds.size()==_bounds.size()) {
+	 // Check if any changed
+	 bool changed=false;
+	 for (int i=0;i<bounds.size();i++) 
+	     if (bounds[i].X()!= _bounds[i].X() || bounds[i].Y() != _bounds[i].Y()) {
+		 dbg("Video.setBounds",1) << "Bounds[" << i << "] changed from " << bounds[i] << " to " << _bounds[i] << std::endl;
+		 changed=true;
+	     }
+	 if (!changed) {
+	     dbg("Video.setBounds",3) << "Bounds not changed" << std::endl;
+	     return;
+	 }
+     }
+     dbg("Video.setBounds",1) << "Updating video bounds" << std::endl;
+     lock();
     bounds=_bounds;
     minLeft=bounds[0].X();
     maxRight=bounds[0].X();
@@ -541,4 +556,6 @@ void Video::setBounds(const std::vector<Point> &_bounds) {
 	minBottom=std::min(minBottom, bounds[i].Y());
 	maxTop=std::max(maxTop, bounds[i].X());
     }
+    dirty=true;
+    unlock();
 }

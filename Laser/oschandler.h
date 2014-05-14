@@ -28,6 +28,9 @@ class OSCHandler {
     float currentDensity;
     int npoints;
 
+    float minx,maxx,miny,maxy;
+    void updateBounds();
+
     bool dirty;
  public:
     OSCHandler(const Lasers &lasers, Video *video);
@@ -70,6 +73,11 @@ class OSCHandler {
     //    void setTransform(int unit);
 
     // /pf/frame
-    float minx,maxx,miny,maxy;
     void pfframe(int frame);
+
+    // Changing bounds
+    void setMinX(float x) { minx=x; updateBounds(); }
+    void setMaxX(float x) { maxx=x; updateBounds(); }
+    void setMinY(float y) { miny=y; updateBounds(); }
+    void setMaxY(float y) { maxy=y; updateBounds(); }
 };
