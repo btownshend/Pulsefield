@@ -83,3 +83,5 @@ Laser/wesstuff.osc
 
 Laser/*.dSYM
 Laser/vectest
+
+*.save
