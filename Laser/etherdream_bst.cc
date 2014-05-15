@@ -459,11 +459,11 @@ static int dac_send_data(struct etherdream *d, struct dac_point *data,
     if (npoints <= 0)
 	return 0;
 
-    dbg("Etherdream.dac_send_data",1) <<  "Command: q(point_rate=" << rate << ") Queue Rate Change" << std::endl;
+    dbg("Etherdream.dac_send_data",4) <<  "Command: q(point_rate=" << rate << ") Queue Rate Change" << std::endl;
     d->conn.dc_local_buffer.queue.command = 'q';
     d->conn.dc_local_buffer.queue.point_rate = rate;
 
-    dbg("Etherdream.dac_send_data",1) <<  "Command: d(npoints=" << npoints << ") Write Data" << std::endl;
+    dbg("Etherdream.dac_send_data",4) <<  "Command: d(npoints=" << npoints << ") Write Data" << std::endl;
     d->conn.dc_local_buffer.header.command = 'd';
     d->conn.dc_local_buffer.header.npoints = npoints;
 
