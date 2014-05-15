@@ -489,6 +489,19 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
     cairo_restore(cr);
 }
 
+void Video::load(std::istream &s) {
+    lasers->lock();
+    lasers->loadTransforms(s);
+    // Constrain to be in bounds
+    for (unsigned int laser=0;laser<lasers->size();laser++) {
+	Transform &t=lasers->getLaser(laser)->getTransform();
+	for (int i=0;i<4;i++) 
+	    t.setFloorPoint(i,constrainPoint(t.getFloorPoint(i)));
+	t.recompute();
+    }
+    lasers->unlock();
+}
+
 // Draw given point set using device coords, and, in another frame, with device coordinates mapped back to world coords
 void Video::update() {
     if (surface==NULL)

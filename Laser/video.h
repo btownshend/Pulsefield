@@ -56,7 +56,7 @@ class Video: public DisplayDevice {
     bool dirty;
     void update();
     void save(std::ostream &s) const { lasers->saveTransforms(s); }
-    void load(std::istream &s) { lasers->loadTransforms(s); }
+    void load(std::istream &s);
  public:
     // Local window routines
     Video(std::shared_ptr<Lasers> lasers);
@@ -66,7 +66,7 @@ class Video: public DisplayDevice {
     void setBounds(const std::vector<Point> &_bounds);
 
     Point constrainPoint(Point p) const;
-    std::ostream &newMessage() { msg.str(""); return msg; }
+    std::ostream &newMessage() { msg.str(""); msglife=50; return msg; }
 
     // Display needs refresh
     void setDirty();
