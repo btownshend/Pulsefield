@@ -56,7 +56,7 @@ static int start_handler(const char *path, const char *types, lo_arg **argv, int
 static int stop_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->startStop(false); return 0; }
 
 // Laser settings
-static int setPPS_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPPS(argv[0]->i,argv[1]->f); return 0; }
+static int setPPS_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPPS(argv[0]->i,argv[1]->i); return 0; }
 static int setBlanking_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setBlanking(argv[0]->i,argv[1]->i,argv[2]->i); return 0; }
 static int setPoints_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPoints(argv[0]->i,argv[1]->i); return 0; }
 static int setSkew_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setSkew(argv[0]->i,argv[1]->i); return 0; }
@@ -125,8 +125,8 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/laser/set/attribute","sf",setAttribute_handler,this);
 
 	/* Laser settings */
-	lo_server_add_method(s,"/laser/set/pps","if",setPPS_handler,this);
-	lo_server_add_method(s,"/laser/set/points","if",setPoints_handler,this);
+	lo_server_add_method(s,"/laser/set/pps","ii",setPPS_handler,this);
+	lo_server_add_method(s,"/laser/set/points","ii",setPoints_handler,this);
 	lo_server_add_method(s,"/laser/set/blanking","iii",setBlanking_handler,this);
 	lo_server_add_method(s,"/laser/set/skew","ii",setSkew_handler,this);
 
