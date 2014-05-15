@@ -341,6 +341,9 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
      cairo_scale(cr,scale,scale);
      float pixel=1.0/scale;
 
+     // Flip y-axis so laser scanner negative values are at bottom
+     cairo_scale(cr,1.0,-1.0);
+
      // Draw overall bounds
      cairo_set_line_width(cr,1*pixel);
      cairo_set_source_rgb (cr,1.0,1.0,1.0);
@@ -385,7 +388,7 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
 	     etherdream_point pt = points[i];
 	     cairo_set_source_rgb (cr,std::min(maxColor.red(),pt.r/65535.0f),std::min(maxColor.green(),pt.g/65535.0f),std::min(maxColor.blue(),pt.b/65535.0f));
 	     cairo_move_to(cr, lastpt.x,lastpt.y);
-	     cairo_line_to(cr, pt.x, pt.y);
+	     cairo_line_to(cr, pt.x,pt.y);
 	     cairo_stroke(cr);
 	     lastpt=pt;
 	     minx=std::min(minx,pt.x);
@@ -421,6 +424,8 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 
      cairo_translate(cr,width/2.0,height/2.0);
 
+     // Flip y direction so LIDAR is at bottom center
+     cairo_scale(cr,1.0,-1.0);
      float scale=std::min((float)width/(maxRight-minLeft),(float)height/(maxTop-minBottom));
      cairo_scale(cr,scale,scale);
      float pixel=1.0/scale;
