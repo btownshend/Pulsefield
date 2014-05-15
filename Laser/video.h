@@ -73,6 +73,7 @@ class Video: public DisplayDevice {
     // Toggle background display
     void toggleBackground() { lasers->toggleBackground(); }
     void toggleGrid() { lasers->toggleGrid(); }
+    void toggleOutline() { lasers->toggleOutline(); }
     // Display needs refresh
     void setDirty();
 };

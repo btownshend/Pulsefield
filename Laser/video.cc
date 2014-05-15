@@ -114,12 +114,16 @@ void *Video::runDisplay(void *arg) {
 			// Grid toggle
 			world->toggleGrid();
 			world->newMessage() << "Toggled grid";
+		    } else if (key==XK_o) {
+			// Grid toggle
+			world->toggleOutline();
+			world->newMessage() << "Toggled laser outline";
 		    } else if (key==XK_r) {
 			// Reset transforms
 			world->clearTransforms();
 			world->newMessage() << "Reset transforms";
 		    } else {
-			world->newMessage() << "(s)ave, (l)oad, (b)background toggle, (g)rid, (r)eset";
+			world->newMessage() << "(s)ave, (l)oad, (b)background toggle, (g)rid, (o)utline, (r)eset";
 		    }
 		}
 		break;

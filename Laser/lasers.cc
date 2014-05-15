@@ -50,8 +50,27 @@ int Lasers::render() {
 		dtmp.drawLine(Point(minx,y+1),Point(minx,y+2),Color(1.0,1.0,1.0));
 	}
     }
-    for (unsigned int i=0;i<lasers.size();i++)
-	lasers[i]->render(dtmp);
+    for (unsigned int i=0;i<lasers.size();i++) {
+	if (showOutline) {
+	    std::vector<etherdream_point> outline(5);
+	    // Need to be inside maximums by at least one pixel or pruning will think its saturated and take it out
+	    outline[0].x=-32766;outline[0].y=-32766;
+	    outline[1].x=-32766;outline[1].y=32766;
+	    outline[2].x=32766;outline[2].y=32766;
+	    outline[3].x=32766;outline[3].y=-32766;
+	    outline[4].x=-32766;outline[4].y=-32766;
+	    // Convert to world 
+	    std::vector<Point> outlineWorld=lasers[i]->getTransform().mapToWorld(outline);
+	    dbg("Lasers.render",3) << "outlineWorld=";
+	    for (int j=0;j<outlineWorld.size();j++)
+		dbgn("Lasers.render",3) << outlineWorld[j] << " ";
+	    dbgn("Lasers.render",3) << std::endl;
+	    Drawing dtmp2=dtmp;
+	    dtmp2.drawPolygon(outlineWorld,Color(1.0,1.0,1.0));
+	    lasers[i]->render(dtmp2);
+	} else
+	    lasers[i]->render(dtmp);
+    }
     dbg("Lasers.render",1) << "Render done" << std::endl;
     unlock();
     return 1;
