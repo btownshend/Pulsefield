@@ -2,7 +2,6 @@
 #include "displaydevice.h"
 #include "lasers.h"
 
-class Transform;
 class Video;
 
 // Cross reference to locate points in window when mouse is clicked
