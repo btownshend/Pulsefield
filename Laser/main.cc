@@ -12,7 +12,8 @@ void usage(int argc,char *argv[]) {
 
 int main(int argc, char *argv[]) {
     int ch;
-    int nlaser=4;
+    int nlaser=1;
+    SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 
     while ((ch=getopt(argc,argv,"d:n:"))!=-1) {
 	switch (ch) {
