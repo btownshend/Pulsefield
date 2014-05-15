@@ -26,6 +26,7 @@ Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(4) {
     bnds[3]=Point(-6,6);
     setBounds(bnds);
     msg << "Initialized";
+    msglife=100;
     dirty=true;
     dpy=NULL;
 }
@@ -293,10 +294,12 @@ void Video::drawInfo(cairo_t *cr, float left,  float top, float width, float hei
      cairo_set_font_size (cr, 40);
      cairo_show_text (cr, fmsg.str().c_str()); 
 
-     cairo_set_font_size (cr, 12);
-
-     cairo_move_to (cr, msgmargin, baseline);
-     cairo_show_text (cr, msg.str().c_str());
+     if (msglife>0) {
+	 // status message
+	 cairo_set_font_size (cr, 12);
+	 cairo_move_to (cr, msgmargin, baseline);
+	 cairo_show_text (cr, msg.str().c_str());
+     }
 
      cairo_restore(cr);
 }
@@ -542,6 +545,9 @@ void Video::update() {
 
      cairo_show_page(cr);
      cairo_destroy(cr);
+     if (msglife>0)
+	 msglife--;  // Count down until it disappears
+
      dirty=false;   // No longer dirty
      unlock();
 }

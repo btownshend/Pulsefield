@@ -53,6 +53,7 @@ class Video: public DisplayDevice {
     void unlock();
     
     std::ostringstream msg; // Message for display in bottom of window
+    int msglife; 	// Number of frames left before clearing
     bool dirty;
     void update();
     void save(std::ostream &s) const { lasers->saveTransforms(s); }
