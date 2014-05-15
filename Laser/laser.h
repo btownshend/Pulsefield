@@ -20,6 +20,7 @@ class Laser: public DisplayDevice  {
     Laser(int unit);
     int open();
     void update();
+    static std::vector<etherdream_point> getBlanks(int blanks, etherdream_point pos);
     static std::vector<etherdream_point> getBlanks(etherdream_point initial, etherdream_point final);
     const std::vector<etherdream_point> &getPoints() const { return pts; }
     float getSpacing() const { return spacing; }

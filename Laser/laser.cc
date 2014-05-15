@@ -65,6 +65,16 @@ void Laser::update() {
 	printf("write %d\n", res);
 }
 
+// Get specifc number of blanks at pos
+std::vector<etherdream_point> Laser::getBlanks(int nblanks, etherdream_point pos) {
+    std::vector<etherdream_point>  result;
+    etherdream_point blank=pos;
+    blank.r=0; blank.g=0;blank.b=0;
+    for (int i=0;i<nblanks;i++) 
+	result.push_back(blank);
+    return result;
+}
+
 // Get number of needed blanks for given slew
 std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdream_point final) {
     std::vector<etherdream_point>  result;
@@ -77,10 +87,7 @@ std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdr
     if (devdist>0) {
 	int nblanks=std::ceil(devdist/MAXSLEWDISTANCE)+10;
 	dbg("Drawing.getBlanks",2) << "Inserting " << nblanks << " for a slew of distance " << devdist << " from " << initial.x << "," << initial.y << " to " << final.x << "," << final.y << std::endl;
-	etherdream_point blank=final;
-	blank.r=0; blank.g=0;blank.b=0;
-	for (int i=0;i<nblanks;i++) 
-	    result.push_back(blank);
+	return getBlanks(nblanks,final);
     }
     return result;
 }
@@ -97,7 +104,19 @@ void Laser::render(const Drawing &drawing) {
     }
     pts=drawing.getPoints(npoints,transform,spacing);
     dbg("Laser.render",2) << "Rendered drawing into " << pts.size() << " points with a spacing of " << spacing << std::endl;
-    if (pts.size()>=2)
-	update();
+    if (pts.size() < npoints) {
+	// Add some blanking on the end to fill it to desired number of points
+	int nblanks=npoints-pts.size();
+	dbg("Laser.render",2) << "Inserting " << nblanks << " blanks to pad out frame" << std::endl;
+	etherdream_point pos;
+	if (pts.size()>0)
+	    pos=pts.back();
+	else {
+	    pos.x=0;pos.y=0;
+	}
+	std::vector<etherdream_point> blanks = getBlanks(nblanks,pos);
+	pts.insert(pts.end(), blanks.begin(), blanks.end());
+    }
+    update();
 }
 
