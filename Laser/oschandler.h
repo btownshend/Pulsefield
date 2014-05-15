@@ -6,7 +6,7 @@
 #include "lo/lo.h"
 #include "dest.h"
 #include "drawing.h"
-#include "laser.h"
+#include "lasers.h"
 
 class Video;
 

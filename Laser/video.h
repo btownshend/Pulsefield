@@ -1,6 +1,6 @@
 #include <cairo-xlib.h>
 #include "displaydevice.h"
-#include "laser.h"
+#include "lasers.h"
 
 class Transform;
 class Video;

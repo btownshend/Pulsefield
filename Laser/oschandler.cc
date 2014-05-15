@@ -12,7 +12,7 @@
 #include <dbg.h>
 #include "oschandler.h"
 #include "urlconfig.h"
-#include "laser.h"
+#include "lasers.h"
 #include "video.h"
 #include "point.h"
 
