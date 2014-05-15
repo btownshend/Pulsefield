@@ -20,12 +20,12 @@ INCLUDES=-I$(ED)/driver/libetherdream -I$(ED)/common -I$(UTIL) -I$(CAIROINC) -I$
 #DEBUG=-g -ggdb -Wall -D_GLIBCXX_DEBUG
 DEBUG=-g  -Wall
 #OPTIMIZE=-O3
-LDFLAGS=-L$(CAIROLIBDIR) -L$(OPENCVLIBDIR) -L$(LIBLOLIBDIR) -ggdb
+LDFLAGS=-L$(CAIROLIBDIR) -L$(OPENCVLIBDIR) -L$(LIBLOLIBDIR)  
 LIBES=-llo $(OPENCV) $(CAIROLIBES)
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES)
 CFLAGS=$(DEBUG) $(OPTIMIZE)
 CXXSRCS=oschandler.cc main.cc  laser.cc lasers.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc
-FESRCS=dbg.cc dest.cc urlconfig.cc point.cc
+FESRCS=dbg.cc point.cc
 #CSRCS=$(EDL)/etherdream.c
 SRCS=$(CXXSRCS) $(CSRCS) $(FESRCS)
 
@@ -33,7 +33,7 @@ all: osclaser
 	echo For debugging malloc, use: export  DYLD_INSERT_LIBRARIES=/usr/lib/libgmalloc.dylib
 
 osclaser: $(CSRCS:.c=.o) $(CXXSRCS:.cc=.o)  $(FESRCS:.cc=.o)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
+	$(CXX) $(LDFLAGS)  -o $@ $^ $(LIBES)
 
 test: test.o $(CSRCS:.c=.o)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
@@ -60,16 +60,15 @@ oschandler.o: /opt/local/include/lo/lo_types.h
 oschandler.o: /opt/local/include/lo/lo_osc_types.h
 oschandler.o: /opt/local/include/lo/lo_errors.h
 oschandler.o: /opt/local/include/lo/lo_lowlevel.h
-oschandler.o: /opt/local/include/lo/lo_macros.h ../LIDAR/Util/dest.h
-oschandler.o: drawing.h ../LIDAR/Util/point.h etherdream_bst.h
+oschandler.o: /opt/local/include/lo/lo_macros.h drawing.h
+oschandler.o: ../LIDAR/Util/point.h etherdream_bst.h
 oschandler.o: etherdream/common/protocol.h bezier.h color.h lasers.h laser.h
 oschandler.o: displaydevice.h transform.h
 oschandler.o: /opt/local/include/opencv2/core/core.hpp
 oschandler.o: /opt/local/include/opencv2/core/types_c.h
 oschandler.o: /opt/local/include/opencv2/core/version.hpp
 oschandler.o: /opt/local/include/opencv2/core/operations.hpp
-oschandler.o: /opt/local/include/opencv2/core/mat.hpp
-oschandler.o: ../LIDAR/Util/urlconfig.h video.h
+oschandler.o: /opt/local/include/opencv2/core/mat.hpp video.h
 oschandler.o: /opt/local/include/cairo/cairo-xlib.h
 oschandler.o: /opt/local/include/cairo/cairo.h
 oschandler.o: /opt/local/include/cairo/cairo-version.h
@@ -96,7 +95,7 @@ main.o: oschandler.h /opt/local/include/lo/lo.h
 main.o: /opt/local/include/lo/lo_endian.h /opt/local/include/lo/lo_types.h
 main.o: /opt/local/include/lo/lo_osc_types.h
 main.o: /opt/local/include/lo/lo_errors.h /opt/local/include/lo/lo_lowlevel.h
-main.o: /opt/local/include/lo/lo_macros.h ../LIDAR/Util/dest.h
+main.o: /opt/local/include/lo/lo_macros.h
 laser.o: etherdream_bst.h etherdream/common/protocol.h laser.h
 laser.o: displaydevice.h transform.h /opt/local/include/opencv2/core/core.hpp
 laser.o: /opt/local/include/opencv2/core/types_c.h

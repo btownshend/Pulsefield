@@ -5,6 +5,9 @@
 class Lasers {
     std::vector<std::shared_ptr<Laser> > lasers;
     Drawing drawing;
+    std::vector<Point> background;   // Background
+    bool showBackground,showGrid;
+
     bool needsRender;
     // Locking
     pthread_mutex_t mutex;
@@ -25,6 +28,9 @@ public:
     // Save/load all transforms of all lasers
     void saveTransforms(std::ostream &s) const;
     void loadTransforms(std::istream &s);
+
+    void setBackground(int scanpt, int totalpts, float angleDeg, float range);
+    void toggleBackground() { showBackground=!showBackground; }
 };
 
 

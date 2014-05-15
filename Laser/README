@@ -1,0 +1,22 @@
+osclaser
+
+This program listens on a UDP port for OSC commands from Pulsefield or CRS and renders them on laser scanners connected via an Ether-dream interface.
+
+Installation Instructions:
+
+Prerequisites:
+- install XQuartz (the X11 windows server) for graphic output  - download from http://xquartz.macosforge.org/landing/
+- install macports for installing other software on your computer (such as OSC libraries)   -   see http://www.macports.org/install.php
+- using macports install some libraries:
+  sudo port install liblo
+  sudo port install opencv
+  sudo port install cairo
+
+With those, you should be able to run osclaser, but let me know if you have any problems.
+
+When you do run it, you can open a command window (or an XQuartz window, since you’ll have that now and its better than command), and type:
+     osclaser -help
+
+
+Brent Townshend
+bst@tc.com

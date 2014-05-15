@@ -7,6 +7,7 @@
 
 #pragma once
 #include <vector>
+#include "lo/lo.h"
 #include "sickio.h"
 
 class Background {
@@ -28,4 +29,7 @@ public:
     const std::vector<float> &getRange(int i) const { return range[i]; }
     const std::vector<float> &getFreq(int i) const { return freq[i]; }
     float getScanRes() const { return scanRes; }
+
+    // Send /pf/background OSC message
+    void sendMessages(lo_address &addr,int scanpt) const;
 };

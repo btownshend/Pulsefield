@@ -161,3 +161,13 @@ mxArray *Background::convertToMX() const {
     }
     return bg;
 }
+
+// Send /pf/background OSC message
+void Background::sendMessages(lo_address &addr, int scanpt) const {
+    assert(scanpt>=0 && scanpt<=range[0].size());
+    // Send one sample of background as scanpoint#, theta (in degress), range (in meters)
+    float angleDeg=scanRes*(scanpt-(range[0].size()-1)/2.0);
+
+    lo_send(addr,"/pf/background","iiff",scanpt,range[0].size(),angleDeg,range[0][scanpt]/UNITSPERM);
+}
+

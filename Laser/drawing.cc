@@ -79,6 +79,24 @@ std::vector<etherdream_point> Cubic::getPoints(float pointSpacing,const Transfor
     return convert(pts,transform);
 }
 
+std::vector<etherdream_point> Polygon::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
+    // Ignore spacing, just map them one-to-one
+    dbg("Polygon.getPoints",5) << "getPoints(spacing=" << pointSpacing << ")" << std::endl;
+    return transform.mapToDevice(points,c);
+}
+
+float Polygon::getLength() const {
+    if (points.size()<=1)
+	return 0.0f;
+    Point lastpt=points.back();
+    float len=0;
+    for (int i=0;i<points.size();i++) {
+	len+=(lastpt-points[i]).norm();
+	lastpt=points[i];
+    }
+    return len;
+}
+
 std::vector<etherdream_point> Primitive::convert(const std::vector<Point> &pts, const Transform &transform) const {
     std::vector<etherdream_point> result(pts.size());
     for (unsigned int i = 0; i < pts.size(); i++) {

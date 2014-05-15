@@ -100,11 +100,17 @@ void *Video::runDisplay(void *arg) {
 			std::ofstream ofs(filename);
 			world->save(ofs);
 		    }
-		    if (key==XK_l) {
+		    else if (key==XK_l) {
 			dbg("Video.runDisplay",1) << "Loading transforms from " << filename << std::endl;
 			world->newMessage() << "Loaded transforms from " << filename;
 			std::ifstream ifs(filename);
 			world->load(ifs);
+		    }
+		    else if (key==XK_b) {
+			// background toggle
+			world->toggleBackground();
+		    } else {
+			world->newMessage() << "(s)ave, (l)oad, (b)background toggle, (g)rid";
 		    }
 		}
 		break;

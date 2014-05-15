@@ -4,19 +4,24 @@
 #include "dbg.h"
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr, "Usage: %s [-n nlaser] [-d debug]\n",argv[0]);
-    fprintf(stderr,"\t-d debug\t\tset debug option (e.g -d4, -dLaser:4)\n");
+    fprintf(stderr, "Usage: %s [-P port] [-n nlaser] [-d debug]\n",argv[0]);
+    fprintf(stderr,"\t-P port\t\t\tset port to listen on (default: 7780)\n");
     fprintf(stderr,"\t-n nlaser\t\tnumber of laser devices\n");
+    fprintf(stderr,"\t-d debug\t\tset debug option (e.g -d4, -dLaser:4)\n");
     exit(1);
 }
 
 int main(int argc, char *argv[]) {
     int ch;
     int nlaser=1;
+    int port=7780;
     SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 
-    while ((ch=getopt(argc,argv,"d:n:"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:n:P:"))!=-1) {
 	switch (ch) {
+	case 'p':
+	    port=atoi(optarg);
+	    break;
 	case 'n':
 	    nlaser=atoi(optarg);
 	    break;
@@ -40,8 +45,8 @@ int main(int argc, char *argv[]) {
     std::shared_ptr<Video> video(new Video(lasers));
     dbg("main",1) << "Opening video" << std::endl;
     video->open();
-    dbg("main",1) << "Creating OSCHandler" << std::endl;
-    OSCHandler osc(lasers,video);
+    dbg("main",1) << "Creating OSCHandler on port " << port << std::endl;
+    OSCHandler osc(port,lasers,video);
 
     dbg("main",1) << "Wait forever..." << std::endl;
     osc.wait();

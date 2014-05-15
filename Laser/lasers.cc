@@ -11,6 +11,7 @@ Lasers::Lasers(int nlasers): lasers(nlasers) {
 	std::cerr<<"Failed to create lasers mutex" << std:: endl;
 	exit(1);
     }
+    showBackground=false;
 }
 
 Lasers::~Lasers() {
@@ -24,8 +25,11 @@ int Lasers::render() {
     }
     lock();
     needsRender=false;
+    Drawing dtmp=drawing;
+    if (showBackground)
+	dtmp.drawPolygon(background,Color(1.0,1.0,1.0));
     for (unsigned int i=0;i<lasers.size();i++)
-	lasers[i]->render(drawing);
+	lasers[i]->render(dtmp);
     dbg("Lasers.render",1) << "Render done" << std::endl;
     unlock();
     return 1;
@@ -70,3 +74,11 @@ void Lasers::unlock() {
     }
 }
 
+void Lasers::setBackground(int scanpt, int totalpts, float angleDeg, float range) {
+    dbg("Lasers.setBackground",5) << "scanpt=" << scanpt << "/" << totalpts << ", angle=" <<angleDeg <<", range=" << range << std::endl;
+    if (totalpts != background.size()) {
+	dbg("Lasers.setBackground",1) << "resize background to " << totalpts << " points" << std::endl;
+	background.resize(totalpts);
+    }
+    background[scanpt].setThetaRange(angleDeg*M_PI/180,range);
+}

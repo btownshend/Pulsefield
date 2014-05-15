@@ -63,6 +63,14 @@ class Cubic:public Primitive {
     float getLength() const { return b.getLength(); }
 };
 
+class Polygon: public Primitive {
+    std::vector<Point> points;
+ public:
+    Polygon(const std::vector<Point> _points,Color c): Primitive(c), points(_points) {;}
+    std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
+    float getLength() const;
+};
+
 class Drawing {
     std::vector<std::shared_ptr<Primitive> > elements;
     int frame;  // Frame number that this drawing corresponds to (or -1 if unknown)
@@ -92,28 +100,37 @@ class Drawing {
 	frame=-1;
     }
 
+    void append(std::shared_ptr<Primitive> prim) {
+	elements.push_back(prim);
+    }
+
     // Add a circle to current drawing
     void drawCircle(Point center, float r, Color c) {
 	dbg("Drawing.drawCircle",2) << "center=" << center << ", radius=" << r << ", color=" << c << std::endl;
-	elements.push_back(std::shared_ptr<Primitive>(new Circle(center,r,c)));
+	append(std::shared_ptr<Primitive>(new Circle(center,r,c)));
+    }
+
+    // Add a polygon  to current drawing
+    void drawPolygon(const std::vector<Point> &pts, Color c) {
+	append(std::shared_ptr<Primitive>(new Polygon(pts,c)));
     }
 
     // Add a arc to current drawing
     void drawArc(Point center, Point p, float angle, Color c) {
 	dbg("Drawing.drawArc",2) << "center=" << center << ", Point =" << p << ", angleCW=" << angle << ", color=" << c << std::endl;
-	elements.push_back(std::shared_ptr<Primitive>(new Arc(center,p,angle,c)));
+	append(std::shared_ptr<Primitive>(new Arc(center,p,angle,c)));
     }
 
     // Add a line to current drawing
     void drawLine(Point p1, Point p2, Color c) {
-	elements.push_back(std::shared_ptr<Primitive>(new Line(p1,p2,c)));
+	append(std::shared_ptr<Primitive>(new Line(p1,p2,c)));
     }
 
     // Add a cubic to current drawing
     void drawCubic(Point p1, Point p2, Point p3, Point p4, Color c) {
 	std::vector<Point> pts(4);
 	pts[0]=p1;pts[1]=p2;pts[2]=p3;pts[3]=p4;
-	elements.push_back(std::shared_ptr<Primitive>(new Cubic(pts,c)));
+	append(std::shared_ptr<Primitive>(new Cubic(pts,c)));
     }
 
     // Convert drawing into a set of etherdream points

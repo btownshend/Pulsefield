@@ -74,6 +74,9 @@ class OSCHandler {
 
     // /pf/frame
     void pfframe(int frame);
+    void pfbackground(int scanpt, int totalpts, float angleDeg, float range) { 
+	lasers->setBackground(scanpt,totalpts,angleDeg,range);
+    }
 
     // Changing bounds
     void setMinX(float x) { minx=x; updateBounds(); }

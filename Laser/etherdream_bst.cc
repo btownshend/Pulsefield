@@ -690,7 +690,7 @@ int etherdream_write(struct etherdream *d, const struct etherdream_point *pts,
 
     int i;
     for (i = 0; i < npts; i++) {
-	next->data[i].x = pts[i].x;
+	next->data[i].x = -pts[i].x; // BST: Flip x-axis
 	next->data[i].y = pts[i].y;
 	next->data[i].r = pts[i].r;
 	next->data[i].g = pts[i].g;
