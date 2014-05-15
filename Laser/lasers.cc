@@ -127,5 +127,10 @@ void Lasers::setBackground(int scanpt, int totalpts, float angleDeg, float range
 	dbg("Lasers.setBackground",1) << "resize background to " << totalpts << " points" << std::endl;
 	background.resize(totalpts);
     }
-    background[scanpt].setThetaRange(angleDeg*M_PI/180,range);
+    if (range>0.1)
+	background[scanpt].setThetaRange(angleDeg*M_PI/180,range);
+    else {
+	dbg("Lasers.setBackground",1) << "Point " << scanpt << " is at close range of " << range << " skipping it." << std::endl;
+	background[scanpt]=background[(scanpt+totalpts-1)%totalpts];
+    }
 }
