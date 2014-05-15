@@ -62,8 +62,9 @@ oschandler.o: /opt/local/include/lo/lo_errors.h
 oschandler.o: /opt/local/include/lo/lo_lowlevel.h
 oschandler.o: /opt/local/include/lo/lo_macros.h ../LIDAR/Util/dest.h
 oschandler.o: drawing.h ../LIDAR/Util/point.h etherdream_bst.h
-oschandler.o: etherdream/common/protocol.h bezier.h laser.h displaydevice.h
-oschandler.o: transform.h /opt/local/include/opencv2/core/core.hpp
+oschandler.o: etherdream/common/protocol.h bezier.h color.h lasers.h laser.h
+oschandler.o: displaydevice.h transform.h
+oschandler.o: /opt/local/include/opencv2/core/core.hpp
 oschandler.o: /opt/local/include/opencv2/core/types_c.h
 oschandler.o: /opt/local/include/opencv2/core/version.hpp
 oschandler.o: /opt/local/include/opencv2/core/operations.hpp
@@ -77,12 +78,12 @@ oschandler.o: /opt/local/include/cairo/cairo-deprecated.h
 oschandler.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
 oschandler.o: /opt/local/include/X11/Xfuncproto.h
 oschandler.o: /opt/local/include/X11/Xosdefs.h
-main.o: laser.h etherdream_bst.h etherdream/common/protocol.h displaydevice.h
-main.o: transform.h /opt/local/include/opencv2/core/core.hpp
+main.o: lasers.h laser.h etherdream_bst.h etherdream/common/protocol.h
+main.o: displaydevice.h transform.h /opt/local/include/opencv2/core/core.hpp
 main.o: /opt/local/include/opencv2/core/types_c.h
 main.o: /opt/local/include/opencv2/core/version.hpp
 main.o: /opt/local/include/opencv2/core/operations.hpp
-main.o: /opt/local/include/opencv2/core/mat.hpp ../LIDAR/Util/point.h
+main.o: /opt/local/include/opencv2/core/mat.hpp ../LIDAR/Util/point.h color.h
 main.o: drawing.h ../LIDAR/Util/dbg.h bezier.h video.h
 main.o: /opt/local/include/cairo/cairo-xlib.h
 main.o: /opt/local/include/cairo/cairo.h
@@ -102,9 +103,17 @@ laser.o: /opt/local/include/opencv2/core/types_c.h
 laser.o: /opt/local/include/opencv2/core/version.hpp
 laser.o: /opt/local/include/opencv2/core/operations.hpp
 laser.o: /opt/local/include/opencv2/core/mat.hpp ../LIDAR/Util/point.h
-laser.o: drawing.h ../LIDAR/Util/dbg.h bezier.h
+laser.o: color.h ../LIDAR/Util/dbg.h drawing.h bezier.h
+lasers.o: lasers.h laser.h etherdream_bst.h etherdream/common/protocol.h
+lasers.o: displaydevice.h transform.h
+lasers.o: /opt/local/include/opencv2/core/core.hpp
+lasers.o: /opt/local/include/opencv2/core/types_c.h
+lasers.o: /opt/local/include/opencv2/core/version.hpp
+lasers.o: /opt/local/include/opencv2/core/operations.hpp
+lasers.o: /opt/local/include/opencv2/core/mat.hpp ../LIDAR/Util/point.h
+lasers.o: color.h drawing.h ../LIDAR/Util/dbg.h bezier.h
 drawing.o: drawing.h ../LIDAR/Util/point.h etherdream_bst.h
-drawing.o: etherdream/common/protocol.h ../LIDAR/Util/dbg.h bezier.h
+drawing.o: etherdream/common/protocol.h ../LIDAR/Util/dbg.h bezier.h color.h
 drawing.o: transform.h /opt/local/include/opencv2/core/core.hpp
 drawing.o: /opt/local/include/opencv2/core/types_c.h
 drawing.o: /opt/local/include/opencv2/core/version.hpp
@@ -126,7 +135,7 @@ video.o: /opt/local/include/opencv2/core/types_c.h
 video.o: /opt/local/include/opencv2/core/version.hpp
 video.o: /opt/local/include/opencv2/core/operations.hpp
 video.o: /opt/local/include/opencv2/core/mat.hpp ../LIDAR/Util/point.h
-video.o: laser.h drawing.h ../LIDAR/Util/dbg.h bezier.h
+video.o: lasers.h laser.h color.h drawing.h ../LIDAR/Util/dbg.h bezier.h
 transform.o: /opt/local/include/opencv2/imgproc/imgproc.hpp
 transform.o: /opt/local/include/opencv2/core/core.hpp
 transform.o: /opt/local/include/opencv2/core/types_c.h
@@ -137,6 +146,6 @@ transform.o: /opt/local/include/opencv2/imgproc/types_c.h
 transform.o: /opt/local/include/opencv2/core/core_c.h transform.h
 transform.o: ../LIDAR/Util/point.h etherdream_bst.h
 transform.o: etherdream/common/protocol.h drawing.h ../LIDAR/Util/dbg.h
-transform.o: bezier.h
+transform.o: bezier.h color.h
 etherdream_bst.o: etherdream_bst.h etherdream/common/protocol.h
 etherdream_bst.o: ../LIDAR/Util/dbg.h
