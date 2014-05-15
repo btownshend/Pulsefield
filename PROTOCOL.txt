@@ -1,5 +1,5 @@
 Pulsefield OSC Protocol
-Version 2.2
+Version 2.2.1
 
 Objectives:
      - transmit real time data to MAX/SC/LiveOSC/ChucK/Java efficiently
@@ -119,6 +119,13 @@ Notes:
      source - string describing where the data came from
      starttime - time in UTC corresponding to sample time 0 above (OSC Time tag semantics, but as two integers)
 
+/pf/background pt totalpts angleDeg distance  - background (walls) of scan
+     pt - point number (starts at 0)
+     totalpts - total points per full scan (typically 381)
+     angleDeg - angle from LIDAR in degrees
+     distance - distance from LIDAR in meters
+- one background message is sent per frame; it takes 381 frames to get all the background
+	       
 /ack code - response to /ping
      code - same code value as in /ping message
 
