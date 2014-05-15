@@ -52,16 +52,9 @@ static int quit_handler(const char *, const char *, lo_arg **, int, lo_message ,
 }
 
 /* Handler stubs */
+static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->ping(msg,argv[0]->i); return 0; }
 static int start_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->startStop(true); return 0; }
 static int stop_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->startStop(false); return 0; }
-
-// Link management
-static int addDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->addDest(&argv[0]->s,argv[1]->i); return 0; }
-static int addDestPort_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->addDest(msg,argv[0]->i); return 0; }
-static int rmDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->rmDest(&argv[0]->s,argv[1]->i); return 0; }
-static int rmDestPort_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->rmDest(msg,argv[0]->i); return 0; }
-static int rmAllDest_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->rmAllDest(); return 0; }
-static int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->ping(msg,argv[0]->i); return 0; }
 
 // Laser settings
 static int setPPS_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPPS(argv[0]->i,argv[1]->f); return 0; }
@@ -98,21 +91,14 @@ static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv,
 static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxY(argv[0]->f); return 0; }
 static int pfbackground_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfbackground(argv[0]->i,argv[1]->i,argv[2]->f,argv[3]->f); return 0; }
 
-OSCHandler::OSCHandler(std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _video) : lasers(_lasers), video(_video),  currentColor(1.0,1.0,1.0) {
+OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _video) : lasers(_lasers), video(_video),  currentColor(1.0,1.0,1.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler()" << std::endl;
     currentDensity=1.0;
     npoints=600;
     minx=-5; maxx=5;
     miny=0; maxy=0;
 
-	URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
-
-	serverPort=urls.getPort("LASER");
-	if (serverPort<0) {
-		fprintf(stderr,"Invalid server port retrieved from %s when looking for LASER: %d\n", urls.getFilename(),serverPort);
-		exit(1);
-	}
-
+	serverPort=port;
 
 	/* start a new server on OSC port  */
 	char cbuf[10];
@@ -124,18 +110,6 @@ OSCHandler::OSCHandler(std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _
 	}
 	printf("Started server on port %d\n", serverPort);
 
-	/* Start sending data to hardwired OSC destinations */
-	const char *targets[]={"VD"};
-	for (unsigned int i=0;i<sizeof(targets)/sizeof(targets[0]);i++) {
-	    int clientPort=urls.getPort(targets[i]);
-	    const char *clientHost=urls.getHost(targets[i]);
-	    if (clientHost==0 || clientPort==-1)
-		fprintf(stderr,"Unable to location %s in urlconfig.txt\n", targets[i]);
-	    else
-		addDest(clientHost, clientPort);
-	}
-
-
 	/* add method that will match the path /quit with no args */
 	lo_server_add_method(s, "/quit", "", quit_handler, NULL);
 
@@ -144,11 +118,6 @@ OSCHandler::OSCHandler(std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _
 	lo_server_add_method(s,"/laser/stop","",stop_handler,this);
 
 	/* Link management */
-	lo_server_add_method(s,"/laser/dest/add","si",addDest_handler,this);
-	lo_server_add_method(s,"/laser/dest/add/port","i",addDestPort_handler,this);
-	lo_server_add_method(s,"/laser/dest/remove","si",rmDest_handler,this);
-	lo_server_add_method(s,"/laser/dest/remove/port","i",rmDestPort_handler,this);
-	lo_server_add_method(s,"/laser/dest/clear","",rmAllDest_handler,this);
 	lo_server_add_method(s,"/ping","i",ping_handler,this);
 
 	/* Attributes */
@@ -235,18 +204,6 @@ void OSCHandler::processIncoming() {
 
 void OSCHandler::startStop(bool start) {
 	printf("OSCHandler: %s\n", start?"start":"stop");
-
-	// Send status update message
-	for (int i=0;i<dests.size();i++) {
-		char cbuf[10];
-		sprintf(cbuf,"%d",dests.getPort(i));
-		lo_address addr = lo_address_new(dests.getHost(i), cbuf);
-		if (start)
-			lo_send(addr,"/laser/started","");
-		else
-			lo_send(addr,"/laser/stopped","");
-		lo_address_free(addr);
-	}
 }
 
 
@@ -286,38 +243,13 @@ void OSCHandler::setSkew(int unit, int skew) {
     // TODO:
 }
 
-void OSCHandler::addDest(const char *host, int port) {
-	dests.add(host,port);
-}
-
-void OSCHandler::addDest(lo_message msg, int port) {
-	char *host=lo_url_get_hostname(lo_address_get_url(lo_message_get_source(msg)));
-	addDest(host,port);
-}
-
-void OSCHandler::rmDest(const char *host, int port) {
-	dests.remove(host,port);
-}
-
-void OSCHandler::rmDest(lo_message msg, int port) {
-	char *host=lo_url_get_hostname(lo_address_get_url(lo_message_get_source(msg)));
-	rmDest(host,port);
-}
-
-void OSCHandler::rmAllDest() {
-	dests.removeAll();
-}
 
 void OSCHandler::ping(lo_message msg, int seqnum) {
-	char *host=lo_url_get_hostname(lo_address_get_url(lo_message_get_source(msg)));
-	printf("Got ping from %s\n",host);
-	for (int i=0;i<dests.size();i++) {
-		char cbuf[10];
-		sprintf(cbuf,"%d",dests.getPort(i));
-		lo_address addr = lo_address_new(dests.getHost(i), cbuf);
-		lo_send(addr,"/ack","i",seqnum);
-		lo_address_free(addr);
-	}
+    char *url=lo_address_get_url(lo_message_get_source(msg));
+    printf("Got ping from %s\n",url);
+    lo_address addr = lo_address_new_from_url(url);
+    lo_send(addr,"/ack","i",seqnum);
+    lo_address_free(addr);
 }
 
 void OSCHandler::setColor(Color c ) {
@@ -388,6 +320,7 @@ void OSCHandler::pfframe(int frame) {
     // Set current frame number
     drawing.setFrame(frame);
 }
+
 
 // Called when any of the bounds have been possibly changed
 void OSCHandler::updateBounds() {
