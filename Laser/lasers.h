@@ -31,6 +31,7 @@ public:
 
     void setBackground(int scanpt, int totalpts, float angleDeg, float range);
     void toggleBackground() { showBackground=!showBackground; }
+    void toggleGrid() { showGrid=!showGrid; }
 };
 
 

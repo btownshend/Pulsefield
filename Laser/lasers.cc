@@ -12,6 +12,7 @@ Lasers::Lasers(int nlasers): lasers(nlasers) {
 	exit(1);
     }
     showBackground=false;
+    showGrid=false;
 }
 
 Lasers::~Lasers() {
@@ -28,6 +29,27 @@ int Lasers::render() {
     Drawing dtmp=drawing;
     if (showBackground)
 	dtmp.drawPolygon(background,Color(1.0,1.0,1.0));
+    if (showGrid) {
+	float minx=-6,maxx=6,miny=0,maxy=6;
+	for (float x=minx;x<=maxx;x+=2) {
+	    dtmp.drawLine(Point(x,miny),Point(x,maxy),Color(1.0,1.0,1.0));
+	    if (x+1<=maxx)  {
+		dtmp.drawLine(Point(x,maxy),Point(x+1,maxy),Color(1.0,1.0,1.0));
+		dtmp.drawLine(Point(x+1,maxy),Point(x+1,miny),Color(1.0,1.0,1.0));
+	    }
+	    if (x+2<=maxx)
+		dtmp.drawLine(Point(x+1,miny),Point(x+2,miny),Color(1.0,1.0,1.0));
+	}
+	for (float y=miny;y<maxy;y+=2) {
+	    dtmp.drawLine(Point(minx,y),Point(maxx,y),Color(1.0,1.0,1.0));
+	    if (y+1<=maxy) {
+		dtmp.drawLine(Point(maxx,y),Point(maxx,y+1),Color(1.0,1.0,1.0));
+		dtmp.drawLine(Point(maxx,y+1),Point(minx,y+1),Color(1.0,1.0,1.0));
+	    }
+	    if (y+2<=maxy)
+		dtmp.drawLine(Point(minx,y+1),Point(minx,y+2),Color(1.0,1.0,1.0));
+	}
+    }
     for (unsigned int i=0;i<lasers.size();i++)
 	lasers[i]->render(dtmp);
     dbg("Lasers.render",1) << "Render done" << std::endl;

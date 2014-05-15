@@ -109,6 +109,9 @@ void *Video::runDisplay(void *arg) {
 		    else if (key==XK_b) {
 			// background toggle
 			world->toggleBackground();
+		    } else if (key==XK_g) {
+			// Grid toggle
+			world->toggleGrid();
 		    } else {
 			world->newMessage() << "(s)ave, (l)oad, (b)background toggle, (g)rid";
 		    }
