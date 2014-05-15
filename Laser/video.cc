@@ -230,10 +230,10 @@ void XRefs::refresh(cairo_t *cr, std::shared_ptr<Laser>laser,  Video &video, int
 	dbg("XRefs.refresh",1) << "Found xref entry; moving laser " << entry->laser->getUnit() << " anchor " << anchorNumber
 			       << " to " << Point(wx,wy) << std::endl;
 	if (entry->dev) {
-	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " device anchor " << anchorNumber << " to " << std::setprecision(0) << Point(wx,wy) << std::endl << std::setprecision(3);
+	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " device anchor " << anchorNumber << " to " <<std::fixed <<  std::setprecision(0) << Point(wx,wy) << std::endl << std::setprecision(3);
 	    entry->laser->getTransform().setDevPoint(anchorNumber,Point(std::min(32767.0,std::max(-32768.0,wx)),std::min(32767.0,std::max(-32768.0,wy))));
 	} else {
-	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " world anchor " << anchorNumber << " to " << Point(wx,wy) << std::endl;
+	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " world anchor " << anchorNumber << " to "<< std::setprecision(3)  << Point(wx,wy) << std::endl;
 	    entry->laser->getTransform().setFloorPoint(anchorNumber,video.constrainPoint(Point(wx,wy)));
 	}
 	entry->laser->getTransform().recompute();
