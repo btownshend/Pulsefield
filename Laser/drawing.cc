@@ -80,9 +80,14 @@ std::vector<etherdream_point> Cubic::getPoints(float pointSpacing,const Transfor
 }
 
 std::vector<etherdream_point> Polygon::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
-    // Ignore spacing, just map them one-to-one
-    dbg("Polygon.getPoints",5) << "getPoints(spacing=" << pointSpacing << ")" << std::endl;
-    return transform.mapToDevice(points,c);
+    std::vector<etherdream_point> result;
+    for (int i=1;i<points.size();i++) {
+	std::vector<etherdream_point> line=Line(points[i-1],points[i],c).getPoints(pointSpacing,transform,priorPoint);
+	result.insert(result.end(),line.begin(),line.end());
+	priorPoint=&result.back();
+    }
+    dbg("Polygon.getPoints",5) << "getPoints(spacing=" << pointSpacing << ") -> " << result.size() << " points" << std::endl;
+    return result;
 }
 
 float Polygon::getLength() const {
