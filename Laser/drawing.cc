@@ -188,15 +188,16 @@ std::vector<etherdream_point> Drawing::getPoints(int targetNumPoints,const Trans
     std::vector<etherdream_point> result = getPoints(spacing,transform);
     std::vector<etherdream_point> pruned = prune(result);
     dbg("Drawing.getPoints",2) << "Initial point count = " << pruned.size() << " compared to planned " << targetNumPoints << " for " << elements.size() << " elements." << std::endl;
-    if (std::abs(targetNumPoints-(int)pruned.size()) > 10) {
-	int nblanks = 0;
-	for (unsigned int i=0;i<pruned.size();i++)
-	    if (pruned[i].r==0 && pruned[i].g==0 && pruned[i].b==0)
-		nblanks++;
-	if (nblanks> targetNumPoints/2)  {
-	    targetNumPoints=nblanks*2;
-	    dbg("Drawing.getPoints",2) << "More than half of points are blanks, increasing target to " << targetNumPoints << std::endl;
-	}
+    int nblanks = 0;
+    for (unsigned int i=0;i<pruned.size();i++)
+	if (pruned[i].r==0 && pruned[i].g==0 && pruned[i].b==0)
+	    nblanks++;
+    if (nblanks> targetNumPoints/2)  {
+	targetNumPoints=nblanks*2;
+	dbg("Drawing.getPoints",2) << "More than half of points are blanks, increasing target to " << targetNumPoints << std::endl;
+    }
+
+    if (std::abs(targetNumPoints-(int)pruned.size()) > 10 &&  pruned.size() > nblanks+2) {
 	float scaleFactor=(targetNumPoints-nblanks)*1.0/(pruned.size()-nblanks);
 	dbg("Drawing.getPoints",2) << "Have " << nblanks << " blanks; adjusting spacing by a factor of " << scaleFactor << std::endl;
 	spacing/=scaleFactor;
