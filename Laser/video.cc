@@ -109,11 +109,17 @@ void *Video::runDisplay(void *arg) {
 		    else if (key==XK_b) {
 			// background toggle
 			world->toggleBackground();
+			world->newMessage() << "Toggled background";
 		    } else if (key==XK_g) {
 			// Grid toggle
 			world->toggleGrid();
+			world->newMessage() << "Toggled grid";
+		    } else if (key==XK_r) {
+			// Reset transforms
+			world->clearTransforms();
+			world->newMessage() << "Reset transforms";
 		    } else {
-			world->newMessage() << "(s)ave, (l)oad, (b)background toggle, (g)rid";
+			world->newMessage() << "(s)ave, (l)oad, (b)background toggle, (g)rid, (r)eset";
 		    }
 		}
 		break;

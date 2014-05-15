@@ -79,6 +79,12 @@ void Lasers::loadTransforms(std::istream &s) {
     needsRender=true;
 }
 
+void Lasers::clearTransforms() {
+    for (unsigned int i=0;i<lasers.size();i++)
+	lasers[i]->getTransform()=Transform();
+    needsRender=true;
+}
+
 void Lasers::lock() {
     dbg("Lasers.lock",5) << "lock req" << std::endl;
     if (pthread_mutex_lock(&mutex)) {

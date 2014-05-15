@@ -28,6 +28,7 @@ public:
     // Save/load all transforms of all lasers
     void saveTransforms(std::ostream &s) const;
     void loadTransforms(std::istream &s);
+    void clearTransforms();
 
     void setBackground(int scanpt, int totalpts, float angleDeg, float range);
     void toggleBackground() { showBackground=!showBackground; }
