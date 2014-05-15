@@ -93,7 +93,6 @@ static int pfbackground_handler(const char *path, const char *types, lo_arg **ar
 OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _video) : lasers(_lasers), video(_video),  currentColor(1.0,1.0,1.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler()" << std::endl;
     currentDensity=1.0;
-    npoints=600;
     minx=-5; maxx=5;
     miny=0; maxy=0;
 

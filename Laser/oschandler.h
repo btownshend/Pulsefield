@@ -24,7 +24,6 @@ class OSCHandler {
 
     Color currentColor;
     float currentDensity;
-    int npoints;
 
     float minx,maxx,miny,maxy;
     void updateBounds();

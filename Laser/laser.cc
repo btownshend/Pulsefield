@@ -13,7 +13,7 @@ static const int MAXSLEWDISTANCE=65535/20;
 Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     unit=_unit;
     PPS=30000;
-    npoints=600;
+    npoints=1000;
     labelColor=Color::getBasicColor(unit);
 }
 
