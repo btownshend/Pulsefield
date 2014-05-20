@@ -75,8 +75,6 @@ Laser/Debug.out
 
 Laser/osclaser
 
-Laser/Debug (Capa's conflicted copy 2014-05-08).out
-
 Laser/transforms.save
 
 Laser/wesstuff.osc
@@ -85,3 +83,4 @@ Laser/*.dSYM
 Laser/vectest
 
 *.save
+*conflicted*
