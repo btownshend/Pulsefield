@@ -11,6 +11,7 @@ World::World(): groups(GROUPDIST,UNGROUPDIST) {
     nextid=1;
     priorngroups=0;
     initWindow();
+    drawRange=true;
 }
 
 void World::makeAssignments(const Vis &vis, float entrylike) {
@@ -215,7 +216,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
     }
 
     if (frame%2==0)
-	draw();
+	draw(&vis);
 
 }
         

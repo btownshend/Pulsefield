@@ -4,6 +4,7 @@
 #include "world.h"
 #include "dbg.h"
 #include "parameters.h"
+#include "vis.h"
 
 void World::initWindow() {
     dbg("World.initWindow",1) << "Creating thread for display..." << std::flush;
@@ -81,7 +82,7 @@ void World::drawinfo(cairo_t *cr, float left,  float top, float width, float hei
      cairo_restore(cr);
 }
 
-void World::draw() const {
+void World::draw(const Vis *vis) const {
     if (surface==NULL)
 	return;
     cairo_surface_flush(surface);
@@ -103,6 +104,25 @@ void World::draw() const {
      cairo_scale(cr,(float)width/(MAXRANGE*2),(float)height/MAXRANGE);
      float pixel=MAXRANGE*1.0/std::min(width,height);
      cairo_translate(cr,0,-(MAXRANGE/2.0));
+
+     if  (drawRange && vis!=NULL) {
+	 // Draw current range
+	 const SickIO *s = vis->getSick();
+
+	 float divergence = 0.011;    // 11 mrad of divergence
+	 cairo_set_line_width(cr,1*pixel);
+	 cairo_set_source_rgb (cr, 1.0,0.0,0.0);
+	 const unsigned int *range = s->getRange(0);
+	 for (unsigned int i=0;i<s->getNumMeasurements();i++) {
+	     Point p1,p2;
+	     float theta=s->getAngleRad(i);
+	     p1.setThetaRange(theta+divergence/2,range[i]);
+	     p2.setThetaRange(theta-divergence/2,range[i]);
+	     cairo_move_to(cr, p1.X(), MAXRANGE-p1.Y());
+	     cairo_line_to(cr, p2.X(), MAXRANGE-p2.Y());
+	     cairo_stroke(cr);
+	 }
+     }
 
      // Draw background
      float scanRes = bg.getScanRes()*M_PI/180;

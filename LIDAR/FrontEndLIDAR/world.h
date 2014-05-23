@@ -38,6 +38,7 @@ class World {
     pthread_t displayThread;
     static void *runDisplay(void *w);
     void makeAssignments(const Vis &vis, float entrylike);
+    bool drawRange;   // True to draw ranges on plots
 public:
     World();
     // Track people and send update messages
@@ -48,7 +49,7 @@ public:
 
     // Drawing routines
     void initWindow();
-    void draw() const;
+    void draw(const Vis *vis=NULL) const;
     void drawinfo(cairo_t *cr, float left,  float top, float width, float height) const;
 
     const Background &getBackground() const { return bg; }
