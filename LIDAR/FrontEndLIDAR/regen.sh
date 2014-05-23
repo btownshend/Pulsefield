@@ -10,7 +10,7 @@ then
 fi
 
 # Start OSC program
-~/Dropbox/Pulsefield/OSC/recordOSC/recordOSC 7002 > $recdir/$base.osc &
+~/Dropbox/Pulsefield/OSC/recordOSC/recordOSC 7780 > $recdir/$base.osc &
 PID=$!
 sleep 2
 

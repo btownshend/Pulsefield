@@ -39,4 +39,5 @@ class Groups {
     Groups(float _groupDist, float _unGroupDist): groupDist(_groupDist),unGroupDist(_unGroupDist) { nextID=1; }
     void update(std::vector<Person> &people, double now);
     void sendMessages(lo_address &addr, int frame, double now) const;
+    unsigned int size() const { return groups.size(); }
 };

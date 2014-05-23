@@ -1,5 +1,5 @@
 Pulsefield OSC Protocol
-Version 2.2.1
+Version 2.2.2
 
 Objectives:
      - transmit real time data to MAX/SC/LiveOSC/ChucK/Java efficiently
@@ -108,10 +108,11 @@ Notes:
      t - time of sample (elapsed time in seconds since beginning of run)
      target - UID of target
 
-/pf/set/parameter value - value of various parameters sent from tracker to applications
+/pf/set/parameter value - value of various parameters sent from tracker to applications (unless otherwise noted, sent every 2000 frames)
      protoversion - protocol version (string) 
      minx, miny, maxx, maxy - bounds of PF in meters
      npeople - number of people currently present (sent each time this number changes)
+     ngroups - number of groups currently present (sent each time this number changes)
      groupdist - distance used for forming groups
      ungroupdist - distance for breaking groups
      numchannels - number of channels

@@ -9,6 +9,7 @@
 World::World(): groups(GROUPDIST,UNGROUPDIST) {
     lastframe=0;
     nextid=1;
+    priorngroups=0;
     initWindow();
 }
 
@@ -272,6 +273,12 @@ void World::sendMessages(Destinations &dests, double elapsed) {
     if (activePeople != priornpeople)
 	for (unsigned int i=0;i<addr.size();i++)
 	    lo_send(addr[i],"/pf/set/npeople","i",activePeople);
+
+    if (groups.size() != priorngroups) {
+	for (unsigned int i=0;i<addr.size();i++)
+	    lo_send(addr[i],"/pf/set/ngroups","i",groups.size());
+	priorngroups=groups.size();
+    }
 
     // Updates
     for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){

@@ -24,6 +24,7 @@ class World {
     int nextid;
     std::vector<Person> people;
     Groups groups;
+    int priorngroups;
     std::set<int> lastid;
 
     Background bg;		// Background model
