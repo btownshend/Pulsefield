@@ -200,46 +200,19 @@ void FrontEnd::matsave(const std::string &filename, int frames) {
 }
 
 void FrontEnd::run() {
-	int retval;
-
-	struct timeval ts1,ts2,lastprocess;
-	gettimeofday(&lastprocess,0);   // Keep track of time of last successful frame
-	while (true) {  /* Forever */
-		fd_set rfds;
-
-		/* Setup file descriptor to watch on */
-		FD_ZERO(&rfds);
-
-		/* get the file descriptor of the server socket and watch for messages */
-		//FD_SET(lo_fd, &rfds);
-		int maxfd=1;
-
-		gettimeofday(&ts1,0);
-		dbg("FrontEnd.run",5) << "At select after "  << (ts1.tv_usec-ts2.tv_usec)/1000.0+(ts1.tv_sec-ts2.tv_sec)*1000 << " msec." << std::endl;
-		struct timeval timeout;
-		timeout.tv_usec=1000;
-		timeout.tv_sec=0;
-		retval = select(maxfd + 1, &rfds, NULL, NULL, &timeout);
-		gettimeofday(&ts2,0);
-		dbg("FrontEnd.run",5) << "Select done after " << (ts2.tv_usec-ts1.tv_usec)/1000.0+(ts2.tv_sec-ts1.tv_sec)*1000 << " msec." << std::endl;
-		if (retval == -1) {
-			perror("select() error: ");
-			exit(1);
-		} else if (retval == 0) {
-			//fprintf(stderr,"Select timeout\n");
-		}
-
-
-		// Read data from sensors
-		bool allValid=true;
-		for (int i=0;i<nsick;i++) {
-			allValid&=sick[i]->isValid();
-		}
-		if (allValid)
-			processFrames();
-		gettimeofday(&lastprocess,0);
+    while (true) {  /* Forever */
+	// Read data from sensors
+	sick[0]->lock();	// Needs to be modified to support multiple LIDARs
+	sick[0]->waitForFrame();
+	bool allValid=true;
+	for (int i=0;i<nsick;i++) {
+	    allValid&=sick[i]->isValid();
 	}
-	// NOT REACHED
+	if (allValid)
+	    processFrames();
+	sick[0]->unlock();
+    }
+    // NOT REACHED
 }
 
 // Processing incoming OSC messages in a separate thread
@@ -365,7 +338,7 @@ void FrontEnd::stopRecording() {
     recording=false;
 }
 
-int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
+int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bool overlayLive) {
     printf("Playing back recording from %s\n", filename);
     FILE *fd=fopen(filename,"r");
     if (fd == NULL) {
@@ -402,27 +375,30 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	    fprintf(stderr,"Input file skips frames %d-%d\n",lastframe+1,frame-1);
 
 	lastframe=frame;
-	while (singleStep && frameStep<=0) {
-	    printf("Num frames to step? ");
-	    char buf[100];
-	    fgets(buf,sizeof(buf)-1,stdin);
-	    if (buf[0]==0xa)
-		frameStep=1;
-	    else
-		frameStep=atoi(buf);
-	    printf("Advancing %d frames\n", frameStep);
-	} 
-	frameStep--;
+	if (!overlayLive) {
+	    while (singleStep && frameStep<=0) {
+		printf("Num frames to step? ");
+		char buf[100];
+		fgets(buf,sizeof(buf)-1,stdin);
+		if (buf[0]==0xa)
+		    frameStep=1;
+		else
+		    frameStep=atoi(buf);
+		printf("Advancing %d frames\n", frameStep);
+	    } 
+	    frameStep--;
 
-	struct timeval now;
-	gettimeofday(&now,0);
+	    struct timeval now;
+	    gettimeofday(&now,0);
 	
-	long int waittime=(acquired.tv_sec-startfile.tv_sec-speedFactor*(now.tv_sec-starttime.tv_sec))*1000000+(acquired.tv_usec-startfile.tv_usec-speedFactor*(now.tv_usec-starttime.tv_usec));
-	if (waittime >1000) {
-	    usleep(waittime);
-	}
+	    long int waittime=(acquired.tv_sec-startfile.tv_sec-speedFactor*(now.tv_sec-starttime.tv_sec))*1000000+(acquired.tv_usec-startfile.tv_usec-speedFactor*(now.tv_usec-starttime.tv_usec));
+	    if (waittime >1000) {
+		// When doing an overlay, timing is driven by file and data is sampled whenever overlay data is ready, if nothing is valid a frame is skipped
+		usleep(waittime);
+	    }
+	} /* else use real-time timing */
 
-	assert(nechoes>=1 && nechoes<=SickIO::MAXECHOES);
+        assert(nechoes>=1 && nechoes<=SickIO::MAXECHOES);
 	assert(nmeasure>0 && nmeasure<=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS);
 
 	for (int e=0;e<nechoes;e++) {
@@ -441,11 +417,27 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor) {
 	}
 	if (frame%100==0)
 	    printf("Playing frame %d\n",frame);
-	if (!sick[0])
-	    sick[0]=new SickIO();
 	
-	sick[0]->set(cid,frame, acquired,  nmeasure, nechoes, range,reflect);
-	processFrames();
+	if (overlayLive) {
+	    sick[0]->lock();
+	    sick[0]->waitForFrame();
+	    assert(sick[0]->isValid());
+	    sick[0]->overlay(cid,frame, acquired,  nmeasure, nechoes, range,reflect);
+	    processFrames();
+	    assert(!sick[0]->isValid());
+	    sick[0]->unlock();
+	} else {
+	    if (nsick==0) {
+		sick[0]=new SickIO();
+		nsick=1;
+	    }
+	    sick[0]->lock();
+	    sick[0]->set(cid,frame, acquired,  nmeasure, nechoes, range,reflect);
+	    assert(sick[0]->isValid());
+	    processFrames();
+	    assert(!sick[0]->isValid());
+	    sick[0]->unlock();
+	}
 
 	if (!matfile.empty()) {
 	    snap->append(vis,world);

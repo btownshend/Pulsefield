@@ -13,6 +13,7 @@
 #include <mat.h>
 
 #include "point.h"
+#include "dbg.h"
 
 class SickIO {
 public:
@@ -29,7 +30,8 @@ private:
 	float y[MAXECHOES][MAXMEASUREMENTS];
 	int num_measurements;
 	struct timeval acquired;
-	unsigned int frame;
+	unsigned int frame;   // Frame number of frame currently stored in range,reflect,x,y,acquired
+	unsigned int frameCntr;  // Increments at each frame time (even if a frame is overwritten)
 	unsigned int overwrittenframes;  // Number of overwritten frames since last message
 	bool valid;
 	pthread_t runThread;
@@ -41,15 +43,26 @@ private:
 	double scanRes;
 	void updateScanFreqAndRes();
 	bool fake;
+	// Synchronization
+	pthread_mutex_t mutex;
+	pthread_cond_t signal;
 public:
 	SickIO(int _id, const char *host, int port);
 	// Constructor to fake the data from a scan
 	SickIO() {
 	    fake=true;
 	    scanFreq=50;
+	    frame=0;
+	    frameCntr=1;
+	    valid=false;
+	    pthread_mutex_init(&mutex,NULL);
+	    pthread_cond_init(&signal,NULL);
 	}
 	// Set values for faking
 	void set(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]);
+
+	// Overlay frame read from data file onto real-time data
+	void overlay(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]);
 	virtual ~SickIO();
 
 	void run();
@@ -115,6 +128,7 @@ public:
 	}
 
 	void clearValid() {
+	    dbg("SickIO.clearValid",8) << "Cleared" << std::endl;
 		this->valid = false;
 	}
 
@@ -141,4 +155,8 @@ public:
 	float getScanRes() const {
 	    return scanRes;
 	}
+
+	void waitForFrame();
+	void lock();
+	void unlock();
 };
