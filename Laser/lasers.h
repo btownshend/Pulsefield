@@ -34,6 +34,7 @@ public:
     void toggleBackground() { showBackground=!showBackground; }
     void toggleGrid() { showGrid=!showGrid; }
     void toggleOutline() { showOutline=!showOutline; }
+    void toggleLaser(int i) { if (i>=0 && i<lasers.size()) lasers[i]->toggleLaser(); }
 };
 
 

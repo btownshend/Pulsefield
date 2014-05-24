@@ -15,6 +15,7 @@ Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     PPS=30000;
     npoints=1000;
     labelColor=Color::getBasicColor(unit);
+    showLaser = true;
 }
 
 int Laser::open() {
@@ -102,8 +103,14 @@ void Laser::render(const Drawing &drawing) {
 	    return;   
 	}
     }
-    pts=drawing.getPoints(npoints,transform,spacing);
-    dbg("Laser.render",2) << "Rendered drawing into " << pts.size() << " points with a spacing of " << spacing << std::endl;
+    if (showLaser) {
+	pts=drawing.getPoints(npoints,transform,spacing);
+	dbg("Laser.render",2) << "Rendered drawing into " << pts.size() << " points with a spacing of " << spacing << std::endl;
+    } else {
+	pts.resize(0);
+	dbg("Laser.render",2) << "Laser is not being shown" << std::endl;
+    }
+
     if (pts.size() < npoints) {
 	// Add some blanking on the end to fill it to desired number of points
 	int nblanks=npoints-pts.size();

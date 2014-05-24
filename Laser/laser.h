@@ -16,6 +16,7 @@ class Laser: public DisplayDevice  {
     int unit;
     Color labelColor;
     Color maxColor;
+    bool showLaser;
  public:
     Laser(int unit);
     int open();
@@ -29,4 +30,5 @@ class Laser: public DisplayDevice  {
     Color getLabelColor() const { return labelColor; }
     Color getMaxColor() const { return maxColor; }
     int getUnit() const { return unit; }
+    void toggleLaser() { showLaser=!showLaser; }
 };
