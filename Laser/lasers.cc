@@ -27,27 +27,31 @@ int Lasers::render() {
     lock();
     needsRender=false;
     Drawing dtmp=drawing;
+    const Color bgColor=Color(0.0,1.0,0.0);
+    const Color gridColor=Color(0.0,1.0,0.0);
+    const Color outlineColor=Color(0.0,1.0,0.0);
+
     if (showBackground)
-	dtmp.drawPolygon(background,Color(1.0,1.0,1.0));
+	dtmp.drawPolygon(background,bgColor);
     if (showGrid) {
 	float minx=-6,maxx=6,miny=0,maxy=6;
 	for (float x=minx;x<=maxx;x+=2) {
-	    dtmp.drawLine(Point(x,miny),Point(x,maxy),Color(1.0,1.0,1.0));
+	    dtmp.drawLine(Point(x,miny),Point(x,maxy),gridColor);
 	    if (x+1<=maxx)  {
-		dtmp.drawLine(Point(x,maxy),Point(x+1,maxy),Color(1.0,1.0,1.0));
-		dtmp.drawLine(Point(x+1,maxy),Point(x+1,miny),Color(1.0,1.0,1.0));
+		dtmp.drawLine(Point(x,maxy),Point(x+1,maxy),gridColor);
+		dtmp.drawLine(Point(x+1,maxy),Point(x+1,miny),gridColor);
 	    }
 	    if (x+2<=maxx)
-		dtmp.drawLine(Point(x+1,miny),Point(x+2,miny),Color(1.0,1.0,1.0));
+		dtmp.drawLine(Point(x+1,miny),Point(x+2,miny),gridColor);
 	}
 	for (float y=miny;y<maxy;y+=2) {
-	    dtmp.drawLine(Point(minx,y),Point(maxx,y),Color(1.0,1.0,1.0));
+	    dtmp.drawLine(Point(minx,y),Point(maxx,y),gridColor);
 	    if (y+1<=maxy) {
-		dtmp.drawLine(Point(maxx,y),Point(maxx,y+1),Color(1.0,1.0,1.0));
-		dtmp.drawLine(Point(maxx,y+1),Point(minx,y+1),Color(1.0,1.0,1.0));
+		dtmp.drawLine(Point(maxx,y),Point(maxx,y+1),gridColor);
+		dtmp.drawLine(Point(maxx,y+1),Point(minx,y+1),gridColor);
 	    }
 	    if (y+2<=maxy)
-		dtmp.drawLine(Point(minx,y+1),Point(minx,y+2),Color(1.0,1.0,1.0));
+		dtmp.drawLine(Point(minx,y+1),Point(minx,y+2),gridColor);
 	}
     }
     for (unsigned int i=0;i<lasers.size();i++) {
@@ -66,7 +70,7 @@ int Lasers::render() {
 		dbgn("Lasers.render",3) << outlineWorld[j] << " ";
 	    dbgn("Lasers.render",3) << std::endl;
 	    Drawing dtmp2=dtmp;
-	    dtmp2.drawPolygon(outlineWorld,Color(1.0,1.0,1.0));
+	    dtmp2.drawPolygon(outlineWorld,outlineColor);
 	    lasers[i]->render(dtmp2);
 	} else
 	    lasers[i]->render(dtmp);
