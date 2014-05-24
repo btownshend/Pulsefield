@@ -90,7 +90,7 @@ static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv,
 static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxY(argv[0]->f); return 0; }
 static int pfbackground_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfbackground(argv[0]->i,argv[1]->i,argv[2]->f,argv[3]->f); return 0; }
 
-OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _video) : lasers(_lasers), video(_video),  currentColor(1.0,1.0,1.0) {
+OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _video) : lasers(_lasers), video(_video),  currentColor(0.0,1.0,0.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler()" << std::endl;
     currentDensity=1.0;
     minx=-5; maxx=5;
