@@ -29,6 +29,9 @@ Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(4) {
     msglife=100;
     dirty=true;
     dpy=NULL;
+
+    legsEnabled=True;
+    bodyEnabled=False;
 }
 
 Video::~Video() {
@@ -99,17 +102,23 @@ void *Video::runDisplay(void *arg) {
 			world->newMessage() << "Saved transforms in " << filename;
 			std::ofstream ofs(filename);
 			world->save(ofs);
-		    }
-		    else if (key==XK_l) {
+		    } else if (key==XK_l) {
 			dbg("Video.runDisplay",1) << "Loading transforms from " << filename << std::endl;
 			world->newMessage() << "Loaded transforms from " << filename;
 			std::ifstream ifs(filename);
 			world->load(ifs);
-		    }
-		    else if (key==XK_b) {
+		    } else if (key==XK_b) {
 			// background toggle
 			world->toggleBackground();
 			world->newMessage() << "Toggled background";
+		    } else if (key==XK_B) {
+			// body  toggle
+			world->toggleBody();
+			world->newMessage() << "Toggled body";
+		    } else if (key==XK_L) {
+			// legs  toggle
+			world->toggleLegs();
+			world->newMessage() << "Toggled legs";
 		    } else if (key==XK_g) {
 			// Grid toggle
 			world->toggleGrid();
@@ -126,7 +135,7 @@ void *Video::runDisplay(void *arg) {
 			world->clearTransforms();
 			world->newMessage() << "Reset transforms";
 		    } else {
-			world->newMessage() << "(s)ave, (l)oad, (b)background toggle, (g)rid, (o)utline, (r)eset";
+			world->newMessage() << "(s)ave, (l)oad, (b)background toggle, (g)rid, (o)utline, (B)ody, (L)eg, (r)eset";
 		    }
 		}
 		break;

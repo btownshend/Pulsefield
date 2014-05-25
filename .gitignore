@@ -84,3 +84,7 @@ Laser/vectest
 
 *.save
 *conflicted*
+
+Laser/Debug.out.recent
+
+*.osc

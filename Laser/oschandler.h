@@ -63,8 +63,9 @@ class OSCHandler {
     void map(int unit, int pt, Point world, Point local);
     //    void setTransform(int unit);
 
-    // /pf/frame
     void pfframe(int frame);
+    void pfbody(Point pos);
+    void pfleg(Point pos);
     void pfbackground(int scanpt, int totalpts, float angleDeg, float range) { 
 	lasers->setBackground(scanpt,totalpts,angleDeg,range);
     }

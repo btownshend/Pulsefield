@@ -81,8 +81,8 @@ static int update_handler(const char *path, const char *types, lo_arg **argv, in
 
 // pf 
 static int pfupdate_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   /* ((OSCHandler *)user_data)->circle(Point(argv[3]->f,argv[4]->f),.30);  */ return 0; }
-static int pfbody_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(argv[2]->f,argv[3]->f),.30); return 0; }
-static int pfleg_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(argv[4]->f,argv[5]->f),.10); return 0; }
+static int pfbody_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   ((OSCHandler *)user_data)->pfbody(Point(argv[2]->f,argv[3]->f)); return 0; }
+static int pfleg_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfleg(Point(argv[4]->f,argv[5]->f)); return 0; }
 static int pfframe_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfframe(argv[0]->i); return 0; }
 static int pfsetminx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMinX(argv[0]->f);  return 0; }
 static int pfsetminy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMinY(argv[0]->f); return 0; }
@@ -305,6 +305,18 @@ void OSCHandler::update() {
     lasers->setDrawing(drawing);
 
     drawing.clear();
+}
+
+void OSCHandler::pfbody(Point pos) {
+    if (video->isBodyEnabled()) {
+	circle(pos,0.3);
+    }
+}
+
+void OSCHandler::pfleg(Point pos) {
+    if (video->isLegsEnabled()) {
+	circle(pos,0.1);
+    }
 }
 
 void OSCHandler::pfframe(int frame) {
