@@ -34,24 +34,28 @@ int Lasers::render() {
     if (showBackground)
 	dtmp.drawPolygon(background,bgColor);
     if (showGrid) {
-	float minx=-6,maxx=6,miny=0,maxy=6;
-	for (float x=minx;x<=maxx;x+=2) {
+	float width=23*12/39.37;
+	float depth=20*12/39.37;
+	float minx=-width/2,maxx=width/2,miny=0,maxy=depth;
+	float xstep=(maxx-minx)/4*0.999;
+	for (float x=minx;x<=maxx;x+=xstep*2) {
 	    dtmp.drawLine(Point(x,miny),Point(x,maxy),gridColor);
-	    if (x+1<=maxx)  {
-		dtmp.drawLine(Point(x,maxy),Point(x+1,maxy),gridColor);
-		dtmp.drawLine(Point(x+1,maxy),Point(x+1,miny),gridColor);
+	    if (x+xstep<=maxx)  {
+		dtmp.drawLine(Point(x,maxy),Point(x+xstep,maxy),gridColor);
+		dtmp.drawLine(Point(x+xstep,maxy),Point(x+xstep,miny),gridColor);
 	    }
-	    if (x+2<=maxx)
-		dtmp.drawLine(Point(x+1,miny),Point(x+2,miny),gridColor);
+	    if (x+2*xstep<=maxx)
+		dtmp.drawLine(Point(x+xstep,miny),Point(x+2*xstep,miny),gridColor);
 	}
-	for (float y=miny;y<maxy;y+=2) {
+	float ystep=(maxx-minx)/4*0.999;
+	for (float y=miny;y<maxy;y+=ystep*2) {
 	    dtmp.drawLine(Point(minx,y),Point(maxx,y),gridColor);
-	    if (y+1<=maxy) {
-		dtmp.drawLine(Point(maxx,y),Point(maxx,y+1),gridColor);
-		dtmp.drawLine(Point(maxx,y+1),Point(minx,y+1),gridColor);
+	    if (y+ystep<=maxy) {
+		dtmp.drawLine(Point(maxx,y),Point(maxx,y+ystep),gridColor);
+		dtmp.drawLine(Point(maxx,y+ystep),Point(minx,y+ystep),gridColor);
 	    }
-	    if (y+2<=maxy)
-		dtmp.drawLine(Point(minx,y+1),Point(minx,y+2),gridColor);
+	    if (y+2*ystep<=maxy)
+		dtmp.drawLine(Point(minx,y+ystep),Point(minx,y+2*ystep),gridColor);
 	}
     }
     for (unsigned int i=0;i<lasers.size();i++) {
