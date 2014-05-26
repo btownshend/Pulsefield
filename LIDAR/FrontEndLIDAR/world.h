@@ -40,6 +40,9 @@ class World {
     void makeAssignments(const Vis &vis, float entrylike);
     bool drawRange;   // True to draw ranges on plots
 
+    void initWindow();
+    void drawinfo(cairo_t *cr, float left,  float top, float width, float height) const;
+
     pthread_mutex_t displayMutex;   // Mutex to prevent X11 events from drawing at the same time as main thread
 public:
     World();
@@ -50,9 +53,7 @@ public:
     mxArray *convertToMX() const;
 
     // Drawing routines
-    void initWindow();
     void draw(const Vis *vis=NULL) const;
-    void drawinfo(cairo_t *cr, float left,  float top, float width, float height) const;
 
     const Background &getBackground() const { return bg; }
 };
