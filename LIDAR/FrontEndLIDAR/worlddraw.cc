@@ -19,6 +19,7 @@ void World::initWindow() {
 
 void *World::runDisplay(void *arg) {
     World *world=(World *)arg;
+    SetDebug("pthread:Display");
     dbg("World.runDisplay",1) << "Thread running" << std::endl;
     world->dpy = XOpenDisplay(NULL);
     if (world->dpy == NULL) {

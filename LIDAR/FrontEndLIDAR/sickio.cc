@@ -20,6 +20,7 @@ using namespace SickToolbox;
 using namespace std;
 
 static void *runner(void *t) {
+    SetDebug("pthread:SickIO");
 	((SickIO*)t)->run();
 	return NULL;
 }

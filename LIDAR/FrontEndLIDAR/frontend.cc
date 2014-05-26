@@ -218,6 +218,7 @@ void FrontEnd::run() {
 // Processing incoming OSC messages in a separate thread
 void *FrontEnd::processIncoming(void *arg) {
     lo_server s = (lo_server)arg;
+    SetDebug("pthread:OSCIncoming");
     dbg("FrontEnd.processIncoming",1) << "Started: s=" << std::setbase(16) << s << std::setbase(10) << std::endl;
     // Process all queued messages
     while (lo_server_recv(s) != 0)

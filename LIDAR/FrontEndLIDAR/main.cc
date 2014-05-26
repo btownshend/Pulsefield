@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
     std::string matfile;
     int matframes=-1;
     bool visoutput=false;
+    SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 
     while ((ch=getopt(argc,argv,"d:D:sr:Rp:Llx:m:M:V"))!=-1) {
 	switch (ch) {
