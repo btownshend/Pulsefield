@@ -45,9 +45,11 @@ void *World::runDisplay(void *arg) {
 	    cairo_xlib_surface_set_size(world->surface,e.xconfigure.width, e.xconfigure.height);
 	case MapNotify:
 	case Expose:
-	    world->draw();
 	    break;
 	}
+	if (XPending(world->dpy)==0)
+	    // Only redraw if there are no more messages
+	    world->draw();
     }
 }
 
