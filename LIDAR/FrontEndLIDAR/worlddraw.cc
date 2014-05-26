@@ -9,6 +9,7 @@
 void World::initWindow() {
     dbg("World.initWindow",1) << "Creating thread for display..." << std::flush;
     surface=0;   // Until the thread gets rolling and sets it
+    pthread_mutex_init(&displayMutex,NULL);
     int rc=pthread_create(&displayThread, NULL, runDisplay, (void *)this);
     if (rc) {
 	fprintf(stderr,"pthread_create failed with error code %d\n", rc);
@@ -86,6 +87,11 @@ void World::drawinfo(cairo_t *cr, float left,  float top, float width, float hei
 void World::draw(const Vis *vis) const {
     if (surface==NULL)
 	return;
+    
+     dbg("World.draw",2) << "locking mutex" << std::endl;
+     pthread_mutex_lock(&((World *)this)->displayMutex);
+     dbg("World.draw",2) << "got mutex lock" << std::endl;
+
     cairo_surface_flush(surface);
     int width=cairo_xlib_surface_get_width(surface);
     int height=cairo_xlib_surface_get_height(surface);
@@ -164,4 +170,6 @@ void World::draw(const Vis *vis) const {
      cairo_show_page(cr);
      cairo_destroy(cr);
      XFlush(dpy);
+     dbg("World.draw",2) << "Unlocking mutex" << std::endl;
+     pthread_mutex_unlock(&((World *)this)->displayMutex);
 }

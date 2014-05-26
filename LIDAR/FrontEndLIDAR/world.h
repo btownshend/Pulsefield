@@ -39,6 +39,8 @@ class World {
     static void *runDisplay(void *w);
     void makeAssignments(const Vis &vis, float entrylike);
     bool drawRange;   // True to draw ranges on plots
+
+    pthread_mutex_t displayMutex;   // Mutex to prevent X11 events from drawing at the same time as main thread
 public:
     World();
     // Track people and send update messages
