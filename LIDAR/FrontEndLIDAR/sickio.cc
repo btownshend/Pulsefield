@@ -232,9 +232,10 @@ void SickIO::get() {
 	gettimeofday(&acquiredTmp,0);
 	lock();
 	
-	if (valid) 
+	if (valid) {
 	    overwrittenframes++;
-	else {
+	    dbg("SickIO.get",5) << "Frame " << frame << " overwritten" << std::endl;
+	} else {
 	    // Copy in new range data, compute x,y values
 	    acquired=acquiredTmp;
 	    frame=frameCntr;
