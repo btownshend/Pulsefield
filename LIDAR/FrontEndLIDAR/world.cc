@@ -66,10 +66,12 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 
 void World::track( const Vis &vis, int frame, float fps,double elapsed) {
     int nsteps;
-    if (lastframe>0)
+    if (lastframe>0 && frame>lastframe)
 	nsteps=frame-lastframe;
-    else
+    else {
+	dbg("World.track",1) << "lastframe=" << lastframe << ", frame=" << frame << ": setting nsteps=1" << std::endl;
 	nsteps=1;
+    }
     lastframe=frame;
 
     // Update existing tracks with next prediction
