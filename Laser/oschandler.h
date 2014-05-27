@@ -59,7 +59,7 @@ class OSCHandler {
     void line(Point p1, Point p2);
     void cubic(Point p1, Point p2, Point p3, Point p4);
 
-    void update();
+    void update(int frame);
     void map(int unit, int pt, Point world, Point local);
     //    void setTransform(int unit);
 

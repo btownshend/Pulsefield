@@ -77,7 +77,7 @@ static int map_handler(const char *path, const char *types, lo_arg **argv, int a
 //static int setTransform_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setTransform(argv[0]->i); return 0; }
 
 // Draw
-static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(); return 0; }
+static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(argv[0]->i); return 0; }
 
 // pf 
 static int pfupdate_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   /* ((OSCHandler *)user_data)->circle(Point(argv[3]->f,argv[4]->f),.30);  */ return 0; }
@@ -140,7 +140,7 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	//	lo_server_add_method(s,"/laser/settransform","i",setTransform_handler,this);
 
 	/* Draw */
-	lo_server_add_method(s,"/laser/update","",update_handler,this);
+	lo_server_add_method(s,"/laser/update","i",update_handler,this);
 
 
 	/* PF */
@@ -300,7 +300,8 @@ void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
 //    lasers->getLaser(unit)->getTransform().recompute();
 //}
 
-void OSCHandler::update() {
+void OSCHandler::update(int frame) {
+    drawing.setFrame(frame);
     dbg("OSCHandler.update",1) << "Got update for drawing frame " << drawing.getFrame() << " with " << drawing.getNumElements() << " elements" << std::endl;
     lasers->setDrawing(drawing);
 
@@ -323,12 +324,12 @@ void OSCHandler::pfframe(int frame) {
     dbg("OSCHandler.pfframe",1) << "Frame " << frame << std::endl;
     if (drawing.getFrame() > 0) {
 	dbg("OSCHandler.pfframe",1) << "Received /pf/frame when drawing contains " << drawing.getNumElements() << " elements.  Assuming /update missing." << std::endl;
-	// Update lasers
-	update();
-    }
-
-    // Set current frame number
-    drawing.setFrame(frame);
+	if (video->isLegsEnabled() || video->isBodyEnabled())
+	    // Update lasers
+	    update(frame);
+    } else
+	// Set current frame number
+	drawing.setFrame(frame);
 }
 
 
