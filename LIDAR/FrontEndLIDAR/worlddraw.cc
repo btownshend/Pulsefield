@@ -98,6 +98,7 @@ void World::draw(const Vis *vis) const {
     int width=cairo_xlib_surface_get_width(surface);
     int height=cairo_xlib_surface_get_height(surface);
      cairo_t *cr = cairo_create(surface);
+     cairo_push_group(cr);
 
      // Erase surface
      cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
@@ -169,7 +170,8 @@ void World::draw(const Vis *vis) const {
 	 }
      }
 
-     cairo_show_page(cr);
+     cairo_pop_group_to_source(cr);  // Draw everything at once to avoid flicker
+     cairo_paint(cr);
      cairo_destroy(cr);
      XFlush(dpy);
      dbg("World.draw",2) << "Unlocking mutex" << std::endl;

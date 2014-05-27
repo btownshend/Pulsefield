@@ -552,6 +552,7 @@ void Video::update() {
     float height=cairo_xlib_surface_get_height(surface);
      cairo_t *cr = cairo_create(surface);
 
+     cairo_push_group(cr);
      // Erase surface
      cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
      cairo_paint(cr);
@@ -579,7 +580,9 @@ void Video::update() {
      drawWorld(cr,columns[0],0.0f,columns[1],rows[0]);
      drawInfo(cr,0.0f,rows[0],width,rows[1]);
 
-     cairo_show_page(cr);
+     cairo_pop_group_to_source(cr);
+     cairo_paint(cr);
+
      cairo_destroy(cr);
      if (msglife>0)
 	 msglife--;  // Count down until it disappears
