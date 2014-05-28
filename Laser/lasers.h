@@ -11,6 +11,9 @@ class Lasers {
     bool needsRender;
     // Locking
     pthread_mutex_t mutex;
+
+    // Allocate to individual lasers
+    std::vector<Drawing> allocate(const Drawing &d) const;
 public:
     Lasers(int nunits);
     ~Lasers();

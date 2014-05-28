@@ -19,6 +19,14 @@ Lasers::~Lasers() {
     (void)pthread_mutex_destroy(&mutex);
 }
 
+// Allocate a drawing to the lasers
+std::vector<Drawing> Lasers::allocate(const Drawing &d)  const {
+    std::vector<Drawing> result(lasers.size());
+    for (unsigned int i=0;i<result.size(); i++)
+	result[i]=d;
+    return result;
+}
+
 int Lasers::render() {
     if (!needsRender) {
 	dbg("Lasers.render",5) << "Not dirty" << std::endl;
@@ -26,36 +34,41 @@ int Lasers::render() {
     }
     lock();
     needsRender=false;
-    Drawing dtmp=drawing;
+    // Split drawing among lasers
+    std::vector<Drawing> dtmp=allocate(drawing);
+
+    // Global drawing - applies to all lasers 
+    Drawing globalDrawing;
+
     const Color bgColor=Color(0.0,1.0,0.0);
     const Color gridColor=Color(0.0,1.0,0.0);
     const Color outlineColor=Color(0.0,1.0,0.0);
 
     if (showBackground)
-	dtmp.drawPolygon(background,bgColor);
+	globalDrawing.drawPolygon(background,bgColor);
     if (showGrid) {
 	float width=23*12/39.37;
 	float depth=20*12/39.37;
 	float minx=-width/2,maxx=width/2,miny=0,maxy=depth;
 	float xstep=(maxx-minx)/4*0.999;
 	for (float x=minx;x<=maxx;x+=xstep*2) {
-	    dtmp.drawLine(Point(x,miny),Point(x,maxy),gridColor);
+	    globalDrawing.drawLine(Point(x,miny),Point(x,maxy),gridColor);
 	    if (x+xstep<=maxx)  {
-		dtmp.drawLine(Point(x,maxy),Point(x+xstep,maxy),gridColor);
-		dtmp.drawLine(Point(x+xstep,maxy),Point(x+xstep,miny),gridColor);
+		globalDrawing.drawLine(Point(x,maxy),Point(x+xstep,maxy),gridColor);
+		globalDrawing.drawLine(Point(x+xstep,maxy),Point(x+xstep,miny),gridColor);
 	    }
 	    if (x+2*xstep<=maxx)
-		dtmp.drawLine(Point(x+xstep,miny),Point(x+2*xstep,miny),gridColor);
+		globalDrawing.drawLine(Point(x+xstep,miny),Point(x+2*xstep,miny),gridColor);
 	}
 	float ystep=(maxx-minx)/4*0.999;
 	for (float y=miny;y<maxy;y+=ystep*2) {
-	    dtmp.drawLine(Point(minx,y),Point(maxx,y),gridColor);
+	    globalDrawing.drawLine(Point(minx,y),Point(maxx,y),gridColor);
 	    if (y+ystep<=maxy) {
-		dtmp.drawLine(Point(maxx,y),Point(maxx,y+ystep),gridColor);
-		dtmp.drawLine(Point(maxx,y+ystep),Point(minx,y+ystep),gridColor);
+		globalDrawing.drawLine(Point(maxx,y),Point(maxx,y+ystep),gridColor);
+		globalDrawing.drawLine(Point(maxx,y+ystep),Point(minx,y+ystep),gridColor);
 	    }
 	    if (y+2*ystep<=maxy)
-		dtmp.drawLine(Point(minx,y+ystep),Point(minx,y+2*ystep),gridColor);
+		globalDrawing.drawLine(Point(minx,y+ystep),Point(minx,y+2*ystep),gridColor);
 	}
     }
     for (unsigned int i=0;i<lasers.size();i++) {
@@ -73,11 +86,10 @@ int Lasers::render() {
 	    for (int j=0;j<outlineWorld.size();j++)
 		dbgn("Lasers.render",3) << outlineWorld[j] << " ";
 	    dbgn("Lasers.render",3) << std::endl;
-	    Drawing dtmp2=dtmp;
-	    dtmp2.drawPolygon(outlineWorld,outlineColor);
-	    lasers[i]->render(dtmp2);
-	} else
-	    lasers[i]->render(dtmp);
+	    dtmp[i].drawPolygon(outlineWorld,outlineColor);
+	}
+	dtmp[i].append(globalDrawing);
+	lasers[i]->render(dtmp[i]);
     }
     dbg("Lasers.render",1) << "Render done" << std::endl;
     unlock();
