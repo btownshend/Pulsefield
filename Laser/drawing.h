@@ -11,10 +11,11 @@
 class Transform;
 
 class Primitive {
+    int shapeID;   // Primitives with the same shapeID should be consistent (if shapeID>=0)
 protected:
     Color c;
  public:
-    Primitive(Color _c): c(_c) {;}
+    Primitive(Color _c): c(_c) { shapeID=-1;}
     virtual ~Primitive() { ; }
     // Get list of discrete points spaced approximately by pointSpacing,  optimizes based on minimizing distance from priorPoint to first point
     // Converts from floor space to device coordinates in the process
@@ -25,6 +26,8 @@ protected:
     std::vector<etherdream_point> convert(const std::vector<Point> &pts, const Transform &transform) const;
 
     virtual float getLength() const { return 0.0; }
+    void setShapeID(int s) {shapeID=s;}
+    int getShapeID() const { return shapeID; }
 };
 
 class Circle: public Primitive {
@@ -74,8 +77,9 @@ class Polygon: public Primitive {
 class Drawing {
     std::vector<std::shared_ptr<Primitive> > elements;
     int frame;  // Frame number that this drawing corresponds to (or -1 if unknown)
+    int curShapeID;
  public:
-    Drawing() { frame=-1; }
+    Drawing() { frame=-1; curShapeID=-1; }
 
     void setFrame(int _frame) { frame=_frame; }
     int getFrame() const { return frame; }
@@ -98,10 +102,27 @@ class Drawing {
 	dbg("Drawing.clear",1) << "Clearing " << elements.size() << " elements from frame " << frame << std::endl;
 	elements.clear();  
 	frame=-1;
+	curShapeID=-1;
     }
 
     void append(std::shared_ptr<Primitive> prim) {
+	prim->setShapeID(curShapeID);
 	elements.push_back(prim);
+    }
+
+    // Start a new shape
+    void shapeBegin() {
+	curShapeID++;
+    }
+
+    void shapeEnd() {
+	;
+    }
+
+    // Append another drawing to this one 
+    void append(const Drawing &d) {
+	for (int i=0;i<d.elements.size();i++)
+	    elements.push_back(d.elements[i]);
     }
 
     // Add a circle to current drawing

@@ -67,6 +67,8 @@ static int setDensity_handler(const char *path, const char *types, lo_arg **argv
 static int setAttribute_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setAttribute(&argv[0]->s,argv[1]->f); return 0; }
 
 // Primitives
+static int shape_begin_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->shapeBegin(&argv[0]->s); return 0; }
+static int shape_end_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->shapeEnd(); return 0; }
 static int circle_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(argv[0]->f,argv[1]->f),argv[2]->f); return 0; }
 static int arc_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->arc(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),argv[4]->f); return 0; }
 static int cubic_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->cubic(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f),Point(argv[6]->f,argv[7]->f)); return 0; }
@@ -130,6 +132,9 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/laser/set/skew","ii",setSkew_handler,this);
 
 	/* Primitives */
+	lo_server_add_method(s,"/laser/shape/begin","s",shape_begin_handler,this);
+	lo_server_add_method(s,"/laser/shape/end","",shape_end_handler,this);
+	
 	lo_server_add_method(s,"/laser/circle","fff",circle_handler,this);
 	lo_server_add_method(s,"/laser/arc","fffff",arc_handler,this);
 	lo_server_add_method(s,"/laser/bezier/cubic","ffffffff",cubic_handler,this);
@@ -260,6 +265,14 @@ void OSCHandler::setDensity(float d ) {
 
 void OSCHandler::setAttribute(const char *attr, float value ) {
     // TODO
+}
+
+void OSCHandler::shapeBegin(const char *type) {
+    drawing.shapeBegin();
+}
+
+void OSCHandler::shapeEnd() {
+    drawing.shapeEnd();
 }
 
 void OSCHandler::circle(Point center, float radius ) {
