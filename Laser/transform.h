@@ -20,6 +20,7 @@ class Transform {
     Point mapToDevice(Point floorPt) const;
 
     // Inverse mapping from laser to world
+    Point mapToWorld(Point p) const;
     Point mapToWorld(etherdream_point p) const;
 
     std::vector<etherdream_point> mapToDevice(const std::vector<Point> &floorPts,Color c) const;

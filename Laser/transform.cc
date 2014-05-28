@@ -92,6 +92,18 @@ Point Transform::mapToWorld(etherdream_point p) const {
     return result;
 }
 
+Point Transform::mapToWorld(Point p) const {
+    std::vector<cv::Point2f> src(1);
+    src[0].x=p.X();
+    src[0].y=p.Y();
+    std::vector<cv::Point2f> dst;
+    cv::perspectiveTransform(src,dst,invTransform);
+    Point result(dst[0].x,dst[0].y);
+
+    dbg("Transform.mapToWorld",10)  << "[" << p.X() << "," <<p.Y() << "]  -> " << result << std::endl;
+    return result;
+}
+
 std::vector<etherdream_point> Transform::mapToDevice(const std::vector<Point> &floorPts,Color c) const {
     std::vector<etherdream_point> result(floorPts.size());
     for (unsigned int i=0;i<floorPts.size();i++)
