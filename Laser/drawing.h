@@ -124,6 +124,10 @@ class Drawing {
     // Get quality score of reproduction for each of the shapeID within the drawing using the given transform
     std::map<int,float> getShapeScores(const Transform &transform) const;
 
+    // Get a subset of the drawing containing only the given shapeIDs
+    Drawing select(std::set<int> shapeIDs) const ;
+
+
     void append(std::shared_ptr<Primitive> prim) {
 	prim->setShapeID(curShapeID);
 	elements.push_back(prim);

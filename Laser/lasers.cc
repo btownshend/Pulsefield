@@ -21,9 +21,26 @@ Lasers::~Lasers() {
 
 // Allocate a drawing to the lasers
 std::vector<Drawing> Lasers::allocate(const Drawing &d)  const {
+    std::map<int,float> bestScores;
+    std::map<int,int> bestlasers;
+    for (unsigned int i=0;i<lasers.size(); i++) {
+	std::map<int,float> scores=d.getShapeScores(lasers[i]->getTransform());
+	for (std::map<int,float>::iterator s=scores.begin();s!=scores.end();s++) {
+	    if (i==0 || s->second > bestScores[s->first]) {
+		bestScores[s->first]=s->second;
+		bestlasers[s->first]=i;
+	    }
+	}
+    }
     std::vector<Drawing> result(lasers.size());
-    for (unsigned int i=0;i<result.size(); i++)
-	result[i]=d;
+    for (unsigned int i=0;i<result.size(); i++)  {
+	std::set<int> select;
+	for (std::map<int,int>::iterator b=bestlasers.begin();b!=bestlasers.end();b++) {
+	    if (b->second==i)
+		select.insert(b->first);
+	}
+	result[i]=d.select(select);
+    }
     return result;
 }
 
