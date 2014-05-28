@@ -1,6 +1,8 @@
 #pragma once 
 #include <ostream>
 #include <vector>
+#include <map>
+#include <set>
 
 #include "point.h"
 #include "etherdream_bst.h"
@@ -25,6 +27,15 @@ protected:
     // Convert from a Point vector to an etherdream vector, applying the current transform
     std::vector<etherdream_point> convert(const std::vector<Point> &pts, const Transform &transform) const;
 
+    // Get score for rendering using givent transform -- higher is better
+    // A shape which is completely on-screen has a score equal to 1.0+1.0/(average line-width)
+    // If part of it is off-screen, then the score is frac(oncreen) (goes from 0.0 to 1.0)
+    // Full offscreen has a score of 0
+    virtual float getShapeScore(const Transform &transform) const {
+	// Should be overridden
+	assert(0);
+    }
+
     virtual float getLength() const { return 0.0; }
     void setShapeID(int s) {shapeID=s;}
     int getShapeID() const { return shapeID; }
@@ -40,6 +51,7 @@ class Circle: public Primitive {
     }
     std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
     float getLength() const { return radius*2*M_PI; }
+    float getShapeScore(const Transform &transform) const;
 };
 
 class Arc: public Primitive {
@@ -48,6 +60,7 @@ class Arc: public Primitive {
  public:
     Arc(Point _center, Point _p, float _angle, Color c): Primitive(c) { center=_center; p=_p; angle=_angle; }
     std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
+    //    float getShapeScore(const Transform &transform) const;
 };
 
 class Line:public Primitive {
@@ -56,6 +69,7 @@ class Line:public Primitive {
     Line(Point _p1, Point _p2, Color c): Primitive(c) { p1=_p1; p2=_p2;  }
     std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
     float getLength() const { return (p1-p2).norm(); }
+    float getShapeScore(const Transform &transform) const;
 };
 
 class Cubic:public Primitive {
@@ -64,6 +78,7 @@ class Cubic:public Primitive {
     Cubic(const std::vector<Point> &pts, Color c): Primitive(c), b(pts) {;}
     std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
     float getLength() const { return b.getLength(); }
+    float getShapeScore(const Transform &transform) const;
 };
 
 class Polygon: public Primitive {
@@ -72,6 +87,7 @@ class Polygon: public Primitive {
     Polygon(const std::vector<Point> _points,Color c): Primitive(c), points(_points) {;}
     std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
     float getLength() const;
+    //    float getShapeScore(const Transform &transform) const;
 };
 
 class Drawing {
@@ -104,6 +120,9 @@ class Drawing {
 	frame=-1;
 	curShapeID=-1;
     }
+
+    // Get quality score of reproduction for each of the shapeID within the drawing using the given transform
+    std::map<int,float> getShapeScores(const Transform &transform) const;
 
     void append(std::shared_ptr<Primitive> prim) {
 	prim->setShapeID(curShapeID);
