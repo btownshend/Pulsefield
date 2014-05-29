@@ -43,6 +43,7 @@ class Point {
     friend std::istream& operator>>(std::istream &s,  Point &p);
     Point min(const Point &p2) const { return Point(std::min(x,p2.X()),std::min(y,p2.Y())); }
     Point max(const Point &p2) const { return Point(std::max(x,p2.X()),std::max(y,p2.Y())); }
+    bool operator==(const Point &p2) const { return x==p2.X() && y==p2.Y(); }
 };
 
 // TODO Don't really belong here
