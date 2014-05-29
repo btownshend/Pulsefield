@@ -268,7 +268,7 @@ void OSCHandler::setAttribute(const char *attr, float value ) {
 }
 
 void OSCHandler::shapeBegin(const char *type) {
-    drawing.shapeBegin();
+    drawing.shapeBegin(currentColor);
 }
 
 void OSCHandler::shapeEnd() {

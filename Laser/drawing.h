@@ -13,11 +13,10 @@
 class Transform;
 
 class Primitive {
-    int shapeID;   // Primitives with the same shapeID should be consistent (if shapeID>=0)
 protected:
     Color c;
  public:
-    Primitive(Color _c): c(_c) { shapeID=-1;}
+    Primitive(Color _c): c(_c) { }
     virtual ~Primitive() { ; }
     // Get list of discrete points spaced approximately by pointSpacing,  optimizes based on minimizing distance from priorPoint to first point
     // Converts from floor space to device coordinates in the process
@@ -37,8 +36,6 @@ protected:
     }
 
     virtual float getLength() const { return 0.0; }
-    void setShapeID(int s) {shapeID=s;}
-    int getShapeID() const { return shapeID; }
 };
 
 class Circle: public Primitive {
@@ -90,12 +87,29 @@ class Polygon: public Primitive {
     //    float getShapeScore(const Transform &transform) const;
 };
 
+class Composite: public Primitive {
+    std::vector<std::shared_ptr<Primitive> > elements;
+ public:
+    Composite(Color c): Primitive(c) {;}
+    void append(std::shared_ptr<Primitive> p) { elements.push_back(p); }
+    std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
+    float getLength() const {
+	float len=0;
+	for (unsigned int i=0;i<elements.size();i++) {
+	    len+=elements[i]->getLength();
+	}
+	return len;
+    }
+    float getShapeScore(const Transform &transform) const;
+};
+
+
 class Drawing {
     std::vector<std::shared_ptr<Primitive> > elements;
     int frame;  // Frame number that this drawing corresponds to (or -1 if unknown)
-    int curShapeID;
+    bool inComposite;
  public:
-    Drawing() { frame=-1; curShapeID=-1; }
+    Drawing() { frame=-1; inComposite=false; }
 
     void setFrame(int _frame) { frame=_frame; }
     int getFrame() const { return frame; }
@@ -117,29 +131,54 @@ class Drawing {
     void clear() {
 	dbg("Drawing.clear",1) << "Clearing " << elements.size() << " elements from frame " << frame << std::endl;
 	elements.clear();  
+	inComposite=false;
 	frame=-1;
-	curShapeID=-1;
     }
 
-    // Get quality score of reproduction for each of the shapeID within the drawing using the given transform
+    // Get quality score of reproduction for each of the elements within the drawing using the given transform
     std::map<int,float> getShapeScores(const Transform &transform) const;
 
-    // Get a subset of the drawing containing only the given shapeIDs
-    Drawing select(std::set<int> shapeIDs) const ;
+    // Get a subset of the drawing containing only the given elements
+    Drawing select(std::set<int> elements) const ;
 
 
     void append(std::shared_ptr<Primitive> prim) {
-	prim->setShapeID(curShapeID);
+	if (inComposite) {
+	    // Append to current composite 
+	    if (elements.size()==0) {
+		dbg("Drawing.append",1) << "inComposite but no elements" << std::endl;
+		inComposite=false;
+	    } else {
+		std::shared_ptr<Composite> c=std::dynamic_pointer_cast<Composite>(elements.back());
+		if (c==std::shared_ptr<Composite>()) {
+		    dbg("Drawing.append",1) << "Last element is not a composite" << std::endl;
+		    inComposite=false;
+		} else {
+		    c->append(prim);
+		    return;
+		}
+	    }
+	}
 	elements.push_back(prim);
     }
 
     // Start a new shape
-    void shapeBegin() {
-	curShapeID++;
+    void shapeBegin(Color c) {
+	dbg("Drawing.shapeBegin",1) << "begin" << std::endl;
+	if (inComposite) {
+	    dbg("Drawing.shapeBegin",1) << "Was already in a composite -- ignoring" << std::endl;
+	} else {
+	    append(std::shared_ptr<Primitive>(new Composite(c)));
+	    inComposite=true;
+	}
     }
 
     void shapeEnd() {
-	;
+	dbg("Drawing.shapeBegin",1) << "end" << std::endl;
+	if (!inComposite) {
+	    dbg("Drawing.shapeBegin",1) << "Was not in a composite -- ignoring" << std::endl;
+	} else 
+	    inComposite=false;
     }
 
     // Append another drawing to this one 

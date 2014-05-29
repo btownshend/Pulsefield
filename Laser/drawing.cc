@@ -62,7 +62,7 @@ float Circle::getShapeScore(const Transform &transform) const {
 	float delta2=(center-transform.mapToWorld(devcenter+Point(1,0))).norm();
 	score=1.0/std::hypot(delta1,delta2)+1.0;
     }
-    dbg("Circle.getShapeScore",2) <<  center << " maps to " << devcenter << " score=" << score << std::endl;
+    dbg("Circle.getShapeScore",5) <<  center << " maps to " << devcenter << " score=" << score << std::endl;
     return score;
 }
 
@@ -70,19 +70,24 @@ float Line::getShapeScore(const Transform &transform) const {
     Point devp1=transform.mapToDevice(p1);
     Point devp2=transform.mapToDevice(p2);
     float length=(devp1-devp2).norm();
-    float lengthOnScreen = (devp1.min(Point(32767,32767)).max(Point(-32768,-32768))-devp2.min(Point(32767,32767)).max(Point(-32768,-32768))).norm();
     float score;
-    if (lengthOnScreen<length*0.99) 
-	score=lengthOnScreen/length;
-    else {
-	// All on-screen, compute maximum width of line (actually physical distance of small step in laser)
-	Point dir=devp2-devp1; dir=dir/dir.norm();
-	Point orthogonal(-dir.Y(),dir.X());
-	float delta1=(p1-transform.mapToWorld(devp1+orthogonal)).norm();
-	float delta2=(p2-transform.mapToWorld(devp2+orthogonal)).norm();
-	score=1.0+1.0/std::max(delta1,delta2);
+    if (length==0) {
+	dbg("Line.getShapeScore",1) << "zero-length line" << std::endl;
+	score=1e10;
+    } else {
+	float lengthOnScreen = (devp1.min(Point(32767,32767)).max(Point(-32768,-32768))-devp2.min(Point(32767,32767)).max(Point(-32768,-32768))).norm();
+	if (lengthOnScreen<length*0.99) 
+	    score=lengthOnScreen/length;
+	else {
+	    // All on-screen, compute maximum width of line (actually physical distance of small step in laser)
+	    Point dir=devp2-devp1; dir=dir/dir.norm();
+	    Point orthogonal(-dir.Y(),dir.X());
+	    float delta1=(p1-transform.mapToWorld(devp1+orthogonal)).norm();
+	    float delta2=(p2-transform.mapToWorld(devp2+orthogonal)).norm();
+	    score=1.0+1.0/std::max(delta1,delta2);
+	}
     }
-    dbg("Line.getShapeScore",2) << "{" <<  p1 << "; " << p2 << "} maps to {" << devp1 << "; " << devp2 << "} score=" << score << std::endl;
+    dbg("Line.getShapeScore",5) << "{" <<  p1 << "; " << p2 << "} maps to {" << devp1 << "; " << devp2 << "} score=" << score << std::endl;
     return score;
 }
 
@@ -139,7 +144,7 @@ float Cubic::getShapeScore(const Transform &transform) const {
 	// Partially off-screen
 	score= fracScore/pts.size();
 
-    dbg("Cubic.getShapeScore",2) << "score=" << score << std::endl;
+    dbg("Cubic.getShapeScore",5) << "score=" << score << std::endl;
     return score;
 }
 
@@ -179,25 +184,70 @@ std::vector<etherdream_point> Arc::getPoints(float pointSpacing,const Transform 
 }
 
 
-// Get quality score of reproduction for each of the shapeID within the drawing using the given transform
+float Composite::getShapeScore(const Transform &transform) const {
+    dbg("Composite.getShapeScore",5) << "Getting score for composite" << std::endl;
+    float score;
+    float fracScore=0;
+    for (unsigned int i=0;i<elements.size();i++) {
+	float s=elements[i]->getShapeScore(transform);
+	if (i==0)
+	    score=s;
+	else
+	    score=std::min(score,s);
+	fracScore+=std::min(1.0f,s);
+    }
+    if (score<1.0)
+	score=fracScore/elements.size();
+    dbg("Composite.getShapeScore",2) << "score=" << score << std::endl;
+    return score;
+}
+
+// Get quality score of reproduction for each of the elements within the drawing using the given transform
 std::map<int,float> Drawing::getShapeScores(const Transform &transform) const {
     std::map<int,float> scores;
     for (unsigned int i=0;i<elements.size();i++)
-	scores[i]+=elements[i]->getShapeScore(transform);
+	scores[i]=elements[i]->getShapeScore(transform);
     return scores;
 }
 
-// Get only the drawing elements in the given set of shapeIDs
-Drawing Drawing::select(std::set<int> shapeIDs) const {
+// Get only the drawing elements in the given set of elements
+Drawing Drawing::select(std::set<int> sel) const {
     Drawing result;
     result.setFrame(frame);
     for (unsigned int i=0;i<elements.size();i++) {
-	if (shapeIDs.count(elements[i]->getShapeID()) > 0)
+	if (sel.count(i) > 0)
 	    result.elements.push_back(elements[i]);
     }
-    dbg("Drawing.select",2) << "Found " << result.getNumElements() << "/" << getNumElements() << " using " << shapeIDs.size() << " shapeIDs" << std::endl;
+    dbg("Drawing.select",2) << "Selected " << result.getNumElements() << "/" << getNumElements()  << std::endl;
+    assert(result.getNumElements()==sel.size());
     return result;
 }
+
+// Convert to points using given floorspace spacing
+std::vector<etherdream_point> Composite::getPoints(float spacing,const Transform &transform,const etherdream_point *priorPoint) const {
+    dbg("Composite.getPoints",2) << "getPoints(" << spacing << ")" << std::endl;
+    std::vector<etherdream_point>  result;
+    if (elements.size()==0)
+	return result;
+
+    for (unsigned int i=0;i<elements.size();i++) {
+	std::vector<etherdream_point> newpoints;
+	if (result.size()>0)
+	    newpoints = elements[i]->getPoints(spacing,transform,&result.back());
+	else
+	    newpoints = elements[i]->getPoints(spacing,transform,priorPoint);
+
+	if (result.size()>0 && newpoints.size()>0)  {
+	    // Insert blanks first
+	    std::vector<etherdream_point> blanks = Laser::getBlanks(result.back(),newpoints.front());
+	    result.insert(result.end(), blanks.begin(), blanks.end());
+	}
+	result.insert(result.end(), newpoints.begin(), newpoints.end());
+    }
+    dbg("Composite.getPoints",2) << "Converted to " << result.size() << " points." << std::endl;
+    return result;
+}
+
 
 // Convert to points using given floorspace spacing
 std::vector<etherdream_point> Drawing::getPoints(float spacing,const Transform &transform) const {
