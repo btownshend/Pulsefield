@@ -23,6 +23,7 @@ class OSCHandler {
     static void *processIncoming(void *arg);  // Static version of pthread_create
 
     Color currentColor;
+    Attributes currentAttributes;
     float currentDensity;
 
     float minx,maxx,miny,maxy;

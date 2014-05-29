@@ -9,21 +9,24 @@
 #include "dbg.h"
 #include "bezier.h"
 #include "color.h"
+#include "attributes.h"
 
 class Transform;
 
 class Primitive {
 protected:
     Color c;
+    Attributes attrs;
  public:
     Primitive(Color _c): c(_c) { }
+    void setAttributes(const Attributes &a) { attrs=a; }
     virtual ~Primitive() { ; }
     // Get list of discrete points spaced approximately by pointSpacing,  optimizes based on minimizing distance from priorPoint to first point
     // Converts from floor space to device coordinates in the process
     virtual std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
 	return std::vector<etherdream_point>(0);
     }
-    // Convert from a Point vector to an etherdream vector, applying the current transform
+    // Convert from a Point vector to an etherdream vector, applying the current transform and any attributes in attrs
     std::vector<etherdream_point> convert(const std::vector<Point> &pts, const Transform &transform) const;
 
     // Get score for rendering using givent transform -- higher is better
@@ -108,6 +111,7 @@ class Drawing {
     std::vector<std::shared_ptr<Primitive> > elements;
     int frame;  // Frame number that this drawing corresponds to (or -1 if unknown)
     bool inComposite;
+    Attributes currentAttributes;
  public:
     Drawing() { frame=-1; inComposite=false; }
 
@@ -127,10 +131,14 @@ class Drawing {
 	return len;
     }
 
+    // Get attributes, allowing them to be modified
+    Attributes &getAttributes() { return currentAttributes; }
+
     // Clear drawing
     void clear() {
 	dbg("Drawing.clear",1) << "Clearing " << elements.size() << " elements from frame " << frame << std::endl;
 	elements.clear();  
+	currentAttributes.clear();
 	inComposite=false;
 	frame=-1;
     }
@@ -143,6 +151,7 @@ class Drawing {
 
 
     void append(std::shared_ptr<Primitive> prim) {
+	prim->setAttributes(currentAttributes);
 	if (inComposite) {
 	    // Append to current composite 
 	    if (elements.size()==0) {

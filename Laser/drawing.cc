@@ -174,7 +174,7 @@ float Polygon::getLength() const {
 std::vector<etherdream_point> Primitive::convert(const std::vector<Point> &pts, const Transform &transform) const {
     std::vector<etherdream_point> result(pts.size());
     for (unsigned int i = 0; i < pts.size(); i++) {
-	result[i] = transform.mapToDevice(pts[i],c);
+	result[i] = transform.mapToDevice(attrs.apply(pts[i],0.0),c);
     }
     return result;
 }

@@ -264,7 +264,7 @@ void OSCHandler::setDensity(float d ) {
 }
 
 void OSCHandler::setAttribute(const char *attr, float value ) {
-    // TODO
+    drawing.getAttributes().add(attr,value);
 }
 
 void OSCHandler::shapeBegin(const char *type) {
@@ -322,6 +322,8 @@ void OSCHandler::update(int frame) {
     dbg("OSCHandler.update",1) << "Got update for drawing frame " << drawing.getFrame() << " with " << drawing.getNumElements() << " elements" << std::endl;
     lasers->setDrawing(drawing);
     drawing.clear();
+    drawing.getAttributes().add("pointmovement",0.2f);   // Temporary kludge to test
+    currentColor = Color(0.0,1.0,0.0);
     lastUpdateFrame=frame;
 }
 
