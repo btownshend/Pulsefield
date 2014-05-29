@@ -288,8 +288,8 @@ void OSCHandler::line(Point p1, Point p2) {
 }
 
 void OSCHandler::cubic(Point p1, Point p2, Point p3, Point p4) {
-    if (p1==p2 || p2==p3 || p3==p4) {
-	dbg("OSCHandler.cubic",1) << "Cubic with overlapping points: " << p1 << "; " << p2 << "; " << p3 << "; " << p4 << " ignored" << std::endl;
+    if (p1==p2 && p2==p3 && p3==p4) {
+	dbg("OSCHandler.cubic",1) << "Cubic with identical points at  " << p1 << " ignored" << std::endl;
 	return;
     }
     drawing.drawCubic(p1,p2,p3,p4,currentColor);
