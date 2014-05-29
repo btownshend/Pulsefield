@@ -29,6 +29,8 @@ class OSCHandler {
     void updateBounds();
 
     bool dirty;
+
+    int lastUpdateFrame;   // Frame of last /laser/update message received
  public:
     OSCHandler(int port, std::shared_ptr<Lasers> lasers, std::shared_ptr<Video> video);
     ~OSCHandler();

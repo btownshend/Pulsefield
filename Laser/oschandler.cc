@@ -288,6 +288,10 @@ void OSCHandler::line(Point p1, Point p2) {
 }
 
 void OSCHandler::cubic(Point p1, Point p2, Point p3, Point p4) {
+    if (p1==p2 || p2==p3 || p3==p4) {
+	dbg("OSCHandler.cubic",1) << "Cubic with overlapping points: " << p1 << "; " << p2 << "; " << p3 << "; " << p4 << " ignored" << std::endl;
+	return;
+    }
     drawing.drawCubic(p1,p2,p3,p4,currentColor);
 }
 
@@ -317,8 +321,8 @@ void OSCHandler::update(int frame) {
     drawing.setFrame(frame);
     dbg("OSCHandler.update",1) << "Got update for drawing frame " << drawing.getFrame() << " with " << drawing.getNumElements() << " elements" << std::endl;
     lasers->setDrawing(drawing);
-
     drawing.clear();
+    lastUpdateFrame=frame;
 }
 
 void OSCHandler::pfbody(Point pos) {
@@ -334,15 +338,16 @@ void OSCHandler::pfleg(Point pos) {
 }
 
 void OSCHandler::pfframe(int frame) {
-    dbg("OSCHandler.pfframe",1) << "Frame " << frame << std::endl;
-    if (drawing.getFrame() > 0) {
-	dbg("OSCHandler.pfframe",1) << "Received /pf/frame when drawing contains " << drawing.getNumElements() << " elements.  Assuming /update missing." << std::endl;
-	if (video->isLegsEnabled() || video->isBodyEnabled())
+    dbg("OSCHandler.pfframe",1) << "pfframe(" << frame << "), lastUpdateFrame=" << lastUpdateFrame << std::endl;
+    if (drawing.getNumElements() > 0 && frame>lastUpdateFrame+100) {
+	dbg("OSCHandler.pfframe",1) << "Received /pf/frame when drawing contains " << drawing.getNumElements() << " elements.  No /laser/update in " << frame-lastUpdateFrame << " frames." << std::endl;
+	if (video->isLegsEnabled() || video->isBodyEnabled()) {
 	    // Update lasers
-	    update(frame);
-    } else
-	// Set current frame number
-	drawing.setFrame(frame);
+	    drawing.setFrame(frame);
+	    lasers->setDrawing(drawing);
+	    drawing.clear();
+	}
+    }
 }
 
 
