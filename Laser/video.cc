@@ -514,7 +514,7 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	     for (unsigned int i=0;i<points.size();i++) {
 		 etherdream_point pt = points[i];
 		 Point wpt=transform.mapToWorld(pt);
-		 dbg("Video.drawWorld",4) << "dev=[" <<  pt.x << "," << pt.y << "], world=" << wpt << std::endl;
+		 //dbg("Video.drawWorld",4) << "dev=[" <<  pt.x << "," << pt.y << "], world=" << wpt << std::endl;
 		 if (pt.r > 0.0 || pt.g >0.0 || pt.b >0.0) {
 		     cairo_move_to(cr, lastwpt.X(),lastwpt.Y());
 		     cairo_line_to(cr, wpt.X(), wpt.Y());
