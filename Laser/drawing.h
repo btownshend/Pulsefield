@@ -173,7 +173,7 @@ class Drawing {
 
     // Start a new shape
     void shapeBegin(Color c) {
-	dbg("Drawing.shapeBegin",1) << "begin" << std::endl;
+	dbg("Drawing.shapeBegin",8) << "begin" << std::endl;
 	if (inComposite) {
 	    dbg("Drawing.shapeBegin",1) << "Was already in a composite -- ignoring" << std::endl;
 	} else {
@@ -183,7 +183,7 @@ class Drawing {
     }
 
     void shapeEnd() {
-	dbg("Drawing.shapeBegin",1) << "end" << std::endl;
+	dbg("Drawing.shapeBegin",8) << "end" << std::endl;
 	if (!inComposite) {
 	    dbg("Drawing.shapeBegin",1) << "Was not in a composite -- ignoring" << std::endl;
 	} else 
