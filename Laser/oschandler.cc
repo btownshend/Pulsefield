@@ -15,6 +15,7 @@
 #include "video.h"
 #include "point.h"
 #include "touchosc.h"
+#include "connections.h"
 
 static void error(int num, const char *msg, const char *path)
 {
@@ -26,6 +27,9 @@ static void error(int num, const char *msg, const char *path)
 static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message msg , void *user_data) {
     if (strncmp(path,"/ui/",4)==0) {
 	return TouchOSC::instance()->handleOSCMessage(path,types,argv,argc,msg);
+    }
+    if (strncmp(path,"/conductor/",11)==0) {
+	return Connections::instance()->handleOSCMessage(path,types,argv,argc,msg);
     }
     static std::set<std::string> noted;  // Already noted
     if (noted.count(path) == 0) {
@@ -354,6 +358,8 @@ void OSCHandler::pfframe(int frame) {
 	    drawing.clear();
 	}
     }
+    // Age all the connections
+    Connections::instance()->incrementAge();
 }
 
 
