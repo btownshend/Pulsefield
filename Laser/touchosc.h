@@ -8,7 +8,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 #include "dbg.h"
-#include "exceptions.h"
 
 // A single fader plus a toggle
 // Has a name and a position
