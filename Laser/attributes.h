@@ -2,6 +2,7 @@
 
 #include "point.h"
 #include "Simplex.hpp"
+#include "touchosc.h"
 
 // An attribute that can be applied to a drawing primitive
 
@@ -24,8 +25,19 @@ public:
     PointMovement(float v): Attribute(v) { ; }
 
     Point apply(Point p, float relpos) const {
-	double noise1=Simplex::noise(p.X(),p.Y())*value;
-	double noise2=Simplex::noise(p.X(),-p.Y())*value;
+	TouchOSC *tosc=TouchOSC::instance();
+	float v=tosc->getFader("grouped","amplitude")->get() * 0.5;
+	float s=tosc->getFader("grouped","scale")->get() * 5;
+	float ph=tosc->getFader("grouped","phase")->get()*1.0;
+	float tx=tosc->getFader("grouped","temporalx")->get()*4.0;
+	float ty=tosc->getFader("grouped","temporaly")->get()*4.0;
+	dbg("PointMovement",1) << "Value=" << v << ", Scale=" << s << ", Phase=" << ph << ", Temporal=" << tx << "," << ty << std::endl;
+	Point np=p*s+ph;
+	struct timeval now;
+	gettimeofday(&now,0);
+	np=np+Point(tx,ty)*(now.tv_sec%1000+now.tv_usec/1e6);
+	double noise1=Simplex::noise(np.X()*s,np.Y()*s)*v;
+	double noise2=Simplex::noise(np.X(),-np.Y())*v;
 	dbg("PointMovement.apply",2) << "noise=[" << noise1 << "," << noise2 << "]" << std::endl;
 	return Point(p.X()+noise1,p.Y()+noise2);
     }

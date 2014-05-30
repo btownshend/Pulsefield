@@ -14,6 +14,7 @@
 #include "lasers.h"
 #include "video.h"
 #include "point.h"
+#include "touchosc.h"
 
 static void error(int num, const char *msg, const char *path)
 {
@@ -22,7 +23,10 @@ static void error(int num, const char *msg, const char *path)
 
 /* catch any incoming messages and display them. returning 1 means that the
  * message has not been fully handled and the server should try other methods */
-static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message , void *) {
+static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message msg , void *user_data) {
+    if (strncmp(path,"/ui/",4)==0) {
+	return TouchOSC::instance()->handleOSCMessage(path,types,argv,argc,msg);
+    }
     static std::set<std::string> noted;  // Already noted
     if (noted.count(path) == 0) {
 	noted.insert(path);
@@ -160,7 +164,7 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/pf/background","iiff",pfbackground_handler,this);
 
 	/* add method that will match any path and args if they haven't been caught above */
-	lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
+	lo_server_add_method(s, NULL, NULL, generic_handler, this);
 
 	/* Start incoming message processing */
 	dbg("OSCHandler",1) << "Creating thread for incoming messages (server=" << s << ")..." << std::flush;
