@@ -1,4 +1,6 @@
 #include "lasers.h"
+#include "connections.h"
+#include "person.h"
 
 Lasers::Lasers(int nlasers): lasers(nlasers) {
     dbg("Lasers.Lasers",1) << "Constructing " << nlasers << " lasers." << std::endl;
@@ -44,13 +46,19 @@ std::vector<Drawing> Lasers::allocate(const Drawing &d)  const {
     return result;
 }
 
-int Lasers::render() {
+int Lasers::render(bool drawBody, bool drawLegs) {
     if (!needsRender) {
 	dbg("Lasers.render",5) << "Not dirty" << std::endl;
 	return 0;
     }
     lock();
     needsRender=false;
+
+    Drawing drawing;
+    Connections::draw(drawing);
+    People::draw(drawing,drawBody, drawLegs);
+    dbg("Lasers.render",1) << "People+Connections have " << drawing.getNumElements() << " elements." << std::endl;
+
     // Split drawing among lasers
     std::vector<Drawing> dtmp=allocate(drawing);
 
@@ -111,17 +119,6 @@ int Lasers::render() {
     dbg("Lasers.render",1) << "Render done" << std::endl;
     unlock();
     return 1;
-}
-
-void Lasers::setDrawing(const Drawing &_drawing) {
-    if (_drawing.getFrame() == drawing.getFrame()) {
-	dbg("Lasers.setDrawing",1) << "Multiple drawings for same frame: " << drawing.getFrame() << std::endl;
-    }
-    lock();
-    drawing=_drawing;
-    needsRender=true;
-    unlock();
-    dbg("Lasers.setDrawing",2) << "Frame=" << drawing.getFrame() << std::endl;
 }
 
 void Lasers::saveTransforms(std::ostream &s)  const {

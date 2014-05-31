@@ -12,6 +12,7 @@
 #include "attributes.h"
 
 class Transform;
+class Drawing;
 
 class Primitive {
 protected:
@@ -93,7 +94,8 @@ class Polygon: public Primitive {
 class Composite: public Primitive {
     std::vector<std::shared_ptr<Primitive> > elements;
  public:
-    Composite(Color c): Primitive(c) {;}
+ Composite(): Primitive(Color(1,1,1)) {;}
+    Composite(const Drawing &d);
     void append(std::shared_ptr<Primitive> p) { elements.push_back(p); }
     std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
     float getLength() const {
@@ -172,12 +174,12 @@ class Drawing {
     }
 
     // Start a new shape
-    void shapeBegin(Color c) {
+    void shapeBegin() {
 	dbg("Drawing.shapeBegin",8) << "begin" << std::endl;
 	if (inComposite) {
 	    dbg("Drawing.shapeBegin",1) << "Was already in a composite -- ignoring" << std::endl;
 	} else {
-	    append(std::shared_ptr<Primitive>(new Composite(c)));
+	    append(std::shared_ptr<Primitive>(new Composite()));
 	    inComposite=true;
 	}
     }

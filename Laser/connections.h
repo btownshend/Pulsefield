@@ -4,6 +4,7 @@
 #include <string>
 #include "lo/lo.h"
 #include "dbg.h"
+#include "drawing.h"
 
 // Keep track of conductor connections
 
@@ -25,6 +26,7 @@ class Connection {
     int uid[2];
     std::map<std::string,ConnectionAttribute> attributes;
     int age; 	// Age counter -- reset whenever something is set, increment when aged
+    Drawing visual; 	// Drawing used to image this connection
  public:
     Connection() {;}
     Connection(CIDType _cid, int uid1, int uid2) {
@@ -48,6 +50,8 @@ class Connection {
 	age++;
     }
     int getAge() const { return age; }
+    void setVisual(const Drawing &d) { visual=d; }
+    void draw(Drawing &d) const {  d.append(visual); }
     friend std::ostream &operator<<(std::ostream &s, const Connection &c);
 };
 
@@ -59,6 +63,7 @@ class Connections {
     Connections() {;}
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
     void incrementAge_impl();
+    void draw_impl(Drawing &d) const;
  public:
     static Connections *instance() {
 	if (theInstance == NULL)
@@ -70,6 +75,12 @@ class Connections {
     }
     static void incrementAge() { instance()->incrementAge_impl(); }
 	
+    static void draw(Drawing &d)  { instance()->draw_impl(d); }
+
+    // Set the drawing commands to image a person rather than using internal drawing routines
+    static void setVisual(CIDType cid, const Drawing &d) {
+	instance()->conns[cid].setVisual(d);
+    }
     
     friend std::ostream &operator<<(std::ostream &s, const Connections &c);
 };

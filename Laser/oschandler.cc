@@ -217,7 +217,7 @@ void OSCHandler::processIncoming() {
 	// TODO: Should set timeout to 0 if geometry is dirty, longer timeout if its clean
 	if  (lo_server_recv_noblock(s,1) == 0) {
 	    // Render lasrs only when nothing in queue
-	    if (lasers->render())
+	    if (lasers->render(video->isBodyEnabled(),video->isLegsEnabled()))
 		// If they've changed, mark the video for update too
 		video->setDirty();
 	}
@@ -290,22 +290,30 @@ void OSCHandler::setAttribute(const char *attr, float value ) {
 
 void OSCHandler::cellBegin(int uid) {
     dbg("OSCHandler.cellBegin",3) << "UID " << uid << std::endl;
-    drawing.shapeBegin(currentColor);
+    if (drawing.getNumElements() > 0) {
+	dbg("OSCHandler.cellBegin",1) << "Drawing is not empty - clearing" << std::endl;
+	drawing.clear();
+    }
 }
 
 void OSCHandler::cellEnd(int uid) {
     dbg("OSCHandler.cellEnd",3) << "UID " << uid << std::endl;
-    drawing.shapeEnd();
+    People::setVisual(uid,drawing);
+    drawing.clear();
 }
 
 void OSCHandler::conxBegin(const char *cid) {
     dbg("OSCHandler.conxBegin",3) << "CID " << cid << std::endl;
-    drawing.shapeBegin(currentColor);
+    if (drawing.getNumElements() > 0) {
+	dbg("OSCHandler.conxBegin",1) << "Drawing is not empty - clearing" << std::endl;
+	drawing.clear();
+    }
 }
 
 void OSCHandler::conxEnd(const char *cid) {
     dbg("OSCHandler.conxEnd",3) << "CID " << cid << std::endl;
-    drawing.shapeEnd();
+    Connections::setVisual(cid,drawing);
+    drawing.clear();
 }
 
 void OSCHandler::circle(Point center, float radius ) {
@@ -350,41 +358,19 @@ void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
 //    lasers->getLaser(unit)->getTransform().recompute();
 //}
 
+
 void OSCHandler::update(int frame) {
-    drawing.setFrame(frame);
-    dbg("OSCHandler.update",1) << "Got update for drawing frame " << drawing.getFrame() << " with " << drawing.getNumElements() << " elements" << std::endl;
-    lasers->setDrawing(drawing);
-    drawing.clear();
-    drawing.getAttributes().add("pointmovement",0.2f);   // Temporary kludge to test
-    currentColor = Color(0.0,1.0,0.0);
-    lastUpdateFrame=frame;
-}
-
-void OSCHandler::pfbody(Point pos) {
-    if (video->isBodyEnabled()) {
-	circle(pos,0.3);
-    }
-}
-
-void OSCHandler::pfleg(Point pos) {
-    if (video->isLegsEnabled()) {
-	circle(pos,0.1);
-    }
+    // Not needed -- using frame for updates
 }
 
 void OSCHandler::pfframe(int frame) {
     dbg("OSCHandler.pfframe",1) << "pfframe(" << frame << "), lastUpdateFrame=" << lastUpdateFrame << std::endl;
-    if (drawing.getNumElements() > 0 && frame>lastUpdateFrame+100) {
-	dbg("OSCHandler.pfframe",1) << "Received /pf/frame when drawing contains " << drawing.getNumElements() << " elements.  No /laser/update in " << frame-lastUpdateFrame << " frames." << std::endl;
-	if (video->isLegsEnabled() || video->isBodyEnabled()) {
-	    // Update lasers
-	    drawing.setFrame(frame);
-	    lasers->setDrawing(drawing);
-	    drawing.clear();
-	}
-    }
-    // Age all the connections
+    lastUpdateFrame=frame;
+    lasers->setDirty(frame);
+
+    // Age all the connections and people
     Connections::incrementAge();
+    People::incrementAge();
 }
 
 

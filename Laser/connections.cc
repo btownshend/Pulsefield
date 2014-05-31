@@ -78,3 +78,12 @@ void Connections::incrementAge_impl() {
 	    a++;
     }
 }
+
+void Connections::draw_impl(Drawing &d) const {
+    dbg("Connections.draw",3) << "Drawing " << conns.size() << " connections." << std::endl;
+    for (std::map<CIDType,Connection>::const_iterator a=conns.begin(); a!=conns.end();a++) {
+	d.shapeBegin();
+	a->second.draw(d);
+	d.shapeEnd();
+    }
+}

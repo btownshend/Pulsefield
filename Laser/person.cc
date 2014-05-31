@@ -72,3 +72,24 @@ void People::incrementAge_impl() {
 	    a++;
     }
 }
+
+void People::draw_impl(Drawing &d, bool drawBody, bool drawLegs)  const {
+    dbg("People.draw",3) << "Draw(" << drawBody << "," << drawLegs << ") for " << p.size() << " people." << std::endl;
+    if (drawBody || drawLegs) {
+	for (std::map<int,Person>::const_iterator a=p.begin(); a!=p.end();a++) {
+	    d.shapeBegin();
+	    a->second.draw(d,drawBody,drawLegs);
+	    d.shapeEnd();
+	}
+    }
+}
+
+void Person::draw(Drawing &d, bool drawBody, bool drawLegs) const  {
+    if (drawBody) {
+	d.drawCircle(position,legDiam+legSep,Color(0.0,1.0,0.0));
+    }
+    if (drawLegs) {
+	for (int i=0;i<2;i++)
+	    d.drawCircle(legs[i].get(),legDiam,Color(0.0,1.0,0.0));
+    }
+}

@@ -3,6 +3,7 @@
 #include <map>
 #include "lo/lo.h"
 #include "point.h"
+#include "drawing.h"
 
 class Leg {
     Point position;
@@ -50,6 +51,8 @@ class Person {
     float getLegSep() const { return legSep; }
     int getGroupID() const { return gid; }
     int getGroupSize() const { return gsize; }
+
+    void draw(Drawing &d, bool drawBody, bool drawLegs) const ;
 };
 
 class People {
@@ -72,4 +75,11 @@ public:
 	return theInstance;
     }
     static void incrementAge() { instance()->incrementAge_impl(); }
+    // Image onto drawing
+    static void draw(Drawing &d, bool drawBody, bool drawLegs)  { instance()->draw_impl(d,drawBody,drawLegs); }
+    // Set the drawing commands to image a person rather than using internal drawing routines
+    static void setVisual(int uid, const Drawing &d) {
+	// Not used -- always draw with internal routines
+	// p[uid].setVisual(d);
+    }
 };
