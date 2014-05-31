@@ -26,6 +26,7 @@ static void error(int num, const char *msg, const char *path)
 /* catch any incoming messages and display them. returning 1 means that the
  * message has not been fully handled and the server should try other methods */
 static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message msg , void *user_data) {
+    dbg("generic_handler",3) << "Received message: " << path << ", with types: " << types << std::endl;
     if (strncmp(path,"/ui/",4)==0) {
 	return TouchOSC::instance()->handleOSCMessage(path,types,argv,argc,msg);
     }
@@ -33,8 +34,8 @@ static int generic_handler(const char *path, const char *types, lo_arg **argv,in
 	return Connections::instance()->handleOSCMessage(path,types,argv,argc,msg);
     }
     static std::set<std::string> noted;  // Already noted
-    if (noted.count(path) == 0) {
-	noted.insert(path);
+    if (noted.count(std::string(path)+types) == 0) {
+	noted.insert(std::string(path)+types);
 	int i;
 	fprintf(stderr, "Unhandled Message Rcvd: %s (", path);
 	for (i=0; i<argc; i++) {
