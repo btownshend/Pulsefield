@@ -27,27 +27,30 @@ std::ostream &operator<<(std::ostream &s, const Connections &c) {
 int Connections::handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
     dbg("Connections.handleOSCMessage",1)  << "Got message: " << path << "(" << types << ") from " << lo_address_get_url(lo_message_get_source(msg)) << std::endl;
 
-    const char *tok=strtok((char *)path,"/");
+    char *pathCopy=new char[strlen(path)+1];
+    strcpy(pathCopy,path);
+    const char *tok=strtok(pathCopy,"/");
+
     bool handled=false;
     if (strcmp(tok,"conductor")==0) {
 	tok=strtok(NULL,"/");
 	if (strcmp(tok,"conx")==0) {
 	    if (strcmp(types,"sssiiff")!=0) {
 		dbg("Connections.handleOSCMessage",1) << "/conductor/conx has unexpected types: " << types << std::endl;
-		return 0;
+	    } else {
+		std::string type=&argv[0]->s;
+		std::string subtype=&argv[1]->s;
+		CIDType cid=&argv[2]->s;
+		int uid1=argv[3]->i;
+		int uid2=argv[4]->i;
+		float value=argv[5]->f;
+		float time=argv[6]->f;
+		dbg("Connections.handleOSCMessage",1) << "type=" << type << ", subtype=" << subtype << ", cid=" << cid << ",uids=" << uid1 << "," << uid2 << ", value=" << value << ", time=" << time << std::endl;
+		if (conns.count(cid)==0)
+		    conns[cid]=Connection(cid,uid1,uid2);
+		conns[cid].set(type,subtype,value,time);
+		handled=true;
 	    }
-	    std::string type=&argv[0]->s;
-	    std::string subtype=&argv[1]->s;
-	    CIDType cid=&argv[2]->s;
-	    int uid1=argv[3]->i;
-	    int uid2=argv[4]->i;
-	    float value=argv[5]->f;
-	    float time=argv[6]->f;
-	    dbg("Connections.handleOSCMessage",1) << "type=" << type << ", subtype=" << subtype << ", cid=" << cid << ",uids=" << uid1 << "," << uid2 << ", value=" << value << ", time=" << time << std::endl;
-	    if (conns.count(cid)==0)
-		conns[cid]=Connection(cid,uid1,uid2);
-	    conns[cid].set(type,subtype,value,time);
-	    handled=true;
 	}
 	else if (strcmp(tok,"rollcall")==0) {
 	    int uid=argv[0]->i;
@@ -61,6 +64,7 @@ int Connections::handleOSCMessage(const char *path, const char *types, lo_arg **
 	dbg("Connections.handleOSCMessage",1) << "Unhanded message: " << path << ": parse failed at token: " << tok << std::endl;
     }
     
+    delete [] pathCopy;
     return handled?0:1;
 }
 

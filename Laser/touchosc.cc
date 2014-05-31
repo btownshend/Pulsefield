@@ -94,7 +94,10 @@ int TouchOSC::handleOSCMessage(const char *path, const char *types, lo_arg **arg
 	dbg("TouchOSC.handleOSCMessage",1)  << "Set remote to " << lo_address_get_url(remote) << std::endl;
 	sendOSC();
     }
-    const char *tok=strtok((char *)path,"/");
+    char *pathCopy=new char[strlen(path)+1];
+    strcpy(pathCopy,path);
+    const char *tok=strtok(pathCopy,"/");
+
     bool handled=false;
     if (strcmp(tok,"ui")==0) {
 	tok=strtok(NULL,"/");
@@ -162,6 +165,7 @@ int TouchOSC::handleOSCMessage(const char *path, const char *types, lo_arg **arg
 	dbg("TouchOSC.handleOSCMessage",1) << "Unhanded message: " << path << ": parse failed at token: " << tok << std::endl;
     }
     
+    delete [] pathCopy;
     return handled?0:1;
 }
 

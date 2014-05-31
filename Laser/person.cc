@@ -13,23 +13,24 @@ Person *People::getPerson(int id) {
 
 int People::handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
     dbg("People.handleOSCMessage",1)  << "Got message: " << path << "(" << types << ") from " << lo_address_get_url(lo_message_get_source(msg)) << std::endl;
-
-    const char *tok=strtok((char *)path,"/");
+    char *pathCopy=new char[strlen(path)+1];
+    strcpy(pathCopy,path);
+    const char *tok=strtok(pathCopy,"/");
     bool handled=false;
     if (strcmp(tok,"pf")==0) {
 	tok=strtok(NULL,"/");
 	if (strcmp(tok,"body")==0) {
 	    if (strcmp(types,"iifffffffffffffffi")!=0) {
 		dbg("People.handleOSCMessage",1) << path << " has unexpected types: " << types << std::endl;
-		return 0;
+	    } else {
+		int id=argv[1]->i;
+		Point position(argv[2]->f,argv[3]->f);
+		dbg("People.handleOSCMessage",1) << "id=" << id << ",pos=" << position << std::endl;
+		Person *person=getPerson(id);
+		person->set(position);
+		person->setStats(argv[12]->f,argv[14]->f);
+		handled=true;
 	    }
-	    int id=argv[1]->i;
-	    Point position(argv[2]->f,argv[3]->f);
-	    dbg("People.handleOSCMessage",1) << "id=" << id << ",pos=" << position << std::endl;
-	    Person *person=getPerson(id);
-	    person->set(position);
-	    person->setStats(argv[12]->f,argv[14]->f);
-	    handled=true;
 	}
 	else if (strcmp(tok,"leg")==0) {
 	    int id=argv[1]->i;
@@ -55,9 +56,9 @@ int People::handleOSCMessage(const char *path, const char *types, lo_arg **argv,
 	}
     }
     if (!handled) {
-	dbg("People.handleOSCMessage",1) << "Unhanded message: " << path << ": parse failed at token: " << tok << std::endl;
+	dbg("People.handleOSCMessage",1) << "Unhanded message: " << path << "(" << types << "): parse failed at token: " << tok << std::endl;
     }
-    
+    delete [] pathCopy;
     return handled?0:1;
 }
 
