@@ -69,11 +69,12 @@ int Connections::handleOSCMessage(const char *path, const char *types, lo_arg **
 }
 
 void Connections::incrementAge() {
-    for (std::map<CIDType,Connection>::iterator a=conns.begin(); a!=conns.end();a++) {
+    for (std::map<CIDType,Connection>::iterator a=conns.begin(); a!=conns.end();) {
 	a->second.incrementAge();
 	if (a->second.getAge() > MAXAGE) {
 	    dbg("Connections.incrementAge",1) << "Connection " << a->first << " has age " << a->second.getAge() << "; deleting." << std::endl;
-	    conns.erase(a);
-	}
+	    a=conns.erase(a);
+	} else
+	    a++;
     }
 }

@@ -63,11 +63,12 @@ int People::handleOSCMessage(const char *path, const char *types, lo_arg **argv,
 }
 
 void People::incrementAge() {
-    for (std::map<int,Person>::iterator a=p.begin(); a!=p.end();a++) {
+    for (std::map<int,Person>::iterator a=p.begin(); a!=p.end();) {
 	a->second.incrementAge();
 	if (a->second.getAge() > MAXAGE) {
 	    dbg("People.incrementAge",1) << "Connection " << a->first << " has age " << a->second.getAge() << "; deleting." << std::endl;
-	    p.erase(a);
-	}
+	    a=p.erase(a);
+	} else
+	    a++;
     }
 }
