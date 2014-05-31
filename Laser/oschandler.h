@@ -57,8 +57,10 @@ class OSCHandler {
     void setAttribute(const char *attr, float value);
 
     // Primitives
-    void shapeBegin(const char *type);
-    void shapeEnd();
+    void cellBegin(int uid);
+    void cellEnd(int uid);
+    void conxBegin(const char *cid);
+    void conxEnd(const char *cid);
     void circle(Point center, float radius);
     void arc(Point center, Point perim,  float angleCW);
     void line(Point p1, Point p2);

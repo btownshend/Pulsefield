@@ -77,8 +77,10 @@ static int setDensity_handler(const char *path, const char *types, lo_arg **argv
 static int setAttribute_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setAttribute(&argv[0]->s,argv[1]->f); return 0; }
 
 // Primitives
-static int shape_begin_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->shapeBegin(&argv[0]->s); return 0; }
-static int shape_end_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->shapeEnd(); return 0; }
+static int conx_begin_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->conxBegin(&argv[0]->s); return 0; }
+static int conx_end_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->conxEnd(&argv[0]->s); return 0; }
+static int cell_begin_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->cellBegin(argv[0]->i); return 0; }
+static int cell_end_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->cellEnd(argv[0]->i); return 0; }
 static int circle_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(argv[0]->f,argv[1]->f),argv[2]->f); return 0; }
 static int arc_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->arc(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),argv[4]->f); return 0; }
 static int cubic_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->cubic(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f),Point(argv[6]->f,argv[7]->f)); return 0; }
@@ -102,7 +104,7 @@ static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv,
 static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxY(argv[0]->f); return 0; }
 static int pfbackground_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfbackground(argv[0]->i,argv[1]->i,argv[2]->f,argv[3]->f); return 0; }
 
-static int person_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   int val= People::instance()->handleOSCMessage(path,types,argv,argc,msg);  dbg("person_handler",1) << "val=" << val << std::endl; return val;}
+static int person_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   return People::instance()->handleOSCMessage(path,types,argv,argc,msg);  }
 
 OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _video) : lasers(_lasers), video(_video),  currentColor(0.0,1.0,0.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler()" << std::endl;
@@ -144,8 +146,10 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/laser/set/skew","ii",setSkew_handler,this);
 
 	/* Primitives */
-	lo_server_add_method(s,"/laser/shape/begin","s",shape_begin_handler,this);
-	lo_server_add_method(s,"/laser/shape/end","",shape_end_handler,this);
+	lo_server_add_method(s,"/laser/conx/begin","s",conx_begin_handler,this);
+	lo_server_add_method(s,"/laser/conx/end","s",conx_end_handler,this);
+	lo_server_add_method(s,"/laser/cell/begin","i",cell_begin_handler,this);
+	lo_server_add_method(s,"/laser/cell/end","i",cell_end_handler,this);
 	
 	lo_server_add_method(s,"/laser/circle","fff",circle_handler,this);
 	lo_server_add_method(s,"/laser/arc","fffff",arc_handler,this);
@@ -162,13 +166,13 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 
 	/* PF */
 	lo_server_add_method(s,"/pf/frame","i",pfframe_handler,this);
-	lo_server_add_method(s,"/pf/update","ififfffffiii",pfupdate_handler,this);
-	lo_server_add_method(s,"/pf/body","iifffffffffffffffi",pfbody_handler,this);
-	lo_server_add_method(s,"/pf/leg","iiiiffffffffi",pfleg_handler,this);
+	//lo_server_add_method(s,"/pf/update","ififfffffiii",pfupdate_handler,this);
+	//lo_server_add_method(s,"/pf/body","iifffffffffffffffi",pfbody_handler,this);
+	//lo_server_add_method(s,"/pf/leg","iiiiffffffffi",pfleg_handler,this);
 
-	//lo_server_add_method(s,"/pf/update","ififfffffiii",person_handler,this);
-	//lo_server_add_method(s,"/pf/body","iifffffffffffffffi",person_handler,this);
-	//lo_server_add_method(s,"/pf/leg","iiiiffffffffi",person_handler,this);
+	lo_server_add_method(s,"/pf/update","ififfffffiii",person_handler,this);
+	lo_server_add_method(s,"/pf/body","iifffffffffffffffi",person_handler,this);
+	lo_server_add_method(s,"/pf/leg","iiiiffffffffi",person_handler,this);
 
 	lo_server_add_method(s,"/pf/set/minx","f",pfsetminx_handler,this);
 	lo_server_add_method(s,"/pf/set/maxx","f",pfsetmaxx_handler,this);
@@ -284,11 +288,23 @@ void OSCHandler::setAttribute(const char *attr, float value ) {
     drawing.getAttributes().add(attr,value);
 }
 
-void OSCHandler::shapeBegin(const char *type) {
+void OSCHandler::cellBegin(int uid) {
+    dbg("OSCHandler.cellBegin",3) << "UID " << uid << std::endl;
     drawing.shapeBegin(currentColor);
 }
 
-void OSCHandler::shapeEnd() {
+void OSCHandler::cellEnd(int uid) {
+    dbg("OSCHandler.cellEnd",3) << "UID " << uid << std::endl;
+    drawing.shapeEnd();
+}
+
+void OSCHandler::conxBegin(const char *cid) {
+    dbg("OSCHandler.conxBegin",3) << "CID " << cid << std::endl;
+    drawing.shapeBegin(currentColor);
+}
+
+void OSCHandler::conxEnd(const char *cid) {
+    dbg("OSCHandler.conxEnd",3) << "CID " << cid << std::endl;
     drawing.shapeEnd();
 }
 
