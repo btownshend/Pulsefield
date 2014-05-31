@@ -55,15 +55,21 @@ class Connections {
     static const int MAXAGE=10;   // Number of frames before unupdated connections should be flushed
     static Connections *theInstance;   // Singleton
     std::map<CIDType,Connection> conns;
+
+    Connections() {;}
+    int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
+    void incrementAge_impl();
  public:
-    int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
     static Connections *instance() {
 	if (theInstance == NULL)
 	    theInstance=new Connections();
 	return theInstance;
     }
+    static int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
+	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
+    }
+    static void incrementAge() { instance()->incrementAge_impl(); }
+	
     
     friend std::ostream &operator<<(std::ostream &s, const Connections &c);
-
-    void incrementAge();
 };

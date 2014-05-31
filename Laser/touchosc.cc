@@ -68,7 +68,7 @@ void TouchOSC::sendOSC(lo_address dest) {
     }
 }
 
-Fader *TouchOSC::getFader(std::string groupName, std::string faderName) {
+Fader *TouchOSC::getFader_impl(std::string groupName, std::string faderName) {
     Setting *s=settings.getSetting(groupName);
     if (s==NULL) {
 	dbg("TouchOSC.getValue",1) << "Requested group " << groupName << " does not exists; adding." << std::endl;
@@ -84,7 +84,7 @@ Fader *TouchOSC::getFader(std::string groupName, std::string faderName) {
     return f;
 }
 
-int TouchOSC::handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
+int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
     dbg("TouchOSC.handleOSCMessage",1)  << "Got message: " << path << "(" << types << ") from " << lo_address_get_url(lo_message_get_source(msg)) << std::endl;
 
     std::string host=lo_address_get_hostname(lo_message_get_source(msg));

@@ -148,17 +148,21 @@ class TouchOSC {
     void sendOSC();
     bool activityLED;
     int currentPos;
- public:
     // TouchOSC UI
     TouchOSC();
     ~TouchOSC();
-    int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
-    Fader *getFader(std::string groupName, std::string faderName);
     static TouchOSC *instance() {
 	if (theInstance == NULL)
 	    theInstance=new TouchOSC();
 	return theInstance;
     }
+    int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
+    Fader *getFader_impl(std::string groupName, std::string faderName);
+ public:
+    static int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
+	return instance()->handleOSCMessage(path,types,argv,argc,msg);
+    }
+    static Fader *getFader(std::string groupName, std::string faderName) { return instance()->getFader(groupName,faderName); }
     void save(std::string filename) const;
     void load(std::string filename);
 };

@@ -28,10 +28,10 @@ static void error(int num, const char *msg, const char *path)
 static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message msg , void *user_data) {
     dbg("generic_handler",3) << "Received message: " << path << ", with types: " << types << std::endl;
     if (strncmp(path,"/ui/",4)==0) {
-	return TouchOSC::instance()->handleOSCMessage(path,types,argv,argc,msg);
+	return TouchOSC::handleOSCMessage(path,types,argv,argc,msg);
     }
     if (strncmp(path,"/conductor/",11)==0) {
-	return Connections::instance()->handleOSCMessage(path,types,argv,argc,msg);
+	return Connections::handleOSCMessage(path,types,argv,argc,msg);
     }
     static std::set<std::string> noted;  // Already noted
     if (noted.count(std::string(path)+types) == 0) {
@@ -104,7 +104,7 @@ static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv,
 static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxY(argv[0]->f); return 0; }
 static int pfbackground_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfbackground(argv[0]->i,argv[1]->i,argv[2]->f,argv[3]->f); return 0; }
 
-static int person_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   return People::instance()->handleOSCMessage(path,types,argv,argc,msg);  }
+static int person_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   return People::handleOSCMessage(path,types,argv,argc,msg);  }
 
 OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _video) : lasers(_lasers), video(_video),  currentColor(0.0,1.0,0.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler()" << std::endl;
@@ -384,7 +384,7 @@ void OSCHandler::pfframe(int frame) {
 	}
     }
     // Age all the connections
-    Connections::instance()->incrementAge();
+    Connections::incrementAge();
 }
 
 

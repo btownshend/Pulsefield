@@ -24,7 +24,7 @@ std::ostream &operator<<(std::ostream &s, const Connections &c) {
     return s;
 }
 
-int Connections::handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
+int Connections::handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
     dbg("Connections.handleOSCMessage",1)  << "Got message: " << path << "(" << types << ") from " << lo_address_get_url(lo_message_get_source(msg)) << std::endl;
 
     char *pathCopy=new char[strlen(path)+1];
@@ -68,7 +68,7 @@ int Connections::handleOSCMessage(const char *path, const char *types, lo_arg **
     return handled?0:1;
 }
 
-void Connections::incrementAge() {
+void Connections::incrementAge_impl() {
     for (std::map<CIDType,Connection>::iterator a=conns.begin(); a!=conns.end();) {
 	a->second.incrementAge();
 	if (a->second.getAge() > MAXAGE) {

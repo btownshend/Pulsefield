@@ -57,13 +57,19 @@ class People {
     static People *theInstance;   // Singleton
     std::map<int,Person> p;
     Person *getPerson(int id);
-public:
+
     People() {;}
-    int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
+    int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
+    void incrementAge_impl();
+    void draw_impl(Drawing &d, bool drawBody, bool drawLegs) const;
+public:
+    static int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
+	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
+    }
     static People *instance() {
 	if (theInstance == NULL)
 	    theInstance=new People();
 	return theInstance;
     }
-    void incrementAge();
+    static void incrementAge() { instance()->incrementAge_impl(); }
 };
