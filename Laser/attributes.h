@@ -25,12 +25,11 @@ public:
     PointMovement(float v): Attribute(v) { ; }
 
     Point apply(Point p, float relpos) const {
-	TouchOSC *tosc=TouchOSC::instance();
-	float v=tosc->getFader("grouped","amplitude")->get() * 0.5;
-	float s=tosc->getFader("grouped","scale")->get() * 5;
-	float ph=tosc->getFader("grouped","phase")->get()*1.0;
-	float tx=tosc->getFader("grouped","temporalx")->get()*4.0;
-	float ty=tosc->getFader("grouped","temporaly")->get()*4.0;
+	float v=TouchOSC::getFader("grouped","amplitude")->get() * 0.5;
+	float s=TouchOSC::getFader("grouped","scale")->get() * 5;
+	float ph=TouchOSC::getFader("grouped","phase")->get()*1.0;
+	float tx=TouchOSC::getFader("grouped","temporalx")->get()*4.0;
+	float ty=TouchOSC::getFader("grouped","temporaly")->get()*4.0;
 	dbg("PointMovement",10) << "Value=" << v << ", Scale=" << s << ", Phase=" << ph << ", Temporal=" << tx << "," << ty << std::endl;
 	Point np=p*s+ph;
 	struct timeval now;
