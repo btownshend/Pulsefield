@@ -138,7 +138,7 @@ class Drawing {
 
     // Clear drawing
     void clear() {
-	dbg("Drawing.clear",1) << "Clearing " << elements.size() << " elements from frame " << frame << std::endl;
+	dbg("Drawing.clear",5) << "Clearing " << elements.size() << " elements from frame " << frame << std::endl;
 	elements.clear();  
 	currentAttributes.clear();
 	inComposite=false;

@@ -46,7 +46,7 @@ std::vector<etherdream_point> Circle::getPoints(float pointSpacing,const Transfo
 	float phase = i * 2.0 * M_PI /(npoints-1)+initphase;
 	*pt = transform.mapToDevice(Point(cos(phase) * radius + center.X(), sin(phase) * radius + center.Y()),c);
     }
-    dbg("Circle.getPoints",2) << "Converted to " << result.size() << " points." << std::endl;
+    dbg("Circle.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
     return result;
 }
 
@@ -111,14 +111,14 @@ std::vector<etherdream_point> Line::getPoints(float pointSpacing,const Transform
 	if (swap) rpos=1-rpos;
 	result[i] = transform.mapToDevice(p1+(p2-p1)*rpos,c);
     }
-    dbg("Line.getPoints",2) << "Converted to " << result.size() << " points." << std::endl;
+    dbg("Line.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
     return result;
 }
 
 
 std::vector<etherdream_point> Cubic::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
     std::vector<Point> pts = b.interpolate(pointSpacing);
-    dbg("Cubic.getPoints",2) << "Converted to " << pts.size() << " points." << std::endl;
+    dbg("Cubic.getPoints",3) << "Converted to " << pts.size() << " points." << std::endl;
     return convert(pts,transform);
 }
 
@@ -198,7 +198,7 @@ float Composite::getShapeScore(const Transform &transform) const {
     }
     if (score<1.0)
 	score=fracScore/elements.size();
-    dbg("Composite.getShapeScore",2) << "score=" << score << std::endl;
+    dbg("Composite.getShapeScore",5) << "score=" << score << std::endl;
     return score;
 }
 
@@ -225,7 +225,7 @@ Drawing Drawing::select(std::set<int> sel) const {
 
 // Convert to points using given floorspace spacing
 std::vector<etherdream_point> Composite::getPoints(float spacing,const Transform &transform,const etherdream_point *priorPoint) const {
-    dbg("Composite.getPoints",2) << "getPoints(" << spacing << ")" << std::endl;
+    dbg("Composite.getPoints",3) << "getPoints(" << spacing << ")" << std::endl;
     std::vector<etherdream_point>  result;
     if (elements.size()==0)
 	return result;
@@ -244,14 +244,14 @@ std::vector<etherdream_point> Composite::getPoints(float spacing,const Transform
 	}
 	result.insert(result.end(), newpoints.begin(), newpoints.end());
     }
-    dbg("Composite.getPoints",2) << "Converted to " << result.size() << " points." << std::endl;
+    dbg("Composite.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
     return result;
 }
 
 
 // Convert to points using given floorspace spacing
 std::vector<etherdream_point> Drawing::getPoints(float spacing,const Transform &transform) const {
-    dbg("Drawing.getPoints",2) << "getPoints(" << spacing << ")" << std::endl;
+    dbg("Drawing.getPoints",3) << "getPoints(" << spacing << ")" << std::endl;
     std::vector<etherdream_point>  result;
     if (elements.size()==0)
 	return result;
@@ -275,7 +275,7 @@ std::vector<etherdream_point> Drawing::getPoints(float spacing,const Transform &
 	std::vector<etherdream_point> blanks = Laser::getBlanks(result.back(),result.front());
 	result.insert(result.end(), blanks.begin(), blanks.end());
     }
-    dbg("Drawing.getPoints",2) << "Converted to " << result.size() << " points." << std::endl;
+    dbg("Drawing.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
     for (unsigned int i=0;i<result.size();i++) {
 	if (i==5) {
 	    dbg("Drawing.getPoints",5)  << "...";

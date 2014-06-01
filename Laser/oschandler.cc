@@ -26,7 +26,7 @@ static void error(int num, const char *msg, const char *path)
 /* catch any incoming messages and display them. returning 1 means that the
  * message has not been fully handled and the server should try other methods */
 static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message msg , void *user_data) {
-    dbg("generic_handler",3) << "Received message: " << path << ", with types: " << types << std::endl;
+    dbg("generic_handler",5) << "Received message: " << path << ", with types: " << types << std::endl;
     if (strncmp(path,"/ui/",4)==0) {
 	return TouchOSC::handleOSCMessage(path,types,argv,argc,msg);
     }
