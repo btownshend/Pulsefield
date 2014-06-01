@@ -354,6 +354,9 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     gettimeofday(&starttime,0);
     int frameStep=0;
     int lastframe=-1;
+    float maxlag=0;
+    float totallag=0;
+    int nlag=0;
 
     while (true) {
 	int cid,nechoes,nmeasure;
@@ -372,8 +375,12 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    // Initialize file start time for reference
 	    startfile=acquired;
 
-	if (frame!=lastframe+1 && lastframe!=-1)
-	    fprintf(stderr,"Input file skips frames %d-%d\n",lastframe+1,frame-1);
+	if (frame!=lastframe+1 && lastframe!=-1) {
+	    if (lastframe+1 == frame-1)
+		fprintf(stderr,"Input file skips frame %d\n",lastframe+1);
+	    else
+		fprintf(stderr,"Input file skips frames %d-%d\n",lastframe+1,frame-1);
+	}
 
 	lastframe=frame;
 	if (!overlayLive) {
@@ -393,6 +400,10 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    gettimeofday(&now,0);
 	
 	    long int waittime=(acquired.tv_sec-startfile.tv_sec-speedFactor*(now.tv_sec-starttime.tv_sec))*1000000+(acquired.tv_usec-startfile.tv_usec-speedFactor*(now.tv_usec-starttime.tv_usec));
+	    float lag=std::max(0l,-waittime)/1e6;
+	    totallag+=lag;
+	    maxlag=std::max(maxlag,lag);
+	    nlag++;
 	    if (waittime >1000) {
 		// When doing an overlay, timing is driven by file and data is sampled whenever overlay data is ready, if nothing is valid a frame is skipped
 		usleep(waittime);
@@ -416,8 +427,12 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    for (int i=0;i<nmeasure;i++)
 		fscanf(fd,"%d ",&reflect[e][i]);
 	}
-	if (frame%100==0)
-	    printf("Playing frame %d\n",frame);
+	if (frame%100==0) {
+	    printf("Playing frame %d with mean lag=%.3fs, maxlag=%.3fs\n",frame,totallag/nlag,maxlag);
+	    totallag=0;
+	    maxlag=0;
+	    nlag=0;
+	}
 	
 	if (overlayLive) {
 	    sick[0]->lock();
