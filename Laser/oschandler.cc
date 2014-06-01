@@ -171,6 +171,7 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/pf/update","ififfffffiii",person_handler,this);
 	lo_server_add_method(s,"/pf/body","iifffffffffffffffi",person_handler,this);
 	lo_server_add_method(s,"/pf/leg","iiiiffffffffi",person_handler,this);
+	lo_server_add_method(s,"/conductor/attr","siff",person_handler,this);
 
 	lo_server_add_method(s,"/pf/set/minx","f",pfsetminx_handler,this);
 	lo_server_add_method(s,"/pf/set/maxx","f",pfsetmaxx_handler,this);
@@ -365,6 +366,10 @@ void OSCHandler::pfframe(int frame) {
     // Age all the connections and people
     Connections::incrementAge();
     People::incrementAge();
+
+    // UI Tick
+    if (frame%50 == 0)
+	TouchOSC::frameTick(frame);
 }
 
 

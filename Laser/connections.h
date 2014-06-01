@@ -10,21 +10,10 @@
 
 typedef std::string CIDType;
 
-class ConnectionAttribute {
-    float value;
-    float time;
- public:
-    ConnectionAttribute() {;}
-    ConnectionAttribute(float _value, float _time) { value=_value; time=_time;}
-    float getValue() const { return value; }
-    float getTime() const { return time; }
-    friend std::ostream &operator<<(std::ostream &s, const ConnectionAttribute &c);
-};
-
 class Connection {
     CIDType cid;
     int uid[2];
-    std::map<std::string,ConnectionAttribute> attributes;
+    Attributes attributes;
     int age; 	// Age counter -- reset whenever something is set, increment when aged
     Drawing visual; 	// Drawing used to image this connection
  public:
@@ -36,23 +25,20 @@ class Connection {
 	age=0;
     }
     void set(std::string type, std::string subtype, float value, float time) {
-	std::string key=type+"."+subtype;
+	std::string key=subtype;
 	if (value==0) {
 	    dbg("Connection.set",1) << "Removing " << key << " from " << cid << std::endl;
 	    attributes.erase(key);
 	} else
-	    attributes[key]=ConnectionAttribute(value,time);
+	    attributes.set(key,Attribute(value,time));
 	age=0;
-    }
-    ConnectionAttribute get(std::string key) {
-	return attributes[key];
     }
     void incrementAge() {
 	age++;
     }
     int getAge() const { return age; }
     void setVisual(const Drawing &d) { visual=d; }
-    void draw(Drawing &d) const {  d.append(visual); }
+    void draw(Drawing &d) const {  d.shapeBegin(attributes); d.append(visual); d.shapeEnd(); }
     friend std::ostream &operator<<(std::ostream &s, const Connection &c);
 };
 

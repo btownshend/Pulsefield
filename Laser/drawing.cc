@@ -24,27 +24,25 @@ Color Color::getBasicColor(int i) {
 	return Color(((i+1)%3)/2.0,((i+1)%5)/4.0,((i+1)%7)/6.0);
 }
 
-std::vector<etherdream_point> Circle::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
+std::vector<Point> Circle::getPoints(float pointSpacing, const Point *priorPoint) const {
     int npoints=std::ceil(getLength()/pointSpacing)+1;
     if (npoints < 5) {
 	dbg("Circle.getPoints",1) << "Circle of radius " << radius << " with point spacing of " << pointSpacing << " only had " << npoints << " points; increasing to 5" << std::endl;
 	npoints=5;
     }
-    std::vector<etherdream_point> result(npoints);
-    struct etherdream_point *pt = &result[0];
+    std::vector<Point> result(npoints);
     float initphase;
-    etherdream_point devcenter=transform.mapToDevice(center,c);
-    if (priorPoint==0 || (priorPoint->x==devcenter.x && priorPoint->y==devcenter.y))
+    if (priorPoint==0 || (center == *priorPoint))
 	initphase=0;
     else {
 	// Find phase closest to prior point
-	Point delta(priorPoint->x-devcenter.x,priorPoint->y-devcenter.y);
+	Point delta = *priorPoint-center;
 	initphase=atan2(delta.Y(),delta.X());
 	dbg("Circle.getPoints",3) << "Delta=" << delta << ", initial phase = " << initphase << std::endl;
     }
-    for (int i = 0; i < npoints; i++,pt++) {
+    for (int i = 0; i < npoints; i++) {
 	float phase = i * 2.0 * M_PI /(npoints-1)+initphase;
-	*pt = transform.mapToDevice(Point(cos(phase) * radius + center.X(), sin(phase) * radius + center.Y()),c);
+	result[i] = Point(cos(phase) * radius + center.X(), sin(phase) * radius + center.Y());
     }
     dbg("Circle.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
     return result;
@@ -91,35 +89,33 @@ float Line::getShapeScore(const Transform &transform) const {
     return score;
 }
 
-std::vector<etherdream_point> Line::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
+std::vector<Point> Line::getPoints(float pointSpacing,const Point *priorPoint) const {
     int npoints=std::max(2,(int)std::ceil(getLength()/pointSpacing)+1);
     bool swap=false;
     if (priorPoint!=NULL) {
 	// Check if line direction should be swapped
-	etherdream_point devp1=transform.mapToDevice(p1,c);
-	etherdream_point devp2=transform.mapToDevice(p2,c);
-	int d1=std::max(abs(priorPoint->x-devp1.x),abs(priorPoint->y-devp1.y));
-	int d2=std::max(abs(priorPoint->x-devp2.x),abs(priorPoint->y-devp2.y));
+	int d1=std::max(abs(priorPoint->X()-p1.X()),abs(priorPoint->Y()-p1.Y()));
+	int d2=std::max(abs(priorPoint->X()-p2.X()),abs(priorPoint->Y()-p2.Y()));
 	if (d2<d1) {
 	    dbg("Line.getPoints",3) << "Swapping line endpoints; d1=" << d1 << ", d2=" << d2 << std::endl;
 	    swap=true;
 	}
     }
-    std::vector<etherdream_point> result(npoints);
+    std::vector<Point> result(npoints);
     for (int i = 0; i < npoints; i++) {
 	float rpos=i*1.0/(npoints-1);
 	if (swap) rpos=1-rpos;
-	result[i] = transform.mapToDevice(p1+(p2-p1)*rpos,c);
+	result[i] = p1+(p2-p1)*rpos;
     }
     dbg("Line.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
     return result;
 }
 
 
-std::vector<etherdream_point> Cubic::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
+std::vector<Point> Cubic::getPoints(float pointSpacing,const Point *priorPoint) const {
     std::vector<Point> pts = b.interpolate(pointSpacing);
     dbg("Cubic.getPoints",3) << "Converted to " << pts.size() << " points." << std::endl;
-    return convert(pts,transform);
+    return pts;
 }
 
 float Cubic::getShapeScore(const Transform &transform) const {
@@ -148,10 +144,10 @@ float Cubic::getShapeScore(const Transform &transform) const {
     return score;
 }
 
-std::vector<etherdream_point> Polygon::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
-    std::vector<etherdream_point> result;
+std::vector<Point> Polygon::getPoints(float pointSpacing,const Point *priorPoint) const {
+    std::vector<Point> result;
     for (int i=1;i<points.size();i++) {
-	std::vector<etherdream_point> line=Line(points[i-1],points[i],c).getPoints(pointSpacing,transform,priorPoint);
+	std::vector<Point> line=Line(points[i-1],points[i],c).getPoints(pointSpacing,priorPoint);
 	result.insert(result.end(),line.begin(),line.end());
 	priorPoint=&result.back();
     }
@@ -174,12 +170,12 @@ float Polygon::getLength() const {
 std::vector<etherdream_point> Primitive::convert(const std::vector<Point> &pts, const Transform &transform) const {
     std::vector<etherdream_point> result(pts.size());
     for (unsigned int i = 0; i < pts.size(); i++) {
-	result[i] = transform.mapToDevice(attrs.apply(pts[i],0.0),c);
+	result[i] = transform.mapToDevice(pts[i],c);
     }
     return result;
 }
 
-std::vector<etherdream_point> Arc::getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
+std::vector<Point> Arc::getPoints(float pointSpacing, const Point *priorPoint) const {
     assert(0);   // TODO
 }
 
@@ -224,25 +220,28 @@ Drawing Drawing::select(std::set<int> sel) const {
 }
 
 // Convert to points using given floorspace spacing
-std::vector<etherdream_point> Composite::getPoints(float spacing,const Transform &transform,const etherdream_point *priorPoint) const {
-    dbg("Composite.getPoints",3) << "getPoints(" << spacing << ")" << std::endl;
-    std::vector<etherdream_point>  result;
-    if (elements.size()==0)
+std::vector<Point> Composite::getPoints(float spacing,const Point *priorPoint) const {
+    dbg("Composite.getPoints",3) << "getPoints(" << spacing << ") with " << attrs.size() << " attributes"  << std::endl;
+    std::vector<Point>  result;
+    if (elements.size()==0) {
+	dbg("Composite.getPoints",3) << "No subelements" << std::endl;
 	return result;
+    }
 
     for (unsigned int i=0;i<elements.size();i++) {
-	std::vector<etherdream_point> newpoints;
-	if (result.size()>0)
-	    newpoints = elements[i]->getPoints(spacing,transform,&result.back());
-	else
-	    newpoints = elements[i]->getPoints(spacing,transform,priorPoint);
+	std::vector<Point> newpoints;
+	newpoints = elements[i]->getPoints(spacing,priorPoint);
+	// Apply all the attributes to the points
+	newpoints = attrs.apply(newpoints);
 
 	if (result.size()>0 && newpoints.size()>0)  {
 	    // Insert blanks first
-	    std::vector<etherdream_point> blanks = Laser::getBlanks(result.back(),newpoints.front());
+	    std::vector<Point> blanks = Laser::getBlanks(result.back(),newpoints.front());
 	    result.insert(result.end(), blanks.begin(), blanks.end());
 	}
 	result.insert(result.end(), newpoints.begin(), newpoints.end());
+	if (result.size()>0)
+	    priorPoint=&result.back();
     }
     dbg("Composite.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
     return result;
@@ -256,12 +255,12 @@ std::vector<etherdream_point> Drawing::getPoints(float spacing,const Transform &
     if (elements.size()==0)
 	return result;
 
+    const Point *lastPoint = NULL;
     for (unsigned int i=0;i<elements.size();i++) {
-	std::vector<etherdream_point> newpoints;
-	if (result.size()>0)
-	    newpoints = elements[i]->getPoints(spacing,transform,&result.back());
-	else
-	    newpoints = elements[i]->getPoints(spacing,transform,NULL);
+	std::vector<Point> pts = elements[i]->getPoints(spacing,lastPoint);
+	if (pts.size() > 0)
+	    lastPoint = &pts.back();
+	std::vector<etherdream_point> newpoints = elements[i]->convert(pts,transform);
 
 	if (result.size()>0 && newpoints.size()>0)  {
 	    // Insert blanks first

@@ -23,6 +23,8 @@ class Laser: public DisplayDevice  {
     void update();
     static std::vector<etherdream_point> getBlanks(int blanks, etherdream_point pos);
     static std::vector<etherdream_point> getBlanks(etherdream_point initial, etherdream_point final);
+    static std::vector<Point> getBlanks(int blanks, Point pos);
+    static std::vector<Point> getBlanks(Point initial, Point final);
     const std::vector<etherdream_point> &getPoints() const { return pts; }
     float getSpacing() const { return spacing; }
     void setPoints(int _npoints) { npoints=_npoints; }

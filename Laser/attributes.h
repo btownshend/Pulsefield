@@ -1,64 +1,41 @@
 #pragma once
+#include <map>
 
 #include "point.h"
 #include "Simplex.hpp"
 #include "touchosc.h"
 
-// An attribute that can be applied to a drawing primitive
-
+// An attribute of a connection or person
 class Attribute {
- protected:
     float value;
-public:
-    Attribute(float v) { 
-	value=v;
-    }
-    // Apply attribute to a point by moving the point
-    // p is the original location, relpos is a value that goes from 0.0 to 1.0 along path or element to make noise relative to position
-    // Default implementation is no movement
-    virtual Point apply(Point p, float relpos) const { return p; }
+    float time;
+ public:
+    Attribute() {;}
+    Attribute(float _value, float _time) { value=_value; time=_time;}
+    float getValue() const { return value; }
+    float getTime() const { return time; }
+    friend std::ostream &operator<<(std::ostream &s, const Attribute &c);
 };
 
-// An attribute which moves vertices of the segmented lines
-class PointMovement: public Attribute {
-public:
-    PointMovement(float v): Attribute(v) { ; }
-
-    Point apply(Point p, float relpos) const {
-	float v=TouchOSC::getFader("grouped","amplitude")->get() * 0.5;
-	float s=TouchOSC::getFader("grouped","scale")->get() * 5;
-	float ph=TouchOSC::getFader("grouped","phase")->get()*1.0;
-	float tx=TouchOSC::getFader("grouped","temporalx")->get()*4.0;
-	float ty=TouchOSC::getFader("grouped","temporaly")->get()*4.0;
-	dbg("PointMovement",10) << "Value=" << v << ", Scale=" << s << ", Phase=" << ph << ", Temporal=" << tx << "," << ty << std::endl;
-	Point np=p*s+ph;
-	struct timeval now;
-	gettimeofday(&now,0);
-	np=np+Point(tx,ty)*(now.tv_sec%1000+now.tv_usec/1e6);
-	double noise1=Simplex::noise(np.X()*s,np.Y()*s)*v;
-	double noise2=Simplex::noise(np.X(),-np.Y())*v;
-	dbg("PointMovement.apply",10) << "noise=[" << noise1 << "," << noise2 << "]" << std::endl;
-	return Point(p.X()+noise1,p.Y()+noise2);
-    }
-};
 
 class Attributes {
-    std::vector<std::shared_ptr<Attribute> > attrs;
+    std::map<std::string,Attribute> attrs;
+    std::vector<Point> applyMovements(std::string attrname, float attrValue, const std::vector<Point> &pts) const;
  public:
     Attributes() { ; }
-    void add(std::shared_ptr<Attribute> a) { attrs.push_back(a); }
-    void add(std::string name, float value) {
-	if (name== "pointmovement")
-	    add(std::shared_ptr<Attribute>(new PointMovement(value)));
-	else
-	    dbg("Attributes.add",1) << "Bad attribute: " << name << std::endl;
-    }
+    void set(std::string name, const Attribute &a) {	attrs[name]=a;  }
+    const Attribute &get(std::string name) { return attrs[name]; }
+    void erase(std::string name) { attrs.erase(name); }
     void clear() { attrs.clear(); }
-    // Apply all attributes to a point position
-    Point apply(Point p, float relpos) const {
-	for (int i=0;i<attrs.size();i++) 
-	    p=attrs[i]->apply(p,relpos);
-	return p;
+    friend std::ostream &operator<<(std::ostream &s, const Attributes &attributes);
+    unsigned int size() const { return attrs.size(); }
+    // Apply all attributes to a vector of points
+    std::vector<Point> apply(std::vector<Point> pts) const {
+	dbg("Attributes.apply",2) << "Applying " << attrs.size() << " attributes to " << pts.size() << " points" << std::endl;
+	for (std::map<std::string,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++)
+	    pts=applyMovements(a->first,a->second.getValue(),pts);
+	return pts;
     }
+
 };
 

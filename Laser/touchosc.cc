@@ -1,4 +1,5 @@
 #include <fstream>
+#include <sys/time.h>
 #include "touchosc.h"
 
 const char *TouchOSC::PORT="9998";
@@ -12,22 +13,10 @@ TouchOSC::TouchOSC()  {
 
     // Setup 
     currentPos=0;
-    settings.addGroup("friends",currentPos++);
     selectedGroup=0;
     activityLED=true;
-    settings.addGroup("grouped",currentPos++);
 
-    for (int pos=0;pos<16;pos++) {
-	Setting *s=settings.getSetting(pos);
-	if (s==NULL)
-	    continue;
-	s->addFader("amplitude",-1,0.5);
-	s->addFader("scale",-1,0.5);
-	s->addFader("phase",-1,0.5);
-	//	for (int i=3;i<7;i++)
-	// s->addFader("",i);
-    }
-
+    load("settings-default.txt");
     // Send out current settings
     sendOSC();
 }
@@ -37,30 +26,36 @@ TouchOSC::~TouchOSC() {
 }
 
 void TouchOSC::sendOSC() {
-    activityLED=!activityLED;
     sendOSC(local);
     sendOSC(remote);
 }
 
-void TouchOSC::sendOSC(lo_address dest) {
-    // Send OSC to make UI reflect current values
-    dbg("TouchOSC.sendOSC",1) << "Sending OSC updates with group " << selectedGroup << " to " << dest << std::endl;
-    Setting *s=settings.getSetting(selectedGroup);
+void Settings::sendOSC(lo_address dest,int selectedGroup) const {
+    // Send labels for attribute selection
+    for (int p=0;p<MAXGROUPS;p++) {
+	int col=(p%4)+1;
+	int row=p/4 + 1;
+	std::string path="/ui/conn/select/"+std::to_string(col)+"/"+std::to_string(row);
+	//  set label
+	std::string label="";
+	const Setting *s=getSetting(p);
+	if (s!=NULL) {
+	    label=s->getGroupName();
+	}
+	dbg("Setting.sendOSC",3) << "Sending " << path << "," << label << " to " << lo_address_get_url(dest) << std::endl;
+	if (lo_send(dest,(path+"/label").c_str(),"s",label.c_str()) <0 ) {
+	    dbg("TouchOSC.sendOSC",1) << "Failed send of " << path << "  to " << lo_address_get_url(dest) << ": " << lo_address_errstr(dest) << std::endl;
+	    return;
+	}
+    }
+
+    // Send settings for current select
+    const Setting *s= getSetting(selectedGroup);
     if (s==NULL) {
 	dbg("TouchOSC.sendOSC",1) << "Selected group " << selectedGroup << " is not valid, switching to group 0" << std::endl;
-	selectedGroup=0;
-	s=settings.getSetting(selectedGroup);
+	s=getSetting(0);
 	if (s==NULL)
 	    return;
-    }
-	
-    if (lo_send(dest,"/ui/active1","f",activityLED?1.0f:0.0f) <0 ) {
-	dbg("TouchOSC.sendOSC",1) << "Failed send of /ui/active1 to " << lo_address_get_url(dest) << ": " << lo_address_errstr(dest) << std::endl;
-	return;
-    }
-    if (lo_send(dest,"/ui/active2","f",activityLED?0.0f:1.0f) <0 ) {
-	dbg("TouchOSC.sendOSC",1) << "Failed send of /ui/active2 to " << lo_address_get_url(dest) << ": " << lo_address_errstr(dest) << std::endl;
-	return;
     }
     if(s->sendOSC(dest) <0) {
 	dbg("TouchOSC.sendOSC",1) << "Failed send of OSC data to " << lo_address_get_url(dest) << ": " << lo_address_errstr(dest) << std::endl;
@@ -68,19 +63,43 @@ void TouchOSC::sendOSC(lo_address dest) {
     }
 }
 
+void TouchOSC::sendOSC(lo_address dest) {
+    // Send OSC to make UI reflect current values
+    dbg("TouchOSC.sendOSC",1) << "Sending OSC updates with group " << selectedGroup << " to " << dest << std::endl;
+    settings.sendOSC(dest,selectedGroup);
+
+}
+
+void TouchOSC::frameTick_impl(int frame) {
+    activityLED=!activityLED;
+    if (lo_send(remote,"/ui/active1","f",activityLED?1.0f:0.0f) <0 ) {
+	dbg("TouchOSC.sendOSC",1) << "Failed send of /ui/active1 to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return;
+    }
+    if (lo_send(remote,"/ui/active2","f",activityLED?0.0f:1.0f) <0 ) {
+	dbg("TouchOSC.sendOSC",1) << "Failed send of /ui/active2 to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return;
+    }
+}
+
 Fader *TouchOSC::getFader_impl(std::string groupName, std::string faderName) {
+    bool updatedUI=false;
     Setting *s=settings.getSetting(groupName);
     if (s==NULL) {
 	dbg("TouchOSC.getValue",1) << "Requested group " << groupName << " does not exists; adding." << std::endl;
 	settings.addGroup(groupName,currentPos++);
 	s=settings.getSetting(groupName);
+	updatedUI=true;
     }
     Fader *f=s->getFader(faderName);
     if (f==NULL) {
 	dbg("TouchOSC.getValue",1) << "Requested fader " << faderName << " does not exist in group " << groupName << " adding it" << std::endl;
 	s->addFader(faderName,-1,0.5f);
 	f=s->getFader(faderName);
+	updatedUI=true;
     }
+    if (updatedUI)
+	sendOSC();
     return f;
 }
 
@@ -109,7 +128,7 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		dbg("TouchOSC.handleOSCMessage",1) << "Selected group position " << col << "/" << row << " with value " << argv[0]->f << std::endl;
 		if (argv[0]->f>0.5) {
 		    int gpos=row*4+col;
-		    Setting *newGroup=settings.getSetting(gpos);
+		    const Setting *newGroup=settings.getSetting(gpos);
 		    if (newGroup==NULL) {
 			dbg("TouchOSC.handleOSCMessage",1) << "No group at position " << gpos << std::endl;
 		    } else {
@@ -146,20 +165,38 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		    if (f==NULL) {
 			dbg("TouchOSC.handleOSCMessage",1) << "Selected fader " << col << " is not valid." << std::endl;
 		    } else {
-			f->setToggle(argv[0]->f>0.5);
+			if (row==0)
+			    f->setUseValueToggle(argv[0]->f>0.5);
+			else if (row==1)
+			    f->setEnableToggle(argv[0]->f>0.5);
+			else
+			    dbg("TouchOSC.handleOSCMessage",1) << "Bad row: " << row << " from /ui/conn/toggles" << std::endl;
 		    }
 		}
 		handled=true;
 	    }
-	} else if (strcmp(tok,"save")==0) {
+	} else if (strcmp(tok,"preset")==0) {
+	    tok=strtok(NULL,"/");
+	    struct timeval now;
+	    gettimeofday(&now,0);
 	    if (argv[0]->f > 0.5)
-		save("settings.txt");
-	    handled=true;
-	} else if (strcmp(tok,"load")==0) {
-	    if (argv[0]->f > 0.5)
-		load("settings.txt");
+		pressTime=now;
+	    else {
+		if (pressTime.tv_sec==0) {
+		    dbg("TouchOSC.handleOSCMessage",1) << "Missed preset " << tok << " press" << std::endl;
+		} else {
+		    float delta=(now.tv_sec-pressTime.tv_sec)+(now.tv_usec-pressTime.tv_usec)/1e6;
+		    dbg("TouchOSC.handleOSCMessage",1) << "Got preset " << tok << " held for " << delta << " seconds" << std::endl;
+		    if (delta>1) 
+			save(std::string("settings_")+tok+".txt");
+		    else
+			load(std::string("settings_")+tok+".txt");
+		    pressTime.tv_sec=0;
+		}
+	    }
 	    handled=true;
 	}
+		    
     }
     if (!handled) {
 	dbg("TouchOSC.handleOSCMessage",1) << "Unhanded message: " << path << ": parse failed at token: " << tok << std::endl;
@@ -170,16 +207,28 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 }
 
 void TouchOSC::save(std::string filename) const {
-    std::ofstream ofs(filename);
-    boost::archive::text_oarchive oa(ofs);
-    oa << settings;
-    dbg("TouchOSC.save",1) << "Saved settings in " << filename << std::endl;
+    try {
+	std::ofstream ofs(filename);
+	boost::archive::text_oarchive oa(ofs);
+	oa << settings;
+	dbg("TouchOSC.save",1) << "Saved settings in " << filename << std::endl;
+    } catch (std::ofstream::failure e) {
+	std::cerr << "Exception saving to " << filename << ": " << e.what() << std::endl;
+    } catch (boost::archive::archive_exception e) {
+	std::cerr << "Exception saving to " << filename << ": " << e.what() << std::endl;
+    }
 }
 
 void TouchOSC::load(std::string filename) {
-    std::ifstream ifs(filename);
-    boost::archive::text_iarchive ia(ifs);
-    ia >> settings;
-    dbg("TouchOSC.save",1) << "Loaded settings from " << filename << "; now have " << settings.size() << "groups" << std::endl;
-    sendOSC();
+    try {
+	std::ifstream ifs(filename);
+	boost::archive::text_iarchive ia(ifs);
+	ia >> settings;
+	dbg("TouchOSC.save",1) << "Loaded settings from " << filename << "; now have " << settings.size() << "groups" << std::endl;
+	sendOSC();
+    } catch (std::ifstream::failure e) {
+	std::cerr << "Exception loading from " << filename << ": " << e.what() << std::endl;
+    } catch (boost::archive::archive_exception e) {
+	std::cerr << "Exception loading from " << filename << ": " << e.what() << std::endl;
+    }
 }

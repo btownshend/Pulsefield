@@ -54,7 +54,19 @@ int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **
 	    // Not needed
 	    handled=true;
 	}
+    } else if (strcmp(tok,"/conductor")) {
+	tok=strtok(NULL,"/");
+	if (strcmp(tok,"attr")==0) {
+	    std::string type=&argv[0]->s;
+	    int uid=argv[1]->i;
+	    float value=argv[2]->f;
+	    float time=argv[3]->f;
+	    dbg("People.handleOSCMessage",1) << "Set attribute " << type << " for id " << uid << ": value=" << value << ", time=" << time << std::endl;
+	    Person *person = getPerson(uid);
+	    person->set(type,value,time);
+	}
     }
+
     if (!handled) {
 	dbg("People.handleOSCMessage",1) << "Unhanded message: " << path << "(" << types << "): parse failed at token: " << tok << std::endl;
     }
@@ -78,15 +90,13 @@ void People::incrementAge_impl() {
 void People::draw_impl(Drawing &d, bool drawBody, bool drawLegs)  const {
     dbg("People.draw",3) << "Draw(" << drawBody << "," << drawLegs << ") for " << p.size() << " people." << std::endl;
     if (drawBody || drawLegs) {
-	for (std::map<int,Person>::const_iterator a=p.begin(); a!=p.end();a++) {
-	    d.shapeBegin();
+	for (std::map<int,Person>::const_iterator a=p.begin(); a!=p.end();a++)
 	    a->second.draw(d,drawBody,drawLegs);
-	    d.shapeEnd();
-	}
     }
 }
 
 void Person::draw(Drawing &d, bool drawBody, bool drawLegs) const  {
+    d.shapeBegin(attributes);
     if (drawBody) {
 	d.drawCircle(position,legDiam+legSep,Color(0.0,1.0,0.0));
     }
@@ -94,4 +104,5 @@ void Person::draw(Drawing &d, bool drawBody, bool drawLegs) const  {
 	for (int i=0;i<2;i++)
 	    d.drawCircle(legs[i].get(),legDiam,Color(0.0,1.0,0.0));
     }
+    d.shapeEnd();
 }

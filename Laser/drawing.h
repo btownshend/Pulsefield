@@ -17,17 +17,13 @@ class Drawing;
 class Primitive {
 protected:
     Color c;
-    Attributes attrs;
  public:
     Primitive(Color _c): c(_c) { }
-    void setAttributes(const Attributes &a) { attrs=a; }
     virtual ~Primitive() { ; }
     // Get list of discrete points spaced approximately by pointSpacing,  optimizes based on minimizing distance from priorPoint to first point
-    // Converts from floor space to device coordinates in the process
-    virtual std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const {
-	return std::vector<etherdream_point>(0);
-    }
-    // Convert from a Point vector to an etherdream vector, applying the current transform and any attributes in attrs
+    virtual std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const = 0;
+
+    // Convert from a Point vector to an etherdream vector, applying the current transform and the primitive's color
     std::vector<etherdream_point> convert(const std::vector<Point> &pts, const Transform &transform) const;
 
     // Get score for rendering using givent transform -- higher is better
@@ -50,7 +46,7 @@ class Circle: public Primitive {
 	dbg("Circle",2) << "c=" <<_c << ", r=" << r << std::endl;
 	center=_c; radius=r;
     }
-    std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
+    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
     float getLength() const { return radius*2*M_PI; }
     float getShapeScore(const Transform &transform) const;
 };
@@ -60,7 +56,7 @@ class Arc: public Primitive {
     float angle;
  public:
     Arc(Point _center, Point _p, float _angle, Color c): Primitive(c) { center=_center; p=_p; angle=_angle; }
-    std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
+    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
     //    float getShapeScore(const Transform &transform) const;
 };
 
@@ -68,7 +64,7 @@ class Line:public Primitive {
     Point p1,p2;
  public:
     Line(Point _p1, Point _p2, Color c): Primitive(c) { p1=_p1; p2=_p2;  }
-    std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
+    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
     float getLength() const { return (p1-p2).norm(); }
     float getShapeScore(const Transform &transform) const;
 };
@@ -77,7 +73,7 @@ class Cubic:public Primitive {
     Bezier b;
  public:
     Cubic(const std::vector<Point> &pts, Color c): Primitive(c), b(pts) {;}
-    std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
+    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
     float getLength() const { return b.getLength(); }
     float getShapeScore(const Transform &transform) const;
 };
@@ -86,18 +82,25 @@ class Polygon: public Primitive {
     std::vector<Point> points;
  public:
     Polygon(const std::vector<Point> _points,Color c): Primitive(c), points(_points) {;}
-    std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
+    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
     float getLength() const;
     //    float getShapeScore(const Transform &transform) const;
 };
 
 class Composite: public Primitive {
     std::vector<std::shared_ptr<Primitive> > elements;
+    Attributes attrs;
  public:
- Composite(): Primitive(Color(1,1,1)) {;}
+ Composite(const Attributes _attrs): Primitive(Color(1,1,1)) {attrs=_attrs;}
     Composite(const Drawing &d);
     void append(std::shared_ptr<Primitive> p) { elements.push_back(p); }
-    std::vector<etherdream_point> getPoints(float pointSpacing,const Transform &transform,const etherdream_point *priorPoint) const;
+    // Convert from a Point vector to an etherdream vector, applying any attributes in attrs
+    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
+
+    void setAttributes(const Attributes &a) { attrs=a; }
+    // Get attributes, allowing them to be modified
+    Attributes &getAttributes() { return attrs; }
+
     float getLength() const {
 	float len=0;
 	for (unsigned int i=0;i<elements.size();i++) {
@@ -113,7 +116,6 @@ class Drawing {
     std::vector<std::shared_ptr<Primitive> > elements;
     int frame;  // Frame number that this drawing corresponds to (or -1 if unknown)
     bool inComposite;
-    Attributes currentAttributes;
  public:
     Drawing() { frame=-1; inComposite=false; }
 
@@ -133,14 +135,11 @@ class Drawing {
 	return len;
     }
 
-    // Get attributes, allowing them to be modified
-    Attributes &getAttributes() { return currentAttributes; }
 
     // Clear drawing
     void clear() {
 	dbg("Drawing.clear",5) << "Clearing " << elements.size() << " elements from frame " << frame << std::endl;
 	elements.clear();  
-	currentAttributes.clear();
 	inComposite=false;
 	frame=-1;
     }
@@ -153,7 +152,6 @@ class Drawing {
 
 
     void append(std::shared_ptr<Primitive> prim) {
-	prim->setAttributes(currentAttributes);
 	if (inComposite) {
 	    // Append to current composite 
 	    if (elements.size()==0) {
@@ -174,18 +172,18 @@ class Drawing {
     }
 
     // Start a new shape
-    void shapeBegin() {
-	dbg("Drawing.shapeBegin",8) << "begin" << std::endl;
+    void shapeBegin(const Attributes &attr) {
+	dbg("Drawing.shapeBegin",3) << "begin shape with " << attr.size() << " attributes" << std::endl;
 	if (inComposite) {
 	    dbg("Drawing.shapeBegin",1) << "Was already in a composite -- ignoring" << std::endl;
 	} else {
-	    append(std::shared_ptr<Primitive>(new Composite()));
+	    append(std::shared_ptr<Primitive>(new Composite(attr)));
 	    inComposite=true;
 	}
     }
 
     void shapeEnd() {
-	dbg("Drawing.shapeBegin",8) << "end" << std::endl;
+	dbg("Drawing.shapeBegin",3) << "end shape" << std::endl;
 	if (!inComposite) {
 	    dbg("Drawing.shapeBegin",1) << "Was not in a composite -- ignoring" << std::endl;
 	} else 
@@ -195,7 +193,7 @@ class Drawing {
     // Append another drawing to this one 
     void append(const Drawing &d) {
 	for (int i=0;i<d.elements.size();i++)
-	    elements.push_back(d.elements[i]);
+	    append(d.elements[i]);
     }
 
     // Add a circle to current drawing

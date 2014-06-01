@@ -16,44 +16,55 @@ class Fader {
     std::string name;
     unsigned int pos;
     float value;
-    bool toggle;
+    bool useValue, enabled;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+	dbg("Fader.serialize",1) << "Saving fader " << name << " settings" << std::endl;
 	ar & name;
 	ar & pos;
 	ar & value;
-	ar & toggle;
+	ar & enabled;
+	ar & useValue;
     }
 public:
     Fader() {;}
-    Fader(std::string _name, unsigned int _pos, float _value=0, bool t=false):name(_name) { pos=_pos; value=_value; toggle=t;}
+    Fader(std::string _name, unsigned int _pos, float _value=0, bool _enabled=true, bool _useValue=false):name(_name) {
+	pos=_pos; value=_value; enabled=_enabled; useValue=_useValue;
+    }
     const std::string &getName() const { return name; }
     float get() const { return value; }
     unsigned int getPos() const { return pos; }
-    bool isToggleOn() const { return toggle; }
+    bool isEnabled() const { return enabled; }
+    bool isUseValue() const { return useValue; }
     void set(float _value) { value=_value; }
-    void setToggle(bool t) { toggle=t; }
-    int sendOSC(lo_address &dest) {
+    void setUseValueToggle(bool t) { useValue=t; }
+    void setEnableToggle(bool t) { enabled=t; }
+    int sendOSC(lo_address &dest) const {
 	std::string faderspath=std::string("/ui/conn/faders/")+std::to_string(pos+1);
-	std::string togglespath=std::string("/ui/conn/toggles/")+std::to_string(pos+1)+"/1";
+	std::string togglespath=std::string("/ui/conn/toggles/")+std::to_string(pos+1);
 	if (lo_send(dest,(faderspath+"/label").c_str(),"s",name.c_str()) < 0)
 	    return -1;
 	if (lo_send(dest,faderspath.c_str(),"f",value) < 0)
 	    return -1;
-	std::cout << "Set fader " << pos+1 << " to " << value << std::endl;
-	if (lo_send(dest,togglespath.c_str(),"f",toggle?1.0:0.0) < 0)
+	dbg("Fader.sendOSC",1) << "Set fader " << pos+1 << " to " << value << std::endl;
+	if (lo_send(dest,(togglespath+"/1").c_str(),"f",useValue?1.0:0.0) < 0)
 	    return -1;
-	std::cout << "Set toggle " << pos+1 << " to " << toggle << std::endl;
+	dbg("Fader.sendOSC",1) << "Set useValue toggle " << pos+1 << " to " << useValue << std::endl;
+	if (lo_send(dest,(togglespath+"/2").c_str(),"f",enabled?1.0:0.0) < 0)
+	    return -1;
+	dbg("Fader.sendOSC",1) << "Set enable toggle " << pos+1 << " to " << enabled << std::endl;
 	return 0;
     }
 };
 
 // Settings for one particular selected group (e.g. connection type)
 class Setting {
+    static const int MAXFADERS=12;
     friend class boost::serialization::access;
     unsigned int pos; // Position in selection grid
     std::string groupName;
     std::vector<Fader> faders;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+	dbg("Setting.serialize",1) << "Saving " << groupName << " with " << faders.size() << " faders" << std::endl;
 	ar & pos;
 	ar & groupName;
 	ar & faders;
@@ -65,11 +76,17 @@ public:
     const std::string &getGroupName() const { return groupName; }
     unsigned int getPos() const { return pos; }
     // Send OSC to make UI reflect current values
-    int sendOSC(lo_address &dest) {
+    int sendOSC(lo_address &dest) const {
 	if (lo_send(dest,"/ui/conn/selected","s",groupName.c_str()) < 0)
 	    return -1;
+	// Set selection
+	std::string selpath="/ui/conn/select/"+std::to_string(pos%4+1)+"/"+std::to_string(pos/4+1);
+	dbg("Setting.sendOSC",1) << "Sending " << selpath << "," << 1.0f << " to " << lo_address_get_url(dest) << std::endl;
+	if (lo_send(dest,selpath.c_str(),"f",1.0f) <0 )
+	    return -1;
+
 	// Clear all the current labels
-	for (unsigned int i=0;i<7;i++) {
+	for (unsigned int i=0;i<MAXFADERS;i++) {
 	    std::string faderspath=std::string("/ui/conn/faders/")+std::to_string(i+1);
 	    if (lo_send(dest,faderspath.c_str(),"f",0.0f) < 0)
 		return -1;
@@ -87,6 +104,9 @@ public:
     void addFader(const std::string &name, unsigned int pos=-1, float value=0.0, bool t=false) {
 	if (pos==-1)
 	    pos=faders.size();
+	if (pos>=MAXFADERS) {
+	    dbg("Setting.addFader",1) << "Too many faders;  have " << faders.size()+1 << ", max=" << MAXFADERS << std::endl;
+	}
 	faders.push_back(Fader(name,pos,value,t));
     }
 
@@ -110,9 +130,11 @@ public:
     
 // All the settings for all the connection types
 class Settings {
+    static const int MAXGROUPS=16;
     friend class boost::serialization::access;
     std::vector<Setting> settings;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+	dbg("Settings.serialize",1) << "Saving " << settings.size() << " settings" << std::endl;
 	ar & settings;
     }
 public:
@@ -127,6 +149,13 @@ public:
 	}
 	return NULL;
     }
+    const Setting *getSetting(unsigned int pos) const {
+	for (unsigned int i=0;i<settings.size();i++) {
+	    if (pos==settings[i].getPos())
+		return &settings[i];
+	}
+	return NULL;
+    }
     Setting *getSetting(unsigned int pos) {
 	for (unsigned int i=0;i<settings.size();i++) {
 	    if (pos==settings[i].getPos())
@@ -135,6 +164,7 @@ public:
 	return NULL;
     }
     unsigned int size() const { return settings.size(); }
+    void sendOSC(lo_address dest,int selectedGroup) const;
 };
 
 class TouchOSC {
@@ -158,13 +188,27 @@ class TouchOSC {
     }
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
     Fader *getFader_impl(std::string groupName, std::string faderName);
+    void frameTick_impl(int frame);
+    struct timeval pressTime;   // Time that a button was pressed (to check if it was held for a long time)
  public:
     static int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
-	return instance()->handleOSCMessage(path,types,argv,argc,msg);
+	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
     }
-    static Fader *getFader(std::string groupName, std::string faderName) { return instance()->getFader(groupName,faderName); }
+    static Fader *getFader(std::string groupName, std::string faderName) { return instance()->getFader_impl(groupName,faderName); }
+    // Get setting of fader applying enabled and useValue settings
+    static float getValue(std::string groupName, std::string faderName, float groupValue, float offValue) {
+	Fader *f=getFader(groupName,faderName);
+	if (!f->isEnabled())
+	    return offValue;
+	if (f->isUseValue())
+	    return f->get()*groupValue;
+	else
+	    return f->get();
+    }
     void save(std::string filename) const;
     void load(std::string filename);
+    // Do anything needed on frame ticks
+    static void frameTick(int frame) { instance()->frameTick_impl(frame); }
 };
 
 

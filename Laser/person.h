@@ -23,6 +23,7 @@ class Person {
     float legDiam, legSep;
     int gid, gsize;
     int age; 	// Age counter -- reset whenever something is set, increment when aged
+    Attributes attributes;
  public:
     Person(int _id) {id=_id; age=0;}
     void incrementAge() {
@@ -53,6 +54,14 @@ class Person {
     int getGroupSize() const { return gsize; }
 
     void draw(Drawing &d, bool drawBody, bool drawLegs) const ;
+    void set(std::string key, float value, float time) {
+	if (value==0) {
+	    dbg("Person.set",1) << "Removing " << key << " from " << id << std::endl;
+	    attributes.erase(key);
+	} else
+	    attributes.set(key,Attribute(value,time));
+	age=0;
+    }
 };
 
 class People {

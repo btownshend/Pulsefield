@@ -76,6 +76,14 @@ std::vector<etherdream_point> Laser::getBlanks(int nblanks, etherdream_point pos
     return result;
 }
 
+std::vector<Point> Laser::getBlanks(int nblanks, Point pos) {
+    std::vector<Point>  result;
+    Point blank=pos;
+    for (int i=0;i<nblanks;i++) 
+	result.push_back(blank);
+    return result;
+}
+
 // Get number of needed blanks for given slew
 std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdream_point final) {
     std::vector<etherdream_point>  result;
@@ -88,6 +96,19 @@ std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdr
     if (devdist>0) {
 	int nblanks=std::ceil(devdist/MAXSLEWDISTANCE)+10;
 	dbg("Drawing.getBlanks",2) << "Inserting " << nblanks << " for a slew of distance " << devdist << " from " << initial.x << "," << initial.y << " to " << final.x << "," << final.y << std::endl;
+	return getBlanks(nblanks,final);
+    }
+    return result;
+}
+
+// Get number of needed blanks for given slew
+std::vector<Point> Laser::getBlanks(Point initial, Point final) {
+    std::vector<Point>  result;
+    // Calculate distance in device coords
+    int devdist=std::max(abs(initial.X()-final.X()),abs(initial.Y()-final.Y()));
+    if (devdist>0) {
+	int nblanks=std::ceil(devdist/MAXSLEWDISTANCE)+10;
+	dbg("Drawing.getBlanks",2) << "Inserting " << nblanks << " for a slew of distance " << devdist << " from " << initial.X() << "," << initial.Y() << " to " << final.X() << "," << final.Y() << std::endl;
 	return getBlanks(nblanks,final);
     }
     return result;

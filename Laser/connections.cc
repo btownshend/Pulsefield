@@ -4,16 +4,8 @@
 
 Connections *Connections::theInstance=NULL;
 
-std::ostream &operator<<(std::ostream &s, const ConnectionAttribute &c) {
-    s << c.getValue() << "@" << c.getTime();
-    return s;
-}
-
 std::ostream &operator<<(std::ostream &s, const Connection &c) {
-    s << c.cid << " [" << c.uid[0] << "," << c.uid[1] << "] ";
-    for (std::map<std::string,ConnectionAttribute>::const_iterator a=c.attributes.begin(); a!=c.attributes.end();a++) {
-	s << a->first << ": " << a->second << " ";
-    }
+    s << c.cid << " [" << c.uid[0] << "," << c.uid[1] << "] " << c.attributes;
     return s;
 }
 
@@ -84,9 +76,6 @@ void Connections::incrementAge_impl() {
 
 void Connections::draw_impl(Drawing &d) const {
     dbg("Connections.draw",3) << "Drawing " << conns.size() << " connections." << std::endl;
-    for (std::map<CIDType,Connection>::const_iterator a=conns.begin(); a!=conns.end();a++) {
-	d.shapeBegin();
+    for (std::map<CIDType,Connection>::const_iterator a=conns.begin(); a!=conns.end();a++)
 	a->second.draw(d);
-	d.shapeEnd();
-    }
 }
