@@ -74,7 +74,6 @@ static int setSkew_handler(const char *path, const char *types, lo_arg **argv, i
 // Attributes
 static int setColor_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setColor(Color(argv[0]->f,argv[1]->f,argv[2]->f)); return 0; }
 static int setDensity_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setDensity(argv[0]->f); return 0; }
-static int setAttribute_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setAttribute(&argv[0]->s,argv[1]->f); return 0; }
 
 // Primitives
 static int conx_begin_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->conxBegin(&argv[0]->s); return 0; }
@@ -137,7 +136,6 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	/* Attributes */
 	lo_server_add_method(s,"/laser/set/color","fff",setColor_handler,this);
 	lo_server_add_method(s,"/laser/set/density","f",setDensity_handler,this);
-	lo_server_add_method(s,"/laser/set/attribute","sf",setAttribute_handler,this);
 
 	/* Laser settings */
 	lo_server_add_method(s,"/laser/set/pps","ii",setPPS_handler,this);
@@ -282,10 +280,6 @@ void OSCHandler::setColor(Color c ) {
 
 void OSCHandler::setDensity(float d ) {
     currentDensity=d;
-}
-
-void OSCHandler::setAttribute(const char *attr, float value ) {
-    drawing.getAttributes().add(attr,value);
 }
 
 void OSCHandler::cellBegin(int uid) {

@@ -54,7 +54,6 @@ class OSCHandler {
     // Attributes
     void setColor(Color c);
     void setDensity(float d);
-    void setAttribute(const char *attr, float value);
 
     // Primitives
     void cellBegin(int uid);
