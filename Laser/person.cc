@@ -67,7 +67,9 @@ void People::incrementAge_impl() {
 	a->second.incrementAge();
 	if (a->second.getAge() > MAXAGE) {
 	    dbg("People.incrementAge",1) << "Connection " << a->first << " has age " << a->second.getAge() << "; deleting." << std::endl;
-	    a=p.erase(a);
+	    std::map<int,Person>::iterator toerase=a;
+	    a++;
+	    p.erase(toerase);
 	} else
 	    a++;
     }

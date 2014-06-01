@@ -72,11 +72,14 @@ void Connections::incrementAge_impl() {
     for (std::map<CIDType,Connection>::iterator a=conns.begin(); a!=conns.end();) {
 	a->second.incrementAge();
 	if (a->second.getAge() > MAXAGE) {
-	    dbg("Connections.incrementAge",1) << "Connection " << a->first << " has age " << a->second.getAge() << "; deleting." << std::endl;
-	    a=conns.erase(a);
+	    dbg("Connections.incrementAge",1) << "Connection " << a->first << " has age " << a->second.getAge() << "; deleting. (had " << conns.size() << " entries)" << std::endl;
+	    std::map<CIDType,Connection>::iterator toerase=a;
+	    a++;
+	    conns.erase(toerase);
 	} else
 	    a++;
     }
+    dbg("Connections.incrementAge",6) << "Connections now have " << conns.size() << " entries" << std::endl;
 }
 
 void Connections::draw_impl(Drawing &d) const {
