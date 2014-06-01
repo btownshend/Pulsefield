@@ -83,6 +83,9 @@ public:
 	    theInstance=new People();
 	return theInstance;
     }
+    static bool personExists(int id)  {
+	return instance()->getPerson(id)!=NULL;
+    }
     static void incrementAge() { instance()->incrementAge_impl(); }
     // Image onto drawing
     static void draw(Drawing &d, bool drawBody, bool drawLegs)  { instance()->draw_impl(d,drawBody,drawLegs); }

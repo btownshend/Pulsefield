@@ -1,5 +1,6 @@
 #include <string>
 #include "connections.h"
+#include "person.h"
 #include "dbg.h"
 
 Connections *Connections::theInstance=NULL;
@@ -28,7 +29,7 @@ int Connections::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	tok=strtok(NULL,"/");
 	if (strcmp(tok,"conx")==0) {
 	    if (strcmp(types,"sssiiff")!=0) {
-		dbg("Connections.handleOSCMessage",1) << "/conductor/conx has unexpected types: " << types << std::endl;
+		dbg("Connections.conx",1) << "/conductor/conx has unexpected types: " << types << std::endl;
 	    } else {
 		std::string type=&argv[0]->s;
 		std::string subtype=&argv[1]->s;
@@ -37,10 +38,14 @@ int Connections::handleOSCMessage_impl(const char *path, const char *types, lo_a
 		int uid2=argv[4]->i;
 		float value=argv[5]->f;
 		float time=argv[6]->f;
-		dbg("Connections.handleOSCMessage",1) << "type=" << type << ", subtype=" << subtype << ", cid=" << cid << ",uids=" << uid1 << "," << uid2 << ", value=" << value << ", time=" << time << std::endl;
-		if (conns.count(cid)==0)
-		    conns[cid]=Connection(cid,uid1,uid2);
-		conns[cid].set(type,subtype,value,time);
+		dbg("Connections.conx",1) << "type=" << type << ", subtype=" << subtype << ", cid=" << cid << ",uids=" << uid1 << "," << uid2 << ", value=" << value << ", time=" << time << std::endl;
+		if (People::personExists(uid1) && People::personExists(uid2)) {
+		    if (conns.count(cid)==0)
+			conns[cid]=Connection(cid,uid1,uid2);
+		    conns[cid].set(type,subtype,value,time);
+		} else {
+		    dbg("Connections.conx",1) << "Connection " << cid << " " << type << "." << subtype << " between missing people: " << uid1 << "," << uid2 <<  " ignored" << std::endl;
+		}
 		handled=true;
 	    }
 	}
@@ -48,7 +53,10 @@ int Connections::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	    int uid=argv[0]->i;
 	    std::string action=&argv[1]->s;
 	    int numconx=argv[2]->i;
-	    dbg("Connections.handleOSCMessage",1) << "rollcall:  uid=" << uid << ", action=" << action << ", numconx=" << numconx << std::endl << *this;
+	    dbg("Connections.rollcall",2) << "rollcall:  uid=" << uid << ", action=" << action << ", numconx=" << numconx << std::endl;
+	    if (!People::personExists(uid)) {
+		dbg("Connections.rollcall",1) << "rollcall has uid for which there is no record: " << uid << std::endl << *this;
+	    }
 	    handled=true;
 	}
     }
