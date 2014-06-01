@@ -28,11 +28,12 @@ class Connection {
     int age; 	// Age counter -- reset whenever something is set, increment when aged
     Drawing visual; 	// Drawing used to image this connection
  public:
-    Connection() {;}
+    Connection() {age=0;}
     Connection(CIDType _cid, int uid1, int uid2) {
 	cid=_cid;
 	uid[0]=uid1;
 	uid[1]=uid2;
+	age=0;
     }
     void set(std::string type, std::string subtype, float value, float time) {
 	std::string key=type+"."+subtype;
