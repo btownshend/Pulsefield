@@ -85,10 +85,12 @@ class Connections {
     }
 
     bool isConnected(int uid1, int uid2) const {
-	return conns.count(std::to_string(uid1)+"-"+std::to_string(uid2))>0;
+	return conns.count(std::to_string(uid1)+"-"+std::to_string(uid2))>0 || conns.count(std::to_string(uid2)+"-"+std::to_string(uid1))>0;
     }
 
     const Connection &getConnection(int uid1, int uid2) const {
+	if (uid1>uid2)
+	    std::swap(uid1,uid2);
 	return conns.at(std::to_string(uid1)+"-"+std::to_string(uid2));
     }
 
