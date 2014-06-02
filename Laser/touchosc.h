@@ -209,6 +209,7 @@ class TouchOSC {
     void load(std::string filename);
     // Do anything needed on frame ticks
     static void frameTick(int frame) { instance()->frameTick_impl(frame); }
+    void updateConnectionMap() const;
 };
 
 

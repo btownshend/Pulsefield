@@ -1,6 +1,8 @@
 #include <fstream>
 #include <sys/time.h>
 #include "touchosc.h"
+#include "person.h"
+#include "connections.h"
 
 const char *TouchOSC::PORT="9998";
 
@@ -80,6 +82,7 @@ void TouchOSC::frameTick_impl(int frame) {
 	dbg("TouchOSC.sendOSC",1) << "Failed send of /ui/active2 to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return;
     }
+    updateConnectionMap();
 }
 
 Fader *TouchOSC::getFader_impl(std::string groupName, std::string faderName) {
@@ -231,4 +234,35 @@ void TouchOSC::load(std::string filename) {
     } catch (boost::archive::archive_exception e) {
 	std::cerr << "Exception loading from " << filename << ": " << e.what() << std::endl;
     }
+}
+
+// Send OSC to touchOSC to update connections
+// UID labels at /ui/uid/[row]
+// multipush at /ui/linked/[col]/[row]
+void TouchOSC::updateConnectionMap() const {
+    // Update UID labels
+    static const int MAXUIDDISPLAY=10;
+       std::vector<int> uids = People::instance()->getIDs();
+    for (int i=0;i<MAXUIDDISPLAY;i++) {
+	std::string uidstring = "";
+	if (i<uids.size())
+	    uidstring = std::to_string(uids[i]);
+	if (lo_send(remote,("/ui/uid/"+std::to_string(i+1)).c_str(),"s",uidstring.c_str()) <0 ) {
+	    dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/uid to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	    return;
+	}
+	for (int j=0;j<MAXUIDDISPLAY;j++) {
+	    bool connected=false;
+	    if (i<uids.size() && j<uids.size())
+		connected = Connections::instance()->isConnected(uids[i],uids[j]) || Connections::instance()->isConnected(uids[i],uids[j]);
+	    std::string path="/ui/linked/"+std::to_string(j+1)+"/"+std::to_string(i+1);
+	    dbg("TouchOSC.updateConnectionMap",3) << "Send " << path << "," << (connected?1.0f:0.0f) << std::endl;
+
+	    if (lo_send(remote,path.c_str(),"f",connected?1.0f:0.0f) <0 ) {
+		dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/linked to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+		return;
+	    }
+	}
+    }
+    
 }
