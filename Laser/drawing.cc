@@ -171,7 +171,12 @@ float Polygon::getLength() const {
 std::vector<etherdream_point> Primitive::convert(const std::vector<Point> &pts, const Transform &transform) const {
     std::vector<etherdream_point> result(pts.size());
     for (unsigned int i = 0; i < pts.size(); i++) {
-	result[i] = transform.mapToDevice(pts[i],c);
+	if (i>0 && pts[i]==pts[i-1]) {
+	    // Blanking, turn off laser
+	    result[i-1].r=0;result[i-1].g=0;result[i-1].b=0;  
+	    result[i]=result[i-1]; 
+	} else
+	    result[i] = transform.mapToDevice(pts[i],c);
     }
     return result;
 }
@@ -232,13 +237,12 @@ std::vector<Point> Composite::getPoints(float spacing,const Point *priorPoint) c
     for (unsigned int i=0;i<elements.size();i++) {
 	std::vector<Point> newpoints;
 	newpoints = elements[i]->getPoints(spacing,priorPoint);
-	// Apply all the attributes to the points
-	newpoints = attrs.apply(newpoints);
 
-	if (result.size()>0 && newpoints.size()>0)  {
+	if (priorPoint!=NULL && newpoints.size()>0)  {
 	    // Insert blanks first
-	    std::vector<Point> blanks = Laser::getBlanks(result.back(),newpoints.front());
+	    std::vector<Point> blanks = Laser::getBlanks(*priorPoint,newpoints.front());
 	    result.insert(result.end(), blanks.begin(), blanks.end());
+	    dbg("Composite.getPoints",3) << "Inserted " << blanks.size() << " blanks before element " << i << " which has " << newpoints.size() << " elements" << std::endl;
 	}
 	result.insert(result.end(), newpoints.begin(), newpoints.end());
 	if (result.size()>0)

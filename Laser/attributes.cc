@@ -25,6 +25,11 @@ std::vector<Point> Attributes::applyMovements(std::string attrname, float attrVa
     gettimeofday(&now,0);
     std::vector<Point> result(pts.size());
     for (int i=0;i<pts.size();i++) {
+	if (i>0 && pts[i]==pts[i-1]) {
+	    // Don't do anything to inserted blanking points 
+	    result[i]=result[i-1];
+	    continue;
+	}
 	Point np=pts[i]*s+ph;
 	np=np+Point(tx,ty)*(now.tv_sec%1000+now.tv_usec/1e6);
 	double noise1=Simplex::noise(np.X()*s,np.Y()*s)*v;

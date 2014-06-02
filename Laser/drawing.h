@@ -90,10 +90,8 @@ class Polygon: public Primitive {
 class Composite: public Primitive {
     std::vector<std::shared_ptr<Primitive> > elements;
     Attributes attrs;
- public:
- Composite(const Attributes _attrs): Primitive(Color(1,1,1)) {attrs=_attrs;}
-    Composite(const Drawing &d);
     bool drawConvexHull;   // Draw convex hull rather than actual points
+public:
     Composite(const Attributes _attrs, bool _hull=false): Primitive(Color(1,1,1)) {attrs=_attrs; drawConvexHull=_hull; }
     void append(std::shared_ptr<Primitive> p) { elements.push_back(p); }
     // Convert from a Point vector to an etherdream vector, applying any attributes in attrs

@@ -9,6 +9,10 @@
 #include "drawing.h"
 
 static const int MAXSLEWDISTANCE=65535/20;
+// slewing is relative to mirror speed, but we need to figure out blanking in floor space (meters) coordinate space, so do rough conversion
+static const float MEANTARGETDIST=4.0;   // Adjust for 4m
+static const float FOV=M_PI/2;
+static const float MAXSLEWMETERS=MAXSLEWDISTANCE/65535.0*MEANTARGETDIST*FOV;
 
 Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     unit=_unit;
@@ -16,6 +20,7 @@ Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     npoints=1000;
     labelColor=Color::getBasicColor(unit);
     showLaser = true;
+    dbg("Laser.Laser",1) << "Maximum slew = " << MAXSLEWDISTANCE << " laser coords, " << MAXSLEWMETERS << " meters." << std::endl;
 }
 
 int Laser::open() {
@@ -88,14 +93,14 @@ std::vector<Point> Laser::getBlanks(int nblanks, Point pos) {
 std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdream_point final) {
     std::vector<etherdream_point>  result;
     if (initial.r==0 &&initial.g==0 && initial.b==0 && final.r==0 &&final.g==0 && final.b==0) {
-	dbg("Drawing.getBlanks",2) << "No blanks needed; initial or final are already blanked" << std::endl;
+	dbg("Laser.getBlanks",2) << "No blanks needed; initial or final are already blanked" << std::endl;
 	return result;
     }
     // Calculate distance in device coords
     int devdist=std::max(abs(initial.x-final.x),abs(initial.y-final.y));
     if (devdist>0) {
 	int nblanks=std::ceil(devdist/MAXSLEWDISTANCE)+10;
-	dbg("Drawing.getBlanks",2) << "Inserting " << nblanks << " for a slew of distance " << devdist << " from " << initial.x << "," << initial.y << " to " << final.x << "," << final.y << std::endl;
+	dbg("Laser.getBlanks",2) << "Inserting " << nblanks << " for a slew of distance " << devdist << " from " << initial.x << "," << initial.y << " to " << final.x << "," << final.y << std::endl;
 	return getBlanks(nblanks,final);
     }
     return result;
@@ -104,12 +109,14 @@ std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdr
 // Get number of needed blanks for given slew
 std::vector<Point> Laser::getBlanks(Point initial, Point final) {
     std::vector<Point>  result;
-    // Calculate distance in device coords
-    int devdist=std::max(abs(initial.X()-final.X()),abs(initial.Y()-final.Y()));
-    if (devdist>0) {
-	int nblanks=std::ceil(devdist/MAXSLEWDISTANCE)+10;
-	dbg("Drawing.getBlanks",2) << "Inserting " << nblanks << " for a slew of distance " << devdist << " from " << initial.X() << "," << initial.Y() << " to " << final.X() << "," << final.Y() << std::endl;
+    // Calculate distance in floor coords
+    float floordist=std::max(fabs(initial.X()-final.X()),fabs(initial.Y()-final.Y()));
+    if (floordist>0.005) {  // More than 0.5cm movement
+	int nblanks=std::ceil(floordist/MAXSLEWMETERS)+10;
+	dbg("Laser.getBlanks",2) << "Inserting " << nblanks << " for a slew of distance " << floordist << " from " << initial.X() << "," << initial.Y() << " to " << final.X() << "," << final.Y() << std::endl;
 	return getBlanks(nblanks,final);
+    } else {
+	dbg("Laser.getBlanks",2) << "No blanks needed for a slew of distance " << floordist << " from " << initial.X() << "," << initial.Y() << " to " << final.X() << "," << final.Y() << std::endl;
     }
     return result;
 }
