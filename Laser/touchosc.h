@@ -140,7 +140,7 @@ class Settings {
 public:
     Settings() {; }
     void addGroup( const std::string &gname) {
-	int newPos=1;
+	int newPos=0;
 	for (int i=0;i<settings.size();i++)
 	    if (settings[i].getPos() >= newPos)
 		newPos=settings[i].getPos()+1;
