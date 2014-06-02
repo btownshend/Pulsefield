@@ -110,7 +110,16 @@ void Connection::draw(Drawing &d) const {
 	    // Move onto radius of person
 	    pt1=pt1+delta*p1->getBodyDiam()/2;
 	    pt2=pt2-delta*p1->getBodyDiam()/2;
-	    d.drawLine(pt1,pt2,Color(0.0,1.0,0.0));
+	    Point pt3,pt4;
+	    Point mid=(pt1+pt2)/2;
+	    if (fabs(delta.X()) > fabs(delta.Y())) {
+		pt3=Point(mid.X(),pt1.Y());
+		pt4=Point(mid.X(),pt2.Y());
+	    } else {
+		pt3=Point(pt1.X(),mid.Y());
+		pt4=Point(pt2.X(),mid.Y());
+	    }
+	    d.drawCubic(pt1,pt3,pt4,pt2,Color(0.0,1.0,0.0));
 	}
     } else {
 	dbg("Connection.draw",3) << "Using received visual with " << visual.getNumElements() << " elements." << std::endl;
