@@ -17,7 +17,7 @@ class Connection {
     int age; 	// Age counter -- reset whenever something is set, increment when aged
     Drawing visual; 	// Drawing used to image this connection
  public:
-    Connection() {age=0;uid[0]=-1;uid[1]=-1;cid="Empty";}
+    Connection() {age=0;uid[0]=-1;uid[1]=-1;cid="Empty"; set("test","allconx",1.0,0.0); }
     Connection(CIDType _cid, int uid1, int uid2) {
 	cid=_cid;
 	uid[0]=uid1;
