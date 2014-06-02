@@ -68,6 +68,7 @@ class People {
     static const int MAXAGE=10;
     static People *theInstance;   // Singleton
     std::map<int,Person> p;
+    Person *getOrCreatePerson(int id);
     Person *getPerson(int id);
 
     People() {;}
@@ -84,7 +85,7 @@ public:
 	return theInstance;
     }
     static bool personExists(int id)  {
-	return instance()->getPerson(id)!=NULL;
+	return instance()->p.count(id)>0;
     }
     static void incrementAge() { instance()->incrementAge_impl(); }
     // Image onto drawing
@@ -93,5 +94,13 @@ public:
     static void setVisual(int uid, const Drawing &d) {
 	// Not used -- always draw with internal routines
 	// p[uid].setVisual(d);
+    }
+    std::vector<int> getIDs() const {
+	std::vector<int> result;
+	for (std::map<int,Person>::const_iterator a=p.begin(); a!=p.end();a++) {
+	    result.push_back(a->first);
+	}
+	std::sort(result.begin(),result.end());
+	return result;
     }
 };

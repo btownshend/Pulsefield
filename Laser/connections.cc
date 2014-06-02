@@ -76,6 +76,11 @@ void Connections::incrementAge_impl() {
 	    std::map<CIDType,Connection>::iterator toerase=a;
 	    a++;
 	    conns.erase(toerase);
+	} else if (!People::personExists(a->second.getUID(0)) || !People::personExists(a->second.getUID(1))) {
+	    dbg("Connections.incrementAge",1) << "Connection " << a->first << " is between non-existent people  " << a->second.getUID(0) << " and " << a->second.getUID(1) << "; deleting. (had " << conns.size() << " entries)" << std::endl;
+	    std::map<CIDType,Connection>::iterator toerase=a;
+	    a++;
+	    conns.erase(toerase);
 	} else
 	    a++;
     }
@@ -87,3 +92,4 @@ void Connections::draw_impl(Drawing &d) const {
     for (std::map<CIDType,Connection>::const_iterator a=conns.begin(); a!=conns.end();a++)
 	a->second.draw(d);
 }
+

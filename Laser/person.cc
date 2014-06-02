@@ -7,6 +7,12 @@ People *People::theInstance=NULL;
 
 Person *People::getPerson(int id) {
     if (p.count(id)==0)
+	return NULL;
+    return &p.at(id);
+}
+
+Person *People::getOrCreatePerson(int id) {
+    if (p.count(id)==0)
 	p.insert(std::pair<int,Person>(id,Person(id)));
     return &p.at(id);
 }
@@ -26,7 +32,7 @@ int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **
 		int id=argv[1]->i;
 		Point position(argv[2]->f,argv[3]->f);
 		dbg("People.handleOSCMessage",1) << "id=" << id << ",pos=" << position << std::endl;
-		Person *person=getPerson(id);
+		Person *person=getOrCreatePerson(id);
 		person->set(position);
 		person->setStats(argv[12]->f,argv[14]->f);
 		handled=true;
@@ -36,7 +42,7 @@ int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **
 	    int id=argv[1]->i;
 	    int leg=argv[2]->i;
 	    Point position(argv[4]->f,argv[5]->f);
-	    Person *person=getPerson(id);
+	    Person *person=getOrCreatePerson(id);
 	    person->setLeg(leg,position);
 	    dbg("People.handleOSCMessage",1) << "id=" << id << ", leg=" << leg << ", pos=" << position << std::endl;
 	    handled=true;
@@ -45,7 +51,7 @@ int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **
 	    int id=argv[2]->i;
 	    int gid=argv[9]->i;
 	    int gsize=argv[10]->i;
-	    Person *person=getPerson(id);
+	    Person *person=getOrCreatePerson(id);
 	    person->setGrouping(gid,gsize);
 	    dbg("People.handleOSCMessage",1) << "id=" << id << ", group=" << gid << " with " << gsize << " people" << std::endl;
 	    handled=true;
@@ -63,7 +69,10 @@ int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **
 	    float time=argv[3]->f;
 	    dbg("People.handleOSCMessage",1) << "Set attribute " << type << " for id " << uid << ": value=" << value << ", time=" << time << std::endl;
 	    Person *person = getPerson(uid);
-	    person->set(type,value,time);
+	    if (person==NULL) {
+		dbg("People.handleOSCMessage",1) << "Person " << uid << " not found -- ignoring conductor message" << std::endl;
+	    } else
+		person->set(type,value,time);
 	}
     }
 
@@ -75,15 +84,19 @@ int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **
 }
 
 void People::incrementAge_impl() {
+    int initialCount=p.size();
     for (std::map<int,Person>::iterator a=p.begin(); a!=p.end();) {
 	a->second.incrementAge();
 	if (a->second.getAge() > MAXAGE) {
-	    dbg("People.incrementAge",1) << "Connection " << a->first << " has age " << a->second.getAge() << "; deleting." << std::endl;
+	    dbg("People.incrementAge",1) << "Person  " << a->first << " has age " << a->second.getAge() << "; deleting." << std::endl;
 	    std::map<int,Person>::iterator toerase=a;
 	    a++;
 	    p.erase(toerase);
 	} else
 	    a++;
+    }
+    if (p.size() != initialCount) {
+	dbg("People.incrementAge",1) << "Reduced number of people from " << initialCount << " to " << p.size() << std::endl;
     }
 }
 
@@ -98,11 +111,11 @@ void People::draw_impl(Drawing &d, bool drawBody, bool drawLegs)  const {
 void Person::draw(Drawing &d, bool drawBody, bool drawLegs) const  {
     d.shapeBegin(attributes);
     if (drawBody) {
-	d.drawCircle(position,legDiam+legSep,Color(0.0,1.0,0.0));
+	d.drawCircle(position,(legDiam+legSep)/2,Color(0.0,1.0,0.0));
     }
     if (drawLegs) {
 	for (int i=0;i<2;i++)
-	    d.drawCircle(legs[i].get(),legDiam,Color(0.0,1.0,0.0));
+	    d.drawCircle(legs[i].get(),legDiam/2,Color(0.0,1.0,0.0));
     }
     d.shapeEnd();
 }

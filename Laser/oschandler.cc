@@ -299,6 +299,9 @@ void OSCHandler::cellEnd(int uid) {
 
 void OSCHandler::conxBegin(const char *cid) {
     dbg("OSCHandler.conxBegin",3) << "CID " << cid << std::endl;
+    if (!Connections::instance()->connectionExists(cid))
+	dbg("OSCHandler.conxBegin",1) << "CID " << cid << " does not exist" << std::endl;
+
     if (drawing.getNumElements() > 0) {
 	dbg("OSCHandler.conxBegin",1) << "Drawing is not empty - clearing" << std::endl;
 	drawing.clear();
@@ -307,7 +310,10 @@ void OSCHandler::conxBegin(const char *cid) {
 
 void OSCHandler::conxEnd(const char *cid) {
     dbg("OSCHandler.conxEnd",3) << "CID " << cid << std::endl;
-    Connections::setVisual(cid,drawing);
+    if (!Connections::instance()->connectionExists(cid)) {
+	dbg("OSCHandler.conxEnd",1) << "CID " << cid << " does not exist" << std::endl;
+    } else
+	Connections::setVisual(cid,drawing);
     drawing.clear();
 }
 

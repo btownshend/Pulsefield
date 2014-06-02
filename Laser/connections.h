@@ -24,6 +24,10 @@ class Connection {
 	uid[1]=uid2;
 	age=0;
     }
+    int getUID(int i) const {
+	assert(i>=0 && i<=1);
+	return uid[i];
+    }
     void set(std::string type, std::string subtype, float value, float time) {
 	std::string key=subtype;
 	if (value==0) {
@@ -66,8 +70,16 @@ class Connections {
 
     // Set the drawing commands to image a person rather than using internal drawing routines
     static void setVisual(CIDType cid, const Drawing &d) {
-	instance()->conns[cid].setVisual(d);
+	instance()->conns.at(cid).setVisual(d);
     }
     
+    bool connectionExists(CIDType cid) const {
+	return conns.count(cid)>0;
+    }
+
+    bool isConnected(int uid1, int uid2) const {
+	return conns.count(std::to_string(uid1)+"-"+std::to_string(uid2))>0;
+    }
+
     friend std::ostream &operator<<(std::ostream &s, const Connections &c);
 };
