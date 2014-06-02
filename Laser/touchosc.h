@@ -139,8 +139,12 @@ class Settings {
     }
 public:
     Settings() {; }
-    void addGroup( const std::string &gname,unsigned int pos) {
-	settings.push_back(Setting(gname,pos));
+    void addGroup( const std::string &gname) {
+	int newPos=1;
+	for (int i=0;i<settings.size();i++)
+	    if (settings[i].getPos() >= newPos)
+		newPos=settings[i].getPos()+1;
+	settings.push_back(Setting(gname,newPos));
     }
     Setting *getSetting(const std::string &name) {
 	for (unsigned int i=0;i<settings.size();i++) {
@@ -177,7 +181,6 @@ class TouchOSC {
     void sendOSC(lo_address dest);
     void sendOSC();
     bool activityLED;
-    int currentPos;
     // TouchOSC UI
     TouchOSC();
     ~TouchOSC();

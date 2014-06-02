@@ -14,7 +14,6 @@ TouchOSC::TouchOSC()  {
     local=lo_address_new("localhost",PORT);
 
     // Setup 
-    currentPos=0;
     selectedGroup=0;
     activityLED=true;
     legsEnabled=true;
@@ -94,7 +93,7 @@ Fader *TouchOSC::getFader_impl(std::string groupName, std::string faderName) {
     Setting *s=settings.getSetting(groupName);
     if (s==NULL) {
 	dbg("TouchOSC.getValue",1) << "Requested group " << groupName << " does not exists; adding." << std::endl;
-	settings.addGroup(groupName,currentPos++);
+	settings.addGroup(groupName);
 	s=settings.getSetting(groupName);
 	updatedUI=true;
     }
