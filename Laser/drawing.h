@@ -93,6 +93,8 @@ class Composite: public Primitive {
  public:
  Composite(const Attributes _attrs): Primitive(Color(1,1,1)) {attrs=_attrs;}
     Composite(const Drawing &d);
+    bool drawConvexHull;   // Draw convex hull rather than actual points
+    Composite(const Attributes _attrs, bool _hull=false): Primitive(Color(1,1,1)) {attrs=_attrs; drawConvexHull=_hull; }
     void append(std::shared_ptr<Primitive> p) { elements.push_back(p); }
     // Convert from a Point vector to an etherdream vector, applying any attributes in attrs
     std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
@@ -172,12 +174,12 @@ class Drawing {
     }
 
     // Start a new shape
-    void shapeBegin(const Attributes &attr) {
+    void shapeBegin(const Attributes &attr, bool drawConvexHull=false) {
 	dbg("Drawing.shapeBegin",3) << "begin shape with " << attr.size() << " attributes" << std::endl;
 	if (inComposite) {
 	    dbg("Drawing.shapeBegin",1) << "Was already in a composite -- ignoring" << std::endl;
 	} else {
-	    append(std::shared_ptr<Primitive>(new Composite(attr)));
+	    append(std::shared_ptr<Primitive>(new Composite(attr,drawConvexHull)));
 	    inComposite=true;
 	}
     }

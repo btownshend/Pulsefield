@@ -2,6 +2,7 @@
 #include <cmath>
 #include <set>
 #include <assert.h>
+#include "opencv2/imgproc/imgproc.hpp"
 #include "drawing.h"
 #include "transform.h"
 #include "laser.h"
@@ -244,6 +245,25 @@ std::vector<Point> Composite::getPoints(float spacing,const Point *priorPoint) c
 	    priorPoint=&result.back();
     }
     dbg("Composite.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
+    if (drawConvexHull) {
+	dbg("Composite.getPoints",3) << "Converting into a convex hull" << std::endl;
+	std::vector<cv::Point2f> src(result.size());
+	for (int i=0;i<result.size();i++) {
+	    src[i].x=result[i].X();
+	    src[i].y=result[i].Y();
+	}
+	std::vector<cv::Point2f> dst;
+	cv::convexHull(src,dst);
+	dbg("Composite.getPoints",3) << "Converted " << result.size() << " points into a convex hull of size " << dst.size() << std::endl;
+	result.resize(dst.size());
+	for (int i=0;i<dst.size();i++) {
+	    result[i]=Point(dst[i].x,dst[i].y);
+	}
+	// TODO -- hull might have larger spacing between some points
+    }
+
+    // Apply all the attributes to the points
+    result=attrs.apply(result);
     return result;
 }
 

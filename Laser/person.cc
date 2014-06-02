@@ -1,6 +1,7 @@
 
 #include <string>
 #include "person.h"
+#include "groups.h"
 #include "dbg.h"
 
 People *People::theInstance=NULL;
@@ -27,11 +28,11 @@ int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **
 	tok=strtok(NULL,"/");
 	if (strcmp(tok,"body")==0) {
 	    if (strcmp(types,"iifffffffffffffffi")!=0) {
-		dbg("People.handleOSCMessage",1) << path << " has unexpected types: " << types << std::endl;
+		dbg("People.body",1) << path << " has unexpected types: " << types << std::endl;
 	    } else {
 		int id=argv[1]->i;
 		Point position(argv[2]->f,argv[3]->f);
-		dbg("People.handleOSCMessage",1) << "id=" << id << ",pos=" << position << std::endl;
+		dbg("People.body",1) << "id=" << id << ",pos=" << position << std::endl;
 		Person *person=getOrCreatePerson(id);
 		person->set(position);
 		person->setStats(argv[12]->f,argv[14]->f);
@@ -44,17 +45,37 @@ int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **
 	    Point position(argv[4]->f,argv[5]->f);
 	    Person *person=getOrCreatePerson(id);
 	    person->setLeg(leg,position);
-	    dbg("People.handleOSCMessage",1) << "id=" << id << ", leg=" << leg << ", pos=" << position << std::endl;
+	    dbg("People.leg",1) << "id=" << id << ", leg=" << leg << ", pos=" << position << std::endl;
 	    handled=true;
 	}
-	else if (strcmp(tok,"body")==0) {
-	    int id=argv[2]->i;
-	    int gid=argv[9]->i;
-	    int gsize=argv[10]->i;
-	    Person *person=getOrCreatePerson(id);
-	    person->setGrouping(gid,gsize);
-	    dbg("People.handleOSCMessage",1) << "id=" << id << ", group=" << gid << " with " << gsize << " people" << std::endl;
-	    handled=true;
+	else if (strcmp(tok,"update")==0) {
+	    if (strcmp(types,"ififfffffiii")!=0) {
+		dbg("People.handleOSCMessage",1) << path << " has unexpected types: " << types << std::endl;
+	    } else {
+		int id=argv[2]->i;
+		int gid=argv[9]->i;
+		int gsize=argv[10]->i;
+		Person *person=getOrCreatePerson(id);
+		if (person->getGroupID() != gid) {
+		    Group *oldGroup = Groups::instance()->getGroup(person->getGroupID());
+		    if (oldGroup!=NULL) {
+			oldGroup->removePerson(id);
+			dbg("People.update",1) << "Removing id " << id << " from group=" << person->getGroupID() << std::endl;
+		    }
+		    if (gid!=0) {
+			dbg("People.update",1) << "Adding id " << id << " to group " << gid << std::endl;
+			Group *group=Groups::instance()->getOrCreateGroup(gid);
+			group->addPerson(id);
+			if (group->getGroupSize() != gsize) {
+			    dbg("People.update",1) << "Group " << gid << " has " << group->getGroupSize() << " people, but update message indicates there should be " << gsize << std::endl;
+			}
+			person->setGrouping(gid,gsize);
+		    } else 
+			person->setGrouping(0,1);
+		}
+		dbg("People.update",1) << "id=" << id << ", group=" << gid << " with " << gsize << " people" << std::endl;
+		handled=true;
+	    }
 	}
 	else if (strcmp(tok,"update")==0) {
 	    // Not needed
@@ -112,11 +133,19 @@ void People::draw_impl(Drawing &d)  const {
 void Person::draw(Drawing &d) const  {
     d.shapeBegin(attributes);
     if (TouchOSC::instance()->isBodyEnabled()) {
-	d.drawCircle(position,(legDiam+legSep)/2,Color(0.0,1.0,0.0));
+	drawBody(d);
     }
     if (TouchOSC::instance()->isLegsEnabled()) {
-	for (int i=0;i<2;i++)
-	    d.drawCircle(legs[i].get(),legDiam/2,Color(0.0,1.0,0.0));
+	drawLegs(d);
     }
     d.shapeEnd();
+}
+
+void Person::drawBody(Drawing &d) const {
+	d.drawCircle(position,(legDiam+legSep)/2,Color(0.0,1.0,0.0));
+}
+
+void Person::drawLegs(Drawing &d) const  {
+    for (int i=0;i<2;i++)
+	d.drawCircle(legs[i].get(),legDiam/2,Color(0.0,1.0,0.0));
 }

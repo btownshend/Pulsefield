@@ -1,6 +1,7 @@
 #include "lasers.h"
 #include "connections.h"
 #include "person.h"
+#include "groups.h"
 
 Lasers::Lasers(int nlasers): lasers(nlasers) {
     dbg("Lasers.Lasers",1) << "Constructing " << nlasers << " lasers." << std::endl;
@@ -57,7 +58,8 @@ int Lasers::render() {
     Drawing drawing;
     Connections::draw(drawing);
     People::draw(drawing);
-    dbg("Lasers.render",1) << "People+Connections have " << drawing.getNumElements() << " elements." << std::endl;
+    Groups::draw(drawing);
+    dbg("Lasers.render",1) << "People+Connections+Groups have " << drawing.getNumElements() << " elements." << std::endl;
 
     // Split drawing among lasers
     std::vector<Drawing> dtmp=allocate(drawing);

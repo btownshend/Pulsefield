@@ -17,6 +17,7 @@
 #include "touchosc.h"
 #include "connections.h"
 #include "person.h"
+#include "groups.h"
 
 static void error(int num, const char *msg, const char *path)
 {
@@ -104,6 +105,7 @@ static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv,
 static int pfbackground_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfbackground(argv[0]->i,argv[1]->i,argv[2]->f,argv[3]->f); return 0; }
 
 static int person_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   return People::handleOSCMessage(path,types,argv,argc,msg);  }
+static int group_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   return Groups::handleOSCMessage(path,types,argv,argc,msg);  }
 
 OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _video) : lasers(_lasers), video(_video),  currentColor(0.0,1.0,0.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler()" << std::endl;
@@ -171,7 +173,9 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/pf/update","ififfffffiii",person_handler,this);
 	lo_server_add_method(s,"/pf/body","iifffffffffffffffi",person_handler,this);
 	lo_server_add_method(s,"/pf/leg","iiiiffffffffi",person_handler,this);
+	lo_server_add_method(s,"/pf/group","iiiffff",group_handler,this);
 	lo_server_add_method(s,"/conductor/attr","siff",person_handler,this);
+	lo_server_add_method(s,"/conductor/gattr","siff",group_handler,this);
 
 	lo_server_add_method(s,"/pf/set/minx","f",pfsetminx_handler,this);
 	lo_server_add_method(s,"/pf/set/maxx","f",pfsetmaxx_handler,this);
@@ -372,6 +376,7 @@ void OSCHandler::pfframe(int frame) {
     // Age all the connections and people
     Connections::incrementAge();
     People::incrementAge();
+    Groups::incrementAge();
 
     // UI Tick
     if (frame%50 == 0)
