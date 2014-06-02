@@ -216,7 +216,7 @@ void OSCHandler::processIncoming() {
 	// TODO: Should set timeout to 0 if geometry is dirty, longer timeout if its clean
 	if  (lo_server_recv_noblock(s,1) == 0) {
 	    // Render lasrs only when nothing in queue
-	    if (lasers->render(video->isBodyEnabled(),video->isLegsEnabled()))
+	    if (lasers->render())
 		// If they've changed, mark the video for update too
 		video->setDirty();
 	}

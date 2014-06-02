@@ -53,7 +53,7 @@ class Person {
     int getGroupID() const { return gid; }
     int getGroupSize() const { return gsize; }
 
-    void draw(Drawing &d, bool drawBody, bool drawLegs) const ;
+    void draw(Drawing &d) const ;
     void set(std::string key, float value, float time) {
 	if (value==0) {
 	    dbg("Person.set",1) << "Removing " << key << " from " << id << std::endl;
@@ -74,7 +74,7 @@ class People {
     People() {;}
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
     void incrementAge_impl();
-    void draw_impl(Drawing &d, bool drawBody, bool drawLegs) const;
+    void draw_impl(Drawing &d) const;
 public:
     static int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
 	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
@@ -89,7 +89,7 @@ public:
     }
     static void incrementAge() { instance()->incrementAge_impl(); }
     // Image onto drawing
-    static void draw(Drawing &d, bool drawBody, bool drawLegs)  { instance()->draw_impl(d,drawBody,drawLegs); }
+    static void draw(Drawing &d)  { instance()->draw_impl(d); }
     // Set the drawing commands to image a person rather than using internal drawing routines
     static void setVisual(int uid, const Drawing &d) {
 	// Not used -- always draw with internal routines

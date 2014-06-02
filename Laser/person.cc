@@ -100,20 +100,20 @@ void People::incrementAge_impl() {
     }
 }
 
-void People::draw_impl(Drawing &d, bool drawBody, bool drawLegs)  const {
-    dbg("People.draw",3) << "Draw(" << drawBody << "," << drawLegs << ") for " << p.size() << " people." << std::endl;
-    if (drawBody || drawLegs) {
+void People::draw_impl(Drawing &d)  const {
+    dbg("People.draw",3) << "Draw for " << p.size() << " people." << std::endl;
+    if (TouchOSC::instance()->isBodyEnabled() || TouchOSC::instance()->isLegsEnabled()) {
 	for (std::map<int,Person>::const_iterator a=p.begin(); a!=p.end();a++)
-	    a->second.draw(d,drawBody,drawLegs);
+	    a->second.draw(d);
     }
 }
 
-void Person::draw(Drawing &d, bool drawBody, bool drawLegs) const  {
+void Person::draw(Drawing &d) const  {
     d.shapeBegin(attributes);
-    if (drawBody) {
+    if (TouchOSC::instance()->isBodyEnabled()) {
 	d.drawCircle(position,(legDiam+legSep)/2,Color(0.0,1.0,0.0));
     }
-    if (drawLegs) {
+    if (TouchOSC::instance()->isLegsEnabled()) {
 	for (int i=0;i<2;i++)
 	    d.drawCircle(legs[i].get(),legDiam/2,Color(0.0,1.0,0.0));
     }

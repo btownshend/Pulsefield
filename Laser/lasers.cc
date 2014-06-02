@@ -46,7 +46,7 @@ std::vector<Drawing> Lasers::allocate(const Drawing &d)  const {
     return result;
 }
 
-int Lasers::render(bool drawBody, bool drawLegs) {
+int Lasers::render() {
     if (!needsRender) {
 	dbg("Lasers.render",5) << "Not dirty" << std::endl;
 	return 0;
@@ -56,7 +56,7 @@ int Lasers::render(bool drawBody, bool drawLegs) {
 
     Drawing drawing;
     Connections::draw(drawing);
-    People::draw(drawing,drawBody, drawLegs);
+    People::draw(drawing);
     dbg("Lasers.render",1) << "People+Connections have " << drawing.getNumElements() << " elements." << std::endl;
 
     // Split drawing among lasers

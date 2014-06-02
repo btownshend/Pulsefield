@@ -29,9 +29,6 @@ Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(4) {
     msglife=100;
     dirty=true;
     dpy=NULL;
-
-    legsEnabled=True;
-    bodyEnabled=False;
 }
 
 Video::~Video() {
@@ -113,11 +110,11 @@ void *Video::runDisplay(void *arg) {
 			world->newMessage() << "Toggled background";
 		    } else if (key==XK_B) {
 			// body  toggle
-			world->toggleBody();
+			TouchOSC::instance()->toggleBody();
 			world->newMessage() << "Toggled body";
 		    } else if (key==XK_L) {
 			// legs  toggle
-			world->toggleLegs();
+			TouchOSC::instance()->toggleLegs();
 			world->newMessage() << "Toggled legs";
 		    } else if (key==XK_g) {
 			// Grid toggle

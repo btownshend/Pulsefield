@@ -19,7 +19,7 @@ class Lasers {
 public:
     Lasers(int nunits);
     ~Lasers();
-    int render(bool drawBody, bool drawLegs);  // Refresh; return 1 if anything changed
+    int render();  // Refresh; return 1 if anything changed
     void setDirty(int _frame) { frame=_frame; needsRender=true; }
     int getDrawingFrame() const { return frame; }
     std::shared_ptr<Laser>  getLaser(int unit) { return lasers[unit]; }

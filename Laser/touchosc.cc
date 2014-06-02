@@ -17,6 +17,8 @@ TouchOSC::TouchOSC()  {
     currentPos=0;
     selectedGroup=0;
     activityLED=true;
+    legsEnabled=true;
+    bodyEnabled=false;
 
     load("settings-default.txt");
     // Send out current settings
@@ -198,8 +200,13 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		}
 	    }
 	    handled=true;
+	} else if (strcmp(tok,"body")==0) {
+	    bodyEnabled=argv[0]->f>0.5;
+	    handled=true;
+	} else if (strcmp(tok,"legs")==0) {
+	    legsEnabled=argv[0]->f>0.5;
+	    handled=true;
 	}
-		    
     }
     if (!handled) {
 	dbg("TouchOSC.handleOSCMessage",1) << "Unhanded message: " << path << ": parse failed at token: " << tok << std::endl;

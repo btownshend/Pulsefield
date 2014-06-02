@@ -59,8 +59,6 @@ class Video: public DisplayDevice {
     void save(std::ostream &s) const { lasers->saveTransforms(s); }
     void load(std::istream &s);
     void clearTransforms() { lasers->clearTransforms(); }
-
-    bool bodyEnabled, legsEnabled;
  public:
     // Local window routines
     Video(std::shared_ptr<Lasers> lasers);
@@ -77,10 +75,6 @@ class Video: public DisplayDevice {
     void toggleGrid() { lasers->toggleGrid(); }
     void toggleOutline() { lasers->toggleOutline(); }
     void toggleLaser(int i) { lasers->toggleLaser(i); }
-    void toggleBody() { bodyEnabled=!bodyEnabled; }
-    bool isBodyEnabled() { return bodyEnabled; }
-    void toggleLegs() { legsEnabled=!legsEnabled; }
-    bool isLegsEnabled() { return legsEnabled; }
     // Display needs refresh
     void setDirty();
 };

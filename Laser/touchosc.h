@@ -190,6 +190,7 @@ class TouchOSC {
     Fader *getFader_impl(std::string groupName, std::string faderName);
     void frameTick_impl(int frame);
     struct timeval pressTime;   // Time that a button was pressed (to check if it was held for a long time)
+    bool bodyEnabled, legsEnabled;
  public:
     static int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
 	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
@@ -210,6 +211,11 @@ class TouchOSC {
     // Do anything needed on frame ticks
     static void frameTick(int frame) { instance()->frameTick_impl(frame); }
     void updateConnectionMap() const;
+
+    void toggleBody() { bodyEnabled=!bodyEnabled; }
+    bool isBodyEnabled() { return bodyEnabled; }
+    void toggleLegs() { legsEnabled=!legsEnabled; }
+    bool isLegsEnabled() { return legsEnabled; }
 };
 
 
