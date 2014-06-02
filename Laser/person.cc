@@ -73,6 +73,7 @@ int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **
 		dbg("People.handleOSCMessage",1) << "Person " << uid << " not found -- ignoring conductor message" << std::endl;
 	    } else
 		person->set(type,value,time);
+	    handled=true;
 	}
     }
 
