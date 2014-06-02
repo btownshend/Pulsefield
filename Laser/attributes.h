@@ -36,6 +36,14 @@ class Attributes {
 	    pts=applyMovements(a->first,a->second.getValue(),pts);
 	return pts;
     }
+    std::vector<std::string > getAttributeNames() const {
+	std::vector<std::string > result;
+	for (std::map<std::string ,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++) {
+	    result.push_back(a->first);
+	}
+	std::sort(result.begin(),result.end());
+	return result;
+    }
 
 };
 

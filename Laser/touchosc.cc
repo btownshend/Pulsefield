@@ -21,6 +21,8 @@ TouchOSC::TouchOSC()  {
     bodyEnabled=false;
 
     load("settings-default.txt");
+    trackUID1=-1;
+    trackUID2=-1;
     // Send out current settings
     sendOSC();
 }
@@ -200,6 +202,19 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		}
 	    }
 	    handled=true;
+	} else if (strcmp(tok,"linked") == 0) {
+	    int col=atoi(strtok(NULL,"/"))-1;
+	    int row=atoi(strtok(NULL,"/"))-1;
+	    dbg("TouchOSC.handleOSCMessage",1) << "Got linked touch  at " << col << "," << row << std::endl;
+	    std::vector<int> uids = People::instance()->getIDs();
+	    if (col>=uids.size() || row>=uids.size()) {
+		dbg("TouchOSC.handleOSCMessage",1) << "Only have " << uids.size() << "UIDs; touch out of range" << std::endl;
+	    } else {
+		trackUID1=uids[row];
+		trackUID2=uids[col];
+		dbg("TouchOSC.handleOSCMessage",1) << "Displaying UIDs " << trackUID1 << "," << trackUID2 << std::endl;
+	    }
+	    handled=true;
 	} else if (strcmp(tok,"body")==0) {
 	    bodyEnabled=argv[0]->f>0.5;
 	    handled=true;
@@ -249,7 +264,7 @@ void TouchOSC::load(std::string filename) {
 void TouchOSC::updateConnectionMap() const {
     // Update UID labels
     static const int MAXUIDDISPLAY=10;
-       std::vector<int> uids = People::instance()->getIDs();
+    std::vector<int> uids = People::instance()->getIDs();
     for (int i=0;i<MAXUIDDISPLAY;i++) {
 	std::string uidstring = "";
 	if (i<uids.size())
@@ -272,4 +287,58 @@ void TouchOSC::updateConnectionMap() const {
 	}
     }
     
+    // Display attributes of selected UIDs
+    std::string uid1label="";
+    std::string uid2label="";
+    if (trackUID1 >= 0 && People::instance()->personExists(trackUID1)) {
+	uid1label=std::to_string(trackUID1);
+	Attributes attr=People::instance()->getAttributes(trackUID1);
+	std::vector<std::string> attrNames=attr.getAttributeNames();
+	for (int i=0;i<attrNames.size();i++) {
+	    Attribute a=attr.get(attrNames[i]);
+	    std::string msg=uid1label+": "+attrNames[i]+"="+std::to_string(a.getValue());
+	    std::string path="/ui/connattr/"+std::to_string(i+1);
+	    if (lo_send(remote,path.c_str(),"s",msg.c_str()) <0 ) {
+		dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/connattr to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+		return;
+	    }
+	}
+	int row=attrNames.size();
+	// And connections with other ID
+	if (trackUID2 >= 0 && People::instance()->personExists(trackUID2)) {
+	    uid2label=std::to_string(trackUID2);
+	    if (Connections::instance()->isConnected(trackUID1,trackUID2)) {
+		Connection c=Connections::instance()->getConnection(trackUID1,trackUID2);
+		Attributes attr=c.getAttributes();
+		std::vector<std::string> attrNames=attr.getAttributeNames();
+		for (int i=0;i<attrNames.size();i++) {
+		    Attribute a=attr.get(attrNames[i]);
+		    std::string msg=uid1label+"-"+uid2label+": "+attrNames[i]+"="+std::to_string(a.getValue());
+		    std::string path="/ui/connattr/"+std::to_string(i+row+1);
+		    if (lo_send(remote,path.c_str(),"s",msg.c_str()) <0 ) {
+			dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/connattr to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+			return;
+		    }
+		}
+		row+=attrNames.size();
+	    }
+	}
+	// Blank out remaining attribute names
+	static const int MAXATTR=10;
+	for (int i=row;i<MAXATTR;i++) {
+	    std::string path="/ui/connattr/"+std::to_string(i+1);
+	    if (lo_send(remote,path.c_str(),"s","") <0 ) {
+		dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/connattr to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+		return;
+	    }
+	}
+    }
+    if (lo_send(remote,"/ui/connattr/uid1","s",uid1label.c_str()) <0 ) {
+	dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/connattr/uid1 to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return;
+    }
+    if (lo_send(remote,"/ui/connattr/uid2","s",uid2label.c_str()) <0 ) {
+	dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/connattr/uid2 to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return;
+    }
 }

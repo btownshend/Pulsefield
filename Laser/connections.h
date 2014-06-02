@@ -43,6 +43,7 @@ class Connection {
     int getAge() const { return age; }
     void setVisual(const Drawing &d) { visual=d; }
     void draw(Drawing &d) const {  d.shapeBegin(attributes); d.append(visual); d.shapeEnd(); }
+    const Attributes &getAttributes() const { return attributes; }
     friend std::ostream &operator<<(std::ostream &s, const Connection &c);
 };
 
@@ -79,6 +80,10 @@ class Connections {
 
     bool isConnected(int uid1, int uid2) const {
 	return conns.count(std::to_string(uid1)+"-"+std::to_string(uid2))>0;
+    }
+
+    const Connection &getConnection(int uid1, int uid2) const {
+	return conns.at(std::to_string(uid1)+"-"+std::to_string(uid2));
     }
 
     friend std::ostream &operator<<(std::ostream &s, const Connections &c);

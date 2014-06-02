@@ -62,6 +62,7 @@ class Person {
 	    attributes.set(key,Attribute(value,time));
 	age=0;
     }
+    Attributes getAttributes() const { return attributes; }
 };
 
 class People {
@@ -102,5 +103,9 @@ public:
 	}
 	std::sort(result.begin(),result.end());
 	return result;
+    }
+
+    Attributes getAttributes(int uid) const { 
+	return p.at(uid).getAttributes();
     }
 };
