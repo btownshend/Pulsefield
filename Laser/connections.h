@@ -24,6 +24,7 @@ class Connection {
 	uid[1]=uid2;
 	age=0;
     }
+    CIDType getCID() const { return cid; }
     int getUID(int i) const {
 	assert(i>=0 && i<=1);
 	return uid[i];
@@ -41,6 +42,7 @@ class Connection {
 	age++;
     }
     int getAge() const { return age; }
+    void setAge(int _age)  { age=_age;}
     void setVisual(const Drawing &d) { visual=d; }
     void draw(Drawing &d) const;
     const Attributes &getAttributes() const { return attributes; }
@@ -62,6 +64,10 @@ class Connections {
 	    theInstance=new Connections();
 	return theInstance;
     }
+    void add(const Connection &conn) {
+	conns[conn.getCID()]=conn;
+    }
+
     static int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
 	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
     }

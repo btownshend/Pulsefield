@@ -18,7 +18,7 @@ TouchOSC::TouchOSC()  {
     activityLED=true;
     legsEnabled=true;
     bodyEnabled=false;
-
+    pressTime.tv_sec=0;
     load("settings-default.txt");
     trackUID1=-1;
     trackUID2=-1;
@@ -204,15 +204,49 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	} else if (strcmp(tok,"linked") == 0) {
 	    int col=atoi(strtok(NULL,"/"))-1;
 	    int row=atoi(strtok(NULL,"/"))-1;
-	    dbg("TouchOSC.handleOSCMessage",1) << "Got linked touch  at " << col << "," << row << std::endl;
+	    dbg("TouchOSC.linked",1) << "Got linked touch  at " << col << "," << row << " v=" << argv[0]->f << std::endl;
 	    std::vector<int> uids = People::instance()->getIDs();
 	    if (col>=uids.size() || row>=uids.size()) {
-		dbg("TouchOSC.handleOSCMessage",1) << "Only have " << uids.size() << "UIDs; touch out of range" << std::endl;
+		dbg("TouchOSC.linked",1) << "Only have " << uids.size() << "UIDs; touch out of range" << std::endl;
 	    } else {
 		trackUID1=uids[row];
 		trackUID2=uids[col];
-		dbg("TouchOSC.handleOSCMessage",1) << "Displaying UIDs " << trackUID1 << "," << trackUID2 << std::endl;
+		dbg("TouchOSC.linked",1) << "Displaying UIDs " << trackUID1 << "," << trackUID2 << std::endl;
 	    }
+	    struct timeval now;
+	    gettimeofday(&now,0);
+	    if (argv[0]->f > 0.5)
+		pressTime=now;
+	    else {
+		if (pressTime.tv_sec==0) {
+		    dbg("TouchOSC.linked",1) << "Missed linked " << tok << " press" << std::endl;
+		} else {
+		    float delta=(now.tv_sec-pressTime.tv_sec)+(now.tv_usec-pressTime.tv_usec)/1e6;
+		    dbg("TouchOSC.linked",1) << "Got linked held for " << delta << " seconds" << std::endl;
+		    if (delta>1) {
+			// Force a connection or attribute between the selected people
+			Setting *s=settings.getSetting(selectedGroup);
+			if (s==NULL) {
+			    dbg("TouchOSC.linked",1) << "No attribute selected" << std::endl;
+			} else {
+			    std::string attribute = s->getGroupName();
+			    if (trackUID1!= trackUID2) {
+				// A connection
+				CIDType cid;
+				if (trackUID1>trackUID2) 
+				    std::swap(trackUID1,trackUID2);
+				Connection conn(std::to_string(trackUID1)+"-"+std::to_string(trackUID2),trackUID1,trackUID2);
+				conn.set("persistent",attribute,trackUID1,trackUID2);
+				conn.setAge(-100);
+				dbg("TouchOSC.linked",1) << "Adding connection " << conn << std::endl;
+				Connections::instance()->add(conn);
+			    }
+			}
+		    }
+		    pressTime.tv_sec=0;
+		}
+	    }
+
 	    handled=true;
 	} else if (strcmp(tok,"body")==0) {
 	    bodyEnabled=argv[0]->f>0.5;
@@ -275,7 +309,7 @@ void TouchOSC::updateConnectionMap() const {
 	for (int j=0;j<MAXUIDDISPLAY;j++) {
 	    bool connected=false;
 	    if (i<uids.size() && j<uids.size())
-		connected = Connections::instance()->isConnected(uids[i],uids[j]) || Connections::instance()->isConnected(uids[i],uids[j]);
+		connected = Connections::instance()->isConnected(uids[i],uids[j]) || Connections::instance()->isConnected(uids[j],uids[i]);
 	    std::string path="/ui/linked/"+std::to_string(j+1)+"/"+std::to_string(i+1);
 	    dbg("TouchOSC.updateConnectionMap",3) << "Send " << path << "," << (connected?1.0f:0.0f) << std::endl;
 
