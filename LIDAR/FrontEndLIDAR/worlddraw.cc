@@ -27,6 +27,10 @@ void *World::runDisplay(void *arg) {
 	fprintf(stderr, "Error: Can't open display. Is DISPLAY set?\n");
 	return NULL;
     }
+    if (!XInitThreads()) {
+	std::cerr << "Unable to set XLib to multithreaded operation" << std::endl;
+	return NULL;
+    }
 
     Window w;
     w = XCreateSimpleWindow(world->dpy, RootWindow(world->dpy, 0),0, 0, 800, 400, 0, 0, BlackPixel(world->dpy, 0));
