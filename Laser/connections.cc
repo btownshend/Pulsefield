@@ -93,3 +93,28 @@ void Connections::draw_impl(Drawing &d) const {
 	a->second.draw(d);
 }
 
+
+void Connection::draw(Drawing &d) const {
+    d.shapeBegin(attributes);
+    if (visual.getNumElements()==0) {
+	dbg("Connection.draw",3) << "Using internal draw" << std::endl;
+	Person *p1= People::instance()->getPerson(uid[0]);
+	Person *p2= People::instance()->getPerson(uid[1]);
+	if (p1==NULL || p2==NULL) {
+	    dbg("Connection.draw",1) << "Connection " << cid << " is invalid -- at least one UID is missing" << std::endl;
+	} else {
+	    Point pt1=p1->get();
+	    Point pt2=p2->get();
+	    Point delta=pt2-pt1;
+	    delta=delta/delta.norm();
+	    // Move onto radius of person
+	    pt1=pt1+delta*p1->getBodyDiam()/2;
+	    pt2=pt2-delta*p1->getBodyDiam()/2;
+	    d.drawLine(pt1,pt2,Color(0.0,1.0,0.0));
+	}
+    } else {
+	dbg("Connection.draw",3) << "Using received visual with " << visual.getNumElements() << " elements." << std::endl;
+	d.append(visual);
+    }
+    d.shapeEnd();
+}

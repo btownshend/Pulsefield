@@ -50,6 +50,7 @@ class Person {
     }
     float getLegDiam() const { return legDiam; }
     float getLegSep() const { return legSep; }
+    float getBodyDiam() const { return legDiam+legSep; }
     int getGroupID() const { return gid; }
     int getGroupSize() const { return gsize; }
 

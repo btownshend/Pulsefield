@@ -142,7 +142,7 @@ void Person::draw(Drawing &d) const  {
 }
 
 void Person::drawBody(Drawing &d) const {
-	d.drawCircle(position,(legDiam+legSep)/2,Color(0.0,1.0,0.0));
+    d.drawCircle(position,getBodyDiam()/2,Color(0.0,1.0,0.0));
 }
 
 void Person::drawLegs(Drawing &d) const  {
