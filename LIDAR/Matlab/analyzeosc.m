@@ -16,7 +16,7 @@ uids=unique(x(:,2));
 col='rgbcmy';
 lh={};
 setfig('facing');clf;
-subplot(211);
+subplot(311);
 for i=1:length(uids)
   uid=uids(i);
   sel=x(:,2)==uid;
@@ -28,7 +28,7 @@ legend(lh);
 xlabel('Frame');
 ylabel('Facing');
 
-subplot(212);
+subplot(312);
 p2=[nan,nan];p1=[nan,nan];
 pnum=1;
 lh={};
@@ -42,7 +42,7 @@ for i=1 % :length(uids)-1
         p2=x(k,3:4);
       end
       rel=p2-p1;
-      dir(k)=cart2pol(rel(1),rel(2));
+      dir(k)=atan2(rel(2),rel(1));
     end
     plot(x(:,1),dir*180/pi,col(mod(pnum,length(col))+1));
     lh{pnum}=sprintf('UID %d to %d',uids(i),uids(j));
@@ -53,3 +53,17 @@ end
 legend(lh);
 xlabel('Frame');
 ylabel('Direction between UIDs');
+
+subplot(313);
+sel=x(:,2)==uids(1);
+adiff1=x(sel,5)-(dir(sel)'*180/pi+180);
+adiff1=(mod(adiff1+180,360)-180);
+plot(x(sel,1),adiff1);
+hold on;
+sel=x(:,2)==uids(2);
+adiff2=x(sel,5)-(dir(sel)'*180/pi);
+adiff2=(mod(adiff2+180,360)-180);
+plot(x(sel,1),adiff2,'r');
+xlabel('Frame');
+ylabel('Angle diff');
+title(sprintf('UID %d facing %d\n',uids(1),uids(2)));
