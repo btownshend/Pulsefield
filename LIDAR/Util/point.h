@@ -31,6 +31,9 @@ class Point {
 	x=cos(theta+M_PI/2)*range; 
 	y=sin(theta+M_PI/2)*range;
     }
+    Point rot90() const {
+	return Point(-y,x); 
+    }
     Point operator-(const Point &p2) const { return Point(x-p2.X(),y-p2.Y()); }
     Point operator+(const Point &p2) const { return Point(x+p2.X(),y+p2.Y()); }
     Point operator/(float s) const { return Point(x/s,y/s); }
