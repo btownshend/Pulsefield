@@ -33,4 +33,5 @@ class Laser: public DisplayDevice  {
     Color getMaxColor() const { return maxColor; }
     int getUnit() const { return unit; }
     void toggleLaser() { showLaser=!showLaser; }
+    void dumpPoints() const;
 };

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include <math.h>
 
@@ -155,3 +156,11 @@ void Laser::render(const Drawing &drawing) {
     update();
 }
 
+void Laser::dumpPoints() const {
+    std::string fname="ptdump-"+std::to_string(unit)+".txt";
+    std::ofstream fd(fname);
+    dbg("Laser.dumpPoints",1) << "Dumping " << pts.size() << " points to " << fname << std::endl;
+    for (int i=0;i<pts.size();i++) {
+	fd << pts[i].x << " " << pts[i].y << " " << (pts[i].g>0.5?1:0) << std::endl;
+    }
+}

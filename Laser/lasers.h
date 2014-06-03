@@ -40,6 +40,7 @@ public:
     void toggleGrid() { showGrid=!showGrid; }
     void toggleOutline() { showOutline=!showOutline; }
     void toggleLaser(int i) { if (i>=0 && i<lasers.size()) lasers[i]->toggleLaser(); }
+    void dumpPoints() { for (int i=0;i<lasers.size();i++) lasers[i]->dumpPoints(); }
 };
 
 

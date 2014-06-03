@@ -379,8 +379,11 @@ void OSCHandler::pfframe(int frame) {
     Groups::incrementAge();
 
     // UI Tick
-    if (frame%50 == 0)
+    if (frame%10 == 0)
 	TouchOSC::frameTick(frame);
+
+    if (frame%1000 == 0)
+	lasers->dumpPoints();
 }
 
 
