@@ -77,7 +77,7 @@ float Bezier::getLength(float res)  const {
     if (length<0) {
 	int npoints=10;
 	float newlen;
-	while (true) {
+	while (npoints <1000) {
 	    float maxsep=1e99;
 	    std::vector<Point> pts=interpolate(npoints); 
 	    newlen=0;
@@ -91,6 +91,9 @@ float Bezier::getLength(float res)  const {
 		break;
 	    }
 	    npoints*=2;
+	    if (npoints>1000) {
+		dbg("Bezier.getLength",1) << "Convergence failure: computed length using " << npoints << " segments for maxsep=" << maxsep << "; res=" << res << std::endl;
+	    }
 	}
 	// Save cached value (override const)
 	((Bezier *)this)->length=newlen;
