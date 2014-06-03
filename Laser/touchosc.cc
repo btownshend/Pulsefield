@@ -22,20 +22,55 @@ TouchOSC::TouchOSC()  {
     load("settings-default.txt");
     trackUID1=-1;
     trackUID2=-1;
-    // Send out current settings
-    sendOSC();
 }
 		       
 TouchOSC::~TouchOSC() {
     lo_address_free(remote);
 }
 
-void TouchOSC::sendOSC() {
-    sendOSC(local);
-    sendOSC(remote);
+int Fader::sendOSC() const {
+    std::string faderspath=std::string("/ui/conn/faders/")+std::to_string(pos+1);
+    std::string togglespath=std::string("/ui/conn/toggles/")+std::to_string(pos+1);
+    if (TouchOSC::instance()->send((faderspath+"/label"),name) < 0)
+	return -1;
+    if (TouchOSC::instance()->send(faderspath,value) < 0)
+	return -1;
+    dbg("Fader.sendOSC",1) << "Set fader " << pos+1 << " to " << value << std::endl;
+    if (TouchOSC::instance()->send((togglespath+"/1"),useValue?1.0:0.0) < 0)
+	return -1;
+    dbg("Fader.sendOSC",1) << "Set useValue toggle " << pos+1 << " to " << useValue << std::endl;
+    if (TouchOSC::instance()->send((togglespath+"/2"),enabled?1.0:0.0) < 0)
+	return -1;
+    dbg("Fader.sendOSC",1) << "Set enable toggle " << pos+1 << " to " << enabled << std::endl;
+    return 0;
 }
 
-void Settings::sendOSC(lo_address dest,int selectedGroup) const {
+int Setting::sendOSC() const {
+    if (TouchOSC::instance()->send("/ui/conn/selected",groupName) < 0)
+	return -1;
+    // Set selection
+    std::string selpath="/ui/conn/select/"+std::to_string(pos%4+1)+"/"+std::to_string(pos/4+1);
+    dbg("Setting.sendOSC",1) << "Sending " << selpath << "," << 1.0f << std::endl;
+    if (TouchOSC::instance()->send(selpath,1.0f) <0 )
+	return -1;
+
+    // Clear all the current labels
+    for (unsigned int i=0;i<MAXFADERS;i++) {
+	std::string faderspath=std::string("/ui/conn/faders/")+std::to_string(i+1);
+	if (TouchOSC::instance()->send(faderspath,0.0f) < 0)
+	    return -1;
+	if (TouchOSC::instance()->send((faderspath+"/label"),"") < 0)
+	    return -1;
+    }
+	    
+    for (unsigned int i=0;i<faders.size();i++)
+	if (faders[i].sendOSC() < 0)
+	    return -1;
+    return 0;
+}
+
+
+void Settings::sendOSC(int selectedGroup) const {
     // Send labels for attribute selection
     for (int p=0;p<MAXGROUPS;p++) {
 	int col=(p%4)+1;
@@ -47,11 +82,9 @@ void Settings::sendOSC(lo_address dest,int selectedGroup) const {
 	if (s!=NULL) {
 	    label=s->getGroupName();
 	}
-	dbg("Setting.sendOSC",3) << "Sending " << path << "," << label << " to " << lo_address_get_url(dest) << std::endl;
-	if (lo_send(dest,(path+"/label").c_str(),"s",label.c_str()) <0 ) {
-	    dbg("TouchOSC.sendOSC",1) << "Failed send of " << path << "  to " << lo_address_get_url(dest) << ": " << lo_address_errstr(dest) << std::endl;
+	dbg("Setting.sendOSC",3) << "Sending " << path << "," << label << std::endl;
+	if (TouchOSC::instance()->send((path+"/label"),label) <0 ) 
 	    return;
-	}
     }
 
     // Send settings for current select
@@ -62,29 +95,26 @@ void Settings::sendOSC(lo_address dest,int selectedGroup) const {
 	if (s==NULL)
 	    return;
     }
-    if(s->sendOSC(dest) <0) {
-	dbg("TouchOSC.sendOSC",1) << "Failed send of OSC data to " << lo_address_get_url(dest) << ": " << lo_address_errstr(dest) << std::endl;
+    if(s->sendOSC() <0)
 	return;
-    }
 }
 
-void TouchOSC::sendOSC(lo_address dest) {
+void TouchOSC::sendOSC() {
     // Send OSC to make UI reflect current values
-    dbg("TouchOSC.sendOSC",1) << "Sending OSC updates with group " << selectedGroup << " to " << dest << std::endl;
-    settings.sendOSC(dest,selectedGroup);
-
+    dbg("TouchOSC.sendOSC",1) << "Sending OSC updates with group " << selectedGroup << " to " << remote << std::endl;
+    settings.sendOSC(selectedGroup);
 }
 
 void TouchOSC::frameTick_impl(int frame) {
     activityLED=!activityLED;
-    if (lo_send(remote,"/ui/active1","f",activityLED?1.0f:0.0f) <0 ) {
-	dbg("TouchOSC.sendOSC",1) << "Failed send of /ui/active1 to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+    if (send("/ui/active1",activityLED?1.0f:0.0f) <0 ) 
 	return;
-    }
-    if (lo_send(remote,"/ui/active2","f",activityLED?0.0f:1.0f) <0 ) {
-	dbg("TouchOSC.sendOSC",1) << "Failed send of /ui/active2 to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+    if (send("/ui/active2",activityLED?0.0f:1.0f) <0 ) 
 	return;
-    }
+    updateUI();
+}
+
+void TouchOSC::updateUI() const {
     updateConnectionMap();
 }
 
@@ -302,10 +332,8 @@ void TouchOSC::updateConnectionMap() const {
 	std::string uidstring = "";
 	if (i<uids.size())
 	    uidstring = std::to_string(uids[i]);
-	if (lo_send(remote,("/ui/uid/"+std::to_string(i+1)).c_str(),"s",uidstring.c_str()) <0 ) {
-	    dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/uid to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	if (send("/ui/uid/"+std::to_string(i+1),uidstring) <0 ) 
 	    return;
-	}
 	for (int j=0;j<MAXUIDDISPLAY;j++) {
 	    bool connected=false;
 	    if (i<uids.size() && j<uids.size())
@@ -313,10 +341,8 @@ void TouchOSC::updateConnectionMap() const {
 	    std::string path="/ui/linked/"+std::to_string(j+1)+"/"+std::to_string(i+1);
 	    dbg("TouchOSC.updateConnectionMap",3) << "Send " << path << "," << (connected?1.0f:0.0f) << std::endl;
 
-	    if (lo_send(remote,path.c_str(),"f",connected?1.0f:0.0f) <0 ) {
-		dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/linked to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	    if (send(path,connected?1.0f:0.0f) <0 )
 		return;
-	    }
 	}
     }
     
@@ -331,10 +357,8 @@ void TouchOSC::updateConnectionMap() const {
 	    Attribute a=attr.get(attrNames[i]);
 	    std::string msg=uid1label+": "+attrNames[i]+"="+std::to_string(a.getValue());
 	    std::string path="/ui/connattr/"+std::to_string(i+1);
-	    if (lo_send(remote,path.c_str(),"s",msg.c_str()) <0 ) {
-		dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/connattr to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	    if (send(path,msg) <0 )
 		return;
-	    }
 	}
 	int row=attrNames.size();
 	// And connections with other ID
@@ -348,10 +372,8 @@ void TouchOSC::updateConnectionMap() const {
 		    Attribute a=attr.get(attrNames[i]);
 		    std::string msg=uid1label+"-"+uid2label+": "+attrNames[i]+"="+std::to_string(a.getValue());
 		    std::string path="/ui/connattr/"+std::to_string(i+row+1);
-		    if (lo_send(remote,path.c_str(),"s",msg.c_str()) <0 ) {
-			dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/connattr to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+		    if (send(path,msg) <0 )
 			return;
-		    }
 		}
 		row+=attrNames.size();
 	    }
@@ -360,18 +382,29 @@ void TouchOSC::updateConnectionMap() const {
 	static const int MAXATTR=10;
 	for (int i=row;i<MAXATTR;i++) {
 	    std::string path="/ui/connattr/"+std::to_string(i+1);
-	    if (lo_send(remote,path.c_str(),"s","") <0 ) {
-		dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/connattr to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	    if (send(path,"") <0 ) {
 		return;
 	    }
 	}
     }
-    if (lo_send(remote,"/ui/connattr/uid1","s",uid1label.c_str()) <0 ) {
-	dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/connattr/uid1 to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+    if (send("/ui/connattr/uid1",uid1label) <0 ) 
 	return;
-    }
-    if (lo_send(remote,"/ui/connattr/uid2","s",uid2label.c_str()) <0 ) {
-	dbg("TouchOSC.updateConnectionMap",1) << "Failed send of /ui/connattr/uid2 to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+    if (send("/ui/connattr/uid2",uid2label) <0 )
 	return;
+}
+
+int TouchOSC::send(std::string path, float value) const {
+    if (lo_send(remote,path.c_str(),"f",value) <0 ) {
+	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return -1;
     }
+    return 0;
+}
+
+int TouchOSC::send(std::string path, std::string value) const {
+    if (lo_send(remote,path.c_str(),"s",value.c_str()) <0 ) {
+	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return -1;
+    }
+    return 0;
 }

@@ -38,22 +38,7 @@ public:
     void set(float _value) { value=_value; }
     void setUseValueToggle(bool t) { useValue=t; }
     void setEnableToggle(bool t) { enabled=t; }
-    int sendOSC(lo_address &dest) const {
-	std::string faderspath=std::string("/ui/conn/faders/")+std::to_string(pos+1);
-	std::string togglespath=std::string("/ui/conn/toggles/")+std::to_string(pos+1);
-	if (lo_send(dest,(faderspath+"/label").c_str(),"s",name.c_str()) < 0)
-	    return -1;
-	if (lo_send(dest,faderspath.c_str(),"f",value) < 0)
-	    return -1;
-	dbg("Fader.sendOSC",1) << "Set fader " << pos+1 << " to " << value << std::endl;
-	if (lo_send(dest,(togglespath+"/1").c_str(),"f",useValue?1.0:0.0) < 0)
-	    return -1;
-	dbg("Fader.sendOSC",1) << "Set useValue toggle " << pos+1 << " to " << useValue << std::endl;
-	if (lo_send(dest,(togglespath+"/2").c_str(),"f",enabled?1.0:0.0) < 0)
-	    return -1;
-	dbg("Fader.sendOSC",1) << "Set enable toggle " << pos+1 << " to " << enabled << std::endl;
-	return 0;
-    }
+    int sendOSC() const;
 };
 
 // Settings for one particular selected group (e.g. connection type)
@@ -76,29 +61,7 @@ public:
     const std::string &getGroupName() const { return groupName; }
     unsigned int getPos() const { return pos; }
     // Send OSC to make UI reflect current values
-    int sendOSC(lo_address &dest) const {
-	if (lo_send(dest,"/ui/conn/selected","s",groupName.c_str()) < 0)
-	    return -1;
-	// Set selection
-	std::string selpath="/ui/conn/select/"+std::to_string(pos%4+1)+"/"+std::to_string(pos/4+1);
-	dbg("Setting.sendOSC",1) << "Sending " << selpath << "," << 1.0f << " to " << lo_address_get_url(dest) << std::endl;
-	if (lo_send(dest,selpath.c_str(),"f",1.0f) <0 )
-	    return -1;
-
-	// Clear all the current labels
-	for (unsigned int i=0;i<MAXFADERS;i++) {
-	    std::string faderspath=std::string("/ui/conn/faders/")+std::to_string(i+1);
-	    if (lo_send(dest,faderspath.c_str(),"f",0.0f) < 0)
-		return -1;
-	    if (lo_send(dest,(faderspath+"/label").c_str(),"s","") < 0)
-		return -1;
-	}
-	    
-	for (unsigned int i=0;i<faders.size();i++)
-	    if (faders[i].sendOSC(dest) < 0)
-		return -1;
-	return 0;
-    }
+    int sendOSC() const;
 
     // Add a fader
     void addFader(const std::string &name, unsigned int pos=-1, float value=0.0, bool t=false) {
@@ -168,7 +131,7 @@ public:
 	return NULL;
     }
     unsigned int size() const { return settings.size(); }
-    void sendOSC(lo_address dest,int selectedGroup) const;
+    void sendOSC(int selectedGroup) const;
 };
 
 class TouchOSC {
@@ -178,7 +141,6 @@ class TouchOSC {
     lo_address remote;
     Settings settings;
     unsigned int selectedGroup;
-    void sendOSC(lo_address dest);
     void sendOSC();
     bool activityLED;
     // TouchOSC UI
@@ -214,12 +176,16 @@ class TouchOSC {
     void load(std::string filename);
     // Do anything needed on frame ticks
     static void frameTick(int frame) { instance()->frameTick_impl(frame); }
+    // Send out messages to update UI
+    void updateUI() const;
     void updateConnectionMap() const;
 
     void toggleBody() { bodyEnabled=!bodyEnabled; }
     bool isBodyEnabled() { return bodyEnabled; }
     void toggleLegs() { legsEnabled=!legsEnabled; }
     bool isLegsEnabled() { return legsEnabled; }
+    int send(std::string path, float value) const;
+    int send(std::string path, std::string value) const;
 };
 
 

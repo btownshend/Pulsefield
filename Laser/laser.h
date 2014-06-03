@@ -4,6 +4,7 @@
 #include "etherdream_bst.h"
 #include "displaydevice.h"
 #include "color.h"
+#include "touchosc.h"
 
 class Drawing;
 
@@ -34,10 +35,11 @@ class Laser: public DisplayDevice  {
     void update();
     const std::vector<etherdream_point> &getPoints() const { return pts; }
     float getSpacing() const { return spacing; }
-    void setPoints(int _npoints) { npoints=_npoints; }
-    void setSkew(int _skew) { blankingSkew=_skew; }
-    void setBlanks(int _pre, int _post) { preBlanks=_pre; postBlanks=_post; }
-    void setPPS(int _pps) { PPS=_pps; }
+    void setPoints(int _npoints) { npoints=_npoints; TouchOSC::instance()->send("/ui/laser/points/label",std::to_string(npoints)+" points"); }
+    void setSkew(int _skew) { blankingSkew=_skew; TouchOSC::instance()->send("/ui/laser/skew/label",std::to_string(blankingSkew)+" skew");}
+    void setPreBlanks(int n) { preBlanks=n; TouchOSC::instance()->send("/ui/laser/preblank/label",std::to_string(preBlanks)+"post-blank");}
+    void setPostBlanks(int n) { postBlanks=n; TouchOSC::instance()->send("/ui/laser/postblank/label",std::to_string(postBlanks)+" pre-blank");}
+    void setPPS(int _pps) { PPS=_pps; TouchOSC::instance()->send("/ui/laser/pps/label",std::to_string(PPS)+" PPS");}
     // Convert drawing into a set of etherdream points
     // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
     void render(const Drawing &drawing);

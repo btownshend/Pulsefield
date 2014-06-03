@@ -15,7 +15,6 @@ class OSCHandler {
     std::shared_ptr<Video> video;
     int serverPort;
 
-    int unit;
     lo_server s;
     
     pthread_t incomingThread;
@@ -46,10 +45,11 @@ class OSCHandler {
     void ping(lo_message msg, int seqnum);
 
     // Laser settings
-    void setPPS(int unit,int pps);
-    void setPoints(int unit,int points);	// Target points per frame
-    void setBlanking(int unit,int before, int after);
-    void setSkew(int unit, int s);
+    void setPPS(int pps);
+    void setPoints(int points);	// Target points per frame
+    void setPreBlanking(int n);
+    void setPostBlanking(int n);
+    void setSkew( int s);
 
     // Attributes
     void setColor(Color c);

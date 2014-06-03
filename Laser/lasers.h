@@ -19,8 +19,30 @@ class Lasers {
 public:
     Lasers(int nunits);
     ~Lasers();
+    void setPoints(int npoints) {
+	for (int i=0;i<lasers.size();i++) lasers[i]->setPoints(npoints);
+	TouchOSC::instance()->send("/ui/laser/points/label",std::to_string(npoints)+" points");
+    }
+    void setSkew(int skew) {
+	for (int i=0;i<lasers.size();i++) lasers[i]->setSkew(skew);
+	TouchOSC::instance()->send("/ui/laser/skew/label",std::to_string(skew)+" skew");
+    }
+    void setPreBlanks(int n) { 
+	for (int i=0;i<lasers.size();i++) lasers[i]->setPreBlanks(n);
+	TouchOSC::instance()->send("/ui/laser/preblank/label",std::to_string(n)+"pre-blank");
+}
+    void setPostBlanks(int n) { 
+	for (int i=0;i<lasers.size();i++) lasers[i]->setPostBlanks(n);
+	TouchOSC::instance()->send("/ui/laser/postblank/label",std::to_string(n)+" post-blank");
+    }
+    void setPPS(int pps) { 
+	for (int i=0;i<lasers.size();i++) lasers[i]->setPPS(pps);
+	TouchOSC::instance()->send("/ui/laser/pps/label",std::to_string(pps)+" PPS");
+    }
+
     int render();  // Refresh; return 1 if anything changed
-    void setDirty(int _frame) { frame=_frame; needsRender=true; }
+    void setFrame(int _frame) { frame=_frame; setDirty(); }
+    void setDirty() { needsRender=true; }
     int getDrawingFrame() const { return frame; }
     std::shared_ptr<Laser>  getLaser(int unit) { return lasers[unit]; }
     std::shared_ptr<const Laser> getLaser(int unit) const  { return lasers[unit]; }

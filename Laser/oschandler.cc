@@ -67,10 +67,11 @@ static int start_handler(const char *path, const char *types, lo_arg **argv, int
 static int stop_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->startStop(false); return 0; }
 
 // Laser settings
-static int setPPS_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPPS(argv[0]->i,argv[1]->i); return 0; }
-static int setBlanking_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setBlanking(argv[0]->i,argv[1]->i,argv[2]->i); return 0; }
-static int setPoints_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPoints(argv[0]->i,argv[1]->i); return 0; }
-static int setSkew_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setSkew(argv[0]->i,argv[1]->i); return 0; }
+static int setPPS_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPPS((int)argv[0]->f); return 0; }
+static int setPreBlanking_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPreBlanking((int)argv[0]->f); return 0; }
+static int setPostBlanking_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPostBlanking((int)argv[0]->f); return 0; }
+static int setPoints_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPoints((int)argv[0]->f); return 0; }
+static int setSkew_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setSkew((int)argv[0]->f); return 0; }
 
 // Attributes
 static int setColor_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setColor(Color(argv[0]->f,argv[1]->f,argv[2]->f)); return 0; }
@@ -140,10 +141,11 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/laser/set/density","f",setDensity_handler,this);
 
 	/* Laser settings */
-	lo_server_add_method(s,"/laser/set/pps","ii",setPPS_handler,this);
-	lo_server_add_method(s,"/laser/set/points","ii",setPoints_handler,this);
-	lo_server_add_method(s,"/laser/set/blanking","iii",setBlanking_handler,this);
-	lo_server_add_method(s,"/laser/set/skew","ii",setSkew_handler,this);
+	lo_server_add_method(s,"/ui/laser/pps","f",setPPS_handler,this);
+	lo_server_add_method(s,"/ui/laser/points","f",setPoints_handler,this);
+	lo_server_add_method(s,"/ui/laser/postblank","f",setPostBlanking_handler,this);
+	lo_server_add_method(s,"/ui/laser/preblank","f",setPreBlanking_handler,this);
+	lo_server_add_method(s,"/ui/laser/skew","f",setSkew_handler,this);
 
 	/* Primitives */
 	lo_server_add_method(s,"/laser/conx/begin","s",conx_begin_handler,this);
@@ -220,7 +222,7 @@ void OSCHandler::processIncoming() {
 	// TODO: Should set timeout to 0 if geometry is dirty, longer timeout if its clean
 	if  (lo_server_recv_noblock(s,1) == 0) {
 	    // Render lasrs only when nothing in queue
-	    if (lasers->render())
+	    if (lasers->render()) 
 		// If they've changed, mark the video for update too
 		video->setDirty();
 	}
@@ -234,40 +236,29 @@ void OSCHandler::startStop(bool start) {
 }
 
 
-void OSCHandler::setPPS(int unit, int pps) {
-    if (unit<0 || unit>=(int)lasers->size()) {
-	dbg("OSCHandler.setPPS",1)  << "Bad unit: " << unit << std::endl;
-	return;
-    }
+void OSCHandler::setPPS(int pps) {
     dbg("OSCHandler.setPPS",1) << "Setting PPS to " << pps << " PPS" << std::endl;
-    lasers->getLaser(unit)->setPPS(pps);
+    lasers->setPPS(pps);
 }
 
-void OSCHandler::setPoints(int unit, int n) {
-    if (unit<0 || unit>=(int)lasers->size()) {
-	dbg("OSCHandler.setPoints",1)  << "Bad unit: " << unit << std::endl;
-	return;
-    }
+void OSCHandler::setPoints(int n) {
     dbg("OSCHandler.setPPS",1) << "Setting points/frame to " << n << std::endl;
-    lasers->getLaser(unit)->setPoints(n);
+    lasers->setPoints(n);
 }
 
-void OSCHandler::setBlanking(int unit, int before, int after) {
-    if (unit<0 || unit>=(int)lasers->size()) {
-	dbg("OSCHandler.setBlanking",1)  << "Bad unit: " << unit << std::endl;
-	return;
-    }
-    dbg("OSCHandler.setBlanking",1) << "Setting blanking to " <<before << ", " << after << std::endl;
-    lasers->getLaser(unit)->setBlanks(before,after);
+void OSCHandler::setPreBlanking(int nblank) {
+    dbg("OSCHandler.setBlanking",1) << "Setting pre blanking to " << nblank << std::endl;
+    lasers->setPreBlanks(nblank);
 }
 
-void OSCHandler::setSkew(int unit, int skew) {
-    if (unit<0 || unit>=(int)lasers->size()) {
-	dbg("OSCHandler.setSkew",1)  << "Bad unit: " << unit << std::endl;
-	return;
-    }
+void OSCHandler::setPostBlanking(int nblank) {
+    dbg("OSCHandler.setBlanking",1) << "Setting post blanking to " << nblank << std::endl;
+    lasers->setPostBlanks(nblank);
+}
+
+void OSCHandler::setSkew(int skew) {
     dbg("OSCHandler.setSkew",1) << "Setting skew to " << skew  << std::endl;
-    lasers->getLaser(unit)->setSkew(skew);
+    lasers->setSkew(skew);
 }
 
 
@@ -371,7 +362,7 @@ void OSCHandler::update(int frame) {
 void OSCHandler::pfframe(int frame) {
     dbg("OSCHandler.pfframe",1) << "pfframe(" << frame << "), lastUpdateFrame=" << lastUpdateFrame << std::endl;
     lastUpdateFrame=frame;
-    lasers->setDirty(frame);
+    lasers->setFrame(frame);
 
     // Age all the connections and people
     Connections::incrementAge();
