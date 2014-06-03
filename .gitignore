@@ -90,3 +90,5 @@ Laser/Debug.out.recent
 *.osc
 
 LIDAR/FrontEndLIDAR/debug.out.crash
+
+Laser/ptdump-0.txt

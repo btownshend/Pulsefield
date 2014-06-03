@@ -9,6 +9,7 @@
 // Keep track of conductor connections
 
 typedef std::string CIDType;
+class Person;
 
 class Connection {
     CIDType cid;
@@ -16,6 +17,8 @@ class Connection {
     Attributes attributes;
     int age; 	// Age counter -- reset whenever something is set, increment when aged
     Drawing visual; 	// Drawing used to image this connection
+    void drawFusion(Drawing &d, const Person *p1, const Person *p2, float stage) const;
+    void drawFusionHalf(Drawing &d, Point c, float r, Point ctr, float rpinch) const;
  public:
     Connection() {age=0;uid[0]=-1;uid[1]=-1;cid="Empty"; set("test","allconx",1.0,0.0); }
     Connection(CIDType _cid, int uid1, int uid2) {

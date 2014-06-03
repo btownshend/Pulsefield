@@ -1,6 +1,6 @@
 #include <string>
-#include "connections.h"
 #include "person.h"
+#include "connections.h"
 #include "dbg.h"
 
 Connections *Connections::theInstance=NULL;
@@ -102,6 +102,8 @@ void Connection::draw(Drawing &d) const {
 	Person *p2= People::instance()->getPerson(uid[1]);
 	if (p1==NULL || p2==NULL) {
 	    dbg("Connection.draw",1) << "Connection " << cid << " is invalid -- at least one UID is missing" << std::endl;
+	} else if (attributes.isSet("fusion")) {
+	    drawFusion(d,p1,p2,attributes.get("fusion").getValue());
 	} else {
 	    Point pt1=p1->get();
 	    Point pt2=p2->get();
@@ -127,3 +129,53 @@ void Connection::draw(Drawing &d) const {
     }
     d.shapeEnd();
 }
+
+// Draw fusion at give stage (0=unfused,1.0=fully fused)
+void Connection::drawFusion(Drawing &d, const Person *p1, const Person *p2, float stage) const {
+    Point c1=p1->get();  float r1=p1->getBodyDiam()/2;
+    Point c2=p2->get();  float r2=p2->getBodyDiam()/2;
+    if (c1==c2) {
+	dbg("Connection.drawFusion",1) << "Points are identical -- skipping draw" << std::endl;
+	return;
+    }
+    Point center=(c1+c2)/2;
+    float rpinch=stage*(r1+r2)/2;
+    // Build the beziers clockwise starting/ending in center (so the 2 halves connect)
+    drawFusionHalf(d,c1,r1,center,rpinch);
+    drawFusionHalf(d,c2,r2,center,rpinch);
+}
+
+void Connection::drawFusionHalf(Drawing &d, Point c, float r, Point ctr, float rpinch) const {
+    //            9       A      B
+    //          8                      C         D
+    //          7                 
+    //          6                     2         1
+    //           5        4       3
+    //   Beziers:   1234, 4556, 6778, 89AB
+    float k=4*(sqrt(2)-1)/3;    // Optimal offset to make bezier approximate a circle
+    Point right=ctr-c; right=right/right.norm();
+    Point up=right.rot90();
+    Point mid=(ctr*2.0 + (c+right*r))/3.0f;
+    Point p1(ctr-up*rpinch);
+    Point p2(mid-up*rpinch);
+    Point p3(c-up*r+right*r);
+    Point p4(c-up*r);
+    Point p5(c-up*r-right*r*k);
+    Point p6(c-up*r*k-right*r);
+    Point p7(c-right*r);
+    Point p8(c-right*r+up*r*k);
+    Point p9(c-right*r*k+up*r);
+    Point pA(c+up*r);
+    Point pB(c+up*r+right*r);
+    Point pC(mid+up*rpinch);
+    Point pD(ctr+up*rpinch);
+    Color col(0.0,1.0,0.0);
+    dbg("Connection.drawFusionHalf",3) << "c=" << c << ", r=" << r << ", ctr=" << ctr << ", rpinch=" << rpinch << std::endl;
+    dbg("Connection.drawFusionHalf",3) << "right=" << right << ", up=" << up << ", mid=" << mid << std::endl;
+    dbg("Connection.drawFusionHalf",3) << p1 << p2 << p3 << p4 << p5 << p6 << p7 << p8 << p9 << pA << pB << pC << pD << std::endl;
+    d.drawCubic(p1,p2,p3,p4,col);
+    d.drawCubic(p4,p5,p6,p7,col);
+    d.drawCubic(p7,p8,p9,pA,col);
+    d.drawCubic(pA,pB,pC,pD,col);
+}
+

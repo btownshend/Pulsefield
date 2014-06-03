@@ -24,7 +24,7 @@ class Attributes {
  public:
     Attributes() { ; }
     void set(std::string name, const Attribute &a) {	attrs[name]=a;  }
-    const Attribute &get(std::string name) { return attrs[name]; }
+    const Attribute &get(std::string name) const { return attrs.at(name); }
     void erase(std::string name) { attrs.erase(name); }
     void clear() { attrs.clear(); }
     friend std::ostream &operator<<(std::ostream &s, const Attributes &attributes);
@@ -44,6 +44,6 @@ class Attributes {
 	std::sort(result.begin(),result.end());
 	return result;
     }
-
+    bool isSet(std::string attr) const { return attrs.count(attr) > 0; }
 };
 
