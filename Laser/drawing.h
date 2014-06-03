@@ -5,11 +5,11 @@
 #include <set>
 
 #include "point.h"
-#include "etherdream_bst.h"
 #include "dbg.h"
 #include "bezier.h"
 #include "color.h"
 #include "attributes.h"
+#include "cpoint.h"
 
 class Transform;
 class Drawing;
@@ -21,10 +21,7 @@ protected:
     Primitive(Color _c): c(_c) { }
     virtual ~Primitive() { ; }
     // Get list of discrete points spaced approximately by pointSpacing,  optimizes based on minimizing distance from priorPoint to first point
-    virtual std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const = 0;
-
-    // Convert from a Point vector to an etherdream vector, applying the current transform and the primitive's color
-    std::vector<etherdream_point> convert(const std::vector<Point> &pts, const Transform &transform) const;
+    virtual std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const = 0;
 
     // Get score for rendering using givent transform -- higher is better
     // A shape which is completely on-screen has a score equal to 1.0+1.0/(average line-width)
@@ -46,7 +43,7 @@ class Circle: public Primitive {
 	dbg("Circle",2) << "c=" <<_c << ", r=" << r << std::endl;
 	center=_c; radius=r;
     }
-    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
+    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const { return radius*2*M_PI; }
     float getShapeScore(const Transform &transform) const;
 };
@@ -56,7 +53,7 @@ class Arc: public Primitive {
     float angle;
  public:
     Arc(Point _center, Point _p, float _angle, Color c): Primitive(c) { center=_center; p=_p; angle=_angle; }
-    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
+    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     //    float getShapeScore(const Transform &transform) const;
 };
 
@@ -64,7 +61,7 @@ class Line:public Primitive {
     Point p1,p2;
  public:
     Line(Point _p1, Point _p2, Color c): Primitive(c) { p1=_p1; p2=_p2;  }
-    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
+    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const { return (p1-p2).norm(); }
     float getShapeScore(const Transform &transform) const;
 };
@@ -73,7 +70,7 @@ class Cubic:public Primitive {
     Bezier b;
  public:
     Cubic(const std::vector<Point> &pts, Color c): Primitive(c), b(pts) {;}
-    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
+    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const { return b.getLength(); }
     float getShapeScore(const Transform &transform) const;
 };
@@ -82,7 +79,7 @@ class Polygon: public Primitive {
     std::vector<Point> points;
  public:
     Polygon(const std::vector<Point> _points,Color c): Primitive(c), points(_points) {;}
-    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
+    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const;
     //    float getShapeScore(const Transform &transform) const;
 };
@@ -94,8 +91,8 @@ class Composite: public Primitive {
 public:
     Composite(const Attributes _attrs, bool _hull=false): Primitive(Color(1,1,1)) {attrs=_attrs; drawConvexHull=_hull; }
     void append(std::shared_ptr<Primitive> p) { elements.push_back(p); }
-    // Convert from a Point vector to an etherdream vector, applying any attributes in attrs
-    std::vector<Point> getPoints(float pointSpacing,const Point *priorPoint) const;
+    // Convert into a vector of points (actually segments), inserts a single blank point for moves
+    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
 
     void setAttributes(const Attributes &a) { attrs=a; }
     // Get attributes, allowing them to be modified
@@ -124,6 +121,9 @@ class Drawing {
 
     // Number of primitives (which gives number of jumps)
     int getNumElements() const { return elements.size(); }
+
+    // Get points to render drawing at given (meter) spacing
+    std::vector<CPoint> getPoints(float spacing) const;
 
     // Get length of current drawing in floor space
     float getLength() const {
@@ -224,14 +224,4 @@ class Drawing {
 	pts[0]=p1;pts[1]=p2;pts[2]=p3;pts[3]=p4;
 	append(std::shared_ptr<Primitive>(new Cubic(pts,c)));
     }
-
-    // Convert drawing into a set of etherdream points
-    // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
-    std::vector<etherdream_point> getPoints(int targetNumPoints,const Transform &transform, float &spacing) const;
-
-    // Convert to points using given floorspace spacing
-    std::vector<etherdream_point> getPoints(float spacing,const Transform &transform) const;
-
-    // Prune points that are not visible
-    std::vector<etherdream_point> prune(const std::vector<etherdream_point> pts) const;
 };

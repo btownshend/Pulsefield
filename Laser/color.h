@@ -8,6 +8,7 @@ class Color {
     float red() const { return r; }
     float green() const { return g; }
     float blue() const { return b; }
+    bool operator==(const Color &c) const { return r==c.r && b==c.b && g==c.g; }
     friend std::ostream& operator<<(std::ostream& s, const Color &col);
     static Color getBasicColor(int i);   // Get color #i for graphic distinct colors
 };

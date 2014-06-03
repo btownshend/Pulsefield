@@ -240,7 +240,7 @@ void OSCHandler::setPPS(int unit, int pps) {
 	return;
     }
     dbg("OSCHandler.setPPS",1) << "Setting PPS to " << pps << " PPS" << std::endl;
-    // TODO:
+    lasers->getLaser(unit)->setPPS(pps);
 }
 
 void OSCHandler::setPoints(int unit, int n) {
@@ -258,7 +258,7 @@ void OSCHandler::setBlanking(int unit, int before, int after) {
 	return;
     }
     dbg("OSCHandler.setBlanking",1) << "Setting blanking to " <<before << ", " << after << std::endl;
-    // TODO:
+    lasers->getLaser(unit)->setBlanks(before,after);
 }
 
 void OSCHandler::setSkew(int unit, int skew) {
@@ -267,7 +267,7 @@ void OSCHandler::setSkew(int unit, int skew) {
 	return;
     }
     dbg("OSCHandler.setSkew",1) << "Setting skew to " << skew  << std::endl;
-    // TODO:
+    lasers->getLaser(unit)->setSkew(skew);
 }
 
 

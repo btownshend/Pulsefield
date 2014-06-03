@@ -25,13 +25,13 @@ Color Color::getBasicColor(int i) {
 	return Color(((i+1)%3)/2.0,((i+1)%5)/4.0,((i+1)%7)/6.0);
 }
 
-std::vector<Point> Circle::getPoints(float pointSpacing, const Point *priorPoint) const {
+std::vector<CPoint> Circle::getPoints(float pointSpacing, const CPoint *priorPoint) const {
     int npoints=std::ceil(getLength()/pointSpacing)+1;
     if (npoints < 5) {
 	dbg("Circle.getPoints",1) << "Circle of radius " << radius << " with point spacing of " << pointSpacing << " only had " << npoints << " points; increasing to 5" << std::endl;
 	npoints=5;
     }
-    std::vector<Point> result(npoints);
+    std::vector<CPoint> result(npoints);
     float initphase;
     if (priorPoint==0 || (center == *priorPoint))
 	initphase=0;
@@ -43,7 +43,7 @@ std::vector<Point> Circle::getPoints(float pointSpacing, const Point *priorPoint
     }
     for (int i = 0; i < npoints; i++) {
 	float phase = i * 2.0 * M_PI /(npoints-1)+initphase;
-	result[i] = Point(cos(phase) * radius + center.X(), sin(phase) * radius + center.Y());
+	result[i] = CPoint(cos(phase) * radius + center.X(), sin(phase) * radius + center.Y(),c);
     }
     dbg("Circle.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
     return result;
@@ -90,7 +90,7 @@ float Line::getShapeScore(const Transform &transform) const {
     return score;
 }
 
-std::vector<Point> Line::getPoints(float pointSpacing,const Point *priorPoint) const {
+std::vector<CPoint> Line::getPoints(float pointSpacing,const CPoint *priorPoint) const {
     int npoints=std::max(2,(int)std::ceil(getLength()/pointSpacing)+1);
     bool swap=false;
     if (priorPoint!=NULL) {
@@ -102,21 +102,24 @@ std::vector<Point> Line::getPoints(float pointSpacing,const Point *priorPoint) c
 	    swap=true;
 	}
     }
-    std::vector<Point> result(npoints);
+    std::vector<CPoint> result(npoints);
     for (int i = 0; i < npoints; i++) {
 	float rpos=i*1.0/(npoints-1);
 	if (swap) rpos=1-rpos;
-	result[i] = p1+(p2-p1)*rpos;
+	result[i] = CPoint(p1+(p2-p1)*rpos,c);
     }
     dbg("Line.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
     return result;
 }
 
 
-std::vector<Point> Cubic::getPoints(float pointSpacing,const Point *priorPoint) const {
+std::vector<CPoint> Cubic::getPoints(float pointSpacing,const CPoint *priorPoint) const {
     std::vector<Point> pts = b.interpolate(pointSpacing);
+    std::vector<CPoint> cpts(pts.size());
+    for (int i=0;i<pts.size();i++)
+	cpts[i]=CPoint(pts[i],c);
     dbg("Cubic.getPoints",3) << "Converted to " << pts.size() << " points." << std::endl;
-    return pts;
+    return cpts;
 }
 
 float Cubic::getShapeScore(const Transform &transform) const {
@@ -145,10 +148,10 @@ float Cubic::getShapeScore(const Transform &transform) const {
     return score;
 }
 
-std::vector<Point> Polygon::getPoints(float pointSpacing,const Point *priorPoint) const {
-    std::vector<Point> result;
+std::vector<CPoint> Polygon::getPoints(float pointSpacing,const CPoint *priorPoint) const {
+    std::vector<CPoint> result;
     for (int i=1;i<points.size();i++) {
-	std::vector<Point> line=Line(points[i-1],points[i],c).getPoints(pointSpacing,priorPoint);
+	std::vector<CPoint> line=Line(points[i-1],points[i],c).getPoints(pointSpacing,priorPoint);
 	result.insert(result.end(),line.begin(),line.end());
 	priorPoint=&result.back();
     }
@@ -168,20 +171,7 @@ float Polygon::getLength() const {
     return len;
 }
 
-std::vector<etherdream_point> Primitive::convert(const std::vector<Point> &pts, const Transform &transform) const {
-    std::vector<etherdream_point> result(pts.size());
-    for (unsigned int i = 0; i < pts.size(); i++) {
-	if (i>0 && pts[i]==pts[i-1]) {
-	    // Blanking, turn off laser
-	    result[i-1].r=0;result[i-1].g=0;result[i-1].b=0;  
-	    result[i]=result[i-1]; 
-	} else
-	    result[i] = transform.mapToDevice(pts[i],c);
-    }
-    return result;
-}
-
-std::vector<Point> Arc::getPoints(float pointSpacing, const Point *priorPoint) const {
+std::vector<CPoint> Arc::getPoints(float pointSpacing, const CPoint *priorPoint) const {
     assert(0);   // TODO
 }
 
@@ -226,23 +216,21 @@ Drawing Drawing::select(std::set<int> sel) const {
 }
 
 // Convert to points using given floorspace spacing
-std::vector<Point> Composite::getPoints(float spacing,const Point *priorPoint) const {
+std::vector<CPoint> Composite::getPoints(float spacing,const CPoint *priorPoint) const {
     dbg("Composite.getPoints",3) << "getPoints(" << spacing << ") with " << attrs.size() << " attributes"  << std::endl;
-    std::vector<Point>  result;
+    std::vector<CPoint>  result;
     if (elements.size()==0) {
 	dbg("Composite.getPoints",3) << "No subelements" << std::endl;
 	return result;
     }
 
     for (unsigned int i=0;i<elements.size();i++) {
-	std::vector<Point> newpoints;
+	std::vector<CPoint> newpoints;
 	newpoints = elements[i]->getPoints(spacing,priorPoint);
 
-	if (priorPoint!=NULL && newpoints.size()>0)  {
-	    // Insert blanks first
-	    std::vector<Point> blanks = Laser::getBlanks(*priorPoint,newpoints.front());
-	    result.insert(result.end(), blanks.begin(), blanks.end());
-	    dbg("Composite.getPoints",3) << "Inserted " << blanks.size() << " blanks before element " << i << " which has " << newpoints.size() << " elements" << std::endl;
+	if (priorPoint!=NULL && newpoints.size()>0 && !(newpoints.front() == *priorPoint))  {
+	    // Insert a blank to make the jump
+	    result.push_back(CPoint((Point)newpoints.front(),Color(0,0,0)));
 	}
 	result.insert(result.end(), newpoints.begin(), newpoints.end());
 	if (result.size()>0)
@@ -261,7 +249,7 @@ std::vector<Point> Composite::getPoints(float spacing,const Point *priorPoint) c
 	dbg("Composite.getPoints",3) << "Converted " << result.size() << " points into a convex hull of size " << dst.size() << std::endl;
 	result.resize(dst.size());
 	for (int i=0;i<dst.size();i++) {
-	    result[i]=Point(dst[i].x,dst[i].y);
+	    result[i]=CPoint(dst[i].x,dst[i].y,c);
 	}
 	// TODO -- hull might have larger spacing between some points
     }
@@ -271,98 +259,27 @@ std::vector<Point> Composite::getPoints(float spacing,const Point *priorPoint) c
     return result;
 }
 
-
 // Convert to points using given floorspace spacing
-std::vector<etherdream_point> Drawing::getPoints(float spacing,const Transform &transform) const {
+std::vector<CPoint> Drawing::getPoints(float spacing) const {
     dbg("Drawing.getPoints",3) << "getPoints(" << spacing << ")" << std::endl;
-    std::vector<etherdream_point>  result;
+    std::vector<CPoint>  result;
     if (elements.size()==0)
 	return result;
 
-    const Point *lastPoint = NULL;
+    const CPoint *lastPoint = NULL;
     for (unsigned int i=0;i<elements.size();i++) {
-	std::vector<Point> pts = elements[i]->getPoints(spacing,lastPoint);
+	std::vector<CPoint> pts = elements[i]->getPoints(spacing,lastPoint);
 	if (pts.size() > 0)
 	    lastPoint = &pts.back();
-	std::vector<etherdream_point> newpoints = elements[i]->convert(pts,transform);
 
-	if (result.size()>0 && newpoints.size()>0)  {
+	if (lastPoint!=NULL && pts.size()>0 && !(pts.front()==*lastPoint))  {
 	    // Insert blanks first
-	    std::vector<etherdream_point> blanks = Laser::getBlanks(result.back(),newpoints.front());
-	    result.insert(result.end(), blanks.begin(), blanks.end());
+	    result.push_back(CPoint((Point)pts.front(),Color(0,0,0)));
 	}
-	result.insert(result.end(), newpoints.begin(), newpoints.end());
-    }
-    // Add blanks for final skew back to start of figure
-    if (result.size()>0) {
-	std::vector<etherdream_point> blanks = Laser::getBlanks(result.back(),result.front());
-	result.insert(result.end(), blanks.begin(), blanks.end());
+	result.insert(result.end(), pts.begin(), pts.end());
     }
     dbg("Drawing.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
-    for (unsigned int i=0;i<result.size();i++) {
-	if (i==5) {
-	    dbg("Drawing.getPoints",5)  << "...";
-	    break;
-	}
-	dbg("Drawing.getPoints",5)  << "pt[" << i << "] = " << result[i].x << "," << result[i].y << " G=" << result[i].g << std::endl;
-    }
     return result;
 }
 
-// Prune a sequence of points by removing any segments that go out of bounds
-std::vector<etherdream_point> Drawing::prune(const std::vector<etherdream_point> pts) const {
-    std::vector<etherdream_point> result;
-    bool oobs=false;
-    for (unsigned int i=0;i<pts.size();i++) {
-	if (pts[i].x != -32768  && pts[i].x != 32767 && pts[i].y != -32768 && pts[i].y != 32767)  {
-	    // In bounds
-	    if (oobs && result.size()>0) {
-		// Just came in bounds, insert blanks if needed
-		std::vector<etherdream_point> blanks = Laser::getBlanks(result.back(),pts[i]);
-		result.insert(result.end(), blanks.begin(), blanks.end());
-	    }
-	    result.push_back(pts[i]);
-	    oobs=false;
-	} else
-	    oobs=true;
-    }
-    // May need end blanks (getBlanks will give an empty list if its not needed)
-    if (result.size()>0) {
-	std::vector<etherdream_point> blanks = Laser::getBlanks(result.back(),result.front());
-	result.insert(result.end(), blanks.begin(), blanks.end());
-    }
-
-    dbg("Drawing.prune",2) << "Pruned points from " << pts.size() << " to " << result.size() << std::endl;
-    return result;
-}
-
-// Convert drawing into a set of etherdream points
-// Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
-std::vector<etherdream_point> Drawing::getPoints(int targetNumPoints,const Transform &transform, float &spacing) const {
-    if (elements.size()==0)
-	return std::vector<etherdream_point>();
-
-    spacing=getLength()/targetNumPoints;
-    std::vector<etherdream_point> result = getPoints(spacing,transform);
-    std::vector<etherdream_point> pruned = prune(result);
-    dbg("Drawing.getPoints",2) << "Initial point count = " << pruned.size() << " compared to planned " << targetNumPoints << " for " << elements.size() << " elements." << std::endl;
-    int nblanks = 0;
-    for (unsigned int i=0;i<pruned.size();i++)
-	if (pruned[i].r==0 && pruned[i].g==0 && pruned[i].b==0)
-	    nblanks++;
-    if (nblanks> targetNumPoints/2)  {
-	targetNumPoints=nblanks*2;
-	dbg("Drawing.getPoints",2) << "More than half of points are blanks, increasing target to " << targetNumPoints << std::endl;
-    }
-
-    if (std::abs(targetNumPoints-(int)pruned.size()) > 10 &&  pruned.size() > nblanks+2) {
-	float scaleFactor=(targetNumPoints-nblanks)*1.0/(pruned.size()-nblanks);
-	dbg("Drawing.getPoints",2) << "Have " << nblanks << " blanks; adjusting spacing by a factor of " << scaleFactor << std::endl;
-	spacing/=scaleFactor;
-	result = getPoints(spacing,transform);
-	pruned = prune(result);
-	dbg("Drawing.getPoints",2) << "Revised point count = " << pruned.size() << " compared to planned " << targetNumPoints << " for " << elements.size() << " elements." << std::endl;
-    }
-    return pruned;
-}
 

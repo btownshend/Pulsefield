@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 
-#include "point.h"
+#include "cpoint.h"
 #include "Simplex.hpp"
 #include "touchosc.h"
 
@@ -20,7 +20,7 @@ class Attribute {
 
 class Attributes {
     std::map<std::string,Attribute> attrs;
-    std::vector<Point> applyMovements(std::string attrname, float attrValue, const std::vector<Point> &pts) const;
+    std::vector<CPoint> applyMovements(std::string attrname, float attrValue, const std::vector<CPoint> &pts) const;
  public:
     Attributes() { ; }
     void set(std::string name, const Attribute &a) {	attrs[name]=a;  }
@@ -30,7 +30,7 @@ class Attributes {
     friend std::ostream &operator<<(std::ostream &s, const Attributes &attributes);
     unsigned int size() const { return attrs.size(); }
     // Apply all attributes to a vector of points
-    std::vector<Point> apply(std::vector<Point> pts) const {
+    std::vector<CPoint> apply(std::vector<CPoint> pts) const {
 	dbg("Attributes.apply",2) << "Applying " << attrs.size() << " attributes to " << pts.size() << " points" << std::endl;
 	for (std::map<std::string,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++)
 	    pts=applyMovements(a->first,a->second.getValue(),pts);

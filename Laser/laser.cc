@@ -17,8 +17,11 @@ static const float MAXSLEWMETERS=MAXSLEWDISTANCE/65535.0*MEANTARGETDIST*FOV;
 
 Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     unit=_unit;
-    PPS=30000;
+    PPS=40000;
     npoints=1000;
+    blankingSkew=3;
+    preBlanks=2;
+    postBlanks=16;
     labelColor=Color::getBasicColor(unit);
     showLaser = true;
     dbg("Laser.Laser",1) << "Maximum slew = " << MAXSLEWDISTANCE << " laser coords, " << MAXSLEWMETERS << " meters." << std::endl;
@@ -82,14 +85,6 @@ std::vector<etherdream_point> Laser::getBlanks(int nblanks, etherdream_point pos
     return result;
 }
 
-std::vector<Point> Laser::getBlanks(int nblanks, Point pos) {
-    std::vector<Point>  result;
-    Point blank=pos;
-    for (int i=0;i<nblanks;i++) 
-	result.push_back(blank);
-    return result;
-}
-
 // Get number of needed blanks for given slew
 std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdream_point final) {
     std::vector<etherdream_point>  result;
@@ -99,30 +94,18 @@ std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdr
     }
     // Calculate distance in device coords
     int devdist=std::max(abs(initial.x-final.x),abs(initial.y-final.y));
-    if (devdist>0) {
-	int nblanks=std::ceil(devdist/MAXSLEWDISTANCE)+10;
-	dbg("Laser.getBlanks",2) << "Inserting " << nblanks << " for a slew of distance " << devdist << " from " << initial.x << "," << initial.y << " to " << final.x << "," << final.y << std::endl;
-	return getBlanks(nblanks,final);
+    if (devdist>1) {
+	int nblanks=std::ceil(devdist/MAXSLEWDISTANCE)+postBlanks;
+	dbg("Laser.getBlanks",2) << "Inserting " << preBlanks << " + " << nblanks << " for a slew of distance " << devdist << " from " << initial.x << "," << initial.y << " to " << final.x << "," << final.y << std::endl;
+	result=getBlanks(preBlanks,initial);
+	std::vector<etherdream_point> blanks = getBlanks(nblanks,final);
+	result.insert(result.end(), blanks.begin(), blanks.end());
     }
     return result;
 }
 
-// Get number of needed blanks for given slew
-std::vector<Point> Laser::getBlanks(Point initial, Point final) {
-    std::vector<Point>  result;
-    // Calculate distance in floor coords
-    float floordist=std::max(fabs(initial.X()-final.X()),fabs(initial.Y()-final.Y()));
-    if (floordist>0.005) {  // More than 0.5cm movement
-	int nblanks=std::ceil(floordist/MAXSLEWMETERS)+10;
-	dbg("Laser.getBlanks",2) << "Inserting " << nblanks << " for a slew of distance " << floordist << " from " << initial.X() << "," << initial.Y() << " to " << final.X() << "," << final.Y() << std::endl;
-	return getBlanks(nblanks,final);
-    } else {
-	dbg("Laser.getBlanks",2) << "No blanks needed for a slew of distance " << floordist << " from " << initial.X() << "," << initial.Y() << " to " << final.X() << "," << final.Y() << std::endl;
-    }
-    return result;
-}
-
-
+// Convert drawing into a set of etherdream points
+// Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
 void Laser::render(const Drawing &drawing) {
     if (d!=0) {
 	int fullness=etherdream_getfullness(d);
@@ -132,8 +115,27 @@ void Laser::render(const Drawing &drawing) {
 	    return;   
 	}
     }
-    if (showLaser) {
-	pts=drawing.getPoints(npoints,transform,spacing);
+    if (showLaser && drawing.getNumElements()>0) {
+	spacing=drawing.getLength()/npoints;
+	pts = transform.mapToDevice(drawing.getPoints(spacing));
+	prune();
+	int nblanks=blanking();
+	dbg("Laser.render",2) << "Initial point count = " << pts.size() << " with " << nblanks << " blanks, compared to planned " << npoints << " for " << drawing.getNumElements() << " elements." << std::endl;
+	int redonpoints=npoints;
+	if (nblanks> redonpoints/2)  {
+	    redonpoints=nblanks*2;
+	    dbg("Laser.render",2) << "More than half of points are blanks, increasing target to " << redonpoints << std::endl;
+	}
+	    
+	if (std::abs(redonpoints-(int)pts.size()) > 10 &&  pts.size() > nblanks+2) {
+	    float scaleFactor=(redonpoints-nblanks)*1.0/(pts.size()-nblanks);
+	    dbg("Laser.render",2) << "Have " << nblanks << " blanks; adjusting spacing by a factor of " << scaleFactor << std::endl;
+	    spacing/=scaleFactor;
+	    pts=transform.mapToDevice(drawing.getPoints(spacing));
+	    prune();
+	    (void)blanking();
+	    dbg("Laser.render",2) << "Revised point count = " << pts.size() << " compared to planned " << redonpoints << " for " << drawing.getNumElements() << " elements." << std::endl;
+	}
 	dbg("Laser.render",2) << "Rendered drawing into " << pts.size() << " points with a spacing of " << spacing << std::endl;
     } else {
 	pts.resize(0);
@@ -164,3 +166,63 @@ void Laser::dumpPoints() const {
 	fd << pts[i].x << " " << pts[i].y << " " << (pts[i].g>0.5?1:0) << std::endl;
     }
 }
+
+// Prune a sequence of points by removing any segments that go out of bounds
+void Laser::prune() {
+    std::vector<etherdream_point> result;
+    bool oobs=false;
+    for (unsigned int i=0;i<pts.size();i++) {
+	if (pts[i].x != -32768  && pts[i].x != 32767 && pts[i].y != -32768 && pts[i].y != 32767)  {
+	    // In bounds
+	    if (oobs && result.size()>0) {
+		// Just came in bounds, insert a blank (will be expanded by blanking)
+		std::vector<etherdream_point> blanks = Laser::getBlanks(1,result.back());
+		result.insert(result.end(), blanks.begin(), blanks.end());
+	    }
+	    result.push_back(pts[i]);
+	    oobs=false;
+	} else
+	    oobs=true;
+    }
+    dbg("Laser.prune",2) << "Pruned points from " << pts.size() << " to " << result.size() << std::endl;
+    pts=result;
+}
+
+int Laser::blanking() {
+    if (pts.size()<2)
+	return 0;
+    std::vector<etherdream_point> result;
+    etherdream_point prevpos=pts.back();
+    bool jumped=true;
+    int nblanks=0;
+    for (unsigned int i=0;i<pts.size();i++) {
+	if (pts[i].r>0 || pts[i].g>0 || pts[i].b>0) {
+	    if (jumped) {
+		// Insert blanks from prevpoint to here
+		std::vector<etherdream_point> blanks = getBlanks(prevpos,pts[i]);
+		result.insert(result.end(), blanks.begin(), blanks.end());
+		nblanks+=blanks.size();
+		jumped=false;
+	    }
+	    result.push_back(pts[i]);
+	    prevpos=pts[i];
+	} else {
+	    // Blanking, mark 
+	    jumped=true;
+	}
+    }
+    dbg("Laser.blanking",2) << "Blanking increased points from " << pts.size() << " to " << result.size() << std::endl;
+    pts=result;
+    // Apply skew
+    if (blankingSkew!=0) {
+	for (int i=0;i<pts.size();i++) {
+	    int newind=(i+blankingSkew)%pts.size();
+	    result[newind].r=pts[i].r;
+	    result[newind].g=pts[i].g;
+	    result[newind].b=pts[i].b;
+	}
+	pts=result;
+    }
+    return nblanks;
+}
+

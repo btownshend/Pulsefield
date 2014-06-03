@@ -108,7 +108,7 @@ int Lasers::render() {
 	    outline[3].x=32766;outline[3].y=-32766;
 	    outline[4].x=-32766;outline[4].y=-32766;
 	    // Convert to world 
-	    std::vector<Point> outlineWorld=lasers[i]->getTransform().mapToWorld(outline);
+	    std::vector<Point> outlineWorld=CPoint::convertToPointVector(lasers[i]->getTransform().mapToWorld(outline));
 	    dbg("Lasers.render",3) << "outlineWorld=";
 	    for (int j=0;j<outlineWorld.size();j++)
 		dbgn("Lasers.render",3) << outlineWorld[j] << " ";

@@ -3,6 +3,7 @@
 #include <iostream>
 #include "opencv2/core/core.hpp"
 #include "point.h"
+#include "cpoint.h"
 #include "etherdream_bst.h"
 
 class Color;
@@ -16,16 +17,16 @@ class Transform {
     void clear();
 
     // Mapping, if out-of-range, return clipped point
-    etherdream_point mapToDevice(Point floorPt,const Color &c) const;
+    etherdream_point mapToDevice(CPoint floorPt) const;
     Point mapToDevice(Point floorPt) const;
 
     // Inverse mapping from laser to world
     Point mapToWorld(Point p) const;
-    Point mapToWorld(etherdream_point p) const;
+    CPoint mapToWorld(etherdream_point p) const;
 
-    std::vector<etherdream_point> mapToDevice(const std::vector<Point> &floorPts,Color c) const;
+    std::vector<etherdream_point> mapToDevice(const std::vector<CPoint> &floorPts) const;
     std::vector<Point> mapToDevice(const std::vector<Point> &floorPts) const;
-    std::vector<Point> mapToWorld(const std::vector<etherdream_point> &pts) const;
+    std::vector<CPoint> mapToWorld(const std::vector<etherdream_point> &pts) const;
 
     // Compute transform matrix from set of points already provided
     void recompute();

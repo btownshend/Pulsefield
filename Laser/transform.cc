@@ -39,7 +39,7 @@ void Transform::recompute() {
     dbg("Transform.recompute",1) << "Done" << std::endl;
 }
 
-etherdream_point Transform::mapToDevice(Point floorPt,const Color &c) const {
+etherdream_point Transform::mapToDevice(CPoint floorPt) const {
     etherdream_point p;
     std::vector<cv::Point2f> src(1);
     src[0].x=floorPt.X();
@@ -62,6 +62,7 @@ etherdream_point Transform::mapToDevice(Point floorPt,const Color &c) const {
     else
 	p.y=y;
 
+    Color c=floorPt.getColor();
     p.r=(int)(c.red() * 65535);
     p.g=(int)(c.green() * 65535);
     p.b=(int)(c.blue() * 65535);
@@ -80,13 +81,13 @@ Point Transform::mapToDevice(Point floorPt) const {
     return Point(dst[0].x,dst[0].y);
 }
 
-Point Transform::mapToWorld(etherdream_point p) const {
+CPoint Transform::mapToWorld(etherdream_point p) const {
     std::vector<cv::Point2f> src(1);
     src[0].x=p.x;
     src[0].y=p.y;
     std::vector<cv::Point2f> dst;
     cv::perspectiveTransform(src,dst,invTransform);
-    Point result(dst[0].x,dst[0].y);
+    CPoint result(dst[0].x,dst[0].y,Color(p.r/65535.0,p.g/65535.0,p.b/65535.0));
 
     dbg("Transform.mapToWorld",10)  << "[" << p.x << "," <<p.y << "]  -> " << result << std::endl;
     return result;
@@ -104,10 +105,10 @@ Point Transform::mapToWorld(Point p) const {
     return result;
 }
 
-std::vector<etherdream_point> Transform::mapToDevice(const std::vector<Point> &floorPts,Color c) const {
+std::vector<etherdream_point> Transform::mapToDevice(const std::vector<CPoint> &floorPts) const {
     std::vector<etherdream_point> result(floorPts.size());
     for (unsigned int i=0;i<floorPts.size();i++)
-	result[i]=mapToDevice(floorPts[i],c);
+	result[i]=mapToDevice(floorPts[i]);
     return result;
 }
 
@@ -118,8 +119,8 @@ std::vector<Point> Transform::mapToDevice(const std::vector<Point> &floorPts) co
     return result;
 }
 
-std::vector<Point> Transform::mapToWorld(const std::vector<etherdream_point> &pts) const {
-    std::vector<Point> result(pts.size());
+std::vector<CPoint> Transform::mapToWorld(const std::vector<etherdream_point> &pts) const {
+    std::vector<CPoint> result(pts.size());
     for (unsigned int i=0;i<pts.size();i++)
 	result[i]=mapToWorld(pts[i]);
     return result;
