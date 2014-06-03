@@ -39,6 +39,10 @@ void LegStats::update(const Person &p) {
 	diff+=2*M_PI;
     dbg("LegStats",4) << "Update leftness of " << facing*180/M_PI << " towards " << curfacing*180/M_PI << " to " << (facing+diff/LEGSTATSTC)*180/M_PI << std::endl;
     facing += diff/LEGSTATSTC;
+    while (facing>M_PI)
+	facing-=2*M_PI;
+    while (facing<-M_PI)
+	facing+=2*M_PI;
     
     // Update separation
     if (p.getLeg(0).isVisible() && p.getLeg(1).isVisible()) {
