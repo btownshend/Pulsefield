@@ -18,6 +18,7 @@
  */
 
 #include <assert.h>
+#include <iostream>
 #include <strstream>
 #include "etherdream_bst.h"
 #include "dbg.h"
@@ -377,7 +378,8 @@ static int check_data_response(struct etherdream *d) {
     if (conn->resp.command == 'd') {
 	if (conn->ackbuf_prod == conn->ackbuf_cons) {
 	    dbg("Etherdream.check_data_response",0) <<  "Protocol error: unexpected data ack (" << conn->ackbuf_prod << " != " << conn->ackbuf_cons << ")" << std::endl;
-	    assert(0);
+	    std::cerr <<  "Protocol error: unexpected data ack (" << conn->ackbuf_prod << " != " << conn->ackbuf_cons << ")" << std::endl;
+	    //	    assert(0);
 	    return -1;
 	}
 	conn->unacked_points -= conn->ackbuf[conn->ackbuf_cons];
