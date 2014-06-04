@@ -29,7 +29,7 @@ public:
     }
     void setPreBlanks(int n) { 
 	for (int i=0;i<lasers.size();i++) lasers[i]->setPreBlanks(n);
-	TouchOSC::instance()->send("/ui/laser/preblank/label",std::to_string(n)+"pre-blank");
+	TouchOSC::instance()->send("/ui/laser/preblank/label",std::to_string(n)+" pre-blank");
 }
     void setPostBlanks(int n) { 
 	for (int i=0;i<lasers.size();i++) lasers[i]->setPostBlanks(n);
