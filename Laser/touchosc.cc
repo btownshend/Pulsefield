@@ -19,7 +19,6 @@ TouchOSC::TouchOSC()  {
     legsEnabled=true;
     bodyEnabled=false;
     pressTime.tv_sec=0;
-    load("settings-default.txt");
     trackUID1=-1;
     trackUID2=-1;
 }
@@ -223,6 +222,10 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		} else {
 		    float delta=(now.tv_sec-pressTime.tv_sec)+(now.tv_usec-pressTime.tv_usec)/1e6;
 		    dbg("TouchOSC.handleOSCMessage",1) << "Got preset " << tok << " held for " << delta << " seconds" << std::endl;
+		    if (strcmp(tok,"10")) 
+			// Defaults
+			load(std::string("settings_default.txt"));
+
 		    if (delta>1) 
 			save(std::string("settings_")+tok+".txt");
 		    else

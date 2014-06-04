@@ -154,8 +154,11 @@ class TouchOSC {
     bool bodyEnabled, legsEnabled;
  public:
     static TouchOSC *instance() {
-	if (theInstance == NULL)
+	if (theInstance == NULL) {
 	    theInstance=new TouchOSC();
+	    // Need to be careful of this being re-entrant into instance()
+	    theInstance->load("settings_default.txt");
+	}
 	return theInstance;
     }
     static int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
