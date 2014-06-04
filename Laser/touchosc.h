@@ -16,28 +16,48 @@ class Fader {
     std::string name;
     unsigned int pos;
     float value;
-    bool useValue, enabled;
+    bool useValue;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
 	dbg("Fader.serialize",1) << "Saving fader " << name << " settings" << std::endl;
 	ar & name;
 	ar & pos;
 	ar & value;
-	ar & enabled;
 	ar & useValue;
     }
 public:
     Fader() {;}
-    Fader(std::string _name, unsigned int _pos, float _value=0, bool _enabled=true, bool _useValue=false):name(_name) {
-	pos=_pos; value=_value; enabled=_enabled; useValue=_useValue;
+    Fader(std::string _name, unsigned int _pos, float _value=0, bool _useValue=false):name(_name) {
+	pos=_pos; value=_value; useValue=_useValue;
     }
     const std::string &getName() const { return name; }
     float get() const { return value; }
     unsigned int getPos() const { return pos; }
-    bool isEnabled() const { return enabled; }
     bool isUseValue() const { return useValue; }
     void set(float _value) { value=_value; }
     void setUseValueToggle(bool t) { useValue=t; }
-    void setEnableToggle(bool t) { enabled=t; }
+    int sendOSC() const;
+};
+
+class Button {
+    friend class boost::serialization::access;
+    std::string name;
+    unsigned int pos;
+    bool enabled;
+    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+	dbg("Button.serialize",1) << "Saving button " << name << " settings" << std::endl;
+	ar & name;
+	ar & pos;
+	ar & enabled;
+    }
+public:
+    Button() {;}
+    Button(std::string _name, unsigned int _pos, bool _enabled=true):name(_name) {
+	pos=_pos; enabled=_enabled; 
+    }
+    const std::string &getName() const { return name; }
+    bool get() const { return enabled; }
+    unsigned int getPos() const { return pos; }
+    void set(bool t) { enabled=t; }
     int sendOSC() const;
 };
 
@@ -48,15 +68,18 @@ class Setting {
     unsigned int pos; // Position in selection grid
     std::string groupName;
     std::vector<Fader> faders;
+    std::vector<Button> buttons;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-	dbg("Setting.serialize",1) << "Saving " << groupName << " with " << faders.size() << " faders" << std::endl;
+	dbg("Setting.serialize",1) << "Saving " << groupName << " with " << faders.size() << " faders" << " and " << buttons.size() << " buttons" << std::endl;
 	ar & pos;
 	ar & groupName;
 	ar & faders;
+	ar & buttons;
     }
 public:
+    static const int MAXBUTTONS=7;
     Setting() {;}
-    Setting(const std::string &_groupname, unsigned int _pos): groupName(_groupname), faders() {pos=_pos; }
+ Setting(const std::string &_groupname, unsigned int _pos): groupName(_groupname), faders(),buttons() {pos=_pos; }
 
     const std::string &getGroupName() const { return groupName; }
     unsigned int getPos() const { return pos; }
@@ -89,6 +112,34 @@ public:
 	}
 	return NULL;
     }
+
+    // Add a button
+    void addButton(const std::string &name, unsigned int pos=-1, bool t=false) {
+	if (pos==-1)
+	    pos=buttons.size();
+	if (pos>=MAXBUTTONS) {
+	    dbg("Setting.addButton",1) << "Too many buttons;  have " << buttons.size()+1 << ", max=" << MAXBUTTONS << std::endl;
+	}
+	buttons.push_back(Button(name,pos,t));
+    }
+
+    // Get button by name
+    Button *getButton(const std::string &name) {
+	for (unsigned int i=0;i<buttons.size();i++) {
+	    if (name==buttons[i].getName())
+		return &buttons[i];
+	}
+	return NULL;
+    }
+    // Get button by position
+    Button *getButton(unsigned int pos) {
+	for (unsigned int i=0;i<buttons.size();i++) {
+	    if (pos==buttons[i].getPos())
+		return &buttons[i];
+	}
+	return NULL;
+    }
+
 };
     
 // All the settings for all the connection types
@@ -147,6 +198,7 @@ class TouchOSC {
     ~TouchOSC();
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
     Fader *getFader_impl(std::string groupName, std::string faderName);
+    Button *getButton_impl(std::string groupName, std::string optionName);
     void frameTick_impl(int frame);
     struct timeval pressTime;   // Time that a button was pressed (to check if it was held for a long time)
     int trackUID1,trackUID2;  // UIDs tracked in TouchOSC
@@ -164,15 +216,18 @@ class TouchOSC {
 	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
     }
     static Fader *getFader(std::string groupName, std::string faderName) { return instance()->getFader_impl(groupName,faderName); }
-    // Get setting of fader applying enabled and useValue settings
+    static Button *getButton(std::string groupName, std::string optionName) { return instance()->getButton_impl(groupName,optionName); }
+    // Get setting of fader applying useValue settings
     static float getValue(std::string groupName, std::string faderName, float groupValue, float offValue) {
 	Fader *f=getFader(groupName,faderName);
-	if (!f->isEnabled())
-	    return offValue;
 	if (f->isUseValue())
 	    return f->get()*groupValue;
 	else
 	    return f->get();
+    }
+    static float getEnabled(std::string groupName, std::string optionName) {
+	Button *e=getButton(groupName,optionName);
+	return e->get();
     }
     void save(std::string filename) const;
     void load(std::string filename);
@@ -189,6 +244,3 @@ class TouchOSC {
     int send(std::string path, float value) const;
     int send(std::string path, std::string value) const;
 };
-
-
-

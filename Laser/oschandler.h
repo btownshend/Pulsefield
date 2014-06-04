@@ -81,4 +81,8 @@ class OSCHandler {
     void setMaxX(float x) { maxx=x; updateBounds(); }
     void setMinY(float y) { miny=y; updateBounds(); }
     void setMaxY(float y) { maxy=y; updateBounds(); }
+
+    // Sound
+    void beat(int bar, int beat);
+    void tempo(float bpm);
 };

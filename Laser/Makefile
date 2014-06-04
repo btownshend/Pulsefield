@@ -25,7 +25,7 @@ LDFLAGS=-L$(CAIROLIBDIR) -L$(OPENCVLIBDIR) -L$(LIBLOLIBDIR)
 LIBES=-llo $(OPENCV) $(CAIROLIBES) $(BOOSTLIBES)
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES)
 CFLAGS=$(DEBUG) $(OPTIMIZE)
-CXXSRCS=oschandler.cc main.cc  laser.cc lasers.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc Simplex.cpp touchosc.cc connections.cc person.cc attributes.cc groups.cc cpoint.cc
+CXXSRCS=oschandler.cc main.cc  laser.cc lasers.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc Simplex.cpp touchosc.cc connections.cc person.cc attributes.cc groups.cc cpoint.cc music.cc
 FESRCS=dbg.cc point.cc dest.cc
 #CSRCS=$(EDL)/etherdream.c
 SRCS=$(CXXSRCS) $(CSRCS) $(FESRCS)
@@ -56,46 +56,48 @@ depend: $(SRCS)
 # DO NOT DELETE
 
 oschandler.o: ../LIDAR/Util/dbg.h oschandler.h drawing.h
-oschandler.o: ../LIDAR/Util/point.h etherdream_bst.h bezier.h color.h
-oschandler.o: attributes.h Simplex.hpp touchosc.h lasers.h laser.h
+oschandler.o: ../LIDAR/Util/point.h bezier.h color.h attributes.h cpoint.h
+oschandler.o: Simplex.hpp touchosc.h lasers.h laser.h etherdream_bst.h
 oschandler.o: displaydevice.h transform.h video.h connections.h person.h
-oschandler.o: groups.h
+oschandler.o: groups.h music.h
 main.o: lasers.h laser.h etherdream_bst.h displaydevice.h transform.h
-main.o: ../LIDAR/Util/point.h color.h drawing.h ../LIDAR/Util/dbg.h bezier.h
-main.o: attributes.h Simplex.hpp touchosc.h video.h oschandler.h
+main.o: ../LIDAR/Util/point.h cpoint.h color.h touchosc.h ../LIDAR/Util/dbg.h
+main.o: drawing.h bezier.h attributes.h Simplex.hpp video.h oschandler.h
 laser.o: etherdream_bst.h laser.h displaydevice.h transform.h
-laser.o: ../LIDAR/Util/point.h color.h ../LIDAR/Util/dbg.h drawing.h bezier.h
-laser.o: attributes.h Simplex.hpp touchosc.h
+laser.o: ../LIDAR/Util/point.h cpoint.h color.h touchosc.h
+laser.o: ../LIDAR/Util/dbg.h drawing.h bezier.h attributes.h Simplex.hpp
 lasers.o: lasers.h laser.h etherdream_bst.h displaydevice.h transform.h
-lasers.o: ../LIDAR/Util/point.h color.h drawing.h ../LIDAR/Util/dbg.h
-lasers.o: bezier.h attributes.h Simplex.hpp touchosc.h connections.h person.h
-lasers.o: groups.h
-drawing.o: drawing.h ../LIDAR/Util/point.h etherdream_bst.h
-drawing.o: ../LIDAR/Util/dbg.h bezier.h color.h attributes.h Simplex.hpp
-drawing.o: touchosc.h transform.h laser.h displaydevice.h
+lasers.o: ../LIDAR/Util/point.h cpoint.h color.h touchosc.h
+lasers.o: ../LIDAR/Util/dbg.h drawing.h bezier.h attributes.h Simplex.hpp
+lasers.o: connections.h person.h groups.h
+drawing.o: drawing.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h bezier.h
+drawing.o: color.h attributes.h cpoint.h Simplex.hpp touchosc.h transform.h
+drawing.o: etherdream_bst.h laser.h displaydevice.h
 bezier.o: bezier.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h
 video.o: video.h displaydevice.h etherdream_bst.h transform.h
-video.o: ../LIDAR/Util/point.h lasers.h laser.h color.h drawing.h
-video.o: ../LIDAR/Util/dbg.h bezier.h attributes.h Simplex.hpp touchosc.h
-transform.o: transform.h ../LIDAR/Util/point.h etherdream_bst.h drawing.h
-transform.o: ../LIDAR/Util/dbg.h bezier.h color.h attributes.h Simplex.hpp
-transform.o: touchosc.h
+video.o: ../LIDAR/Util/point.h cpoint.h color.h lasers.h laser.h touchosc.h
+video.o: ../LIDAR/Util/dbg.h drawing.h bezier.h attributes.h Simplex.hpp
+transform.o: transform.h ../LIDAR/Util/point.h cpoint.h color.h
+transform.o: etherdream_bst.h drawing.h ../LIDAR/Util/dbg.h bezier.h
+transform.o: attributes.h Simplex.hpp touchosc.h
 etherdream_bst.o: etherdream_bst.h ../LIDAR/Util/dbg.h
 Simplex.o: Simplex.hpp
 touchosc.o: touchosc.h ../LIDAR/Util/dbg.h person.h ../LIDAR/Util/point.h
-touchosc.o: drawing.h etherdream_bst.h bezier.h color.h attributes.h
-touchosc.o: Simplex.hpp connections.h
-connections.o: connections.h ../LIDAR/Util/dbg.h drawing.h
-connections.o: ../LIDAR/Util/point.h etherdream_bst.h bezier.h color.h
-connections.o: attributes.h Simplex.hpp touchosc.h person.h
-person.o: person.h ../LIDAR/Util/point.h drawing.h etherdream_bst.h
-person.o: ../LIDAR/Util/dbg.h bezier.h color.h attributes.h Simplex.hpp
-person.o: touchosc.h groups.h
-attributes.o: attributes.h ../LIDAR/Util/point.h Simplex.hpp touchosc.h
-attributes.o: ../LIDAR/Util/dbg.h
-groups.o: groups.h drawing.h ../LIDAR/Util/point.h etherdream_bst.h
-groups.o: ../LIDAR/Util/dbg.h bezier.h color.h attributes.h Simplex.hpp
-groups.o: touchosc.h person.h
+touchosc.o: drawing.h bezier.h color.h attributes.h cpoint.h Simplex.hpp
+touchosc.o: connections.h music.h
+connections.o: person.h ../LIDAR/Util/point.h drawing.h ../LIDAR/Util/dbg.h
+connections.o: bezier.h color.h attributes.h cpoint.h Simplex.hpp touchosc.h
+connections.o: connections.h
+person.o: person.h ../LIDAR/Util/point.h drawing.h ../LIDAR/Util/dbg.h
+person.o: bezier.h color.h attributes.h cpoint.h Simplex.hpp touchosc.h
+person.o: groups.h
+attributes.o: attributes.h cpoint.h color.h ../LIDAR/Util/point.h Simplex.hpp
+attributes.o: touchosc.h ../LIDAR/Util/dbg.h music.h
+groups.o: groups.h drawing.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h
+groups.o: bezier.h color.h attributes.h cpoint.h Simplex.hpp touchosc.h
+groups.o: person.h
+cpoint.o: cpoint.h color.h ../LIDAR/Util/point.h
+music.o: music.h touchosc.h ../LIDAR/Util/dbg.h
 ../LIDAR/Util/dbg.o: ../LIDAR/Util/dbg.h
 ../LIDAR/Util/point.o: ../LIDAR/Util/point.h
 ../LIDAR/Util/dest.o: ../LIDAR/Util/dest.h ../LIDAR/Util/dbg.h

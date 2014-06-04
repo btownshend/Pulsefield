@@ -18,6 +18,7 @@
 #include "connections.h"
 #include "person.h"
 #include "groups.h"
+#include "music.h"
 
 static void error(int num, const char *msg, const char *path)
 {
@@ -90,6 +91,10 @@ static int line_handler(const char *path, const char *types, lo_arg **argv, int 
 // Transforms
 static int map_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->map(argv[0]->i,argv[1]->i,Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f)); return 0; }
 //static int setTransform_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setTransform(argv[0]->i); return 0; }
+
+// Sound
+static int beat_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    Music::instance()->setBeat(argv[0]->i,argv[1]->i); return 0; }
+static int tempo_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    Music::instance()->setTempo(argv[0]->f); return 0; }
 
 // Draw
 static int update_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->update(argv[0]->i); return 0; }
@@ -165,6 +170,10 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	/* Draw */
 	lo_server_add_method(s,"/laser/update","i",update_handler,this);
 
+	/* Sound */
+	lo_server_add_method(s,"/sound/beat","ii",beat_handler,this);
+	lo_server_add_method(s,"/sound/tempo","f",tempo_handler,this);
+	
 
 	/* PF */
 	lo_server_add_method(s,"/pf/frame","i",pfframe_handler,this);
@@ -346,15 +355,6 @@ void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
     lasers->getLaser(unit)->getTransform().setDevPoint(pt,devpt);
 }
 
-//void OSCHandler::setTransform(int unit) {
-//    if (unit<0 || unit>=(int)lasers->size()) {
-//	dbg("OSCHandler.setTransform",1)  << "Bad unit: " << unit << std::endl;
-//	return;
-//    }
-//    lasers->getLaser(unit)->getTransform().recompute();
-//}
-
-
 void OSCHandler::update(int frame) {
     // Not needed -- using frame for updates
 }
@@ -370,13 +370,12 @@ void OSCHandler::pfframe(int frame) {
     Groups::incrementAge();
 
     // UI Tick
-    if (frame%10 == 0)
+    if (frame%20 == 0)
 	TouchOSC::frameTick(frame);
 
-    if (frame%1000 == 0)
-	lasers->dumpPoints();
+    //    if (frame%1000 == 0)
+    //	lasers->dumpPoints();
 }
-
 
 // Called when any of the bounds have been possibly changed
 void OSCHandler::updateBounds() {

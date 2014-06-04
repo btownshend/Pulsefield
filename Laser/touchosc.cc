@@ -3,6 +3,7 @@
 #include "touchosc.h"
 #include "person.h"
 #include "connections.h"
+#include "music.h"
 
 const char *TouchOSC::PORT="9998";
 
@@ -37,9 +38,16 @@ int Fader::sendOSC() const {
     if (TouchOSC::instance()->send((togglespath+"/1"),useValue?1.0:0.0) < 0)
 	return -1;
     dbg("Fader.sendOSC",1) << "Set useValue toggle " << pos+1 << " to " << useValue << std::endl;
-    if (TouchOSC::instance()->send((togglespath+"/2"),enabled?1.0:0.0) < 0)
+    return 0;
+}
+
+int Button::sendOSC() const {
+    std::string buttonspath=std::string("/ui/conn/buttons/")+std::to_string(pos+1);
+    if (TouchOSC::instance()->send((buttonspath+"/label"),name) < 0)
 	return -1;
-    dbg("Fader.sendOSC",1) << "Set enable toggle " << pos+1 << " to " << enabled << std::endl;
+    if (TouchOSC::instance()->send(buttonspath+"/1",enabled?1.0:0.0) < 0)
+	return -1;
+    dbg("Button.sendOSC",1) << "Set button " << pos+1 << " to " << enabled << std::endl;
     return 0;
 }
 
@@ -52,7 +60,7 @@ int Setting::sendOSC() const {
     if (TouchOSC::instance()->send(selpath,1.0f) <0 )
 	return -1;
 
-    // Clear all the current labels
+    // Clear all the current fader values and labels
     for (unsigned int i=0;i<MAXFADERS;i++) {
 	std::string faderspath=std::string("/ui/conn/faders/")+std::to_string(i+1);
 	if (TouchOSC::instance()->send(faderspath,0.0f) < 0)
@@ -60,10 +68,23 @@ int Setting::sendOSC() const {
 	if (TouchOSC::instance()->send((faderspath+"/label"),"") < 0)
 	    return -1;
     }
-	    
     for (unsigned int i=0;i<faders.size();i++)
 	if (faders[i].sendOSC() < 0)
 	    return -1;
+
+    // Clear all the current button values and labels
+    for (unsigned int i=0;i<MAXBUTTONS;i++) {
+	std::string buttonspath=std::string("/ui/conn/buttons/")+std::to_string(i+1);
+	if (TouchOSC::instance()->send(buttonspath,0.0f) < 0)
+	    return -1;
+	if (TouchOSC::instance()->send((buttonspath+"/label"),"") < 0)
+	    return -1;
+    }
+
+    for (unsigned int i=0;i<buttons.size();i++)
+	if (buttons[i].sendOSC() < 0)
+	    return -1;
+
     return 0;
 }
 
@@ -114,7 +135,12 @@ void TouchOSC::frameTick_impl(int frame) {
 
 void TouchOSC::updateUI() const {
     updateConnectionMap();
+    Music *m=Music::instance();
+    m->predict();
+    send("/ui/beat",std::to_string(m->getLastBar())+":"+std::to_string((int)m->getLastBeat()));
+    send("/ui/tempo",std::to_string((int)m->getTempo()));
 }
+
 
 Fader *TouchOSC::getFader_impl(std::string groupName, std::string faderName) {
     bool updatedUI=false;
@@ -130,6 +156,27 @@ Fader *TouchOSC::getFader_impl(std::string groupName, std::string faderName) {
 	dbg("TouchOSC.getValue",1) << "Requested fader " << faderName << " does not exist in group " << groupName << " adding it" << std::endl;
 	s->addFader(faderName,-1,0.5f);
 	f=s->getFader(faderName);
+	updatedUI=true;
+    }
+    if (updatedUI)
+	sendOSC();
+    return f;
+}
+
+Button *TouchOSC::getButton_impl(std::string groupName, std::string buttonName) {
+    bool updatedUI=false;
+    Setting *s=settings.getSetting(groupName);
+    if (s==NULL) {
+	dbg("TouchOSC.getValue",1) << "Requested group " << groupName << " does not exists; adding." << std::endl;
+	settings.addGroup(groupName);
+	s=settings.getSetting(groupName);
+	updatedUI=true;
+    }
+    Button *f=s->getButton(buttonName);
+    if (f==NULL) {
+	dbg("TouchOSC.getValue",1) << "Requested button " << buttonName << " does not exist in group " << groupName << " adding it" << std::endl;
+	s->addButton(buttonName);
+	f=s->getButton(buttonName);
 	updatedUI=true;
     }
     if (updatedUI)
@@ -201,10 +248,25 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		    } else {
 			if (row==0)
 			    f->setUseValueToggle(argv[0]->f>0.5);
-			else if (row==1)
-			    f->setEnableToggle(argv[0]->f>0.5);
 			else
 			    dbg("TouchOSC.handleOSCMessage",1) << "Bad row: " << row << " from /ui/conn/toggles" << std::endl;
+		    }
+		}
+		handled=true;
+	    } else if (strcmp(tok,"buttons")==0) {
+		int col=atoi(strtok(NULL,"/"))-1;
+		int row=atoi(strtok(NULL,"/"))-1;
+		int pos=col+row*Setting::MAXBUTTONS;
+		dbg("TouchOSC.handleOSCMessage",1) << "Set button " << pos << " with value " << argv[0]->f << std::endl;
+		Setting *s=settings.getSetting(selectedGroup);
+		if (s==NULL) {
+		    dbg("TouchOSC.handleOSCMessage",1) << "Selected group " << selectedGroup << " is not valid." << std::endl;
+		} else {
+		    Button *f=s->getButton(pos);
+		    if (f==NULL) {
+			dbg("TouchOSC.handleOSCMessage",1) << "Selected button " << pos << " is not valid." << std::endl;
+		    } else {
+			f->set(argv[0]->f>0.5);
 		    }
 		}
 		handled=true;
@@ -341,7 +403,7 @@ void TouchOSC::updateConnectionMap() const {
 	    if (i<uids.size() && j<uids.size())
 		connected = Connections::instance()->isConnected(uids[i],uids[j]) || Connections::instance()->isConnected(uids[j],uids[i]);
 	    std::string path="/ui/linked/"+std::to_string(j+1)+"/"+std::to_string(i+1);
-	    dbg("TouchOSC.updateConnectionMap",3) << "Send " << path << "," << (connected?1.0f:0.0f) << std::endl;
+	    dbg("TouchOSC.updateConnectionMap",5) << "Send " << path << "," << (connected?1.0f:0.0f) << std::endl;
 
 	    if (send(path,connected?1.0f:0.0f) <0 )
 		return;
@@ -400,6 +462,7 @@ int TouchOSC::send(std::string path, float value) const {
 	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return -1;
     }
+    usleep(100);
     return 0;
 }
 
@@ -408,5 +471,6 @@ int TouchOSC::send(std::string path, std::string value) const {
 	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return -1;
     }
+    usleep(100);
     return 0;
 }
