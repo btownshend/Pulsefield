@@ -137,7 +137,6 @@ public:
 class TouchOSC {
     static TouchOSC *theInstance;   // Singleton
     static const char *PORT;
-    lo_address local;
     lo_address remote;
     Settings settings;
     unsigned int selectedGroup;

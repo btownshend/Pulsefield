@@ -11,7 +11,6 @@ TouchOSC *TouchOSC::theInstance=NULL;
 TouchOSC::TouchOSC()  {
     // Start off connected to localhost (for debugging)
     remote=lo_address_new("localhost",PORT);
-    local=lo_address_new("localhost",PORT);
 
     // Setup 
     selectedGroup=0;
