@@ -379,8 +379,7 @@ static int check_data_response(struct etherdream *d) {
 	if (conn->ackbuf_prod == conn->ackbuf_cons) {
 	    dbg("Etherdream.check_data_response",0) <<  "Protocol error: unexpected data ack (" << conn->ackbuf_prod << " != " << conn->ackbuf_cons << ")" << std::endl;
 	    std::cerr <<  "Protocol error: unexpected data ack (" << conn->ackbuf_prod << " != " << conn->ackbuf_cons << ")" << std::endl;
-	    //	    assert(0);
-	    return -1;
+	    assert(0);
 	}
 	conn->unacked_points -= conn->ackbuf[conn->ackbuf_cons];
 	conn->ackbuf_cons = (conn->ackbuf_cons + 1) % MAX_LATE_ACKS;
@@ -547,7 +546,7 @@ static void *dac_loop(void *dv) {
 	    int diff = MIN_SEND_POINTS - cap;
 	    int wait_time = 500 + (1000000L * diff / b->pps);
 
-	    dbg("Etherdream.dac_loop",2) <<  "st " << (int)d->conn.resp.dac_status.playback_state << " om " << d->conn.pending_meta_acks << "; "
+	    dbg("Etherdream.dac_loop",4) <<  "st " << (int)d->conn.resp.dac_status.playback_state << " om " << d->conn.pending_meta_acks << "; "
 					 << "b " << d->conn.resp.dac_status.buffer_fullness << " + " << d->conn.unacked_points << " - " << expected_used << " = " << expected_fullness << " -> c  " << cap << ", wait " << wait_time << " usec" << std::endl;
 
 	    microsleep(wait_time);
@@ -567,7 +566,7 @@ static void *dac_loop(void *dv) {
 	if (cap > 80)
 	    cap = 80;
 
-	dbg("Etherdream.dac_loop",2) <<  "st " << (int)d->conn.resp.dac_status.playback_state << " om " << d->conn.pending_meta_acks << "; "
+	dbg("Etherdream.dac_loop",4) <<  "st " << (int)d->conn.resp.dac_status.playback_state << " om " << d->conn.pending_meta_acks << "; "
 				     << "b " << d->conn.resp.dac_status.buffer_fullness << " + " << d->conn.unacked_points << " - " << expected_used << " = " << expected_fullness << " -> write  " << cap << std::endl;
 
 	res = dac_send_data(d, b->data + b->idx, cap, b->pps);
