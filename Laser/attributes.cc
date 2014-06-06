@@ -73,23 +73,30 @@ float Attributes::getTotalLen(const std::vector<CPoint> &pts)  {
 std::vector<CPoint> Attributes::applyMusic(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
     float amplitude=TouchOSC::getValue(attrname,"music-amp",attrValue,0.0)*0.5;  // Amplitude
     float beat=TouchOSC::getValue(attrname,"music-beat",attrValue,1)*1.0;  // When in bar
-    float dur=TouchOSC::getValue(attrname,"music-pulselen",attrValue,1)*1.0;  // Duration (pulse length) in bars
-    float speed=TouchOSC::getValue(attrname,"music-speed",attrValue,1)*16.0;  // Duration (pulse length) in bars
+    float length=TouchOSC::getValue(attrname,"music-pulselen",attrValue,0.2)*1.0;  // Length in fraction of line length
+    float speed=TouchOSC::getValue(attrname,"music-speed",attrValue,1)*15.0+1.0;  // Speed factor
     if (!TouchOSC::getEnabled(attrname,"music"))
 	return pts;
     float fracbar=Music::instance()->getFracBar();
-    dbg("Attributes.applyMusic",2) << "Amp=" << amplitude << ", beat=" << beat << ", dur=" << dur << ",speed=" << speed << ", fracBar=" << fracbar << std::endl;
+    dbg("Attributes.applyMusic",2) << "Amp=" << amplitude << ", beat=" << beat << ", length=" << length << ",speed=" << speed << ", length=" << length << ", fracBar=" << fracbar << std::endl;
     std::vector<CPoint> result=pts;
     float totalLen=getTotalLen(pts);
 
     float len=0;
     for (int i=1;i<result.size();i++) {
-	len += (result[i]-result[i-1]).norm();
-	float frac=fmod(len/totalLen+beat,1.0);
-	Point vec=pts[i]-pts[i-1]; vec=vec/vec.norm();
+	Point vec=pts[i]-pts[i-1];
+	float veclen=vec.norm();
+	vec=vec/veclen;
+	len += veclen;
+	float frac=fmod(len/totalLen/speed+beat,1.0);
 	Point ortho=Point(-vec.Y(),vec.X());
-	if (abs(frac-fracbar*speed)<dur)
-	    result[i]=result[i]+ortho*amplitude;
+	if (fmod(frac-fracbar,1.0)<length/speed) {
+	    float offset=amplitude*fmod(frac-fracbar,1.0)/(length/speed);
+	    dbg("Attributes.applyMusic",5) << "i=" << i << ", frac=" << frac << ", ortho=" << ortho << " offset=" <<  offset << std::endl;
+	    result[i]=result[i]+ortho*offset;
+	} else {
+	    dbg("Attributes.applyMusic",5) << "i=" << i << ", frac=" << frac << ", ortho=" << ortho << std::endl;
+	}
     }
     return result;
 }
