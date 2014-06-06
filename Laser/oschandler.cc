@@ -35,6 +35,9 @@ static int generic_handler(const char *path, const char *types, lo_arg **argv,in
     if (strncmp(path,"/conductor/",11)==0) {
 	return Connections::handleOSCMessage(path,types,argv,argc,msg);
     }
+    if (strncmp(path,"/soundui/",9)==0) {
+	return Music::instance()->handleOSCMessage(path,types,argv,argc,msg);
+    }
     static std::set<std::string> noted;  // Already noted
     if (noted.count(std::string(path)+types) == 0) {
 	noted.insert(std::string(path)+types);
@@ -374,6 +377,7 @@ void OSCHandler::pfframe(int frame) {
     // UI Tick
     if (frame%20 == 0)
 	TouchOSC::frameTick(frame);
+    Music::instance()->frameTick(frame);
 
     //    if (frame%1000 == 0)
     //	lasers->dumpPoints();
