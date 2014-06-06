@@ -251,6 +251,7 @@ std::vector<CPoint> Composite::getPoints(float spacing,const CPoint *priorPoint)
 	for (int i=0;i<dst.size();i++) {
 	    result[i]=CPoint(dst[i].x,dst[i].y,c);
 	}
+	result=CPoint::resample(result);
 	// TODO -- hull might have larger spacing between some points
     }
 

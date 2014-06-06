@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "color.h"
 #include "point.h"
 
@@ -32,4 +33,6 @@ class CPoint: public Point {
 	    result[i]=cpts[i];
 	return result;
     }
+    // Equalize spacing by resampling
+    static std::vector<CPoint> resample(std::vector<CPoint> pts, int npts=-1);
 };
