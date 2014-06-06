@@ -189,7 +189,10 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    if (otherLeg!=NULL) {
 		// Update likelihood using separtion from other leg
 		    float d=(otherLeg->position-pt).norm();
-		    if (useSepLikeLookup)
+		    if (d>MAXLEGSEP*2)
+			seplike=-1000;
+		    else
+			if (useSepLikeLookup)
 			seplike=legSepLike.lookup(d);
 		    else
 			seplike=log(normpdf(d,ls.getSep(),sqrt(otherLeg->posvar+ls.getSepSigma()*ls.getSepSigma()))*UNITSPERM);
