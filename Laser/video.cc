@@ -29,6 +29,9 @@ Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(4) {
     msglife=100;
     dirty=true;
     dpy=NULL;
+    // Load transforms
+    std::ifstream ifs("transforms.save");
+    load(ifs);
 }
 
 Video::~Video() {
