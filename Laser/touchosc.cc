@@ -145,7 +145,6 @@ void TouchOSC::frameTick_impl(int frame) {
     }
 }
 
-
 Fader *TouchOSC::getFader_impl(std::string groupName, std::string faderName) {
     bool updatedUI=false;
     Setting *s=settings.getSetting(groupName);
@@ -210,29 +209,29 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	    if (strcmp(tok,"select")==0) {
 		int col=atoi(strtok(NULL,"/"))-1;
 		int row=atoi(strtok(NULL,"/"))-1;
-		dbg("TouchOSC.handleOSCMessage",1) << "Selected group position " << col << "/" << row << " with value " << argv[0]->f << std::endl;
+		dbg("TouchOSC.conn",1) << "Selected group position " << col << "/" << row << " with value " << argv[0]->f << std::endl;
 		if (argv[0]->f>0.5) {
 		    int gpos=row*4+col;
 		    const Setting *newGroup=settings.getSetting(gpos);
 		    if (newGroup==NULL) {
-			dbg("TouchOSC.handleOSCMessage",1) << "No group at position " << gpos << std::endl;
+			dbg("TouchOSC.conn",1) << "No group at position " << gpos << std::endl;
 		    } else {
 			selectedGroup=gpos;
-			dbg("TouchOSC.handleOSCMessage",1) << "Switch to group " << newGroup->getGroupName() << std::endl;
+			dbg("TouchOSC.conn",1) << "Switch to group " << newGroup->getGroupName() << std::endl;
 			sendOSC();
 		    }
 		}
 		handled=true;
 	    } else if (strcmp(tok,"faders")==0) {
 		int pos=atoi(strtok(NULL,"/"))-1;
-		dbg("TouchOSC.handleOSCMessage",1) << "Set fader " << pos << " with value " << argv[0]->f << std::endl;
+		dbg("TouchOSC.faders",1) << "Set fader " << pos << " with value " << argv[0]->f << std::endl;
 		Setting *s=settings.getSetting(selectedGroup);
 		if (s==NULL) {
-		    dbg("TouchOSC.handleOSCMessage",1) << "Selected group " << selectedGroup << " is not valid." << std::endl;
+		    dbg("TouchOSC.faders",1) << "Selected group " << selectedGroup << " is not valid." << std::endl;
 		} else {
 		    Fader *f=s->getFader(pos);
 		    if (f==NULL) {
-			dbg("TouchOSC.handleOSCMessage",1) << "Selected fader " << pos << " is not valid." << std::endl;
+			dbg("TouchOSC.faders",1) << "Selected fader " << pos << " is not valid." << std::endl;
 		    } else {
 			f->set(argv[0]->f);
 		    }
@@ -241,19 +240,19 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	    } else if (strcmp(tok,"toggles")==0) {
 		int col=atoi(strtok(NULL,"/"))-1;
 		int row=atoi(strtok(NULL,"/"))-1;
-		dbg("TouchOSC.handleOSCMessage",1) << "Set toggle " << col << "/" << row << " with value " << argv[0]->f << std::endl;
+		dbg("TouchOSC.toggles",1) << "Set toggle " << col << "/" << row << " with value " << argv[0]->f << std::endl;
 		Setting *s=settings.getSetting(selectedGroup);
 		if (s==NULL) {
-		    dbg("TouchOSC.handleOSCMessage",1) << "Selected group " << selectedGroup << " is not valid." << std::endl;
+		    dbg("TouchOSC.toggles",1) << "Selected group " << selectedGroup << " is not valid." << std::endl;
 		} else {
 		    Fader *f=s->getFader(col);
 		    if (f==NULL) {
-			dbg("TouchOSC.handleOSCMessage",1) << "Selected fader " << col << " is not valid." << std::endl;
+			dbg("TouchOSC.toggles",1) << "Selected fader " << col << " is not valid." << std::endl;
 		    } else {
 			if (row==0)
 			    f->setUseValueToggle(argv[0]->f>0.5);
 			else
-			    dbg("TouchOSC.handleOSCMessage",1) << "Bad row: " << row << " from /ui/conn/toggles" << std::endl;
+			    dbg("TouchOSC.toggles",1) << "Bad row: " << row << " from /ui/conn/toggles" << std::endl;
 		    }
 		}
 		handled=true;
@@ -261,14 +260,14 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		int col=atoi(strtok(NULL,"/"))-1;
 		int row=atoi(strtok(NULL,"/"))-1;
 		int pos=col+row*Setting::MAXBUTTONS;
-		dbg("TouchOSC.handleOSCMessage",1) << "Set button " << pos << " with value " << argv[0]->f << std::endl;
+		dbg("TouchOSC.buttons",1) << "Received command to set button " << pos << " with value " << argv[0]->f << std::endl;
 		Setting *s=settings.getSetting(selectedGroup);
 		if (s==NULL) {
-		    dbg("TouchOSC.handleOSCMessage",1) << "Selected group " << selectedGroup << " is not valid." << std::endl;
+		    dbg("TouchOSC.buttons",1) << "Selected group " << selectedGroup << " is not valid." << std::endl;
 		} else {
 		    Button *f=s->getButton(pos);
 		    if (f==NULL) {
-			dbg("TouchOSC.handleOSCMessage",1) << "Selected button " << pos << " is not valid." << std::endl;
+			dbg("TouchOSC.buttons",1) << "Selected button " << pos << " is not valid." << std::endl;
 		    } else {
 			f->set(argv[0]->f>0.5);
 		    }
@@ -283,10 +282,10 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		pressTime=now;
 	    else {
 		if (pressTime.tv_sec==0) {
-		    dbg("TouchOSC.handleOSCMessage",1) << "Missed preset " << tok << " press" << std::endl;
+		    dbg("TouchOSC.preset",1) << "Missed preset " << tok << " press" << std::endl;
 		} else {
 		    float delta=(now.tv_sec-pressTime.tv_sec)+(now.tv_usec-pressTime.tv_usec)/1e6;
-		    dbg("TouchOSC.handleOSCMessage",1) << "Got preset " << tok << " held for " << delta << " seconds" << std::endl;
+		    dbg("TouchOSC.preset",1) << "Got preset " << tok << " held for " << delta << " seconds" << std::endl;
 		    if (strcmp(tok,"10")) 
 			// Defaults
 			load(std::string("settings_default.txt"));
@@ -478,6 +477,7 @@ int TouchOSC::send(std::string path, float value) const {
 }
 
 int TouchOSC::send(std::string path, std::string value) const {
+    dbg("TouchOSC.send",4) << "send " << path << "," << value << std::endl;
     if (lo_send(remote,path.c_str(),"s",value.c_str()) <0 ) {
 	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return -1;

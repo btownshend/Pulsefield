@@ -148,7 +148,7 @@ class Settings {
     friend class boost::serialization::access;
     std::vector<Setting> settings;
     template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-	dbg("Settings.serialize",1) << "Saving " << settings.size() << " settings" << std::endl;
+	dbg("Settings.serialize",1) << "Saving " << settings.size() << " settings" << "; first group=" << settings[0].getGroupName() << std::endl;
 	ar & settings;
     }
 public:
