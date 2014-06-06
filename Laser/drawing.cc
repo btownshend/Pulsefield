@@ -95,8 +95,8 @@ std::vector<CPoint> Line::getPoints(float pointSpacing,const CPoint *priorPoint)
     bool swap=false;
     if (priorPoint!=NULL) {
 	// Check if line direction should be swapped
-	int d1=std::max(abs(priorPoint->X()-p1.X()),abs(priorPoint->Y()-p1.Y()));
-	int d2=std::max(abs(priorPoint->X()-p2.X()),abs(priorPoint->Y()-p2.Y()));
+	int d1=std::max(fabs(priorPoint->X()-p1.X()),fabs(priorPoint->Y()-p1.Y()));
+	int d2=std::max(fabs(priorPoint->X()-p2.X()),fabs(priorPoint->Y()-p2.Y()));
 	if (d2<d1) {
 	    dbg("Line.getPoints",3) << "Swapping line endpoints; d1=" << d1 << ", d2=" << d2 << std::endl;
 	    swap=true;
