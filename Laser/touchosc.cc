@@ -468,11 +468,12 @@ void TouchOSC::updateConnectionMap() const {
 }
 
 int TouchOSC::send(std::string path, float value) const {
+    dbg("TouchOSC.send",4) << "send " << path << "," << value << std::endl;
     if (lo_send(remote,path.c_str(),"f",value) <0 ) {
 	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return -1;
     }
-    usleep(100);
+    usleep(10);
     return 0;
 }
 
@@ -482,6 +483,6 @@ int TouchOSC::send(std::string path, std::string value) const {
 	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return -1;
     }
-    usleep(100);
+    usleep(10);
     return 0;
 }
