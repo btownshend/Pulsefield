@@ -40,9 +40,9 @@ std::vector<CPoint> Attributes::applyMovements(std::string attrname, float attrV
 }
 
 std::vector<CPoint> Attributes::applyDashes(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
-    float onLength=TouchOSC::getValue(attrname,"dash-on",attrValue,0.0)*0.10;  // On-length in meters
-    float offLength=TouchOSC::getValue(attrname,"dash-off",attrValue,0.5)*0.10;  // Off-length in meters
-    float velocity=TouchOSC::getValue(attrname,"dash-vel",attrValue,0.0)*3.0;  // Dash-velocity in meters/3
+    float onLength=TouchOSC::getValue(attrname,"dash-on",attrValue,0.0)*0.50;  // On-length in meters
+    float offLength=TouchOSC::getValue(attrname,"dash-off",attrValue,0.5)*0.50;  // Off-length in meters
+    float velocity=TouchOSC::getValue(attrname,"dash-vel",attrValue,0.0)*3.0;  // Dash-velocity in meters/s
     if (!TouchOSC::getEnabled(attrname,"dashes"))
 	return pts;
     dbg("Attributes.applyDashes",5) << "On=" << onLength << ", off=" << offLength << ", vel=" << velocity << std::endl;
@@ -52,6 +52,7 @@ std::vector<CPoint> Attributes::applyDashes(std::string attrname, float attrValu
     float totallen=onLength+offLength;
     float dist=fmod(((now.tv_sec+now.tv_usec/1e6)*velocity),totallen);
 
+    // TODO: Instead of blanking, put more points in 'on' region, less in 'off' region
     for (int i=1;i<result.size();i++) {
 	if (dist<offLength)
 	    result[i].setColor(Color(0,0.01,0));  // Turn off this segment (but don't use zero or it'll look like blanking)
