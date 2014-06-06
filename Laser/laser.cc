@@ -49,7 +49,12 @@ int Laser::open() {
 	printf("Requested laser unit %d, but only have %d lasers\n", unit, cc);
 	return -1;
     }
-    d = etherdream_get(unit);
+    // Kludge to make sure we get ordered id's (TODO: make general)
+    if (cc==2 && etherdream_get_id(etherdream_get(0)) < etherdream_get_id(etherdream_get(1))) {
+	std::cout << "Swapped etherdream order" << std::endl;
+	d = etherdream_get(1-unit);    
+    } else
+	d = etherdream_get(unit);
     printf("Connecting to laser %d...\n",unit);
     if (etherdream_connect(d) < 0)
 	return -1;
