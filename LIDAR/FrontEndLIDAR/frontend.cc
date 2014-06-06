@@ -115,12 +115,12 @@ FrontEnd::FrontEnd(int _nsick,int argc, const char *argv[]) {
 	printf("Started server on port %d\n", serverPort);
 
 	/* Start sending data to hardwired OSC destinations */
-	const char *targets[]={"VD","VIS","COND","LAN","REC"};
+	const char *targets[]={"VD","VIS","COND","LAN","REC","COND2","VIS2"};
 	for (unsigned int i=0;i<sizeof(targets)/sizeof(targets[0]);i++) {
 	    int clientPort=urls.getPort(targets[i]);
 	    const char *clientHost=urls.getHost(targets[i]);
 	    if (clientHost==0 || clientPort==-1)
-		fprintf(stderr,"Unable to location %s in urlconfig.txt\n", targets[i]);
+		fprintf(stderr,"Unable to locate %s in urlconfig.txt\n", targets[i]);
 	    else
 		addDest(clientHost, clientPort);
 	}
@@ -428,6 +428,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 		fscanf(fd,"%d ",&reflect[e][i]);
 	}
 	if (frame%100==0) {
+	    dbg("frontend",1) << "Playing frame " << frame << " with mean lag " <<  totallag/nlag << ", maxlag=" << maxlag << std::endl;
 	    printf("Playing frame %d with mean lag=%.3fs, maxlag=%.3fs\n",frame,totallag/nlag,maxlag);
 	    totallag=0;
 	    maxlag=0;
