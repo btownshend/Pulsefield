@@ -104,32 +104,32 @@ std::vector<CPoint> Attributes::applyMusic(std::string attrname, float attrValue
 std::vector<CPoint> Attributes::applyStraighten(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
     if (!TouchOSC::getEnabled(attrname,"straighten"))
 	return pts;
-    float maxLen=std::max(fabs(pts.back().X()-pts.front().X()),fabs(pts.back().Y()-pts.front().Y()));
-    float minTurn=TouchOSC::getValue(attrname,"straighten",attrValue,0.0)*maxLen/2;  // Min distance before turning
-    dbg("Attributes.applyStraighten",2) << "maxLen=" << maxLen << ",minTurn=" << minTurn << std::endl;
-    std::vector<CPoint> result=pts;
-    float runlen=minTurn;
-    int dir=0;
-    for (int i=1;i<result.size();i++) {
-	Point delta=pts[i]-result[i-1];
-	if (runlen>=std::min(minTurn,(pts.back()-result[i-1]).norm())) {
-	    // Choose direction
-	    int newdir=0;
-	    if (fabs(delta.X())<fabs(delta.Y()))
-		newdir=1;
-	    if (newdir!=dir) {
-		dbg("Attributes.applyStraighten",2) << "Turn at point " << result[i-1] << "->" << result[i] << " with runlen=" << runlen << std::endl;
-		runlen=0;
-		dir=newdir;
-	    }
-	}
-	if (dir==0)
-	    result[i]=result[i-1]+Point(delta.X(),0.0);
+    int  nTurns=(int)(TouchOSC::getValue(attrname,"straighten",attrValue,0.1)*10)+1;  // Number of turns
+    Point delta = pts.back()-pts.front();
+    float maxDist=std::max(fabs(delta.X()),fabs(delta.Y()));
+    float totalLen=getTotalLen(pts);
+    maxDist=std::max(maxDist,totalLen/2);
+    float blockSize=maxDist/nTurns;
+    dbg("Attributes.applyStraighten",2) << "nTurns=" << nTurns << ", delta=" << delta << ",blockSize=" << blockSize << std::endl;
+    assert(blockSize>0);
+    std::vector<CPoint> results;
+    results.push_back(pts.front());
+    // Draw manhattan path with blockSize blocks (in meters)
+    for (int i=1;i<pts.size();) {
+	Point delta=pts[i]-results.back();
+	if (fabs(delta.X())>blockSize)
+	    results.push_back(results.back()+Point(copysign(blockSize,delta.X()),0));
+	else if (fabs(delta.Y())>blockSize)
+	    results.push_back(results.back()+Point(0,copysign(blockSize,delta.Y())));
 	else
-	    result[i]=result[i-1]+Point(0.0,delta.Y());
-	runlen+=(result[i]-result[i-1]).norm();
+	    i++;
     }
-    return result;
+    CPoint priorpt=pts.back();
+    priorpt.setX(results.back().X());
+    results.push_back(priorpt);
+    results.push_back(pts.back());
+    results=CPoint::resample(results,pts.size());
+    return results;
 }
 
 std::vector<CPoint> Attributes::apply(std::vector<CPoint> pts) const {
