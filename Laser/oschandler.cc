@@ -364,10 +364,12 @@ void OSCHandler::pfframe(int frame) {
     lastUpdateFrame=frame;
     lasers->setFrame(frame);
 
-    // Age all the connections and people
-    Connections::incrementAge();
-    People::incrementAge();
-    Groups::incrementAge();
+    if (!TouchOSC::instance()->isFrozen()) {
+	// Age all the connections and people
+	Connections::incrementAge();
+	People::incrementAge();
+	Groups::incrementAge();
+    }
 
     // UI Tick
     if (frame%20 == 0)

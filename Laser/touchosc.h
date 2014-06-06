@@ -202,7 +202,7 @@ class TouchOSC {
     void frameTick_impl(int frame);
     struct timeval pressTime;   // Time that a button was pressed (to check if it was held for a long time)
     int trackUID1,trackUID2;  // UIDs tracked in TouchOSC
-    bool bodyEnabled, legsEnabled;
+    bool bodyEnabled, legsEnabled,frozen;
  public:
     static TouchOSC *instance() {
 	if (theInstance == NULL) {
@@ -229,6 +229,7 @@ class TouchOSC {
 	Button *e=getButton(groupName,optionName);
 	return e->get();
     }
+    bool isFrozen() const { return frozen; }
     void save(std::string filename) const;
     void load(std::string filename);
     // Do anything needed on frame ticks

@@ -348,6 +348,10 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	} else if (strcmp(tok,"legs")==0) {
 	    legsEnabled=argv[0]->f>0.5;
 	    handled=true;
+	} else if (strcmp(tok,"freeze")==0) {
+	    dbg("TouchOSC.freeze",1) << "Got message: " << argv[0]->f << std::endl;
+	    frozen=argv[0]->f>0.5;
+	    handled=true;
 	}
     }
     if (!handled) {
