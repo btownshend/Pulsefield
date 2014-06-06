@@ -60,26 +60,30 @@ int Setting::sendOSC() const {
     if (TouchOSC::instance()->send(selpath,1.0f) <0 )
 	return -1;
 
-    // Clear all the current fader values and labels
-    for (unsigned int i=0;i<MAXFADERS;i++) {
-	std::string faderspath=std::string("/ui/conn/faders/")+std::to_string(i+1);
-	if (TouchOSC::instance()->send(faderspath,0.0f) < 0)
-	    return -1;
-	if (TouchOSC::instance()->send((faderspath+"/label"),"") < 0)
-	    return -1;
+    const bool preClear = false;
+
+    if (preClear) {
+	// Clear all the current fader values and labels
+	for (unsigned int i=0;i<MAXFADERS;i++) {
+	    std::string faderspath=std::string("/ui/conn/faders/")+std::to_string(i+1);
+	    if (TouchOSC::instance()->send(faderspath,0.0f) < 0)
+		return -1;
+	    if (TouchOSC::instance()->send((faderspath+"/label"),"") < 0)
+		return -1;
+	}
+	// Clear all the current button values and labels
+	for (unsigned int i=0;i<MAXBUTTONS;i++) {
+	    std::string buttonspath=std::string("/ui/conn/buttons/")+std::to_string(i+1);
+	    if (TouchOSC::instance()->send(buttonspath,0.0f) < 0)
+		return -1;
+	    if (TouchOSC::instance()->send((buttonspath+"/label"),"") < 0)
+		return -1;
+	}
     }
+
     for (unsigned int i=0;i<faders.size();i++)
 	if (faders[i].sendOSC() < 0)
 	    return -1;
-
-    // Clear all the current button values and labels
-    for (unsigned int i=0;i<MAXBUTTONS;i++) {
-	std::string buttonspath=std::string("/ui/conn/buttons/")+std::to_string(i+1);
-	if (TouchOSC::instance()->send(buttonspath,0.0f) < 0)
-	    return -1;
-	if (TouchOSC::instance()->send((buttonspath+"/label"),"") < 0)
-	    return -1;
-    }
 
     for (unsigned int i=0;i<buttons.size();i++)
 	if (buttons[i].sendOSC() < 0)
@@ -118,27 +122,27 @@ void Settings::sendOSC(int selectedGroup) const {
 	return;
 }
 
-void TouchOSC::sendOSC() {
+void TouchOSC::sendOSC() const {
     // Send OSC to make UI reflect current values
     dbg("TouchOSC.sendOSC",1) << "Sending OSC updates with group " << selectedGroup << " to " << remote << std::endl;
     settings.sendOSC(selectedGroup);
 }
 
 void TouchOSC::frameTick_impl(int frame) {
-    activityLED=!activityLED;
-    if (send("/ui/active1",activityLED?1.0f:0.0f) <0 ) 
-	return;
-    if (send("/ui/active2",activityLED?0.0f:1.0f) <0 ) 
-	return;
-    updateUI();
-}
-
-void TouchOSC::updateUI() const {
-    updateConnectionMap();
-    Music *m=Music::instance();
-    m->predict();
-    send("/ui/beat",std::to_string(m->getLastBar())+":"+std::to_string((int)m->getLastBeat()));
-    send("/ui/tempo",std::to_string((int)m->getTempo()));
+    dbg("TouchOSC.frameTick",3) << "Frame " << frame << std::endl;
+    if (frame % 10 == 0) {
+	activityLED=!activityLED;
+	if (send("/ui/active1",activityLED?1.0f:0.0f) <0 ) 
+	    return;
+	if (send("/ui/active2",activityLED?0.0f:1.0f) <0 ) 
+	    return;
+    }
+    if (frame % 50 == 4) {
+	updateConnectionMap();
+    }
+    if (frame % 10 == 2) {
+	sendOSC();
+    }
 }
 
 
@@ -354,7 +358,9 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	    handled=true;
 	}
     }
-    if (!handled) {
+    if (handled) {
+	sendOSC();
+    } else {
 	dbg("TouchOSC.handleOSCMessage",1) << "Unhanded message: " << path << ": parse failed at token: " << tok << std::endl;
     }
     
@@ -394,6 +400,7 @@ void TouchOSC::load(std::string filename) {
 // multipush at /ui/linked/[col]/[row]
 void TouchOSC::updateConnectionMap() const {
     // Update UID labels
+    dbg("TouchOSC.updateConnectionMap",1) << "Updating connection map" << std::endl;
     static const int MAXUIDDISPLAY=10;
     std::vector<int> uids = People::instance()->getIDs();
     for (int i=0;i<MAXUIDDISPLAY;i++) {

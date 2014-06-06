@@ -375,8 +375,7 @@ void OSCHandler::pfframe(int frame) {
     }
 
     // UI Tick
-    if (frame%20 == 0)
-	TouchOSC::frameTick(frame);
+    TouchOSC::frameTick(frame);
     Music::instance()->frameTick(frame);
 
     //    if (frame%1000 == 0)

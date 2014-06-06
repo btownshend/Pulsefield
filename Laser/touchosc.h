@@ -191,7 +191,7 @@ class TouchOSC {
     lo_address remote;
     Settings settings;
     unsigned int selectedGroup;
-    void sendOSC();
+    void sendOSC() const;
     bool activityLED;
     // TouchOSC UI
     TouchOSC();
@@ -234,8 +234,6 @@ class TouchOSC {
     void load(std::string filename);
     // Do anything needed on frame ticks
     static void frameTick(int frame) { instance()->frameTick_impl(frame); }
-    // Send out messages to update UI
-    void updateUI() const;
     void updateConnectionMap() const;
 
     void toggleBody() { bodyEnabled=!bodyEnabled; }
