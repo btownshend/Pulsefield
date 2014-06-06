@@ -94,20 +94,28 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	return;
     }
 
-    float tc=UPDATETC;
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
 	if (assignments[i]!=-1 && !all)
 	    continue;
+	float tc=UPDATETC;
 	for (int k=0;k<NRANGES;k++) {
+	    if (k==NRANGES-1) {
+		// Different update TC for new background
+		if (srange[i]>range[0][i])
+		    tc=UPDATETCFARTHER;
+		else
+		    tc=UPDATETCCLOSER;
+	    }
 	    // Note allow updates even if range>MAXRANGE, otherwise points slightly smaller than MAXRANGE get biased and have low freq
 	    if (fabs(srange[i]-range[k][i]) < MINBGSEP) {
 		range[k][i]=srange[i]*1.0f/tc + range[k][i]*(1-1.0f/tc);
 		freq[k][i]+=(1.0f-freq[k][i])/tc;
 		// Swap ordering if needed
 		for (int kk=k;kk>0;kk--)
-		    if  (freq[kk][i] > freq[kk-1][i])
+		    if  (freq[kk][i] > freq[kk-1][i]) {
+			dbg("Background.update",2) << "Promoting background at scan " << i << " with range=" << range[kk][i] << ", freq=" << freq[kk][i] << " to level " << kk-1 << "; range[0]=" << range[0][i]  << std::endl;
 			swap(i,kk,kk-1);
-		    else
+		    } else
 			break;
 		// Decrement the rest
 		for (int kk=k+1;kk<NRANGES;kk++)
