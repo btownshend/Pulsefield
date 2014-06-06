@@ -63,7 +63,7 @@ public:
 
 // Settings for one particular selected group (e.g. connection type)
 class Setting {
-    static const int MAXFADERS=12;
+    static const int MAXFADERS=18;
     friend class boost::serialization::access;
     unsigned int pos; // Position in selection grid
     std::string groupName;
