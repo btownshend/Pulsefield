@@ -61,31 +61,44 @@ std::vector<CPoint> Attributes::applyDashes(std::string attrname, float attrValu
     return result;
 }
 
+float Attributes::getTotalLen(const std::vector<CPoint> &pts)  {
+    float totalLen=0;
+    for (int i=1;i<pts.size();i++) {
+	totalLen += (pts[i]-pts[i-1]).norm();
+    }
+    return totalLen;
+}
+
 std::vector<CPoint> Attributes::applyMusic(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
     float amplitude=TouchOSC::getValue(attrname,"music-amp",attrValue,0.0)*0.5;  // Amplitude
-    float beat=TouchOSC::getValue(attrname,"music-beat",attrValue,1)*1;  // When in beat
-    float dur=TouchOSC::getValue(attrname,"music-dur",attrValue,1)*1;  // Duration in beats
+    float beat=TouchOSC::getValue(attrname,"music-beat",attrValue,1)*1.0;  // When in bar
+    float dur=TouchOSC::getValue(attrname,"music-pulselen",attrValue,1)*1.0;  // Duration (pulse length) in bars
+    float speed=TouchOSC::getValue(attrname,"music-speed",attrValue,1)*16.0;  // Duration (pulse length) in bars
     if (!TouchOSC::getEnabled(attrname,"music"))
 	return pts;
-    float curBeat=Music::instance()->getBeat();
-    dbg("Attributes.applyMusic",2) << "Amp=" << amplitude << ", beat=" << beat << ", dur=" << dur << ", getBeat()=" << curBeat << std::endl;
-    if (fabs((fmod(curBeat,1) - beat)) > dur/2 ) {
-	// Out of window, no change
-	return pts;
-    }
+    float fracbar=Music::instance()->getFracBar();
+    dbg("Attributes.applyMusic",2) << "Amp=" << amplitude << ", beat=" << beat << ", dur=" << dur << ",speed=" << speed << ", fracBar=" << fracbar << std::endl;
     std::vector<CPoint> result=pts;
-    Point offset=Point(amplitude,amplitude);
-    for (int i=0;i<result.size();i++) {
-	result[i]=result[i]+offset;
+    float totalLen=getTotalLen(pts);
+
+    float len=0;
+    for (int i=1;i<result.size();i++) {
+	len += (result[i]-result[i-1]).norm();
+	float frac=fmod(len/totalLen+beat,1.0);
+	Point vec=pts[i]-pts[i-1]; vec=vec/vec.norm();
+	Point ortho=Point(-vec.Y(),vec.X());
+	if (abs(frac-fracbar*speed)<dur)
+	    result[i]=result[i]+ortho*amplitude;
     }
     return result;
 }
 
 std::vector<CPoint> Attributes::applyStraighten(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
-    float minTurn=TouchOSC::getValue(attrname,"straighten",attrValue,0.0)*3;  // Min distance before turning
     if (!TouchOSC::getEnabled(attrname,"straighten"))
 	return pts;
-    dbg("Attributes.applyStraighten",2) << "minTurn=" << minTurn << std::endl;
+    float maxLen=std::max(fabs(pts.back().X()-pts.front().X()),fabs(pts.back().Y()-pts.front().Y()));
+    float minTurn=TouchOSC::getValue(attrname,"straighten",attrValue,0.0)*maxLen/2;  // Min distance before turning
+    dbg("Attributes.applyStraighten",2) << "maxLen=" << maxLen << ",minTurn=" << minTurn << std::endl;
     std::vector<CPoint> result=pts;
     float runlen=minTurn;
     int dir=0;

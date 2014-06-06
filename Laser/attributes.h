@@ -24,7 +24,8 @@ class Attributes {
     std::vector<CPoint> applyDashes(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const;
     std::vector<CPoint> applyMusic(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const;
     std::vector<CPoint> applyStraighten(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const;
- public:
+    static float getTotalLen(const std::vector<CPoint> &pts);
+public:
     Attributes() { ; }
     void set(std::string name, const Attribute &a) {	attrs[name]=a;  }
     const Attribute &get(std::string name) const { return attrs.at(name); }
