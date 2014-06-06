@@ -370,6 +370,10 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 void TouchOSC::save(std::string filename) const {
     try {
 	std::ofstream ofs(filename);
+	if (!ofs.good()) {
+	    std::cerr << "Failed open of " << filename << " for saving" << std::endl;
+	    return;
+	}
 	boost::archive::text_oarchive oa(ofs);
 	oa << settings;
 	dbg("TouchOSC.save",1) << "Saved settings in " << filename << std::endl;
@@ -383,6 +387,10 @@ void TouchOSC::save(std::string filename) const {
 void TouchOSC::load(std::string filename) {
     try {
 	std::ifstream ifs(filename);
+	if (!ifs.good()) {
+	    std::cerr << "Failed open of " << filename << " for loading" << std::endl;
+	    return;
+	}
 	boost::archive::text_iarchive ia(ifs);
 	ia >> settings;
 	dbg("TouchOSC.save",1) << "Loaded settings from " << filename << "; now have " << settings.size() << "groups" << std::endl;
