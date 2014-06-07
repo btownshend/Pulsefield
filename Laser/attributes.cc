@@ -205,11 +205,21 @@ std::vector<CPoint> Attributes::applyDoubler(std::string attrname, float attrVal
 std::vector<CPoint> Attributes::apply(std::vector<CPoint> pts) const {
     dbg("Attributes.apply",2) << "Applying " << attrs.size() << " attributes to " << pts.size() << " points" << std::endl;
     for (std::map<std::string,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++) {
-	pts=applyStraighten(a->first,a->second.getValue(),pts);
-	pts=applyMovements(a->first,a->second.getValue(),pts);
-	pts=applyDashes(a->first,a->second.getValue(),pts);
-	pts=applyMusic(a->first,a->second.getValue(),pts);
+	std::string attrname=a->first;
+	if ( TouchOSC::getEnabled(attrname,"disable")) {
+	    dbg("Attributes.apply",2) << "Attribute " << attrname << " disabled" << std::endl;
+	    if (false && attrs.size()==1) {
+		// Remove line
+		dbg("Attributes.apply",2) << "Disabling connection since " << attrname << " is disabled and it is the only attribute" << std:: endl;
+		return std::vector<CPoint>();
+	    }
+	} else {
+	    pts=applyStraighten(attrname,a->second.getValue(),pts);
+	    pts=applyMovements(attrname,a->second.getValue(),pts);
+	    pts=applyDashes(attrname,a->second.getValue(),pts);
+	    pts=applyMusic(attrname,a->second.getValue(),pts);
 	    pts=applyDoubler(attrname,a->second.getValue(),pts);
+	}
     }
     return pts;
 }
