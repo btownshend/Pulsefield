@@ -267,7 +267,7 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		} else {
 		    Button *f=s->getButton(pos);
 		    if (f==NULL) {
-			dbg("TouchOSC.buttons",1) << "Selected button " << pos << " is not valid." << std::endl;
+			dbg("TouchOSC.buttons",1) << "Selected button " << pos << " is not valid in group " << s->getGroupName() << std::endl;
 		    } else {
 			f->set(argv[0]->f>0.5);
 		    }
