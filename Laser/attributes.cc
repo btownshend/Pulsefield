@@ -132,6 +132,51 @@ std::vector<CPoint> Attributes::applyStraighten(std::string attrname, float attr
     return results;
 }
 
+std::vector<CPoint> Attributes::applyDoubler(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
+    if (!TouchOSC::getEnabled(attrname,"double"))
+	return pts;
+    if (pts.size()<2)
+	return pts;
+    int  nCopies=(int)(TouchOSC::getValue(attrname,"dbl-ncopies",attrValue,0)*4)+1;  // Number of turns
+    float offset=TouchOSC::getValue(attrname,"dbl-offset",attrValue,0)*0.5;  // Offset of copies
+    if (nCopies == 1)
+	return pts;
+    std::vector<CPoint> fwd;
+    std::vector<CPoint> rev;
+    for (int i=0;i<pts.size();i+=nCopies) {
+	fwd.push_back(pts[i]);
+	rev.push_back(pts[pts.size()-1-i]);
+    }
+
+    std::vector<CPoint> results=fwd;
+    Point offpt(0,0);
+    for (int i=0;i<nCopies-1;i++) {
+	std::vector<CPoint> src;
+	switch (i%4) {
+	case 0:
+	    src=rev;
+	    offpt=Point(offset,0)*(int)(1+i/4);
+	    break;
+	case 1:
+	    src=fwd;
+	    offpt=Point(-offset,0)*(int)(1+i/4);
+	    break;
+	case 2:
+	    src=rev;
+	    offpt=Point(0,offset)*(int)(1+i/4);
+	    break;
+	case 3:
+	    src=fwd;
+	    offpt=Point(0,-offset)*(int)(1+i/4);
+	    break;
+	}
+	for (int j=0;j<src.size();j++)
+	    results.push_back(src[j]+offpt);
+    }
+    dbg("Attributes.applyDoubler",2) << "nCopies=" << nCopies << " offset=" << offset << "  increased npoints from " << pts.size() << " to " << results.size() << std::endl;
+    return results;
+}
+
 std::vector<CPoint> Attributes::apply(std::vector<CPoint> pts) const {
     dbg("Attributes.apply",2) << "Applying " << attrs.size() << " attributes to " << pts.size() << " points" << std::endl;
     for (std::map<std::string,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++) {
@@ -139,6 +184,7 @@ std::vector<CPoint> Attributes::apply(std::vector<CPoint> pts) const {
 	pts=applyMovements(a->first,a->second.getValue(),pts);
 	pts=applyDashes(a->first,a->second.getValue(),pts);
 	pts=applyMusic(a->first,a->second.getValue(),pts);
+	    pts=applyDoubler(attrname,a->second.getValue(),pts);
     }
     return pts;
 }
