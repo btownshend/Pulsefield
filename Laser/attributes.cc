@@ -71,14 +71,16 @@ float Attributes::getTotalLen(const std::vector<CPoint> &pts)  {
 }
 
 std::vector<CPoint> Attributes::applyMusic(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
+    static const int numShapes=6;
     float amplitude=TouchOSC::getValue(attrname,"music-amp",attrValue,0.0)*0.5;  // Amplitude
     float beat=TouchOSC::getValue(attrname,"music-beat",attrValue,1)*1.0;  // When in bar
     float length=TouchOSC::getValue(attrname,"music-pulselen",attrValue,0.2)*1.0;  // Length in fraction of line length
     float speed=TouchOSC::getValue(attrname,"music-speed",attrValue,1)*15.0+1.0;  // Speed factor
+    int shape=(int)(TouchOSC::getValue(attrname,"music-shape",attrValue,1)*numShapes);
     if (!TouchOSC::getEnabled(attrname,"music"))
 	return pts;
     float fracbar=Music::instance()->getFracBar();
-    dbg("Attributes.applyMusic",2) << "Amp=" << amplitude << ", beat=" << beat << ", length=" << length << ",speed=" << speed << ", length=" << length << ", fracBar=" << fracbar << std::endl;
+		    dbg("Attributes.applyMusic",2) << "Amp=" << amplitude << ", beat=" << beat << ", length=" << length << ",speed=" << speed << ", length=" << length << ", fracBar=" << fracbar << ", shape=" << shape <<  std::endl;
     std::vector<CPoint> result=pts;
     float totalLen=getTotalLen(pts);
 
@@ -90,9 +92,32 @@ std::vector<CPoint> Attributes::applyMusic(std::string attrname, float attrValue
 	len += veclen;
 	float frac=fmod(len/totalLen/speed+beat,1.0);
 	Point ortho=Point(-vec.Y(),vec.X());
-	if (fmod(frac-fracbar,1.0)<length/speed) {
-	    float offset=amplitude*fmod(frac-fracbar,1.0)/(length/speed);
-	    dbg("Attributes.applyMusic",5) << "i=" << i << ", frac=" << frac << ", ortho=" << ortho << " offset=" <<  offset << std::endl;
+	float shapepos=fmod(frac-fracbar,1.0)/(length/speed);   // Varies from -1 to +1 over shape
+	if (shapepos>-1 && shapepos<1) {
+	    float shapeval=0;
+	    switch (shape) {
+	    case 0:
+		shapeval=shapepos;
+		break;
+	    case 1:
+		shapeval=1-shapepos;
+		break;
+	    case 2:
+		shapeval=sin(shapepos*M_PI);
+		break;
+	    case 3:
+		shapeval=Simplex::noise(pts[i].X()*1,pts[i].Y()*1);
+		break;
+	    case 4:
+		shapeval=Simplex::noise(pts[i].X()*5,pts[i].Y()*5);
+		break;
+	    case 5:
+	    default:
+		shapeval=1;
+		break;
+	    }
+	    float offset=amplitude*shapeval;
+	    dbg("Attributes.applyMusic",5) << "i=" << i << ", frac=" << frac << ", ortho=" << ortho << ", shapepos=" << shapepos << ", offset=" << offset << std::endl;
 	    result[i]=result[i]+ortho*offset;
 	} else {
 	    dbg("Attributes.applyMusic",5) << "i=" << i << ", frac=" << frac << ", ortho=" << ortho << std::endl;
