@@ -47,7 +47,7 @@ class Connection {
     int getAge() const { return age; }
     void setAge(int _age)  { age=_age;}
     void setVisual(const Drawing &d) { visual=d; }
-    void draw(Drawing &d) const;
+    void draw(Drawing &d, float visThresh) const;
     const Attributes &getAttributes() const { return attributes; }
     friend std::ostream &operator<<(std::ostream &s, const Connection &c);
 };

@@ -95,46 +95,78 @@ void Connections::incrementAge_impl() {
 }
 
 void Connections::draw_impl(Drawing &d) const {
-    dbg("Connections.draw",3) << "Drawing " << conns.size() << " connections." << std::endl;
+    float visThresh=TouchOSC::instance()->getVisualThreshold();
+    int maxConn=TouchOSC::instance()->getMaxConnections();
+    if (maxConn>0 && maxConn<conns.size()) {
+	// Set temporary visThresh to reduce number of connections to maxConn
+	std::vector<float> values;
+	for (std::map<CIDType,Connection>::const_iterator a=conns.begin(); a!=conns.end();a++) {
+	    if (a->second.getAttributes().isSet("fusion"))
+		continue;
+	    float maxval=a->second.getAttributes().getMaxVal();
+	    values.push_back(maxval);
+	}
+	if (maxConn<values.size()) {
+	    std::sort(values.begin(),values.end());
+	    visThresh=std::max(values[values.size()-maxConn],visThresh);
+	    dbg("Connections.draw",2) << "Only showing " << maxConn << "/" << values.size() << " non-fusion connections using a threshold of " << visThresh << std::endl;
+	}
+    }
+    dbg("Connections.draw",3) << "Drawing " << conns.size() << " connections with visThresh=" << visThresh << std::endl;
     for (std::map<CIDType,Connection>::const_iterator a=conns.begin(); a!=conns.end();a++)
-	a->second.draw(d);
+	a->second.draw(d,visThresh);
 }
 
 
-void Connection::draw(Drawing &d) const {
-    d.shapeBegin(attributes);
-    if (visual.getNumElements()==0) {
-	dbg("Connection.draw",3) << "Using internal draw" << std::endl;
-	Person *p1= People::instance()->getPerson(uid[0]);
-	Person *p2= People::instance()->getPerson(uid[1]);
-	if (p1==NULL || p2==NULL) {
-	    dbg("Connection.draw",1) << "Connection " << cid << " is invalid -- at least one UID is missing" << std::endl;
-	} else if (attributes.isSet("fusion")) {
+void Connection::draw(Drawing &d,float visThresh) const {
+    dbg("Connection.draw",4) <<  *this << std::endl;
+    Person *p1= People::instance()->getPerson(uid[0]);
+    Person *p2= People::instance()->getPerson(uid[1]);
+    if (p1==NULL || p2==NULL) {
+	dbg("Connection.draw",1) << "Connection " << cid << " is invalid -- at least one UID is missing" << std::endl;
+	return;
+    }
+
+    if (attributes.isSet("fusion")) {
+	if (TouchOSC::instance()->isFusionEnabled()) {
+	    Attributes fusionOnly;
+	    fusionOnly.set("fusion",attributes.get("fusion"));
+	    d.shapeBegin(fusionOnly);   // Only the fusion attributes apply
 	    drawFusion(d,p1,p2,attributes.get("fusion").getValue());
-	} else {
-	    Point pt1=p1->get();
-	    Point pt2=p2->get();
-	    Point delta=pt2-pt1;
-	    delta=delta/delta.norm();
-	    // Move onto radius of person
-	    pt1=pt1+delta*p1->getBodyDiam()/2;
-	    pt2=pt2-delta*p1->getBodyDiam()/2;
-	    Point pt3,pt4;
-	    Point mid=(pt1+pt2)/2;
-	    if (fabs(delta.X()) > fabs(delta.Y())) {
-		pt3=Point(mid.X(),pt1.Y());
-		pt4=Point(mid.X(),pt2.Y());
-	    } else {
-		pt3=Point(pt1.X(),mid.Y());
-		pt4=Point(pt2.X(),mid.Y());
-	    }
-	    d.drawCubic(pt1,pt3,pt4,pt2,Color(0.0,1.0,0.0));
+	    d.shapeEnd();
 	}
     } else {
-	dbg("Connection.draw",3) << "Using received visual with " << visual.getNumElements() << " elements." << std::endl;
-	d.append(visual);
+	Attributes aboveThresh = attributes.filter(visThresh);
+	if (aboveThresh.size() == 0) {
+	    dbg("Connection.draw",2) << "Skipping connection " << cid << " since none of its attributes are above " << visThresh << std:: endl;
+	    return;
+	}
+	dbg("Connection.draw",2) << "Drawing connection " << cid << " with " << aboveThresh.size() << "/" << attributes.size() << " attributes above " << visThresh << std:: endl;
+	if (!TouchOSC::instance()->isLayeringEnabled() && aboveThresh.size()>1) {
+	    // No layering, just keep strongest attribute
+	    dbg("Connection.draw",2) << "No layering: " << cid << " had " << aboveThresh.size() << " attributes, keeping only 1" << std::endl;
+	    aboveThresh=attributes.keepStrongest();
+	}
+	d.shapeBegin(aboveThresh);
+	Point pt1=p1->get();
+	Point pt2=p2->get();
+	Point delta=pt2-pt1;
+	delta=delta/delta.norm();
+	// Move onto radius of person
+	pt1=pt1+delta*p1->getBodyDiam()/2;
+	pt2=pt2-delta*p1->getBodyDiam()/2;
+	Point pt3,pt4;
+	Point mid=(pt1+pt2)/2;
+	if (fabs(delta.X()) > fabs(delta.Y())) {
+	    pt3=Point(mid.X(),pt1.Y());
+	    pt4=Point(mid.X(),pt2.Y());
+	} else {
+	    pt3=Point(pt1.X(),mid.Y());
+	    pt4=Point(pt2.X(),mid.Y());
+	}
+	d.drawCubic(pt1,pt3,pt4,pt2,Color(0.0,1.0,0.0));
+	d.shapeEnd();
     }
-    d.shapeEnd();
 }
 
 // Draw fusion at give stage (0=unfused,1.0=fully fused)
