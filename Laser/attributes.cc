@@ -97,19 +97,19 @@ std::vector<CPoint> Attributes::applyMusic(std::string attrname, float attrValue
 	    float shapeval=0;
 	    switch (shape) {
 	    case 0:
-		shapeval=shapepos;
+		shapeval=shapepos>0?0.0:1.0;
 		break;
 	    case 1:
-		shapeval=1-shapepos;
+		shapeval=1-fabs(-shapepos);
 		break;
 	    case 2:
 		shapeval=sin(shapepos*M_PI);
 		break;
 	    case 3:
-		shapeval=Simplex::noise(pts[i].X()*1,pts[i].Y()*1);
+		shapeval=Simplex::noise(pts[i].X()*5,pts[i].Y()*5);
 		break;
 	    case 4:
-		shapeval=Simplex::noise(pts[i].X()*5,pts[i].Y()*5);
+		shapeval=Simplex::noise(pts[i].X()*10,pts[i].Y()*10);
 		break;
 	    case 5:
 	    default:
