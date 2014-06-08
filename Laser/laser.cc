@@ -205,6 +205,7 @@ int Laser::blanking() {
 	    if (jumped) {
 		// Insert blanks from prevpoint to here
 		std::vector<etherdream_point> blanks = getBlanks(prevpos,pts[i]);
+		dbg("Laser.blanking",3) << "Adding " << blanks.size() << " blanks at position " << i << std::endl;
 		result.insert(result.end(), blanks.begin(), blanks.end());
 		nblanks+=blanks.size();
 		jumped=false;
@@ -215,6 +216,13 @@ int Laser::blanking() {
 	    // Blanking, mark 
 	    jumped=true;
 	}
+    }
+    if (jumped && result.size()>0) {
+	// Insert blanks from prevpoint to here
+	std::vector<etherdream_point> blanks = getBlanks(prevpos,result.front());
+	dbg("Laser.blanking",3) << "Adding " << blanks.size() << " blanks at end " << std::endl;
+	result.insert(result.end(), blanks.begin(), blanks.end());
+	nblanks+=blanks.size();
     }
     dbg("Laser.blanking",2) << "Blanking increased points from " << pts.size() << " to " << result.size() << std::endl;
     pts=result;

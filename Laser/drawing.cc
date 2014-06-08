@@ -267,18 +267,24 @@ std::vector<CPoint> Drawing::getPoints(float spacing) const {
     if (elements.size()==0)
 	return result;
 
-    const CPoint *lastPoint = NULL;
     for (unsigned int i=0;i<elements.size();i++) {
-	std::vector<CPoint> pts = elements[i]->getPoints(spacing,lastPoint);
-	if (pts.size() > 0)
-	    lastPoint = &pts.back();
-
-	if (lastPoint!=NULL && pts.size()>0 && !(pts.front()==*lastPoint))  {
-	    // Insert blanks first
-	    result.push_back(CPoint((Point)pts.front(),Color(0,0,0)));
+	std::vector<CPoint> pts;
+	if (result.size()==0) {
+	    pts= elements[i]->getPoints(spacing,NULL);
+	    result.insert(result.end(), pts.begin(), pts.end());
+	} else {
+	    pts= elements[i]->getPoints(spacing,&result.back());
+	    if (pts.size()>0) {
+		if (!(pts.front()==result.back()))
+		    // Insert blanks first
+		    result.push_back(CPoint((Point)pts.front(),Color(0,0,0)));
+		result.insert(result.end(), pts.begin(), pts.end());
+	    }
 	}
-	result.insert(result.end(), pts.begin(), pts.end());
     }
+    if (result.size()>1 && !(result.front()==result.back()))
+	// One more blank at end
+	result.push_back(CPoint((Point)result.front(),Color(0,0,0)));
     dbg("Drawing.getPoints",3) << "Converted to " << result.size() << " points." << std::endl;
     return result;
 }
