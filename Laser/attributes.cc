@@ -213,6 +213,10 @@ std::vector<CPoint> Attributes::applyDoubler(std::string attrname, float attrVal
 }
 
 std::vector<CPoint> Attributes::apply(std::vector<CPoint> pts) const {
+    if (!TouchOSC::instance()->isAttrsEnabled()) {
+	dbg("Attributes.apply",2) << "Atrributes disabled" << std::endl;
+	return pts;
+    }
     dbg("Attributes.apply",2) << "Applying " << attrs.size() << " attributes to " << pts.size() << " points" << std::endl;
     for (std::map<std::string,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++) {
 	std::string attrname=a->first;
