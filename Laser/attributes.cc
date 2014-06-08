@@ -170,8 +170,8 @@ std::vector<CPoint> Attributes::applyDoubler(std::string attrname, float attrVal
 	return pts;
     if (pts.size()<2)
 	return pts;
-    int  nCopies=(int)(TouchOSC::getValue(attrname,"dbl-ncopies",attrValue,0)*4)+1;  // Number of turns
-    float offset=TouchOSC::getValue(attrname,"dbl-offset",attrValue,0)*0.5;  // Offset of copies
+    int  nCopies=(int)(TouchOSC::getValue(attrname,"dbl-ncopies",attrValue,0)*4)+2;  // Number of copies
+    float offset=TouchOSC::getValue(attrname,"dbl-offset",attrValue,0)*0.1;  // Offset of copies
     if (nCopies == 1)
 	return pts;
     std::vector<CPoint> fwd;
@@ -180,31 +180,33 @@ std::vector<CPoint> Attributes::applyDoubler(std::string attrname, float attrVal
 	fwd.push_back(pts[i]);
 	rev.push_back(pts[pts.size()-1-i]);
     }
+    fwd.push_back(pts.back());
+    rev.push_back(pts.front());
 
     std::vector<CPoint> results=fwd;
-    Point offpt(0,0);
     for (int i=0;i<nCopies-1;i++) {
 	std::vector<CPoint> src;
-	switch (i%4) {
-	case 0:
+	if (i%2==0)
 	    src=rev;
-	    offpt=Point(offset,0)*(int)(1+i/4);
-	    break;
-	case 1:
+	else
 	    src=fwd;
-	    offpt=Point(-offset,0)*(int)(1+i/4);
-	    break;
-	case 2:
-	    src=rev;
-	    offpt=Point(0,offset)*(int)(1+i/4);
-	    break;
-	case 3:
-	    src=fwd;
-	    offpt=Point(0,-offset)*(int)(1+i/4);
-	    break;
+
+	results.push_back(src[0]);
+	for (int j=1;j<src.size();j++) {
+	    Point vec=src[j]-src[j-1];
+	    if (vec.norm()==0)
+		vec=Point(1,0);
+	    else
+		vec=vec/vec.norm();
+	    Point ortho=Point(-vec.Y(),vec.X());
+	    if ((pts.front()-pts.back()).norm() < .02) {
+		if (j<5)
+		    ortho=ortho*(j/5.0);
+		if (src.size()-j-1 < 5)
+		    ortho=ortho*((src.size()-j-1)/5.0);
+	    }
+	    results.push_back(src[j]+ortho*offset*(int)(i/2+1));
 	}
-	for (int j=0;j<src.size();j++)
-	    results.push_back(src[j]+offpt);
     }
     dbg("Attributes.applyDoubler",2) << "nCopies=" << nCopies << " offset=" << offset << "  increased npoints from " << pts.size() << " to " << results.size() << std::endl;
     return results;
