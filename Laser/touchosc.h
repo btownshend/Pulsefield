@@ -202,7 +202,8 @@ class TouchOSC {
     void frameTick_impl(int frame);
     struct timeval pressTime;   // Time that a button was pressed (to check if it was held for a long time)
     int trackUID1,trackUID2;  // UIDs tracked in TouchOSC
-    bool bodyEnabled, legsEnabled,frozen;
+    bool bodyEnabled, legsEnabled,frozen,layeringEnabled,onePerEnabled,fusionEnabled,attrsEnabled;
+    int maxConnections;
     float visualThreshold,conductorGlobal;
  public:
     static TouchOSC *instance() {
@@ -238,9 +239,15 @@ class TouchOSC {
     void updateConnectionMap() const;
 
     void toggleBody() { bodyEnabled=!bodyEnabled; }
-    bool isBodyEnabled() { return bodyEnabled; }
+    bool isBodyEnabled() const { return bodyEnabled; }
     void toggleLegs() { legsEnabled=!legsEnabled; }
-    bool isLegsEnabled() { return legsEnabled; }
+    bool isLegsEnabled() const { return legsEnabled; }
+    bool isLayeringEnabled() const { return layeringEnabled; }
+    bool isOnePerEnabled() const { return onePerEnabled; }
+    bool isFusionEnabled() const { return fusionEnabled; }
+    bool isAttrsEnabled() const { return attrsEnabled; }
+    int getMaxConnections() const { return maxConnections; }
+    float getVisualThreshold() const { return visualThreshold; }
     float getConductorGlobal() const { return conductorGlobal; }
     int send(std::string path, float value) const;
     int send(std::string path, std::string value) const;

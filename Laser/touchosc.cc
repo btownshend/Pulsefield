@@ -19,6 +19,12 @@ TouchOSC::TouchOSC()  {
     activityLED=true;
     legsEnabled=true;
     bodyEnabled=false;
+    layeringEnabled=false;
+    onePerEnabled=true;
+    attrsEnabled=true;
+    fusionEnabled=true;
+    maxConnections=10;
+    visualThreshold=0.0;
     conductorGlobal=1.0;
     pressTime.tv_sec=0;
     trackUID1=-1;
@@ -128,6 +134,15 @@ void TouchOSC::sendOSC() const {
     // Send OSC to make UI reflect current values
     dbg("TouchOSC.sendOSC",1) << "Sending OSC updates with group " << selectedGroup << " to " << remote << std::endl;
     settings.sendOSC(selectedGroup);
+    if (send("/ui/freeze",frozen?1.0:0.0) < 0) return;
+    if (send("/ui/body",bodyEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/legs",legsEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/attrenable",attrsEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/layer",layeringEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/oneper",onePerEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/fusion",fusionEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/maxconn/label","Max Connections: "+std::to_string(maxConnections))<0) return;
+    if (send("/ui/visthresh/label","Visual Threshold: "+std::to_string(round(visualThreshold*100)/100))<0) return;
     if (send("/ui/condglobal/label","Conductor Global: "+std::to_string(round(conductorGlobal*100/100)))<0) return;
 }
 
@@ -354,11 +369,28 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	} else if (strcmp(tok,"legs")==0) {
 	    legsEnabled=argv[0]->f>0.5;
 	    handled=true;
+	} else if (strcmp(tok,"attrenable")==0) {
+	    attrsEnabled=argv[0]->f>0.5;
+	    handled=true;
+	} else if (strcmp(tok,"layer")==0) {
+	    layeringEnabled=argv[0]->f>0.5;
+	    handled=true;
+	} else if (strcmp(tok,"oneper")==0) {
+	    onePerEnabled=argv[0]->f>0.5;
+	    handled=true;
+	} else if (strcmp(tok,"fusion")==0) {
+	    fusionEnabled=argv[0]->f>0.5;
+	    handled=true;
 	} else if (strcmp(tok,"freeze")==0) {
 	    dbg("TouchOSC.freeze",1) << "Got message: " << argv[0]->f << std::endl;
 	    frozen=argv[0]->f>0.5;
 	    handled=true;
-	}
+	} else if (strcmp(tok,"maxconn")==0) {
+	    maxConnections=argv[0]->f;
+	    handled=true;
+	} else if (strcmp(tok,"visthresh")==0) {
+	    visualThreshold=argv[0]->f;
+	    handled=true;
 	} else if (strcmp(tok,"condglobal")==0) {
 	    // Pass on to conductor TODO
 	    Conductor::instance()->send("/ui/condglobal",argv[0]->f);
