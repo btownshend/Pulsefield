@@ -25,7 +25,7 @@ LDFLAGS=-L$(CAIROLIBDIR) -L$(OPENCVLIBDIR) -L$(LIBLOLIBDIR)
 LIBES=-llo $(OPENCV) $(CAIROLIBES) $(BOOSTLIBES)
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES)
 CFLAGS=$(DEBUG) $(OPTIMIZE)
-CXXSRCS=oschandler.cc main.cc  laser.cc lasers.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc Simplex.cpp touchosc.cc connections.cc person.cc attributes.cc groups.cc cpoint.cc music.cc
+CXXSRCS=oschandler.cc main.cc  laser.cc lasers.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc Simplex.cpp touchosc.cc connections.cc person.cc attributes.cc groups.cc cpoint.cc music.cc conductor.cc
 FESRCS=dbg.cc point.cc dest.cc
 #CSRCS=$(EDL)/etherdream.c
 SRCS=$(CXXSRCS) $(CSRCS) $(FESRCS)
@@ -84,10 +84,10 @@ etherdream_bst.o: etherdream_bst.h ../LIDAR/Util/dbg.h
 Simplex.o: Simplex.hpp
 touchosc.o: touchosc.h ../LIDAR/Util/dbg.h person.h ../LIDAR/Util/point.h
 touchosc.o: drawing.h bezier.h color.h attributes.h cpoint.h Simplex.hpp
-touchosc.o: connections.h music.h
+touchosc.o: connections.h music.h conductor.h
 connections.o: person.h ../LIDAR/Util/point.h drawing.h ../LIDAR/Util/dbg.h
 connections.o: bezier.h color.h attributes.h cpoint.h Simplex.hpp touchosc.h
-connections.o: connections.h
+connections.o: connections.h conductor.h
 person.o: person.h ../LIDAR/Util/point.h drawing.h ../LIDAR/Util/dbg.h
 person.o: bezier.h color.h attributes.h cpoint.h Simplex.hpp touchosc.h
 person.o: groups.h
@@ -96,8 +96,9 @@ attributes.o: touchosc.h ../LIDAR/Util/dbg.h music.h
 groups.o: groups.h drawing.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h
 groups.o: bezier.h color.h attributes.h cpoint.h Simplex.hpp touchosc.h
 groups.o: person.h
-cpoint.o: cpoint.h color.h ../LIDAR/Util/point.h
+cpoint.o: cpoint.h color.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h
 music.o: music.h touchosc.h ../LIDAR/Util/dbg.h
+conductor.o: conductor.h ../LIDAR/Util/dbg.h
 ../LIDAR/Util/dbg.o: ../LIDAR/Util/dbg.h
 ../LIDAR/Util/point.o: ../LIDAR/Util/point.h
 ../LIDAR/Util/dest.o: ../LIDAR/Util/dest.h ../LIDAR/Util/dbg.h
