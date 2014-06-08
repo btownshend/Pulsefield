@@ -217,6 +217,7 @@ std::vector<CPoint> Attributes::apply(std::vector<CPoint> pts) const {
 	dbg("Attributes.apply",2) << "Atrributes disabled" << std::endl;
 	return pts;
     }
+    bool applied[5] = {false,false,false,false,false};
     dbg("Attributes.apply",2) << "Applying " << attrs.size() << " attributes to " << pts.size() << " points" << std::endl;
     for (std::map<std::string,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++) {
 	std::string attrname=a->first;
@@ -228,11 +229,26 @@ std::vector<CPoint> Attributes::apply(std::vector<CPoint> pts) const {
 		return std::vector<CPoint>();
 	    }
 	} else {
-	    pts=applyStraighten(attrname,a->second.getValue(),pts);
-	    pts=applyMovements(attrname,a->second.getValue(),pts);
-	    pts=applyDashes(attrname,a->second.getValue(),pts);
-	    pts=applyMusic(attrname,a->second.getValue(),pts);
-	    pts=applyDoubler(attrname,a->second.getValue(),pts);
+	    if (!applied[0]) {
+		pts=applyDoubler(attrname,a->second.getValue(),pts);
+		//		applied[0]=true;
+	    }
+	    if (!applied[1]) {
+		pts=applyStraighten(attrname,a->second.getValue(),pts);
+		//		applied[1]=true;
+	    }
+	    if (!applied[2]) {
+		pts=applyMovements(attrname,a->second.getValue(),pts);
+		//		applied[2]=true;
+	    }
+	    if (!applied[3]) {
+		pts=applyDashes(attrname,a->second.getValue(),pts);
+		//		applied[3]=true;
+	    }
+	    if (!applied[4]) {
+		pts=applyMusic(attrname,a->second.getValue(),pts);
+		//		applied[4]=true;
+	    }
 	}
     }
     return pts;
