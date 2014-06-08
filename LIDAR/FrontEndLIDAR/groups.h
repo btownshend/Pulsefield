@@ -17,7 +17,7 @@ class Group {
     Group(int _gid, double now) { gid=_gid; createTime=now; diameter=0; }
     ~Group();
     void add(int uid) { members.insert(uid); }
-    void remove(int uid) {members.erase(uid); }
+    void remove(int uid);
     int size() const { return members.size(); }
     void update(const std::vector<Person> &people);
     int getID() const { return gid; }

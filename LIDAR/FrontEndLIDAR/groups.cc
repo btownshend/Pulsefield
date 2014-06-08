@@ -6,7 +6,9 @@
 #include "parameters.h"
 
 std::ostream &operator<<(std::ostream &s, const Group &g) {
-    s << "GID: " << g.gid << ", size=" << g.members.size();
+    s << "GID: " << g.gid << ", members=";
+    for (std::set<int>::const_iterator m=g.members.begin();m!=g.members.end();m++)
+	s << *m << " ";
     return s;
 }
 
@@ -111,6 +113,8 @@ void Groups::update(std::vector<Person> &people, double elapsed) {
 	    dbg("Groups.update",2) << "Delete group " << *(*g) << std::endl;
 	    delete (*g);
 	    groups.erase(g);
+	} else if ((*g)->size() == 1) {
+	    dbg("Groups.update",1) << "Group with 1 person:  " << *(*g) << std::endl;
 	}
 	g=nextIt;
     }
@@ -127,4 +131,9 @@ void Groups::sendMessages(lo_address &addr, int frame, double elapsed) const {
 
 void Group::sendMessages(lo_address &addr, int frame, double elapsed) const {
     lo_send(addr,"/pf/group","iiiffff",frame,gid,size(),elapsed-createTime,centroid.X()/UNITSPERM, centroid.Y()/UNITSPERM, diameter/UNITSPERM);
+}
+
+void Group::remove(int uid) {
+    dbg("Groups.remove",1) << "Remove UID " << uid << ": grp was: " << *this << std::endl;
+    members.erase(uid);
 }

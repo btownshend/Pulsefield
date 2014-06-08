@@ -30,6 +30,7 @@ Person::Person(int _id, const Point &leg1, const Point &leg2) {
 }
 
 Person::~Person() {
+    dbg("Person",2) << "Deleting person " << *this << std::endl;
     if (group!=NULL)
 	group->remove(id);
 }
@@ -38,7 +39,7 @@ bool Person::isDead() const {
     float visibility = totalVisibleCount*1.0/age;
     bool result = (age<AGETHRESHOLD && visibility<MINVISIBILITY) || (consecutiveInvisibleCount >= INVISIBLEFORTOOLONG);
     if (result) {
-	dbg("Person.isDead",2) << " Deleting " << *this << std::endl;
+	dbg("Person.isDead",2) << " Person has expired life: " << *this << std::endl;
     }
     return result;
 }

@@ -204,6 +204,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
     // Delete lost people
     for (unsigned int i=0;i<people.size();i++)
 	if (people[i].isDead()) {
+	    dbg("World.track",1) << "Erasing person: " << people[i] << std::endl;
 	    people.erase(people.begin()+i);
 	    i--;
 	}
