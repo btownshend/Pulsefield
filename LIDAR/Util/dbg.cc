@@ -84,7 +84,10 @@ std::ostream& DbgFile(const char *fname, const char *dstr, int level)
       newFile->s = &std::cout;
     } else {
       fullFilename = new char[strlen(fname)+strlen(dbgDir)+2];
-      sprintf(fullFilename,"%s/%s",dbgDir,fname);
+      if (fname[0]=='/')
+	  sprintf(fullFilename,"%s",fname);
+      else
+	  sprintf(fullFilename,"%s/%s",dbgDir,fname);
       newFile->s = new std::ofstream(fullFilename,std::ofstream::trunc);
     }
     dbg(dstr,level) << "Writing to '" << fullFilename << "'." << std::endl;
@@ -196,12 +199,17 @@ int DebugCheck(const char* dstr,int level)
 // If 's' is an integer, then it serves as a default
 void SetDebug(const char* s, const char* dbgf)
 {
+    if (dbgf==NULL && dbgf__==NULL) {
+	// First time
+	dbgf=debugFile;
+    }
     if (dbgf!=NULL) {
 	char *old=dbgf__;
 	dbgf__=new char[strlen(dbgf)+1];
 	strcpy(dbgf__,dbgf);
 	if (old)
 	    delete old;
+	printf("Set debug file to %s\n",dbgf__);
     }
     if (strncmp(s,"TIMING",6) == 0) {
 	// Special case so we don't clog debug table

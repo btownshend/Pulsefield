@@ -7,11 +7,11 @@ extern char *dbgf__;
 
 #ifdef NODEBUG
 inline int DebugCheck(const char *dstr,int level) { return 0; }
-inline void SetDebug(const char *dlev, const char *dbgf=debugFile) { ; }
+inline void SetDebug(const char *dlev, const char *dbgf=0) { ; }
 inline void CloseDebugFiles(void) {;}
 #else /* NODEBUG */
 int DebugCheck (const char *dstr,int level);
-void SetDebug (const char* dlev, const char *dbgf=debugFile);
+void SetDebug (const char* dlev, const char *dbgf=0);
 void CloseDebugFiles();
 void PushDebugSettings();
 void PopDebugSettings();

@@ -11,8 +11,8 @@ static int nsick=1;
 unsigned int MAXRANGE=12000;
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr, "Usage: %s [-D maxrange] [-R | -r recordfile | -p playfile [-L] [-s] [-l] [-x slowfactor] [-m matframes [-M matfile ]] ] [-V]\n",argv[0]);
-    fprintf(stderr,"\t-D maxrange\t\tset maximum range in meters\n");
+    fprintf(stderr, "Usage: %s [-B maxrange] [-R | -r recordfile | -p playfile [-L] [-s] [-l] [-x slowfactor] [-m matframes [-M matfile ]] ] [-V] [[-D debugfile] -d debug]\n",argv[0]);
+    fprintf(stderr,"\t-B maxrange\t\tset maximum range in meters\n");
     fprintf(stderr,"\t-R\t\trecord into default filename based on current date and time\n");
     fprintf(stderr,"\t-r file\t\trecord into given file\n");
     fprintf(stderr,"\t-p file\t\tplayback from given file\n");
@@ -22,6 +22,8 @@ void usage(int argc,char *argv[]) {
     fprintf(stderr,"\t\t-x x\tslow down playback by a factor of k use -x 0 to run at max speed\n");
     fprintf(stderr,"\t-m matframes\tsave given number of frames to frontend_dump.mat file and exit (or 0 to do all)\n");
     fprintf(stderr,"\t\t-M file\tspecify mat-file name (without suffix)\n");
+    fprintf(stderr,"\t\t-D file\tspecify debug file name\n");
+    fprintf(stderr,"\t-d debug\t\tset debug option (e.g -d4, -dFrontEnd:4)\n");
     fprintf(stderr,"\t-V\t\tenable /vis messages\n");
     exit(1);
 }
@@ -38,15 +40,19 @@ int main(int argc, char *argv[])
     std::string matfile;
     int matframes=-1;
     bool visoutput=false;
+
     SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 
-    while ((ch=getopt(argc,argv,"d:D:sr:Rp:Llx:m:M:V"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:D:B:sr:Rp:Llx:m:M:V"))!=-1) {
 	switch (ch) {
 	case 'd':
 	    SetDebug(optarg);
 	    break;
-	case 'D':
+	case 'B':
 	    MAXRANGE=(int)(atof(optarg)*1000);
+	    break;
+	case 'D':
+	    SetDebug("xxx:1",optarg);
 	    break;
 	case 's':
 	    singlestep=true;
