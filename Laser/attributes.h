@@ -30,6 +30,9 @@ public:
     Attributes() { ; }
     void set(std::string name, const Attribute &a) {	attrs[name]=a;  }
     const Attribute &get(std::string name) const { return attrs.at(name); }
+    Attributes filter(float minval) const;   // Keep only attributes >= minval
+    Attributes keepStrongest() const;  // Reduce to the single strongest attribute
+    float getMaxVal() const;  // Get max attribute value
     void erase(std::string name) { attrs.erase(name); }
     void clear() { attrs.clear(); }
     friend std::ostream &operator<<(std::ostream &s, const Attributes &attributes);
@@ -46,4 +49,5 @@ public:
     }
     bool isSet(std::string attr) const { return attrs.count(attr) > 0; }
 };
+
 

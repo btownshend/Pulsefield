@@ -233,3 +233,37 @@ std::vector<CPoint> Attributes::apply(std::vector<CPoint> pts) const {
     }
     return pts;
 }
+
+// Keep only attributes >= minval
+Attributes Attributes::filter(float minval) const { 
+    Attributes result;
+    for (std::map<std::string ,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++) {
+	if (a->second.getValue() >= minval)
+	    result.set(a->first,a->second);
+    }
+    return result;
+}
+
+// Get maximum attribute value (excluding fusion)
+float Attributes::getMaxVal() const {
+    float result=0;
+    for (std::map<std::string ,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++) {
+	if (a->second.getValue() >= result)
+	    result=a->second.getValue();
+    }
+    return result;
+}
+
+// Reduce to the single strongest attribute
+Attributes Attributes::keepStrongest() const {
+    Attributes result;
+    float maxval=getMaxVal();
+    for (std::map<std::string ,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++) {
+	if (a->second.getValue() == maxval) {
+	    result.set(a->first,a->second);
+	    break;
+	}
+    }
+    return result;
+}
+
