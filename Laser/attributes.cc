@@ -131,23 +131,31 @@ std::vector<CPoint> Attributes::applyStraighten(std::string attrname, float attr
 	return pts;
     int  nTurns=(int)(TouchOSC::getValue(attrname,"straighten",attrValue,0.1)*10)+1;  // Number of turns
     Point delta = pts.back()-pts.front();
-    float maxDist=std::max(fabs(delta.X()),fabs(delta.Y()));
+    float minDist=std::min(fabs(delta.X()),fabs(delta.Y()));
     float totalLen=getTotalLen(pts);
-    maxDist=std::max(maxDist,totalLen/2);
-    float blockSize=maxDist/nTurns;
+    float blockSize=std::max(totalLen/nTurns/8,minDist/nTurns);
     dbg("Attributes.applyStraighten",2) << "nTurns=" << nTurns << ", delta=" << delta << ",blockSize=" << blockSize << std::endl;
     assert(blockSize>0);
     std::vector<CPoint> results;
     results.push_back(pts.front());
     // Draw manhattan path with blockSize blocks (in meters)
+    float len=0;
     for (int i=1;i<pts.size();) {
 	Point delta=pts[i]-results.back();
-	if (fabs(delta.X())>blockSize)
+	if (fabs(delta.X())>=blockSize-.001)  {
 	    results.push_back(results.back()+Point(copysign(blockSize,delta.X()),0));
-	else if (fabs(delta.Y())>blockSize)
+	    len=0;
+	} else if (fabs(delta.Y())>=blockSize-.001) {
 	    results.push_back(results.back()+Point(0,copysign(blockSize,delta.Y())));
-	else
+	    len = 0;
+	} else if (len>blockSize*1.41) {
+	    // In case we're going in circles, emit every now and then
+	    results.push_back(pts[i]);
+	    len=0;
+	} else {
 	    i++;
+	    len+=delta.norm();
+	}
     }
     CPoint priorpt=pts.back();
     priorpt.setX(results.back().X());
