@@ -4,6 +4,7 @@
 #include "person.h"
 #include "connections.h"
 #include "music.h"
+#include "conductor.h"
 
 const char *TouchOSC::PORT="9998";
 
@@ -18,6 +19,7 @@ TouchOSC::TouchOSC()  {
     activityLED=true;
     legsEnabled=true;
     bodyEnabled=false;
+    conductorGlobal=1.0;
     pressTime.tv_sec=0;
     trackUID1=-1;
     trackUID2=-1;
@@ -126,6 +128,7 @@ void TouchOSC::sendOSC() const {
     // Send OSC to make UI reflect current values
     dbg("TouchOSC.sendOSC",1) << "Sending OSC updates with group " << selectedGroup << " to " << remote << std::endl;
     settings.sendOSC(selectedGroup);
+    if (send("/ui/condglobal/label","Conductor Global: "+std::to_string(round(conductorGlobal*100/100)))<0) return;
 }
 
 void TouchOSC::frameTick_impl(int frame) {
@@ -356,6 +359,12 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	    frozen=argv[0]->f>0.5;
 	    handled=true;
 	}
+	} else if (strcmp(tok,"condglobal")==0) {
+	    // Pass on to conductor TODO
+	    Conductor::instance()->send("/ui/condglobal",argv[0]->f);
+	    conductorGlobal=argv[0]->f;
+	    handled=true;
+	}	    
     }
     if (handled) {
 	sendOSC();

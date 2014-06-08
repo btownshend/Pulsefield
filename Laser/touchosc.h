@@ -203,6 +203,7 @@ class TouchOSC {
     struct timeval pressTime;   // Time that a button was pressed (to check if it was held for a long time)
     int trackUID1,trackUID2;  // UIDs tracked in TouchOSC
     bool bodyEnabled, legsEnabled,frozen;
+    float visualThreshold,conductorGlobal;
  public:
     static TouchOSC *instance() {
 	if (theInstance == NULL) {
@@ -240,6 +241,7 @@ class TouchOSC {
     bool isBodyEnabled() { return bodyEnabled; }
     void toggleLegs() { legsEnabled=!legsEnabled; }
     bool isLegsEnabled() { return legsEnabled; }
+    float getConductorGlobal() const { return conductorGlobal; }
     int send(std::string path, float value) const;
     int send(std::string path, std::string value) const;
 };

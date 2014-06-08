@@ -2,6 +2,7 @@
 #include "person.h"
 #include "connections.h"
 #include "dbg.h"
+#include "conductor.h"
 
 Connections *Connections::theInstance=NULL;
 
@@ -31,6 +32,7 @@ int Connections::handleOSCMessage_impl(const char *path, const char *types, lo_a
 
     bool handled=false;
     if (strcmp(tok,"conductor")==0) {
+	Conductor::instance()->setHostname(lo_address_get_hostname(lo_message_get_source(msg)));
 	tok=strtok(NULL,"/");
 	if (strcmp(tok,"conx")==0) {
 	    if (strcmp(types,"sssiiff")!=0) {
