@@ -5,7 +5,6 @@
 
 Background::Background() {
     scanRes=0;
-    nupdates=0;
 }
 
 void Background::setup(const SickIO &sick) {
@@ -16,6 +15,7 @@ void Background::setup(const SickIO &sick) {
 	range[i].resize(sick.getNumMeasurements());
 	freq[i].resize(sick.getNumMeasurements());
     }
+    farnotseen.resize(sick.getNumMeasurements());
     scanRes=sick.getScanRes();
 }
 
@@ -81,37 +81,22 @@ std::vector<float> Background::like(const SickIO &sick) const {
 void Background::update(const SickIO &sick, const std::vector<int> &assignments, bool all) {
     setup(sick);
     const unsigned int *srange = sick.getRange(0);
-    nupdates++;
-    if (nupdates<BGINITFRAMES) {
-	// Fast adaptation for BGINITFRAMES
-	for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
-	    freq[0][i]=1;
-	    if (srange[i]>range[0][i]-MINBGSEP)
-		range[0][i]=(srange[i]+range[0][i])/2;
-	    for (int k=1;k<NRANGES;k++)
-		freq[k][i]=0;
-	}
-	return;
-    }
-
+   
+    // range[0] is for the fartherest seen in last BGLONGDISTLIFE frames
+    // range[1] is the most frequent seen, with exponential decay using UPDATETC
+    // range[2] is the last value seen, not matching 0 or 1;   promoted to range[1] if its frequency passes range[1]
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
 	if (assignments[i]!=-1 && !all)
 	    continue;
 	float tc=UPDATETC;
+	// Update if long distance
 	for (int k=0;k<NRANGES;k++) {
-	    if (k==NRANGES-1) {
-		// Different update TC for new background
-		if (srange[i]>range[0][i])
-		    tc=UPDATETCFARTHER;
-		else
-		    tc=UPDATETCCLOSER;
-	    }
 	    // Note allow updates even if range>MAXRANGE, otherwise points slightly smaller than MAXRANGE get biased and have low freq
 	    if (fabs(srange[i]-range[k][i]) < MINBGSEP) {
 		range[k][i]=srange[i]*1.0f/tc + range[k][i]*(1-1.0f/tc);
 		freq[k][i]+=(1.0f-freq[k][i])/tc;
 		// Swap ordering if needed
-		for (int kk=k;kk>0;kk--)
+		for (int kk=k;kk>1;kk--)
 		    if  (freq[kk][i] > freq[kk-1][i]) {
 			dbg("Background.update",2) << "Promoting background at scan " << i << " with range=" << range[kk][i] << ", freq=" << freq[kk][i] << " to level " << kk-1 << "; range[0]=" << range[0][i]  << std::endl;
 			swap(i,kk,kk-1);
@@ -120,12 +105,21 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 		// Decrement the rest
 		for (int kk=k+1;kk<NRANGES;kk++)
 		    freq[kk][i]-=(freq[kk][i]/tc);
+		if (k==0)
+		    farnotseen[i]=0;
 		break;
-	    } else if (k==NRANGES-1 && srange[i]<MAXRANGE && srange[i]>=MINRANGE) {
+	    } else if (k==0 && srange[i] > range[k][i]) {
+		// New long distance point
+		dbg("Background.update",2) << "Farthest background at scan " << i << " moved from " << range[k][i] << " to " << srange[i] << std::endl;
+		range[k][i]=srange[i];
+		freq[k][i]=1.0f;
+		farnotseen[i]=0;
+		break;
+	    } else if (k==NRANGES-1 && srange[i]>=MINRANGE) {
 		// No matches, inside active area; reset last range value 
 		range[k][i]=srange[i];
 		freq[k][i]=1.0f/tc;
-		for (int kk=k;kk>0;kk--)
+		for (int kk=k;kk>1;kk--)
 		    if  (freq[kk][i] > freq[kk-1][i])
 			swap(i,kk,kk-1);
 		    else
@@ -133,6 +127,12 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    } else {
 		freq[k][i]-=(freq[k][i]/tc);
 	    }
+	}
+	if (farnotseen[i] > BGLONGDISTLIFE) {
+	    dbg("Background.update",2) << "Farthest background at scan " << i << " not seen for " << farnotseen[i] << " frames.  Resetting to " << range[1][i] << std::endl;
+	    swap(i,0,1);
+	    swap(i,1,2);
+	    farnotseen[i]=0;
 	}
     }
 }

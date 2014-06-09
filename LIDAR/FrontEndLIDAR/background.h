@@ -13,9 +13,9 @@
 class Background {
     static const int NRANGES=3;
 
-    int nupdates;
     std::vector<float> range[NRANGES];   // Range in mm of background for NRANGES values/scan
     std::vector<float> freq[NRANGES];
+    std::vector<int> farnotseen;
     float scanRes;
 
     void swap(int k, int i, int j);
