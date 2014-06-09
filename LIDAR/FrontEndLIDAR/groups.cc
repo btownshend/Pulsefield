@@ -29,8 +29,8 @@ std::set<int> Groups::getConnected(int i, std::set<int> current,const std::vecto
     return current;
 }
 
-Group *Groups::newGroup(double elapsed) {
-    Group *grp=new Group(nextID++,elapsed);
+std::shared_ptr<Group> Groups::newGroup(double elapsed) {
+    std::shared_ptr<Group> grp(new Group(nextID++,elapsed));
     dbg("Groups",2) << "Create new group " << grp->getID() << std::endl;
     groups.insert(grp);
     return grp;
@@ -39,7 +39,7 @@ Group *Groups::newGroup(double elapsed) {
 // Update groups
 void Groups::update(std::vector<Person> &people, double elapsed) {
     std::vector<bool> scanned(people.size(),0);
-    std::set<Group *> usedGroups;
+    std::set<std::shared_ptr<Group> > usedGroups;
 
     for (unsigned int i=0;i<people.size();i++) {
 	if (!scanned[i]) {
@@ -47,14 +47,14 @@ void Groups::update(std::vector<Person> &people, double elapsed) {
 	    // Find their connected set (none of these will be accounted for yet)
 	    std::set<int> connected = getConnected(i,std::set<int>(),people);
 	    if (connected.size() > 1) {
-		Group *grp=NULL;
+		std::shared_ptr<Group> grp;
 		for (std::set<int>::iterator c=connected.begin();c!=connected.end();c++) 
 		    if (people[*c].isGrouped() && usedGroups.count(people[*c].getGroup())==0) {
 			grp=people[*c].getGroup();
 			break;
 		    }
 
-		if (grp==NULL)
+		if (grp==nullptr)
 		    // Need to allocate a new group
 		    grp = newGroup(elapsed);
 
@@ -65,7 +65,7 @@ void Groups::update(std::vector<Person> &people, double elapsed) {
 			dbg("Groups.update",2) << "Hit already scanned person " << people[*c] << " that is connected to " << people[i] << "; need to merge groups " << *people[i].getGroup() << " and " << *people[*c].getGroup() << std::endl;
 			assert(people[i].isGrouped() && people[*c].isGrouped());   // This can only happen if both were in groups
 			assert(people[i].getGroup() != people[*c].getGroup());
-			Group *oldgrp=people[i].getGroup();
+			std::shared_ptr<Group> oldgrp=people[i].getGroup();
 			for (unsigned int j=0;j<people.size();j++) 
 			    if (people[j].getGroup() == oldgrp) {
 				dbg("Groups.update",2) << "Moving person " << people[j].getID() << " to " << *people[*c].getGroup() << std::endl;
@@ -106,12 +106,11 @@ void Groups::update(std::vector<Person> &people, double elapsed) {
     }
 
     // Remove any old groups with nobody in them
-    for (std::set<Group*>::iterator g=groups.begin();g!=groups.end();) {
+    for (std::set<std::shared_ptr<Group> >::iterator g=groups.begin();g!=groups.end();) {
 	// Copy next position so we can safely delete g
-	std::set<Group *>::iterator nextIt = g; nextIt++;
+	std::set<std::shared_ptr<Group> >::iterator nextIt = g; nextIt++;
 	if ((*g)->size() == 0) {
 	    dbg("Groups.update",2) << "Delete group " << *(*g) << std::endl;
-	    delete (*g);
 	    groups.erase(g);
 	} else if ((*g)->size() == 1) {
 	    dbg("Groups.update",1) << "Group with 1 person:  " << *(*g) << std::endl;
@@ -125,7 +124,7 @@ void Groups::sendMessages(lo_address &addr, int frame, double elapsed) const {
     if (groups.size()==0)
 	return;
     dbg("Groups.sendMessages",2) << "Frame " << frame << ": sending " << groups.size() << " group messages" << std::endl;
-    for (std::set<Group*>::iterator g=groups.begin();g!=groups.end(); g++)
+    for (std::set<std::shared_ptr<Group> >::iterator g=groups.begin();g!=groups.end(); g++)
 	(*g)->sendMessages(addr,frame,elapsed);
 }
 

@@ -31,10 +31,10 @@ class Group {
 
 class Groups {
     const float groupDist, unGroupDist;
-    std::set<Group*> groups;
+    std::set<std::shared_ptr<Group> > groups;
     std::set<int> getConnected(int i, std::set<int> current,const std::vector<Person> &people);
     int nextID;
-    Group *newGroup(double elapsed);
+    std::shared_ptr<Group> newGroup(double elapsed);
  public:
     Groups(float _groupDist, float _unGroupDist): groupDist(_groupDist),unGroupDist(_unGroupDist) { nextID=1; }
     void update(std::vector<Person> &people, double now);

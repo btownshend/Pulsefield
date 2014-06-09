@@ -25,13 +25,11 @@ Person::Person(int _id, const Point &leg1, const Point &leg2) {
     age=1;
     consecutiveInvisibleCount=0;
     totalVisibleCount=1;
-
-    group=NULL;
 }
 
 Person::~Person() {
     dbg("Person",2) << "Deleting person " << *this << std::endl;
-    if (group!=NULL)
+    if (group!=nullptr)
 	group->remove(id);
 }
 
@@ -46,7 +44,7 @@ bool Person::isDead() const {
 
 std::ostream &operator<<(std::ostream &s, const Person &p) {
     s << "ID " << p.id ;
-    if (p.group != NULL)
+    if (p.group != nullptr)
 	s << ", GID:" << p.group->getID();
     s << std::fixed << std::setprecision(0) 
       << ", position: " << p.position
@@ -181,14 +179,15 @@ void Person::sendMessages(lo_address &addr, int frame, double now) const {
 	legs[i].sendMessages(addr,frame,id,i);
 }
 
-void Person::addToGroup(Group *g) {
-    assert(group==NULL);
+void Person::addToGroup(std::shared_ptr<Group> g) {
+    assert(group==nullptr);
     group=g; group->add(id);
 }
 
 void Person::unGroup() {
-    assert(group!=NULL);
-    group->remove(id); group=NULL;
+    assert(group!=nullptr);
+    group->remove(id);
+    group.reset();
 }
 
 void Person::addToMX(mxArray *people, int index) const {

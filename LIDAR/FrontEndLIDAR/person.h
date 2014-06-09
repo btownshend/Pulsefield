@@ -25,7 +25,7 @@ class Person {
     Point velocity;
 
     // Grouping
-    Group *group;   // Current group or null if ungrouped
+    std::shared_ptr<Group> group;   // Current group or null if ungrouped
 
     // Aging, visibility
     int age;
@@ -51,10 +51,10 @@ public:
     float getMaxLike() const { return legs[0].maxlike+legs[1].maxlike; }
     const LegStats &getLegStats() const { return legStats; }
     int getAge() const { return age; }
-    Group *getGroup() const { return group; }
-    void addToGroup(Group *g);
+    std::shared_ptr<Group> getGroup() const { return group; }
+    void addToGroup(std::shared_ptr<Group> g);
     void unGroup();
-    bool isGrouped() const { return group!=NULL; }
+    bool isGrouped() const { return group!=nullptr; }
     float getObsLike(const Point &pt, int leg, int frame) const;   // Get likelihood of an observed echo at pt hitting leg given current model
     // Send /pf/ OSC messages
     void sendMessages(lo_address &addr, int frame, double now) const;
