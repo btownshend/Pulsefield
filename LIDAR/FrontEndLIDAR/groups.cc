@@ -17,7 +17,7 @@ Group::~Group() {
 }
 
 // Get all other people that are connected by <=maxdist to person i
-std::set<int> Groups::getConnected(int i, std::set<int> current,const std::vector<Person> &people) {
+std::set<int> Groups::getConnected(int i, std::set<int> current,const People &people) {
     current.insert(i);
     for (unsigned int j=0;j<people.size();j++)  {
 	float d=(people[i].getPosition() - people[j].getPosition()).norm();
@@ -37,7 +37,7 @@ std::shared_ptr<Group> Groups::newGroup(double elapsed) {
 }
 
 // Update groups
-void Groups::update(std::vector<Person> &people, double elapsed) {
+void Groups::update(People &people, double elapsed) {
     std::vector<bool> scanned(people.size(),0);
     std::set<std::shared_ptr<Group> > usedGroups;
 
@@ -134,5 +134,6 @@ void Group::sendMessages(lo_address &addr, int frame, double elapsed) const {
 
 void Group::remove(int uid) {
     dbg("Groups.remove",1) << "Remove UID " << uid << ": grp was: " << *this << std::endl;
+    assert(members.count(uid)==1);
     members.erase(uid);
 }

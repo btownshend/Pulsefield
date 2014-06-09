@@ -59,3 +59,23 @@ public:
     // Send /pf/ OSC messages
     void sendMessages(lo_address &addr, int frame, double now) const;
 };
+
+
+class People {
+    int nextid;
+    std::vector <std::shared_ptr<Person> > p;
+ public:
+    People() { nextid=1; }
+    unsigned int size() const { return p.size(); }
+    const Person &operator[](int i) const { return *p[i]; }
+    Person &operator[](int i)  { return *p[i]; }
+    void add(const Point &l1, const Point &l2) {
+	p.push_back(std::shared_ptr<Person>(new Person(nextid,l1,l2)));
+	nextid++;
+    }
+    void erase(int i) { p.erase(p.begin()+i); }
+    std::vector <std::shared_ptr<Person> >::iterator begin() { return p.begin(); }
+    std::vector <std::shared_ptr<Person> >::iterator end() { return p.end(); }
+    std::vector <std::shared_ptr<Person> >::const_iterator begin() const { return p.begin(); }
+    std::vector <std::shared_ptr<Person> >::const_iterator end() const { return p.end(); }
+};

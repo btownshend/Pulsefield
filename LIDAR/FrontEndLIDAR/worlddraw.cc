@@ -162,12 +162,12 @@ void World::draw(const Vis *vis) const {
      // Draw people
      cairo_set_source_rgb (cr, 0.0, 1.0, 0.0);
      cairo_set_line_width(cr,2*pixel);
-     for (std::vector<Person>::const_iterator p=people.begin();p!=people.end();p++){
-	 if (p->getAge() >= AGETHRESHOLD) {
+     for (int j=0;j<people.size();j++) {
+	 if (people[j].getAge() >= AGETHRESHOLD) {
 	     for (int i=0;i<2;i++) {
-		 const Point &leg=p->getLeg(i).getPosition();
+		 const Point &leg=people[j].getLeg(i).getPosition();
 		 cairo_new_sub_path(cr);
-		 cairo_arc(cr,leg.X(), MAXRANGE-leg.Y(),p->getLegStats().getDiam()/2.0,0.0,2*M_PI);
+		 cairo_arc(cr,leg.X(), MAXRANGE-leg.Y(),people[j].getLegStats().getDiam()/2.0,0.0,2*M_PI);
 		 cairo_close_path(cr);
 		 cairo_stroke(cr);
 	     }

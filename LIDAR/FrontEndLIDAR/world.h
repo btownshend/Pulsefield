@@ -21,8 +21,7 @@ typedef struct _cairo_surface cairo_surface_t;
 
 class World {
     int lastframe;
-    int nextid;
-    std::vector<Person> people;
+    People people;
     Groups groups;
     int priorngroups;
     std::set<int> lastid;

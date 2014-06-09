@@ -8,7 +8,6 @@
 
 World::World(): groups(GROUPDIST,UNGROUPDIST) {
     lastframe=0;
-    nextid=1;
     priorngroups=0;
     initWindow();
     drawRange=true;
@@ -121,8 +120,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		// Move the points out by legdiam/2 so they make sense
 		l1=l1*((l1.norm()+INITLEGDIAM/2)/l1.norm());
 		l2=l2*((l2.norm()+INITLEGDIAM/2)/l2.norm());
-		people.push_back(Person(nextid,l1,l2));
-		nextid++;
+		people.add(l1,l2);
 		entrylike=entrylike+log(100);   // Lot more likely that other hits are an entry
 		makeAssignments(vis,entrylike);// Redo after adding new tracks, but only do twice (allowing only 1 new person per frame) to limit cpu
 	    } else {
@@ -202,8 +200,8 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
     // Delete lost people
     for (unsigned int i=0;i<people.size();i++)
 	if (people[i].isDead()) {
-	    dbg("World.track",1) << "Erasing person: " << people[i] << std::endl;
-	    people.erase(people.begin()+i);
+	    dbg("World.track",1) << "Erasing people[" << i << "] = person: " << people[i] << std::endl;
+	    people.erase(i);
 	    i--;
 	}
 
@@ -252,15 +250,15 @@ void World::sendMessages(Destinations &dests, double elapsed) {
     std::set<int>exitids = lastid;
     unsigned int priornpeople=lastid.size();
     unsigned activePeople=0;
-    for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
-	if (p->getAge() >= AGETHRESHOLD) {
+    for (int pi=0;pi<people.size();pi++){
+	if (people[pi].getAge() >= AGETHRESHOLD) {
 	    activePeople++;
-	    exitids.erase(p->getID());
-	    if ( lastid.count(p->getID()) == 0) {
+	    exitids.erase(people[pi].getID());
+	    if ( lastid.count(people[pi].getID()) == 0) {
 		for (unsigned int i=0;i<addr.size();i++)
-		    lo_send(addr[i],"/pf/entry","ifii",lastframe,elapsed,p->getID(),p->getChannel());
+		    lo_send(addr[i],"/pf/entry","ifii",lastframe,elapsed,people[pi].getID(),people[pi].getChannel());
 	    }
-	    lastid.insert(p->getID());
+	    lastid.insert(people[pi].getID());
 	}
     }
 
@@ -283,10 +281,10 @@ void World::sendMessages(Destinations &dests, double elapsed) {
     }
 
     // Updates
-    for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++){
-	if (p->getAge() >= AGETHRESHOLD)
+    for (int pi=0;pi<people.size();pi++){
+	if (people[pi].getAge() >= AGETHRESHOLD)
 	    for (unsigned int i=0;i<addr.size();i++)
-		p->sendMessages(addr[i],lastframe,elapsed);
+		people[pi].sendMessages(addr[i],lastframe,elapsed);
     }
     // Groups
     for (unsigned int i=0;i<addr.size();i++)
@@ -294,25 +292,25 @@ void World::sendMessages(Destinations &dests, double elapsed) {
 
     // Geo
     Point center;  // Center of all participants
-    for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++)
-	center=center+p->getPosition();
+    for (int pi=0;pi<people.size();pi++)
+	center=center+people[pi].getPosition();
     center=center/people.size();
-    for (std::vector<Person>::iterator p=people.begin();p!=people.end();p++) {
-	float centerDist=(p->getPosition()-center).norm();
+    for (int pi=0;pi<people.size();pi++) {
+	float centerDist=(people[pi].getPosition()-center).norm();
 	float otherDist=-1;
-	for (std::vector<Person>::iterator p2=people.begin();p2!=people.end();p2++) {
-	    float dist = (p2->getPosition()-p->getPosition()).norm();
+	for (int  pi2=0;pi2<people.size();pi2++) {
+	    float dist = (people[pi2].getPosition()-people[pi].getPosition()).norm();
 	    if (dist>0.001 && (dist<otherDist || otherDist==-1))
 		otherDist=dist;
 	}
-	float exitDist=std::max(0.0f,MAXRANGE-p->getPosition().norm());   // Distance to be out of range
-	if (p->getPosition().Y() < exitDist)
-	    exitDist=std::max(0.0f,p->getPosition().Y());  // Distance to pass behind sensor
+	float exitDist=std::max(0.0f,MAXRANGE-people[pi].getPosition().norm());   // Distance to be out of range
+	if (people[pi].getPosition().Y() < exitDist)
+	    exitDist=std::max(0.0f,people[pi].getPosition().Y());  // Distance to pass behind sensor
 
 	if (otherDist>0)
 	    otherDist/=UNITSPERM;
 	for (unsigned int i=0;i<addr.size();i++)
-	    if (lo_send(addr[i], "/pf/geo","iifff",lastframe,p->getID(),centerDist/UNITSPERM,otherDist,exitDist/UNITSPERM) < 0) {
+	    if (lo_send(addr[i], "/pf/geo","iifff",lastframe,people[pi].getID(),centerDist/UNITSPERM,otherDist,exitDist/UNITSPERM) < 0) {
 		std::cerr << "Failed send of /pf/geo to " << lo_address_get_url(addr[i]) << std::endl;
 		return;
 	    }
@@ -331,12 +329,8 @@ void World::sendMessages(Destinations &dests, double elapsed) {
 }
 
 mxArray *World::convertToMX() const {
-    const char *fieldnames[]={"tracks","nextid","npeople","assignments","bglike","bestlike"};
+    const char *fieldnames[]={"tracks","npeople","assignments","bglike","bestlike"};
     mxArray *world = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
-
-    mxArray *pNextid = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(pNextid) = nextid;
-    mxSetField(world,0,"nextid",pNextid);
 
     mxArray *pNpeople = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);
     *(int *)mxGetPr(pNpeople) = people.size();
@@ -366,7 +360,7 @@ mxArray *World::convertToMX() const {
     const char *pfieldnames[]={"id","position","legs","legsmeas","prevlegs","legvelocity","scanpts","posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     mxArray *pPeople;
     if ((pPeople = mxCreateStructMatrix(1,people.size(),sizeof(pfieldnames)/sizeof(pfieldnames[0]),pfieldnames)) == NULL) {
-	fprintf(stderr,"Unable to create people matrix of size (1,%ld)\n",people.size());
+	fprintf(stderr,"Unable to create people matrix of size (1,%d)\n",people.size());
     }
 
     for (unsigned int i=0;i<people.size();i++) {

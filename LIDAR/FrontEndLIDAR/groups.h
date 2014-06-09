@@ -2,10 +2,11 @@
 #include <ostream>
 #include <set>
 #include <vector>
+#include <assert.h>
 #include "lo/lo.h"
 #include "point.h"
 
-class Person;
+class People;
 
 class Group {
     int gid;
@@ -16,10 +17,10 @@ class Group {
  public:
     Group(int _gid, double now) { gid=_gid; createTime=now; diameter=0; }
     ~Group();
-    void add(int uid) { members.insert(uid); }
+    void add(int uid) { assert(members.count(uid)==0);  members.insert(uid); }
     void remove(int uid);
     int size() const { return members.size(); }
-    void update(const std::vector<Person> &people);
+    void update(const People &people);
     int getID() const { return gid; }
    void sendMessages(lo_address &addr, int frame, double now) const;
    void setCentroid(Point p) { centroid=p; }
@@ -32,12 +33,12 @@ class Group {
 class Groups {
     const float groupDist, unGroupDist;
     std::set<std::shared_ptr<Group> > groups;
-    std::set<int> getConnected(int i, std::set<int> current,const std::vector<Person> &people);
+    std::set<int> getConnected(int i, std::set<int> current,const People &people);
     int nextID;
     std::shared_ptr<Group> newGroup(double elapsed);
  public:
     Groups(float _groupDist, float _unGroupDist): groupDist(_groupDist),unGroupDist(_unGroupDist) { nextID=1; }
-    void update(std::vector<Person> &people, double now);
+    void update(People &people, double now);
     void sendMessages(lo_address &addr, int frame, double now) const;
     unsigned int size() const { return groups.size(); }
 };
