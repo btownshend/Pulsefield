@@ -169,7 +169,7 @@ void World::draw(const Vis *vis) const {
 		 cairo_new_sub_path(cr);
 		 cairo_arc(cr,leg.X(), MAXRANGE-leg.Y(),p->getLegStats().getDiam()/2.0,0.0,2*M_PI);
 		 cairo_close_path(cr);
-		 cairo_fill(cr);
+		 cairo_stroke(cr);
 	     }
 	 }
      }
