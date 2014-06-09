@@ -25,6 +25,7 @@ Person::Person(int _id, const Point &leg1, const Point &leg2) {
     age=1;
     consecutiveInvisibleCount=0;
     totalVisibleCount=1;
+    dbg("Person",1) << "New person: " << *this << std::endl;
 }
 
 Person::~Person() {

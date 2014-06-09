@@ -121,9 +121,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		// Move the points out by legdiam/2 so they make sense
 		l1=l1*((l1.norm()+INITLEGDIAM/2)/l1.norm());
 		l2=l2*((l2.norm()+INITLEGDIAM/2)/l2.norm());
-		Person newPerson = Person(nextid,l1,l2);
-		people.push_back(newPerson);
-		dbg("World.track",1) << "New person: " << newPerson << std::endl;
+		people.push_back(Person(nextid,l1,l2));
 		nextid++;
 		entrylike=entrylike+log(100);   // Lot more likely that other hits are an entry
 		makeAssignments(vis,entrylike);// Redo after adding new tracks, but only do twice (allowing only 1 new person per frame) to limit cpu
