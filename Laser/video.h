@@ -13,6 +13,8 @@ class XRef {
     Point winpos;
     bool reset; 	// True to indicate that it should be moved to this position
     XRef(std::shared_ptr<Laser> _laser, int _anchorNumber, bool _dev, Point _winpos) {laser=_laser; anchorNumber=_anchorNumber; dev=_dev; winpos=_winpos;  reset=false;}
+    // Move coord for currently selected point by amount given in device or floor coordinates
+    void movePoint(Point p);
 };
 
 class XRefs {
@@ -26,6 +28,8 @@ class XRefs {
     void push_back(const XRef &xr) { xref.push_back(xr); }
     void refresh(cairo_t *cr, std::shared_ptr<Laser>laser, Video &video, int anchorNumber, bool dev, Point pos);
     void clear() { clickedEntry=-1; xref.clear(); }
+    // Move coord for currently selected point by amount given in device or floor coordinates
+    void movePoint(Point p);
 };
 
 class Video: public DisplayDevice {

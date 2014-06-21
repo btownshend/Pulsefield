@@ -67,7 +67,7 @@ void *Video::runDisplay(void *arg) {
 	return NULL;
     }
     world->window = XCreateSimpleWindow(world->dpy, RootWindow(world->dpy, 0),0, 0, 800, 400, 0, 0, BlackPixel(world->dpy, 0));
-    long eventMask= StructureNotifyMask | ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask;
+    long eventMask= StructureNotifyMask | ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask|KeyReleaseMask;
     XSelectInput(world->dpy, world->window,eventMask);
     XMapWindow(world->dpy, world->window);
 
@@ -75,6 +75,9 @@ void *Video::runDisplay(void *arg) {
 
     // Ready to begin
     world->unlock();
+
+    // moving flag, must be true for gross mouse movements (i.e. while 'm' key is pressed)
+    bool moving=false;
 
     while (1) {
 	XEvent e;
@@ -134,8 +137,32 @@ void *Video::runDisplay(void *arg) {
 			// Reset transforms
 			world->clearTransforms();
 			world->newMessage() << "Reset transforms";
+		    } else if (key==XK_m) {
+			moving=true;
+			dbg("Video.runDisplay",1) << "Set moving to true" << std::endl;
+		    } else if (key==XK_Left) {
+			xrefs.movePoint(Point(-1,0));
+		    } else if (key==XK_Right) {
+			xrefs.movePoint(Point(1,0));
+		    } else if (key==XK_Up) {
+			xrefs.movePoint(Point(0,1));
+		    } else if (key==XK_Down) {
+			xrefs.movePoint(Point(0,-1));
 		    } else {
 			world->newMessage() << "(s)ave, (l)oad, (b)background toggle, (g)rid, (o)utline, (B)ody, (L)eg, (r)eset";
+		    }
+		}
+		break;
+	    case KeyRelease:
+		{
+		    KeySym key;
+		    const int bufsize=20;
+		    char buffer[bufsize];
+		    int charcount = XLookupString(&e.xkey,buffer,bufsize,&key,NULL);
+		    dbg("Video.runDisplay",5)  << "Key Released:  code=" << e.xkey.keycode << ", sym=" << key << ", keycount=" << charcount << std::endl;
+		    if (key==XK_m) {
+			moving=false;
+			dbg("Video.runDisplay",1) << "Set moving to false" << std::endl;
 		    }
 		}
 		break;
@@ -146,13 +173,17 @@ void *Video::runDisplay(void *arg) {
 		break;
 	    case ButtonRelease:
 		dbg("Video.runDisplay",5)  << "Button Released:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
-		xrefs.update(Point(e.xbutton.x,e.xbutton.y),true);
-		world->dirty=true;
+		if (moving) {
+		    xrefs.update(Point(e.xbutton.x,e.xbutton.y),true);
+		    world->dirty=true;
+		}
 		break;
 	    case MotionNotify:
 		dbg("Video.runDisplay",5)  << "Motion:  " << e.xmotion.x << ", " << e.xmotion.y << " with " << XPending(world->dpy) << " events queued" << std::endl;
-		world->dirty=true;
-		xrefs.update(Point(e.xbutton.x,e.xbutton.y),false);
+		if (moving) {
+		    world->dirty=true;
+		    xrefs.update(Point(e.xbutton.x,e.xbutton.y),false);
+		}
 		break;
 	    case ConfigureNotify:
 		cairo_xlib_surface_set_size(world->surface,e.xconfigure.width, e.xconfigure.height);
@@ -208,10 +239,10 @@ void Video::setDirty() {
 
 // Mark the point closest to winpt for updating it (i.e. when mouse clicked)
 void XRefs::markClosest(Point winpt) {
-    if (clickedEntry!=-1) {
-	dbg("XRefs.markClosest",1) << "Button already pressed, not re-marking" << std::endl;
-	return;
-    }
+    //    if (clickedEntry!=-1) {
+    //	dbg("XRefs.markClosest",1) << "Button already pressed, not re-marking" << std::endl;
+    //	return;
+    //    }
     float dist=1e99;
     for (unsigned int i=0;i<xref.size();i++)  {
 	float d=(winpt-xref[i].winpos).norm();
@@ -239,7 +270,7 @@ XRef *XRefs::lookup(std::shared_ptr<Laser>laser, int anchorNumber, bool dev) {
 
 void XRefs::update(Point newpos, bool clear) {
     if (clickedEntry<0) {
-	dbg("Xrefs.update",1) << "update() with no clicked entry" << std::endl;
+	dbg("XRefs.update",1) << "update() with no clicked entry" << std::endl;
 	return;
     }
     assert(clickedEntry<(int)xref.size());
@@ -250,6 +281,30 @@ void XRefs::update(Point newpos, bool clear) {
 	clickedEntry=-1;
 }
 
+void XRefs::movePoint(Point offset) {
+    if (clickedEntry<0) {
+	dbg("XRefs.movePoint",1) << "movePoint() with no clicked entry" << std::endl;
+	return;
+    }
+    assert(clickedEntry<(int)xref.size());
+    xref[clickedEntry].movePoint(offset);
+}
+
+void XRef::movePoint(Point offset) {
+    Transform &t=laser->getTransform();
+    Point oldPoint,newPoint;
+    if (dev)  {
+	oldPoint = t.getDevPoint(anchorNumber);
+	newPoint = oldPoint+offset*10;
+	t.setDevPoint(anchorNumber,newPoint);
+    } else {
+	oldPoint = t.getFloorPoint(anchorNumber);
+	newPoint=oldPoint+offset*0.01;
+	t.setFloorPoint(anchorNumber,newPoint);
+    }
+    dbg("XRef.movePoint",1) << "Moving point " << anchorNumber << " at " << oldPoint << " to " << newPoint << std::endl;
+    t.recompute();
+}
 	     
 // Update table with given xref and modify underlying Laser struct if reset is set
 void XRefs::refresh(cairo_t *cr, std::shared_ptr<Laser>laser,  Video &video, int anchorNumber, bool dev, Point pos) {
