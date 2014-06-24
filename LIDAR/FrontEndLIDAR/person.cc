@@ -1,5 +1,5 @@
 #include <vector>
-
+#include <cmath>
 #include <string.h>
 #include "person.h"
 #include "vis.h"
@@ -104,12 +104,12 @@ float Person::getObsLike(const Point &pt, int leg, int frame) const {
 
 void Person::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs[2], int nstep,float fps) {
     // Need to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods
-    legs[0].update(vis,bglike,fs[0],nstep,fps,legStats,0);
-    legs[1].update(vis,bglike,fs[1],nstep,fps,legStats,&legs[0]);
+    legs[0].update(vis,bglike,fs[0],legStats,0);
+    legs[1].update(vis,bglike,fs[1],legStats,&legs[0]);
     if (true) {
 	// TODO only if leg[1] adjusted, then do first leg again
 	dbg("Person.update",2) << "Re-running update of leg[0] since leg[1] position changed." << std::endl;
-	legs[0].update(vis,bglike,fs[0],nstep,fps,legStats,&legs[1]);
+	legs[0].update(vis,bglike,fs[0],legStats,&legs[1]);
     }
     // Update visibility counters
     legs[0].updateVisibility();
@@ -119,8 +119,12 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     legs[0].updateDiameterEstimates(vis,legStats);
     legs[1].updateDiameterEstimates(vis,legStats);
 
+    // Update velocities
+    legs[0].updateVelocity(nstep,fps);
+    legs[1].updateVelocity(nstep,fps);
+
     if (!legs[0].isVisible() && !legs[1].isVisible()) {
-	// Both legs hidden, maintain both at average velocity (already damped by legs.updat())
+	// Both legs hidden, maintain both at average velocity (already damped by legs.update())
 	dbg("Person.update",2) << "Person " << id << ": both legs hidden" << std::endl;
 	legs[0].velocity=(legs[0].velocity+legs[1].velocity)/2.0;
 	legs[1].velocity=legs[0].velocity;

@@ -64,7 +64,7 @@ float Leg::getObsLike(const Point &pt, int frame,const LegStats &ls) const {
     return like;
 }
 
-void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, int nstep,float fps, const LegStats &ls, const Leg *otherLeg) {
+void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs,const LegStats &ls, const Leg *otherLeg) {
     // Copy in scanpts
     scanpts=fs;
 
@@ -72,7 +72,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     const float LOGDIAMMU=log(ls.getDiam());
     const float LOGDIAMSIGMA=log(1+ls.getDiamSigma()/ls.getDiam());
 
-    dbg("Leg.update",5) << "nstep=" << nstep << ", prior: " << *this << std::endl;
+    dbg("Leg.update",5) << "prior: " << *this << std::endl;
     dbg("Leg.update",5) << " fs=" << fs << std::endl;
     
     // Bound search by prior position + 2*sigma(position) + legdiam/2
@@ -244,17 +244,18 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     position=measurement;
 }
 
-    if (nstep>0) {
+void Leg::updateVelocity(int nstep, float fps) {
+    if (nstep>0 && maxlike >= MINLIKEFORUPDATES && scanpts.size()>2) {
 	// Update velocities
-	if (fs.size()==0)
-	    velocity=velocity*VELDAMPING;
-	else
-	    velocity=velocity*(1-1/VELUPDATETC)+(measurement-prevPosition)/(nstep/fps)/VELUPDATETC;
+	velocity=velocity*(1-1.0f/VELUPDATETC)+(measurement-prevPosition)/nstep*fps/VELUPDATETC;
 
 	// Reduce speed if over maximum
 	float spd=velocity.norm();
 	if (spd>MAXLEGSPEED)
 	    velocity=velocity*(MAXLEGSPEED/spd);
+    } else {
+	velocity=velocity*VELDAMPING;
+	dbg("Leg.updateVelocity",1) << "Damping leg speed to " << velocity << std::endl;
     }
 }
 

@@ -31,8 +31,9 @@ class Leg {
     float getObsLike(const Point &pt, int frame,const LegStats &ls) const;
     Point getPosition() const { return position; }
     void predict(int nstep, float fps);
-    void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, int nstep,float fps, const LegStats &ls, const Leg *otherLeg=0);
+    void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, const LegStats &ls, const Leg *otherLeg=0);
     void updateVisibility();
+    void updateVelocity(int nstep, float fps);
     void updateDiameterEstimates(const Vis &vis, LegStats &ls) const;   // Update given legstats diameter if possible
     void sendMessages(lo_address &addr, int frame, int id, int legnum) const;
     bool isVisible() const { return consecutiveInvisibleCount==0; }
