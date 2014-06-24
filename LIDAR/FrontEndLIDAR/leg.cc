@@ -13,7 +13,7 @@
 #include "vis.h"
 #include "lookuptable.h"
 
-Leg::Leg(const Point &pt): kf(pt) {
+Leg::Leg(const Point &pt) {
     position=pt;
     prevPosition=pt;
     posvar=INITIALPOSITIONVAR;
@@ -22,7 +22,7 @@ Leg::Leg(const Point &pt): kf(pt) {
 }
 
 // Empty constructor used to initialize array, gets overwritten using above ctor subsequently
-Leg::Leg():kf() {
+Leg::Leg() {
     ;
 }
 
@@ -41,15 +41,6 @@ void Leg::predict(int nstep, float fps) {
     position.setY(position.Y()+velocity.Y()*nstep/fps);
     prevposvar=posvar;
     posvar=std::min(posvar+DRIFTVAR*nstep,MAXPOSITIONVAR);
-    for (int i=0;i<nstep;i++) {
-	Point vel=kf.getVelocity(fps);
-	if (vel.norm() > MAXLEGSPEED) {
-	    dbg("Leg.predict",2) << "Reducing leg speed from " << vel.norm() << " to " << MAXLEGSPEED << std::endl;
-	    kf.setVelocity(fps,vel*MAXLEGSPEED/vel.norm());
-	}
-	Point kfp=kf.predict();
-	dbg("Leg.predict",5) << "predict(old)= " << position << ", predict(kf)=" << kfp << ", velocityy=" << kf.getVelocity(fps) << std::endl;
-    }
 }
 
 // Get likelihood of an observed echo at pt hitting leg given current model
@@ -250,6 +241,8 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     }
 
     dbg("Leg.update",3) << "Leg MLE measurement= " << measurement << " +/- " << sqrt(posvar) << " with like= " << *mle << std::endl;
+    position=measurement;
+}
 
     if (nstep>0) {
 	// Update velocities
@@ -263,12 +256,6 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	if (spd>MAXLEGSPEED)
 	    velocity=velocity*(MAXLEGSPEED/spd);
     }
-
-    Point p=kf.correct(measurement,Point(1,1)*posvar);
-    dbg("Leg.update",5) << std::setprecision(0) << "Measurement=" << measurement << " +/- " << sqrt(posvar) << ", velocity=" << velocity <<  ", KF position=" << p << ", vel=" << kf.getVelocity(fps) << std::endl << std::setprecision(3);
-
-    position=kf.getPosition();
-    velocity=kf.getVelocity(fps);
 }
 
 void Leg::updateVisibility() {

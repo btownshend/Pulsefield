@@ -3,7 +3,6 @@
 #include <ostream>
 #include <vector>
 #include "point.h"
-#include "kalmanfilter.h"
 
 class Person;
 class LegStats;
@@ -25,7 +24,6 @@ class Leg {
     int likenx, likeny;
     Point minval, maxval;
     void init(const Point &pt);
-    KalmanFilter kf;
  public:
     Leg();
     Leg(const Point &pos);
