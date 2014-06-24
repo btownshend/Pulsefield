@@ -41,7 +41,7 @@ hold on;
 
 xy=range2xy(vis.angle,vis.range);
 
-colors='rbcmy';
+colors=get(gca,'ColorOrder');
 isbg=tracker.assignments(:,1)==-1;
 plotted=false(size(isbg));
 for i=1:length(tracker.tracks)
@@ -50,13 +50,13 @@ for i=1:length(tracker.tracks)
   loc=t.position;
   vel=t.velocity;
   fprintf('%s\n', t.tostring());
-  color=colors(mod(id-1,length(colors))+1);
+  color=colors(mod(id-1,size(colors,1))+1,:);
   % plot(t.updatedLoc(1),t.updatedLoc(2),['+',color]);
-  plot(t.position(1),t.position(2),['x',color]);
-  plot(t.legs(:,1),t.legs(:,2),['o',color]);
+  plot(t.position(1),t.position(2),'x','Color',color);
+  plot(t.legs(:,1),t.legs(:,2),'o','Color',color);
   if args.showhits
-    plot(xy(t.scanpts{1},1),xy(t.scanpts{1},2),['>',color]);
-    plot(xy(t.scanpts{2},1),xy(t.scanpts{2},2),['<',color]);
+    plot(xy(t.scanpts{1},1),xy(t.scanpts{1},2),'<','Color',color);
+    plot(xy(t.scanpts{2},1),xy(t.scanpts{2},2),'>','Color',color);
   end
   plotted([t.scanpts{1};t.scanpts{2}])=true;
   for l=1:2
@@ -66,7 +66,7 @@ for i=1:length(tracker.tracks)
     [x,y]=pol2cart(angle,t.legdiam/2);
     x=x+leg(1);
     y=y+leg(2);
-    plot(x,y,color);
+    plot(x,y,'Color',color);
   end
 end
 if sum(~plotted)>0
@@ -128,7 +128,7 @@ lastline=lastline+skip;
 
 for i=1:length(tracker.tracks)
   t=tracker.tracks(i);
-  color=colors(mod(t.id-1,length(colors))+1);
+  color=colors(mod(t.id-1,size(colors,1))+1,:);
   if t.consecutiveInvisibleCount>0
     invcode=sprintf(' I=%d',t.consecutiveInvisibleCount);
   else
