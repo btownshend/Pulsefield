@@ -51,7 +51,7 @@ static const float LEGDIAMSIGMA=50;		// Sigma for leg diameter
 static const float MEANLEGSEP=300; 	// Mean leg separation
 static const float LEGSEPSIGMA=100;		// Sigma for leg separation
 static const float FACINGSEM=20.0*M_PI/180; 	// SEM for facing direction 
-static const float LEGSTATSTC=100; 	// Time constant for updating  estimate of leg diameter, separation, etc.
+static const float LEGSTATSTC=10; 	// Time constant for updating  estimate of leg diameter, separation, etc.
 static const float LEFTNESSTC=500;	// time constant for updating leftness
 
 // ******** Deleting tracks
