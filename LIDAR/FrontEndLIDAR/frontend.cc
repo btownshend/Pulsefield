@@ -427,7 +427,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    for (int i=0;i<nmeasure;i++)
 		fscanf(fd,"%d ",&reflect[e][i]);
 	}
-	if (frame%100==0) {
+	if (nlag>=100) {
 	    dbg("frontend",1) << "Playing frame " << frame << " with mean lag " <<  totallag/nlag << ", maxlag=" << maxlag << std::endl;
 	    printf("Playing frame %d with mean lag=%.3fs, maxlag=%.3fs\n",frame,totallag/nlag,maxlag);
 	    totallag=0;
