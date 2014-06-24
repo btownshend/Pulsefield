@@ -230,13 +230,13 @@ void SickIO::get() {
 
 	struct timeval acquiredTmp;
 	gettimeofday(&acquiredTmp,0);
-	lock();
 	
 	if (valid) {
 	    overwrittenframes++;
 	    dbg("SickIO.get",5) << "Frame " << frame << " overwritten" << std::endl;
 	} else {
 	    // Copy in new range data, compute x,y values
+	    lock();
 	    acquired=acquiredTmp;
 	    frame=frameCntr;
 	    for (int i=0;i<num_measurements;i++)
@@ -246,10 +246,14 @@ void SickIO::get() {
 		    x[e][i]=cos(getAngleRad(i)+M_PI/2)*range[e][i];
 		    y[e][i]=sin(getAngleRad(i)+M_PI/2)*range[e][i];
 		}
+	    valid=true;
+	    pthread_cond_signal(&signal);
+	    unlock();
 	}
 
 	if (frameCntr%1000 == 0 && overwrittenframes>0) {
 	    fprintf(stderr,"Warning: %d of last 1000 frames overwritten before being retrieved\n", overwrittenframes);
+	    dbg("SickIO.get",1) << "Warning: " << overwrittenframes << " of last 1000 frames overwritten before being retrieved" << std::endl;
 	    overwrittenframes=0;
 	}
 	frameCntr++;
@@ -258,9 +262,6 @@ void SickIO::get() {
 	} else
 	    dbg("SickIO.get",8) << "Frame " << frameCntr << ": got " << num_measurements << " measurements, status=" << status << std::endl;
 
-	valid=true;
-	pthread_cond_signal(&signal);
-	unlock();
 }
 
 // Wait until a frame is ready, must be locked before calling
