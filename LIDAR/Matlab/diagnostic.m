@@ -3,7 +3,8 @@ function diagnostic(snap,varargin)
 defaults=struct('trackid',[],...   % Only show these trackids
                 'frames',[],...
                 'minage',1,...
-                'debug',false...
+                'debug',false,...
+                'other','speed'...
                 );
 args=processargs(defaults,varargin);
 
@@ -133,15 +134,22 @@ for i=1:length(ids)
   title('Total Speed');
   
   subplot(236)
-  [~,spd1]=cart2pol(legvel(:,1,1),legvel(:,1,2));
-  [~,spd2]=cart2pol(legvel(:,2,1),legvel(:,2,2));
-  plot(frame,spd1,[color,'--']);
-  hold on;
-  plot(frame,spd2,[color,'-']);
-  plot(frame(vis(:,1)),spd1(vis(:,1)),[color,'.']);
-  plot(frame(vis(:,2)),spd2(vis(:,2)),[color,'.']);
-  xlabel('Frame');
-  title('Leg Speed');
+  if strcmp(args.other,'speed')
+    [~,spd1]=cart2pol(legvel(:,1,1),legvel(:,1,2));
+    [~,spd2]=cart2pol(legvel(:,2,1),legvel(:,2,2));
+    plot(frame,spd1,[color,'--']);
+    hold on;
+    plot(frame,spd2,[color,'-']);
+    plot(frame(vis(:,1)),spd1(vis(:,1)),[color,'.']);
+    plot(frame(vis(:,2)),spd2(vis(:,2)),[color,'.']);
+    xlabel('Frame');
+    title('Leg Speed');
+  else
+    sep=loc(:,1,:)-loc(:,2,:);
+    plot(frame,squeeze(sqrt(sep(:,:,1).^2+sep(:,:,2).^2)),[color,'-']);
+    xlabel('Frame');
+    title('Leg Sep');
+  end
 end
 
 
