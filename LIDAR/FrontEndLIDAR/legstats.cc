@@ -34,7 +34,7 @@ std::ostream &operator<<(std::ostream &s, const LegStats &ls) {
 void LegStats::update(const Person &p) {
     // Update leftness
     Point legdiff=p.getLeg(1).getPosition()-p.getLeg(0).getPosition();
-    leftness=leftness*(1-1/LEFTNESSTC)+legdiff.dot(Point(-p.getVelocity().Y(),p.getVelocity().X()))/LEFTNESSTC;
+    leftness=leftness*(1-1.0f/LEFTNESSTC)+legdiff.dot(Point(-p.getVelocity().Y(),p.getVelocity().X()))/LEFTNESSTC;
 
     // Update facing
     float curfacing=legdiff.getTheta()+M_PI/2;
@@ -56,7 +56,9 @@ void LegStats::update(const Person &p) {
     if (updateSep && p.getLeg(0).isVisible() && p.getLeg(1).isVisible()) {
 	// Both legs visible, update separation estimate
 	float cursep=(p.getLeg(0).getPosition()-p.getLeg(1).getPosition()).norm();
-	sep = sep*(1-1/LEGSTATSTC) + cursep/LEGSTATSTC;
+	float alpha=1.0f/LEGSTATSTC;
+	float oldsep=sep;
+	sep = sep*(1-alpha) + alpha*cursep;
 	// TODO: track sepSigma
 	if (sep>MEANLEGSEP*2) {
 	    dbg("LegStats",2) << "Leg separation too high at " << sep << "; reducing to " << MEANLEGSEP*2 << std::endl;
