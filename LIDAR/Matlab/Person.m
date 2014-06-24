@@ -401,8 +401,10 @@ classdef Person < handle
       end
     end
 
-    function plotlike(obj,vis) 
-      setfig(sprintf('discretelike ID %d',obj.id));clf;
+    function plotlike(obj,vis,newfig) 
+      if nargin<3 || newfig
+        setfig(sprintf('discretelike ID %d',obj.id));clf;
+      end
       sym={'<','>'};
       for i=1:2
         subplot(1,2,i);
