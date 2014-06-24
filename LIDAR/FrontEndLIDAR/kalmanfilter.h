@@ -18,6 +18,8 @@ class KalmanFilter {
     Point getVelocity(float fps) const;
     void setVelocity(float fps,Point vel);
     Point getPosition() const;
+    Point getPositionVar() const;
+    friend std::ostream& operator<<(std::ostream &s, const KalmanFilter &kf);
 };
 
  
