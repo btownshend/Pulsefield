@@ -8,7 +8,7 @@ class Person;
 class LegStats {
     float diam,diamSigma;
     float sep,sepSigma; 	// average leg separation in meters
-    bool updateDiamSep;	// True to update diameter, sep
+    bool updateDiam, updateSep;	// True to update diameter, sep
     float leftness;			// Leftness is >0 when leg0 is the left leg
     float facing,facingSEM;	// Direction in radians they are facing
  public:

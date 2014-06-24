@@ -13,9 +13,13 @@ LegStats::LegStats() {
     leftness=0.0;
     facing=0.0;
     facingSEM=FACINGSEM;
-    updateDiamSep=false;
-    if (!updateDiamSep) {
-	dbg("LegStats",1) << "Not updated leg diameters or sep" << std::endl;
+    updateDiam=false;
+    updateSep=true;
+    if (!updateDiam) {
+	dbg("LegStats",1) << "Not updating leg diameters" << std::endl;
+    }
+    if (!updateSep) {
+	dbg("LegStats",1) << "Not updating leg seps" << std::endl;
     }
 }
 
@@ -49,7 +53,7 @@ void LegStats::update(const Person &p) {
 	facing+=2*M_PI;
     
     // Update separation
-    if (updateDiamSep && p.getLeg(0).isVisible() && p.getLeg(1).isVisible()) {
+    if (updateSep && p.getLeg(0).isVisible() && p.getLeg(1).isVisible()) {
 	// Both legs visible, update separation estimate
 	float cursep=(p.getLeg(0).getPosition()-p.getLeg(1).getPosition()).norm();
 	sep = sep*(1-1/LEGSTATSTC) + cursep/LEGSTATSTC;
@@ -66,7 +70,7 @@ void LegStats::update(const Person &p) {
 }
 
 void LegStats::updateDiameter(float newDiam, float newDiamSEM) {
-    if (updateDiamSep) {
+    if (updateDiam) {
 	// TODO: track diamSigma
 	diam = diam*(1-1/LEGSTATSTC) + newDiam/LEGSTATSTC;
 	dbg("LegStats.updateDiameter",3) << "newDiam=" << newDiam << ", updated diam=" << diam << ", sigma=" << diamSigma << std::endl;
