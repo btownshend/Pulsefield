@@ -46,7 +46,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	}
 	if (assignments[f]>=0) {
 	    nassigned++;
-	    dbg("World.makeAssignments",5) << "Assigned scan " << f << " to track " << assignments[f] << "." << legassigned[f] << std::endl;
+	    dbg("World.makeAssignments",5) << "Assigned scan " << f << " to P" << people[assignments[f]].getID() << "." << legassigned[f] << std::endl;
 	} else if (assignments[f]==-2)
 	    nentries++;
 	else
