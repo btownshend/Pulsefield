@@ -94,7 +94,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    // Note allow updates even if range>MAXRANGE, otherwise points slightly smaller than MAXRANGE get biased and have low freq
 	    if (fabs(srange[i]-range[k][i]) < MINBGSEP) {
 		range[k][i]=srange[i]*1.0f/tc + range[k][i]*(1-1.0f/tc);
-		freq[k][i]+=(1.0f-freq[k][i])/tc;
+		freq[k][i]+=1.0f/tc;
 		// Swap ordering if needed
 		for (int kk=k;kk>1;kk--)
 		    if  (freq[kk][i] > freq[kk-1][i]) {
@@ -102,9 +102,6 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 			swap(i,kk,kk-1);
 		    } else
 			break;
-		// Decrement the rest
-		for (int kk=k+1;kk<NRANGES;kk++)
-		    freq[kk][i]-=(freq[kk][i]/tc);
 		if (k==0)
 		    farnotseen[i]=0;
 		break;
@@ -124,10 +121,15 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 			swap(i,kk,kk-1);
 		    else
 			break;
-	    } else {
-		freq[k][i]-=(freq[k][i]/tc);
 	    }
 	}
+	// Rescale so freq adds to 1.0
+	float ftotal=0;
+	for (int k=0;k<NRANGES;k++)
+	    ftotal+=freq[k][i];
+	for (int k=0;k<NRANGES;k++)
+	    freq[k][i]/=ftotal;
+
 	if (farnotseen[i] > BGLONGDISTLIFE) {
 	    dbg("Background.update",2) << "Farthest background at scan " << i << " not seen for " << farnotseen[i] << " frames.  Resetting to " << range[1][i] << std::endl;
 	    swap(i,0,1);
