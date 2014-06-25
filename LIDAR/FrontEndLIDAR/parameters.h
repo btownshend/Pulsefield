@@ -21,7 +21,7 @@ static const float SENSORSIGMA=8;	// Sensor statistical error
 static const double RANDOMPTPROB=1e-30;	// Probability any given scan point is random noise
 
 // ******** Background
-static const int MINBGSEP=100;	// max distance to consider a scan point part of a nearby background
+static const int MINBGSEP=15;	// max distance to consider a scan point part of a nearby background (based on plotbg() output, which shows variation of <= 0.01m around hard surfaces)
 static const float MINBGFREQ=0.05;	// Minimum frequency of a background to call it such unilaterally
 static const int BGINITFRAMES=50*5;		// Background intiialization for this many frames
 static const int UPDATETC=50*60;		// Background update freq (after initial averaging)
