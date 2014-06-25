@@ -111,8 +111,8 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    } else if (k==0 && srange[i] > range[k][i]) {
 		// New long distance point
 		dbg("Background.update",2) << "Farthest background at scan " << i << " moved from " << range[k][i] << " to " << srange[i] << std::endl;
-		range[k][i]=srange[i];
-		freq[k][i]=1.0f;
+		range[k][i]=srange[i]*1.0f/FARUPDATETC + range[k][i]*(1-1.0f/FARUPDATETC);
+		freq[k][i]+=1.0f/tc;
 		farnotseen[i]=0;
 		break;
 	    } else if (k==NRANGES-1 && srange[i]>=MINRANGE) {

@@ -25,6 +25,7 @@ static const int MINBGSEP=15;	// max distance to consider a scan point part of a
 static const float MINBGFREQ=0.05;	// Minimum frequency of a background to call it such unilaterally
 static const int BGINITFRAMES=50*5;		// Background intiialization for this many frames
 static const int UPDATETC=50*60;		// Background update freq (after initial averaging)
+static const int FARUPDATETC=50*1;		// Background update for points farther than primary background
 static const int BGLONGDISTLIFE=50*30;		// If the most distance background hasn't been seen in this many frames, replace it with the most frequently seen one
 static const unsigned int MINRANGE=100;	// minimum distance from LIDAR; ranges less than this are ignored
 extern unsigned int MAXRANGE;	// maximum distance from LIDAR; ranges greater than this are ignored
