@@ -41,8 +41,8 @@ std::vector<float> Background::like(const SickIO &sick) const {
 	    // Compute result
 	    result[i]=0.0;
 	    for (int k=0;k<NRANGES-1;k++) {
-		// This is a background pixel if it matches the ranges of this scan's background
-		if (freq[k][i]>0 && fabs(srange[i]-range[k][i]) < MINBGSEP )
+		// This is a background pixel if it matches the ranges of this scan's background, or is farther than maximum background
+		if (freq[k][i]>0 && (fabs(srange[i]-range[k][i]) < MINBGSEP || (srange[i]>range[k][i] && k==0) ))
 		    result[i]+=freq[k][i];
 	    }
 	    if (result[i]<MINBGFREQ) {
