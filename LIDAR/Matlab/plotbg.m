@@ -27,3 +27,7 @@ for i=1:3
 end
 xlabel('Frame');
 ylabel('Freq');
+c=axis;
+c(3)=0;
+c(4)=1;
+axis(c);
