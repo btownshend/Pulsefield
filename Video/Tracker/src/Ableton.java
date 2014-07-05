@@ -42,13 +42,16 @@ class TrackSet {
 	String name;
 	int firstTrack;
 	int numTracks;
+	float tempo;
 	boolean armed;
-	TrackSet(String name, int firstTrack, int numTracks) {
+	TrackSet(String name, int firstTrack, int numTracks, float tempo) {
 		this.name=name;
 		this.firstTrack=firstTrack;
 		this.numTracks=numTracks;
+		this.tempo = tempo;
 		armed=false;
 	}
+
 	int getMIDIChannel(int channel) {
 		//System.out.println("getMIDIChannel("+channel+")->"+(channel%numTracks));
 		return channel%numTracks;
@@ -93,12 +96,25 @@ public class Ableton {
 		tracks = new HashMap<Integer,Track>();
 		tempo=120;
 		tracksets=new HashMap<String,TrackSet>();
-		tracksets.put("Harp", new TrackSet("Harp",92,1));
-		tracksets.put("Guitar", new TrackSet("Guitar",93,1));
-		tracksets.put("Pads", new TrackSet("Pads",95,4));
-		tracksets.put("Tron", new TrackSet("Tron",99,1));
-		tracksets.put("Poly",new TrackSet("Poly",100,1));
-		tracksets.put("Navier", new TrackSet("Navier",101,4));
+		tracksets.put("QU",new TrackSet("Quetzal",1,6,120));
+		tracksets.put("PR",new TrackSet("Pring",8,8,108));
+		tracksets.put("OL",new TrackSet("Oluminum",17,7,93));
+		tracksets.put("EP",new TrackSet("Episarch",25,5,93));
+		tracksets.put("NG",new TrackSet("New Gamelan",31,9,120));
+		tracksets.put("MB",new TrackSet("Music Box",41,8,111));
+		tracksets.put("GA",new TrackSet("Garage Revisited",50,6,120));
+		tracksets.put("FO",new TrackSet("Forski",57,8,72));
+		tracksets.put("FI",new TrackSet("Firebell",66,7,108));
+		tracksets.put("DB",new TrackSet("Deep Blue",74,8,100));
+		tracksets.put("AN",new TrackSet("Animals",84,4,120));
+		tracksets.put("MV",new TrackSet("Movies",89,1,120));
+		tracksets.put("DD",new TrackSet("DDR",91,1,0));
+		tracksets.put("Harp", new TrackSet("Harp",92,1,0));
+		tracksets.put("Guitar", new TrackSet("Guitar",93,1,0));
+		tracksets.put("Pads", new TrackSet("Pads",95,4,0));
+		tracksets.put("Tron", new TrackSet("Tron",99,1,0));
+		tracksets.put("Poly",new TrackSet("Poly",100,1,0));
+		tracksets.put("Navier", new TrackSet("Navier",101,4,0));
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
 	}
@@ -219,6 +235,7 @@ public class Ableton {
 	}
 
 	public void playClip(int track, int clip) {
+		PApplet.println("playClip("+track+","+clip+")");
 		OscMessage msg=new OscMessage("/live/play/clip");
 		msg.add(track);
 		msg.add(clip);
