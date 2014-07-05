@@ -11,7 +11,7 @@ public class Tracker extends PApplet {
 	/**
 	 * 
 	 */
-	private static boolean present = true;
+	private static boolean present = false;
 	private static boolean autocycle = false;
 	
 	private static boolean starting = true;   // Disable bad OSC messages before setup
@@ -91,7 +91,7 @@ public class Tracker extends PApplet {
 		vis[7]=new VisualizerGuitar(this,synth);
 		vis[8]=new VisualizerDot(this);
 		vis[9]=new VisualizerChuck(this);
-		setapp(8);
+		setapp(3);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
