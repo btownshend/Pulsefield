@@ -192,6 +192,7 @@ classdef SoundAppGrid < SoundApp
       end
 
       if info.ableton
+        % Handle playing a movie clip each time a group is formed
         for i=1:length(info.groupsformed)
           gid=info.groupsformed(i);
           idset=info.groupmap.gid2idset(gid);
