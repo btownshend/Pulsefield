@@ -96,6 +96,9 @@ public class Tracker extends PApplet {
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
 		oscP5.plug(this, "pfupdate", "/pf/update");
+		oscP5.plug(this, "pfbackground","/pf/background");
+		oscP5.plug(this, "pfgeo","/pf/geo");
+		oscP5.plug(this, "pfgroup", "/pf/group");
 		oscP5.plug(this, "pfleg", "/pf/leg");
 		oscP5.plug(this, "pfbody", "/pf/body");
 		oscP5.plug(this, "pfsetnpeople", "/pf/set/npeople");
@@ -366,6 +369,18 @@ public class Tracker extends PApplet {
 		resetcoords();
 	}
 
+	public void pfbackground(int scan, int nscan, float angle, float range) {
+		// Not implemented.
+	}
+	
+	public void pfgeo(int frame, int id, float centerDist, float otherDist, float existDist) {
+		// Not implemented.
+	}
+	
+	public void pfgroup(int frame, int gid, int gsize, float life, float centroidX, float centroidY, float diameter) {
+		// Not implemented.
+	}
+	
 	public void cycle() {
 		if (autocycle) {
 			Calendar cal=Calendar.getInstance();
