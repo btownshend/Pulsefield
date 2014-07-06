@@ -206,6 +206,7 @@ public class Tracker extends PApplet {
 		//		translate((width-height)/2f,0);
 
 		vis[currentvis].draw(this,positions,new PVector(width,height));
+		vis[currentvis].drawLaser(this,positions);
 	}
 
 	public void mouseReleased() {
