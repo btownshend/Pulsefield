@@ -25,12 +25,13 @@ public class Tracker extends PApplet {
 	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
 	Visualizer vis[];
 	VisualizerGrid visAbleton;
+	VisualizerProximity visProx;
 	VisualizerNavier visNavier;
 	VisualizerDDR visDDR;
 	VisualizerDot visDot;
 	VisualizerChuck visChuck;
-	String visnames[]={"Pads","Navier","Tron","Ableton","DDR","Poly","Voronoi","Guitar","Dot","CHucK"};
-	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5"};
+	String visnames[]={"Pads","Navier","Tron","Ableton","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity"};
+	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","5/1"};
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK;
 	Positions positions;
@@ -92,6 +93,7 @@ public class Tracker extends PApplet {
 		vis[8]=new VisualizerDot(this);
 		vis[9]=new VisualizerChuck(this);
 		setapp(3);
+		vis[10]=new VisualizerProximity(this);
 
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
