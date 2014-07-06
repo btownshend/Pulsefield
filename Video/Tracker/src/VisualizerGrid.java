@@ -74,8 +74,8 @@ public class VisualizerGrid extends VisualizerPS {
 			//PApplet.println("ID "+pos.id+" closest to grid ("+gposx[closest]+","+gposy[closest]+"), position "+closest+" at a distance of "+Math.sqrt(mindist));
 			if (current!=closest) {
 				int track=pos.id%(ts.numTracks)+ts.firstTrack;
-				if (current!=-1)
-					Ableton.getInstance().stopClip(track, current);
+//				if (current!=-1)
+//					Ableton.getInstance().stopClip(track, current);
 				assignments.put(pos.id,closest);
 				Ableton.getInstance().playClip(track,closest);
 			}
