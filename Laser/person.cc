@@ -143,6 +143,11 @@ void Person::draw(Drawing &d) const  {
     if (TouchOSC::instance()->isLegsEnabled()) {
 	drawLegs(d);
     }
+    if (visual!=nullptr) {
+	dbg("Person.draw",1) << "Drawing visual with " << visual->getNumElements() << " elements on drawing with " << d.getNumElements() << " elements" << std::endl;
+	d.append(*visual);
+	dbg("Person.draw",1) << "Drawing now has " << d.getNumElements() << " elements" << std::endl;
+    }
     d.shapeEnd();
 }
 

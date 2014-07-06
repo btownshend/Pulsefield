@@ -24,8 +24,9 @@ class Person {
     int gid, gsize;
     int age; 	// Age counter -- reset whenever something is set, increment when aged
     Attributes attributes;
+    std::shared_ptr<Drawing> visual;
  public:
-    Person(int _id) {id=_id; age=0; gid=0; gsize=1; set("allpeople",1.0,0.0); }
+    Person(int _id) {id=_id; age=0; gid=0; gsize=1; set("allpeople",1.0,0.0); visual=std::shared_ptr<Drawing>(); }
     void incrementAge() {
 	age++;
     }
@@ -66,6 +67,10 @@ class Person {
 	age=0;
     }
     Attributes getAttributes() const { return attributes; }
+    void setVisual(const Drawing &d) {
+	dbg("Person.setVisual",1) << "Set visual for " << id << " to drawing with " << d.getNumElements() << " elements." << std::endl;
+	visual=std::shared_ptr<Drawing>(new Drawing(d));
+    }
 };
 
 class People {
@@ -95,8 +100,11 @@ public:
     static void draw(Drawing &d)  { instance()->draw_impl(d); }
     // Set the drawing commands to image a person rather than using internal drawing routines
     static void setVisual(int uid, const Drawing &d) {
-	// Not used -- always draw with internal routines
-	// p[uid].setVisual(d);
+	if (personExists(uid))
+	    instance()->p.at(uid).setVisual(d);
+	else {
+	    dbg("People.setVisual",1) << "Missing ID " << uid << std::endl;
+	}
     }
     std::vector<int> getIDs() const {
 	std::vector<int> result;
