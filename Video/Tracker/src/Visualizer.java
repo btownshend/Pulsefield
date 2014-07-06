@@ -26,6 +26,11 @@ public abstract class Visualizer {
 		}
 	}
 
+	// Draw to laser
+	public void drawLaser(PApplet parent, Positions p) {
+	;	
+	}
+	
 	abstract public void update(PApplet parent, Positions p);
 	public void start() {;}
 	public void stop() {;}

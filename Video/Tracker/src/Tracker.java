@@ -73,7 +73,7 @@ public class Tracker extends PApplet {
 		MAX = new NetAddress(config.getHost("MAX"), config.getPort("MAX"));
 		ableton = new Ableton(oscP5, AL);
 		touchOSC = new TouchOSC(oscP5, TO);
-
+		new Laser(oscP5, new NetAddress(config.getHost("LASER"), config.getPort("LASER")));
 		synth = new Max(this,oscP5, MAX);
 
 		synth.play(0,64,100,100,1);
