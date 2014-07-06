@@ -263,21 +263,31 @@ public class Tracker extends PApplet {
 		}  /* print the address pattern and the typetag of the received OscMessage */
 	}
 
-	public PVector normalizePosition(PVector pos) {
+	public static PVector normalizePosition(PVector pos) {
 		return new PVector(pos.x*2f/(Tracker.maxx-Tracker.minx),pos.y*2f/(Tracker.maxy-Tracker.miny));
 	}
 	
-	public PVector mapPosition(float x, float y) {
+	public static PVector mapPosition(float x, float y) {
 		return mapPosition(new PVector(x,y));
 	}
 
-	public PVector mapPosition(PVector raw) {
+	public static PVector mapPosition(PVector raw) {
 		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
 		PVector result=PVector.sub(raw,mid);
 		result.rotate((float)Math.toRadians(Tracker.screenrotation));
 		// Flip y-axis since screen has origin in top left
 		result.y=-result.y;
 //		PApplet.println("Mapped ("+raw+") to ("+result);
+		return result;
+	}
+	
+	public static PVector unMapPosition(PVector mapped) {
+		mapped.x=mapped.x*(Tracker.maxx-Tracker.minx)/2.0f;
+		mapped.y=mapped.y*(Tracker.maxy-Tracker.miny)/2.0f;
+		PVector result=new PVector(mapped.x,-mapped.y);
+		result.rotate((float)Math.toRadians(Tracker.screenrotation));
+		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
+		result=PVector.add(result,mid);
 		return result;
 	}
 	
