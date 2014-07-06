@@ -14,6 +14,7 @@ class Background {
     static const int NRANGES=3;
 
     std::vector<float> range[NRANGES];   // Range in mm of background for NRANGES values/scan
+    std::vector<float> sigma[NRANGES];  // Sigma for Gaussian for this range
     std::vector<float> freq[NRANGES];
     std::vector<int> farnotseen;
     float scanRes;

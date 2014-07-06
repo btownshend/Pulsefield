@@ -1,9 +1,10 @@
 % Plot a particular bg scanline
 function plotbg(snap,scanline)
-setfig('plotbg');clf;
-subplot(211);
 frame=arrayfun(@(z) z.vis.frame,snap);
 vrange=arrayfun(@(z) z.vis.range(scanline),snap);
+
+setfig('plotbg');clf;
+subplot(311);
 plot(frame,vrange,'g');
 hold on;
 col='rbm';
@@ -15,7 +16,17 @@ legend('Vis','Bg1','Bg2','Bg3');
 xlabel('Frame');
 ylabel('Range');
 
-subplot(212);
+subplot(312);
+for i=1:3
+  sigma=arrayfun(@(z) z.bg.sigma(i,scanline),snap);
+  plot(frame+i/4,sigma,col(i));
+  hold on;
+end
+legend('Bg1','Bg2','Bg3');
+xlabel('Frame');
+ylabel('Sigma');
+
+subplot(313);
 freq=[];
 for i=1:3
   freq(i,:)=arrayfun(@(z) z.bg.freq(i,scanline),snap);

@@ -4,6 +4,7 @@ classdef Background < handle
       angle;
       range;
       freq;
+      sigma;
     end
 
     methods
@@ -25,6 +26,7 @@ classdef Background < handle
           newobj.angle=obj.angle;
           newobj.range=obj.range;
           newobj.freq=obj.freq;
+          newobj.sigma=obj.sigma;
           obj=newobj;
         end
       end

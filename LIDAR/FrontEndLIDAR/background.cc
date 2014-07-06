@@ -14,6 +14,9 @@ void Background::setup(const SickIO &sick) {
     for (int i=0;i<NRANGES;i++) {
 	range[i].resize(sick.getNumMeasurements());
 	freq[i].resize(sick.getNumMeasurements());
+	sigma[i].resize(sick.getNumMeasurements());
+	for (int j=0;j<sick.getNumMeasurements();j++)
+	    sigma[i][j]=MEANBGSIGMA;
     }
     farnotseen.resize(sick.getNumMeasurements());
     scanRes=sick.getScanRes();
@@ -27,6 +30,9 @@ void Background::swap(int k, int i, int j) {
     float tmpfreq=freq[i][k];
     freq[i][k]=freq[j][k];
     freq[j][k]=tmpfreq;
+    float tmpsigma=sigma[i][k];
+    sigma[i][k]=sigma[j][k];
+    sigma[j][k]=tmpsigma;
 }
 
 // Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
@@ -140,7 +146,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 }
 
 mxArray *Background::convertToMX() const {
-    const char *fieldnames[]={"range","angle","freq"};
+    const char *fieldnames[]={"range","angle","freq","sigma"};
     mxArray *bg = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
     mxArray *pRange = mxCreateDoubleMatrix(NRANGES,range[0].size(),mxREAL);
@@ -165,6 +171,14 @@ mxArray *Background::convertToMX() const {
 	for (int j=0;j<NRANGES;j++)
 	    *data++=freq[j][i];
     mxSetField(bg,0,"freq",pFreq);
+
+    mxArray *pSigma = mxCreateDoubleMatrix(NRANGES,range[0].size(),mxREAL);
+    assert(pSigma!=NULL);
+    data=mxGetPr(pSigma);
+    for (unsigned int i=0;i<range[0].size();i++)
+	for (int j=0;j<NRANGES;j++)
+	    *data++=sigma[j][i]/UNITSPERM;
+    mxSetField(bg,0,"sigma",pSigma);
 
     if (mxSetClassName(bg,"Background")) {
 	fprintf(stderr,"Unable to convert background to a Matlab class\n");
