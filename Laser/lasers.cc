@@ -74,11 +74,13 @@ int Lasers::render() {
     if (showBackground)
 	globalDrawing.drawPolygon(background,bgColor);
     if (showGrid) {
-	float width=23*12/39.37;
-	float depth=20*12/39.37;
+	int ngrid=7;
+	float width=6;
+	float depth=3;
 	float minx=-width/2,maxx=width/2,miny=0,maxy=depth;
-	float xstep=(maxx-minx)/4*0.999;
-	for (float x=minx;x<=maxx;x+=xstep*2) {
+	float xstep=(maxx-minx)/(ngrid-1);
+	for (int i=0;i<ngrid;i++) {
+	    float x=minx+i*xstep;
 	    globalDrawing.drawLine(Point(x,miny),Point(x,maxy),gridColor);
 	    if (x+xstep<=maxx)  {
 		globalDrawing.drawLine(Point(x,maxy),Point(x+xstep,maxy),gridColor);
@@ -87,8 +89,9 @@ int Lasers::render() {
 	    if (x+2*xstep<=maxx)
 		globalDrawing.drawLine(Point(x+xstep,miny),Point(x+2*xstep,miny),gridColor);
 	}
-	float ystep=(maxx-minx)/4*0.999;
-	for (float y=miny;y<maxy;y+=ystep*2) {
+	float ystep=(maxy-miny)/(ngrid-1);
+	for (int j=0;j<ngrid;j++) {
+	    float y=miny+j*ystep;
 	    globalDrawing.drawLine(Point(minx,y),Point(maxx,y),gridColor);
 	    if (y+ystep<=maxy) {
 		globalDrawing.drawLine(Point(maxx,y),Point(maxx,y+ystep),gridColor);
