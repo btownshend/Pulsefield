@@ -11,7 +11,16 @@ class Color;
 // Transformation between floor (meter) space and device (-32767:32767) space
 class Transform {
     cv::Mat transform, invTransform; 
-    std::vector<cv::Point2f> floorpts, devpts;
+    std::vector<Point> floorpts, devpts;
+    float hfov, vfov;
+    static std::vector<cv::Point2f> convertPoints(const std::vector<Point> &pts);
+
+    // Convert  device coord to flat space (i.e. laser projection grid)
+    Point deviceToFlat(Point devPt) const;
+    std::vector<Point> deviceToFlat(const std::vector<Point> &devPts) const;
+    // Convert  flat space coord to device coords
+    Point flatToDevice(Point flatPt) const;
+    std::vector<Point> flatToDevice(const std::vector<Point> &flatPts) const;
  public:
     Transform();
     void clear();
@@ -33,10 +42,10 @@ class Transform {
 
     // Setup mapping
     // Point indices are order based on laser positions: BL, BR, TR, TL
-    Point getFloorPoint(int i) const { assert(i>=0&&i<(int)floorpts.size()); return Point(floorpts[i].x,floorpts[i].y); }
-    Point getDevPoint(int i) const { assert(i>=0&&i<(int)floorpts.size()); return Point(devpts[i].x,devpts[i].y); }
-    void setFloorPoint(int i, Point floorpt) { assert(i>=0&&i<(int)floorpts.size()); floorpts[i].x=floorpt.X(), floorpts[i].y=floorpt.Y();  }
-    void setDevPoint(int i, Point devpt) { assert(i>=0&&i<(int)floorpts.size()); devpts[i].x=devpt.X(); devpts[i].y=devpt.Y();  }
+    Point getFloorPoint(int i) const { assert(i>=0&&i<(int)floorpts.size()); return floorpts[i]; }
+    Point getDevPoint(int i) const { assert(i>=0&&i<(int)floorpts.size()); return devpts[i]; }
+    void setFloorPoint(int i, Point floorpt) { assert(i>=0&&i<(int)floorpts.size()); floorpts[i]=floorpt; }
+    void setDevPoint(int i, Point devpt) { assert(i>=0&&i<(int)floorpts.size()); devpts[i]=devpt; }
 
     // Load/save 
     void save(std::ostream &s) const;
