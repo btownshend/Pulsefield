@@ -31,7 +31,10 @@ Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(4) {
     dpy=NULL;
     // Load transforms
     std::ifstream ifs("transforms.save");
-    load(ifs);
+    if (ifs.good()) 
+	load(ifs);
+    else
+	dbg("Video",1) << "Unable to open transforms.save for reading" << std::endl;
 }
 
 Video::~Video() {
