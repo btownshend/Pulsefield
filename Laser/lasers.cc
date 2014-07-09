@@ -115,8 +115,12 @@ int Lasers::render() {
 	    dbgn("Lasers.render",3) << std::endl;
 	    dtmp[i].drawPolygon(outlineWorld,outlineColor);
 	}
-	dtmp[i].append(globalDrawing);
-	lasers[i]->render(dtmp[i]);
+	if (showTest) {
+	    lasers[i]->showTest();
+	} else {
+	    dtmp[i].append(globalDrawing);
+	    lasers[i]->render(dtmp[i]);
+	}
     }
     dbg("Lasers.render",1) << "Render done" << std::endl;
     unlock();

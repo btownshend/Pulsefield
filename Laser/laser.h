@@ -48,4 +48,5 @@ class Laser: public DisplayDevice  {
     int getUnit() const { return unit; }
     void toggleLaser() { showLaser=!showLaser; }
     void dumpPoints() const;
+    void showTest();
 };

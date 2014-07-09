@@ -130,9 +130,13 @@ void *Video::runDisplay(void *arg) {
 			// Grid toggle
 			world->toggleOutline();
 			world->newMessage() << "Toggled laser outline";
+		    } else if (key==XK_t) {
+			// Grid toggle
+			world->toggleTest();
+			world->newMessage() << "Toggled laser test pattern";
 		    } else if (key>=XK_1 && key<=XK_9) {
 			world->toggleLaser(key-XK_1);
-			world->newMessage() << "Toggled laser " << key << std::endl;
+			world->newMessage() << "Toggled laser " << (int)(key-'0') << std::endl;
 		    } else if (key==XK_r) {
 			// Reset transforms
 			world->clearTransforms();

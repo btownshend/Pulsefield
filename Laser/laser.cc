@@ -239,3 +239,49 @@ int Laser::blanking() {
     return nblanks;
 }
 
+void Laser::showTest() {
+    etherdream_point pt;
+    pts.clear();
+    pt.r=0;pt.g=0;pt.r=0;
+    static const int ngrid=9;
+    static const int blank=60;
+    static const int npoints=10000;
+    static const int fullrange=32767;
+    static const int range=28000;
+    static const int step=2*fullrange*ngrid*2/npoints;
+    dbg("Laser.showTest",1) << "Showing laser test pattern with step size of " << step << std::endl;
+    // Start and finish each scan near (-range,-range)
+    pt.g=65535;
+    pt.x=-fullrange; pt.y=-fullrange;
+    for (int i=0;i<ngrid;i++) {
+      pt.y=2*range*i/(ngrid-1)-range;
+      if (pt.x<0) {
+	for (int x=-fullrange;x<fullrange;x+=step) {
+	  pt.x=x;
+	  pts.push_back(pt);
+	}
+      } else {
+	for (int x=fullrange;x>-fullrange;x-=step)  {
+	  pt.x=x;
+	  pts.push_back(pt);
+	}
+      }
+    }
+    // Now we should be near (range,range) assuming ngrid is odd
+    for (int i=0;i<ngrid;i++) {
+      pt.x=2*range*(ngrid-1-i)/(ngrid-1)-range;
+      if (pt.y<0) {
+	for (int y=-fullrange;y<fullrange;y+=step)  {
+	  pt.y=y;
+	  pts.push_back(pt);
+	}
+      } else {
+	for (int y=fullrange;y>-fullrange;y-=step)  {
+	  pt.y=y;
+	  pts.push_back(pt);
+	}
+      }
+    }
+    update();
+}
+
