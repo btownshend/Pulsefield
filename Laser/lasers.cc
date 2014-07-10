@@ -103,13 +103,29 @@ int Lasers::render() {
     }
     for (unsigned int i=0;i<lasers.size();i++) {
 	if (showOutline) {
-	    std::vector<etherdream_point> outline(5);
+	  std::vector<etherdream_point> outline;
 	    // Need to be inside maximums by at least one pixel or pruning will think its saturated and take it out
-	    outline[0].x=-32766;outline[0].y=-32766;
-	    outline[1].x=-32766;outline[1].y=32766;
-	    outline[2].x=32766;outline[2].y=32766;
-	    outline[3].x=32766;outline[3].y=-32766;
-	    outline[4].x=-32766;outline[4].y=-32766;
+	    int maxx=30000;
+	    int maxy=32766;
+	    etherdream_point p;
+	    static const int nsegments=20;
+	    p.x=-maxx;
+	    for (int i=0;i<nsegments;i++) {
+	      p.y=-maxy+2*i*maxy/(nsegments-1);
+	      outline.push_back(p);
+	    }
+	    for (int i=0;i<nsegments;i++) {
+	      p.x=-maxx+2*i*maxx/(nsegments-1);
+	      outline.push_back(p);
+	    }
+	    for (int i=0;i<nsegments;i++) {
+	      p.y=-maxy+2*(nsegments-i-1)*maxy/(nsegments-1);
+	      outline.push_back(p);
+	    }
+	    for (int i=0;i<nsegments;i++) {
+	      p.x=-maxx+2*(nsegments-i-1)*maxx/(nsegments-1);
+	      outline.push_back(p);
+	    }
 	    // Convert to world 
 	    std::vector<Point> outlineWorld=CPoint::convertToPointVector(lasers[i]->getTransform().mapToWorld(outline));
 	    dbg("Lasers.render",3) << "outlineWorld=";
