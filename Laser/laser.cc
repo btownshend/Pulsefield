@@ -244,7 +244,6 @@ void Laser::showTest() {
     pts.clear();
     pt.r=0;pt.g=0;pt.r=0;
     static const int ngrid=9;
-    static const int blank=60;
     static const int npoints=10000;
     static const int fullrange=32767;
     static const int range=28000;
