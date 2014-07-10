@@ -177,7 +177,7 @@ void Laser::prune() {
     std::vector<etherdream_point> result;
     bool oobs=false;
     for (unsigned int i=0;i<pts.size();i++) {
-	if (pts[i].x != -32768  && pts[i].x != 32767 && pts[i].y != -32768 && pts[i].y != 32767)  {
+	if (transform.onScreen(pts[i])) {
 	    // In bounds
 	    if (oobs && result.size()>0) {
 		// Just came in bounds, insert a blank (will be expanded by blanking)
@@ -246,14 +246,13 @@ void Laser::showTest() {
     static const int ngrid=9;
     static const int npoints=10000;
     static const int fullrange=32767;
-    static const int range=28000;
     static const int step=2*fullrange*ngrid*2/npoints;
     dbg("Laser.showTest",1) << "Showing laser test pattern with step size of " << step << std::endl;
-    // Start and finish each scan near (-range,-range)
+    // Start and finish each scan at full range, but scan based on visible range stored in transform
     pt.g=65535;
     pt.x=-fullrange; pt.y=-fullrange;
     for (int i=0;i<ngrid;i++) {
-      pt.y=2*range*i/(ngrid-1)-range;
+      pt.y=(transform.getMaxY()-transform.getMinY())*i/(ngrid-1)+transform.getMinY();
       if (pt.x<0) {
 	for (int x=-fullrange;x<fullrange;x+=step) {
 	  pt.x=x;
@@ -268,7 +267,7 @@ void Laser::showTest() {
     }
     // Now we should be near (range,range) assuming ngrid is odd
     for (int i=0;i<ngrid;i++) {
-      pt.x=2*range*(ngrid-1-i)/(ngrid-1)-range;
+      pt.x=(transform.getMaxX()-transform.getMinX())*(ngrid-1-i)/(ngrid-1)+transform.getMinX();
       if (pt.y<0) {
 	for (int y=-fullrange;y<fullrange;y+=step)  {
 	  pt.y=y;

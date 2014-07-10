@@ -14,7 +14,7 @@ class Transform {
     std::vector<Point> floorpts, devpts;
     float hfov, vfov;
     static std::vector<cv::Point2f> convertPoints(const std::vector<Point> &pts);
-
+    int minx, maxx, miny, maxy;   // Bounds of laser projection (in device cooords)
     // Convert  device coord to flat space (i.e. laser projection grid)
     Point deviceToFlat(Point devPt) const;
     std::vector<Point> deviceToFlat(const std::vector<Point> &devPts) const;
@@ -37,6 +37,14 @@ class Transform {
     std::vector<Point> mapToDevice(const std::vector<Point> &floorPts) const;
     std::vector<CPoint> mapToWorld(const std::vector<etherdream_point> &pts) const;
 
+    // Check if a given device coordinate is "on-screen" (can be projected)
+    bool onScreen(Point devPt) const;
+    bool onScreen(etherdream_point devPt) const { return onScreen(Point(devPt.x,devPt.y)); }
+    float getMinX() const { return minx; } 
+    float getMaxX() const { return maxx; } 
+    float getMinY() const { return miny; } 
+    float getMaxY() const { return maxy; } 
+    
     // Compute transform matrix from set of points already provided
     void recompute();
 

@@ -8,6 +8,10 @@
 Transform::Transform(): floorpts(4), devpts(4) {
     hfov=90*M_PI/180;
     vfov=90*M_PI/180;
+    minx=-32000;
+    maxx=32000;
+    miny=-32766;  // Needs to be less than extreme values in etherdream (short) values 
+    maxy=32766;
     clear();
 }
 
@@ -139,6 +143,7 @@ Point Transform::mapToDevice(Point floorPt) const {
     src[0].x=floorPt.X();
     src[0].y=floorPt.Y();
     std::vector<cv::Point2f> dst;
+    //    dbg("Transform.mapToDevice",1) << "run persp" << std::endl;
     cv::perspectiveTransform(src,dst,transform);
     // dst is now in 'flat' space
     Point devPt=flatToDevice(Point(dst[0].x, dst[0].y));
@@ -186,6 +191,11 @@ std::vector<CPoint> Transform::mapToWorld(const std::vector<etherdream_point> &p
     for (unsigned int i=0;i<pts.size();i++)
 	result[i]=mapToWorld(pts[i]);
     return result;
+}
+
+// Check if a given device coordinate is "on-screen" (can be projected)
+bool Transform::onScreen(Point devPt) const {
+    return devPt.X()>=minx && devPt.X()<=maxx && devPt.Y() >=miny && devPt.Y() <= maxy;
 }
 
 void Transform::save(std::ostream &s) const {

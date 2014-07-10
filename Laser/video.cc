@@ -10,7 +10,9 @@
 #include "transform.h"
 #include "dbg.h"
 
+// Bounds of laser hardware interface (laser may actually only be able to draw a region smaller than this)
 const int MAXVALUE=32767;
+const int MINVALUE=-32768;
 const float titleHeight=15;   // in pixels
 
 Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(4) {
@@ -325,7 +327,7 @@ void XRefs::refresh(cairo_t *cr, std::shared_ptr<Laser>laser,  Video &video, int
 			       << " to " << Point(wx,wy) << std::endl;
 	if (entry->dev) {
 	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " device anchor " << anchorNumber << " to " <<std::fixed <<  std::setprecision(0) << Point(wx,wy) << std::endl << std::setprecision(3);
-	    entry->laser->getTransform().setDevPoint(anchorNumber,Point(std::min(32767.0,std::max(-32768.0,wx)),std::min(32767.0,std::max(-32768.0,wy))));
+	    entry->laser->getTransform().setDevPoint(anchorNumber,Point(std::min(MAXVALUE,std::max(MINVALUE,(int)wx)),std::min(MAXVALUE,std::max(MINVALUE,(int)wy))));
 	} else {
 	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " world anchor " << anchorNumber << " to "<< std::setprecision(3)  << Point(wx,wy) << std::endl;
 	    entry->laser->getTransform().setFloorPoint(anchorNumber,video.constrainPoint(Point(wx,wy)));
@@ -441,11 +443,11 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
      cairo_set_line_width(cr,1*pixel);
      Color c=laser->getLabelColor();
      cairo_set_source_rgb (cr,c.red(),c.green(),c.blue());
-     cairo_move_to(cr,-MAXVALUE,-MAXVALUE);
-     cairo_line_to(cr,-MAXVALUE,MAXVALUE);
+     cairo_move_to(cr,MINVALUE,MINVALUE);
+     cairo_line_to(cr,MINVALUE,MAXVALUE);
      cairo_line_to(cr,MAXVALUE,MAXVALUE);
-     cairo_line_to(cr,MAXVALUE,-MAXVALUE);
-     cairo_line_to(cr,-MAXVALUE,-MAXVALUE);
+     cairo_line_to(cr,MAXVALUE,MINVALUE);
+     cairo_line_to(cr,MINVALUE,MINVALUE);
      cairo_stroke(cr);
 
      // Draw anchor points
@@ -478,7 +480,7 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
 	     minx=std::min(minx,pt.x);
 	     maxx=std::max(maxx,pt.x);
 	 }
-	 dbg("Video.drawDevice",2) << "XRange: [" << minx << "," << maxx << "]" << std::endl;
+	 dbg("Video.drawDevice",4) << "XRange: [" << minx << "," << maxx << "]" << std::endl;
      }
     cairo_restore(cr);
 }
@@ -538,15 +540,10 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 
 	 // Draw coverage area of laser
 	 // Translate to center
-	 etherdream_point tmp;
-	 tmp.x=-MAXVALUE; tmp.y=-MAXVALUE;
-	 Point worldTL=transform.mapToWorld(tmp);
-	 tmp.x=MAXVALUE; tmp.y=-MAXVALUE;
-	 Point worldTR=transform.mapToWorld(tmp);
-	 tmp.x=-MAXVALUE; tmp.y=MAXVALUE;
-	 Point worldBL=transform.mapToWorld(tmp);
-	 tmp.x=MAXVALUE; tmp.y=MAXVALUE;
-	 Point worldBR=transform.mapToWorld(tmp);
+	 Point worldTL=transform.mapToWorld(Point(transform.getMinX(), transform.getMinY()));
+	 Point worldTR=transform.mapToWorld(Point(transform.getMaxX(), transform.getMinY()));
+	 Point worldBL=transform.mapToWorld(Point(transform.getMinX(), transform.getMaxY()));
+	 Point worldBR=transform.mapToWorld(Point(transform.getMaxX(), transform.getMaxY()));
 	 dbg("Video.drawWorld",3) << "TL=" << worldTL << ", TR=" << worldTR << ", BL=" << worldBL << ", BR=" << worldBR << std::endl;
 	 cairo_set_line_width(cr,1*pixel);
 	 cairo_move_to(cr,worldTL.X(),worldTL.Y());

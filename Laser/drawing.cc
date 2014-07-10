@@ -50,18 +50,18 @@ std::vector<CPoint> Circle::getPoints(float pointSpacing, const CPoint *priorPoi
 }
 
 float Circle::getShapeScore(const Transform &transform) const {
-    Point devcenter=transform.mapToDevice(center);
-    float devradius=(transform.mapToDevice(Point(center.X(),center.Y()+radius))-devcenter).norm();
+    Point devCenter=transform.mapToDevice(center);
+    float devRadius=(transform.mapToDevice(Point(center.X(),center.Y()+radius))-devCenter).norm();
     float score;
-    if (devcenter.X()+devradius>32767 || devcenter.X()-devradius<-32768 || devcenter.Y()+devradius>32767 || devcenter.Y()-devradius<-32768)
+    if (!transform.onScreen(devCenter+Point(devRadius,devRadius)) || ! transform.onScreen(devCenter-Point(devRadius,devRadius)))
 	score=0.0;  // off-screen
     else {
 	// All on-screen, compute maximum width of line (actually physical distance of small step in laser)
-	float delta1=(center-transform.mapToWorld(devcenter+Point(0,1))).norm();
-	float delta2=(center-transform.mapToWorld(devcenter+Point(1,0))).norm();
+	float delta1=(center-transform.mapToWorld(devCenter+Point(0,1))).norm();
+	float delta2=(center-transform.mapToWorld(devCenter+Point(1,0))).norm();
 	score=1.0/std::hypot(delta1,delta2)+1.0;
     }
-    dbg("Circle.getShapeScore",5) <<  center << " maps to " << devcenter << " score=" << score << std::endl;
+    dbg("Circle.getShapeScore",5) <<  center << " maps to " << devCenter << " score=" << score << std::endl;
     return score;
 }
 
@@ -74,7 +74,7 @@ float Line::getShapeScore(const Transform &transform) const {
 	dbg("Line.getShapeScore",1) << "zero-length line" << std::endl;
 	score=1e10;
     } else {
-	float lengthOnScreen = (devp1.min(Point(32767,32767)).max(Point(-32768,-32768))-devp2.min(Point(32767,32767)).max(Point(-32768,-32768))).norm();
+	float lengthOnScreen = (devp1.min(Point(transform.getMaxX(),transform.getMaxY())).max(Point(transform.getMinX(),transform.getMinY()))-devp2.min(Point(transform.getMaxX(),transform.getMaxY())).max(Point(transform.getMinX(),transform.getMinY()))).norm();
 	if (lengthOnScreen<length*0.99) 
 	    score=lengthOnScreen/length;
 	else {
@@ -210,7 +210,7 @@ Drawing Drawing::select(std::set<int> sel) const {
 	if (sel.count(i) > 0)
 	    result.elements.push_back(elements[i]);
     }
-    dbg("Drawing.select",2) << "Selected " << result.getNumElements() << "/" << getNumElements()  << std::endl;
+    dbg("Drawing.select",4) << "Selected " << result.getNumElements() << "/" << getNumElements()  << std::endl;
     assert(result.getNumElements()==sel.size());
     return result;
 }
