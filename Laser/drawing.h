@@ -215,6 +215,7 @@ class Drawing {
 
     // Add a line to current drawing
     void drawLine(Point p1, Point p2, Color c) {
+	dbg("Drawing.drawLine",4) << "p1=" << p1 << ", p2=" << p2 << ", color=" << c << std::endl;
 	append(std::shared_ptr<Primitive>(new Line(p1,p2,c)));
     }
 

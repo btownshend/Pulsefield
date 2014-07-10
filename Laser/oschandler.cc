@@ -333,6 +333,7 @@ void OSCHandler::arc(Point center, Point pt, float angle ) {
 }
 
 void OSCHandler::line(Point p1, Point p2) {
+    dbg("OSCHandler.line",3) << "line(" << p1 << "," << p2 << ")" << std::endl;
     drawing.drawLine(p1,p2,currentColor);
 }
 
