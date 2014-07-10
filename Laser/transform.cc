@@ -13,6 +13,57 @@ Transform::Transform(): floorpts(4), devpts(4) {
     miny=-32766;  // Needs to be less than extreme values in etherdream (short) values 
     maxy=32766;
     clear();
+
+    if (false) {
+	// Test conversions
+	Point devPt=Point(0,0);
+	Point flatPt=deviceToFlat(devPt);
+	Point dev2=flatToDevice(flatPt);
+	dbg("Transform.transform",1) << "Device Point " << devPt << " -> " << flatPt << " -> " << dev2 << std::endl;
+	devPt=Point(-32767,0);
+	flatPt=deviceToFlat(devPt);
+	dev2=flatToDevice(flatPt);
+	dbg("Transform.transform",1) << "Device Point " << devPt << " -> " << flatPt << " -> " << dev2 << std::endl;
+	devPt=Point(0,32767);
+	flatPt=deviceToFlat(devPt);
+	dev2=flatToDevice(flatPt);
+	dbg("Transform.transform",1) << "Device Point " << devPt << " -> " << flatPt << " -> " << dev2 << std::endl;
+
+	flatPt=Point(-3,4);
+	devPt=flatToDevice(flatPt);
+	Point flat2=deviceToFlat(devPt);
+	dbg("Transform.transform",1) << "Flat Point " << flatPt << " -> " << devPt << " -> " << flat2 << std::endl;
+
+	flatPt=Point(10,10);
+	devPt=flatToDevice(flatPt);
+	flat2=deviceToFlat(devPt);
+	dbg("Transform.transform",1) << "Flat Point " << flatPt << " -> " << devPt << " -> " << flat2 << std::endl;
+
+	flatPt=Point(1,1);
+	devPt=flatToDevice(flatPt);
+	flat2=deviceToFlat(devPt);
+	dbg("Transform.transform",1) << "Flat Point " << flatPt << " -> " << devPt << " -> " << flat2 << std::endl;
+
+	Point floorPt=Point(0,0);
+	devPt=mapToDevice(floorPt);
+	Point floor2=mapToWorld(devPt);
+	dbg("Transform.transform",1) << "Floor Point " << floorPt << " -> " << devPt << " -> " << floor2 << std::endl;
+
+	floorPt=Point(-1,0);
+	devPt=mapToDevice(floorPt);
+	floor2=mapToWorld(devPt);
+	dbg("Transform.transform",1) << "Floor Point " << floorPt << " -> " << devPt << " -> " << floor2 << std::endl;
+
+	floorPt=Point(0,1);
+	devPt=mapToDevice(floorPt);
+	floor2=mapToWorld(devPt);
+	dbg("Transform.transform",1) << "Floor Point " << floorPt << " -> " << devPt << " -> " << floor2 << std::endl;
+
+	floorPt=Point(3,1);
+	devPt=mapToDevice(floorPt);
+	floor2=mapToWorld(devPt);
+	dbg("Transform.transform",1) << "Floor Point " << floorPt << " -> " << devPt << " -> " << floor2 << std::endl;
+    }
 }
 
 void Transform::clear() {
