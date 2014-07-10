@@ -150,13 +150,21 @@ void *Video::runDisplay(void *arg) {
 			moving=true;
 			dbg("Video.runDisplay",1) << "Set moving to true" << std::endl;
 		    } else if (key==XK_Left) {
-			xrefs.movePoint(Point(-1,0));
+			world->lasers->lock();	// Need to lock since this may change the perspective transform which may be concurrently accessed
+			xrefs.movePoint(Point(-10,0));
+			world->lasers->unlock();
 		    } else if (key==XK_Right) {
-			xrefs.movePoint(Point(1,0));
+			world->lasers->lock();
+			xrefs.movePoint(Point(10,0));
+			world->lasers->unlock();
 		    } else if (key==XK_Up) {
-			xrefs.movePoint(Point(0,1));
+			world->lasers->lock();
+			xrefs.movePoint(Point(0,10));
+			world->lasers->unlock();
 		    } else if (key==XK_Down) {
-			xrefs.movePoint(Point(0,-1));
+			world->lasers->lock();
+			xrefs.movePoint(Point(0,-10));
+			world->lasers->unlock();
 		    } else {
 			world->newMessage() << "(s)ave, (l)oad, (b)background toggle, (g)rid, (o)utline, (B)ody, (L)eg, (r)eset";
 		    }
