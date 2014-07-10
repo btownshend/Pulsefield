@@ -1,3 +1,4 @@
+#include <iostream>
 #include <istream>
 #include <assert.h>
 #include "point.h"

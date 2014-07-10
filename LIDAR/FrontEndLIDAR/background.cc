@@ -2,6 +2,7 @@
 #include "background.h"
 #include "parameters.h"
 #include "dbg.h"
+#include "normal.h"
 
 Background::Background() {
     scanRes=0;
@@ -48,27 +49,25 @@ std::vector<float> Background::like(const SickIO &sick) const {
 	    result[i]=0.0;
 	    for (int k=0;k<NRANGES-1;k++) {
 		// This is a background pixel if it matches the ranges of this scan's background, or is farther than maximum background
-		if (freq[k][i]>0 && (fabs(srange[i]-range[k][i]) < MINBGSEP || (srange[i]>range[k][i] && k==0) ))
-		    result[i]+=freq[k][i];
-	    }
-	    if (result[i]<MINBGFREQ) {
-		// No strong primary matches, If it matches adjacent scan backgrounds, consider that with a weighting
-		for (int k=0;k<NRANGES-1;k++) {
-		    if (i>0 && fabs(srange[i]-range[k][i-1])<MINBGSEP) 
-			result[i]+=freq[k][i-1]*ADJSCANBGWEIGHT;
-		    if (i+1<sick.getNumMeasurements() && fabs(srange[i]-range[k][i+1])<MINBGSEP)
-			result[i]+=freq[k][i+1]*ADJSCANBGWEIGHT;
+		if (srange[i]>range[k][i] && k==0)
+		    result[i]=1.0;
+		else 
+		    result[i]+=(1-result[i])*freq[k][i]*normpdf(srange[i],range[k][i],sigma[k][i]); 
+
+		// Use adjacent scans
+		if (i>0)
+		    result[i]+=(1-result[i])*freq[k][i-1]*ADJSCANBGWEIGHT*normpdf(srange[i],range[k][i-1],sigma[k][i-1]);
+		if (i+1<sick.getNumMeasurements())
+		    result[i]+=(1-result[i])*freq[k][i+1]*ADJSCANBGWEIGHT*normpdf(srange[i],range[k][i+1],sigma[k][i+1]);
+
+		// Check if it is between this and adjacent background
+		if (i>0 && ((srange[i]>range[0][i]) != (srange[i]>range[0][i-1]))) {
+		    result[i]+=(1-result[i])*freq[0][i]*freq[0][i-1]*INTERPSCANBGWEIGHT/fabs(range[0][i-1]-range[0][i]);
+		    //		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i-1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
 		}
-	    }
-	    if (result[i]==0 && freq[0][i]>0) {
-		// Still no matches, check if is between this and adjacent background
-		if (i>0 && freq[0][i-1]>0 && ((srange[i]>range[0][i]) != (srange[i]>range[0][i-1]))) {
-		    result[i]=std::min(freq[0][i],freq[0][i-1])*INTERPSCANBGWEIGHT;
-		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i-1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
-		}
-	if (i+1<sick.getNumMeasurements() && freq[0][i+1]>0 && ((srange[i]>range[0][i]) != (srange[i]>range[0][i+1]))) {
-		    result[i]=std::min(freq[0][i],freq[0][i+1])*INTERPSCANBGWEIGHT;
-		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0)  <<std::fixed <<  srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i+1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
+		if (i+1<sick.getNumMeasurements() && ((srange[i]>range[0][i]) != (srange[i]>range[0][i+1]))) {
+		    result[i]=freq[0][i]*freq[0][i+1]*INTERPSCANBGWEIGHT/fabs(range[0][i]-range[0][i+1]);
+		    //		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0)  <<std::fixed <<  srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i+1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
 		}
 	    }
 	    if (result[i]>1.0) {
@@ -76,10 +75,9 @@ std::vector<float> Background::like(const SickIO &sick) const {
 		result[i]=1.0;
 	    }
 	}
-	// TODO: This is not a correct likelihood -- need to have it reflect the p(obs|bg) in the same way that we have p(obs|target) so they can be compared
-	// For now, assume this probability occurs over a range of [-MINBGSEP,MINBGSEP], so pdf= prob/(2*MINBGSEP)  (in meters, since all the other PDF's are in meters)
+	// Make this into a  likelihood -- need to have it reflect the p(obs|bg) in the same way that we have p(obs|target) so they can be compared
 	// Problem is that even for very low probs (e.g. .002), likelihood is >>entrylikelihood
-	result[i]=log(result[i]/(2.0*MINBGSEP/UNITSPERM)); 
+	result[i]=log(result[i]*UNITSPERM); 
     }
     return result;
 }
@@ -88,47 +86,64 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
     setup(sick);
     const unsigned int *srange = sick.getRange(0);
    
-    // range[0] is for the fartherest seen in last BGLONGDISTLIFE frames
-    // range[1] is the most frequent seen, with exponential decay using UPDATETC
+    // range[0] is for the farthest seen in last BGLONGDISTLIFE frames
+    // range[1] is the most frequent seen, other than range[0], with exponential decay using UPDATETC
     // range[2] is the last value seen, not matching 0 or 1;   promoted to range[1] if its frequency passes range[1]
+    float tc=UPDATETC;
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
 	if (assignments[i]!=-1 && !all)
 	    continue;
-	float tc=UPDATETC;
-	// Update if long distance
+	// Find which background fits best
+	int bestk=-1;
+	float bestprob=-1;
 	for (int k=0;k<NRANGES;k++) {
-	    // Note allow updates even if range>MAXRANGE, otherwise points slightly smaller than MAXRANGE get biased and have low freq
-	    if (fabs(srange[i]-range[k][i]) < MINBGSEP) {
-		range[k][i]=srange[i]*1.0f/tc + range[k][i]*(1-1.0f/tc);
-		freq[k][i]+=1.0f/tc;
-		// Swap ordering if needed
-		for (int kk=k;kk>1;kk--)
-		    if  (freq[kk][i] > freq[kk-1][i]) {
-			dbg("Background.update",2) << "Promoting background at scan " << i << " with range=" << range[kk][i] << ", freq=" << freq[kk][i] << " to level " << kk-1 << "; range[0]=" << range[0][i]  << std::endl;
-			swap(i,kk,kk-1);
-		    } else
-			break;
-		if (k==0)
-		    farnotseen[i]=0;
-		break;
-	    } else if (k==0 && srange[i] > range[k][i]) {
-		// New long distance point
-		dbg("Background.update",2) << "Farthest background at scan " << i << " moved from " << range[k][i] << " to " << srange[i] << std::endl;
-		range[k][i]=srange[i]*1.0f/FARUPDATETC + range[k][i]*(1-1.0f/FARUPDATETC);
-		freq[k][i]+=1.0f/tc;
-		farnotseen[i]=0;
-		break;
-	    } else if (k==NRANGES-1 && srange[i]>=MINRANGE) {
-		// No matches, inside active area; reset last range value 
-		range[k][i]=srange[i];
-		freq[k][i]=1.0f/tc;
-		for (int kk=k;kk>1;kk--)
-		    if  (freq[kk][i] > freq[kk-1][i])
-			swap(i,kk,kk-1);
-		    else
-			break;
+	    if (fabs(srange[i]-range[k][i])<3*sigma[k][i]) {
+		float p=normpdf(srange[i],range[k][i],sigma[k][i]);
+		if (p>bestprob) {
+		    bestk=k;
+		    bestprob=p;
+		}
 	    }
 	}
+	dbg("Background.update",5) << "Best fit for background " << i << " is index " << bestk << " with prob " << std::setprecision(8) << bestprob << std::setprecision(3) << std::endl;
+	if (bestk >= 0) {
+	    // Normal update
+	    float oldrange=range[bestk][i];
+	    range[bestk][i]=srange[i]*1.0f/tc + range[bestk][i]*(1-1.0f/tc);
+	    freq[bestk][i]+=1.0f/tc;
+	    if (sick.getFrame() > BGINITFRAMES)
+		sigma[bestk][i]=std::min((double)MAXBGSIGMA,sqrt(sigma[bestk][i]*sigma[bestk][i]*(1-1.0f/tc)+(srange[i]-range[bestk][i])*(srange[i]-oldrange)*1.0f/tc));
+	    if (bestk==0)
+		farnotseen[i]=0;
+	} else if (srange[i]>range[0][i]) {
+	    // New long distance point, update range[0] faster
+	    dbg("Background.update",2) << "Farthest background at scan " << i << " moved from " << range[0][i] << " to " << srange[i] << std::endl;
+	    float oldrange=range[0][i];
+	    range[0][i]=srange[i]*1.0f/FARUPDATETC + range[0][i]*(1-1.0f/FARUPDATETC);
+	    if (sick.getFrame() > BGINITFRAMES)
+		sigma[0][i]=std::min((double)MAXBGSIGMA,sqrt(sigma[0][i]*sigma[0][i]*(1-1.0f/FARUPDATETC)+(srange[i]-range[0][i])*(srange[i]-oldrange)*1.0f/FARUPDATETC));
+	    freq[0][i]+=1.0f/tc;
+	    farnotseen[i]=0;
+	} else {
+	    // No matches, inside active area; reset last range value 
+	    range[NRANGES-1][i]=srange[i];
+	    sigma[NRANGES-1][i]=MEANBGSIGMA;
+	    freq[NRANGES-1][i]=1.0f/tc;
+	}
+	// Swap ordering if needed
+	if (range[0][i] < range[1][i])
+	    // range[0] is always farthest
+	    swap(i,0,1);
+
+	bool dodump=false;
+	for (int k=NRANGES-1;k>1;k--)
+	    if  (freq[k][i] > freq[k-1][i]) {
+		// freq[1] should always be > freq[2]
+		dbg("Background.update",2) << "Promoting background at scan " << i << " with range=" << range[k][i] << ", freq=" << freq[k][i] << " to level " << k-1 << "; range[0]=" << range[0][i]  << std::endl;
+		swap(i,k,k-1);
+		dodump=true;
+	    } 
+
 	// Rescale so freq adds to 1.0
 	float ftotal=0;
 	for (int k=0;k<NRANGES;k++)
@@ -141,6 +156,46 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    swap(i,0,1);
 	    swap(i,1,2);
 	    farnotseen[i]=0;
+	    dodump=true;
+	}
+	//See if we should split any backgrounds
+	for (int k=0;k<NRANGES-1;k++) {
+	    if (sigma[k][i]==MAXBGSIGMA && freq[k][i]>10*freq[NRANGES-2][i]) {
+		dbg("Background.update",1) << "Scan " << i << ", splitting " << k << " (range=" << range[k][i] << ", sigma=" << sigma[k][i] << ", freq=" << freq[k][i] << "), replacing last bg with freq=" << freq[NRANGES-2][i] << std::endl;
+		for (int kk=NRANGES-2;kk>k+1;kk--)
+		    swap(i,kk,kk-1);
+		range[k+1][i]=range[k][i]-0.8*sigma[k][i];
+		sigma[k+1][i]=sigma[k][i]*0.6;
+		freq[k+1][i]=freq[k][i]/2;
+		range[k][i]=range[k][i]+0.8*sigma[k][i];
+		sigma[k][i]=sigma[k][i]*0.6;
+		freq[k][i]=freq[k][i]/2;
+		dodump=true;
+	    }
+	}
+	//See if we should merge any backgrounds
+	for (int k=0;k<NRANGES-1;k++) {
+	    for (int k2=k+1;k2<NRANGES-1;k2++) {
+		// If we split a N(0,1) distribution at x=0, the two halves have mean 0.8 with std=0.62;  use this below
+		if ( (fabs(range[k][i]-range[k2][i]) < 2*(sigma[k][i]+sigma[k2][i])) && sigma[k][i]<MAXBGSIGMA/2.0 && sigma[k2][i]<MAXBGSIGMA/2.0 && freq[k2][i]>0 && range[k][i]>0 && range[k2][i]>0) {
+		    dbg("Background.update",1) << "At scan " << i << ", merging bg " << k << " (range=" << range[k][i] << ", sigma=" << sigma[k][i] << ", freq=" << freq[k][i] << ") with "
+					       << k2 << " (range=" << range[k2][i] << ", sigma=" << sigma[k2][i] << ", freq=" << freq[k2][i] << ")" << std::endl;
+		    sigma[k][i]=(sigma[k][i]+sigma[k2][i])/2+fabs(range[k][i]-range[k2][i])/4;
+		    range[k][i]=(range[k][i]+range[k2][i])/2;
+		    freq[k][i]=freq[k][i]+freq[k2][i];
+		    for (int kk=k2;kk<NRANGES-1;kk++)
+			swap(i,kk,kk+1);
+		    freq[NRANGES-1][i]=0;
+		    range[NRANGES-1][i]=0;
+		    sigma[NRANGES-1][i]=MEANBGSIGMA;
+		    dodump=true;
+		}
+	    }
+	}
+	if (dodump) {
+	    for (int k=0;k<NRANGES;k++) {
+		dbg("Background.update",1) << "Scan " << i << " " << k << ": " << range[k][i] << " " << sigma[k][i] << " " << freq[k][i] << std::endl;
+	    }
 	}
     }
 }

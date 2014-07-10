@@ -11,9 +11,14 @@
 #include "sickio.h"
 
 class Background {
-    static const int NRANGES=3;
+    static const int NRANGES=5;
 
-    std::vector<float> range[NRANGES];   // Range in mm of background for NRANGES values/scan
+    // Background constists of multiple ranges, as follows:
+    // 0 - most distant background
+    // 1..NRANGES-2 - next most frequently seen background
+    // NRANGES-1 - potential new background, reset anytime a new scan shows a point that falls outside any of the prior background ranges
+    // These can be seen as a N-component gaussian mixture model, with an additional pending range
+    std::vector<float> range[NRANGES];   // Range in mm of background for NRANGES values/scan (mean of Gaussian)
     std::vector<float> sigma[NRANGES];  // Sigma for Gaussian for this range
     std::vector<float> freq[NRANGES];
     std::vector<int> farnotseen;
@@ -29,6 +34,7 @@ public:
     mxArray *convertToMX() const;
     const std::vector<float> &getRange(int i) const { return range[i]; }
     const std::vector<float> &getFreq(int i) const { return freq[i]; }
+    const std::vector<float> &getSigma(int i) const { return sigma[i]; }
     float getScanRes() const { return scanRes; }
 
     // Send /pf/background OSC message

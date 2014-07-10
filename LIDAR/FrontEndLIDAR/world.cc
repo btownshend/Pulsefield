@@ -59,7 +59,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	bg.update(*sick,assignments,true);
     } else {
 	// Update background only with points assumed to be background
-	bg.update(*sick,assignments,true);
+	bg.update(*sick,assignments,false);
     }
 }
 
