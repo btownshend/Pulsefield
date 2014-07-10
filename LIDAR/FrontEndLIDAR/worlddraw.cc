@@ -144,16 +144,22 @@ void World::draw(const Vis *vis) const {
      cairo_set_line_width(cr,1*pixel);
      for (int k=0;k<2;k++) {
 	 const std::vector<float> &range = bg.getRange(k);
+	 const std::vector<float> &sigma = bg.getSigma(k);
 	 const std::vector<float> &frac = bg.getFreq(k);
 	 for (unsigned int i=0;i<range.size();i++) {
 	     if (frac[i]>0.01) {
-		 Point p1,p2;
+		 Point p1,p2,p3,p4;
 		 float theta=(i-(range.size()-1)/2.0)*scanRes;
-		 p1.setThetaRange(theta+divergence/2,range[i]);
-		 p2.setThetaRange(theta-divergence/2,range[i]);
+		 p1.setThetaRange(theta+divergence/2,range[i]-2*sigma[i]);
+		 p2.setThetaRange(theta-divergence/2,range[i]-2*sigma[i]);
+		 p3.setThetaRange(theta-divergence/2,range[i]+2*sigma[i]);
+		 p4.setThetaRange(theta+divergence/2,range[i]+2*sigma[i]);
 		 cairo_set_source_rgb (cr, frac[i],frac[i],frac[i]);
 		 cairo_move_to(cr, p1.X(), MAXRANGE-p1.Y());
 		 cairo_line_to(cr, p2.X(), MAXRANGE-p2.Y());
+		 cairo_line_to(cr, p3.X(), MAXRANGE-p3.Y());
+		 cairo_line_to(cr, p4.X(), MAXRANGE-p4.Y());
+		 cairo_line_to(cr, p1.X(), MAXRANGE-p1.Y());
 		 cairo_stroke(cr);
 	     }
 	 }

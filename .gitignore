@@ -127,3 +127,5 @@ LIDAR/FrontEndLIDAR/postopt3-mini.vnc-showlaser
 LIDAR/FrontEndLIDAR/PRIORREVS/frontend-0.2
 
 LIDAR/FrontEndLIDAR/frontend.HOLD
+
+Laser/malloc.dump
