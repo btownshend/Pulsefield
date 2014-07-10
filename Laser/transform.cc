@@ -191,7 +191,7 @@ std::vector<CPoint> Transform::mapToWorld(const std::vector<etherdream_point> &p
 void Transform::save(std::ostream &s) const {
     dbg("Transform.save",1) << "Saving transform" << std::endl;
     for (unsigned int i=0;i<floorpts.size();i++) 
-	s << std::fixed <<  std::setprecision(3) << floorpts[i] << " " << std::setprecision(0) << devpts[i] << " " <<  std::endl << std::setprecision(3);;
+	s << std::fixed <<  std::setprecision(3) << floorpts[i] << " " << std::setprecision(0) << devpts[i] << " " <<  std::endl << std::setprecision(3);
 }
 
 void Transform::load(std::istream &s) {
