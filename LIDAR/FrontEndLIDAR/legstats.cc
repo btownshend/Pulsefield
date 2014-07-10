@@ -68,7 +68,7 @@ void LegStats::update(const Person &p) {
 	    dbg("LegStats",2) << "Leg separation too low at " << sep << "; increasing to " << MEANLEGSEP/2 << std::endl;
 	    sep=MEANLEGSEP/2;
 	}
-	sepSigma=sqrt(sepSigma*sepSigma*(1-alpha)+alpha*(cursep-sep)*(cursep-oldsep)/LEGSTATSTC);
+	sepSigma=sqrt(sepSigma*sepSigma*(1-alpha)+alpha*(cursep-sep)*(cursep-oldsep));
 	dbg("LegStats.update",2) << "Current sep=" << cursep << ", mean sep= " << sep << " +/- " << sepSigma << std::endl;
     }
 }
