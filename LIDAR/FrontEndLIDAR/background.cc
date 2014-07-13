@@ -161,7 +161,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	//See if we should split any backgrounds
 	for (int k=0;k<NRANGES-1;k++) {
 	    if (sigma[k][i]==MAXBGSIGMA && freq[k][i]>10*freq[NRANGES-2][i]) {
-		dbg("Background.update",1) << "Scan " << i << ", splitting " << k << " (range=" << range[k][i] << ", sigma=" << sigma[k][i] << ", freq=" << freq[k][i] << "), replacing last bg with freq=" << freq[NRANGES-2][i] << std::endl;
+		dbg("Background.update",2) << "Scan " << i << ", splitting " << k << " (range=" << range[k][i] << ", sigma=" << sigma[k][i] << ", freq=" << freq[k][i] << "), replacing last bg with freq=" << freq[NRANGES-2][i] << std::endl;
 		for (int kk=NRANGES-2;kk>k+1;kk--)
 		    swap(i,kk,kk-1);
 		range[k+1][i]=range[k][i]-0.8*sigma[k][i];
@@ -178,7 +178,6 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    for (int k2=k+1;k2<NRANGES-1;k2++) {
 		// If we split a N(0,1) distribution at x=0, the two halves have mean 0.8 with std=0.62;  use this below
 		if ( (fabs(range[k][i]-range[k2][i]) < 2*(sigma[k][i]+sigma[k2][i])) && sigma[k][i]<MAXBGSIGMA/2.0 && sigma[k2][i]<MAXBGSIGMA/2.0 && freq[k2][i]>0 && range[k][i]>0 && range[k2][i]>0) {
-		    dbg("Background.update",1) << "At scan " << i << ", merging bg " << k << " (range=" << range[k][i] << ", sigma=" << sigma[k][i] << ", freq=" << freq[k][i] << ") with "
 					       << k2 << " (range=" << range[k2][i] << ", sigma=" << sigma[k2][i] << ", freq=" << freq[k2][i] << ")" << std::endl;
 		    sigma[k][i]=(sigma[k][i]+sigma[k2][i])/2+fabs(range[k][i]-range[k2][i])/4;
 		    range[k][i]=(range[k][i]+range[k2][i])/2;
@@ -189,12 +188,13 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 		    range[NRANGES-1][i]=0;
 		    sigma[NRANGES-1][i]=MEANBGSIGMA;
 		    dodump=true;
+			dbg("Background.update",2) << "At scan " << i << ", merging bg " << k << " (range=" << range[k][i] << ", sigma=" << sigma[k][i] << ", freq=" << freq[k][i] << ") with "
 		}
 	    }
 	}
 	if (dodump) {
 	    for (int k=0;k<NRANGES;k++) {
-		dbg("Background.update",1) << "Scan " << i << " " << k << ": " << range[k][i] << " " << sigma[k][i] << " " << freq[k][i] << std::endl;
+		dbg("Background.update",3) << "Scan " << i << " " << k << ": " << range[k][i] << " " << sigma[k][i] << " " << freq[k][i] << std::endl;
 	    }
 	}
     }
