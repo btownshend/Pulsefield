@@ -137,6 +137,15 @@ classdef Background < handle
         input('Press return to continue','s');
       end
     end
-   end
 
+    function p=getActiveArea(bg,maxrange)
+    % Estimate the active area -- a polynomial enclosed by the "walls"
+      filtlen=round(size(bg.range,2)/12);
+      mr=medfilt1(bg.range(1,:),filtlen);
+      sel=mr<=maxrange;
+      p=range2xy(bg.angle(sel),mr(sel));
+      p(end+1,:)=p(1,:);
+    end
+
+   end
 end
