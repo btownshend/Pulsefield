@@ -173,22 +173,25 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 		dodump=true;
 	    }
 	}
-	//See if we should merge any backgrounds
-	for (int k=0;k<NRANGES-1;k++) {
-	    for (int k2=k+1;k2<NRANGES-1;k2++) {
-		// If we split a N(0,1) distribution at x=0, the two halves have mean 0.8 with std=0.62;  use this below
-		if ( (fabs(range[k][i]-range[k2][i]) < 2*(sigma[k][i]+sigma[k2][i])) && sigma[k][i]<MAXBGSIGMA/2.0 && sigma[k2][i]<MAXBGSIGMA/2.0 && freq[k2][i]>0 && range[k][i]>0 && range[k2][i]>0) {
-					       << k2 << " (range=" << range[k2][i] << ", sigma=" << sigma[k2][i] << ", freq=" << freq[k2][i] << ")" << std::endl;
-		    sigma[k][i]=(sigma[k][i]+sigma[k2][i])/2+fabs(range[k][i]-range[k2][i])/4;
-		    range[k][i]=(range[k][i]+range[k2][i])/2;
-		    freq[k][i]=freq[k][i]+freq[k2][i];
-		    for (int kk=k2;kk<NRANGES-1;kk++)
-			swap(i,kk,kk+1);
-		    freq[NRANGES-1][i]=0;
-		    range[NRANGES-1][i]=0;
-		    sigma[NRANGES-1][i]=MEANBGSIGMA;
-		    dodump=true;
+	if (false) {
+	    // Disable this for now;  seems that one should dominate and eventually take over with the other one slowly fading away
+	    //See if we should merge any backgrounds
+	    for (int k=0;k<NRANGES-1;k++) {
+		for (int k2=k+1;k2<NRANGES-1;k2++) {
+		    // If we split a N(0,1) distribution at x=0, the two halves have mean 0.8 with std=0.62;  use this below
+		    if ( (fabs(range[k][i]-range[k2][i]) < 2*(sigma[k][i]+sigma[k2][i])) && sigma[k][i]<MAXBGSIGMA/2.0 && sigma[k2][i]<MAXBGSIGMA/2.0 && freq[k2][i]>0 && range[k][i]>0 && range[k2][i]>0) {
 			dbg("Background.update",2) << "At scan " << i << ", merging bg " << k << " (range=" << range[k][i] << ", sigma=" << sigma[k][i] << ", freq=" << freq[k][i] << ") with "
+						   << k2 << " (range=" << range[k2][i] << ", sigma=" << sigma[k2][i] << ", freq=" << freq[k2][i] << ")" << std::endl;
+			sigma[k][i]=(sigma[k][i]+sigma[k2][i])/2+fabs(range[k][i]-range[k2][i])/4;
+			range[k][i]=(range[k][i]+range[k2][i])/2;
+			freq[k][i]=freq[k][i]+freq[k2][i];
+			for (int kk=k2;kk<NRANGES-1;kk++)
+			    swap(i,kk,kk+1);
+			freq[NRANGES-1][i]=0;
+			range[NRANGES-1][i]=0;
+			sigma[NRANGES-1][i]=MEANBGSIGMA;
+			dodump=true;
+		    }
 		}
 	    }
 	}
