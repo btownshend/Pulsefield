@@ -47,15 +47,16 @@ void Leg::predict(int nstep, float fps) {
 float Leg::getObsLike(const Point &pt, int frame,const LegStats &ls) const {
     float dpt=(pt-position).norm();
     float sigma=sqrt(pow(ls.getDiamSigma()/2,2.0)+posvar);
-    float like=log(normpdf(dpt, ls.getDiam()/2,sigma)*UNITSPERM);
 
+    // float like=log(normpdf(dpt, ls.getDiam()/2,sigma)*UNITSPERM);
+    float like=log(ricepdf(dpt,ls.getDiam()/2,sigma)*UNITSPERM);
     // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
     // This is handled by calculating the probabily of the object overlapping the scan line prior to the endpoint.
     float dclr=segment2pt(Point(0.0,0.0),pt,position);
     dbg("Leg.getObsLike",20) << "pt=" << pt << ", leg=" << position << ", pt-leg=" << (pt-position) << "dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
     if (dclr<dpt) {
-	float clike1=log(normcdf(dclr,ls.getDiam()/2,sigma));
-	float clike2= log(normcdf(dpt,ls.getDiam()/2,sigma));
+	float clike1=log(ricecdf(dclr,ls.getDiam()/2,sigma));
+	float clike2= log(ricecdf(dpt,ls.getDiam()/2,sigma));
 	like+=clike1-clike2;
 	dbg("Leg.getObsLike",20) << "clike=" << clike1 << "-" << clike2 << "=" << clike1-clike2 << ", like=" << like << std::endl;
     }
@@ -186,7 +187,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 			if (useSepLikeLookup)
 			seplike=legSepLike.lookup(d);
 		    else
-			seplike=log(normpdf(d,ls.getSep(),sqrt(otherLeg->posvar+ls.getSepSigma()*ls.getSepSigma()))*UNITSPERM);
+			seplike=log(ricepdf(d,ls.getSep(),sqrt(otherLeg->posvar+ls.getSepSigma()*ls.getSepSigma()))*UNITSPERM);
 		    if (std::isnan(seplike))
 			dbg("Leg.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", seplike=" << seplike << std::endl;
 	    }
