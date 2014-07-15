@@ -154,10 +154,13 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	for (int iy=0;iy<likeny;iy++) {
 	    float y=minval.Y()+iy*step;
 	    Point pt(x,y);
-	    float adist=(position-pt).norm();
-
+	    // float adist=(position-pt).norm();
+	    
 	    // a priori likelihood
-	    float apriori=log(normpdf(adist,0,apriorisigma)*UNITSPERM);
+	    // float apriori=log(normpdf(adist,0,apriorisigma)*UNITSPERM);  // WRONG computation!
+
+	    Point delta=position-pt;
+	    float apriori=log(normpdf(delta.X(),0,apriorisigma)*UNITSPERM)+log(normpdf(delta.Y(),0,apriorisigma)*UNITSPERM);   // Assume apriorsigma applies in both directions, no covariance
 
 	    // Likelihood with respect to unobstructed paths (leg can't be in these paths)
 	    float dclr=1e10;
