@@ -46,14 +46,13 @@ void Leg::predict(int nstep, float fps) {
 // Get likelihood of an observed echo at pt hitting leg given current model
 float Leg::getObsLike(const Point &pt, int frame,const LegStats &ls) const {
     float dpt=(pt-position).norm();
-    float sigma=sqrt(pow(ls.getDiamSigma()/2,2.0)+posvar);
-
+    float sigma=sqrt(pow(ls.getDiamSigma()/2,2.0)+posvar);  // hack: use positition sigma inflated by leg diam variance
     // float like=log(normpdf(dpt, ls.getDiam()/2,sigma)*UNITSPERM);
     float like=log(ricepdf(dpt,ls.getDiam()/2,sigma)*UNITSPERM);
     // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
-    // This is handled by calculating the probabily of the object overlapping the scan line prior to the endpoint.
+    // This is handled by calculating the probability of the object overlapping the scan line prior to the endpoint.
     float dclr=segment2pt(Point(0.0,0.0),pt,position);
-    dbg("Leg.getObsLike",20) << "pt=" << pt << ", leg=" << position << ", pt-leg=" << (pt-position) << "dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
+    dbg("Leg.getObsLike",20) << "pt=" << pt << ", leg=" << position << ", pt-leg=" << (pt-position) << ", diam=" << ls.getDiam() << ", dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
     if (dclr<dpt) {
 	float clike1=log(ricecdf(dclr,ls.getDiam()/2,sigma));
 	float clike2= log(ricecdf(dpt,ls.getDiam()/2,sigma));
@@ -179,7 +178,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    // Likelihood with respect to separation from other leg (if it is set and has low variance)
 	    float seplike=0;
 	    if (otherLeg!=NULL) {
-		// Update likelihood using separtion from other leg
+		// Update likelihood using separation from other leg
 		    float d=(otherLeg->position-pt).norm();
 		    if (d>MAXLEGSEP*2)
 			seplike=-1000;
@@ -189,7 +188,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 		    else
 			seplike=log(ricepdf(d,ls.getSep(),sqrt(otherLeg->posvar+ls.getSepSigma()*ls.getSepSigma()))*UNITSPERM);
 		    if (std::isnan(seplike))
-			dbg("Leg.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", seplike=" << seplike << std::endl;
+			dbg("Leg.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", uselookup=" << useSepLikeLookup << ", sep=" << ls.getSep() << ", sigma=" << (sqrt(otherLeg->posvar+ls.getSepSigma()*ls.getSepSigma()))  << ", seplike=" << seplike << std::endl;
 	    }
 
 	    like[ix*likeny+iy]=glike+clearlike+apriori+seplike;
