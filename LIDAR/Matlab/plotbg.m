@@ -7,28 +7,33 @@ setfig('plotbg');clf;
 subplot(311);
 plot(frame,vrange,'g');
 hold on;
-col='rbm';
-for i=1:3
+col='rbcmky';
+leg={'vis'};
+nbg=size(snap(1).bg.range,1)
+for i=1:nbg
   range=arrayfun(@(z) z.bg.range(i,scanline),snap);
-  plot(frame+i/4,range,col(i));
+  plot(frame+i/(nbg+1),range,col(i));
+  leg{end+1}=sprintf('Bg%d',i);
 end
-legend('Vis','Bg1','Bg2','Bg3');
+legend(leg);
 xlabel('Frame');
 ylabel('Range');
 
 subplot(312);
-for i=1:3
+leg={};
+for i=1:nbg
   sigma=arrayfun(@(z) z.bg.sigma(i,scanline),snap);
-  plot(frame+i/4,sigma,col(i));
+  plot(frame+i/(nbg+1),sigma,col(i));
   hold on;
+  leg{end+1}=sprintf('Bg%d',i);
 end
-legend('Bg1','Bg2','Bg3');
+legend(leg);
 xlabel('Frame');
 ylabel('Sigma');
 
 subplot(313);
 freq=[];
-for i=1:3
+for i=1:nbg
   freq(i,:)=arrayfun(@(z) z.bg.freq(i,scanline),snap);
 end
 h=bar(frame,freq','stacked');
