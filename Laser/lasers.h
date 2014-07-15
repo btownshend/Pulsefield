@@ -5,7 +5,7 @@
 class Lasers {
     std::vector<std::shared_ptr<Laser> > lasers;
     std::vector<Point> background;   // Background
-    bool showBackground,showGrid,showOutline,showTest;
+    bool showBackground,showGrid,showOutline,showTest,showAlignment;
 
     bool needsRender;
     // Locking
@@ -60,6 +60,7 @@ public:
     void setBackground(int scanpt, int totalpts, float angleDeg, float range);
     void toggleBackground() { showBackground=!showBackground; }
     void toggleGrid() { showGrid=!showGrid; }
+    void toggleAlignment() { showAlignment=!showAlignment; }
     void toggleOutline() { showOutline=!showOutline; }
     void toggleTest() { showTest=!showTest; }
     void toggleLaser(int i) { if (i>=0 && i<lasers.size()) lasers[i]->toggleLaser(); }

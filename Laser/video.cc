@@ -135,8 +135,12 @@ void *Video::runDisplay(void *arg) {
 			// Grid toggle
 			world->toggleOutline();
 			world->newMessage() << "Toggled laser outline";
+		    } else if (key==XK_a) {
+			// Alignment pattern toggle
+			world->toggleAlignment();
+			world->newMessage() << "Toggled alignment (tubes) pattern";
 		    } else if (key==XK_t) {
-			// Grid toggle
+			// Test pattern toggle
 			world->toggleTest();
 			world->newMessage() << "Toggled laser test pattern";
 		    } else if (key>=XK_1 && key<=XK_9) {

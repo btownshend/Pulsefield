@@ -77,6 +77,7 @@ class Video: public DisplayDevice {
     // Toggle background display
     void toggleBackground() { lasers->toggleBackground(); }
     void toggleGrid() { lasers->toggleGrid(); }
+    void toggleAlignment() { lasers->toggleAlignment(); }
     void toggleOutline() { lasers->toggleOutline(); }
     void toggleTest() { lasers->toggleTest(); }
     void toggleLaser(int i) { lasers->toggleLaser(i); }

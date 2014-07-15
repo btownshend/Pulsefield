@@ -16,6 +16,7 @@ Lasers::Lasers(int nlasers): lasers(nlasers) {
     }
     showBackground=false;
     showGrid=false;
+    showAlignment=false;
 }
 
 Lasers::~Lasers() {
@@ -73,6 +74,50 @@ int Lasers::render() {
 
     if (showBackground)
 	globalDrawing.drawPolygon(background,bgColor);
+    if (showAlignment)  {
+	// TODO: Draw alignment pattern
+	static const float MINTARGETDISTFROMBG=0.5;   // Minimum distance of target from background
+	static const float MAXTARGETRANGEDIFF=0.3;
+	static const int MINTARGETHITS=2;	// Minimum number of hits for it to be a target
+	static const int MAXTARGETHITS=10;	// Maximum number of hits for it to be a target
+	float lastBgRange=background[0].norm();
+	int inTargetCnt=0;
+	float tgtRange=0;
+	for (int i=0;i<background.size();i++) {
+	    float range=background[i].norm();
+	    dbg("Laser.showAlignment",10) <<  "i=" << i << ", range=" << range << ", inTargetCnt=" << inTargetCnt << std::endl;
+	    if (inTargetCnt>0 && fabs(range-tgtRange)>MAXTARGETRANGEDIFF)  {
+	      if (inTargetCnt>=MINTARGETHITS) {
+		// Just finished a target
+		float diameter=(background[i-1]-background[i-inTargetCnt]).norm()*(inTargetCnt+1)/inTargetCnt;
+		Point center=(background[i-inTargetCnt/2-1]+background[i-(inTargetCnt+1)/2])/2;
+		center=center * (tgtRange+diameter/2)/center.norm();	// Move to correct range
+		dbg("Laser.showAlignment",3) << "alignment pattern detected at scans " << i-inTargetCnt << "-" << i-1 << " at " << center << " with diameter " << diameter << " at range " << tgtRange <<  " with background at range " << lastBgRange << ", new range=" << range <<  std::endl;
+		// Draw the hits on the target as a polygon
+		std::vector<Point> tgt(background.begin()+i-inTargetCnt,background.begin()+i);
+		globalDrawing.drawPolygon(tgt,bgColor);
+		// Draw a circle around target at a larger radius
+		globalDrawing.drawCircle(center,diameter*0.6,bgColor);
+	      } 
+	      inTargetCnt=0;  // Reset, since this is a different range
+	    }
+	    if (range<lastBgRange-MINTARGETDISTFROMBG) {
+	      if (inTargetCnt==0)
+		tgtRange=range;
+	      else
+		tgtRange=std::min(range,tgtRange);
+	      inTargetCnt++;
+	    } else {
+		lastBgRange=range;
+		inTargetCnt=0;
+	    }
+	    if (inTargetCnt> MAXTARGETHITS) {
+	      // Too big -- reset
+	      inTargetCnt=0;
+	      lastBgRange=range;
+	    }
+	}
+    }
     if (showGrid) {
 	int ngrid=7;
 	float width=6;
