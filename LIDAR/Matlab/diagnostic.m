@@ -4,7 +4,8 @@ defaults=struct('trackid',[],...   % Only show these trackids
                 'frames',[],...
                 'minage',1,...
                 'debug',false,...
-                'other','speed'...
+                'other','speed',...
+                'plotvar',false...
                 );
 args=processargs(defaults,varargin);
 
@@ -70,6 +71,7 @@ for i=1:length(ids)
     continue;
   end
   loc=nan(length(snap),2,2);
+  posvar=nan(length(snap),2);
   legvel=nan(length(snap),2,2);
   vel=nan(length(snap),2);
   vis=false(length(snap),2);
@@ -77,6 +79,7 @@ for i=1:length(ids)
     sel=arrayfun(@(z) z.id, snap(j).tracker.tracks)==id;
     if sum(sel)>0
       loc(j,:,:)=snap(j).tracker.tracks(sel).legs;
+      posvar(j,:)=snap(j).tracker.tracks(sel).posvar;
       vel(j,:)=snap(j).tracker.tracks(sel).velocity;
       legvel(j,:,:)=snap(j).tracker.tracks(sel).legvelocity;
       if isprop(snap(j).tracker.tracks(sel),'scanpts')
@@ -102,6 +105,12 @@ for i=1:length(ids)
   plot(loc(:,1,1),frame,[color,'-']);
   hold on;
   plot(loc(:,2,1),frame,[color,'-']);
+  if args.plotvar
+    for ii=1:size(posvar,1)
+      plot(loc(ii,1,1)+sqrt(posvar(ii,1))*[-1,1],frame(ii)+[-0.2,-0.2],[color,':']);
+      plot(loc(ii,2,1)+sqrt(posvar(ii,2))*[-1,1],frame(ii)+[0.2,0.2],[color,':']);
+    end
+  end
   % Visible points
   plot(loc(vis(:,1),1,1),frame(vis(:,1)),[color,'.']);
   plot(loc(vis(:,2),2,1),frame(vis(:,2)),[color,'.']);
@@ -116,6 +125,12 @@ for i=1:length(ids)
   plot(frame,loc(:,1,2),[color,'-']);
   hold on;
   plot(frame,loc(:,2,2),[color,'-']);
+  if args.plotvar
+    for ii=1:size(posvar,1)
+      plot(frame(ii)+[-0.2,-0.2],loc(ii,1,2)+sqrt(posvar(ii,1))*[-1,1],[color,':']);
+      plot(frame(ii)+[0.2,0.2],loc(ii,2,2)+sqrt(posvar(ii,2))*[-1,1],[color,':']);
+    end
+  end
   plot(frame(vis(:,1)),loc(vis(:,1),1,2),[color,'.']);
   plot(frame(vis(:,2)),loc(vis(:,2),2,2),[color,'.']);
   cy=axis;
