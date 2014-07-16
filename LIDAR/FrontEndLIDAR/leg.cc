@@ -75,42 +75,6 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     dbg("Leg.update",5) << "prior: " << *this << std::endl;
     dbg("Leg.update",5) << " fs=" << fs << std::endl;
     
-    // Bound search by prior position + 2*sigma(position) + legdiam/2
-    float margin;
-    margin=2*sqrt(posvar);
-    minval=position-margin;
-    maxval=position+margin;
-
-    // Make sure any potential measured point is also in the search
-    for (unsigned int i=0;i<fs.size();i++) {
-	Point pt=vis.getSick()->getPoint(fs[i]);
-	pt=pt*(1+ls.getDiam()/2/pt.norm());	// Move to expected position of leg
-	minval=minval.min(pt);
-	maxval=maxval.max(pt);
-    }
-
-    // Increase search by legdiam/2
-    minval=minval-ls.getDiam()/2;
-    maxval=maxval+ls.getDiam()/2;
-
-    // Initial estimate of grid size
-    float step=20;
-    likenx=(int)((maxval.X()-minval.X())/step+1.5);
-    likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
-    if (likenx*likeny > MAXGRIDPTS) {
-	step=step*sqrt(likenx*likeny*1.0/MAXGRIDPTS);
-	dbg("Leg.update",3) << "Too many grid points (" << likenx << " x " << likeny << ") - increasing stepsize to  " << step << " mm" << std::endl;
-    }
-
-    minval.setX(floor(minval.X()/step)*step);
-    minval.setY(floor(minval.Y()/step)*step);
-    maxval.setX(ceil(maxval.X()/step)*step);
-    maxval.setY(ceil(maxval.Y()/step)*step);
-
-    likenx=(int)((maxval.X()-minval.X())/step+1.5);
-    likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
-    dbg("Leg.update",4) << "Search box = " << minval << " : " << maxval << std::endl;
-    dbg("Leg.update",4) << "Search over a " << likenx << " x " << likeny << " grid with " << fs.size() << " points, diam=" << ls.getDiam() << " +/- *" << exp(LOGDIAMSIGMA) << std::endl;
 
     // Find the rays that will hit this box
     float theta[4];
@@ -149,10 +113,12 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     like.resize(likenx*likeny);
 
     float apriorisigma=sqrt(posvar+SENSORSIGMA*SENSORSIGMA);
+    float stepx=(maxval.X()-minval.X())/(likenx-1);
+    float stepy=(maxval.Y()-minval.Y())/(likeny-1);
     for (int ix=0;ix<likenx;ix++) {
-	float x=minval.X()+ix*step;
+	float x=minval.X()+ix*stepx;
 	for (int iy=0;iy<likeny;iy++) {
-	    float y=minval.Y()+iy*step;
+	    float y=minval.Y()+iy*stepy;
 	    Point pt(x,y);
 	    // float adist=(position-pt).norm();
 	    
@@ -220,9 +186,9 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     double var=0;
     double tprob=0;
     for (int ix=0;ix<likenx;ix++) {
-	float x=minval.X()+ix*step;
+	float x=minval.X()+ix*stepx;
 	for (int iy=0;iy<likeny;iy++) {
-	    float y=minval.Y()+iy*step;
+	    float y=minval.Y()+iy*stepy;
 	    Point pt(x,y);
 	    if (like[ix*likeny+iy]<-50)
 		// Won't add much!

@@ -84,9 +84,45 @@ float Person::getObsLike(const Point &pt, int leg, int frame) const {
     return legs[leg].getObsLike(pt,frame,legStats);
 }
 
+void Person::setupGrid() {
+    // Bound search by prior position + 2*sigma(position) + legdiam/2
+    float margin;
+    margin=2*sqrt((legs[0].posvar+legs[1].posvar)/2);
+    minval=position-margin;
+    maxval=position+margin;
+
+    // Increase search by legdiam/2
+    minval=minval-legStats.getDiam()/2;
+    maxval=maxval+legStats.getDiam()/2;
+
+    // Initial estimate of grid size
+    float step=20;
+    likenx=(int)((maxval.X()-minval.X())/step+1.5);
+    likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
+    if (likenx*likeny > MAXGRIDPTS) {
+	step=step*sqrt(likenx*likeny*1.0/MAXGRIDPTS);
+	dbg("Leg.update",3) << "Too many grid points (" << likenx << " x " << likeny << ") - increasing stepsize to  " << step << " mm" << std::endl;
+    }
+
+    minval.setX(floor(minval.X()/step)*step);
+    minval.setY(floor(minval.Y()/step)*step);
+    maxval.setX(ceil(maxval.X()/step)*step);
+    maxval.setY(ceil(maxval.Y()/step)*step);
+
+    likenx=(int)((maxval.X()-minval.X())/step+1.5);
+    likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
+    dbg("Person.setupGrid",4) << "Search box = " << minval << " : " << maxval << std::endl;
+    dbg("Person.setupGrid",4) << "Search over a " << likenx << " x " << likeny << " grid, diam=" << legStats.getDiam() << " +/-" << LEGDIAMSIGMA << std::endl;
+    Point legSepVector=legs[1].getPosition()-legs[0].getPosition();
+    dbg("Person.setupGrid",4) << "Legsepvector=" << legSepVector << std::endl;
+    legs[0].setupGrid(likenx, likeny, minval-legSepVector/2, maxval-legSepVector/2);
+    legs[1].setupGrid(likenx, likeny, minval+legSepVector/2, maxval+legSepVector/2);
+}
+
 void Person::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs[2], int nstep,float fps) {
     // Need to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods
-    legs[0].update(vis,bglike,fs[0],legStats,0);
+    setupGrid();
+    legs[0].update(vis,bglike,fs[0],legStats,NULL);
     legs[1].update(vis,bglike,fs[1],legStats,&legs[0]);
     if (true) {
 	// TODO only if leg[1] adjusted, then do first leg again

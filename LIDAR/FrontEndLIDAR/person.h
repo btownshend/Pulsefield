@@ -36,6 +36,13 @@ class Person {
     // Leg positions, stats
     Leg legs[2];
     LegStats legStats;
+
+    // Grids
+    int likenx, likeny;
+
+    // Person position grid
+    Point minval, maxval;
+    void setupGrid();
 public:
     Person(int _id, const Point &leg1, const Point &leg2);
     ~Person();
