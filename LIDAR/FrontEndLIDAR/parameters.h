@@ -44,7 +44,7 @@ static const float MAXLEGSPEED=4000;	// Maximum speed of a leg in mm/s
 static const float MAXLEGSEP=400;	// Maximum separation of leg centers
 static const float VELUPDATETC=10;	// Velocity update time constant in frames
 static const float VELDAMPING=0.95;	// Damping (multiplicative factor) for legvelocity when not visible
-static const float DRIFTVAR=100*100;	// Additional variance of position estimates per step when they are estimated 
+static const float DRIFTVAR=50*50;	// Additional variance of position estimates per step when they are estimated 
 static const float MINLIKEFORUPDATES=-30;	  // Minimum likelihood of a target to use the current observations to update it
 
 // ******** Leg statistics 
