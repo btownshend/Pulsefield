@@ -68,15 +68,14 @@ void Person::predict(int nstep, float fps) {
     for (int i=0;i<2;i++) 
 	legs[i].predict(nstep,fps);
 
-    for (int i=0;i<2;i++)
-	legs[i].posvar=std::min(legs[i].posvar,legs[1-i].posvar+MAXLEGSEP*MAXLEGSEP);
-
     position=(legs[0].position+legs[1].position)/2;
     velocity=(legs[0].velocity+legs[1].velocity)/2;
     dbg("Person.predict",2) << "After predict: " << *this << std::endl;
 
 
     // If one leg is locked down, then the other leg can't vary more than MAXLEGSEP
+    //    for (int i=0;i<2;i++)
+    //	legs[i].posvar=std::min(legs[i].posvar,legs[1-i].posvar+legStats.getSepSigma()*legStats.getSepSigma());
 }
 
 // Get likelihood of an observed echo at pt hitting leg given current model
