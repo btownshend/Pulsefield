@@ -2,6 +2,7 @@ classdef Person < handle
   properties
     id; 	% ID of person
     position; 	% Position of core (hips)
+    persposvar;	% Position variance of person
     legs;   	% Coordinates of legs;  legs(1,:)=left, legs(2,:)=right
     legsmeas;	% Measurement of legs (before any smoothing)
     prevlegs;	% Previous leg coordinates
@@ -15,8 +16,8 @@ classdef Person < handle
     legdiam;	% Estimate of leg diameter in meters
     leftness;	% Fraction of time leg(1) is on the left side of direction of motion
     maxlike;	% Maximum likelihood
-    like;	% Cell array of likelihood matrices
-    minval;	% Range of coordinates for likelihoods
+    like;	% Cell array of likelihood matrices (leg[0],leg[1],person,separation)
+    minval;	% Range of coordinates for likelihoods (4,2); first index is same as above 
     maxval;	
     age;
     consecutiveInvisibleCount;
@@ -401,35 +402,45 @@ classdef Person < handle
       end
     end
 
-    function calcpersonlike(obj,legvec) 
+    function calcpersonlike(obj,legvec,personpos) 
     % Given the likelihood of the two legs (in obj.like), compute the likelihood of the person center
     % Use the given vector as the delta from leg1 to leg2
       if nargin<2
         legvec=obj.prevlegs(2,:)-obj.prevlegs(1,:);
       end
+      if nargin<3
+        personpos=obj.position;
+      end
       % Calculate body position for each element in leg grid 
       offset(1,:)=legvec/2;
       offset(2,:)=-legvec/2;
-      lcoord={};
+      lcoord={};  % Coordinates of leg grids
+      ocoord={};  % Leg grids shifted to person center
       for i=1:2
         for j=1:2
-          lcoord{i,j}=(obj.maxval(i,j)-obj.minval(i,j))*(0:size(obj.like{i},3-j)-1)/(size(obj.like{i},3-j)-1)+obj.minval(i,j)+offset(i,j);
+          lcoord{i,j}=(obj.maxval(i,j)-obj.minval(i,j))*(0:size(obj.like{i},3-j)-1)/(size(obj.like{i},3-j)-1)+obj.minval(i,j);
+          ocoord{i,j}=lcoord{i,j}+offset(i,j);
         end
       end
 
-      ngrid=40;
-      minval=mean(obj.minval,1);
-      maxval=mean(obj.maxval,1);
+      ngrid=size(obj.like{1});
+      minval=mean(obj.minval(1:2,:),1);
+      maxval=mean(obj.maxval(1:2,:),1);
       for j=1:2
-        ccoord{j}=(maxval(j)-minval(j))*(0:ngrid-1)/(ngrid-1)+minval(j);
+        ccoord{j}=(maxval(j)-minval(j))*(0:ngrid(3-j)-1)/(ngrid(3-j)-1)+minval(j);
       end
-      l={};
+      l={};  % Person likelihood
       for k=1:2
-        l{k}=interp2(lcoord{k,1},lcoord{k,2}',obj.like{k},ccoord{1},ccoord{2}');
+        l{k}=interp2(ocoord{k,1},ocoord{k,2}',obj.like{k},ccoord{1},ccoord{2}');
       end
       obj.like{3}=l{1}+l{2};
       obj.minval(3,:)=minval;
       obj.maxval(3,:)=maxval;
+      reflected=obj.like{2};
+      reflected=reflected+interp2(2*personpos(1)-lcoord{1,1},2*personpos(2)-lcoord{1,2}',obj.like{1},lcoord{2,1},lcoord{2,2}');
+      obj.like{4}=reflected;
+      obj.minval(4,:)=obj.minval(2,:)-personpos;
+      obj.maxval(4,:)=obj.maxval(2,:)-personpos;
     end
     
     function plotlike(obj,vis,newfig) 
@@ -437,16 +448,18 @@ classdef Person < handle
         setfig(sprintf('discretelike ID %d',obj.id));clf;
       end
       sym={'<','>'};
-      if length(obj.like)==2
-        obj.calcpersonlike;
-      end
+
       for i=1:length(obj.like)
-        subplot(1,length(obj.like),i);
+        if length(obj.like)>2
+          subplot(2,ceil(length(obj.like)/2),i);
+        else
+          subplot(1,length(obj.like),i);
+        end
         xvals=((1:size(obj.like{i},2))-1)*(obj.maxval(i,1)-obj.minval(i,1))/(size(obj.like{i},2)-1)+obj.minval(i,1);
         yvals=((1:size(obj.like{i},1))-1)*(obj.maxval(i,2)-obj.minval(i,2))/(size(obj.like{i},1)-1)+obj.minval(i,2);
         [mx,my]=meshgrid(xvals,yvals);
         pcolor(mx,my,obj.like{i});
-        shading('interp');
+        %shading('interp');
         hold on;
         if nargin>=2 && i<3
           xy=range2xy(vis.angle,vis.range);
@@ -457,10 +470,18 @@ classdef Person < handle
           plot(prevpos(1),prevpos(2),'wo');
           plot(obj.position(1),obj.position(2),'wx');
           title('Body');
+        elseif i==4
+          title('Leg Position (1 reflected onto 2)');
+          personpos=obj.position;
+          plot(obj.prevlegs(2,1)-obj.prevlegs(1,1),obj.prevlegs(2,2)-obj.prevlegs(1,2),'wo');
+          plot(obj.legs(2,1)-obj.legs(1,1),obj.legs(2,2)-obj.legs(1,2),'wx');
+          plot([0,obj.legs(2,1)-obj.legs(1,1)],[0,obj.legs(2,2)-obj.legs(1,2)],'w-');
         else
           plot(obj.prevlegs(i,1),obj.prevlegs(i,2),'wo');
           plot(obj.legs(i,1),obj.legs(i,2),'wx');
-          title(sprintf('Leg %d',i));
+          [cx,cy]=pol2cart(0:pi/20:2*pi,sqrt(obj.posvar(i)));
+          plot(obj.legs(i,1)+cx,obj.legs(i,2)+cy,'w-');
+          title(sprintf('Leg %d (o-prior,x-new)',i));
         end
         if min(obj.like{i})<-10
           caxis(max(obj.like{i}(:))+[-30,0]);
@@ -469,7 +490,13 @@ classdef Person < handle
         end
         colorbar
         axis equal
-        axis([min(obj.minval(:,1)),max(obj.maxval(:,1)),min(obj.minval(:,2)),max(obj.maxval(:,2))]);
+        if i<4
+          if size(obj.minval,1)>3
+            axis([min(obj.minval(1:3,1)),max(obj.maxval(1:3,1)),min(obj.minval(1:3,2)),max(obj.maxval(1:3,2))]);
+          else
+            axis([min(obj.minval(:,1)),max(obj.maxval(:,1)),min(obj.minval(:,2)),max(obj.maxval(:,2))]);
+          end
+        end
       end
       if nargin>=2
         suptitle(sprintf('ID %d Frame %d',obj.id,vis.frame));

@@ -22,6 +22,7 @@ class Person {
     int id;
     int channel;
     Point position;
+    float posvar;
     Point velocity;
 
     // Grouping

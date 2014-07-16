@@ -22,6 +22,7 @@ Person::Person(int _id, const Point &leg1, const Point &leg2) {
     lastchannel = (lastchannel+1)%NCHANNELS;
 
     position=(leg1+leg2)/2;
+    posvar=(legs[0].posvar+legs[1].posvar)/4;
     age=1;
     consecutiveInvisibleCount=0;
     totalVisibleCount=1;
@@ -48,7 +49,7 @@ std::ostream &operator<<(std::ostream &s, const Person &p) {
     if (p.group != nullptr)
 	s << ", GID:" << p.group->getID();
     s << std::fixed << std::setprecision(0) 
-      << ", position: " << p.position
+      << ", position: " << p.position << "+-" << sqrt(p.posvar)
       << ", leg1:  {" << p.legs[0] << "}"
       << ", leg2: {" << p.legs[1] << "}"
       << ", " << p.legStats
@@ -200,7 +201,7 @@ void Person::unGroup() {
 }
 
 void Person::addToMX(mxArray *people, int index) const {
-    // const char *fieldnames[]={"id","position","legs","legsmeas","prevlegs","legvelocity","scanpts","posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
+    // const char *fieldnames[]={"id","position","legs","prevlegs","legvelocity","scanpts","persposvar", "posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     // Note: for multidimensional arrays, first index changes most rapidly in accessing matlab data
     mxArray *pId = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);
     *(int *)mxGetPr(pId) = id;
@@ -214,14 +215,19 @@ void Person::addToMX(mxArray *people, int index) const {
 
     mxArray *pPosvar = mxCreateDoubleMatrix(1,2,mxREAL);
     data = mxGetPr(pPosvar);
-    data[0]=legs[0].posvar/1e6;
-    data[1]=legs[1].posvar/1e6;
+    data[0]=legs[0].posvar/(UNITSPERM*UNITSPERM);
+    data[1]=legs[1].posvar/(UNITSPERM*UNITSPERM);
     mxSetField(people,index,"posvar",pPosvar);
+
+    mxArray *pPPosvar = mxCreateDoubleMatrix(1,1,mxREAL);
+    data = mxGetPr(pPPosvar);
+    data[0]=posvar/(UNITSPERM*UNITSPERM);
+    mxSetField(people,index,"persposvar",pPPosvar);
 
     mxArray *pPrevposvar = mxCreateDoubleMatrix(1,2,mxREAL);
     data = mxGetPr(pPrevposvar);
-    data[0]=legs[0].prevposvar/1e6;
-    data[1]=legs[1].prevposvar/1e6;
+    data[0]=legs[0].prevposvar/(UNITSPERM*UNITSPERM);
+    data[1]=legs[1].prevposvar/(UNITSPERM*UNITSPERM);
     mxSetField(people,index,"prevposvar",pPrevposvar);
 
     mxArray *pVelocity = mxCreateDoubleMatrix(1,2,mxREAL);
