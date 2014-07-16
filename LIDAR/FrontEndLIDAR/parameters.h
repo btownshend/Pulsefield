@@ -54,7 +54,10 @@ static const float MINLEGSEP=100;
 static const float MAXLEGSEP=600; 
 static const float LEGSEPSIGMA=50;		// Sigma for leg separation (actually RMSE of difference in leg sep from predicted)
 static const float FACINGSEM=20.0*M_PI/180; 	// SEM for facing direction 
-static const float LEGSTATSTC=10; 	// Time constant for updating  estimate of leg diameter, separation, etc.
+static const float FACINGTC=10; 	// Time constant for updating  estimate of facing direction
+static const float LEGSEPTC=1; 	// Time constant for updating  estimate of leg separation
+static const float LEGSEPSIGMATC=50; 	// Time constant for updating  estimate of leg separation sigma
+static const float LEGDIAMTC=10; 	// Time constant for updating  estimate of leg diameter
 static const float LEFTNESSTC=500;	// time constant for updating leftness
 
 // ******** Deleting tracks

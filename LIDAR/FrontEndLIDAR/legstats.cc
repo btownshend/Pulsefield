@@ -45,8 +45,8 @@ void LegStats::update(const Person &p) {
 	diff-=2*M_PI;
     while (diff<-M_PI)
 	diff+=2*M_PI;
-    dbg("LegStats",4) << "Update leftness of " << facing*180/M_PI << " towards " << curfacing*180/M_PI << " to " << (facing+diff/LEGSTATSTC)*180/M_PI << std::endl;
-    facing += diff/LEGSTATSTC;
+    dbg("LegStats",4) << "Update leftness of " << facing*180/M_PI << " towards " << curfacing*180/M_PI << " to " << (facing+diff/FACINGTC)*180/M_PI << std::endl;
+    facing += diff/FACINGTC;
     while (facing>M_PI)
 	facing-=2*M_PI;
     while (facing<-M_PI)
@@ -56,19 +56,20 @@ void LegStats::update(const Person &p) {
     if (updateSep && p.getLeg(0).isVisible() && p.getLeg(1).isVisible()) {
 	// Both legs visible, update separation estimate
 	float cursep=(p.getLeg(0).getPosition()-p.getLeg(1).getPosition()).norm();
-	float alpha=1.0f/LEGSTATSTC;
+	float alphaSep=1.0f/LEGSEPTC;
 	float oldsep=sep;
-	sep = sep*(1-alpha) + alpha*cursep;
+	sep = sep*(1-alphaSep) + alphaSep*cursep;
 	// TODO: track sepSigma
-	if (sep>MEANLEGSEP*2) {
-	    dbg("LegStats",2) << "Leg separation too high at " << sep << "; reducing to " << MEANLEGSEP*2 << std::endl;
-	    sep=MEANLEGSEP*2;
+	if (sep>MAXLEGSEP) {
+	    dbg("LegStats",2) << "Leg separation too high at " << sep << "; reducing to " << MAXLEGSEP << std::endl;
+	    sep=MAXLEGSEP;
 	}
-	if (sep<MEANLEGSEP/2) {
-	    dbg("LegStats",2) << "Leg separation too low at " << sep << "; increasing to " << MEANLEGSEP/2 << std::endl;
-	    sep=MEANLEGSEP/2;
+	if (sep<MINLEGSEP) {
+	    dbg("LegStats",2) << "Leg separation too low at " << sep << "; increasing to " << MINLEGSEP << std::endl;
+	    sep=MINLEGSEP;
 	}
-	sepSigma=sqrt(sepSigma*sepSigma*(1-alpha)+alpha*(cursep-sep)*(cursep-oldsep));
+	float alphaSepSigma=1.0f/LEGSEPSIGMATC;
+	sepSigma=sqrt(sepSigma*sepSigma*(1-alphaSepSigma)+alphaSepSigma*(cursep-oldsep)*(cursep-oldsep));
 	dbg("LegStats.update",2) << "Current sep=" << cursep << ", mean sep= " << sep << " +/- " << sepSigma << std::endl;
     }
 }
@@ -76,7 +77,7 @@ void LegStats::update(const Person &p) {
 void LegStats::updateDiameter(float newDiam, float newDiamSEM) {
     if (updateDiam) {
 	// TODO: track diamSigma
-	diam = diam*(1-1/LEGSTATSTC) + newDiam/LEGSTATSTC;
+	diam = diam*(1-1/LEGDIAMTC) + newDiam/LEGDIAMTC;
 	dbg("LegStats.updateDiameter",3) << "newDiam=" << newDiam << ", updated diam=" << diam << ", sigma=" << diamSigma << std::endl;
     }
 }
