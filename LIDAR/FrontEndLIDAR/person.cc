@@ -71,26 +71,6 @@ void Person::predict(int nstep, float fps) {
     for (int i=0;i<2;i++)
 	legs[i].posvar=std::min(legs[i].posvar,legs[1-i].posvar+MAXLEGSEP*MAXLEGSEP);
 
-    // Check that they didn't get too close or too far apart
-    float legsep=(legs[0].position-legs[1].position).norm();
-    if (legsep<legStats.getDiam()-0.1) {
-	dbg("Person.predict",2) << "legs are " << legsep << " apart (< " << legStats.getDiam() << "), splitting" << std::endl;
-	Point vec;
-	if (legsep>0)
-	    vec=(legs[0].position-legs[1].position)*(legStats.getDiam()/legsep-1);
-	else
-	    vec=Point(legStats.getDiam(),0);
-
-	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
-	legs[0].position=legs[0].position-vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
-    }
-    if (legsep>MAXLEGSEP+0.1) {
-	dbg("Person.predict",2) << "legs are " << legsep << " apart (> " << MAXLEGSEP << "), moving together" << std::endl;
-	Point vec;
-	vec=(legs[0].position-legs[1].position)*(MAXLEGSEP/legsep-1);
-	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
-	legs[0].position=legs[0].position-vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
-    }
     position=(legs[0].position+legs[1].position)/2;
     velocity=(legs[0].velocity+legs[1].velocity)/2;
     dbg("Person.predict",2) << "After predict: " << *this << std::endl;
@@ -122,6 +102,27 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     // Update leg diameter estimates in legStats
     legs[0].updateDiameterEstimates(vis,legStats);
     legs[1].updateDiameterEstimates(vis,legStats);
+
+    // Check that they didn't get too close or too far apart
+    float legsep=(legs[0].position-legs[1].position).norm();
+    float maxLegSep=std::min(MAXLEGSEP,legStats.getSep()+legStats.getSepSigma());
+    if (legsep>maxLegSep) {
+	dbg("Person.predict",2) << "legs are " << legsep << " apart (> " << maxLegSep << "), moving together" << std::endl;
+	Point vec;
+	vec=(legs[0].position-legs[1].position)*(maxLegSep/legsep-1);
+	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
+	legs[1].position=legs[1].position-vec*(legs[1].posvar/(legs[0].posvar+legs[1].posvar));
+    }
+    float minLegSep=std::max(MINLEGSEP,std::max(legStats.getSep()-legStats.getSepSigma(),legStats.getDiam()));
+    if (legsep<minLegSep) {
+	dbg("Person.predict",2) << "legs are " << legsep << " apart (< " << minLegSep << "), moving apart" << std::endl;
+	Point vec;
+	vec=(legs[0].position-legs[1].position)*(minLegSep/legsep-1);
+	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
+	legs[1].position=legs[1].position-vec*(legs[1].posvar/(legs[0].posvar+legs[1].posvar));
+    }
+
+    dbg("Person.predict",2) << "After adjusting leg seps: " << *this << std::endl;
 
     // Update velocities
     legs[0].updateVelocity(nstep,fps);
