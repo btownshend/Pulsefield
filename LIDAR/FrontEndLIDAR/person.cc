@@ -103,6 +103,9 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     legs[0].updateDiameterEstimates(vis,legStats);
     legs[1].updateDiameterEstimates(vis,legStats);
 
+    // Other stats to update
+    legStats.update(*this);
+ 
     // Check that they didn't get too close or too far apart
     float legsep=(legs[0].position-legs[1].position).norm();
     float maxLegSep=std::min(MAXLEGSEP,legStats.getSep()+legStats.getSepSigma());
@@ -142,9 +145,6 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     // New position
     position=(legs[0].position+legs[1].position)/2.0;
 
-    // Other stats to update
-    legStats.update(*this);
- 
     // Age, visibility counters
     if (legs[0].isVisible() || legs[1].isVisible()) {
 	consecutiveInvisibleCount=0;
