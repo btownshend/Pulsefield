@@ -401,26 +401,67 @@ classdef Person < handle
       end
     end
 
+    function calcpersonlike(obj,legvec) 
+    % Given the likelihood of the two legs (in obj.like), compute the likelihood of the person center
+    % Use the given vector as the delta from leg1 to leg2
+      if nargin<2
+        legvec=obj.prevlegs(2,:)-obj.prevlegs(1,:);
+      end
+      % Calculate body position for each element in leg grid 
+      offset(1,:)=legvec/2;
+      offset(2,:)=-legvec/2;
+      lcoord={};
+      for i=1:2
+        for j=1:2
+          lcoord{i,j}=(obj.maxval(i,j)-obj.minval(i,j))*(0:size(obj.like{i},3-j)-1)/(size(obj.like{i},3-j)-1)+obj.minval(i,j)+offset(i,j);
+        end
+      end
+
+      ngrid=40;
+      minval=mean(obj.minval,1);
+      maxval=mean(obj.maxval,1);
+      for j=1:2
+        ccoord{j}=(maxval(j)-minval(j))*(0:ngrid-1)/(ngrid-1)+minval(j);
+      end
+      l={};
+      for k=1:2
+        l{k}=interp2(lcoord{k,1},lcoord{k,2}',obj.like{k},ccoord{1},ccoord{2}');
+      end
+      obj.like{3}=l{1}+l{2};
+      obj.minval(3,:)=minval;
+      obj.maxval(3,:)=maxval;
+    end
+    
     function plotlike(obj,vis,newfig) 
       if nargin<3 || newfig
         setfig(sprintf('discretelike ID %d',obj.id));clf;
       end
       sym={'<','>'};
-      for i=1:2
-        subplot(1,2,i);
+      if length(obj.like)==2
+        obj.calcpersonlike;
+      end
+      for i=1:length(obj.like)
+        subplot(1,length(obj.like),i);
         xvals=((1:size(obj.like{i},2))-1)*(obj.maxval(i,1)-obj.minval(i,1))/(size(obj.like{i},2)-1)+obj.minval(i,1);
         yvals=((1:size(obj.like{i},1))-1)*(obj.maxval(i,2)-obj.minval(i,2))/(size(obj.like{i},1)-1)+obj.minval(i,2);
         [mx,my]=meshgrid(xvals,yvals);
         pcolor(mx,my,obj.like{i});
         shading('interp');
         hold on;
-        if nargin>=2
+        if nargin>=2 && i<3
           xy=range2xy(vis.angle,vis.range);
           plot(xy(obj.scanpts{i},1),xy(obj.scanpts{i},2),['w',sym{i}]);
         end
-        plot(obj.prevlegs(i,1),obj.prevlegs(i,2),'wo');
-        plot(obj.legs(i,1),obj.legs(i,2),'wx');
-        title(sprintf('Leg %d',i));
+        if i==3
+          prevpos=mean(obj.prevlegs,1);
+          plot(prevpos(1),prevpos(2),'wo');
+          plot(obj.position(1),obj.position(2),'wx');
+          title('Body');
+        else
+          plot(obj.prevlegs(i,1),obj.prevlegs(i,2),'wo');
+          plot(obj.legs(i,1),obj.legs(i,2),'wx');
+          title(sprintf('Leg %d',i));
+        end
         if min(obj.like{i})<-10
           caxis(max(obj.like{i}(:))+[-30,0]);
         else
