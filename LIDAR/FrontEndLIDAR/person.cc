@@ -68,7 +68,6 @@ void Person::predict(int nstep, float fps) {
     for (int i=0;i<2;i++) 
 	legs[i].predict(nstep,fps);
 
-    // If one leg is locked down, then the other leg can't vary more than MAXLEGSEP
     for (int i=0;i<2;i++)
 	legs[i].posvar=std::min(legs[i].posvar,legs[1-i].posvar+MAXLEGSEP*MAXLEGSEP);
 
@@ -95,6 +94,9 @@ void Person::predict(int nstep, float fps) {
     position=(legs[0].position+legs[1].position)/2;
     velocity=(legs[0].velocity+legs[1].velocity)/2;
     dbg("Person.predict",2) << "After predict: " << *this << std::endl;
+
+
+    // If one leg is locked down, then the other leg can't vary more than MAXLEGSEP
 }
 
 // Get likelihood of an observed echo at pt hitting leg given current model
@@ -111,6 +113,8 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	dbg("Person.update",2) << "Re-running update of leg[0] since leg[1] position changed." << std::endl;
 	legs[0].update(vis,bglike,fs[0],legStats,&legs[1]);
     }
+
+
     // Update visibility counters
     legs[0].updateVisibility();
     legs[1].updateVisibility();
