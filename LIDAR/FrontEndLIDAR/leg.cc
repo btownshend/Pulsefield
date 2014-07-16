@@ -48,7 +48,9 @@ float Leg::getObsLike(const Point &pt, int frame,const LegStats &ls) const {
     float dpt=(pt-position).norm();
     float sigma=sqrt(pow(ls.getDiamSigma()/2,2.0)+posvar);  // hack: use positition sigma inflated by leg diam variance
     // float like=log(normpdf(dpt, ls.getDiam()/2,sigma)*UNITSPERM);
-    float like=log(ricepdf(dpt,ls.getDiam()/2,sigma)*UNITSPERM);
+    Point delta=pt-position;
+    Point diamOffset=delta/delta.norm()*ls.getDiam()/2;
+    float like=log(normpdf(delta.X(),diamOffset.X(),sigma)*UNITSPERM)+log(normpdf(delta.Y(),diamOffset.Y(),sigma)*UNITSPERM);
     // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
     // This is handled by calculating the probability of the object overlapping the scan line prior to the endpoint.
     float dclr=segment2pt(Point(0.0,0.0),pt,position);
