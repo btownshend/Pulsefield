@@ -119,6 +119,150 @@ void Person::setupGrid() {
     legs[1].setupGrid(likenx, likeny, minval+legSepVector/2, maxval+legSepVector/2);
 }
 
+void Person::analyzeLikelihoods() { 
+    // Form likelihood of person center
+    // Individual leg likelihoods are already shifted relative to each other by expected leg separation vector, thus can add the same locations in each grid 
+    std::vector<float> like1 = legs[0].like;
+    std::vector<float> like2=legs[1].like;
+    assert(like1.size()==likenx*likeny);
+    assert(like2.size()==likenx*likeny);
+    like=like1;
+    for (int i=0;i<like.size();i++) 
+	like[i]+=like2[i];
+
+    float stepx=(maxval.X()-minval.X())/(likenx-1);
+    float stepy=(maxval.Y()-minval.Y())/(likeny-1);
+
+    // Apply apriori distribution (bivariate normal with equal variances) to likelikhood function
+    double posstd=sqrt(posvar);
+    assert(posstd>0);
+    for (int ix=0;ix<likenx;ix++) {
+	float x=minval.X()+ix*stepx;
+	for (int iy=0;iy<likeny;iy++) {
+	    float y=minval.Y()+iy*stepy;
+	    Point pt(x,y);
+	    double apriorilike=log(normpdf(pt.X(),position.X(),posstd)*UNITSPERM) + log(normpdf(pt.Y(),position.Y(),posstd)*UNITSPERM);
+	    like[ix*likeny+iy]+=apriorilike;
+	}
+    }
+
+    // Find iterator that points to maximum of MLE
+    std::vector<float>::iterator mle=std::max_element(like.begin(),like.end());
+    maxlike=*mle;
+
+    // Use iterator position to figure out location of MLE
+    int pos=distance(like.begin(),mle);
+    int mleix=pos/likeny;
+    int mleiy=pos-mleix*likeny;
+
+    // Set person position to MLE
+    Point oldPosition=position;
+    position=Point(minval.X()+mleix*stepx,minval.Y()+mleiy*stepy);
+
+    dbg("Person.analyzeLikelihoods",3) << "ID " << id << " MLE position= " << position << " (was  " << oldPosition  << ") with like= " << *mle << std::endl;
+
+    // Calculate variance (actually mean-square distance from MLE)
+    double var=0;
+    double tprob=0;
+    for (int ix=0;ix<likenx;ix++) {
+	float x=minval.X()+ix*stepx;
+	for (int iy=0;iy<likeny;iy++) {
+	    float y=minval.Y()+iy*stepy;
+	    Point pt(x,y);
+	    if (like[ix*likeny+iy]<-50)
+		// Won't add much!
+		continue;
+	    double prob=exp(like[ix*likeny+iy]);
+	    if (std::isnan(prob) || !(prob>0))
+		dbg("Person.analyzeLikelihoods",3) << "At ix=" << ix << ", iy=" << iy << "; prob=" << prob << ", like=" << like[ix*likeny+iy] << std::endl;
+	    assert(prob>0);
+	    var+=prob*pow((pt-position).norm(),2.0);
+	    assert(~std::isnan(var));
+	    tprob+=prob;
+	}
+    }
+    if (tprob<=0) {
+	posvar=pow((maxval-minval).norm(),2.0);
+	dbg("Person.analyzeLikelihoods",3) << "Position prob grid totals to " << tprob << "; setting posstd to " << sqrt(posvar) << std::endl;
+    } else {
+	posvar=var/tprob;
+    }
+    if (posvar< SENSORSIGMA*SENSORSIGMA/2) {
+	dbg("Person.analyzeLikelihoods",3) << "Calculated posvar for leg is too low (" << sqrt(posvar) << "), setting to " << SENSORSIGMA/sqrt(2) << std::endl;
+	posvar= SENSORSIGMA*SENSORSIGMA/2;
+    }
+
+    dbg("Person.analyzeLikelihoods",3) << "ID " << id << " Position std= " << sqrt(posvar) << std::endl;
+
+    // Now fold over leg likehoods:  overlay leg[1] with leg[0] reflected around person position to find best estimate of leg separation vector
+    double sepmaxlike=-1e99;
+    int sepmleix,sepmleiy;
+    Point sepvec;
+    Point oldsepvec=legs[1].prevPosition-legs[0].prevPosition;
+    double sepstd=legStats.getSepSigma();
+    dbg("Person.analyzeLikelihoods",3) << "ID " << id << " Analyzing leg separation using prior sepvec=" << oldsepvec << " with std=" << sepstd << std::endl;
+    seplike.resize(like.size());
+    // Figure out ranges for separation grid
+    int ix2=2*mleix;
+    int iy2=2*mleiy;
+    Point p0=legs[0].minval+Point(ix2*stepx,iy2*stepy);
+    Point p1=legs[1].minval;
+    sepminval=p1-p0;
+    sepmaxval=sepminval+(maxval-minval)*2;
+    dbg("Person.analyzeLikelihoods",3) << "Separation grid goes from min=" << sepminval << " to max=" << sepmaxval << std::endl;
+
+    for (int ix=0;ix<likenx;ix++) {
+	int ix2=2*mleix-ix;
+	for (int iy=0;iy<likeny;iy++) {
+	    int index1=ix*likeny+iy;
+	    if (ix2<0 || ix2>=likenx) {
+		seplike[index1]=nan("");
+		continue;
+	    }
+	    int iy2=2*mleiy-iy;
+	    if (iy2<0 || iy2>=likeny) {
+		seplike[index1]=nan("");
+		continue;
+	    }
+	    Point p0=legs[0].minval+Point(ix2*stepx,iy2*stepy);
+	    Point p1=legs[1].minval+Point(ix*stepx,iy*stepy);
+	    Point newsepvec=p1-p0;
+	    double apriorilike=log(normpdf(newsepvec.X(),oldsepvec.X(),sepstd)*UNITSPERM) + log(normpdf(newsepvec.Y(),oldsepvec.Y(),sepstd)*UNITSPERM);
+	    
+	    int index2=ix2*likeny+iy2;
+	    seplike[index1]=like2[index1]+like1[index2]+apriorilike;
+	    if (seplike[index1]>sepmaxlike) {
+		sepmaxlike=seplike[index1];
+		sepmleix=ix;
+		sepmleiy=iy;
+		sepvec=newsepvec;
+		dbg("Person.analyzeLikelihoods",3) << "At like1(" << ix << "," << iy << ") =" << like1[index1] << ", like2(" << ix2 << "," << iy2 << ")=" << like2[index2] << ", apriori=" << apriorilike << "-> total=" << sepmaxlike << ", sepvec=" << sepvec << std::endl;
+	    }
+	}
+    }
+    
+    dbg("Person.analyzeLikelihoods",3) << "ID " << id << " leg sep MLE= " << sepvec << " with like=" << sepmaxlike << " at (" << sepmleix << "," << sepmleiy  << ")" << " separate leg positioning gave legvec=" << (legs[1].getPosition()-legs[0].getPosition()) << std::endl;
+
+    // Check that they didn't get too close or too far apart
+    float legsep=sepvec.norm();
+    float maxLegSep=std::min(MAXLEGSEP,legStats.getSep()+legStats.getSepSigma());
+    if (legsep>maxLegSep) {
+	dbg("Person.predict",2) << "legs are " << legsep << " apart (> " << maxLegSep << "), moving together" << std::endl;
+	Point vec;
+	sepvec=sepvec*maxLegSep/legsep;
+    }
+    float minLegSep=std::max(MINLEGSEP,std::max(legStats.getSep()-legStats.getSepSigma(),legStats.getDiam()));
+    if (legsep<minLegSep) {
+	dbg("Person.predict",2) << "legs are " << legsep << " apart (< " << minLegSep << "), moving apart" << std::endl;
+	sepvec=sepvec*minLegSep/legsep;
+    }
+    dbg("Person.analyzeLikelihoods",3) << "ID " << id << " leg[0] moving from " << legs[0].getPosition() << " to " << position-(sepvec/2) << std::endl;
+    dbg("Person.analyzeLikelihoods",3) << "ID " << id << " leg[1] moving from " << legs[1].getPosition() << " to " << position+(sepvec/2) << std::endl;
+    // Set the leg positions based on this, but don't set their variance or an incorrect leg position will get locked in
+    //legs[0].position=position-(sepvec/2);
+    //legs[1].position=position+(sepvec/2); 
+}
+
 void Person::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs[2], int nstep,float fps) {
     // Need to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods
     setupGrid();
@@ -130,6 +274,8 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	legs[0].update(vis,bglike,fs[0],legStats,&legs[1]);
     }
 
+    // Combine individual leg likelihoods to make person estimates
+    analyzeLikelihoods();
 
     // Update visibility counters
     legs[0].updateVisibility();
@@ -174,12 +320,14 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	legs[1].velocity=legs[0].velocity;
     }
 
-    // Average velocity of legs
-    velocity=(legs[0].velocity+legs[1].velocity)/2.0;
-    assert(std::isfinite(velocity.X()) && std::isfinite(velocity.Y()));
+    if (false) {
+	// Average velocity of legs
+	velocity=(legs[0].velocity+legs[1].velocity)/2.0;
+	assert(std::isfinite(velocity.X()) && std::isfinite(velocity.Y()));
 
-    // New position
-    position=(legs[0].position+legs[1].position)/2.0;
+	// New position
+	position=(legs[0].position+legs[1].position)/2.0;
+    } 
 
     // Age, visibility counters
     if (legs[0].isVisible() || legs[1].isVisible()) {
@@ -272,20 +420,28 @@ void Person::addToMX(mxArray *people, int index) const {
     data[1]=velocity.Y()/UNITSPERM;
     mxSetField(people,index,"velocity",pVelocity);
 
-    mxArray *pMinval = mxCreateDoubleMatrix(2,2,mxREAL);
+    mxArray *pMinval = mxCreateDoubleMatrix(4,2,mxREAL);
     data = mxGetPr(pMinval);
     for (int i=0;i<2;i++) 
 	*data++=legs[i].minval.X()/UNITSPERM;
+    *data++=minval.X()/UNITSPERM;
+    *data++=sepminval.X()/UNITSPERM;
     for (int i=0;i<2;i++) 
 	*data++=legs[i].minval.Y()/UNITSPERM;
+    *data++=minval.Y()/UNITSPERM;
+    *data++=sepminval.Y()/UNITSPERM;
     mxSetField(people,index,"minval",pMinval);
 
-    mxArray *pMaxval = mxCreateDoubleMatrix(2,2,mxREAL);
+    mxArray *pMaxval = mxCreateDoubleMatrix(4,2,mxREAL);
     data = mxGetPr(pMaxval);
     for (int i=0;i<2;i++) 
 	*data++=legs[i].maxval.X()/UNITSPERM;
+    *data++=maxval.X()/UNITSPERM;
+    *data++=sepmaxval.X()/UNITSPERM;
     for (int i=0;i<2;i++) 
 	*data++=legs[i].maxval.Y()/UNITSPERM;
+    *data++=maxval.Y()/UNITSPERM;
+    *data++=sepmaxval.Y()/UNITSPERM;
     mxSetField(people,index,"maxval",pMaxval);
 
     mxArray *pScanptsCA=mxCreateCellMatrix(1,2);
@@ -306,7 +462,8 @@ void Person::addToMX(mxArray *people, int index) const {
     *data++=legs[1].position.Y()/UNITSPERM;
     mxSetField(people,index,"legs",pLegs);
 
-    mxArray *pLikeCA=mxCreateCellMatrix(1,2);
+
+    mxArray *pLikeCA=mxCreateCellMatrix(1,4);
     for (int i=0;i<2;i++) {
 	mxArray *pLike = mxCreateDoubleMatrix(legs[i].likeny,legs[i].likenx,mxREAL);
 	assert((int)legs[i].like.size()==legs[i].likenx*legs[i].likeny);
@@ -315,6 +472,22 @@ void Person::addToMX(mxArray *people, int index) const {
 	    *data++=-legs[i].like[j];   // Use neg loglikes in the matlab version
 	mxSetCell(pLikeCA,i,pLike);
     }
+    // Person likelihood
+    mxArray *pPLike = mxCreateDoubleMatrix(likeny,likenx,mxREAL);
+    assert((int)like.size()==likenx*likeny);
+    data = mxGetPr(pPLike);
+    for (unsigned int j=0;j<like.size();j++) 
+	*data++=-like[j];   // Use neg loglikes in the matlab version
+    mxSetCell(pLikeCA,2,pPLike);
+
+    // Sep likelihood
+    mxArray *pSeplike = mxCreateDoubleMatrix(likeny,likenx,mxREAL);
+    assert((int)seplike.size()==likenx*likeny);
+    data = mxGetPr(pSeplike);
+    for (unsigned int j=0;j<seplike.size();j++) 
+	*data++=-seplike[j];   // Use neg loglikes in the matlab version
+    mxSetCell(pLikeCA,3,pSeplike);
+
     mxSetField(people,index,"like",pLikeCA);
 
     mxArray *pMaxlike = mxCreateDoubleMatrix(1,1,mxREAL);
@@ -357,3 +530,4 @@ void Person::addToMX(mxArray *people, int index) const {
     *(int *)mxGetPr(pTotalVisibleCount) = totalVisibleCount;
     mxSetField(people,index,"totalVisibleCount",pTotalVisibleCount);
 }
+

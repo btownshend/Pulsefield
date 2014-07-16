@@ -42,7 +42,15 @@ class Person {
 
     // Person position grid
     Point minval, maxval;
+    std::vector<float> like;
+    float maxlike; 	   // Likelihood of maximum likelihood estimator
+
+    // Leg separation grid
+    std::vector<float> seplike;
+    Point sepminval, sepmaxval;
+
     void setupGrid();
+    void analyzeLikelihoods();
 public:
     Person(int _id, const Point &leg1, const Point &leg2);
     ~Person();
