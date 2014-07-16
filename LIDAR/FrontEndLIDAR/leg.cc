@@ -214,7 +214,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     int pos=distance(like.begin(),mle);
     int ix=pos/likeny;
     int iy=pos-ix*likeny;
-    measurement=Point(minval.X()+ix*step,minval.Y()+iy*step);
+    position=Point(minval.X()+ix*stepx,minval.Y()+iy*stepy);
 
     // Calculate variance (actual mean-square distance from MLE)
     double var=0;
@@ -231,7 +231,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    if (std::isnan(prob) || !(prob>0))
 		dbg("Leg.update",3) << "prob=" << prob << ", like=" << like[ix*likeny+iy] << std::endl;
 	    assert(prob>0);
-	    var+=prob*pow((pt-measurement).norm(),2.0);
+	    var+=prob*pow((pt-position).norm(),2.0);
 	    assert(~std::isnan(var));
 	    tprob+=prob;
 	}
@@ -243,14 +243,13 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	posvar= SENSORSIGMA*SENSORSIGMA;
     }
 
-    dbg("Leg.update",3) << "Leg MLE measurement= " << measurement << " +/- " << sqrt(posvar) << " with like= " << *mle << std::endl;
-    position=measurement;
+    dbg("Leg.update",3) << "Leg MLE position= " << position << " +/- " << sqrt(posvar) << " with like= " << *mle << std::endl;
 }
 
 void Leg::updateVelocity(int nstep, float fps) {
     if (nstep>0 && maxlike >= MINLIKEFORUPDATES && scanpts.size()>2) {
 	// Update velocities
-	velocity=velocity*(1-1.0f/VELUPDATETC)+(measurement-prevPosition)/nstep*fps/VELUPDATETC;
+	velocity=velocity*(1-1.0f/VELUPDATETC)+(position-prevPosition)/nstep*fps/VELUPDATETC;
 
 	// Reduce speed if over maximum
 	float spd=velocity.norm();

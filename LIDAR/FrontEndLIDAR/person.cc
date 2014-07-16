@@ -256,14 +256,6 @@ void Person::addToMX(mxArray *people, int index) const {
     }
     mxSetField(people,index,"scanpts",pScanptsCA);
 
-    mxArray *pMeasLegs = mxCreateDoubleMatrix(2,2,mxREAL);
-    data = mxGetPr(pMeasLegs);
-    *data++=legs[0].measurement.X()/UNITSPERM;
-    *data++=legs[1].measurement.X()/UNITSPERM;
-    *data++=legs[0].measurement.Y()/UNITSPERM;
-    *data++=legs[1].measurement.Y()/UNITSPERM;
-    mxSetField(people,index,"legsmeas",pMeasLegs);
-
     mxArray *pLegs = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pLegs);
     *data++=legs[0].position.X()/UNITSPERM;

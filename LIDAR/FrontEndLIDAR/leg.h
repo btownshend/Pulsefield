@@ -10,8 +10,7 @@ class Vis;
 
 class Leg {
     friend class Person;
-    Point measurement;  // Current measurement
-    Point position;   // Smoothed estimate of position
+    Point position;   // Estimate of position of leg
     float posvar;
     Point prevPosition;
     float prevposvar;
