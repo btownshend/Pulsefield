@@ -3,6 +3,8 @@
 #include "person.h"
 #include "groups.h"
 
+std::shared_ptr<Lasers> Lasers::theInstance;   // Singleton
+
 Lasers::Lasers(int nlasers): lasers(nlasers) {
     dbg("Lasers.Lasers",1) << "Constructing " << nlasers << " lasers." << std::endl;
     for (unsigned int i=0;i<lasers.size();i++) {
@@ -14,9 +16,12 @@ Lasers::Lasers(int nlasers): lasers(nlasers) {
 	std::cerr<<"Failed to create lasers mutex" << std:: endl;
 	exit(1);
     }
-    showBackground=false;
-    showGrid=false;
-    showAlignment=false;
+    
+    setFlag("background",false);
+    setFlag("grid",false);
+    setFlag("alignment",false);
+    setFlag("body",true);
+    setFlag("legs",true);
 }
 
 Lasers::~Lasers() {
@@ -72,9 +77,9 @@ int Lasers::render() {
     const Color gridColor=Color(0.0,1.0,0.0);
     const Color outlineColor=Color(0.0,1.0,0.0);
 
-    if (showBackground)
+    if (getFlag("background"))
 	globalDrawing.drawPolygon(background,bgColor);
-    if (showAlignment)  {
+    if (getFlag("alignment"))  {
 	// TODO: Draw alignment pattern
 	static const float MINTARGETDISTFROMBG=0.5;   // Minimum distance of target from background
 	static const float MAXTARGETRANGEDIFF=0.3;
@@ -118,7 +123,7 @@ int Lasers::render() {
 	    }
 	}
     }
-    if (showGrid) {
+    if (getFlag("grid")) {
 	int ngrid=7;
 	float width=6;
 	float depth=6;
@@ -147,7 +152,7 @@ int Lasers::render() {
 	}
     }
     for (unsigned int i=0;i<lasers.size();i++) {
-	if (showOutline) {
+	if (getFlag("outline")) {
 	  std::vector<etherdream_point> outline;
 	    // Need to be inside maximums by at least one pixel or pruning will think its saturated and take it out
 	    int maxx=30000;
@@ -179,7 +184,7 @@ int Lasers::render() {
 	    dbgn("Lasers.render",3) << std::endl;
 	    dtmp[i].drawPolygon(outlineWorld,outlineColor);
 	}
-	if (showTest) {
+	if (getFlag("test")) {
 	    lasers[i]->showTest();
 	} else {
 	    dtmp[i].append(globalDrawing);

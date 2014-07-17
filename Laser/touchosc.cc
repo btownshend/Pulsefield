@@ -7,6 +7,7 @@
 #include "conductor.h"
 
 const char *TouchOSC::PORT="9998";
+#include "lasers.h"
 
 TouchOSC *TouchOSC::theInstance=NULL;
 
@@ -16,9 +17,6 @@ TouchOSC::TouchOSC()  {
 
     // Setup 
     selectedGroup=0;
-    activityLED=true;
-    legsEnabled=true;
-    bodyEnabled=false;
     layeringEnabled=false;
     onePerEnabled=true;
     attrsEnabled=true;
@@ -134,9 +132,9 @@ void TouchOSC::sendOSC() const {
     // Send OSC to make UI reflect current values
     dbg("TouchOSC.sendOSC",1) << "Sending OSC updates with group " << selectedGroup << " to " << remote << std::endl;
     settings.sendOSC(selectedGroup);
-    if (send("/ui/freeze",frozen?1.0:0.0) < 0) return;
-    if (send("/ui/body",bodyEnabled?1.0:0.0) < 0) return;
-    if (send("/ui/legs",legsEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/laser/freeze",frozen?1.0:0.0) < 0) return;
+    if (send("/ui/laser/body",Lasers::instance()->getFlag("body")?1.0:0.0) < 0) return;
+    if (send("/ui/laser/legs",Lasers::instance()->getFlag("legs")?1.0:0.0) < 0) return;
     if (send("/ui/attrenable",attrsEnabled?1.0:0.0) < 0) return;
     if (send("/ui/layer",layeringEnabled?1.0:0.0) < 0) return;
     if (send("/ui/oneper",onePerEnabled?1.0:0.0) < 0) return;
@@ -363,12 +361,28 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	    }
 
 	    handled=true;
-	} else if (strcmp(tok,"body")==0) {
-	    bodyEnabled=argv[0]->f>0.5;
-	    handled=true;
-	} else if (strcmp(tok,"legs")==0) {
-	    legsEnabled=argv[0]->f>0.5;
-	    handled=true;
+	} else if (strcmp(tok,"laser")==0) {
+	    tok=strtok(NULL,"/");
+	    std::string flags[]={"body","legs","grid","background","alignment","test","outline"};
+	    for (int i=0;i<sizeof(flags)/sizeof(flags[0]);i++) {
+		if (flags[i]==tok) {
+		    Lasers::instance()->setFlag(tok,argv[0]->f>0.5);
+		    handled=true;
+		}
+	    }
+	    if (!handled) {
+		if (strcmp(tok,"freeze")==0) {
+		    frozen=argv[0]->f>0.5;
+		    handled=true;
+		}
+		else if (strcmp(tok,"enable")==0) {
+		    int row=atoi(strtok(NULL,"/"))-1;
+		    int col=atoi(strtok(NULL,"/"))-1;
+		    dbg("TouchOSC",1) << "Got /ui/laser/enable, row=" << row << ", col=" << col << ", value=" << argv[0]->f << std::endl;
+		    Lasers::instance()->enable(col,argv[0]->f>0.5);
+		    handled=true;
+		}
+	    }
 	} else if (strcmp(tok,"attrenable")==0) {
 	    attrsEnabled=argv[0]->f>0.5;
 	    handled=true;
@@ -380,10 +394,6 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	    handled=true;
 	} else if (strcmp(tok,"fusion")==0) {
 	    fusionEnabled=argv[0]->f>0.5;
-	    handled=true;
-	} else if (strcmp(tok,"freeze")==0) {
-	    dbg("TouchOSC.freeze",1) << "Got message: " << argv[0]->f << std::endl;
-	    frozen=argv[0]->f>0.5;
 	    handled=true;
 	} else if (strcmp(tok,"maxconn")==0) {
 	    maxConnections=argv[0]->f;

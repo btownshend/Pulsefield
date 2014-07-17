@@ -3,6 +3,7 @@
 #include "person.h"
 #include "groups.h"
 #include "dbg.h"
+#include "lasers.h"
 
 People *People::theInstance=NULL;
 
@@ -129,7 +130,7 @@ void People::incrementAge_impl() {
 
 void People::draw_impl(Drawing &d)  const {
     dbg("People.draw",3) << "Draw for " << p.size() << " people." << std::endl;
-    if (TouchOSC::instance()->isBodyEnabled() || TouchOSC::instance()->isLegsEnabled()) {
+    if (Lasers::instance()->getFlag("body") || Lasers::instance()->getFlag("legs"))  {
 	for (std::map<int,Person>::const_iterator a=p.begin(); a!=p.end();a++)
 	    a->second.draw(d);
     }
@@ -137,10 +138,10 @@ void People::draw_impl(Drawing &d)  const {
 
 void Person::draw(Drawing &d) const  {
     d.shapeBegin(attributes);
-    if (TouchOSC::instance()->isBodyEnabled()) {
+    if (Lasers::instance()->getFlag("body")) {
 	drawBody(d);
     }
-    if (TouchOSC::instance()->isLegsEnabled()) {
+    if (Lasers::instance()->getFlag("legs")) {
 	drawLegs(d);
     }
     if (visual!=nullptr) {

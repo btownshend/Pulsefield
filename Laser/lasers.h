@@ -3,9 +3,9 @@
 #include "drawing.h"
 
 class Lasers {
+    static std::shared_ptr<Lasers> theInstance;   // Singleton
     std::vector<std::shared_ptr<Laser> > lasers;
     std::vector<Point> background;   // Background
-    bool showBackground,showGrid,showOutline,showTest,showAlignment;
 
     bool needsRender;
     // Locking
@@ -16,8 +16,16 @@ class Lasers {
 
     // Current frame
     int frame;
+
+    // Flags
+    std::map<std::string, bool> flags;
+    Lasers(int nunits);   // Only ever  called by initialize
 public:
-    Lasers(int nunits);
+    static void initialize(int nunits) { assert(!theInstance); theInstance=std::shared_ptr<Lasers>(new Lasers(nunits)); }
+    static std::shared_ptr<Lasers> instance() {
+	assert(theInstance);
+	return theInstance;
+    }
     ~Lasers();
     void setPoints(int npoints) {
 	for (int i=0;i<lasers.size();i++) lasers[i]->setPoints(npoints);
@@ -58,13 +66,14 @@ public:
     void clearTransforms();
 
     void setBackground(int scanpt, int totalpts, float angleDeg, float range);
-    void toggleBackground() { showBackground=!showBackground; }
-    void toggleGrid() { showGrid=!showGrid; }
-    void toggleAlignment() { showAlignment=!showAlignment; }
-    void toggleOutline() { showOutline=!showOutline; }
-    void toggleTest() { showTest=!showTest; }
-    void toggleLaser(int i) { if (i>=0 && i<lasers.size()) lasers[i]->toggleLaser(); }
+
+    void setFlag(std::string flag, bool value) { flags[flag]=value; TouchOSC::instance()->send("/ui/laser/"+flag,value?1.0:0.0); }
+    void toggleFlag(std::string flag) { setFlag(flag,!getFlag(flag)); }
+    bool getFlag(std::string flag) { return flags[flag]; }
+
+    void enable(int i, bool enable) { if (i>=0 && i<lasers.size()) lasers[i]->enable(enable); }
+    bool isEnabled(int i) const { if (i>=0 && i<lasers.size()) return lasers[i]->isEnabled(); return false; }
+    void toggleEnable(int i) { enable(i,!isEnabled(i)); }
+
     void dumpPoints() { for (int i=0;i<lasers.size();i++) lasers[i]->dumpPoints(); }
 };
-
-

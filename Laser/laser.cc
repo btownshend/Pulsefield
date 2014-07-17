@@ -23,7 +23,7 @@ Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     preBlanks=2;
     postBlanks=16;
     labelColor=Color::getBasicColor(unit);
-    showLaser = true;
+    enable(true);
     dbg("Laser.Laser",1) << "Maximum slew = " << MAXSLEWDISTANCE << " laser coords, " << MAXSLEWMETERS << " meters." << std::endl;
 }
 

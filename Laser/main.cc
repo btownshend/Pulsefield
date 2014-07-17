@@ -44,13 +44,14 @@ int main(int argc, char *argv[]) {
 
     
     dbg("main",1) << "Creating lasers" << std::endl;
-    std::shared_ptr<Lasers> lasers(new Lasers(nlaser));
+    Lasers::initialize(nlaser);
+
     dbg("main",1) << "Creating video" << std::endl;
-    std::shared_ptr<Video> video(new Video(lasers));
+    std::shared_ptr<Video> video(new Video(Lasers::instance()));
     dbg("main",1) << "Opening video" << std::endl;
     video->open();
     dbg("main",1) << "Creating OSCHandler on port " << port << std::endl;
-    OSCHandler osc(port,lasers,video);
+    OSCHandler osc(port,Lasers::instance(),video);
 
     dbg("main",1) << "Wait forever..." << std::endl;
     osc.wait();

@@ -117,34 +117,34 @@ void *Video::runDisplay(void *arg) {
 			world->load(ifs);
 		    } else if (key==XK_b) {
 			// background toggle
-			world->toggleBackground();
+			Lasers::instance()->toggleFlag("background");
 			world->newMessage() << "Toggled background";
 		    } else if (key==XK_B) {
 			// body  toggle
-			TouchOSC::instance()->toggleBody();
+			Lasers::instance()->toggleFlag("body");
 			world->newMessage() << "Toggled body";
 		    } else if (key==XK_L) {
 			// legs  toggle
-			TouchOSC::instance()->toggleLegs();
+			Lasers::instance()->toggleFlag("legs");
 			world->newMessage() << "Toggled legs";
 		    } else if (key==XK_g) {
 			// Grid toggle
-			world->toggleGrid();
+			Lasers::instance()->toggleFlag("grid");
 			world->newMessage() << "Toggled grid";
 		    } else if (key==XK_o) {
 			// Grid toggle
-			world->toggleOutline();
+			Lasers::instance()->toggleFlag("outline");
 			world->newMessage() << "Toggled laser outline";
 		    } else if (key==XK_a) {
 			// Alignment pattern toggle
-			world->toggleAlignment();
+			Lasers::instance()->toggleFlag("alignment");
 			world->newMessage() << "Toggled alignment (tubes) pattern";
 		    } else if (key==XK_t) {
 			// Test pattern toggle
-			world->toggleTest();
+			Lasers::instance()->toggleFlag("test");
 			world->newMessage() << "Toggled laser test pattern";
 		    } else if (key>=XK_1 && key<=XK_9) {
-			world->toggleLaser(key-XK_1);
+			Lasers::instance()->toggleEnable(key-XK_1);
 			world->newMessage() << "Toggled laser " << (int)(key-'0') << std::endl;
 		    } else if (key==XK_r) {
 			// Reset transforms

@@ -74,13 +74,6 @@ class Video: public DisplayDevice {
     Point constrainPoint(Point p) const;
     std::ostream &newMessage() { msg.str(""); msglife=50; return msg; }
 
-    // Toggle background display
-    void toggleBackground() { lasers->toggleBackground(); }
-    void toggleGrid() { lasers->toggleGrid(); }
-    void toggleAlignment() { lasers->toggleAlignment(); }
-    void toggleOutline() { lasers->toggleOutline(); }
-    void toggleTest() { lasers->toggleTest(); }
-    void toggleLaser(int i) { lasers->toggleLaser(i); }
     // Display needs refresh
     void setDirty();
 };

@@ -2,6 +2,7 @@
 #include "groups.h"
 #include "dbg.h"
 #include "person.h"
+#include "lasers.h"
 
 Groups *Groups::theInstance=NULL;
 
@@ -82,7 +83,7 @@ void Groups::incrementAge_impl() {
 
 void Groups::draw_impl(Drawing &d)  const {
     dbg("Groups.draw",3) << "Draw for " << p.size() << " groups." << std::endl;
-    if (TouchOSC::instance()->isBodyEnabled() || TouchOSC::instance()->isLegsEnabled()) {
+    if (Lasers::instance()->getFlag("body") || Lasers::instance()->getFlag("legs")) {
 	for (std::map<int,Group>::const_iterator a=p.begin(); a!=p.end();a++)
 	    a->second.draw(d);
     }

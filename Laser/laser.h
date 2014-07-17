@@ -46,7 +46,11 @@ class Laser: public DisplayDevice  {
     Color getLabelColor() const { return labelColor; }
     Color getMaxColor() const { return maxColor; }
     int getUnit() const { return unit; }
-    void toggleLaser() { showLaser=!showLaser; }
+    void enable(bool enable) { showLaser=enable;
+	TouchOSC::instance()->send("/ui/laser/enable/1/"+std::to_string(unit+1),showLaser?1.0:0.0);
+    }
+    bool isEnabled() const { return showLaser; }
+    void toggleEnable() { showLaser=!showLaser; }
     void dumpPoints() const;
     void showTest();
 };
