@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <set>
+#include <map>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -29,32 +30,33 @@ static void error(int num, const char *msg, const char *path)
  * message has not been fully handled and the server should try other methods */
 static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message msg , void *user_data) {
     dbg("generic_handler",5) << "Received message: " << path << ", with types: " << types << std::endl;
+    int nothandled=1;
     if (strncmp(path,"/ui/",4)==0) {
-	return TouchOSC::handleOSCMessage(path,types,argv,argc,msg);
+	nothandled=TouchOSC::handleOSCMessage(path,types,argv,argc,msg);
+    } else if (strncmp(path,"/conductor/",11)==0) {
+	nothandled= Connections::handleOSCMessage(path,types,argv,argc,msg);
+    } else if (strncmp(path,"/soundui/",9)==0) {
+	nothandled= Music::instance()->handleOSCMessage(path,types,argv,argc,msg);
     }
-    if (strncmp(path,"/conductor/",11)==0) {
-	return Connections::handleOSCMessage(path,types,argv,argc,msg);
-    }
-    if (strncmp(path,"/soundui/",9)==0) {
-	return Music::instance()->handleOSCMessage(path,types,argv,argc,msg);
-    }
-    static std::set<std::string> noted;  // Already noted
-    if (noted.count(std::string(path)+types) == 0) {
-	noted.insert(std::string(path)+types);
-	int i;
-	fprintf(stderr, "Unhandled Message Rcvd: %s (", path);
-	for (i=0; i<argc; i++) {
-	    fprintf(stderr,"%c",types[i]);
-	}
-	fprintf(stderr, "): ");
-	for (i=0; i<argc; i++) {
+    if (nothandled) {
+	static std::set<std::string> noted;  // Already noted
+	if (noted.count(std::string(path)+types) == 0) {
+	    noted.insert(std::string(path)+types);
+	    int i;
+	    printf( "Unhandled Message Rcvd: %s (", path);
+	    for (i=0; i<argc; i++) {
+		printf("%c",types[i]);
+	    }
+	    printf( "): ");
+	    for (i=0; i<argc; i++) {
 		lo_arg_pp((lo_type)types[i], argv[i]);
-		fprintf(stderr, ", ");
+		printf( ", ");
+	    }
+	    printf("\n");
+	    fflush(stdout);
 	}
-	fprintf(stderr,"\n");
-	fflush(stderr);
     }
-    return 1;
+    return nothandled;
 }
 
 static bool doQuit = false;
