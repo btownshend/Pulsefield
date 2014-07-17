@@ -79,16 +79,25 @@ frontend.o: /opt/local/include/cairo/cairo-deprecated.h
 frontend.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
 frontend.o: /opt/local/include/X11/Xfuncproto.h
 frontend.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
-frontend.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
-frontend.o: /opt/local/include/opencv2/core/core.hpp
-frontend.o: /opt/local/include/opencv2/core/types_c.h
-frontend.o: /opt/local/include/opencv2/core/version.hpp
-frontend.o: /opt/local/include/opencv2/core/operations.hpp
-frontend.o: /opt/local/include/opencv2/core/mat.hpp
-frontend.o: /opt/local/include/opencv2/imgproc/imgproc.hpp
-frontend.o: /opt/local/include/opencv2/imgproc/types_c.h
-frontend.o: /opt/local/include/opencv2/core/core_c.h background.h groups.h
-frontend.o: snapshot.h vis.h parameters.h
+frontend.o: background.h groups.h snapshot.h vis.h parameters.h
+handlers.o: frontend.h /opt/local/include/lo/lo.h
+handlers.o: /opt/local/include/lo/lo_endian.h
+handlers.o: /opt/local/include/lo/lo_types.h
+handlers.o: /opt/local/include/lo/lo_osc_types.h
+handlers.o: /opt/local/include/lo/lo_errors.h
+handlers.o: /opt/local/include/lo/lo_lowlevel.h
+handlers.o: /opt/local/include/lo/lo_macros.h ../Util/dest.h sickio.h
+handlers.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
+handlers.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
+handlers.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
+handlers.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBufferMonitor.hh
+handlers.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
+handlers.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
+handlers.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
+handlers.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
+handlers.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
+handlers.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
+handlers.o: ../Util/point.h ../Util/dbg.h
 main.o: frontend.h /opt/local/include/lo/lo.h
 main.o: /opt/local/include/lo/lo_endian.h /opt/local/include/lo/lo_types.h
 main.o: /opt/local/include/lo/lo_osc_types.h
@@ -124,7 +133,7 @@ background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.
 background.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
 background.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 background.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-background.o: ../Util/point.h ../Util/dbg.h parameters.h
+background.o: ../Util/point.h ../Util/dbg.h parameters.h normal.h
 world.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 world.o: /opt/local/include/lo/lo_types.h
 world.o: /opt/local/include/lo/lo_osc_types.h
@@ -141,16 +150,7 @@ world.o: /opt/local/include/X11/Xfuncproto.h /opt/local/include/X11/Xosdefs.h
 world.o: person.h /Applications/MATLAB_R2014a.app/extern/include/mat.h
 world.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 world.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-world.o: ../Util/point.h legstats.h leg.h kalmanfilter.h
-world.o: /opt/local/include/opencv2/video/tracking.hpp
-world.o: /opt/local/include/opencv2/core/core.hpp
-world.o: /opt/local/include/opencv2/core/types_c.h
-world.o: /opt/local/include/opencv2/core/version.hpp
-world.o: /opt/local/include/opencv2/core/operations.hpp
-world.o: /opt/local/include/opencv2/core/mat.hpp
-world.o: /opt/local/include/opencv2/imgproc/imgproc.hpp
-world.o: /opt/local/include/opencv2/imgproc/types_c.h
-world.o: /opt/local/include/opencv2/core/core_c.h ../Util/dest.h background.h
+world.o: ../Util/point.h legstats.h leg.h ../Util/dest.h background.h
 world.o: sickio.h
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -185,16 +185,7 @@ snapshot.o: /opt/local/include/lo/lo_types.h
 snapshot.o: /opt/local/include/lo/lo_osc_types.h
 snapshot.o: /opt/local/include/lo/lo_errors.h
 snapshot.o: /opt/local/include/lo/lo_lowlevel.h
-snapshot.o: /opt/local/include/lo/lo_macros.h legstats.h leg.h kalmanfilter.h
-snapshot.o: /opt/local/include/opencv2/video/tracking.hpp
-snapshot.o: /opt/local/include/opencv2/core/core.hpp
-snapshot.o: /opt/local/include/opencv2/core/types_c.h
-snapshot.o: /opt/local/include/opencv2/core/version.hpp
-snapshot.o: /opt/local/include/opencv2/core/operations.hpp
-snapshot.o: /opt/local/include/opencv2/core/mat.hpp
-snapshot.o: /opt/local/include/opencv2/imgproc/imgproc.hpp
-snapshot.o: /opt/local/include/opencv2/imgproc/types_c.h
-snapshot.o: /opt/local/include/opencv2/core/core_c.h ../Util/dest.h
+snapshot.o: /opt/local/include/lo/lo_macros.h legstats.h leg.h ../Util/dest.h
 snapshot.o: background.h groups.h snapshot.h vis.h
 vis.o: vis.h sickio.h
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
@@ -217,15 +208,7 @@ person.o: /opt/local/include/lo/lo_osc_types.h
 person.o: /opt/local/include/lo/lo_errors.h
 person.o: /opt/local/include/lo/lo_lowlevel.h
 person.o: /opt/local/include/lo/lo_macros.h ../Util/point.h legstats.h leg.h
-person.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
-person.o: /opt/local/include/opencv2/core/core.hpp
-person.o: /opt/local/include/opencv2/core/types_c.h
-person.o: /opt/local/include/opencv2/core/version.hpp
-person.o: /opt/local/include/opencv2/core/operations.hpp
-person.o: /opt/local/include/opencv2/core/mat.hpp
-person.o: /opt/local/include/opencv2/imgproc/imgproc.hpp
-person.o: /opt/local/include/opencv2/imgproc/types_c.h
-person.o: /opt/local/include/opencv2/core/core_c.h vis.h sickio.h
+person.o: vis.h sickio.h
 person.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -251,17 +234,7 @@ worlddraw.o: /opt/local/include/lo/lo_osc_types.h
 worlddraw.o: /opt/local/include/lo/lo_errors.h
 worlddraw.o: /opt/local/include/lo/lo_lowlevel.h
 worlddraw.o: /opt/local/include/lo/lo_macros.h ../Util/point.h legstats.h
-worlddraw.o: leg.h kalmanfilter.h
-worlddraw.o: /opt/local/include/opencv2/video/tracking.hpp
-worlddraw.o: /opt/local/include/opencv2/core/core.hpp
-worlddraw.o: /opt/local/include/opencv2/core/types_c.h
-worlddraw.o: /opt/local/include/opencv2/core/version.hpp
-worlddraw.o: /opt/local/include/opencv2/core/operations.hpp
-worlddraw.o: /opt/local/include/opencv2/core/mat.hpp
-worlddraw.o: /opt/local/include/opencv2/imgproc/imgproc.hpp
-worlddraw.o: /opt/local/include/opencv2/imgproc/types_c.h
-worlddraw.o: /opt/local/include/opencv2/core/core_c.h ../Util/dest.h
-worlddraw.o: background.h sickio.h
+worlddraw.o: leg.h ../Util/dest.h background.h sickio.h
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -275,16 +248,7 @@ leg.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 leg.o: /opt/local/include/lo/lo_types.h /opt/local/include/lo/lo_osc_types.h
 leg.o: /opt/local/include/lo/lo_errors.h /opt/local/include/lo/lo_lowlevel.h
 leg.o: /opt/local/include/lo/lo_macros.h legstats.h leg.h ../Util/point.h
-leg.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
-leg.o: /opt/local/include/opencv2/core/core.hpp
-leg.o: /opt/local/include/opencv2/core/types_c.h
-leg.o: /opt/local/include/opencv2/core/version.hpp
-leg.o: /opt/local/include/opencv2/core/operations.hpp
-leg.o: /opt/local/include/opencv2/core/mat.hpp
-leg.o: /opt/local/include/opencv2/imgproc/imgproc.hpp
-leg.o: /opt/local/include/opencv2/imgproc/types_c.h
-leg.o: /opt/local/include/opencv2/core/core_c.h parameters.h ../Util/dbg.h
-leg.o: normal.h vis.h sickio.h
+leg.o: parameters.h ../Util/dbg.h normal.h vis.h sickio.h
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -305,17 +269,7 @@ legstats.o: /opt/local/include/lo/lo_osc_types.h
 legstats.o: /opt/local/include/lo/lo_errors.h
 legstats.o: /opt/local/include/lo/lo_lowlevel.h
 legstats.o: /opt/local/include/lo/lo_macros.h ../Util/point.h legstats.h
-legstats.o: leg.h kalmanfilter.h
-legstats.o: /opt/local/include/opencv2/video/tracking.hpp
-legstats.o: /opt/local/include/opencv2/core/core.hpp
-legstats.o: /opt/local/include/opencv2/core/types_c.h
-legstats.o: /opt/local/include/opencv2/core/version.hpp
-legstats.o: /opt/local/include/opencv2/core/operations.hpp
-legstats.o: /opt/local/include/opencv2/core/mat.hpp
-legstats.o: /opt/local/include/opencv2/imgproc/imgproc.hpp
-legstats.o: /opt/local/include/opencv2/imgproc/types_c.h
-legstats.o: /opt/local/include/opencv2/core/core_c.h parameters.h
-legstats.o: ../Util/dbg.h
+legstats.o: leg.h parameters.h ../Util/dbg.h
 groups.o: groups.h /opt/local/include/lo/lo.h
 groups.o: /opt/local/include/lo/lo_endian.h /opt/local/include/lo/lo_types.h
 groups.o: /opt/local/include/lo/lo_osc_types.h
@@ -325,16 +279,7 @@ groups.o: /opt/local/include/lo/lo_macros.h ../Util/point.h person.h
 groups.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
 groups.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 groups.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-groups.o: legstats.h leg.h kalmanfilter.h
-groups.o: /opt/local/include/opencv2/video/tracking.hpp
-groups.o: /opt/local/include/opencv2/core/core.hpp
-groups.o: /opt/local/include/opencv2/core/types_c.h
-groups.o: /opt/local/include/opencv2/core/version.hpp
-groups.o: /opt/local/include/opencv2/core/operations.hpp
-groups.o: /opt/local/include/opencv2/core/mat.hpp
-groups.o: /opt/local/include/opencv2/imgproc/imgproc.hpp
-groups.o: /opt/local/include/opencv2/imgproc/types_c.h
-groups.o: /opt/local/include/opencv2/core/core_c.h ../Util/dbg.h parameters.h
+groups.o: legstats.h leg.h ../Util/dbg.h parameters.h
 kalmanfilter.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
 kalmanfilter.o: /opt/local/include/opencv2/core/core.hpp
 kalmanfilter.o: /opt/local/include/opencv2/core/types_c.h
@@ -344,3 +289,4 @@ kalmanfilter.o: /opt/local/include/opencv2/core/mat.hpp
 kalmanfilter.o: /opt/local/include/opencv2/imgproc/imgproc.hpp
 kalmanfilter.o: /opt/local/include/opencv2/imgproc/types_c.h
 kalmanfilter.o: /opt/local/include/opencv2/core/core_c.h ../Util/point.h
+kalmanfilter.o: ../Util/dbg.h
