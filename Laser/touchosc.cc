@@ -10,6 +10,7 @@
 TouchOSC *TouchOSC::theInstance=NULL;
 
 TouchOSC::TouchOSC()  {
+    theInstance=this;
     URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
 
     /* Setup touchOSC sending */
@@ -414,7 +415,7 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
     if (handled) {
 	sendOSC();
     } else {
-	dbg("TouchOSC.handleOSCMessage",1) << "Unhanded message: " << path << ": parse failed at token: " << tok << std::endl;
+	dbg("TouchOSC.handleOSCMessage",1) << "Unhandled message: " << path << ": parse failed at token: " << tok << std::endl;
     }
     
     delete [] pathCopy;

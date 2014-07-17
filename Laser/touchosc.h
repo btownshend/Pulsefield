@@ -207,7 +207,8 @@ class TouchOSC {
  public:
     static TouchOSC *instance() {
 	if (theInstance == NULL) {
-	    theInstance=new TouchOSC();
+	    new TouchOSC();
+	    assert(theInstance != NULL);
 	    // Need to be careful of this being re-entrant into instance()
 	    theInstance->load("settings_default.txt");
 	}
