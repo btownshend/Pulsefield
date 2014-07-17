@@ -91,7 +91,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
     // range[2] is the last value seen, not matching 0 or 1;   promoted to range[1] if its frequency passes range[1]
     float tc=UPDATETC;
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
-	if (assignments[i]!=-1 && !all)
+	if (!all && assignments[i]!=-1)
 	    continue;
 	// Find which background fits best
 	int bestk=-1;
