@@ -81,6 +81,20 @@ FrontEnd::FrontEnd(int _nsick,int argc, const char *argv[]) {
 	    else
 		addDest(clientHost, clientPort);
 	}
+	
+	/* Setup touchOSC sending */
+	int touchOSCPort=urls.getPort("TO");
+	const char *touchOSCHost=urls.getHost("TO");
+	if (touchOSCPort==-1 || touchOSCHost==0) {
+	    fprintf(stderr,"Unable to locate TO in urlconfig.txt\n");
+	    touchOSC=0;
+	} else {
+	    dbg("FrontEnd",1) << "Sending to touchOSC at " << touchOSCHost << ":" << touchOSCPort << std::endl;
+	    char cbuf[10];
+	    sprintf(cbuf,"%d",touchOSCPort);
+	    touchOSC = lo_address_new(touchOSCHost, cbuf);
+	    sendUIMessages();
+	}
 
 	/* Start cameras */
 	printf("Initializing with %d sensors...",nsick);fflush(stdout);
@@ -453,6 +467,16 @@ void FrontEnd::sendSetupMessages(const char *host, int port) const {
     }
 }
 
+void FrontEnd::sendUIMessages() {
+    if (!touchOSC) 
+	return;
+    if (frame%50 == 0) {
+	lo_send(touchOSC,"/pf/maxrange","f",(float)MAXRANGE/UNITSPERM);
+	lo_send(touchOSC,"/pf/frame","i",frame);
+	lo_send(touchOSC,"/health/FE","f",(frame%100 == 0)?1.0:0.0);
+    }
+}
+
 void FrontEnd::sendMessages(double elapsed) {
     static bool firsttime=true;
     if  (firsttime) {
@@ -460,6 +484,8 @@ void FrontEnd::sendMessages(double elapsed) {
 		sendInitialMessages(dests.getHost(i),dests.getPort(i));
 	    firsttime=false;
     }
+    sendUIMessages();
+
     if (frame%200 == 0) {
 	// Send setup messages every 200 frames
 	for (int i=0;i<dests.size();i++)

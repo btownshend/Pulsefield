@@ -1,22 +1,28 @@
+#include <set>
 #include "frontend.h"
 #include "sickio.h"
+#include "parameters.h"
 
 /* catch any incoming messages and display them. returning 1 means that the
  * message has not been fully handled and the server should try other methods */
 static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message , void *) {
+    static std::set<std::string> noted;  // Already noted
+    if (noted.count(std::string(path)+types) == 0) {
+	noted.insert(std::string(path)+types);
 	int i;
-	fprintf(stderr, "Unhandled Message Rcvd: %s (", path);
+	fprintf(stdout, "Unhandled Message Rcvd: %s (", path);
 	for (i=0; i<argc; i++) {
-		printf("%c",types[i]);
+	    fprintf(stdout,"%c",types[i]);
 	}
-	fprintf(stderr, "): ");
+	fprintf(stdout, "): ");
 	for (i=0; i<argc; i++) {
-		lo_arg_pp((lo_type)types[i], argv[i]);
-		fprintf(stderr, ", ");
+	    lo_arg_pp((lo_type)types[i], argv[i]); // Pretty-prints to stdout
+	    fprintf(stdout, ", ");
 	}
-	fprintf(stderr,"\n");
-	fflush(stderr);
-	return 1;
+	fprintf(stdout,"\n");
+	fflush(stdout);
+    }
+    return 1;
 }
 
 bool FrontEnd::doQuit = false;
@@ -149,6 +155,8 @@ void FrontEnd::ping(lo_message msg, int seqnum) {
 	}
 }
 
+static int maxrange_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    MAXRANGE=argv[0]->f*UNITSPERM; return 0; }
+
 void FrontEnd::addHandlers() {
 	/* add method that will match any path and args if they haven't been caught explicitly */
 	lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
@@ -171,4 +179,6 @@ void FrontEnd::addHandlers() {
 	lo_server_add_method(s,"/vis/dest/remove","si",rmDest_handler,this);
 	lo_server_add_method(s,"/vis/dest/remove/port","i",rmDestPort_handler,this);
 	lo_server_add_method(s,"/vis/dest/clear","",rmAllDest_handler,this);
+
+	lo_server_add_method(s,"/pf/maxrange","f",maxrange_handler,this);
 }
