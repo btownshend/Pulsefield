@@ -83,7 +83,8 @@ for i=1:length(ids)
       vel(j,:)=snap(j).tracker.tracks(sel).velocity;
       legvel(j,:,:)=snap(j).tracker.tracks(sel).legvelocity;
       if isprop(snap(j).tracker.tracks(sel),'scanpts')
-        vis(j,:)=~isempty(snap(j).tracker.tracks(sel).scanpts{1})||~isempty(snap(j).tracker.tracks(sel).scanpts{2});
+        vis(j,1)=~isempty(snap(j).tracker.tracks(sel).scanpts{1});
+        vis(j,2)=~isempty(snap(j).tracker.tracks(sel).scanpts{2});
       else
         vis(j,:)=[snap(j).tracker.tracks(sel).legclasses]>0;
       end
