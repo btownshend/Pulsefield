@@ -45,6 +45,10 @@ class FrontEnd {
     std::string matfile;
     std::vector<std::string> arglist;
 
+    // OSC Message handling
+    void addHandlers();
+    static bool doQuit;
+
     // Startup messages to OSC
     void sendInitialMessages(const char *host, int port) const;
     void sendSetupMessages(const char *host, int port) const;
@@ -62,7 +66,10 @@ class FrontEnd {
     void stopRecording();
     int playFile(const char *filename, bool singleStep,float speedFactor=1.0f,bool overlayLive=false);
 
+    void matsave(const std::string &filename, int frames);
+
     // Handlers for OSC messages
+    void quit();
     void startStop(bool start);
     void setFPS(int fps);
     int getFPS() const;
@@ -75,5 +82,4 @@ class FrontEnd {
     void rmDest(lo_message msg, int port);
     void rmAllDest();
     void ping(lo_message msg, int seqnum);
-    void matsave(const std::string &filename, int frames);
 };
