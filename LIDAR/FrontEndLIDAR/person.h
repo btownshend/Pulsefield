@@ -49,7 +49,7 @@ class Person {
     std::vector<float> seplike;
     Point sepminval, sepmaxval;
 
-    void setupGrid();
+    void setupGrid(const Vis &vis, const std::vector<int> fs[2]);
     void analyzeLikelihoods();
 public:
     Person(int _id, const Point &leg1, const Point &leg2);
