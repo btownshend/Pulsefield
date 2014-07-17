@@ -8,6 +8,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 #include "dbg.h"
+#include "urlconfig.h"
 
 // A single fader plus a toggle
 // Has a name and a position
@@ -187,7 +188,6 @@ public:
 
 class TouchOSC {
     static TouchOSC *theInstance;   // Singleton
-    static const char *PORT;
     lo_address remote;
     Settings settings;
     unsigned int selectedGroup;

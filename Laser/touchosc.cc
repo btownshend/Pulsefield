@@ -5,15 +5,26 @@
 #include "connections.h"
 #include "music.h"
 #include "conductor.h"
-
-const char *TouchOSC::PORT="9998";
 #include "lasers.h"
 
 TouchOSC *TouchOSC::theInstance=NULL;
 
 TouchOSC::TouchOSC()  {
-    // Start off connected to localhost (for debugging)
-    remote=lo_address_new("localhost",PORT);
+    URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
+
+    /* Setup touchOSC sending */
+    int touchOSCPort=urls.getPort("TO");
+    const char *touchOSCHost=urls.getHost("TO");
+    if (touchOSCPort==-1 || touchOSCHost==0) {
+	fprintf(stderr,"Unable to locate TO in urlconfig.txt\n");
+	remote=0;
+    } else {
+	char cbuf[10];
+	sprintf(cbuf,"%d",touchOSCPort);
+	remote = lo_address_new(touchOSCHost, cbuf);
+	dbg("TouchOSC",1)  << "Set remote to " << lo_address_get_url(remote) << std::endl;
+	// Don't call sendOSC here as it will cause a recursive loop
+    }
 
     // Setup 
     selectedGroup=0;
@@ -30,7 +41,8 @@ TouchOSC::TouchOSC()  {
 }
 		       
 TouchOSC::~TouchOSC() {
-    lo_address_free(remote);
+    if (remote)
+	lo_address_free(remote);
 }
 
 int Fader::sendOSC() const {
@@ -130,7 +142,7 @@ void Settings::sendOSC(int selectedGroup) const {
 
 void TouchOSC::sendOSC() const {
     // Send OSC to make UI reflect current values
-    dbg("TouchOSC.sendOSC",1) << "Sending OSC updates with group " << selectedGroup << " to " << remote << std::endl;
+    dbg("TouchOSC.sendOSC",1) << "Sending OSC updates with group " << selectedGroup << " to " << lo_address_get_url(remote) << std::endl;
     settings.sendOSC(selectedGroup);
     if (send("/ui/laser/freeze",frozen?1.0:0.0) < 0) return;
     if (send("/ui/laser/body",Lasers::instance()->getFlag("body")?1.0:0.0) < 0) return;
@@ -207,12 +219,6 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
     dbg("TouchOSC.handleOSCMessage",1)  << "Got message: " << path << "(" << types << ") from " << lo_address_get_url(lo_message_get_source(msg)) << std::endl;
 
     std::string host=lo_address_get_hostname(lo_message_get_source(msg));
-    if (host != lo_address_get_hostname(remote)) {
-	lo_address_free(remote);
-	remote=lo_address_new(host.c_str(),PORT);
-	dbg("TouchOSC.handleOSCMessage",1)  << "Set remote to " << lo_address_get_url(remote) << std::endl;
-	sendOSC();
-    }
     char *pathCopy=new char[strlen(path)+1];
     strcpy(pathCopy,path);
     const char *tok=strtok(pathCopy,"/");
