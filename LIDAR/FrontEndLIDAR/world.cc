@@ -123,6 +123,7 @@ public:
 void World::makeAssignments(const Vis &vis, float entrylike) {
     dbg("World.makeAssignments",3) << "makeAssignments(entrylike= " << entrylike << ")" << std::endl;
     const SickIO *sick=vis.getSick();
+    const unsigned int *range=sick->getRange(0);
     // Build a list of targets that group together the hits
     std::vector<Target> targets;
     int nassigned=0;
@@ -134,14 +135,13 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 
     for (unsigned int f=0;f<sick->getNumMeasurements();f++) {
 	if (bglike[f]>bglikethresh) {
-	    dbg("World.makeAssignments",8) << "Assigned scan " << f << " to background with bglike= " << bglike[f] << std::endl;
+	    dbg("World.makeAssignments",8) << "Assigned scan " << f << " with range " << range[f] << " to background with bglike= " << bglike[f] << std::endl;
 	    assignments[f]=-1;
 	    nbg++;
 	    continue;  // Probably background
 	}
 	dbg("World.makeAssignments",8) << "Processing scan " << f << " with bglike= " << bglike[f] << std::endl;
 	bool assigned=false;
-	const unsigned int *range=sick->getRange(0);
 	for (int i=targets.size()-1;i>=0;i--) {
 	    // Check if we can add this point to an existing target
 	    if ((sick->getPoint(f)-targets[i].lastHit()).norm()<=MAXLEGDIAM)  {
@@ -161,7 +161,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 		targets.back().append(f,sick->getPoint(f));
 		nassigned++;
 		assigned=true;
-		dbg("World.makeAssignments",4) << "Assigned scan " << f << " to target " << i << std::endl;
+		dbg("World.makeAssignments",4) << "Assigned scan " << f << " with range " << range[f] << " to target " << i << std::endl;
 		break;
 	    }
 	}
