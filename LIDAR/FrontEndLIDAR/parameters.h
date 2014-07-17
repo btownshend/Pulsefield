@@ -35,6 +35,7 @@ static const float INTERPSCANBGWEIGHT=0.2;	// scaling of background probability 
 
 // ***** Assignment
 static const float MINFORCELIKE=-10;  // Minimum likelihood to force assigning a class to the only target that is possible (otherwise a track is formed)
+static const float MAXASSIGNMENTDIST=500;
 
 // ***** Tracking
 static const float INITIALPOSITIONVAR=100*100;  // Variance of initial position estimates
@@ -48,6 +49,7 @@ static const float MINLIKEFORUPDATES=-30;	  // Minimum likelihood of a target to
 
 // ******** Leg statistics 
 static const float INITLEGDIAM=200;	// Initial diameter of legs
+static const float MAXLEGDIAM=300;	// Maximum diameter of legs
 static const float LEGDIAMSIGMA=50;		// Sigma for leg diameter
 static const float MEANLEGSEP=350; 	// Mean leg separation
 static const float MINLEGSEP=100;
