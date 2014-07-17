@@ -315,6 +315,11 @@ public class Tracker extends PApplet {
 
 	void pfframe(int frame) {
 		//PApplet.println("Got frame "+frame);
+		if (frame%50 ==0) {
+			OscMessage msg = new OscMessage("/health/VD");
+			msg.add((frame%100==0)?1.0:0.0);
+			sendOSC("TO",msg);
+		}
 	}
 
 	synchronized void add(int id, int channel) {
