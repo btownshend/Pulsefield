@@ -62,6 +62,33 @@ public:
 	scans=std::vector<int>(scans.begin(),scans.begin()+jump+1);
 	return result;
     }
+    // Split target at local maxima
+    Target splitLocalMaxima() {
+	assert(hits.size()>=2);
+	int maxima=1; // Maxima at this point
+	float depth=hits[maxima].norm() - std::max(hits[maxima-1].norm(),hits[maxima+1].norm());
+	for (int i=1;i<hits.size()-1;i++) {
+	    float tmpdepth=hits[i].norm() - std::max(hits[i-1].norm(),hits[i+1].norm());
+	    if (tmpdepth>depth) {
+		maxima=i;
+		depth=tmpdepth;
+	    }
+	}
+	int jump;
+	// Check which side should get maxima
+	if (hits[maxima-1].norm() < hits[maxima+1].norm())
+	    jump=maxima-1;
+	else
+	    jump=maxima;
+
+	dbg("World.makeAssignments",3) << "Split target into 2 at local maxima with depth " << depth << " at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << std::endl;
+	Target result;
+	for (int i=jump+1;i<hits.size();i++)
+	    result.append(scans[i],hits[i]);
+	hits=std::vector<Point>(hits.begin(),hits.begin()+jump+1);
+	scans=std::vector<int>(scans.begin(),scans.begin()+jump+1);
+	return result;
+    }
     void setAssignments(std::vector<int> &assignments, std::vector<unsigned int> &legassigned, int assignedPerson, int assignedLeg)  {
 	for (int i=0;i<scans.size();i++) {
 	    assignments[scans[i]]=assignedPerson;
@@ -78,6 +105,19 @@ public:
 	    result=std::min(result,bglike[scans[i]]);
 	return result;
     }
+    // Check if target would have a local maximum of size >= minsize if pt is added
+    float getMaximaDepth() const {
+	float depth=0;
+	for (int i=0;i<hits.size();i++)
+	    for (int j=i+1;j<hits.size();j++) {
+		if (hits[j].norm()<depth+hits[i].norm())
+		    continue;
+		for (int k=j+1;k<hits.size();k++)
+		    depth=std::max(depth,hits[j].norm()-std::max(hits[i].norm(),hits[k].norm()));
+	    }
+	return depth;
+    }
+    
 };
 
 void World::makeAssignments(const Vis &vis, float entrylike) {
@@ -137,6 +177,8 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
     dbg("World.makeAssignments",3) << "Assigned " << nassigned << " hits to " << targets.size() << " targets." << std::endl;
     // Split targets that are too wide
     for (int i=0;i<targets.size();i++) {
+	if (targets[i].getMaximaDepth() >= TARGETMAXIMADEPTH)
+	    targets.push_back(targets[i].splitLocalMaxima());
 	if (targets[i].getWidth() > MAXLEGDIAM) {
 	    targets.push_back(targets[i].split());
 	}

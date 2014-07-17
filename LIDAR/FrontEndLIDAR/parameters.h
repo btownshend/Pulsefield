@@ -36,6 +36,7 @@ static const float INTERPSCANBGWEIGHT=0.2;	// scaling of background probability 
 // ***** Assignment
 static const float MINFORCELIKE=-10;  // Minimum likelihood to force assigning a class to the only target that is possible (otherwise a track is formed)
 static const float MAXASSIGNMENTDIST=500;
+static const float TARGETMAXIMADEPTH=50;   // Minimum depth of a local range maxima in a target to split it
 
 // ***** Tracking
 static const float INITIALPOSITIONVAR=100*100;  // Variance of initial position estimates
