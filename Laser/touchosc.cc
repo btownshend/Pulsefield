@@ -158,11 +158,8 @@ void TouchOSC::sendOSC() const {
 
 void TouchOSC::frameTick_impl(int frame) {
     dbg("TouchOSC.frameTick",3) << "Frame " << frame << std::endl;
-    if (frame % 10 == 0) {
-	activityLED=!activityLED;
-	if (send("/ui/active1",activityLED?1.0f:0.0f) <0 ) 
-	    return;
-	if (send("/ui/active2",activityLED?0.0f:1.0f) <0 ) 
+    if (frame % 50 == 0) {
+	if (send("/health/LS",(frame%100 ==0)?1.0f:0.0f) <0 ) 
 	    return;
     }
     if (frame % 50 == 4) {

@@ -192,7 +192,6 @@ class TouchOSC {
     Settings settings;
     unsigned int selectedGroup;
     void sendOSC() const;
-    bool activityLED;
     // TouchOSC UI
     TouchOSC();
     ~TouchOSC();
