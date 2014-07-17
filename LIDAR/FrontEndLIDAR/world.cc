@@ -13,53 +13,235 @@ World::World(): groups(GROUPDIST,UNGROUPDIST) {
     drawRange=true;
 }
 
+// Class for managing targets based on lidar scan before assigning them to people
+class Target {
+    std::vector<int> scans;
+    std::vector<Point> hits;
+    bool assigned;
+public:
+    Target() { assigned=false; }
+
+    // Get maximum distance to given point
+    float getDist(Point p) const { 
+	    float tgtdist=0;
+	    for (int i=0;i<hits.size();i++)
+		tgtdist=std::max(tgtdist, (p-hits[i]).norm());
+	    return tgtdist;
+    }
+    void append(int scan,Point pos) { scans.push_back(scan); hits.push_back(pos); }
+    Point lastHit() const { return hits.back(); }
+    int lastScan() const { return scans.back(); }
+    // Get estimate of center of target
+    Point getCenter() const {
+	Point sum(0,0);
+	for (int i=0;i<hits.size();i++)
+	    sum=sum+hits[i];
+	Point mid=sum/hits.size();  // Mean of points
+	float offset=INITLEGDIAM/2*(M_PI/4);   // Shift away from sensor by mean dist one would be in front of a circle of given diameter
+	Point center=mid*(1+offset/mid.norm());
+	return center;
+    }
+    float getWidth() const { return (hits.front()-hits.back()).norm(); }
+    // Split target at largest jump
+    Target split() {
+	assert(hits.size()>=2);
+	int jump=0;   // Jump is after this index
+	float jumpSize=(hits[jump]-hits[jump+1]).norm();
+	for (int i=1;i<hits.size()-1;i++) {
+	    float jtmp=(hits[i]-hits[i+1]).norm();
+	    if (jtmp>jumpSize) {
+		jump=i;
+		jumpSize=jtmp;
+	    }
+	}
+	dbg("World.makeAssignments",3) << "Split target into 2 at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << std::endl;
+	Target result;
+	for (int i=jump+1;i<hits.size();i++)
+	    result.append(scans[i],hits[i]);
+	hits=std::vector<Point>(hits.begin(),hits.begin()+jump+1);
+	scans=std::vector<int>(scans.begin(),scans.begin()+jump+1);
+	return result;
+    }
+    void setAssignments(std::vector<int> &assignments, std::vector<unsigned int> &legassigned, int assignedPerson, int assignedLeg)  {
+	for (int i=0;i<scans.size();i++) {
+	    assignments[scans[i]]=assignedPerson;
+	    legassigned[scans[i]]=assignedLeg;
+	}
+	assigned=true;
+    }
+    int size() const { return scans.size(); }
+    bool isAssigned() const { return assigned; }
+    // Compute likelihood of least likely one of being background
+    float minBgLike(const std::vector<float> &bglike) const { 
+	float result=bglike[scans.front()];
+	for (int i=1;i<scans.size();i++) 
+	    result=std::min(result,bglike[scans[i]]);
+	return result;
+    }
+};
+
 void World::makeAssignments(const Vis &vis, float entrylike) {
     dbg("World.makeAssignments",3) << "makeAssignments(entrylike= " << entrylike << ")" << std::endl;
-    // Calculate likelihoods of each scan belonging to each track and assign to highest likelihood
     const SickIO *sick=vis.getSick();
-    bestlike.resize(sick->getNumMeasurements());
-    assignments.resize(sick->getNumMeasurements());
-    legassigned.resize(sick->getNumMeasurements());
-
+    // Build a list of targets that group together the hits
+    std::vector<Target> targets;
     int nassigned=0;
     int nentries=0;
     int nbg=0;
+    assignments.assign(sick->getNumMeasurements(),-2);	// Default everything to entries
+    legassigned.assign(sick->getNumMeasurements(),0);
+    float bglikethresh=log(0.5*UNITSPERM);
+
     for (unsigned int f=0;f<sick->getNumMeasurements();f++) {
-        bestlike[f]=entrylike;
-	assignments[f]=-2;
-	legassigned[f]=0;
-	if (bglike[f] > bestlike[f]) {
-	    bestlike[f]=bglike[f];
+	if (bglike[f]>bglikethresh) {
+	    dbg("World.makeAssignments",8) << "Assigned scan " << f << " to background with bglike= " << bglike[f] << std::endl;
 	    assignments[f]=-1;
+	    nbg++;
+	    continue;  // Probably background
 	}
-	for (unsigned int i=0;i<people.size();i++) {
-	    for (int leg=0;leg<2;leg++) {
-		// This is a fudge since the DIAMETER is log-normal and the position itself is normal
-		float like =people[i].getObsLike(sick->getPoint(f),leg,vis.getSick()->getFrame());
-		dbg("World.makeAssignments",20) << "For assigning scan " << f << " to P" << people[i].getID() << "." << leg << ", like=" << like << ", best so far=" << bestlike[f] << ", bglike=" << bglike[f] << ", entrylike=" << entrylike << std::endl;
-		if (like>bestlike[f]) {
-		    bestlike[f]=like;
-		    assignments[f]=i;
-		    legassigned[f]=leg;
+	dbg("World.makeAssignments",8) << "Processing scan " << f << " with bglike= " << bglike[f] << std::endl;
+	bool assigned=false;
+	const unsigned int *range=sick->getRange(0);
+	for (int i=targets.size()-1;i>=0;i--) {
+	    // Check if we can add this point to an existing target
+	    if ((sick->getPoint(f)-targets[i].lastHit()).norm()<=MAXLEGDIAM)  {
+		// Check if all intervening scans have a shorter range (i.e. we jumping over a near obstruction)
+		bool canmerge=true;
+		for (int j=targets[i].lastScan()+1;j<f;j++) {
+		    dbg("World.makeAssignments",3) << "Comparing gap range[" << j << "] of " << range[j] << " with range[" << f << "] of " << range[f] << std::endl;
+		    if (range[j] >= range[f]) {
+			// Not closer, can' t do this merge
+			dbg("World.makeAssignments",3) << "Can't merge scan " << f << " at range " << range[f] << " with target " << i << " since scan " << j << " has range " << range[j] << std::endl;
+			canmerge=false;
+			break;
+		    }
+		}
+		if (!canmerge)
+		    break;
+		targets.back().append(f,sick->getPoint(f));
+		nassigned++;
+		assigned=true;
+		dbg("World.makeAssignments",4) << "Assigned scan " << f << " to target " << i << std::endl;
+		break;
+	    }
+	}
+	if (!assigned)  {
+	    // Not a match to current target, add a new one
+	    Target t;
+	    t.append(f,sick->getPoint(f));
+	    targets.push_back(t);
+	    dbg("World.makeAssignments",4) << "Assigned scan " << f << " to new target " << targets.size()-1 << std::endl;
+	    nassigned++;
+	}
+    }
+    dbg("World.makeAssignments",3) << "Assigned " << nassigned << " hits to " << targets.size() << " targets." << std::endl;
+    // Split targets that are too wide
+    for (int i=0;i<targets.size();i++) {
+	if (targets[i].getWidth() > MAXLEGDIAM) {
+	    targets.push_back(targets[i].split());
+	}
+    }
+
+    // Now match targets with people, legs
+
+    std::vector<bool> legAssigned[2];
+
+    for (int leg=0;leg<2;leg++)
+	legAssigned[leg].assign(people.size(),false);
+
+    for (int pass=0;pass<people.size()*2;pass++) {
+	float closest=1e10;
+	int assignedTarget=-1;
+	int assignedPerson=-1;
+	int assignedLeg=-1;
+
+	for (int t=0;t<targets.size();t++) {
+	    if (targets[t].isAssigned())
+		continue;
+	    assert(targets[t].size()>0);
+	    Point center=targets[t].getCenter();
+	    for ( int i=0;i<people.size();i++) {
+		for (int leg=0;leg<2;leg++) {
+		    if (legAssigned[leg][i])
+			continue;
+		    float dist=(center-people[i].getLeg(leg).getPosition()).norm();
+		    if (dist < closest) {
+			closest=dist;
+			assignedPerson=i;
+			assignedLeg=leg;
+			assignedTarget=t;
+		    }
 		}
 	    }
 	}
-	if (assignments[f]>=0) {
-	    nassigned++;
-	    dbg("World.makeAssignments",5) << "Assigned scan " << f << " to P" << people[assignments[f]].getID() << "." << legassigned[f] << std::endl;
-	} else if (assignments[f]==-2)
-	    nentries++;
-	else
-	    nbg++;
+	if (closest<MAXASSIGNMENTDIST) {
+	    dbg("World.makeAssignments",3) << "Assigning; closest person to  target " << assignedTarget << " is P" << assignedPerson << "." << assignedLeg << " with distance " << closest << std::endl;
+	    targets[assignedTarget].setAssignments(assignments, legassigned, assignedPerson, assignedLeg);
+	    legAssigned[assignedLeg][assignedPerson]=true;  // Mark it as already assigned
+	} else {
+	    dbg("World.makeAssignments",3) << "Not assigning; closest target-person is  target " << assignedTarget << ", P" << assignedPerson << "." << assignedLeg << " with distance " << closest << std::endl;
+	    break;
+	}
     }
 
-    dbg("World.makeAssignments",3) << "Assigned " << nassigned << " points to targets,  " << nbg  << " to background, and " << nentries << " to entries." << std::endl;
+    // Unassigned ones
+    for (int t=0;t<targets.size();t++) {
+	if (!targets[t].isAssigned()) {
+	    if (targets[t].minBgLike(bglike) > entrylike) {
+		dbg("World.makeAssignments",3) << "Unassigned target " << t << " has minBgLike=" << targets[t].minBgLike(bglike) << ": assigning to background" << std::endl;
+		targets[t].setAssignments(assignments, legassigned, -1,0);
+		nbg+=targets[t].size();
+	    } else {
+		dbg("World.makeAssignments",3) << "Unassigned target " << t << " has minBgLike=" << targets[t].minBgLike(bglike) << ": assigning to entries" << std::endl;
+		nentries+=targets[t].size();
+	    }
+	}
+    }
+    
+    nassigned-=nentries;
+
+    dbg("World.makeAssignments",3) << "Assigned " << nassigned << " points to existing people,  " << nbg  << " to background, and " << nentries << " to entries." << std::endl;
     if (nbg < nassigned+nentries) {
 	dbg("World.makeAssignments",2) << "Only have " << nbg*1.0/(nbg+nassigned+nentries)*100 << "% of points assigned to background, using all points for update." << std::endl;
 	bg.update(*sick,assignments,true);
     } else {
 	// Update background only with points assumed to be background
 	bg.update(*sick,assignments,false);
+    }
+
+    if (nentries>=MINCREATEHITS) {
+	dbg("World.track",2) << "Have " << nentries << " non-background scan points unassigned." << std::endl;
+
+	// Create a new track if we can find 2 points that are separated by ~meanlegsep
+	float bestsep=1e10;
+	int bestindices[2]={0,0};
+
+	for (int t1=0;t1<targets.size();t1++) {
+	    if (targets[t1].isAssigned() || targets[t1].size()<2)
+		continue;
+	    for (int t2=0;t2<targets.size();t2++) {
+		if (targets[t2].isAssigned() || targets[t2].size()<2)
+		    continue;
+		float dist=(targets[t1].getCenter()-targets[t2].getCenter()).norm();
+		dbg("World.track",4) << "Unassigned targets " << t1 << " and " << t2 << " are separated by " << dist << std::endl;
+		if (dist>=MINLEGSEP && dist <= MAXLEGSEP && fabs(dist-MEANLEGSEP)<fabs(bestsep-MEANLEGSEP) ) {
+		    bestsep=dist;
+		    dbg("World.track",3) << "Unassigned targets " << t1 << " and " << t2 << " are best separation so far at " << bestsep << std::endl;
+		    bestindices[0]=t1;
+		    bestindices[1]=t2;
+		}
+	    }
+	}
+	if (bestsep<=MAXLEGSEP) {
+	    dbg("World.track",1) << "Creating an initial track using targets " << bestindices[0] << "," << bestindices[1] << " with separation " << bestsep << std::endl;
+	    Point l1=targets[bestindices[0]].getCenter();
+	    Point l2=targets[bestindices[1]].getCenter();
+	    people.add(l1,l2);
+	    targets[bestindices[0]].setAssignments(assignments,legassigned,people.size()-1,0);
+	    targets[bestindices[1]].setAssignments(assignments,legassigned,people.size()-1,1);
+	} else {
+	    dbg("World.track",2) << "Not creating a track - no pair appropriately spaced" << std::endl;
+	}
     }
 }
 
@@ -85,49 +267,13 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
     // Calculate background likelihoods
     bglike=bg.like(*vis.getSick());
 
-    // Map scans to tracks
-    makeAssignments(vis,entrylike);
-    std::vector<int> unassigned;
-    for (unsigned int i=0;i<assignments.size();i++)
-	if (assignments[i]==-2)
-	    unassigned.push_back(i);
-
-    if (unassigned.size()>0 && frame>BGINITFRAMES) {
-	dbg("World.track",2) << "Have " << unassigned.size() << " scan points unassigned." << std::endl;
-	if ((int)unassigned.size()<MINCREATEHITS) {
-	    dbg("World.track",3) <<  "'Need at least " << MINCREATEHITS << " points to assign a new track -- skipping" << std::endl;
-	} else {
-	    // Create a new track if we can find 2 points that are separated by ~meanlegsep
-	    float bestsep=1e10;
-	    int bestindices[2]={0,0};
-	    for (std::vector<int>::iterator i=unassigned.begin();i!=unassigned.end();i++) {
-		for (std::vector<int>::iterator j=unassigned.begin();j!=unassigned.end();j++) {
-		    if (i==j)
-			continue;
-		    float dist=(vis.getSick()->getPoint(*i)-vis.getSick()->getPoint(*j)).norm();
-		    if (fabs(dist-MEANLEGSEP)<fabs(bestsep-MEANLEGSEP) ) {
-			bestsep=dist;
-			dbg("World.track",4) << "Unassigned points " << *i << " and " << *j << " are best separation so far at " << bestsep << std::endl;
-			bestindices[0]=*i;
-			bestindices[1]=*j;
-		    }
-		}
-	    }
-	    if (bestsep>=MINLEGSEP && bestsep<=MAXLEGSEP) {
-		dbg("World.track",1) << "Creating an initial track using scans " << bestindices[0] << "," << bestindices[1] << " with separation " << bestsep << std::endl;
-		Point l1=vis.getSick()->getPoint(bestindices[0]);
-		Point l2=vis.getSick()->getPoint(bestindices[1]);
-		// Move the points out by legdiam/2 so they make sense
-		l1=l1*((l1.norm()+INITLEGDIAM/2)/l1.norm());
-		l2=l2*((l2.norm()+INITLEGDIAM/2)/l2.norm());
-		people.add(l1,l2);
-		entrylike=entrylike+log(100);   // Lot more likely that other hits are an entry
-		makeAssignments(vis,entrylike);// Redo after adding new tracks, but only do twice (allowing only 1 new person per frame) to limit cpu
-	    } else {
-		dbg("World.track",2) << "Not creating a track - no pair appropriately spaced: best separation=" << bestsep << std::endl;
-	    }
-	}
-    }
+    if (frame >BGINITFRAMES)
+	// Map scans to tracks, and update background
+	makeAssignments(vis,entrylike);
+    else
+	// Update all points for background
+	bg.update(*vis.getSick(),assignments,true);
+	
 
     // Implement assignment
     for (unsigned int p=0;p<people.size();p++) {
