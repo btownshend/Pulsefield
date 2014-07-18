@@ -162,7 +162,11 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 			dbg("Leg.update",3) << "ix=" << ix << ", iy=" << iy << ", d=" << d << ", uselookup=" << useSepLikeLookup << ", sep=" << ls.getSep() << ", sigma=" << (sqrt(otherLeg->posvar+ls.getSepSigma()*ls.getSepSigma()))  << ", seplike=" << seplike << std::endl;
 	    }
 
-	    like[ix*likeny+iy]=glike+clearlike+apriori+seplike;
+	    like[ix*likeny+iy]=glike+clearlike+seplike;
+	    if (fs.size()<2)
+		// Only use the apiori if there aren't many hits; this allows fast recapture of hits
+		like[ix*likeny+iy]+=apriori;
+		
 	    //assert(isfinite(like[ix*likeny+iy]));
 	    dbg("Leg.update",20) << "like[" << ix << "," << iy << "] (x=" << x << ", y=" << y << ") L= " << std::setprecision(1) << like[ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << ", S=" << seplike << std::endl << std::setprecision(3);
 	}
