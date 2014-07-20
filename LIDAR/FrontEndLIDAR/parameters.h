@@ -63,7 +63,7 @@ static const float FACINGTC=10; 	// Time constant for updating  estimate of faci
 static const float LEGSEPTC=1; 	// Time constant for updating  estimate of leg separation
 static const float LEGSEPSIGMATC=50; 	// Time constant for updating  estimate of leg separation sigma
 static const float LEGDIAMTC=10; 	// Time constant for updating  estimate of leg diameter
-static const float LEFTNESSTC=500;	// time constant for updating leftness
+static const float LEFTNESSTC=100;	// time constant for updating leftness
 
 // ******** Deleting tracks
 static const int INVISIBLEFORTOOLONG=50;	// Number of frames of invisible before deleting
