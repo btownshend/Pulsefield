@@ -42,12 +42,12 @@ static const float TARGETMAXIMADEPTH=50;   // Minimum depth of a local range max
 
 // ***** Tracking
 static const float INITIALPOSITIONVAR=100*100;  // Variance of initial position estimates
-static const float MAXPOSITIONVAR=50*50;  // Never let the position variance go above this during predictions
-static const float INITIALHIDDENVAR=300*300;  // Variance of initial position estimates when leg is not initially visible
+static const float MAXPOSITIONVAR=60*60;  // Never let the position variance go above this during predictions
 static const float MAXLEGSPEED=4000;	// Maximum speed of a leg in mm/s
 static const float VELUPDATETC=10;	// Velocity update time constant in frames
 static const float VELDAMPING=0.95;	// Damping (multiplicative factor) for legvelocity when not visible
-static const float DRIFTVAR=10*10; //50*50;	// Additional variance of position estimates per step when they are estimated 
+//  DRIFTVAR, MAXPOSITIONVAR based on running "diagnostic(csnap,'other',{'predbar','predvssteps'})" in matlab, DRIFTVAR+SENSORSIGMA^2 should match single frame prediction error
+static const float DRIFTVAR=16*16; //50*50;	// Additional variance of position estimates per step when they are estimated 
 static const float MINLIKEFORUPDATES=-30;	  // Minimum likelihood of a target to use the current observations to update it
 
 // ******** Leg statistics 
