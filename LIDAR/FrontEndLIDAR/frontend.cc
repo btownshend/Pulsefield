@@ -181,11 +181,13 @@ void FrontEnd::processFrames() {
 	
 	char dbgstr[100];
 	sprintf(dbgstr,"Frame.%d",sick[0]->getFrame());
+	sprintf(dbgstr,"Frame.%d",frame);
 	bool tmpDebug=false;
 	if (DebugCheck(dbgstr,20)) {
 	    PushDebugSettings();
 	    SetDebug("20");
 	    tmpDebug=true;
+	    dbg("FrontEnd",1) << "Temporarily set debug level to 20 for frame " << frame << std::endl;
 	}
 
 	sendOnce |= sendAlways;
@@ -210,10 +212,11 @@ void FrontEnd::processFrames() {
 	world->track(*vis,frame,sick[0]->getScanFreq(),elapsed);
 	sendMessages(elapsed);
 	sendOnce=0;
-	frame=frame+1;
-
-	if (tmpDebug)
+	if (tmpDebug) {
+	    dbg("FrontEnd",1) << "End of frame " << frame << ", restoring debug levels" << std::endl;
 	    PopDebugSettings();
+	}
+	frame=frame+1;
 }
 
 void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
