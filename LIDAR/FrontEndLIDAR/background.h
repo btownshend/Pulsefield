@@ -26,6 +26,7 @@ class Background {
 
     void swap(int k, int i, int j);
     void setup(const SickIO &sick);
+    bool bginit;			// True while initializing background
 public:
     Background();
     // Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
@@ -39,4 +40,7 @@ public:
 
     // Send /pf/background OSC message
     void sendMessages(lo_address &addr,int scanpt) const;
+
+    bool isInitializing() const { return bginit; }
 };
+

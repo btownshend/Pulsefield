@@ -6,6 +6,7 @@
 
 Background::Background() {
     scanRes=0;
+    bginit=true;
 }
 
 void Background::setup(const SickIO &sick) {
@@ -21,6 +22,7 @@ void Background::setup(const SickIO &sick) {
     }
     farnotseen.resize(sick.getNumMeasurements());
     scanRes=sick.getScanRes();
+    bginit=true;
 }
 
 void Background::swap(int k, int i, int j) {
@@ -84,6 +86,9 @@ std::vector<float> Background::like(const SickIO &sick) const {
 
 void Background::update(const SickIO &sick, const std::vector<int> &assignments, bool all) {
     setup(sick);
+    if (bginit && sick.getFrame()>BGINITFRAMES)
+	bginit=false;
+
     const unsigned int *srange = sick.getRange(0);
    
     // range[0] is for the farthest seen in last BGLONGDISTLIFE frames
@@ -111,7 +116,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    float oldrange=range[bestk][i];
 	    range[bestk][i]=srange[i]*1.0f/tc + range[bestk][i]*(1-1.0f/tc);
 	    freq[bestk][i]+=1.0f/tc;
-	    if (sick.getFrame() > BGINITFRAMES)
+	    if (!bginit)
 		sigma[bestk][i]=std::min((double)MAXBGSIGMA,sqrt(sigma[bestk][i]*sigma[bestk][i]*(1-1.0f/tc)+(srange[i]-range[bestk][i])*(srange[i]-oldrange)*1.0f/tc));
 	    if (bestk==0)
 		farnotseen[i]=0;
@@ -120,7 +125,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    dbg("Background.update",2) << "Farthest background at scan " << i << " moved from " << range[0][i] << " to " << srange[i] << std::endl;
 	    float oldrange=range[0][i];
 	    range[0][i]=srange[i]*1.0f/FARUPDATETC + range[0][i]*(1-1.0f/FARUPDATETC);
-	    if (sick.getFrame() > BGINITFRAMES)
+	    if (!bginit)
 		sigma[0][i]=std::min((double)MAXBGSIGMA,sqrt(sigma[0][i]*sigma[0][i]*(1-1.0f/FARUPDATETC)+(srange[i]-range[0][i])*(srange[i]-oldrange)*1.0f/FARUPDATETC));
 	    freq[0][i]+=1.0f/tc;
 	    farnotseen[i]=0;

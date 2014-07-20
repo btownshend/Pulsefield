@@ -309,7 +309,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
     // Calculate background likelihoods
     bglike=bg.like(*vis.getSick());
 
-    if (frame >BGINITFRAMES)
+    if (!bg.isInitializing())
 	// Map scans to tracks, and update background
 	makeAssignments(vis,entrylike);
     else
