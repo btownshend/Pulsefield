@@ -180,20 +180,46 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     maxlike=*mle;
 
     if (maxlike < MINLIKEFORUPDATES) {
-	dbg("Leg.update",1) << "Very unlikely placement: MLE position= " << position << " +/- " << sqrt(posvar) << " with like= " << maxlike << "-- not updating estimates" << std::endl;
+	dbg("Leg.update",1) << "Very unlikely placement: MLE position= " << *mle <<  " with like= " << maxlike << "-- not updating estimates" << std::endl;
 	// Don't use this estimate to set the new leg positions, velocities, etc
 	return;
     }
-
     // Use iterator position to figure out location of MLE
     int pos=distance(like.begin(),mle);
     int ix=pos/likeny;
     int iy=pos-ix*likeny;
-    position=Point(minval.X()+ix*stepx,minval.Y()+iy*stepy);
+    Point mlepos(minval.X()+ix*stepx,minval.Y()+iy*stepy);
+
+
+    // Find mean location by averaging over grid
+    // Calculate variance (actual mean-square distance from MLE)
+    Point sum(0,0);
+    double tprob=0;
+    for (int ix=0;ix<likenx;ix++) {
+	float x=minval.X()+ix*stepx;
+	for (int iy=0;iy<likeny;iy++) {
+	    float y=minval.Y()+iy*stepy;
+	    Point pt(x,y);
+	    if (like[ix*likeny+iy]-*mle<-12)   
+		// Won't add much!  Less than likenx*likeny*exp(-12)
+		continue;
+	    double prob=exp(like[ix*likeny+iy]-*mle);
+	    if (std::isnan(prob) || !(prob>0))
+		dbg("Leg.update",3) << "prob=" << prob << ", like=" << like[ix*likeny+iy] << std::endl;
+	    assert(prob>0);
+	    sum=sum+pt*prob;
+	    tprob+=prob;
+	}
+    }
+    assert(tprob>0);  // Since MLE was found, there must be some point that works
+    Point mean=sum/tprob;
+
+    dbg("Leg.update",3) << "Got MLE=" << mlepos << " with like=" << *mle << ", mean position=" << mean << ", tprob=" << tprob << std::endl;
+    position=mean;
 
     // Calculate variance (actual mean-square distance from MLE)
     double var=0;
-    double tprob=0;
+    tprob=0;
     for (int ix=0;ix<likenx;ix++) {
 	float x=minval.X()+ix*stepx;
 	for (int iy=0;iy<likeny;iy++) {
@@ -218,7 +244,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	posvar= SENSORSIGMA*SENSORSIGMA;
     }
 
-    dbg("Leg.update",3) << "Leg MLE position= " << position << " +/- " << sqrt(posvar) << " with like= " << *mle << std::endl;
+    dbg("Leg.update",3) << "Leg position= " << position << " +/- " << sqrt(posvar) << " with like= " << *mle << std::endl;
 }
 
 void Leg::updateVelocity(int nstep, float fps) {
