@@ -49,7 +49,7 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	setNumEchoes(1);
 	setCaptureRSSI(false);
 	scanFreq=50;
-	scanRes=0.5;
+	scanRes=0.3333;
 	updateScanFreqAndRes();
 	running=false;
 	pthread_mutex_init(&mutex,NULL);
