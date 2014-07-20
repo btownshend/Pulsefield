@@ -167,12 +167,15 @@ void World::draw(const Vis *vis) const {
      }
 
      // Draw people
-     cairo_set_source_rgb (cr, 0.0, 1.0, 0.0);
      cairo_set_line_width(cr,2*pixel);
      for (int j=0;j<people.size();j++) {
 	 if (people[j].getAge() >= AGETHRESHOLD) {
 	     for (int i=0;i<2;i++) {
 		 const Point &leg=people[j].getLeg(i).getPosition();
+		 if (i==0)
+		     cairo_set_source_rgb (cr, 0.0, 1.0, 0.0);
+		 else
+		     cairo_set_source_rgb (cr, 0.0, 0.0, 1.0);
 		 cairo_new_sub_path(cr);
 		 cairo_arc(cr,leg.X(), MAXRANGE-leg.Y(),people[j].getLegStats().getDiam()/2.0,0.0,2*M_PI);
 		 cairo_close_path(cr);
