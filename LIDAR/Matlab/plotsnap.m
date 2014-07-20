@@ -84,7 +84,7 @@ c=axis;
 
 bxy=[];
 vxy=[];
-divergence=0.011;
+divergence=0.0047;
 for i=1:length(vis.angle)
   if (bg.freq(1,i)<0.01) || abs(vis.range(i)-bg.range(1,i))>0.1
     vxy(end+1,:)=range2xy(vis.angle(i)-divergence,vis.range(i));
