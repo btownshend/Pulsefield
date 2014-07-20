@@ -4,6 +4,7 @@ classdef Person < handle
     position; 	% Position of core (hips)
     persposvar;	% Position variance of person
     legs;   	% Coordinates of legs;  legs(1,:)=left, legs(2,:)=right
+    predictedlegs;   	% Coordinates of predicted values of legs before incorporating measurements
     legsmeas;	% Measurement of legs (before any smoothing)
     prevlegs;	% Previous leg coordinates
     legvelocity;% Velocity of each leg
