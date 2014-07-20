@@ -348,7 +348,8 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		if (fs[f].back()-fs[f].front()+1 != (int)fs[f].size()) {
 		    // Has a gap
 		    for (unsigned int i=1;i<fs[f].size();i++) 
-			if (fs[f][i]-fs[f][i-1] != 1) {
+			// Gap must be a more distant range rather than shadowing
+			if (fs[f][i]-fs[f][i-1] != 1 && vis.getSick()->getRange(0)[fs[f][i]-1]>vis.getSick()->getRange(0)[fs[f][i]]) {
 			    for (unsigned int j=i;j<fs[f].size();j++)
 				fs[1-f].push_back(fs[f][j]);
 			    fs[f].resize(i);
@@ -361,14 +362,12 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 	    if (fs[f].size()>0 && fs[1-f].size()==0) {
 		// Still one empty, look for a large range jump
 		for (unsigned int i=1;i<fs[f].size();i++) { 
-		    float r=vis.getSick()->getRange(0)[fs[f][i]];
-		    float rprev=vis.getSick()->getRange(0)[fs[f][i-1]];
-		    float rjump=abs(r-rprev);
+		    float rjump=(vis.getSick()->getPoint(fs[f][i])-vis.getSick()->getPoint(fs[f][i-1])).norm();
 		    if (rjump>INITLEGDIAM/2) {
 			for (unsigned int j=i;j<fs[f].size();j++)
 			    fs[1-f].push_back(fs[f][j]);
 			fs[f].resize(i);
-			dbg("World.track",2) << "Splitting preliminary assignment for ID " << people[p].getID() << " at a range jump of " << rjump << " from  " << rprev << " to " << r  << " into " << fs[0] << ", " << fs[1] << std::endl;
+			dbg("World.track",2) << "Splitting preliminary assignment for ID " << people[p].getID() << " at a range jump of " << rjump << " into " << fs[0] << ", " << fs[1] << std::endl;
 			split=true;
 			break;
 		    }
