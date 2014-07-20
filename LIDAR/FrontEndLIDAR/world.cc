@@ -186,10 +186,10 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 
     // Now match targets with people, legs
 
-    std::vector<bool> legAssigned[2];
+    std::vector<int> legAssigned[2]; // Track assigned to leg, or -1 if not assigned
 
     for (int leg=0;leg<2;leg++)
-	legAssigned[leg].assign(people.size(),false);
+	legAssigned[leg].assign(people.size(),-1);
 
     for (int pass=0;pass<people.size()*2;pass++) {
 	float closest=1e10;
@@ -204,7 +204,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	    Point center=targets[t].getCenter();
 	    for ( int i=0;i<people.size();i++) {
 		for (int leg=0;leg<2;leg++) {
-		    if (legAssigned[leg][i])
+		    if (legAssigned[leg][i] != -1)
 			continue;
 		    float dist=(center-people[i].getLeg(leg).getPosition()).norm();
 		    if (dist < closest) {
@@ -217,11 +217,25 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	    }
 	}
 	if (closest<MAXASSIGNMENTDIST) {
-	    dbg("World.makeAssignments",3) << "Assigning; closest person to  target " << assignedTarget << " is P" << assignedPerson << "." << assignedLeg << " with distance " << closest << std::endl;
+	    dbg("World.makeAssignments",3) << "Assigning; closest person to  target " << assignedTarget << " is P" << people[assignedPerson].getID() << "." << assignedLeg << " with distance " << closest << std::endl;
 	    targets[assignedTarget].setAssignments(assignments, legassigned, assignedPerson, assignedLeg);
-	    legAssigned[assignedLeg][assignedPerson]=true;  // Mark it as already assigned
+	    legAssigned[assignedLeg][assignedPerson]=assignedTarget;  // Mark it as already assigned
+	    int otherTarget=legAssigned[1-assignedLeg][assignedPerson];
+	    if (otherTarget != -1) {
+		// This is the second leg assigned, check if the assignment should be swapped
+		float currentd2 = pow((targets[assignedTarget].getCenter()-people[assignedPerson].getLeg(assignedLeg).getPosition()).norm(),2.0)+
+		    pow((targets[otherTarget].getCenter()-people[assignedPerson].getLeg(1-assignedLeg).getPosition()).norm(),2.0);
+		float swapd2 = pow((targets[otherTarget].getCenter()-people[assignedPerson].getLeg(assignedLeg).getPosition()).norm(),2.0)+pow((targets[assignedTarget].getCenter()-people[assignedPerson].getLeg(1-assignedLeg).getPosition()).norm(),2.0);
+		if (swapd2<currentd2) {
+		    dbg("World.makeAssignments",1) << "Swapping target assignments: P" << people[assignedPerson].getID() << "." << assignedLeg << " now gets target " << otherTarget << ", since sqd-dist with swap= " << swapd2 << " < " <<  currentd2 << std::endl;
+		    targets[assignedTarget].setAssignments(assignments, legassigned, assignedPerson, 1-assignedLeg);
+		    targets[otherTarget].setAssignments(assignments, legassigned, assignedPerson, assignedLeg);
+		} else {
+		    dbg("World.makeAssignments",3) << "Not swapping target assignments: P" << people[assignedPerson].getID() << "." << assignedLeg << " now gets target " << otherTarget << ", since sqd-dist with swap= " << swapd2 << " >  " <<  currentd2 << std::endl;
+		}
+	    }
 	} else {
-	    dbg("World.makeAssignments",3) << "Not assigning; closest target-person is  target " << assignedTarget << ", P" << assignedPerson << "." << assignedLeg << " with distance " << closest << std::endl;
+	    dbg("World.makeAssignments",3) << "Not assigning; closest target-person is  target " << assignedTarget << ", P" << people[assignedPerson].getID() << "." << assignedLeg << " with distance " << closest << std::endl;
 	    break;
 	}
     }
