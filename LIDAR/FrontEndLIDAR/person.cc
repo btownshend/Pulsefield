@@ -71,6 +71,7 @@ void Person::predict(int nstep, float fps) {
 	legs[i].predict(nstep,fps);
 
     position=(legs[0].position+legs[1].position)/2;
+    posvar=(legs[0].posvar+legs[1].posvar)/4;
     velocity=(legs[0].velocity+legs[1].velocity)/2;
     dbg("Person.predict",2) << "After predict: " << *this << std::endl;
 
@@ -372,10 +373,9 @@ void Person::sendMessages(lo_address &addr, int frame, double now) const {
 	std::cerr << "Failed send of /pf/update to " << lo_address_get_url(addr) << std::endl;
 	return;
     }
-    float posvar=sqrt((legs[0].posvar+legs[1].posvar)/2);
     if (lo_send(addr, "/pf/body","iifffffffffffffffi",frame,id,
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,
-		posvar/UNITSPERM,posvar/UNITSPERM,
+		sqrt(posvar)/UNITSPERM,sqrt(posvar)/UNITSPERM,
 		velocity.norm()/UNITSPERM,0.0f,
 		velocity.getTheta()*180.0/M_PI,0.0f,
 		legStats.getFacing()*180.0/M_PI,legStats.getFacingSEM()*180.0/M_PI,
