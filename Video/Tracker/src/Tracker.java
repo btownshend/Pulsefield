@@ -72,8 +72,9 @@ public class Tracker extends PApplet {
 		PApplet.println("Sending chuck commands to "+config.getHost("CK")+":"+config.getPort("CK"));
 		PApplet.println("AL at "+config.getHost("AL")+":"+config.getPort("AL"));
 		MAX = new NetAddress(config.getHost("MAX"), config.getPort("MAX"));
-		ableton = new Ableton(oscP5, AL);
 		touchOSC = new TouchOSC(oscP5, TO);
+		ableton = new Ableton(oscP5, AL);
+
 		new Laser(oscP5, new NetAddress(config.getHost("LASER"), config.getPort("LASER")));
 		synth = new Max(this,oscP5, MAX);
 
@@ -113,6 +114,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "pfstarted", "/pf/started");
 		oscP5.plug(this, "pfstopped", "/pf/stopped");	
 		oscP5.plug(this, "tempo", "/tempo");
+		oscP5.plug(this, "volume", "/volume");
 		oscP5.plug(this, "ping", "/ping");
 		
 		PApplet.println("Setup complete");
@@ -120,9 +122,15 @@ public class Tracker extends PApplet {
 	}
 
 	public void tempo(float t) {
+		PApplet.println("tempo("+t+")");
 		MasterClock.settempo(t);
+		Ableton.getInstance().setALTempo(t);
 	}
 
+	public void volume(float vol) {
+		Ableton.getInstance().setALVolume(vol);
+	}
+	
 	public void ping(int code) {
 		OscMessage msg = new OscMessage("/ack");
 		//PApplet.println("Got ping "+code);
