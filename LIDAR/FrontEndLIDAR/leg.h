@@ -11,6 +11,7 @@ class Vis;
 class Leg {
     friend class Person;
     Point position;   // Estimate of position of leg
+    Point predictedPosition;  // Current predicted position before incorporating measurements
     float posvar;
     Point prevPosition;
     float prevposvar;

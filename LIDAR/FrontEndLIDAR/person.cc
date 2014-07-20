@@ -398,7 +398,7 @@ void Person::unGroup() {
 }
 
 void Person::addToMX(mxArray *people, int index) const {
-    // const char *fieldnames[]={"id","position","legs","prevlegs","legvelocity","scanpts","persposvar", "posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
+    // const char *fieldnames[]={"id","position","legs","predictedlegs","prevlegs","legvelocity","scanpts","persposvar", "posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     // Note: for multidimensional arrays, first index changes most rapidly in accessing matlab data
     mxArray *pId = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);
     *(int *)mxGetPr(pId) = id;
@@ -474,6 +474,14 @@ void Person::addToMX(mxArray *people, int index) const {
     *data++=legs[0].position.Y()/UNITSPERM;
     *data++=legs[1].position.Y()/UNITSPERM;
     mxSetField(people,index,"legs",pLegs);
+
+    mxArray *pPredictedLegs = mxCreateDoubleMatrix(2,2,mxREAL);
+    data = mxGetPr(pPredictedLegs);
+    *data++=legs[0].predictedPosition.X()/UNITSPERM;
+    *data++=legs[1].predictedPosition.X()/UNITSPERM;
+    *data++=legs[0].predictedPosition.Y()/UNITSPERM;
+    *data++=legs[1].predictedPosition.Y()/UNITSPERM;
+    mxSetField(people,index,"predictedlegs",pPredictedLegs);
 
 
     mxArray *pLikeCA=mxCreateCellMatrix(1,4);

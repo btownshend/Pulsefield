@@ -43,6 +43,7 @@ void Leg::predict(int nstep, float fps) {
     position.setY(position.Y()+velocity.Y()*nstep/fps);
     prevposvar=posvar;
     posvar=std::min(posvar+DRIFTVAR*nstep,MAXPOSITIONVAR);
+    predictedPosition=position;   // Save this for subsequent analyses
 }
 
 // Get likelihood of an observed echo at pt hitting leg given current model
