@@ -15,10 +15,12 @@
 
 Leg::Leg(const Point &pt) {
     position=pt;
+    predictedPosition=pt;
     prevPosition=pt;
     posvar=INITIALPOSITIONVAR;
     prevposvar=posvar;
     consecutiveInvisibleCount=0;
+    velocity=Point(0,0);
 }
 
 // Empty constructor used to initialize array, gets overwritten using above ctor subsequently
