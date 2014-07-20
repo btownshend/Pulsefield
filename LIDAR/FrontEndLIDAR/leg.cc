@@ -141,12 +141,14 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 
 	    // Likelihood with respect to positive hits
 	    float glike=0;
+	    float bgsum=0;
 	    for (unsigned int k=0;k<fs.size();k++) {
 		float dpt=(vis.getSick()->getPoint(fs[k])-pt).norm();
 		// Scale it so it is a density per meter in the area of the mean
 		float obslike=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA)*(UNITSPERM/ls.getDiam()));
 		// Take the most likely of the observation being background or this target 
 		glike+=std::max(bglike[fs[k]],obslike);
+		bgsum+=bglike[fs[k]];
 	    }
 
 	    // Likelihood with respect to separation from other leg (if it is set and has low variance)
@@ -171,7 +173,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 		like[ix*likeny+iy]+=apriori;
 		
 	    //assert(isfinite(like[ix*likeny+iy]));
-	    dbg("Leg.update",20) << "like[" << ix << "," << iy << "] (x=" << x << ", y=" << y << ") L= " << std::setprecision(1) << like[ix*likeny+iy]  << "  M=" << glike << ", C=" << clearlike << ", A=" << apriori << ", S=" << seplike << std::endl << std::setprecision(3);
+	    dbg("Leg.update",20) << "like[" << ix << "," << iy << "] (x=" << x << ", y=" << y << ") L= " << std::setprecision(1) << like[ix*likeny+iy]  << "  M=" << glike << ",BG=" << bgsum << ", C=" << clearlike << ", A=" << apriori << ", S=" << seplike << std::endl << std::setprecision(3);
 	}
     }
 
