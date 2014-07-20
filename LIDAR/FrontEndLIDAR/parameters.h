@@ -19,6 +19,8 @@ static const float UNITSPERM=1000.0;		// Internal units per meter
 // ******** Sensor
 static const float SENSORSIGMA=8;	// Sensor statistical error 
 static const double RANDOMPTPROB=1e-30;	// Probability any given scan point is random noise
+static const float DIVERGENCE = 0.00473;    // 4.7 mrad of divergence + 14mm (from regress of table of distance, diameter in manual)
+static const float EXITDIAMETER=13.6;
 
 // ******** Background
 static const float MEANBGSIGMA=10;   // Initial sigma for a new background
