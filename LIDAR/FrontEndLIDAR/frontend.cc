@@ -180,7 +180,6 @@ void FrontEnd::processFrames() {
     dbg("FrontEnd.processFrame",1) << "Processing frame " << frame << std::endl;
 	
 	char dbgstr[100];
-	sprintf(dbgstr,"Frame.%d",sick[0]->getFrame());
 	sprintf(dbgstr,"Frame.%d",frame);
 	bool tmpDebug=false;
 	if (DebugCheck(dbgstr,20)) {
@@ -430,6 +429,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	char tmpfile[1000];
 	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),frame);
 	snap->save(tmpfile);
+	snap->clear();
     }
     return 0;
 }
