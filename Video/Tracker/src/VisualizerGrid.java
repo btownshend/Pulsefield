@@ -15,7 +15,6 @@ public class VisualizerGrid extends VisualizerPS {
 	int ncell;
 	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR"};
 	int song=0;
-	TrackSet ts;
 	
 	VisualizerGrid(PApplet parent) {
 		super(parent);
@@ -37,11 +36,11 @@ public class VisualizerGrid extends VisualizerPS {
 		gridwidth=2f/ncol;
 		gridheight=2f/nrow;
 		song=0;
-		ts=Ableton.getInstance().setTrackSet(songs[song]);
+		Ableton.getInstance().setTrackSet(songs[song]);
 	}
 	public void start() {
 		song=(song+1)%songs.length;
-		ts=Ableton.getInstance().setTrackSet(songs[song]);
+		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);
 		PApplet.println("Starting grid with song "+song+": "+ts.name);
 	}
 	public void stop() {
@@ -73,6 +72,7 @@ public class VisualizerGrid extends VisualizerPS {
 			}
 			//PApplet.println("ID "+pos.id+" closest to grid ("+gposx[closest]+","+gposy[closest]+"), position "+closest+" at a distance of "+Math.sqrt(mindist));
 			if (current!=closest) {
+				TrackSet ts=Ableton.getInstance().trackSet;
 				int track=pos.id%(ts.numTracks)+ts.firstTrack;
 //				if (current!=-1)
 //					Ableton.getInstance().stopClip(track, current);
@@ -109,12 +109,16 @@ public class VisualizerGrid extends VisualizerPS {
 			parent.stroke(127,0,0);
 			parent.rect(wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
 			parent.fill(255);
-			parent.text("C"+cell+"-P"+id,wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
+			TrackSet ts=Ableton.getInstance().trackSet;
+			Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
+			Clip clip=track.getClip(cell);
+			
+			parent.text(track.getName()+"-"+clip.getName()+" P"+id,wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
 		}
 		parent.fill(127);
 		parent.textAlign(PConstants.LEFT, PConstants.TOP);
 		parent.textSize(24);
-		parent.text(ts.name,5,5);
+		parent.text(Ableton.getInstance().trackSet.name,5,5);
 	}
 
 	public void drawLaser(PApplet parent, Positions p) {
@@ -165,7 +169,7 @@ public class VisualizerGrid extends VisualizerPS {
 				handled=true;
 			}
 		} else if (components[1].equals("grid") && components[2].equals("song")) {
-			ts=Ableton.getInstance().setTrackSet(theOscMessage.get(0).stringValue());
+			Ableton.getInstance().setTrackSet(theOscMessage.get(0).stringValue());
 			handled=true;
 		}
 		if (!handled)
