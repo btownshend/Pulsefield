@@ -9,6 +9,7 @@
 #include "lookuptable.h"
 #include "groups.h"
 
+static const bool USEPERSONLIKE=false;
 
 Person::Person(int _id, const Point &leg1, const Point &leg2) {
     id=_id;
@@ -288,7 +289,8 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     }
 
     // Combine individual leg likelihoods to make person estimates
-    analyzeLikelihoods();
+    if (USEPERSONLIKE)
+	analyzeLikelihoods();
 
     // Update visibility counters
     legs[0].updateVisibility();
@@ -333,7 +335,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	legs[1].velocity=legs[0].velocity;
     }
 
-    if (false) {
+    if (!USEPERSONLIKE) {
 	// Average velocity of legs
 	velocity=(legs[0].velocity+legs[1].velocity)/2.0;
 	assert(std::isfinite(velocity.X()) && std::isfinite(velocity.Y()));
@@ -484,7 +486,7 @@ void Person::addToMX(mxArray *people, int index) const {
     mxSetField(people,index,"predictedlegs",pPredictedLegs);
 
 
-    mxArray *pLikeCA=mxCreateCellMatrix(1,4);
+    mxArray *pLikeCA=mxCreateCellMatrix(1,USEPERSONLIKE?4:2);
     for (int i=0;i<2;i++) {
 	mxArray *pLike = mxCreateDoubleMatrix(legs[i].likeny,legs[i].likenx,mxREAL);
 	assert((int)legs[i].like.size()==legs[i].likenx*legs[i].likeny);
@@ -493,21 +495,24 @@ void Person::addToMX(mxArray *people, int index) const {
 	    *data++=-legs[i].like[j];   // Use neg loglikes in the matlab version
 	mxSetCell(pLikeCA,i,pLike);
     }
-    // Person likelihood
-    mxArray *pPLike = mxCreateDoubleMatrix(likeny,likenx,mxREAL);
-    assert((int)like.size()==likenx*likeny);
-    data = mxGetPr(pPLike);
-    for (unsigned int j=0;j<like.size();j++) 
-	*data++=-like[j];   // Use neg loglikes in the matlab version
-    mxSetCell(pLikeCA,2,pPLike);
+    
+    if (USEPERSONLIKE) {
+	// Person likelihood
+	mxArray *pPLike = mxCreateDoubleMatrix(likeny,likenx,mxREAL);
+	assert((int)like.size()==likenx*likeny);
+	data = mxGetPr(pPLike);
+	for (unsigned int j=0;j<like.size();j++) 
+	    *data++=-like[j];   // Use neg loglikes in the matlab version
+	mxSetCell(pLikeCA,2,pPLike);
 
-    // Sep likelihood
-    mxArray *pSeplike = mxCreateDoubleMatrix(likeny,likenx,mxREAL);
-    assert((int)seplike.size()==likenx*likeny);
-    data = mxGetPr(pSeplike);
-    for (unsigned int j=0;j<seplike.size();j++) 
-	*data++=-seplike[j];   // Use neg loglikes in the matlab version
-    mxSetCell(pLikeCA,3,pSeplike);
+	// Sep likelihood
+	mxArray *pSeplike = mxCreateDoubleMatrix(likeny,likenx,mxREAL);
+	assert((int)seplike.size()==likenx*likeny);
+	data = mxGetPr(pSeplike);
+	for (unsigned int j=0;j<seplike.size();j++) 
+	    *data++=-seplike[j];   // Use neg loglikes in the matlab version
+	mxSetCell(pLikeCA,3,pSeplike);
+    }
 
     mxSetField(people,index,"like",pLikeCA);
 
