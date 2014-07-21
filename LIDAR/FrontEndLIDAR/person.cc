@@ -311,7 +311,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
  
     // Check that they didn't get too close or too far apart
     float legsep=(legs[0].position-legs[1].position).norm();
-    float maxLegSep=std::min(MAXLEGSEP,legStats.getSep()+legStats.getSepSigma());
+    float maxLegSep=MAXLEGSEP;
     if (legsep>maxLegSep) {
 	dbg("Person.update",2) << "legs are " << legsep << " apart (> " << maxLegSep << "), moving together" << std::endl;
 	Point vec;
@@ -319,7 +319,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
 	legs[1].position=legs[1].position-vec*(legs[1].posvar/(legs[0].posvar+legs[1].posvar));
     }
-    float minLegSep=std::max(MINLEGSEP,std::max(legStats.getSep()-legStats.getSepSigma(),legStats.getDiam()));
+    float minLegSep=std::max(MINLEGSEP,legStats.getDiam());
     if (legsep<minLegSep) {
 	dbg("Person.predict",2) << "legs are " << legsep << " apart (< " << minLegSep << "), moving apart" << std::endl;
 	Point vec;
