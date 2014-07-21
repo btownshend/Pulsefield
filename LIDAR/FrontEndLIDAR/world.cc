@@ -220,20 +220,6 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	    dbg("World.makeAssignments",3) << "Assigning; closest person to  target " << assignedTarget << " is P" << people[assignedPerson].getID() << "." << assignedLeg << " with distance " << closest << std::endl;
 	    targets[assignedTarget].setAssignments(assignments, legassigned, assignedPerson, assignedLeg);
 	    legAssigned[assignedLeg][assignedPerson]=assignedTarget;  // Mark it as already assigned
-	    int otherTarget=legAssigned[1-assignedLeg][assignedPerson];
-	    if (otherTarget != -1) {
-		// This is the second leg assigned, check if the assignment should be swapped
-		float currentd2 = pow((targets[assignedTarget].getCenter()-people[assignedPerson].getLeg(assignedLeg).getPosition()).norm(),2.0)+
-		    pow((targets[otherTarget].getCenter()-people[assignedPerson].getLeg(1-assignedLeg).getPosition()).norm(),2.0);
-		float swapd2 = pow((targets[otherTarget].getCenter()-people[assignedPerson].getLeg(assignedLeg).getPosition()).norm(),2.0)+pow((targets[assignedTarget].getCenter()-people[assignedPerson].getLeg(1-assignedLeg).getPosition()).norm(),2.0);
-		if (swapd2<currentd2) {
-		    dbg("World.makeAssignments",1) << "Swapping target assignments: P" << people[assignedPerson].getID() << "." << assignedLeg << " now gets target " << otherTarget << ", since sqd-dist with swap= " << swapd2 << " < " <<  currentd2 << std::endl;
-		    targets[assignedTarget].setAssignments(assignments, legassigned, assignedPerson, 1-assignedLeg);
-		    targets[otherTarget].setAssignments(assignments, legassigned, assignedPerson, assignedLeg);
-		} else {
-		    dbg("World.makeAssignments",3) << "Not swapping target assignments: P" << people[assignedPerson].getID() << "." << assignedLeg << " now gets target " << otherTarget << ", since sqd-dist with swap= " << swapd2 << " >  " <<  currentd2 << std::endl;
-		}
-	    }
 	} else {
 	    dbg("World.makeAssignments",3) << "Not assigning; closest target-person is  target " << assignedTarget << ", P" << people[assignedPerson].getID() << "." << assignedLeg << " with distance " << closest << std::endl;
 	    break;
@@ -335,10 +321,16 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
     for (unsigned int p=0;p<people.size();p++) {
 	// Build list of points assigned to this person
 	std::vector<int> fs[2];
-	for (unsigned int j=0;j<assignments.size();j++)
-	    if (assignments[j]==(int)p)
-		fs[legassigned[j]].push_back(j);
-
+	for (unsigned int j=0;j<assignments.size();j++) 
+	    if (assignments[j]==(int)p) {
+		// Redo assignments to which leg based on observertion
+		Point sickpt=vis.getSick()->getPoint(j);
+		float l1=people[p].getObsLike(sickpt,0,vis.getSick()->getFrame());
+		float l2=people[p].getObsLike(sickpt,1,vis.getSick()->getFrame());
+		dbg("World.track",5) << "Assigning scan " << j << " to person P" <<  people[p].getID() << " like= [" << l1 << ", " << l2 << "]" << std::endl;
+		fs[l1>l2?0:1].push_back(j);
+	    }
+	/*****	
 	// Reorganize split between two legs if needed (e.g. frame 958)
 	// TODO -- these splits don't take into account which prior position is closer so they result in leg swaps sometimes (e.g. frame 958 of *2923.ferec)
 	bool split=false;
@@ -394,6 +386,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		dbg("World.track",2) << "Swapped assignment for ID " << people[p].getID() << " into " << fs[0] << ", " << fs[1] << std::endl;
 	    }
 	}
+	**/
 
 	people[p].update(vis,bglike,fs,nsteps,fps);
     }
