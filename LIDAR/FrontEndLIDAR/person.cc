@@ -89,15 +89,18 @@ float Person::getObsLike(const Point &pt, int leg, int frame) const {
 void Person::setupGrid(const Vis &vis, const std::vector<int> fs[2]) {
     // Bound search by prior position + 2*sigma(position) + legdiam/2
     float margin;
-    margin=2*sqrt((legs[0].posvar+legs[1].posvar)/2);
+    margin=2*sqrt(std::max(legs[0].posvar,legs[1].posvar));
     minval=position-margin;
     maxval=position+margin;
 
     Point legSepVector=legs[1].getPosition()-legs[0].getPosition();
 
+    // Make sure all hits are included
     for (int i=0;i<2;i++)
 	for (int j=0;j<fs[i].size();j++)  {
 	    Point pt=vis.getSick()->getPoint(fs[i][j]);
+	    // Compute expected target center for this point
+	    Point phit=pt+pt/pt.norm()*legStats.getDiam()/2;
 	    // Adjust point back to person-centered space from leg-centered space
 	    if (i==0)
 		pt=pt+legSepVector/2;
@@ -105,6 +108,8 @@ void Person::setupGrid(const Vis &vis, const std::vector<int> fs[2]) {
 		pt=pt-legSepVector/2;
 	    minval=minval.min(pt);
 	    maxval=maxval.max(pt);
+	    minval=minval.min(phit);
+	    maxval=maxval.max(phit);
 	}
 
     // Increase search by legdiam/2 to make sure entire PDF is contained
@@ -112,7 +117,7 @@ void Person::setupGrid(const Vis &vis, const std::vector<int> fs[2]) {
     maxval=maxval+legStats.getDiam()/2;
 
     // Initial estimate of grid size
-    float step=20;
+    float step=10;
     likenx=(int)((maxval.X()-minval.X())/step+1.5);
     likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
     if (likenx*likeny > MAXGRIDPTS) {
