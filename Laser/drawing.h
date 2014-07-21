@@ -16,6 +16,7 @@ class Drawing;
 
 class Primitive {
 protected:
+    static const float DELTADIST;  // Distance to move in device space to calculate spread do to angle
     Color c;
  public:
     Primitive(Color _c): c(_c) { }

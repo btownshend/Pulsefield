@@ -8,6 +8,7 @@
 #include "laser.h"
 #include "dbg.h"
 
+const float Primitive::DELTADIST=20;  // Distance to move in device space to calculate spread do to angle
 std::ostream& operator<<(std::ostream& s, const Color &col) {
     return s << "[" << col.r << "," << col.g << "," << col.b << "]";
 }
@@ -54,14 +55,14 @@ float Circle::getShapeScore(const Transform &transform) const {
     float devRadius=(transform.mapToDevice(Point(center.X(),center.Y()+radius))-devCenter).norm();
     float score;
     if (!transform.onScreen(devCenter+Point(devRadius,devRadius)) || ! transform.onScreen(devCenter-Point(devRadius,devRadius)))
-	score=0.0;  // off-screen
+	score=0.0;  // off-screen (TODO: Handle partial off-screens)
     else {
 	// All on-screen, compute maximum width of line (actually physical distance of small step in laser)
-	float delta1=(center-transform.mapToWorld(devCenter+Point(0,1))).norm();
-	float delta2=(center-transform.mapToWorld(devCenter+Point(1,0))).norm();
+	float delta1=(center-transform.mapToWorld(devCenter+Point(0,DELTADIST))).norm();
+	float delta2=(center-transform.mapToWorld(devCenter+Point(DELTADIST,0))).norm();
 	score=1.0/std::hypot(delta1,delta2)+1.0;
+	dbg("Circle.getShapeScore",5) <<  center << " maps to " << devCenter << " delta=" << delta1 << ", " << delta2 << ", score=" << score << std::endl;
     }
-    dbg("Circle.getShapeScore",5) <<  center << " maps to " << devCenter << " score=" << score << std::endl;
     return score;
 }
 
@@ -81,6 +82,7 @@ float Line::getShapeScore(const Transform &transform) const {
 	    // All on-screen, compute maximum width of line (actually physical distance of small step in laser)
 	    Point dir=devp2-devp1; dir=dir/dir.norm();
 	    Point orthogonal(-dir.Y(),dir.X());
+	    orthogonal=orthogonal*DELTADIST;
 	    float delta1=(p1-transform.mapToWorld(devp1+orthogonal)).norm();
 	    float delta2=(p2-transform.mapToWorld(devp2+orthogonal)).norm();
 	    score=1.0+1.0/std::max(delta1,delta2);
