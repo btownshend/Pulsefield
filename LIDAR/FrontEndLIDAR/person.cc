@@ -107,7 +107,7 @@ void Person::setupGrid(const Vis &vis, const std::vector<int> fs[2]) {
 	    maxval=maxval.max(pt);
 	}
 
-    // Increase search by legdiam/2
+    // Increase search by legdiam/2 to make sure entire PDF is contained
     minval=minval-legStats.getDiam()/2;
     maxval=maxval+legStats.getDiam()/2;
 
@@ -262,7 +262,7 @@ void Person::analyzeLikelihoods() {
     float legsep=sepvec.norm();
     float maxLegSep=std::min(MAXLEGSEP,legStats.getSep()+legStats.getSepSigma());
     if (legsep>maxLegSep) {
-	dbg("Person.predict",2) << "legs are " << legsep << " apart (> " << maxLegSep << "), moving together" << std::endl;
+	dbg("Person.analyzeLikelihoods",2) << "legs are " << legsep << " apart (> " << maxLegSep << "), moving together" << std::endl;
 	Point vec;
 	sepvec=sepvec*maxLegSep/legsep;
     }
@@ -308,7 +308,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     float legsep=(legs[0].position-legs[1].position).norm();
     float maxLegSep=std::min(MAXLEGSEP,legStats.getSep()+legStats.getSepSigma());
     if (legsep>maxLegSep) {
-	dbg("Person.predict",2) << "legs are " << legsep << " apart (> " << maxLegSep << "), moving together" << std::endl;
+	dbg("Person.update",2) << "legs are " << legsep << " apart (> " << maxLegSep << "), moving together" << std::endl;
 	Point vec;
 	vec=(legs[0].position-legs[1].position)*(maxLegSep/legsep-1);
 	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));

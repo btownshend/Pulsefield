@@ -135,7 +135,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 
     for (unsigned int f=0;f<sick->getNumMeasurements();f++) {
 	if (bglike[f]>bglikethresh) {
-	    dbg("World.makeAssignments",8) << "Assigned scan " << f << " with range " << range[f] << " to background with bglike= " << bglike[f] << std::endl;
+	    //dbg("World.makeAssignments",8) << "Assigned scan " << f << " with range " << range[f] << " to background with bglike= " << bglike[f] << std::endl;
 	    assignments[f]=-1;
 	    nbg++;
 	    continue;  // Probably background
@@ -148,10 +148,10 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 		// Check if all intervening scans have a shorter range (i.e. we jumping over a near obstruction)
 		bool canmerge=true;
 		for (int j=targets[i].lastScan()+1;j<f;j++) {
-		    dbg("World.makeAssignments",3) << "Comparing gap range[" << j << "] of " << range[j] << " with range[" << f << "] of " << range[f] << std::endl;
+		    dbg("World.makeAssignments",10) << "Comparing gap range[" << j << "] of " << range[j] << " with range[" << f << "] of " << range[f] << std::endl;
 		    if (range[j] >= range[f]) {
 			// Not closer, can' t do this merge
-			dbg("World.makeAssignments",3) << "Can't merge scan " << f << " at range " << range[f] << " with target " << i << " since scan " << j << " has range " << range[j] << std::endl;
+			dbg("World.makeAssignments",10) << "Can't merge scan " << f << " at range " << range[f] << " with target " << i << " since scan " << j << " has range " << range[j] << std::endl;
 			canmerge=false;
 			break;
 		    }
@@ -170,7 +170,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	    Target t;
 	    t.append(f,sick->getPoint(f));
 	    targets.push_back(t);
-	    dbg("World.makeAssignments",4) << "Assigned scan " << f << " to new target " << targets.size()-1 << std::endl;
+	    dbg("World.makeAssignments",4) << "Assigned scan " << f << "with range " << range[f] << " to new target " << targets.size()-1 << std::endl;
 	    nassigned++;
 	}
     }

@@ -38,7 +38,8 @@ void Background::swap(int k, int i, int j) {
     sigma[j][k]=tmpsigma;
 }
 
-// Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
+// Return likelihood of each scan pixel being part of background (fixed structures not to be considered targets)
+// Note that these are not probabilities -- they can only be compared with equivalently computed likelihoods of the scan pixel being part of a hit
 std::vector<float> Background::like(const SickIO &sick) const {
     ((Background *)this)->setup(sick);
     std::vector<float> result(sick.getNumMeasurements(),0.0);
