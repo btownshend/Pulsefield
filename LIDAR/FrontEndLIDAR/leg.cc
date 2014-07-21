@@ -180,17 +180,17 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     // Find iterator that points to maximum of MLE
     std::vector<float>::iterator mle=std::max_element(like.begin(),like.end());
     maxlike=*mle;
-
-    if (maxlike < MINLIKEFORUPDATES) {
-	dbg("Leg.update",1) << "Very unlikely placement: MLE position= " << *mle <<  " with like= " << maxlike << "-- not updating estimates" << std::endl;
-	// Don't use this estimate to set the new leg positions, velocities, etc
-	return;
-    }
     // Use iterator position to figure out location of MLE
     int pos=distance(like.begin(),mle);
     int ix=pos/likeny;
     int iy=pos-ix*likeny;
     Point mlepos(minval.X()+ix*stepx,minval.Y()+iy*stepy);
+
+    if (maxlike < MINLIKEFORUPDATES) {
+	dbg("Leg.update",1) << "Very unlikely placement: MLE position= " << mlepos <<  " with like= " << maxlike << "-- not updating estimates, leaving leg at " << position <<"+=" << sqrt(posvar) <<  std::endl;
+	// Don't use this estimate to set the new leg positions, velocities, etc
+	return;
+    }
 
 
     // Find mean location by averaging over grid
