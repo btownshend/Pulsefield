@@ -54,16 +54,10 @@ float Leg::getObsLike(const Point &pt, int frame,const LegStats &ls) const {
     Point delta=pt-position;
     Point diamOffset=delta/delta.norm()*ls.getDiam()/2;
     float like=log(normpdf(delta.X(),diamOffset.X(),sigma)*UNITSPERM)+log(normpdf(delta.Y(),diamOffset.Y(),sigma)*UNITSPERM);
-    // Check if the intersection point would be shadowed by the object (ie the contact is on the wrong side)
-    // This is handled by calculating the probability of the object overlapping the scan line prior to the endpoint.
-    float dclr=segment2pt(Point(0.0,0.0),pt,position);
-    dbg("Leg.getObsLike",20) << "pt=" << pt << ", leg=" << position << ", pt-leg=" << (pt-position) << ", diam=" << ls.getDiam() << ", dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", dclr=" << dclr << std::endl;
-    if (dclr<dpt) {
-	float clike1=log(ricecdf(dclr,ls.getDiam()/2,sigma));
-	float clike2= log(ricecdf(dpt,ls.getDiam()/2,sigma));
-	like+=clike1-clike2;
-	dbg("Leg.getObsLike",20) << "clike=" << clike1 << "-" << clike2 << "=" << clike1-clike2 << ", like=" << like << std::endl;
-    }
+    // And check the likelihood that the echo is in front of the true leg position
+    float frontlike=log(1-normcdf(pt.norm(),position.norm(),sqrt(posvar)));
+    dbg("Leg.getObsLike",20) << "pt=" << pt << ", leg=" << position << ", pt-leg=" << (pt-position) << ", diam=" << ls.getDiam() << ", dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", frontlike=" << frontlike << std::endl;
+    like+=frontlike;
     like=std::max((float)log(RANDOMPTPROB),like);
     assert(std::isfinite(like));
     return like;
