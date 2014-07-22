@@ -18,11 +18,9 @@ void Background::setup(const SickIO &sick) {
     for (int i=0;i<NRANGES;i++) {
 	range[i].resize(sick.getNumMeasurements());
 	freq[i].resize(sick.getNumMeasurements());
-	sigma[i].resize(sick.getNumMeasurements());
-	for (int j=0;j<sick.getNumMeasurements();j++)
-	    sigma[i][j]=MEANBGSIGMA;
+	sigma[i].assign(sick.getNumMeasurements(),MEANBGSIGMA);
+	consecutiveInvisible[i].resize(sick.getNumMeasurements());
     }
-    farnotseen.resize(sick.getNumMeasurements());
     scanRes=sick.getScanRes();
     bginit=true;
 }
@@ -38,6 +36,9 @@ void Background::swap(int k, int i, int j) {
     float tmpsigma=sigma[i][k];
     sigma[i][k]=sigma[j][k];
     sigma[j][k]=tmpsigma;
+    float tmpconsecutiveInvisible=consecutiveInvisible[i][k];
+    consecutiveInvisible[i][k]=consecutiveInvisible[j][k];
+    consecutiveInvisible[j][k]=tmpconsecutiveInvisible;
 }
 
 // Return likelihood of each scan pixel being part of background (fixed structures not to be considered targets)
@@ -109,6 +110,8 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	int bestk=-1;
 	float bestprob=-1;
 	for (int k=0;k<NRANGES;k++) {
+	    if (range[k][i]==0)
+		continue;
 	    if (fabs(srange[i]-range[k][i])<3*sigma[k][i]) {
 		float p=normpdf(srange[i],range[k][i],sigma[k][i]);
 		if (p>bestprob) {
@@ -116,6 +119,8 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 		    bestprob=p;
 		}
 	    }
+	    if (srange[i]>range[k][i] || k==0)
+		consecutiveInvisible[k][i]++;   // Count amount of time that this should be visible, but isn't -- except for most distant one; need a way to get rid of that too...
 	}
 	dbg("Background.update",5) << "Best fit for background " << i << " is index " << bestk << " with prob " << std::setprecision(8) << bestprob << std::setprecision(3) << std::endl;
 	if (bestk >= 0) {
@@ -125,8 +130,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    freq[bestk][i]+=1.0f/tc;
 	    if (!bginit)
 		sigma[bestk][i]=std::min((double)MAXBGSIGMA,sqrt(sigma[bestk][i]*sigma[bestk][i]*(1-1.0f/tc)+(srange[i]-range[bestk][i])*(srange[i]-oldrange)*1.0f/tc));
-	    if (bestk==0)
-		farnotseen[i]=0;
+	    consecutiveInvisible[bestk][i]=0;
 	} else if (srange[i]>range[0][i]) {
 	    // New long distance point, update range[0] faster
 	    dbg("Background.update",2) << "Farthest background at scan " << i << " moved from " << range[0][i] << " to " << srange[i] << std::endl;
@@ -138,23 +142,34 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 		sigma[0][i]=std::min((double)MAXBGSIGMA,sqrt(sigma[0][i]*sigma[0][i]*(1-1.0f/FARUPDATETC)+(srange[i]-range[0][i])*(srange[i]-oldrange)*1.0f/FARUPDATETC));
 	    }
 	    freq[0][i]+=1.0f/tc;
-	    farnotseen[i]=0;
+	    consecutiveInvisible[0][i]=0;
 	} else {
 	    // No matches, inside active area; reset last range value 
 	    range[NRANGES-1][i]=srange[i];
 	    sigma[NRANGES-1][i]=MEANBGSIGMA;
 	    freq[NRANGES-1][i]=1.0f/tc;
 	}
+	bool dodump=false;
+	for (int k=NRANGES-2;k>=0;k--) {
+	    if (consecutiveInvisible[k][i]>(k==0?BGLONGDISTLIFE:MAXBGINVISIBLE)) {
+		dbg("Background.update",2) << "Frame " << sick.getFrame() << ": background " << k << " at scan " << i << " with range=" << range[k][i] << ", freq=" << freq[k][i] << " has not been seen for " << consecutiveInvisible[k][i] << " frames; removing it." << std::endl;
+		freq[k][i]=0;
+		range[k][i]=0;
+		consecutiveInvisible[k][i]=0;
+		swap(i,k,k+1);	
+		dodump=true;
+	    }
+	}
+
 	// Swap ordering if needed
 	if (range[0][i] < range[1][i])
 	    // range[0] is always farthest
 	    swap(i,0,1);
 
-	bool dodump=false;
 	for (int k=NRANGES-1;k>1;k--)
 	    if  (freq[k][i] > freq[k-1][i]) {
 		// freq[1] should always be > freq[2]
-		dbg("Background.update",2) << "Promoting background at scan " << i << " with range=" << range[k][i] << ", freq=" << freq[k][i] << " to level " << k-1 << "; range[0]=" << range[0][i]  << std::endl;
+		dbg("Background.update",2) << "Frame " << sick.getFrame() << ": promoting background at scan " << i << " with range=" << range[k][i] << ", freq=" << freq[k][i] << " to level " << k-1 << "; range[0]=" << range[0][i]  << std::endl;
 		swap(i,k,k-1);
 		dodump=true;
 	    } 
@@ -163,15 +178,11 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	float ftotal=0;
 	for (int k=0;k<NRANGES;k++)
 	    ftotal+=freq[k][i];
-	for (int k=0;k<NRANGES;k++)
-	    freq[k][i]/=ftotal;
-
-	if (farnotseen[i] > BGLONGDISTLIFE) {
-	    dbg("Background.update",2) << "Farthest background at scan " << i << " not seen for " << farnotseen[i] << " frames.  Resetting to " << range[1][i] << std::endl;
-	    swap(i,0,1);
-	    swap(i,1,2);
-	    farnotseen[i]=0;
-	    dodump=true;
+	if (ftotal>0)
+	    for (int k=0;k<NRANGES;k++)
+		freq[k][i]/=ftotal;
+	else {
+	    dbg("Background.update",1) << "Warning: ftotal=" << ftotal << std::endl;
 	}
 	//See if we should split any backgrounds
 	for (int k=0;k<NRANGES-1;k++) {
@@ -212,7 +223,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	}
 	if (dodump) {
 	    for (int k=0;k<NRANGES;k++) {
-		dbg("Background.update",3) << "Scan " << i << " " << k << ": " << range[k][i] << " " << sigma[k][i] << " " << freq[k][i] << std::endl;
+		dbg("Background.update",3) << "Scan " << i << " " << k << ": r=" << range[k][i] << ", s= " << sigma[k][i] << ", f= " << freq[k][i] << " Inv=" << consecutiveInvisible[k][i] << std::endl;
 	    }
 	}
     }

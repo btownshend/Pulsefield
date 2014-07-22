@@ -24,7 +24,7 @@ class Background {
     std::vector<float> range[NRANGES];   // Range in mm of background for NRANGES values/scan (mean of Gaussian)
     std::vector<float> sigma[NRANGES];  // Sigma for Gaussian for this range
     std::vector<float> freq[NRANGES];
-    std::vector<int> farnotseen;
+    std::vector<int> consecutiveInvisible[NRANGES];
     float scanRes;
 
     void swap(int k, int i, int j);
@@ -45,5 +45,6 @@ public:
     void sendMessages(lo_address &addr,int scanpt) const;
 
     bool isInitializing() const { return bginit; }
+    int numRanges() const { return NRANGES-1; }  // 1 less than internal since last one is a placeholder for new values
 };
 
