@@ -74,6 +74,8 @@ public:
     float getObsLike(const Point &pt, int leg, int frame) const;   // Get likelihood of an observed echo at pt hitting leg given current model
     // Send /pf/ OSC messages
     void sendMessages(lo_address &addr, int frame, double now) const;
+    // Return performance metric for current frame
+    float getFramePerformance() const { return legs[0].getFramePerformance()+legs[1].getFramePerformance(); }
 };
 
 
@@ -94,4 +96,7 @@ class People {
     std::vector <std::shared_ptr<Person> >::iterator end() { return p.end(); }
     std::vector <std::shared_ptr<Person> >::const_iterator begin() const { return p.begin(); }
     std::vector <std::shared_ptr<Person> >::const_iterator end() const { return p.end(); }
+    // Return performance metric for current frame
+    std::vector<float> getFramePerformance() const { std::vector<float> s; for (int i=0;i<p.size();i++) s.push_back(p[i]->getFramePerformance()); return s; }
+    int getLastID() const { return nextid-1; }
 };

@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <assert.h>
+#include <numeric>
 
 #include "frontend.h"
 #include "urlconfig.h"
@@ -309,6 +310,11 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     float maxlag=0;
     float totallag=0;
     int nlag=0;
+    std::vector<float> allperf;
+    int minPerfFrame=1000000;
+    int maxPerfFrame=-1;
+    int maxPeople=0;
+    int activeFrames=0;
 
     while (true) {
 	int cid,nechoes,nmeasure;
@@ -321,6 +327,23 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	if (nread!=6)  {
 	    std::cerr << "Error scaning input file, read " << nread << " entries when 6 were expected" << std::endl;
 	    return -1;
+	}
+        assert(nechoes>=1 && nechoes<=SickIO::MAXECHOES);
+	assert(nmeasure>0 && nmeasure<=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS);
+
+	for (int e=0;e<nechoes;e++) {
+	    int echo;
+	    fscanf(fd,"D%d ",&echo);
+	    assert(echo>=0 && echo<nechoes);
+	    for (int i=0;i<nmeasure;i++)
+		fscanf(fd,"%d ",&range[e][i]);
+	}
+	for (int e=0;e<nechoes;e++) {
+	    int echo;
+	    fscanf(fd,"R%d ",&echo);
+	    assert(echo>=0 && echo<nechoes);
+	    for (int i=0;i<nmeasure;i++)
+		fscanf(fd,"%d ",&reflect[e][i]);
 	}
 	    
 	if (lastframe==-1) 
@@ -372,23 +395,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    }
 	} /* else use real-time timing */
 
-        assert(nechoes>=1 && nechoes<=SickIO::MAXECHOES);
-	assert(nmeasure>0 && nmeasure<=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS);
-
-	for (int e=0;e<nechoes;e++) {
-	    int echo;
-	    fscanf(fd,"D%d ",&echo);
-	    assert(echo>=0 && echo<nechoes);
-	    for (int i=0;i<nmeasure;i++)
-		fscanf(fd,"%d ",&range[e][i]);
-	}
-	for (int e=0;e<nechoes;e++) {
-	    int echo;
-	    fscanf(fd,"R%d ",&echo);
-	    assert(echo>=0 && echo<nechoes);
-	    for (int i=0;i<nmeasure;i++)
-		fscanf(fd,"%d ",&reflect[e][i]);
-	}
 	if (nlag>=100) {
 	    dbg("frontend",1) << "Playing frame " << frame << " with mean lag " <<  totallag/nlag << ", maxlag=" << maxlag << std::endl;
 	    printf("Playing frame %d with mean lag=%.3fs, maxlag=%.3fs\n",frame,totallag/nlag,maxlag);
@@ -433,9 +439,59 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 		snap->clear();
 	    }
 	}
-
+	minPerfFrame=std::min(minPerfFrame,frame-1);
+	maxPerfFrame=std::max(maxPerfFrame,frame-1);
+	if (world->numPeople() > 0) {
+	    maxPeople=std::max(world->numPeople(),maxPeople);
+	    std::vector<float> framePerf=world->getFramePerformance();
+	    allperf.insert(allperf.end(),framePerf.begin(),framePerf.end());
+	    activeFrames++;
+	}
     }
     fclose(fd);
+
+    // Write performance data
+    static const char *perfFilename="performance.csv";
+    FILE *perfFD=fopen(perfFilename,"a");
+    if (perfFD == NULL) {
+	fprintf(stderr,"Unable to open performance file %s for appending\n", perfFilename);
+	return -1;
+    }
+    // Get current time
+    time_t now;
+    time(&now);
+    struct tm *timeptr=localtime(&now);
+    char datestr[100];
+    strftime(datestr,sizeof(datestr),"%d-%h-%Y %H:%M:%S",timeptr);
+
+    // Get current GIT revision
+    const char *command = "git log -1 --format='%h' 2>&1";
+    FILE *fp = popen(command, "r");
+    char gitrev[50];
+    if (fp == NULL) {
+	std::cerr << "Failed to run " << command << std::endl;
+	strcpy(gitrev,"?");
+    } else {
+	(void)fgets(gitrev, sizeof(gitrev)-1, fp);
+	if (strlen(gitrev)>0)
+	    gitrev[strlen(gitrev)-1]=0;  // Remove newline
+    }
+    fclose(fp);
+
+    std::sort(allperf.begin(),allperf.end());
+    float mean=std::accumulate(allperf.begin(),allperf.end(),0)/allperf.size();
+    std::string allargs=arglist[0];
+    for (unsigned int i=1;i<arglist.size();i++)
+	allargs+=" "+arglist[i];
+    fprintf(perfFD,"\"%s\",\"%s\",\"%s\",\"%s\",%d,%d,%d,%d,%d,%ld,%g",allargs.c_str(),filename, gitrev,datestr, minPerfFrame, maxPerfFrame, activeFrames,maxPeople, world->getLastID(),allperf.size(), sqrt(mean)/UNITSPERM);
+    float prctiles[]={0,0.5,0.9,0.95,0.99,1.0};
+    for (int i=0;i<sizeof(prctiles)/sizeof(prctiles[0]);i++) {
+	int pos=(int)((allperf.size()-1)*prctiles[i]+0.5);
+	fprintf(perfFD,",%.0f,%f",100*prctiles[i],sqrt(allperf[pos])/UNITSPERM);
+    }
+    fprintf(perfFD,"\n");
+    fclose(perfFD);
+
     if (!matfile.empty()) {
 	char tmpfile[1000];
 	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),frame);

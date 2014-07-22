@@ -38,4 +38,5 @@ class Leg {
     void sendMessages(lo_address &addr, int frame, int id, int legnum) const;
     bool isVisible() const { return consecutiveInvisibleCount==0; }
     void setupGrid(int _likenx, int _likeny, Point _minval, Point _maxval) { likenx=_likenx; likeny=_likeny; minval=_minval; maxval=_maxval; }
+    float getFramePerformance() const { return pow((position-predictedPosition).norm(),2.0); }
 };

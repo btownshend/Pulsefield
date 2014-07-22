@@ -133,3 +133,7 @@ Laser/malloc.dump
 LIDAR/FrontEndLIDAR/normtest
 
 *.hold
+
+LIDAR/FrontEndLIDAR/performance.csv
+
+LIDAR/FrontEndLIDAR/testing.log

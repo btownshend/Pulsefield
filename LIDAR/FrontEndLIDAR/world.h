@@ -82,4 +82,8 @@ public:
 	d=std::min(d,fabs(p.Y()-maxy));
 	return d;
     }
+    // Return performance metric for current frame
+    std::vector<float> getFramePerformance() const { return people.getFramePerformance(); }
+    int numPeople() const { return people.size(); }
+    int getLastID() const { return people.getLastID(); }
 };
