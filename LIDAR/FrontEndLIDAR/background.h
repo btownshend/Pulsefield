@@ -10,6 +10,9 @@
 #include "lo/lo.h"
 #include "sickio.h"
 
+class Vis;
+class World;
+
 class Background {
     static const int NRANGES=5;
 
@@ -30,7 +33,7 @@ class Background {
 public:
     Background();
     // Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
-    std::vector<float> like(const SickIO &sick) const;
+    std::vector<float> like(const Vis &vis, const World &world) const;
     void update(const SickIO &sick, const std::vector<int> &assignments, bool all=false);
     mxArray *convertToMX() const;
     const std::vector<float> &getRange(int i) const { return range[i]; }

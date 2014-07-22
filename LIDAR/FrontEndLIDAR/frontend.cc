@@ -27,7 +27,7 @@ static void error(int num, const char *msg, const char *path)
 }
 
 
-FrontEnd::FrontEnd(int _nsick,int argc, const char *argv[]) {
+FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]) {
     dbg("FrontEnd",1) << "FrontEnd::FrontEnd(" << _nsick << ")" << std::endl;
 
     for (int i=0;i<argc;i++)
@@ -45,7 +45,7 @@ FrontEnd::FrontEnd(int _nsick,int argc, const char *argv[]) {
 	} else
 	    sick = new SickIO*[nsick];
 	
-	world = new World();
+	world = new World(maxRange);
 	vis = new Vis();
 	snap=NULL;  // If needed, set in matsave()
 	nechoes=1;
@@ -211,6 +211,7 @@ void FrontEnd::processFrames() {
 	world->track(*vis,frame,sick[0]->getScanFreq(),elapsed);
 	sendMessages(elapsed);
 	sendOnce=0;
+	dbg("FrontEnd",2) << "Bounds=[" << world->getMinX() << "," << world->getMaxX() << "," << world->getMinY() << "," << world->getMaxY() << "]" << std::endl;
 	if (tmpDebug) {
 	    dbg("FrontEnd",1) << "End of frame " << frame << ", restoring debug levels" << std::endl;
 	    PopDebugSettings();
@@ -454,10 +455,10 @@ void FrontEnd::sendSetupMessages(const char *host, int port) const {
     for (unsigned int i=1;i<arglist.size();i++)
 	allargs+=" "+arglist[i];
     lo_send(addr,"/pf/set/source","s",allargs.c_str());
-    lo_send(addr,"/pf/set/minx","f",-(float)MAXRANGE/UNITSPERM);
-    lo_send(addr,"/pf/set/maxx","f",MAXRANGE/UNITSPERM);
-    lo_send(addr,"/pf/set/miny","f",0.0);
-    lo_send(addr,"/pf/set/maxy","f",MAXRANGE/UNITSPERM);
+    lo_send(addr,"/pf/set/minx","f",world->getMinX()/UNITSPERM);
+    lo_send(addr,"/pf/set/maxx","f",world->getMaxX()/UNITSPERM);
+    lo_send(addr,"/pf/set/miny","f",world->getMinY()/UNITSPERM);
+    lo_send(addr,"/pf/set/maxy","f",world->getMaxY()/UNITSPERM);
     lo_send(addr,"/pf/set/groupdist","f",GROUPDIST/UNITSPERM);
     lo_send(addr,"/pf/set/ungroupdist","f",UNGROUPDIST/UNITSPERM);
     lo_send(addr,"/pf/set/numchannels","i",NCHANNELS);
@@ -474,7 +475,10 @@ void FrontEnd::sendUIMessages() {
     if (!touchOSC) 
 	return;
     if (frame%50 == 0) {
-	lo_send(touchOSC,"/pf/maxrange","f",(float)MAXRANGE/UNITSPERM);
+	lo_send(touchOSC,"/pf/minx","f",world->getMinX()/UNITSPERM);
+	lo_send(touchOSC,"/pf/maxx","f",world->getMaxX()/UNITSPERM);
+	lo_send(touchOSC,"/pf/miny","f",world->getMinY()/UNITSPERM);
+	lo_send(touchOSC,"/pf/maxy","f",world->getMaxY()/UNITSPERM);
 	lo_send(touchOSC,"/pf/frame","i",frame);
 	lo_send(touchOSC,"/health/FE","f",(frame%100 == 0)?1.0:0.0);
     }

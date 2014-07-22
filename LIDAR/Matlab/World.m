@@ -9,6 +9,7 @@ classdef World < handle
     bestlike;		% NSCAN: best likelihood after assignment
     entrylike;		% NSCAN: entry likelihoods
     debug;
+    bounds;
   end
   
   methods

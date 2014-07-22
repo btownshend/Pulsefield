@@ -97,7 +97,16 @@ handlers.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 handlers.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
 handlers.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 handlers.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-handlers.o: ../Util/point.h ../Util/dbg.h
+handlers.o: ../Util/point.h ../Util/dbg.h parameters.h world.h
+handlers.o: /opt/local/include/cairo/cairo-xlib.h
+handlers.o: /opt/local/include/cairo/cairo.h
+handlers.o: /opt/local/include/cairo/cairo-version.h
+handlers.o: /opt/local/include/cairo/cairo-features.h
+handlers.o: /opt/local/include/cairo/cairo-deprecated.h
+handlers.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
+handlers.o: /opt/local/include/X11/Xfuncproto.h
+handlers.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
+handlers.o: background.h groups.h
 main.o: frontend.h /opt/local/include/lo/lo.h
 main.o: /opt/local/include/lo/lo_endian.h /opt/local/include/lo/lo_types.h
 main.o: /opt/local/include/lo/lo_osc_types.h
@@ -133,7 +142,16 @@ background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.
 background.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
 background.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
 background.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-background.o: ../Util/point.h ../Util/dbg.h parameters.h normal.h
+background.o: ../Util/point.h ../Util/dbg.h parameters.h normal.h vis.h
+background.o: world.h /opt/local/include/cairo/cairo-xlib.h
+background.o: /opt/local/include/cairo/cairo.h
+background.o: /opt/local/include/cairo/cairo-version.h
+background.o: /opt/local/include/cairo/cairo-features.h
+background.o: /opt/local/include/cairo/cairo-deprecated.h
+background.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
+background.o: /opt/local/include/X11/Xfuncproto.h
+background.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
+background.o: ../Util/dest.h groups.h
 world.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 world.o: /opt/local/include/lo/lo_types.h
 world.o: /opt/local/include/lo/lo_osc_types.h

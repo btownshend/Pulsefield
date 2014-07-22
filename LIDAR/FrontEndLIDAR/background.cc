@@ -3,6 +3,8 @@
 #include "parameters.h"
 #include "dbg.h"
 #include "normal.h"
+#include "vis.h"
+#include "world.h"
 
 Background::Background() {
     scanRes=0;
@@ -40,12 +42,13 @@ void Background::swap(int k, int i, int j) {
 
 // Return likelihood of each scan pixel being part of background (fixed structures not to be considered targets)
 // Note that these are not probabilities -- they can only be compared with equivalently computed likelihoods of the scan pixel being part of a hit
-std::vector<float> Background::like(const SickIO &sick) const {
+std::vector<float> Background::like(const Vis &vis, const World &world) const {
+    const SickIO &sick=*vis.getSick();
     ((Background *)this)->setup(sick);
     std::vector<float> result(sick.getNumMeasurements(),0.0);
     const unsigned int *srange = sick.getRange(0);
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
-	if (srange[i]>=MAXRANGE || srange[i]<MINRANGE)
+	if (!world.inRange(sick.getPoint(i)) || srange[i]<MINRANGE)
 	    result[i]=1.0;
 	else {
 	    // Compute result
@@ -97,6 +100,9 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
     // range[2] is the last value seen, not matching 0 or 1;   promoted to range[1] if its frequency passes range[1]
     float tc=UPDATETC;
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
+	if (srange[i]<MINRANGE)
+	    continue;  // Ignore short points, not even including them in update.   That way all the bg probs are conditional on the LIDAR being able to scan the active area
+	// Out of range, distant points are still handled as background since they do not prevent a target from being hit and thus the bg probs are not conditional on these
 	if (!all && assignments[i]!=-1)
 	    continue;
 	// Find which background fits best
@@ -125,9 +131,12 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    // New long distance point, update range[0] faster
 	    dbg("Background.update",2) << "Farthest background at scan " << i << " moved from " << range[0][i] << " to " << srange[i] << std::endl;
 	    float oldrange=range[0][i];
-	    range[0][i]=srange[i]*1.0f/FARUPDATETC + range[0][i]*(1-1.0f/FARUPDATETC);
-	    if (!bginit)
+	    if (bginit) 
+		range[0][i]=srange[i];
+	    else {
+		range[0][i]=srange[i]*1.0f/FARUPDATETC + range[0][i]*(1-1.0f/FARUPDATETC);
 		sigma[0][i]=std::min((double)MAXBGSIGMA,sqrt(sigma[0][i]*sigma[0][i]*(1-1.0f/FARUPDATETC)+(srange[i]-range[0][i])*(srange[i]-oldrange)*1.0f/FARUPDATETC));
+	    }
 	    freq[0][i]+=1.0f/tc;
 	    farnotseen[i]=0;
 	} else {

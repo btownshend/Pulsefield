@@ -31,7 +31,6 @@ static const int UPDATETC=50*60;		// Background update freq (after initial avera
 static const int FARUPDATETC=50*1;		// Background update for points farther than primary background
 static const int BGLONGDISTLIFE=50*30;		// If the most distance background hasn't been seen in this many frames, replace it with the most frequently seen one
 static const unsigned int MINRANGE=100;	// minimum distance from LIDAR; ranges less than this are ignored
-extern unsigned int MAXRANGE;	// maximum distance from LIDAR; ranges greater than this are ignored
 static const float ADJSCANBGWEIGHT=0.2;	// scaling of background probability when applying an adjacent scan's background to a point
 static const float INTERPSCANBGWEIGHT=0.2;	// scaling of background probability when interpolating between adjacent scan backgrounds
 

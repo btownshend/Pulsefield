@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
     std::string matfile;
     int matframes=-1;
     bool visoutput=false;
+    float maxRange=5000;
 
     SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 
@@ -49,7 +50,7 @@ int main(int argc, char *argv[])
 	    SetDebug(optarg);
 	    break;
 	case 'B':
-	    MAXRANGE=(int)(atof(optarg)*1000);
+	    maxRange=atof(optarg)*UNITSPERM;
 	    break;
 	case 'D':
 	    SetDebug("xxx:1",optarg);
@@ -96,7 +97,7 @@ int main(int argc, char *argv[])
 
     if (playFile) {
 	// Create a front end with no sensors so it doesn't access any devices
-	FrontEnd fe(overlayLive?nsick:0,argc,(const char **)argv);
+	FrontEnd fe(overlayLive?nsick:0,maxRange,argc,(const char **)argv);
 	if (matframes >= 0){
 	    if (matfile.empty()) {
 		// Use playback file as filename
@@ -124,7 +125,7 @@ int main(int argc, char *argv[])
 	exit(0);
     }
 
-    FrontEnd fe(nsick,argc,(const char **)argv);
+    FrontEnd fe(nsick,maxRange,argc,(const char **)argv);
     printf("FrontEnd::FrontEnd() done\n");
     if (visoutput) 
 	fe.getStat(FrontEnd::RANGE,0);

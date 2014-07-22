@@ -59,7 +59,7 @@ class FrontEnd {
  public:
     enum { RANGE=0x10, REFLECT=0x20, PF=0x40 };  // Bitmasks of what to send in next message group
 
-    FrontEnd(int nsick,int argc, const char **argv);
+    FrontEnd(int nsick,float maxRange,int argc, const char **argv);
     ~FrontEnd();
 
     void run();

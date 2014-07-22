@@ -26,6 +26,8 @@ class World {
     int priorngroups;
     std::set<int> lastid;
 
+    float minx,maxx,miny,maxy;	// Active region bounds
+
     Background bg;		// Background model
     std::vector<float> bglike;	// Current background likelihoods (regardless of assignment)
     std::vector<int> assignments;   // Which person is assigned to each scan line -- -1 for background, -2 for new track
@@ -44,7 +46,7 @@ class World {
 
     pthread_mutex_t displayMutex;   // Mutex to prevent X11 events from drawing at the same time as main thread
 public:
-    World();
+    World(float maxRange);
     // Track people and send update messages
     void track( const Vis &vis, int frame, float fps,double elapsed);
     void deleteLostPeople();
@@ -55,4 +57,29 @@ public:
     void draw(const Vis *vis=NULL) const;
 
     const Background &getBackground() const { return bg; }
+
+    // Boundary operations
+    bool inRange(Point p) const { return p.X()>=minx && p.X() <=maxx && p.Y()>=miny && p.Y()<=maxy; }
+
+    float getMinX() const { return minx; }
+    float getMaxX() const { return maxx; }
+    float getMinY() const { return miny; }
+    float getMaxY() const { return maxy; }
+
+    float getWidth() const { return maxx-minx; }
+    float getHeight() const { return maxy-miny; }
+    Point getCenter() const { return Point((minx+maxx)/2,(miny+maxy)/2); }
+
+    void setMinX(float v) { minx=v; }
+    void setMinY(float v) { miny=v; }
+    void setMaxX(float v) { maxx=v; }
+    void setMaxY(float v) { maxy=v; }
+
+    float distanceToBoundary(Point p) const {
+	double d=fabs(p.X()-minx); 
+	d=std::min(d,fabs(p.Y()-miny));
+	d=std::min(d,fabs(p.X()-maxx));
+	d=std::min(d,fabs(p.Y()-maxy));
+	return d;
+    }
 };

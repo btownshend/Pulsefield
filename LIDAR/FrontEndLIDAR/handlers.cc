@@ -2,6 +2,7 @@
 #include "frontend.h"
 #include "sickio.h"
 #include "parameters.h"
+#include "world.h"
 
 /* catch any incoming messages and display them. returning 1 means that the
  * message has not been fully handled and the server should try other methods */
@@ -155,12 +156,13 @@ void FrontEnd::ping(lo_message msg, int seqnum) {
 	}
 }
 
-static int maxrange_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    MAXRANGE=argv[0]->f*UNITSPERM; return 0; }
+static int setMinX_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((World *)user_data)->setMinX(argv[0]->f*UNITSPERM); return 0; }
+static int setMaxX_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((World *)user_data)->setMaxX(argv[0]->f*UNITSPERM); return 0; }
+static int setMinY_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((World *)user_data)->setMinY(argv[0]->f*UNITSPERM); return 0; }
+static int setMaxY_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((World *)user_data)->setMaxY(argv[0]->f*UNITSPERM); return 0; }
+
 
 void FrontEnd::addHandlers() {
-	/* add method that will match any path and args if they haven't been caught explicitly */
-	lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
-
 	lo_server_add_method(s, "/quit", "", quit_handler, this);
 
 	lo_server_add_method(s,"/vis/start","",start_handler,this);
@@ -180,5 +182,11 @@ void FrontEnd::addHandlers() {
 	lo_server_add_method(s,"/vis/dest/remove/port","i",rmDestPort_handler,this);
 	lo_server_add_method(s,"/vis/dest/clear","",rmAllDest_handler,this);
 
-	lo_server_add_method(s,"/pf/maxrange","f",maxrange_handler,this);
+	lo_server_add_method(s,"/pf/minx","f",setMinX_handler,world);
+	lo_server_add_method(s,"/pf/maxx","f",setMaxX_handler,world);
+	lo_server_add_method(s,"/pf/miny","f",setMinY_handler,world);
+	lo_server_add_method(s,"/pf/maxy","f",setMaxY_handler,world);
+	/* add method that will match any path and args if they haven't been caught explicitly */
+	lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
+
 }

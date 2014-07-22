@@ -6,11 +6,15 @@
 #include "dbg.h"
 #include "parameters.h"
 
-World::World(): groups(GROUPDIST,UNGROUPDIST) {
+World::World(float maxRange): groups(GROUPDIST,UNGROUPDIST) {
     lastframe=0;
     priorngroups=0;
     initWindow();
     drawRange=true;
+    miny=0;
+    maxy=maxRange;
+    minx=-maxRange;
+    maxx=maxRange;
 }
 
 // Class for managing targets based on lidar scan before assigning them to people
@@ -307,7 +311,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
     dbg("World.track",2) << "Tracking frame " << frame << std::endl;
 
     // Calculate background likelihoods
-    bglike=bg.like(*vis.getSick());
+    bglike=bg.like(vis,*this);
 
     if (!bg.isInitializing())
 	// Map scans to tracks, and update background
@@ -497,9 +501,7 @@ void World::sendMessages(Destinations &dests, double elapsed) {
 	    if (dist>0.001 && (dist<otherDist || otherDist==-1))
 		otherDist=dist;
 	}
-	float exitDist=std::max(0.0f,MAXRANGE-people[pi].getPosition().norm());   // Distance to be out of range
-	if (people[pi].getPosition().Y() < exitDist)
-	    exitDist=std::max(0.0f,people[pi].getPosition().Y());  // Distance to pass behind sensor
+	float exitDist=distanceToBoundary(people[pi].getPosition());
 
 	if (otherDist>0)
 	    otherDist/=UNITSPERM;
@@ -523,7 +525,7 @@ void World::sendMessages(Destinations &dests, double elapsed) {
 }
 
 mxArray *World::convertToMX() const {
-    const char *fieldnames[]={"tracks","npeople","assignments","bglike","bestlike"};
+    const char *fieldnames[]={"tracks","npeople","assignments","bglike","bestlike","bounds"};
     mxArray *world = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
     mxArray *pNpeople = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);
@@ -550,6 +552,14 @@ mxArray *World::convertToMX() const {
     for (unsigned int i=0;i<bglike.size();i++)
 	*data++=bglike[i];
     mxSetField(world,0,"bglike",pBglike);
+
+    mxArray *pBounds = mxCreateDoubleMatrix(1,4,mxREAL);
+    data=mxGetPr(pBounds);
+    *data++=minx;
+    *data++=maxx;
+    *data++=miny;
+    *data++=maxy;
+    mxSetField(world,0,"bounds",pBounds);
 
     const char *pfieldnames[]={"id","position","legs","predictedlegs","prevlegs","legvelocity","scanpts","persposvar","posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     mxArray *pPeople;

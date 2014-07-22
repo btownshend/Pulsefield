@@ -115,10 +115,19 @@ void World::draw(const Vis *vis) const {
      
      // Translate to center
      cairo_translate(cr,width/2.0,height/2.0);
-     cairo_scale(cr,(float)width/(MAXRANGE*2),(float)height/MAXRANGE);
-     float pixel=MAXRANGE*1.0/std::min(width,height);
-     cairo_translate(cr,0,-(MAXRANGE/2.0));
 
+     // Push to right side of screen if we the aspect ratio doesn't fit
+     if (width>height*getWidth()/getHeight())
+	 cairo_translate(cr,(width-height*getWidth()/getHeight())/2,0);
+
+     // Scale to correct dimensions and flip Y axis, leaving a 5pixel margin
+     float pixel=std::max(getWidth()/(width-10),getHeight()/(height-10));
+
+     cairo_scale(cr,1/pixel,-1/pixel); 
+
+     // Move center to center of active area
+     Point center=getCenter();
+     cairo_translate(cr,-center.X(),-center.Y());
 
      if  (drawRange && vis!=NULL) {
 	 // Draw current range
@@ -133,11 +142,21 @@ void World::draw(const Vis *vis) const {
 	     float effDivergence=DIVERGENCE+EXITDIAMETER/range[i];
 	     p1.setThetaRange(theta+effDivergence/2,range[i]);
 	     p2.setThetaRange(theta-effDivergence/2,range[i]);
-	     cairo_move_to(cr, p1.X(), MAXRANGE-p1.Y());
-	     cairo_line_to(cr, p2.X(), MAXRANGE-p2.Y());
+	     cairo_move_to(cr, p1.X(), p1.Y());
+	     cairo_line_to(cr, p2.X(), p2.Y());
 	     cairo_stroke(cr);
 	 }
      }
+
+     // Draw bounds
+     cairo_set_line_width(cr,1*pixel);
+     cairo_set_source_rgb (cr, 0.0,1.0,0.0);
+     cairo_move_to(cr, getMinX(), getMinY());
+     cairo_line_to(cr, getMinX(), getMaxY());
+     cairo_line_to(cr, getMaxX(), getMaxY());
+     cairo_line_to(cr, getMaxX(), getMinY());
+     cairo_line_to(cr, getMinX(), getMinY());
+     cairo_stroke(cr);
 
      // Draw background
      float scanRes = bg.getScanRes()*M_PI/180;
@@ -156,11 +175,11 @@ void World::draw(const Vis *vis) const {
 		 p3.setThetaRange(theta-effDivergence/2,range[i]+2*sigma[i]);
 		 p4.setThetaRange(theta+effDivergence/2,range[i]+2*sigma[i]);
 		 cairo_set_source_rgb (cr, frac[i],frac[i],frac[i]);
-		 cairo_move_to(cr, p1.X(), MAXRANGE-p1.Y());
-		 cairo_line_to(cr, p2.X(), MAXRANGE-p2.Y());
-		 cairo_line_to(cr, p3.X(), MAXRANGE-p3.Y());
-		 cairo_line_to(cr, p4.X(), MAXRANGE-p4.Y());
-		 cairo_line_to(cr, p1.X(), MAXRANGE-p1.Y());
+		 cairo_move_to(cr, p1.X(), p1.Y());
+		 cairo_line_to(cr, p2.X(), p2.Y());
+		 cairo_line_to(cr, p3.X(), p3.Y());
+		 cairo_line_to(cr, p4.X(), p4.Y());
+		 cairo_line_to(cr, p1.X(), p1.Y());
 		 cairo_stroke(cr);
 	     }
 	 }
@@ -177,7 +196,7 @@ void World::draw(const Vis *vis) const {
 		 else
 		     cairo_set_source_rgb (cr, 0.0, 0.0, 1.0);
 		 cairo_new_sub_path(cr);
-		 cairo_arc(cr,leg.X(), MAXRANGE-leg.Y(),people[j].getLegStats().getDiam()/2.0,0.0,2*M_PI);
+		 cairo_arc(cr,leg.X(), leg.Y(),people[j].getLegStats().getDiam()/2.0,0.0,2*M_PI);
 		 cairo_close_path(cr);
 		 cairo_stroke(cr);
 	     }
