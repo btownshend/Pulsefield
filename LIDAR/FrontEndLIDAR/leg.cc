@@ -191,7 +191,6 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 
 
     // Find mean location by averaging over grid
-    // Calculate variance (actual mean-square distance from MLE)
     Point sum(0,0);
     double tprob=0;
     for (int ix=0;ix<likenx;ix++) {
@@ -224,10 +223,10 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	for (int iy=0;iy<likeny;iy++) {
 	    float y=minval.Y()+iy*stepy;
 	    Point pt(x,y);
-	    if (like[ix*likeny+iy]<-50)
+	    if (like[ix*likeny+iy]-*mle<-12)
 		// Won't add much!
 		continue;
-	    double prob=exp(like[ix*likeny+iy]);
+	    double prob=exp(like[ix*likeny+iy]-*mle);
 	    if (std::isnan(prob) || !(prob>0))
 		dbg("Leg.update",3) << "prob=" << prob << ", like=" << like[ix*likeny+iy] << std::endl;
 	    assert(prob>0);
