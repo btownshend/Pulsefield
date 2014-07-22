@@ -25,7 +25,11 @@ std::set<int> Groups::getConnected(int i, std::set<int> current,const People &pe
 	    current=getConnected(j,current,people);
 	}
     }
-    dbg("Groups.getConnected",10) << "getConnected(" << i << ") -> " << current.size() << std::endl;
+    dbg("Groups.getConnected",10) << "getConnected(" << people[i].getID() << ") -> ";
+    for (std::set<int>::iterator c=current.begin();c!=current.end();c++) {
+	dbgn("Groups.getConnected",10) << people[*c].getID() << " ";
+    }
+    dbgn("Groups.getConnected",10) << std::endl;
     return current;
 }
 
@@ -54,10 +58,11 @@ void Groups::update(People &people, double elapsed) {
 			break;
 		    }
 
-		if (grp==nullptr)
+		if (grp==nullptr) {
 		    // Need to allocate a new group
+		    dbg("Groups.update",2) << "Person " << people[i].getID() << " is connected but not to any people already in groups." << std::endl;
 		    grp = newGroup(elapsed);
-
+		}
 		// Assign it
 		Point centroid;
 		for (std::set<int>::iterator c=connected.begin();c!=connected.end();c++) {
