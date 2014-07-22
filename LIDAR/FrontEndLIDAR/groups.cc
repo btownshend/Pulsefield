@@ -21,7 +21,7 @@ std::set<int> Groups::getConnected(int i, std::set<int> current,const People &pe
     current.insert(i);
     for (unsigned int j=0;j<people.size();j++)  {
 	float d=(people[i].getPosition() - people[j].getPosition()).norm();
-	if (current.count(j)==0 && (d <= groupDist || (d<=unGroupDist && people[i].isGrouped() && people[i].getGroup()==people[j].getGroup()))) {
+	if (current.count(j)==0 && (d <= groupDist || (d<=unGroupDist && (people[i].isGrouped()||people[j].isGrouped()) && people[i].getGroup()==people[j].getGroup()))) {
 	    current=getConnected(j,current,people);
 	}
     }
@@ -69,7 +69,12 @@ void Groups::update(People &people, double elapsed) {
 		    if (scanned[*c]) {
 			dbg("Groups.update",2) << "Hit already scanned person " << people[*c] << " that is connected to " << people[i] << "; need to merge groups " << *people[i].getGroup() << " and " << *people[*c].getGroup() << std::endl;
 			assert(people[i].isGrouped() && people[*c].isGrouped());   // This can only happen if both were in groups
-			assert(people[i].getGroup() != people[*c].getGroup());
+			if (people[i].getGroup() == people[*c].getGroup()) {
+			    dbg("Groups.update",1) << "Asymmetry in group assignment detected;  person " << people[i] << " is connected to person " << people[*c] << ", but when the latter was scanned, they weren't connected to " << people[i] << std::endl;
+			    grp=people[i].getGroup();  // Kludge: fix the current group number
+			    continue; // Just leave this person alone
+			}
+			 
 			std::shared_ptr<Group> oldgrp=people[i].getGroup();
 			for (unsigned int j=0;j<people.size();j++) 
 			    if (people[j].getGroup() == oldgrp) {
