@@ -161,7 +161,7 @@ void World::draw(const Vis *vis) const {
      // Draw background
      float scanRes = bg.getScanRes()*M_PI/180;
      cairo_set_line_width(cr,1*pixel);
-     for (int k=0;k<2;k++) {
+     for (int k=0;k<bg.numRanges();k++) {
 	 const std::vector<float> &range = bg.getRange(k);
 	 const std::vector<float> &sigma = bg.getSigma(k);
 	 const std::vector<float> &frac = bg.getFreq(k);
