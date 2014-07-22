@@ -479,6 +479,8 @@ classdef Person < handle
           plot([0,obj.legs(2,1)-obj.legs(1,1)],[0,obj.legs(2,2)-obj.legs(1,2)],'w-');
         else
           plot(obj.prevlegs(i,1),obj.prevlegs(i,2),'wo');
+          [cx,cy]=pol2cart(0:pi/20:2*pi,sqrt(obj.prevposvar(i)));
+          plot(obj.prevlegs(i,1)+cx,obj.prevlegs(i,2)+cy,'w-');
           plot(obj.legs(i,1),obj.legs(i,2),'wx');
           [cx,cy]=pol2cart(0:pi/20:2*pi,sqrt(obj.posvar(i)));
           plot(obj.legs(i,1)+cx,obj.legs(i,2)+cy,'w-');
