@@ -1,3 +1,4 @@
+#include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,11 +12,12 @@ static int nsick=1;
 unsigned int MAXRANGE=12000;
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr, "Usage: %s [-B maxrange] [-R | -r recordfile | -p playfile [-L] [-s] [-l] [-x slowfactor] [-m matframes [-M matfile ]] ] [-V] [[-D debugfile] -d debug]\n",argv[0]);
+    fprintf(stderr, "Usage: %s [-B maxrange] [-R | -r recordfile | -p playfile [-L] [-s] [-l] [-x slowfactor] [-F frame1:frameN | -F nframes]  [-m matframes [-M matfile ]] ] [-V] [[-D debugfile] -d debug]\n",argv[0]);
     fprintf(stderr,"\t-B maxrange\t\tset maximum range in meters\n");
     fprintf(stderr,"\t-R\t\trecord into default filename based on current date and time\n");
     fprintf(stderr,"\t-r file\t\trecord into given file\n");
     fprintf(stderr,"\t-p file\t\tplayback from given file\n");
+    fprintf(stderr,"\t-F\t\tplayback only give number of frames or frame number range\n");
     fprintf(stderr,"\t\t-L\toverlay live as well during playback\n");
     fprintf(stderr,"\t\t-s\tsingle-step playback\n");
     fprintf(stderr,"\t\t-l\tloop file continuously\n");
@@ -24,6 +26,7 @@ void usage(int argc,char *argv[]) {
     fprintf(stderr,"\t\t-M file\tspecify mat-file name (without suffix)\n");
     fprintf(stderr,"\t\t-D file\tspecify debug file name\n");
     fprintf(stderr,"\t-d debug\t\tset debug option (e.g -d4, -dFrontEnd:4)\n");
+    fprintf(stderr,"\t-c commentt\tlog a comment\n");
     fprintf(stderr,"\t-V\t\tenable /vis messages\n");
     exit(1);
 }
@@ -41,10 +44,13 @@ int main(int argc, char *argv[])
     int matframes=-1;
     bool visoutput=false;
     float maxRange=5000;
+    int frame1=-1;
+    int frameN=-1;
+    std::string comments;
 
     SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 
-    while ((ch=getopt(argc,argv,"d:D:B:sr:Rp:Llx:m:M:V"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:D:B:sr:Rp:Llx:m:M:VF:c:"))!=-1) {
 	switch (ch) {
 	case 'd':
 	    SetDebug(optarg);
@@ -52,8 +58,25 @@ int main(int argc, char *argv[])
 	case 'B':
 	    maxRange=atof(optarg)*UNITSPERM;
 	    break;
+	case 'c':
+	    // Comment
+	    comments+=optarg;
+	    comments+="; ";
+	    break;
 	case 'D':
 	    SetDebug("xxx:1",optarg);
+	    break;
+	case 'F':
+	    {
+		size_t colonpos=std::string(optarg).find(":");
+		if (colonpos==std::string::npos) {
+		    frameN=atoi(optarg);
+		} else {
+		    frame1=atoi(optarg);
+		    frameN=atoi(&optarg[colonpos+1]);
+		    std::cout << "Running frames " << frame1 << ":" << frameN << std::endl;
+		}
+	    }
 	    break;
 	case 's':
 	    singlestep=true;
@@ -95,6 +118,8 @@ int main(int argc, char *argv[])
     if (argc>optind || (matframes>0 && !playFile))
 	usage(argc,argv);
 
+    dbg("main",1) << "Comment: " << comments << std::endl;
+
     if (playFile) {
 	// Create a front end with no sensors so it doesn't access any devices
 	FrontEnd fe(overlayLive?nsick:0,maxRange,argc,(const char **)argv);
@@ -118,7 +143,7 @@ int main(int argc, char *argv[])
 	}
 	// Now playback file through it
 	do {
-	    int rc=fe.playFile(playFile,singlestep,speedFactor,overlayLive);
+	    int rc=fe.playFile(playFile,singlestep,speedFactor,overlayLive,frame1,frameN);
 	    if (rc)
 		exit(1);
 	} while (loop);   // Keep repeating if loop is set

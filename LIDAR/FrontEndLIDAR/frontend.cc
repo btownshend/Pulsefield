@@ -291,7 +291,7 @@ void FrontEnd::stopRecording() {
     recording=false;
 }
 
-int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bool overlayLive) {
+int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bool overlayLive,int frame1, int frameN) {
     printf("Playing back recording from %s\n", filename);
     FILE *fd=fopen(filename,"r");
     if (fd == NULL) {
@@ -326,6 +326,16 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	if (lastframe==-1) 
 	    // Initialize file start time for reference
 	    startfile=acquired;
+
+	if (frame1==-1 && frameN!=-1) {
+	    // Just first frameN frames
+	    frame1=frame;
+	    frameN+=frame-1;
+	}
+	if (frame1!=-1 && frame<frame1)
+	    continue;
+	if (frameN!=-1 && frame>frameN)
+	    break;
 
 	if (frame!=lastframe+1 && lastframe!=-1) {
 	    if (lastframe+1 == frame-1)
