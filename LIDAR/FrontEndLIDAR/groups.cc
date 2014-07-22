@@ -21,6 +21,11 @@ std::set<int> Groups::getConnected(int i, std::set<int> current,const People &pe
     current.insert(i);
     for (unsigned int j=0;j<people.size();j++)  {
 	float d=(people[i].getPosition() - people[j].getPosition()).norm();
+	// The logic with ungroupdist can make getConnected asymmetric when a new person is added to the group
+	// E.g. prior grouping 1,2;   run from 1 and find that 3 is also grouped (with intermed distance), as is 4 (with intermed dist to 3)
+	// Starting from 1, find 1,2,3 -- add 3 to list, but it was not checked again after its grouped status was changed
+	// Now start from 4 and find 1,2,3,4 since it is now close enough to 3
+	// or something like that...   caused an assert error below, which is now coded as a debug message instead, but uncertain if recovery is good. (TODO)
 	if (current.count(j)==0 && (d <= groupDist || (d<=unGroupDist && (people[i].isGrouped()||people[j].isGrouped()) && people[i].getGroup()==people[j].getGroup()))) {
 	    current=getConnected(j,current,people);
 	}
