@@ -121,11 +121,16 @@ for i=1:length(ids)
   plot(loc(:,1,1),loc(:,1,2),[color1,'-']);
   hold on;
   plot(loc(:,2,1),loc(:,2,2),[color2,'-']);
-  plot(loc(vis(:,1),1,1),loc(vis(:,1),1,2),[color1,'.']);
-  plot(loc(vis(:,2),2,1),loc(vis(:,2),2,2),[color2,'.']);
+  plot(loc(vis(:,1),1,1),loc(vis(:,1),1,2),[color1,'.'],'MarkerSize',10);
+  plot(loc(vis(:,2),2,1),loc(vis(:,2),2,2),[color2,'.'],'MarkerSize',10);
   % Invisible ones
   plot(loc(~vis(:,1),1,1),loc(~vis(:,1),1,2),[color1,'o']);
   plot(loc(~vis(:,2),2,1),loc(~vis(:,2),2,2),[color2,'o']);
+  % Connector lines every 10 frames
+  conn=find(mod(frame,5)==0);
+  for ci=1:length(conn)
+    plot([loc(conn(ci),:,1)],[loc(conn(ci),:,2)],'Color',[1,1,1]*0.9);
+  end
   axis equal
   c=axis;
   
@@ -140,8 +145,8 @@ for i=1:length(ids)
     end
   end
   % Visible points
-  plot(loc(vis(:,1),1,1),frame(vis(:,1)),[color1,'.']);
-  plot(loc(vis(:,2),2,1),frame(vis(:,2)),[color2,'.']);
+  plot(loc(vis(:,1),1,1),frame(vis(:,1)),[color1,'.'],'MarkerSize',10);
+  plot(loc(vis(:,2),2,1),frame(vis(:,2)),[color2,'.'],'MarkerSize',10);
   cx=axis;
   cx(1:2)=c(1:2);
   axis(cx);
@@ -159,8 +164,8 @@ for i=1:length(ids)
       plot(frame(ii)+[0.2,0.2],loc(ii,2,2)+sqrt(posvar(ii,2))*[-1,1],[color2,':']);
     end
   end
-  plot(frame(vis(:,1)),loc(vis(:,1),1,2),[color1,'.']);
-  plot(frame(vis(:,2)),loc(vis(:,2),2,2),[color2,'.']);
+  plot(frame(vis(:,1)),loc(vis(:,1),1,2),[color1,'.'],'MarkerSize',10);
+  plot(frame(vis(:,2)),loc(vis(:,2),2,2),[color2,'.'],'MarkerSize',10);
   cy=axis;
   cy(3:4)=c(3:4);
   axis(cy);
@@ -201,8 +206,8 @@ for i=1:length(ids)
       hold on;
       plot(frame,pstd(:,2),[color2,'-']);
       % Visible points
-      plot(frame(vis(:,1)),pstd(vis(:,1),1),[color1,'.']);
-      plot(frame(vis(:,2)),pstd(vis(:,2),2),[color2,'.']);
+      plot(frame(vis(:,1)),pstd(vis(:,1),1),[color1,'.'],'MarkerSize',10);
+      plot(frame(vis(:,2)),pstd(vis(:,2),2),[color2,'.'],'MarkerSize',10);
       xlabel('Frame');
       ylabel('Prediction Error (m)');
       title('Prediction error');
