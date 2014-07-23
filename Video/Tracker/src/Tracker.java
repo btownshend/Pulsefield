@@ -290,9 +290,10 @@ public class Tracker extends PApplet {
 	}
 	
 	public static PVector unMapPosition(PVector mapped) {
-		mapped.x=mapped.x*(Tracker.maxx-Tracker.minx)/2.0f;
-		mapped.y=mapped.y*(Tracker.maxy-Tracker.miny)/2.0f;
-		PVector result=new PVector(mapped.x,-mapped.y);
+		PVector result=new PVector(mapped.x,mapped.y);
+		result.x=mapped.x*(Tracker.maxx-Tracker.minx)/2.0f;
+		result.y=mapped.y*(Tracker.maxy-Tracker.miny)/2.0f;
+		result.y=-result.y;
 		result.rotate((float)Math.toRadians(Tracker.screenrotation));
 		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
 		result=PVector.add(result,mid);
