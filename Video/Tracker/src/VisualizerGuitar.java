@@ -10,9 +10,9 @@ import processing.opengl.PGraphicsOpenGL;
 class GString {
 	final static int nfrets=22;
 	static float frets[];
-	final static float nut=-0.8f;
+	final static float nut=-0.8f;  // Range of Y-coords for nut, bridge in [-1,1] normalized coordinates
 	final static float bridge=1.1f;
-	final static float minstring=-0.48f;
+	final static float minstring=-0.48f;  // Range of X-coords for strings in [-1,1] normalized coordinates
 	final static float maxstring=0.49f;
 	final static int vibrateTime=500;   // Milliseconds
 
@@ -61,7 +61,10 @@ class GString {
 			vibrating=false;
 		return vibrating;
 	}
-
+	// Get the fraction of time elapsed in its vibration as [0,1.0];
+	public float fracOfVibrate() {
+		return (System.currentTimeMillis()-strikeTime)*1.0f/vibrateTime;
+	}
 }
 
 public class VisualizerGuitar extends VisualizerPS {
@@ -117,10 +120,11 @@ public class VisualizerGuitar extends VisualizerPS {
 			PVector p2=this.convertToScreen(new PVector(GString.bridge,ypos), wsize);	
 			if (s.isVibrating()) {
 				PVector pf=this.convertToScreen(new PVector(GString.frets[s.fret],ypos), wsize);	
-
+				float vfrac=s.fracOfVibrate();
+				PVector mid=PVector.add(PVector.mult(pf,1-vfrac),PVector.mult(p2,vfrac));
+				mid.y+=parent.randomGaussian()*5;
 				parent.stroke(s.color);
 				parent.line(p1.x,p1.y,pf.x,pf.y);
-				PVector mid=new PVector((p2.x+pf.x)/2,(p2.y+pf.y)/2+parent.randomGaussian()*5);
 				parent.line(pf.x,pf.y,mid.x,mid.y);
 				parent.line(mid.x,mid.y,p2.x,p2.y);
 			} else {
@@ -128,6 +132,38 @@ public class VisualizerGuitar extends VisualizerPS {
 				parent.line(p1.x,p1.y,p2.x,p2.y);
 			}
 		}
+	}
+	
+	public void drawLaser(PApplet parent, Positions p) {
+		super.drawLaser(parent,p);
+		//PApplet.println("Guitar drawLaser");
+		Laser laser=Laser.getInstance();
+		laser.bgBegin();
+		for (int i=0;i<GString.nfrets;i++) {
+			float xpos=GString.frets[i];
+			PVector p1=Tracker.unMapPosition(new PVector(xpos,GString.minstring-.05f));
+			PVector p2=Tracker.unMapPosition(new PVector(xpos,GString.maxstring+.05f));		
+			laser.line(p1.x,p1.y,p2.x,p2.y);
+		}
+		for (int i=0;i<strings.length;i++) {
+			GString s=strings[i];
+			float ypos=s.position;
+			PVector p1=Tracker.unMapPosition(new PVector(GString.nut,ypos));
+			PVector p2=Tracker.unMapPosition(new PVector(GString.bridge,ypos));	
+			if (s.isVibrating()) {
+				PVector pf=Tracker.unMapPosition(new PVector(GString.frets[s.fret],ypos));	
+
+				laser.line(p1.x,p1.y,pf.x,pf.y);
+				float vfrac=s.fracOfVibrate();
+				PVector mid=PVector.add(PVector.mult(pf,1-vfrac),PVector.mult(p2,vfrac));
+				mid.y+=parent.randomGaussian()*.2;
+				laser.line(pf.x,pf.y,mid.x,mid.y);
+				laser.line(mid.x,mid.y,p2.x,p2.y);
+			} else {
+				laser.line(p1.x,p1.y,p2.x,p2.y);
+			}
+		}
+		laser.bgEnd();
 	}
 
 	public void update(PApplet parent, Positions allpos) {
