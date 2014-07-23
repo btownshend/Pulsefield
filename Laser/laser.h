@@ -11,6 +11,7 @@ class Drawing;
 class Laser: public DisplayDevice  {
     int PPS;
     int npoints;
+    float targetSegmentLen;   // Target segment length -- if we can achieve this with < npoints, then use that, otherwise limit by npoints
     int blankingSkew;   // Blanks should be moved this many samples later in stream
     int preBlanks;	// Blanks before a move begins
     int postBlanks;  // Blanks after a move ends

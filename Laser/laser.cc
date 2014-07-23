@@ -14,13 +14,15 @@ static const int MAXSLEWDISTANCE=65535/20;
 static const float MEANTARGETDIST=4.0;   // Adjust for 4m
 static const float FOV=M_PI/2;
 static const float MAXSLEWMETERS=MAXSLEWDISTANCE/65535.0*MEANTARGETDIST*FOV;
+static const int MINPOINTS=400;   // Minimum points per frame to avoid having laser focussed too tightly (brightly)
 
 Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     unit=_unit;
     PPS=40000;
-    npoints=1000;
+    npoints=4000;
     blankingSkew=3;
-    preBlanks=2;
+    targetSegmentLen=0.01f;
+    preBlanks=3;
     postBlanks=16;
     labelColor=Color::getBasicColor(unit);
     enable(true);
@@ -121,35 +123,30 @@ void Laser::render(const Drawing &drawing) {
 	}
     }
     if (showLaser && drawing.getNumElements()>0) {
-	spacing=drawing.getLength()/npoints;
+	float drawLength=drawing.getLength();
+	spacing=std::max(drawLength/npoints,targetSegmentLen);
 	pts = transform.mapToDevice(drawing.getPoints(spacing));
 	prune();
 	int nblanks=blanking();
-	dbg("Laser.render",2) << "Initial point count = " << pts.size() << " with " << nblanks << " blanks, compared to planned " << npoints << " for " << drawing.getNumElements() << " elements." << std::endl;
-	int redonpoints=npoints;
-	if (nblanks> redonpoints/2)  {
-	    redonpoints=nblanks*2;
-	    dbg("Laser.render",2) << "More than half of points are blanks, increasing target to " << redonpoints << std::endl;
-	}
-	    
-	if (std::abs(redonpoints-(int)pts.size()) > 10 &&  pts.size() > nblanks+2) {
-	    float scaleFactor=(redonpoints-nblanks)*1.0/(pts.size()-nblanks);
-	    dbg("Laser.render",2) << "Have " << nblanks << " blanks; adjusting spacing by a factor of " << scaleFactor << std::endl;
-	    spacing/=scaleFactor;
+	float effDrawLength=(pts.size()-nblanks)*spacing;
+	dbg("Laser.render",2) << "Initial point count = " << pts.size() << " with " << nblanks << " blanks at a spaing of " << spacing << " for " << drawing.getNumElements() << " elements." << std::endl;
+	dbg("Laser.render",2) << "Total drawing length =" << drawLength << ", but effective length=" << effDrawLength << std::endl;
+
+	if (drawLength!=effDrawLength &&  pts.size() > nblanks+2) {
+	    spacing=std::max(effDrawLength/(npoints-nblanks),targetSegmentLen);
 	    pts=transform.mapToDevice(drawing.getPoints(spacing));
 	    prune();
-	    (void)blanking();
-	    dbg("Laser.render",2) << "Revised point count = " << pts.size() << " compared to planned " << redonpoints << " for " << drawing.getNumElements() << " elements." << std::endl;
+	    nblanks=blanking();
+	    dbg("Laser.render",2) << "Revised point count = " << pts.size() << " with " << nblanks << " blanks at a spaing of " << spacing << " for " << drawing.getNumElements() << " elements." << std::endl;
 	}
-	dbg("Laser.render",2) << "Rendered drawing into " << pts.size() << " points with a spacing of " << spacing << std::endl;
     } else {
 	pts.resize(0);
 	dbg("Laser.render",2) << "Laser is not being shown" << std::endl;
     }
 
-    if (pts.size() < npoints) {
+    if (pts.size() < MINPOINTS) {
 	// Add some blanking on the end to fill it to desired number of points
-	int nblanks=npoints-pts.size();
+	int nblanks=MINPOINTS-pts.size();
 	dbg("Laser.render",2) << "Inserting " << nblanks << " blanks to pad out frame" << std::endl;
 	etherdream_point pos;
 	if (pts.size()>0)
