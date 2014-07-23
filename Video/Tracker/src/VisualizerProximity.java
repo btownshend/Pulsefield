@@ -12,7 +12,6 @@ public class VisualizerProximity extends VisualizerPS {
 	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR"};
 	int song=0;
 	TrackSet ts;
-	static final int NUMCLIPS=60;
 	static final float MAXSEP=0.2f; // Maximum separation to trigger
 	
 	VisualizerProximity(PApplet parent) {
@@ -30,6 +29,10 @@ public class VisualizerProximity extends VisualizerPS {
 		assignments.clear();
 	}
 
+	public int clipNumber(int id1, int id2) {
+		return (id1*7+id2)%ts.nclips;
+	}
+	
 	public void update(PApplet parent, Positions allpos) {
 		super.update(parent,allpos);
 	//	HashMap<Integer,Integer> newAssignments=new HashMap<Integer,Integer>();
@@ -65,10 +68,10 @@ public class VisualizerProximity extends VisualizerPS {
 
 				int track=id1%(ts.numTracks)+ts.firstTrack;
 //				if (current!=-1)
-//					Ableton.getInstance().stopClip(track, (id1*7+current)%NUMCLIPS);
+//					Ableton.getInstance().stopClip(track, clipNumber(id1,closest));
 				assignments.put(id1,closest);
 				if (closest!=-1)
-					Ableton.getInstance().playClip(track,(id1*7+closest)%NUMCLIPS);
+					Ableton.getInstance().playClip(track,clipNumber(id1,closest));
 			}
 		}
 
@@ -119,7 +122,7 @@ public class VisualizerProximity extends VisualizerPS {
 			laser.cellBegin(id1);
 			PVector p1 = Tracker.unMapPosition(p.get(id1).origin);
 			PVector p2 = Tracker.unMapPosition(p.get(id2).origin);
-			PApplet.println("Drawing line "+p1+" to "+p2);
+//			PApplet.println("Drawing line "+p1+" to "+p2);
 			laser.line(p1.x,p1.y,p2.x,p2.y);
 			laser.cellEnd(id1);
 		}
