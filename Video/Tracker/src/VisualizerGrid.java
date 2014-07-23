@@ -70,7 +70,7 @@ public class VisualizerGrid extends VisualizerPS {
 			if (assignments.containsKey(pos.id)) {
 				current=assignments.get(pos.id);
 				closest=current;
-				mindist=(Math.pow(gposx[closest]-pos.origin.x,2)+Math.pow(gposy[closest]-pos.origin.y,2))*0.5*0.5;  // Make it appear a little closer to create hysteresis
+				mindist=(Math.pow(gposx[closest]-pos.origin.x,2)+Math.pow(gposy[closest]-pos.origin.y,2))*0.8;  // Make it appear a little closer to create hysteresis
 				//PApplet.println("Had existing grid "+closest+" at distance "+Math.sqrt(mindist));	
 			}
 			for (int i=0;i<ncell;i++) {
