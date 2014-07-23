@@ -287,8 +287,8 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     // Need to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods
     setupGrid(vis,fs);
     legs[0].update(vis,bglike,fs[0],legStats,NULL);
-    legs[1].update(vis,bglike,fs[1],legStats,&legs[0]);
-    if (true) {
+    legs[1].update(vis,bglike,fs[1],legStats,NULL);
+    if (false) {
 	// TODO only if leg[1] adjusted, then do first leg again
 	dbg("Person.update",2) << "Re-running update of leg[0] since leg[1] position changed." << std::endl;
 	legs[0].update(vis,bglike,fs[0],legStats,&legs[1]);
