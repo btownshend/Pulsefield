@@ -1,5 +1,5 @@
 #include <algorithm>
-
+#include <numeric>
 #include "lo/lo.h"
 #include "world.h"
 #include "vis.h"
@@ -325,15 +325,36 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
     for (unsigned int p=0;p<people.size();p++) {
 	// Build list of points assigned to this person
 	std::vector<int> fs[2];
+	std::vector<float> ldiff;
+	// Check differential effect of assigning to one or the other
 	for (unsigned int j=0;j<assignments.size();j++) 
 	    if (assignments[j]==(int)p) {
 		// Redo assignments to which leg based on observertion
 		Point sickpt=vis.getSick()->getPoint(j);
 		float l1=people[p].getObsLike(sickpt,0,vis.getSick()->getFrame());
 		float l2=people[p].getObsLike(sickpt,1,vis.getSick()->getFrame());
-		dbg("World.track",5) << "Assigning scan " << j << " to person P" <<  people[p].getID() << " like= [" << l1 << ", " << l2 << "]" << std::endl;
-		fs[l1>l2?0:1].push_back(j);
+		ldiff.push_back(l1-l2);
+		fs[0].push_back(j);
 	    }
+	// Check all possible splits into 1 or 2 contiguous groups
+	float maxldiff=0;
+	int bestsplit=0;
+	for (unsigned int j=0;j<ldiff.size()+1;j++)  {
+	    float ltotal=std::accumulate(ldiff.begin(),ldiff.begin()+j,0)-std::accumulate(ldiff.begin()+j,ldiff.end(),0);
+	    if (abs(ltotal)>abs(maxldiff)) {
+		maxldiff=ltotal;
+		bestsplit=j;
+	    }
+	}
+	dbg("World.track",5) << "Best split of points assigned to person P" <<  people[p].getID() << " (" << fs[0] <<  ") is at " << bestsplit << " with likelihood difference " << maxldiff << std::endl;
+	if (maxldiff<0) {
+	    fs[1].assign(fs[0].begin(),fs[0].begin()+bestsplit);
+	    fs[0].erase(fs[0].begin(),fs[0].begin()+bestsplit);
+	} else {
+	    fs[1].assign(fs[0].begin()+bestsplit,fs[0].end());
+	    fs[0].erase(fs[0].begin()+bestsplit,fs[0].end());
+	}
+
 	/*****	
 	// Reorganize split between two legs if needed (e.g. frame 958)
 	// TODO -- these splits don't take into account which prior position is closer so they result in leg swaps sometimes (e.g. frame 958 of *2923.ferec)
