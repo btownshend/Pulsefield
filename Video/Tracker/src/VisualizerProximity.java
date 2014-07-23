@@ -24,11 +24,11 @@ public class VisualizerProximity extends VisualizerPS {
 	public void start() {
 		song=(song+1)%songs.length;
 		ts=Ableton.getInstance().setTrackSet(songs[song]);
-		PApplet.println("Starting grid with song "+song+": "+ts.name);
+		PApplet.println("Starting proximity with song "+song+": "+ts.name);
 	}
 	public void stop() {
 		assignments.clear();
-		}
+	}
 
 	public void update(PApplet parent, Positions allpos) {
 		super.update(parent,allpos);
@@ -39,6 +39,9 @@ public class VisualizerProximity extends VisualizerPS {
 			// Find closest NEIGHBOR	
 			int closest=-1;
 			double mindist=MAXSEP;
+			int current=-1;
+			if (assignments.containsKey(id1))
+				current=assignments.get(id1);
 			
 			for (Map.Entry<Integer,Position> e2: allpos.positions.entrySet()) {
 				int id2=e2.getKey();
@@ -47,17 +50,18 @@ public class VisualizerProximity extends VisualizerPS {
 				PVector pos2=e2.getValue().origin;
 				
 				double dist2=Math.pow(pos1.x-pos2.x,2)+Math.pow(pos1.y-pos2.y,2);
+				if (id2==current)
+					dist2*=0.9;  // Hysteresis
+				
 				if (dist2 < mindist) {
 					mindist=dist2;
 					closest=id2;
 				}
 			}
 			//PApplet.println("ID "+id1+" closest to id "+closest+" at a distance of "+Math.sqrt(mindist));
-			int current=-1;
-			if (assignments.containsKey(id1))
-				current=assignments.get(id1);
+
 			if (current!=closest) {
-				PApplet.println("ID "+id1+" now closer to id "+closest+" instead of "+current+" at a distance of "+Math.sqrt(mindist));
+				PApplet.println("ID "+closest+" now closer to id "+id1+" instead of "+current+" at a distance of "+Math.sqrt(mindist));
 
 				int track=id1%(ts.numTracks)+ts.firstTrack;
 //				if (current!=-1)
