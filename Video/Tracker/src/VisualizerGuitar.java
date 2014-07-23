@@ -11,17 +11,17 @@ class GString {
 	final static int nfrets=22;
 	static float frets[];
 	final static float nut=-0.8f;  // Range of Y-coords for nut, bridge in [-1,1] normalized coordinates
-	final static float bridge=1.1f;
+	final static float bridge=0.9f;
 	final static float minstring=-0.48f;  // Range of X-coords for strings in [-1,1] normalized coordinates
 	final static float maxstring=0.49f;
-	final static int vibrateTime=500;   // Milliseconds
-
+	final static int vibrateTime=1000;   // Milliseconds
 	int fretpitch;
 	float position;  // X-coord of string (in range -1 to 1)
 	boolean vibrating;
 	long strikeTime;
 	int color;
 	int fret;
+	int velocity;
 	
 	GString(int fretpitch) {
 		this.fretpitch=fretpitch;
@@ -53,6 +53,7 @@ class GString {
 		int velocity=(int)(p.avgspeed.mag()*500);
 		if (velocity>127)
 			velocity=127;
+		this.velocity=velocity;
 		synth.play(p.id, fretpitch+fret, velocity, vibrateTime, p.channel);
 	}
 
@@ -65,6 +66,10 @@ class GString {
 	public float fracOfVibrate() {
 		return (System.currentTimeMillis()-strikeTime)*1.0f/vibrateTime;
 	}
+	
+	public float elapsedTime() {
+		return (System.currentTimeMillis()-strikeTime)/1000f;
+	}
 }
 
 public class VisualizerGuitar extends VisualizerPS {
@@ -73,7 +78,8 @@ public class VisualizerGuitar extends VisualizerPS {
 	HashMap<Integer, PVector> lastpos;
 	PImage guitar;
 	TrackSet trackSet;
-	
+	final static float laserScaling=0.5f;    // Scale laser drawing this much
+
 	public VisualizerGuitar(PApplet parent, Synth synth) {
 		super(parent);
 		this.synth=synth;
@@ -122,7 +128,7 @@ public class VisualizerGuitar extends VisualizerPS {
 				PVector pf=this.convertToScreen(new PVector(GString.frets[s.fret],ypos), wsize);	
 				float vfrac=s.fracOfVibrate();
 				PVector mid=PVector.add(PVector.mult(pf,1-vfrac),PVector.mult(p2,vfrac));
-				mid.y+=parent.randomGaussian()*5;
+				mid.y+=Math.sin(2*Math.PI*s.elapsedTime()*5)*(strings[1].position-strings[0].position)*0.5;  // Max amplitude is 1/2 the spacing
 				parent.stroke(s.color);
 				parent.line(p1.x,p1.y,pf.x,pf.y);
 				parent.line(pf.x,pf.y,mid.x,mid.y);
@@ -140,25 +146,22 @@ public class VisualizerGuitar extends VisualizerPS {
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();
 		for (int i=0;i<GString.nfrets;i++) {
-			float xpos=GString.frets[i];
-			PVector p1=Tracker.unMapPosition(new PVector(xpos,GString.minstring-.05f));
-			PVector p2=Tracker.unMapPosition(new PVector(xpos,GString.maxstring+.05f));		
+			float xpos=GString.frets[i]*laserScaling;
+			PVector p1=Tracker.unMapPosition(new PVector(xpos,laserScaling*(GString.minstring-.05f)));
+			PVector p2=Tracker.unMapPosition(new PVector(xpos,laserScaling*(GString.maxstring+.05f)));		
 			laser.line(p1.x,p1.y,p2.x,p2.y);
 		}
 		for (int i=0;i<strings.length;i++) {
 			GString s=strings[i];
-			float ypos=s.position;
-			PVector p1=Tracker.unMapPosition(new PVector(GString.nut,ypos));
-			PVector p2=Tracker.unMapPosition(new PVector(GString.bridge,ypos));	
+			float ypos=laserScaling*s.position;
+			PVector p1=Tracker.unMapPosition(new PVector(laserScaling*GString.nut,ypos));
+			PVector p2=Tracker.unMapPosition(new PVector(laserScaling*GString.bridge,ypos));	
 			if (s.isVibrating()) {
 				PVector pf=Tracker.unMapPosition(new PVector(GString.frets[s.fret],ypos));	
-
-				laser.line(p1.x,p1.y,pf.x,pf.y);
-				float vfrac=s.fracOfVibrate();
-				PVector mid=PVector.add(PVector.mult(pf,1-vfrac),PVector.mult(p2,vfrac));
-				mid.y+=parent.randomGaussian()*.2;
-				laser.line(pf.x,pf.y,mid.x,mid.y);
-				laser.line(mid.x,mid.y,p2.x,p2.y);
+				float amp=(1-s.fracOfVibrate())*s.velocity/127.0f ;
+				PVector mid=PVector.mult(PVector.add(pf,p2),0.5f);
+				mid.y+=Math.sin(2*Math.PI*s.elapsedTime()*5)*laserScaling*(strings[1].position-strings[0].position)*3*amp;  
+				laser.cubic(p1.x,p1.y,pf.x,pf.y,mid.x,mid.y,p2.x,p2.y);
 			} else {
 				laser.line(p1.x,p1.y,p2.x,p2.y);
 			}
