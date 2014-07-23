@@ -11,6 +11,7 @@ public class Laser {
 	static Laser theLaser;
 	
 	Laser(OscP5 oscP5, NetAddress addr) {
+		PApplet.println("Laser destination set to "+addr);
 		this.oscP5=oscP5;
 		this.addr=addr;
 		theLaser=this;
@@ -52,6 +53,20 @@ public class Laser {
 		msg.add(y2);
 		sendMessage(msg);
 	}
+	
+	public void cubic(float x1,float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
+		OscMessage msg = new OscMessage("/laser/bezier/cubic");
+		msg.add(x1);
+		msg.add(y1);
+		msg.add(x2);
+		msg.add(y2);
+		msg.add(x3);
+		msg.add(y3);
+		msg.add(x4);
+		msg.add(y4);
+		sendMessage(msg);
+	}
+	
 	public void rect(float x, float y, float width, float height) {
 		line(x,y,x+width,y);
 		line(x+width,y,x+width,y+height);
