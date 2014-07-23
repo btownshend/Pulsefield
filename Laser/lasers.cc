@@ -32,13 +32,17 @@ Lasers::~Lasers() {
 std::vector<Drawing> Lasers::allocate(const Drawing &d)  const {
     std::map<int,float> bestScores;
     std::map<int,int> bestlasers;
+    bool firstLaser=true;
     for (unsigned int i=0;i<lasers.size(); i++) {
-	std::map<int,float> scores=d.getShapeScores(lasers[i]->getTransform());
-	for (std::map<int,float>::iterator s=scores.begin();s!=scores.end();s++) {
-	    if (i==0 || s->second > bestScores[s->first]) {
-		bestScores[s->first]=s->second;
-		bestlasers[s->first]=i;
+	if (lasers[i]->isEnabled()) {
+	    std::map<int,float> scores=d.getShapeScores(lasers[i]->getTransform());
+	    for (std::map<int,float>::iterator s=scores.begin();s!=scores.end();s++) {
+		if (firstLaser || s->second > bestScores[s->first]) {
+		    bestScores[s->first]=s->second;
+		    bestlasers[s->first]=i;
+		}
 	    }
+	    firstLaser=false;
 	}
     }
     std::vector<Drawing> result(lasers.size());
