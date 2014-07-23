@@ -207,7 +207,15 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     Point mean=sum/tprob;
 
     dbg("Leg.update",3) << "Got MLE=" << mlepos << " with like=" << *mle << ", mean position=" << mean << ", tprob=" << tprob << std::endl;
-    position=mean;
+    if (velocity.norm() <= STATIONARYVELOCITY ) {
+	// Not moving, keep position a little more stable
+	dbg("Leg.update",3) << "Speed = " << velocity.norm() << " mm/frame, stabilizing position" << std::endl;
+	Point delta=mean-position;
+	position=position+delta/10;
+    } else {
+	dbg("Leg.update",3) << "Speed = " << velocity.norm() << " mm/frame, not stabilizing position" << std::endl;
+	position=mean;
+    }
 
     // Calculate variance (actual mean-square distance from MLE)
     double var=0;

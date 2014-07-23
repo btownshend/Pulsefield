@@ -49,6 +49,7 @@ static const float VELDAMPING=0.95;	// Damping (multiplicative factor) for legve
 //  DRIFTVAR, MAXPOSITIONVAR based on running "diagnostic(csnap,'other',{'predbar','predvssteps'})" in matlab, DRIFTVAR+SENSORSIGMA^2 should match single frame prediction error
 static const float DRIFTVAR=16*16; //50*50;	// Additional variance of position estimates per step when they are estimated 
 static const float MINLIKEFORUPDATES=-60;	  // Minimum likelihood of a target to use the current observations to update it (if its too low, then we get underflows of accumulating the total prob)
+static const float STATIONARYVELOCITY=50;	// If speed is less than this (in mm/s), then stabilize position
 
 // ******** Leg statistics 
 static const float INITLEGDIAM=200;	// Initial diameter of legs
