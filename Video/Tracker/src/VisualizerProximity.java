@@ -108,22 +108,22 @@ public class VisualizerProximity extends VisualizerPS {
 		parent.text(ts.name,5,5);
 	}
 
-//	public void drawLaser(PApplet parent, Positions p) {
-//		super.drawLaser(parent,p);
-//		Laser laser=Laser.getInstance();
-//		PVector gridOffset=new PVector(gridwidth/2, gridheight/2);
-//		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
-//			int id=entry.getKey();
-//			int cell=entry.getValue();
-//			laser.cellBegin(id);
-//			PVector gcenter=new PVector(gposx[cell],gposy[cell]);
-//			PVector tl = Tracker.unMapPosition(PVector.sub(gcenter, gridOffset));
-//			PVector br = Tracker.unMapPosition(PVector.add(gcenter, gridOffset));
-//			PApplet.println("Drawing rect "+tl+" to "+br);
-//			laser.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
-//			laser.cellEnd(id);
-//		}
-//	}
+	public void drawLaser(PApplet parent, Positions p) {
+		super.drawLaser(parent,p);
+		Laser laser=Laser.getInstance();
+		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
+			int id1=entry.getKey();
+			int id2=entry.getValue();
+			if (id2==-1)
+				continue;
+			laser.cellBegin(id1);
+			PVector p1 = Tracker.unMapPosition(p.get(id1).origin);
+			PVector p2 = Tracker.unMapPosition(p.get(id2).origin);
+			PApplet.println("Drawing line "+p1+" to "+p2);
+			laser.line(p1.x,p1.y,p2.x,p2.y);
+			laser.cellEnd(id1);
+		}
+	}
 	
 	public void setnpeople(int n) {
 		// Ignored for now
