@@ -20,8 +20,8 @@ public class Tracker extends PApplet {
 	private float avgFrameRate=0;
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
-	static float minx=-3.61f, maxx=3.61f, miny=-3.2f, maxy=3.2f;
-	static float rawminy=-3.61f, rawmaxy=3.61f, rawminx=0.63f, rawmaxx=7.04f;
+	static float minx=-5f, maxx=5f, miny=0f, maxy=5f;
+	static float rawminy=0f, rawmaxy=5f, rawminx=-5f, rawmaxx=5f;
 	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
 	Visualizer vis[];
 	VisualizerGrid visAbleton;
