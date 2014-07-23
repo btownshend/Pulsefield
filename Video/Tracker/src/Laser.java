@@ -35,6 +35,15 @@ public class Laser {
 		msg.add(id);
 		sendMessage(msg);
 	}
+	public void bgBegin() {
+		OscMessage msg = new OscMessage("/laser/bg/begin");
+		sendMessage(msg);
+	}
+	public void bgEnd() {
+		OscMessage msg = new OscMessage("/laser/bg/end");
+		sendMessage(msg);
+	}
+
 	public void line(float x1,float y1, float x2, float y2) {
 		OscMessage msg = new OscMessage("/laser/line");
 		msg.add(x1);

@@ -66,10 +66,12 @@ int Lasers::render() {
     needsRender=false;
 
     Drawing drawing;
+    if (visual!=nullptr)
+	drawing.append(*visual);	// Background
     Connections::draw(drawing);
-    People::draw(drawing);
     Groups::draw(drawing);
-    dbg("Lasers.render",1) << "People+Connections+Groups have " << drawing.getNumElements() << " elements." << std::endl;
+    People::draw(drawing);
+    dbg("Lasers.render",1) << "BG+People+Connections+Groups have " << drawing.getNumElements() << " elements." << std::endl;
 
     // Split drawing among lasers
     std::vector<Drawing> dtmp=allocate(drawing);

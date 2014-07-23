@@ -10,7 +10,8 @@
 class Video;
 
 class OSCHandler {
-    Drawing drawing;
+    Drawing bgDrawing,cellDrawing,conxDrawing;
+    enum { NONE,BACKGROUND,CELL,CONX} drawTarget;
     std::shared_ptr<Lasers> lasers;
     std::shared_ptr<Video> video;
     int serverPort;
@@ -31,6 +32,7 @@ class OSCHandler {
     bool dirty;
 
     int lastUpdateFrame;   // Frame of last /laser/update message received
+    Drawing *currentDrawing();   // Get currently targetted drawing or NULL if none.
  public:
     OSCHandler(int port, std::shared_ptr<Lasers> lasers, std::shared_ptr<Video> video);
     ~OSCHandler();
@@ -60,6 +62,8 @@ class OSCHandler {
     void cellEnd(int uid);
     void conxBegin(const char *cid);
     void conxEnd(const char *cid);
+    void bgBegin();
+    void bgEnd();
     void circle(Point center, float radius);
     void arc(Point center, Point perim,  float angleCW);
     void line(Point p1, Point p2);

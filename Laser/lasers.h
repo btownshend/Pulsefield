@@ -7,6 +7,9 @@ class Lasers {
     std::vector<std::shared_ptr<Laser> > lasers;
     std::vector<Point> background;   // Background
 
+    // Visual for background
+    std::shared_ptr<Drawing> visual;
+
     bool needsRender;
     // Locking
     pthread_mutex_t mutex;
@@ -76,4 +79,9 @@ public:
     void toggleEnable(int i) { enable(i,!isEnabled(i)); }
 
     void dumpPoints() { for (int i=0;i<lasers.size();i++) lasers[i]->dumpPoints(); }
+
+    void setVisual(const Drawing &d) {
+	dbg("Lasers.setVisual",1) << "Set bg visual to drawing with " << d.getNumElements() << " elements." << std::endl;
+	visual=std::shared_ptr<Drawing>(new Drawing(d));
+    }
 };
