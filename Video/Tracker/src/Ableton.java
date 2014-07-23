@@ -95,11 +95,14 @@ class TrackSet {
 	int numTracks;
 	float tempo;
 	boolean armed;
-	TrackSet(String name, int firstTrack, int numTracks, float tempo) {
+	int nclips;
+	
+	TrackSet(String name, int firstTrack, int numTracks, float tempo, int nclips) {
 		this.name=name;
 		this.firstTrack=firstTrack;
 		this.numTracks=numTracks;
 		this.tempo = tempo;
+		this.nclips = nclips;
 		armed=false;
 	}
 
@@ -139,8 +142,8 @@ public class Ableton {
 	float meter[] = new float[2];
 	int playstate = -1;
 
-	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo) {
-		tracksets.put(id,new TrackSet(name,firstTrack,numTracks,tempo));
+	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips) {
+		tracksets.put(id,new TrackSet(name,firstTrack,numTracks,tempo,nclips));
 		for (int i=0;i<numTracks;i++) {
 			Track t=getTrack(i+firstTrack);
 			t.setSongTrack(id,i);
@@ -156,25 +159,25 @@ public class Ableton {
 		tracks = new HashMap<Integer,Track>();
 		tempo=120;
 		tracksets=new HashMap<String,TrackSet>();
-		addSong("QU","Quetzal",1,6,120);
-		addSong("PR","Pring",8,8,108);
-		addSong("OL","Oluminum",17,7,93);
-		addSong("EP","Episarch",25,5,93);
-		addSong("NG","New Gamelan",31,9,120);
-		addSong("MB","Music Box",41,8,111);
-		addSong("GA","Garage Revisited",50,6,120);
-		addSong("FO","Forski",57,8,72);
-		addSong("FI","Firebell",66,7,108);
-		addSong("DB","Deep Blue",74,8,100);
-		addSong("AN","Animals",84,4,120);
-		addSong("MV","Movies",89,1,120);
-		addSong("DD","DDR",91,1,120);
-		addSong("Harp", "Harp",92,1,120);
-		addSong("Guitar", "Guitar",93,1,120);
-		addSong("Pads", "Pads",95,4,120);
-		addSong("Tron", "Tron",99,1,120);
-		addSong("Poly","Poly",100,1,120);
-		addSong("Navier", "Navier",101,4,120);
+		addSong("QU","Quetzal",1,6,120,60);
+		addSong("PR","Pring",8,8,108,60);
+		addSong("OL","Oluminum",17,7,93,60);
+		addSong("EP","Episarch",25,5,93,60);
+		addSong("NG","New Gamelan",31,9,120,60);
+		addSong("MB","Music Box",41,8,111,60);
+		addSong("GA","Garage Revisited",50,6,120,60);
+		addSong("FO","Forski",57,8,72,60);
+		addSong("FI","Firebell",66,7,108,60);
+		addSong("DB","Deep Blue",74,8,100,60);
+		addSong("AN","Animals",84,4,120,60);
+		addSong("MV","Movies",89,1,120,60);
+		addSong("DD","DDR",91,1,120,60);
+		addSong("Harp", "Harp",92,1,120,0);
+		addSong("Guitar", "Guitar",93,1,120,0);
+		addSong("Pads", "Pads",95,4,120,0);
+		addSong("Tron", "Tron",99,1,120,0);
+		addSong("Poly","Poly",100,1,120,0);
+		addSong("Navier", "Navier",101,4,120,0);
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
 		// Clear track info
@@ -191,7 +194,7 @@ public class Ableton {
 	}
 
 	public void sendMessage(OscMessage msg) {
-		System.out.println("AL<-"+msg.addrPattern());
+		//System.out.println("AL<-"+msg.addrPattern());
 		oscP5.send(msg,AL);
 	}
 
