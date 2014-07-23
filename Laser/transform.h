@@ -45,6 +45,9 @@ class Transform {
     float getMinY() const { return miny; } 
     float getMaxY() const { return maxy; } 
     
+    // Clip a line to the onScreen portion
+    void clipLine(Point &floorPt1, Point &floorPt2) const;
+
     // Compute transform matrix from set of points already provided
     void recompute();
 

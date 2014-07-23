@@ -67,19 +67,24 @@ float Circle::getShapeScore(const Transform &transform) const {
 }
 
 float Line::getShapeScore(const Transform &transform) const {
-    Point devp1=transform.mapToDevice(p1);
-    Point devp2=transform.mapToDevice(p2);
-    float length=(devp1-devp2).norm();
+    float length=(p1-p2).norm();
     float score;
     if (length==0) {
 	dbg("Line.getShapeScore",1) << "zero-length line" << std::endl;
 	score=1e10;
     } else {
-	float lengthOnScreen = (devp1.min(Point(transform.getMaxX(),transform.getMaxY())).max(Point(transform.getMinX(),transform.getMinY()))-devp2.min(Point(transform.getMaxX(),transform.getMaxY())).max(Point(transform.getMinX(),transform.getMinY()))).norm();
+	Point p1clipped=p1;
+	Point p2clipped=p2;
+	transform.clipLine(p1clipped,p2clipped);
+	float lengthOnScreen = (p2clipped-p1clipped).norm();
+	dbg("Line.getShapeScore",5) << "length on screen = " << lengthOnScreen << ", total Length=" << length << std::endl;
 	if (lengthOnScreen<length*0.99) 
 	    score=lengthOnScreen/length;
 	else {
 	    // All on-screen, compute maximum width of line (actually physical distance of small step in laser)
+	    Point devp1=transform.mapToDevice(p1);
+	    Point devp2=transform.mapToDevice(p2);
+
 	    Point dir=devp2-devp1; dir=dir/dir.norm();
 	    Point orthogonal(-dir.Y(),dir.X());
 	    orthogonal=orthogonal*DELTADIST;
@@ -88,7 +93,7 @@ float Line::getShapeScore(const Transform &transform) const {
 	    score=1.0+1.0/std::max(delta1,delta2);
 	}
     }
-    dbg("Line.getShapeScore",5) << "{" <<  p1 << "; " << p2 << "} maps to {" << devp1 << "; " << devp2 << "} score=" << score << std::endl;
+    dbg("Line.getShapeScore",5) << "{" <<  p1 << "; " << p2 << "} score=" << score << std::endl;
     return score;
 }
 
@@ -129,24 +134,27 @@ float Cubic::getShapeScore(const Transform &transform) const {
     std::vector<Point> pts = b.interpolate(5);
     float score;
     float fracScore=0;
+    float totalLength=0;
     for (int i=0;i<pts.size()-1;i++) {
 	// Temporary line
 	Line l(pts[i],pts[i+1],Color(0,0,0));
+	float len=l.getLength();
 	float s=l.getShapeScore(transform);
 	if (s<1)
-	    fracScore+=s;
+	    fracScore+=s*len;
 	else
-	    fracScore+=1.0;
+	    fracScore+=1.0*len;
 	if (i==0)
 	    score=s;
 	else
 	    score=std::min(score,s);
+	totalLength+=len;
     }
     if (score<1)
 	// Partially off-screen
-	score= fracScore/pts.size();
+	score= fracScore/totalLength;
 
-    dbg("Cubic.getShapeScore",5) << "score=" << score << std::endl;
+    dbg("Cubic.getShapeScore",5) << "bezier from " << b.getPoint(0.0) << " with total length=" << totalLength << " interpolated in " << pts.size() << " points,  score=" << score << std::endl;
     return score;
 }
 

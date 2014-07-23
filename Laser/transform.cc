@@ -262,3 +262,33 @@ void Transform::load(std::istream &s) {
     recompute();
 }
 
+void Transform::clipLine(Point &p1, Point &p2) const {
+    Point dp1=mapToDevice(p1);
+    Point dp2=mapToDevice(p2);
+    if (onScreen(dp1)&&onScreen(dp2))
+	return;
+    if (!onScreen(dp1)&&!onScreen(dp2)) {
+	p2=p1;
+	return;
+    }
+    Point good,bad;
+    if (onScreen(dp1)) {
+	good=p1;
+	bad=p2;
+    } else {
+	good=p2;
+	bad=p1;
+    }
+    // Binary search for edge with 1cm resolution
+    while ((good-bad).norm() > 0.01) {
+	Point mid=(good+bad)/2;
+	if (onScreen(mapToDevice(mid)))
+	    good=mid;
+	else 
+	    bad=mid;
+    }
+    if (onScreen(dp1))
+	p2=good;
+    else
+	p1=good;
+}
