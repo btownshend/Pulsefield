@@ -1,7 +1,7 @@
 #!/bin/sh 
 # Run tests, saving results in performance.csv
 FRAMERANGE=2000
-TESTS=(multi1.ferec multi3.ferec multi6.ferec ghost.ferec zero1-4541.ferec)
+TESTS=(notmoving.ferec multi1.ferec multi3.ferec multi4.ferec multi6.ferec multi7.ferec ghost.ferec zero1-4541.ferec)
 /bin/echo -n "Notes? " 
 read notes
 {
@@ -9,6 +9,7 @@ read notes
     echo "Notes:  $notes"
     git diff
 } >> testing.log    
+echo >>performance.csv
 for test in ${TESTS[*]}
 do
     ./frontend -p ../Recordings/$test -x10 -F $FRAMERANGE -B 8 -c "$notes"
