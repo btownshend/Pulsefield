@@ -422,6 +422,8 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
     if (height>titleHeight*4) {
 	std::ostringstream msg2;
 	msg2 << std::fixed << "Laser " << laser->getUnit() << ": " << laser->getPoints().size() << " @ " << std::setprecision(1) << laser->getSpacing()*1000 << std::setprecision(3);
+	if (!laser->isEnabled())
+	    msg2 << " (DISABLED)";
 	drawText(cr,0,0,width,titleHeight,msg2.str().c_str());
 	cairo_translate(cr,0,titleHeight);
 	height-=titleHeight;
@@ -443,13 +445,13 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
      cairo_scale(cr,1.0,-1.0);
 
      // Draw overall bounds
-     cairo_set_line_width(cr,1*pixel);
-     cairo_set_source_rgb (cr,1.0,1.0,1.0);
-     std::vector<Point> devBounds = laser->getTransform().mapToDevice(bounds);
-     cairo_move_to(cr,devBounds.back().X(), devBounds.back().Y());
-     for (unsigned int i=0;i<devBounds.size();i++)
-	 cairo_line_to(cr,devBounds[i].X(),devBounds[i].Y());
-     cairo_stroke(cr);
+     // cairo_set_line_width(cr,1*pixel);
+     // cairo_set_source_rgb (cr,1.0,1.0,1.0);
+     // std::vector<Point> devBounds = laser->getTransform().mapToDevice(bounds);
+     // cairo_move_to(cr,devBounds.back().X(), devBounds.back().Y());
+     // for (unsigned int i=0;i<devBounds.size();i++)
+     // 	 cairo_line_to(cr,devBounds[i].X(),devBounds[i].Y());
+     // cairo_stroke(cr);
 
      // Draw bounding box
      cairo_set_line_width(cr,1*pixel);
@@ -552,17 +554,51 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 
 	 // Draw coverage area of laser
 	 // Translate to center
-	 Point worldTL=transform.mapToWorld(Point(transform.getMinX(), transform.getMinY()));
-	 Point worldTR=transform.mapToWorld(Point(transform.getMaxX(), transform.getMinY()));
-	 Point worldBL=transform.mapToWorld(Point(transform.getMinX(), transform.getMaxY()));
-	 Point worldBR=transform.mapToWorld(Point(transform.getMaxX(), transform.getMaxY()));
-	 dbg("Video.drawWorld",3) << "TL=" << worldTL << ", TR=" << worldTR << ", BL=" << worldBL << ", BR=" << worldBR << std::endl;
+	 Point worldBL=transform.mapToWorld(Point(transform.getMinX(), transform.getMinY()));
+	 Point worldBR=transform.mapToWorld(Point(transform.getMaxX(), transform.getMinY()));
+	 dbg("Video.drawWorld",3) << "BL=" << worldBL << ", BR=" << worldBR << std::endl;
 	 cairo_set_line_width(cr,1*pixel);
-	 cairo_move_to(cr,worldTL.X(),worldTL.Y());
-	 cairo_line_to(cr,worldTR.X(),worldTR.Y());
+	 cairo_move_to(cr,worldBL.X(),worldBL.Y());
 	 cairo_line_to(cr,worldBR.X(),worldBR.Y());
-	 cairo_line_to(cr,worldBL.X(),worldBL.Y());
-	 cairo_line_to(cr,worldTL.X(),worldTL.Y());
+	 static const int ninterp=50;
+	 Point prevpt=worldBR;
+	 for (int iy=0;iy<ninterp;iy++) {
+	     float y=iy*(transform.getMaxY()-transform.getMinY())/(ninterp-1)+transform.getMinY();
+	     Point devpt=Point(transform.getMaxX(), y);
+	     dbg("Video.drawWorld",3) << "devpt=" << devpt << std::endl;
+	     Point pt=transform.mapToWorld(devpt);
+	     dbg("Video.drawWorld",3) << "pt=" << pt << std::endl;
+	     if (pt.X()>=minLeft && pt.X()<=maxRight && pt.Y()>=minBottom && pt.Y()<=maxTop) {
+		 dbg("Video.drawWorld",3) << "in bounds" << std::endl;
+		 cairo_move_to(cr,prevpt.X(),prevpt.Y());
+		 cairo_line_to(cr,pt.X(),pt.Y());
+	     }
+	     prevpt=pt;
+	 }
+	 prevpt=worldBL;
+	 for (int iy=0;iy<ninterp;iy++) {
+	     float y=iy*(transform.getMaxY()-transform.getMinY())/(ninterp-1)+transform.getMinY();
+	     Point devpt=Point(transform.getMinX(), y);
+	     dbg("Video.drawWorld",3) << "devpt=" << devpt << std::endl;
+	     Point pt=transform.mapToWorld(devpt);
+	     dbg("Video.drawWorld",3) << "pt=" << pt << std::endl;
+	     if (pt.X()>=minLeft && pt.X()<=maxRight && pt.Y()>=minBottom && pt.Y()<=maxTop) {
+		 dbg("Video.drawWorld",3) << "in bounds" << std::endl;
+		 cairo_move_to(cr,prevpt.X(),prevpt.Y());
+		 cairo_line_to(cr,pt.X(),pt.Y());
+	     }
+	     prevpt=pt;
+	 }
+
+	 // cairo_move_to(cr,worldTL.X(),worldTL.Y());
+	 // for (int iy=0;iy<ninterp;iy++) {
+	 //     float y=iy*(transform.getMaxY()-transform.getMinY())/(ninterp-1)+transform.getMinY();
+	 //     Point devpt=Point(transform.getMaxX(), y);
+	 //     if (transform.onScreen(devpt)) {
+	 // 	 Point pt=transform.mapToWorld(devpt);
+	 // 	 cairo_line_to(cr,pt.X(),pt.Y());
+	 //     }
+	 // }
 	 cairo_stroke(cr);
 
 	 // Draw anchor points
