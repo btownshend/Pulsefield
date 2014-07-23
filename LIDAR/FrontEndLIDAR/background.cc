@@ -151,8 +151,9 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	}
 	bool dodump=false;
 	for (int k=NRANGES-2;k>=0;k--) {
-	    if (consecutiveInvisible[k][i]>(k==0?BGLONGDISTLIFE:MAXBGINVISIBLE)) {
-		dbg("Background.update",2) << "Frame " << sick.getFrame() << ": background " << k << " at scan " << i << " with range=" << range[k][i] << ", freq=" << freq[k][i] << " has not been seen for " << consecutiveInvisible[k][i] << " frames; removing it." << std::endl;
+	    float maxInv=(k==0?BGLONGDISTLIFE:MAXBGINVISIBLE)+3.0/freq[k][i];	// Wait fixed amount of time (in case there's an obstruction) plus 3*expected repetition time
+	    if (consecutiveInvisible[k][i]>maxInv) {
+		dbg("Background.update",2) << "Frame " << sick.getFrame() << ": background " << k << " at scan " << i << " with range=" << range[k][i] << ", freq=" << freq[k][i] << " has not been seen for " << consecutiveInvisible[k][i] << " frames (>" << maxInv << ") removing it." << std::endl;
 		freq[k][i]=0;
 		range[k][i]=0;
 		consecutiveInvisible[k][i]=0;

@@ -137,3 +137,5 @@ LIDAR/FrontEndLIDAR/normtest
 LIDAR/FrontEndLIDAR/performance.csv
 
 LIDAR/FrontEndLIDAR/testing.log
+
+LIDAR/FrontEndLIDAR/osc_test.cc
