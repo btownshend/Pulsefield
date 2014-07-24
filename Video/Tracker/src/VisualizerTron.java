@@ -274,5 +274,53 @@ public class VisualizerTron extends Visualizer {
 			}	
 		super.draw(parent, p, wsize);
 	}
+	
+	public void drawLaser(PApplet parent, Positions p) {
+		super.drawLaser(parent,p);
+		Laser laser=Laser.getInstance();
+		laser.bgBegin();
+		for (int i=0;i<gridWidth;i++)
+			for (int j=0;j<gridHeight;j++) {
+				GridData g=grid[i*gridHeight+j];
+				int gid=g.id;
+				if (gid!=-1) {
+					if (p.get(gid)== null) {
+						// Person deleted
+						PApplet.println("draw: missing person in grid: id= "+gid);
+						grid[i*gridHeight+j].id=-1;
+						continue;
+					}
+					if (g.exploding>0) {
+//						final int explosionFrames = 400;
+//						assert(p.get(gid)!=null);
+//						parent.fill(p.get(gid).getcolor(parent));
+//						float w = wsize.x*(explosionFrames-g.exploding)/explosionFrames/gridWidth;
+//						float h = wsize.y*(explosionFrames-g.exploding)/explosionFrames/gridHeight;
+//						float disp=wsize.x*g.exploding/explosionFrames;
+//						parent.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight+disp,w,h);
+//						parent.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight-disp, w,h);
+//						parent.rect(wsize.x*i/gridWidth+disp, wsize.y*j/gridHeight, w,h);
+//						parent.rect(wsize.x*i/gridWidth-disp, wsize.y*j/gridHeight, w,h);
+//						if (g.exploding<explosionFrames)
+//							grid[i*gridHeight+j].exploding+=10;
+//						else {
+//							grid[i*gridHeight+j].exploding=-1;
+//							grid[i*gridHeight+j].id=-1;
+//						}
+					} else {
+						float inset=0.1f;
+						PVector c1=Tracker.unMapPosition(new PVector(i*2.0f/gridWidth-1,(j+1)*2.0f/gridHeight-1));
+						PVector c2=Tracker.unMapPosition(new PVector((i+1)*2.0f/gridWidth-1,j*2.0f/gridHeight-1));	
+						if (currentgrid.containsKey(gid) && currentgrid.get(gid)==i*gridHeight+j) {
+//							PApplet.println("c1="+c1+", c2="+c2);
+							laser.rect(c1.x,c1.y,c2.x-c1.x,c2.y-c1.y);
+						}
+						if (playgrid.get(g.id).grid == i*gridHeight+j)
+							laser.rect(c1.x+inset*(c2.x-c1.x),c1.y+inset*(c2.y-c1.y),c2.x-c1.x-2*inset*(c2.x-c1.x),c2.y-c1.y-2*inset*(c2.y-c1.y));
+					}
+				}
+			}	
+		laser.bgEnd();
+	}
 }
 
