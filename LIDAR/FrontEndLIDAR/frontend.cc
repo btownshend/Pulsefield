@@ -457,7 +457,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     }
     fclose(fd);
 
-    fclose(fp);
     if (savePerfData) {
 	// Write performance data
 	static const char *perfFilename="performance.csv";
@@ -485,6 +484,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 		if (strlen(gitrev)>0)
 		    gitrev[strlen(gitrev)-1]=0;  // Remove newline
 	    }
+	    pclose(fp);
 
 	    float meanfps=nallProcTime/totalallProcTime;
 	    std::sort(allperf.begin(),allperf.end());
