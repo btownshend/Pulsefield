@@ -410,10 +410,11 @@ void OSCHandler::line(Point p1, Point p2) {
 }
 
 void OSCHandler::svgfile(std::string filename,Point origin, float scaling,float rotateDeg) {
+    static const std::string SVGDIRECTORY("Images");
     dbg("OSCHandler.svgfile",3) << "svgfile(" << filename << ", " << origin << ", " << scaling << ", " << rotateDeg << ")" << std::endl;
     Drawing *d=currentDrawing();
     if (d!=NULL) {
-	std::shared_ptr<SVG> s=SVGs::get(filename);
+	std::shared_ptr<SVG> s=SVGs::get(SVGDIRECTORY+"/"+filename);
 	if (s!=nullptr)
 	    s->addToDrawing(*d,origin,scaling,rotateDeg,currentColor);
     }
