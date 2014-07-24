@@ -68,6 +68,7 @@ class OSCHandler {
     void arc(Point center, Point perim,  float angleCW);
     void line(Point p1, Point p2);
     void cubic(Point p1, Point p2, Point p3, Point p4);
+    void svgfile(std::string filename,Point origin, float scaling, float rotateDeg);
 
     void update(int frame);
     void map(int unit, int pt, Point world, Point local);

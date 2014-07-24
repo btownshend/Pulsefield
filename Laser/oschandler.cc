@@ -20,6 +20,7 @@
 #include "person.h"
 #include "groups.h"
 #include "music.h"
+#include "svg.h"
 
 static void error(int num, const char *msg, const char *path)
 {
@@ -94,6 +95,7 @@ static int circle_handler(const char *path, const char *types, lo_arg **argv, in
 static int arc_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->arc(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),argv[4]->f); return 0; }
 static int cubic_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->cubic(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f),Point(argv[6]->f,argv[7]->f)); return 0; }
 static int line_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->line(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f)); return 0; }
+static int svgfile_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->svgfile(&argv[0]->s,Point(argv[1]->f,argv[2]->f),argv[3]->f,argv[4]->f); return 0; }
 
 // Transforms
 static int map_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->map(argv[0]->i,argv[1]->i,Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f)); return 0; }
@@ -171,6 +173,7 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/laser/arc","fffff",arc_handler,this);
 	lo_server_add_method(s,"/laser/bezier/cubic","ffffffff",cubic_handler,this);
 	lo_server_add_method(s,"/laser/line","ffff",line_handler,this);
+	lo_server_add_method(s,"/laser/svgfile","sffff",svgfile_handler,this);
 
 	/* Transforms */
 	lo_server_add_method(s,"/laser/map","iiffff",map_handler,this);
@@ -404,6 +407,16 @@ void OSCHandler::line(Point p1, Point p2) {
     Drawing *d=currentDrawing();
     if (d!=NULL)
 	d->drawLine(p1,p2,currentColor);
+}
+
+void OSCHandler::svgfile(std::string filename,Point origin, float scaling,float rotateDeg) {
+    dbg("OSCHandler.svgfile",3) << "svgfile(" << filename << ", " << origin << ", " << scaling << ", " << rotateDeg << ")" << std::endl;
+    Drawing *d=currentDrawing();
+    if (d!=NULL) {
+	std::shared_ptr<SVG> s=SVGs::get(filename);
+	if (s!=nullptr)
+	    s->addToDrawing(*d,origin,scaling,rotateDeg,currentColor);
+    }
 }
 
 void OSCHandler::cubic(Point p1, Point p2, Point p3, Point p4) {

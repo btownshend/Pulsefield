@@ -34,6 +34,15 @@ class Point {
     Point rot90() const {
 	return Point(-y,x); 
     }
+    Point flipY() const {
+	return Point(x,-y);
+    }
+    Point rotate(float radians) const { 
+	return Point(x*cos(radians)-y*sin(radians),x*sin(radians)+y*cos(radians));
+    }
+    Point rotateDegrees(float degrees) const { 
+	return rotate(degrees*M_PI/180);
+    }
     Point operator-(const Point &p2) const { return Point(x-p2.X(),y-p2.Y()); }
     Point operator+(const Point &p2) const { return Point(x+p2.X(),y+p2.Y()); }
     Point operator/(float s) const { return Point(x/s,y/s); }

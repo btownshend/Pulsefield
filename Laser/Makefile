@@ -13,11 +13,13 @@ CAIROINC=/opt/local/include/cairo
 CAIROLIBDIR=/opt/local/lib
 CAIROLIBES=-lcairo -lX11
 
+NANOSVGINC=../nanosvg/src
+
 BOOSTLIBES=-lboost_serialization-mt
 
 ED=etherdream
 EDL=$(ED)/driver/libetherdream
-INCLUDES=-I$(ED)/driver/libetherdream -I$(ED)/common -I$(UTIL) -I$(CAIROINC) -I$(OPENCVINC)
+INCLUDES=-I$(ED)/driver/libetherdream -I$(ED)/common -I$(UTIL) -I$(CAIROINC) -I$(OPENCVINC) -I$(NANOSVGINC)
 #DEBUG=-g -ggdb -Wall -D_GLIBCXX_DEBUG
 DEBUG=-g  -Wall
 #OPTIMIZE=-O3
@@ -25,7 +27,7 @@ LDFLAGS=-L$(CAIROLIBDIR) -L$(OPENCVLIBDIR) -L$(LIBLOLIBDIR)
 LIBES=-llo $(OPENCV) $(CAIROLIBES) $(BOOSTLIBES)
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES)
 CFLAGS=$(DEBUG) $(OPTIMIZE)
-CXXSRCS=oschandler.cc main.cc  laser.cc lasers.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc Simplex.cpp touchosc.cc connections.cc person.cc attributes.cc groups.cc cpoint.cc music.cc conductor.cc urlconfig.cc
+CXXSRCS=svg.cc oschandler.cc main.cc  laser.cc lasers.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc Simplex.cpp touchosc.cc connections.cc person.cc attributes.cc groups.cc cpoint.cc music.cc conductor.cc urlconfig.cc
 FESRCS=dbg.cc point.cc dest.cc
 #CSRCS=$(EDL)/etherdream.c
 SRCS=$(CXXSRCS) $(CSRCS) $(FESRCS)
@@ -55,11 +57,14 @@ depend: $(SRCS)
 
 # DO NOT DELETE
 
+svg.o: drawing.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h bezier.h color.h
+svg.o: attributes.h cpoint.h Simplex.hpp touchosc.h ../LIDAR/Util/urlconfig.h
+svg.o: svg.h
 oschandler.o: ../LIDAR/Util/dbg.h oschandler.h drawing.h
 oschandler.o: ../LIDAR/Util/point.h bezier.h color.h attributes.h cpoint.h
 oschandler.o: Simplex.hpp touchosc.h ../LIDAR/Util/urlconfig.h lasers.h
 oschandler.o: laser.h etherdream_bst.h displaydevice.h transform.h video.h
-oschandler.o: connections.h person.h groups.h music.h
+oschandler.o: connections.h person.h groups.h music.h svg.h
 main.o: lasers.h laser.h etherdream_bst.h displaydevice.h transform.h
 main.o: ../LIDAR/Util/point.h cpoint.h color.h touchosc.h ../LIDAR/Util/dbg.h
 main.o: ../LIDAR/Util/urlconfig.h drawing.h bezier.h attributes.h Simplex.hpp

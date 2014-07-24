@@ -76,6 +76,17 @@ class Cubic:public Primitive {
     float getShapeScore(const Transform &transform) const;
 };
 
+// A path formed by a set of beziers
+class Path:public Primitive {
+    std::vector<Point> controlPts;
+ public:
+    Path(const std::vector<Point> &p, Color c): Primitive(c), controlPts(p) {;}
+    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
+    float getLength() const;
+    float getShapeScore(const Transform &transform) const;
+};
+
+
 class Polygon: public Primitive {
     std::vector<Point> points;
  public:

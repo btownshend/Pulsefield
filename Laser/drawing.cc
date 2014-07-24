@@ -158,6 +158,53 @@ float Cubic::getShapeScore(const Transform &transform) const {
     return score;
 }
 
+std::vector<CPoint> Path::getPoints(float pointSpacing,const CPoint *priorPoint) const {
+    std::vector<CPoint> result;
+    if (priorPoint!=NULL && (*priorPoint-controlPts.front()).norm()>.001)
+	// Need to blank to get to starting position
+	result.push_back(CPoint((Point)controlPts.front(),Color(0,0,0)));
+    for (int i=0;i<controlPts.size()-3;i+=3) {
+	std::vector<CPoint> cp=Cubic(std::vector<Point> (controlPts.begin()+i, controlPts.begin()+i+4),c).getPoints(pointSpacing,priorPoint);
+	result.insert(result.end(),cp.begin(),cp.end());
+	dbg("Path.getPoints",5) << "got " << cp.size() << "points from cubic, now have " << result.size() << " points.";
+	for (int j=0;j<cp.size();j++) 
+	    dbgn("Path.getPoints",5) << cp[j] << " ";
+	dbgn("Path.getPoints",5) << std::endl;
+	priorPoint=&result.back();
+    }
+    dbg("Path.getPoints",5) << "getPoints(spacing=" << pointSpacing << ") -> " << result.size() << " points (first=" << result.front() << ", 2nd last=" << result[result.size()-2] << ", last=" << result.back() << ")" << std::endl;
+    return result;
+}
+
+float Path::getLength() const {
+    float len=0;
+    for (int i=0;i<controlPts.size()-3;i+=3)
+	len+=Cubic(std::vector<Point> (controlPts.begin()+i, controlPts.begin()+i+4),c).getLength();
+    dbg("Path.getLength",5) << "len=" << len << std::endl;
+    return len;
+}
+
+float Path::getShapeScore(const Transform &transform) const {
+    dbg("Path.getShapeScore",5) << "Getting score for path" << std::endl;
+    float score;
+    float visLen=0;
+    float totalLen=0;
+    for (int i=0;i<controlPts.size()-3;i+=3) {
+	float s=Cubic(std::vector<Point> (controlPts.begin()+i,controlPts.begin()+i+4),c).getShapeScore(transform);
+	float len=Cubic(std::vector<Point> (controlPts.begin()+i, controlPts.begin()+i+4),c).getLength();
+	if (i==0)
+	    score=s;
+	else
+	    score=std::min(score,s);
+	visLen+=std::min(1.0f,s)*len;
+	totalLen+=len;
+    }
+    if (score<1.0)
+	score=visLen/totalLen;
+    dbg("Path.getShapeScore",5) << "score=" << score << std::endl;
+    return score;
+}
+
 std::vector<CPoint> Polygon::getPoints(float pointSpacing,const CPoint *priorPoint) const {
     std::vector<CPoint> result;
     for (int i=1;i<points.size();i++) {
