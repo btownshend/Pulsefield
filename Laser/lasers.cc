@@ -6,6 +6,8 @@
 std::shared_ptr<Lasers> Lasers::theInstance;   // Singleton
 
 Lasers::Lasers(int nlasers): lasers(nlasers) {
+    etherdream_lib_start();
+
     dbg("Lasers.Lasers",1) << "Constructing " << nlasers << " lasers." << std::endl;
     for (unsigned int i=0;i<lasers.size();i++) {
 	lasers[i]=std::shared_ptr<Laser>(new Laser(i));

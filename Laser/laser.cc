@@ -20,7 +20,7 @@ Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     unit=_unit;
     PPS=40000;
     npoints=4000;
-    blankingSkew=3;
+    blankingSkew=0; //3;
     targetSegmentLen=0.01f;
     preBlanks=3;
     postBlanks=16;
@@ -30,8 +30,6 @@ Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
 }
 
 int Laser::open() {
-    etherdream_lib_start();
-
     /* Sleep for a bit over a second, to ensure that we see broadcasts
      * from all available DACs. */
     usleep(1200000);
