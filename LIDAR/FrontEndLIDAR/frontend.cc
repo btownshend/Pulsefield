@@ -292,7 +292,7 @@ void FrontEnd::stopRecording() {
     recording=false;
 }
 
-int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bool overlayLive,int frame1, int frameN) {
+int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bool overlayLive,int frame1, int frameN, bool savePerfData) {
     printf("Playing back recording from %s\n", filename);
     FILE *fd=fopen(filename,"r");
     if (fd == NULL) {
@@ -457,50 +457,53 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     }
     fclose(fd);
 
-    // Write performance data
-    static const char *perfFilename="performance.csv";
-    FILE *perfFD=fopen(perfFilename,"a");
-    if (perfFD == NULL) {
-	fprintf(stderr,"Unable to open performance file %s for appending\n", perfFilename);
-	return -1;
-    }
-    // Get current time
-    time_t now;
-    time(&now);
-    struct tm *timeptr=localtime(&now);
-    char datestr[100];
-    strftime(datestr,sizeof(datestr),"%d-%h-%Y %H:%M:%S",timeptr);
-
-    // Get current GIT revision
-    const char *command = "git log -1 --format='%h' 2>&1";
-    FILE *fp = popen(command, "r");
-    char gitrev[50];
-    if (fp == NULL) {
-	std::cerr << "Failed to run " << command << std::endl;
-	strcpy(gitrev,"?");
-    } else {
-	(void)fgets(gitrev, sizeof(gitrev)-1, fp);
-	if (strlen(gitrev)>0)
-	    gitrev[strlen(gitrev)-1]=0;  // Remove newline
-    }
     fclose(fp);
+    if (savePerfData) {
+	// Write performance data
+	static const char *perfFilename="performance.csv";
+	FILE *perfFD=fopen(perfFilename,"a");
+	if (perfFD == NULL) {
+	    fprintf(stderr,"Unable to open performance file %s for appending\n", perfFilename);
+	} else {
+	    std::cout << "Writing performance data to " << perfFilename << std::endl;
+	    // Get current time
+	    time_t now;
+	    time(&now);
+	    struct tm *timeptr=localtime(&now);
+	    char datestr[100];
+	    strftime(datestr,sizeof(datestr),"%d-%h-%Y %H:%M:%S",timeptr);
 
-    float meanfps=nallProcTime/totalallProcTime;
-    std::sort(allperf.begin(),allperf.end());
-    float mean=std::accumulate(allperf.begin(),allperf.end(),0)/allperf.size();
-    std::string allargs=arglist[0];
-    for (unsigned int i=1;i<arglist.size();i++)
-	allargs+=" "+arglist[i];
-    fprintf(perfFD,"\"%s\",\"%s\",\"%s\",\"%s\",%d,%d,%d,%d,%d,%ld,%g",allargs.c_str(),filename, gitrev,datestr, minPerfFrame, maxPerfFrame, activeFrames,maxPeople, world->getLastID(),allperf.size(), sqrt(mean)/UNITSPERM);
-    fprintf(perfFD,",%.2f",meanfps);
-    float prctiles[]={0,0.5,0.9,0.95,0.99,1.0};
-    for (int i=0;i<sizeof(prctiles)/sizeof(prctiles[0]);i++) {
-	int pos=(int)((allperf.size()-1)*prctiles[i]+0.5);
-	fprintf(perfFD,",%.0f,%f",100*prctiles[i],sqrt(allperf[pos])/UNITSPERM);
-    }
+	    // Get current GIT revision
+	    const char *command = "git log -1 --format='%h' 2>&1";
+	    FILE *fp = popen(command, "r");
+	    char gitrev[50];
+	    if (fp == NULL) {
+		std::cerr << "Failed to run " << command << std::endl;
+		strcpy(gitrev,"?");
+	    } else {
+		(void)fgets(gitrev, sizeof(gitrev)-1, fp);
+		if (strlen(gitrev)>0)
+		    gitrev[strlen(gitrev)-1]=0;  // Remove newline
+	    }
+
+	    float meanfps=nallProcTime/totalallProcTime;
+	    std::sort(allperf.begin(),allperf.end());
+	    float mean=std::accumulate(allperf.begin(),allperf.end(),0)/allperf.size();
+	    std::string allargs=arglist[0];
+	    for (unsigned int i=1;i<arglist.size();i++)
+		allargs+=" "+arglist[i];
+	    fprintf(perfFD,"\"%s\",\"%s\",\"%s\",\"%s\",%d,%d,%d,%d,%d,%ld,%g",allargs.c_str(),filename, gitrev,datestr, minPerfFrame, maxPerfFrame, activeFrames,maxPeople, world->getLastID(),allperf.size(), sqrt(mean)/UNITSPERM);
+	    fprintf(perfFD,",%.2f",meanfps);
+	    float prctiles[]={0,0.5,0.9,0.95,0.99,1.0};
+	    for (int i=0;i<sizeof(prctiles)/sizeof(prctiles[0]);i++) {
+		int pos=(int)((allperf.size()-1)*prctiles[i]+0.5);
+		fprintf(perfFD,",%.0f,%f",100*prctiles[i],sqrt(allperf[pos])/UNITSPERM);
+	    }
     
-    fprintf(perfFD,"\n");
-    fclose(perfFD);
+	    fprintf(perfFD,"\n");
+	    fclose(perfFD);
+	}
+    }
 
     if (!matfile.empty()) {
 	char tmpfile[1000];

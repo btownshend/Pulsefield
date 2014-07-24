@@ -12,6 +12,6 @@ read notes
 echo >>performance.csv
 for test in ${TESTS[*]}
 do
-    ./frontend -p ../Recordings/$test -x10 -F $FRAMERANGE -B 8 -c "$notes"
+    ./frontend -P -p ../Recordings/$test -x10 -F $FRAMERANGE -B 8 -c "$notes"
 done
 echo '---------- Done '$(date) ------- >>testing.log

@@ -12,12 +12,13 @@ static int nsick=1;
 unsigned int MAXRANGE=12000;
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr, "Usage: %s [-B maxrange] [-R | -r recordfile | -p playfile [-L] [-s] [-l] [-x slowfactor] [-F frame1:frameN | -F nframes]  [-m matframes [-M matfile ]] ] [-V] [[-D debugfile] -d debug]\n",argv[0]);
+    fprintf(stderr, "Usage: %s [-B maxrange] [-R | -r recordfile | -p playfile [-L] [-s] [-l] [-x slowfactor] [-F frame1:frameN | -F nframes]  [-m matframes [-M matfile ]] [-P] ] [-V] [[-D debugfile] -d debug]\n",argv[0]);
     fprintf(stderr,"\t-B maxrange\t\tset maximum range in meters\n");
     fprintf(stderr,"\t-R\t\trecord into default filename based on current date and time\n");
     fprintf(stderr,"\t-r file\t\trecord into given file\n");
     fprintf(stderr,"\t-p file\t\tplayback from given file\n");
     fprintf(stderr,"\t-F\t\tplayback only give number of frames or frame number range\n");
+    fprintf(stderr,"\t-P\tappend performance summary to performance.csv\n");
     fprintf(stderr,"\t\t-L\toverlay live as well during playback\n");
     fprintf(stderr,"\t\t-s\tsingle-step playback\n");
     fprintf(stderr,"\t\t-l\tloop file continuously\n");
@@ -47,10 +48,11 @@ int main(int argc, char *argv[])
     int frame1=-1;
     int frameN=-1;
     std::string comments;
+    bool savePerfData=false;
 
     SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 
-    while ((ch=getopt(argc,argv,"d:D:B:sr:Rp:Llx:m:M:VF:c:"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:D:B:sr:Rp:Llx:m:M:VF:c:P"))!=-1) {
 	switch (ch) {
 	case 'd':
 	    SetDebug(optarg);
@@ -105,6 +107,9 @@ int main(int argc, char *argv[])
 	case 'p':
 	    playFile=optarg;
 	    break;
+	case 'P':
+	    savePerfData=true;
+	    break;
 	case 'x':
 	    speedFactor=atof(optarg);
 	    break;
@@ -143,7 +148,8 @@ int main(int argc, char *argv[])
 	}
 	// Now playback file through it
 	do {
-	    int rc=fe.playFile(playFile,singlestep,speedFactor,overlayLive,frame1,frameN);
+	    int rc=fe.playFile(playFile,singlestep,speedFactor,overlayLive,frame1,frameN,savePerfData);
+	    savePerfData=false;   // Only save it once if looping
 	    if (rc)
 		exit(1);
 	} while (loop);   // Keep repeating if loop is set
