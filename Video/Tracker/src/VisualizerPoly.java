@@ -208,5 +208,33 @@ public class VisualizerPoly extends Visualizer {
 			pos++;
 		}
 	}
+	
+	public void drawLaser(PApplet parent, Positions p) {
+		super.drawLaser(parent,p);
+		PVector center=Tracker.unMapPosition(new PVector(0,0));
+		PVector tl=Tracker.unMapPosition(new PVector(-1.0f,-1.0f));
+		PVector rad=PVector.sub(tl, center);
+		float maxRadius=Math.min(Math.abs(rad.x),Math.abs(rad.y));
+		//PApplet.println("Poly drawLaser center="+center+", tl="+tl+", radius="+maxRadius);
+		Laser laser=Laser.getInstance();
+		laser.bgBegin();
+		// Draw rings in gray
+		for (int i=1;i<=totalBeats;i++) {
+			if (i%4 == 0)
+				parent.strokeWeight(2);
+			else
+				parent.strokeWeight(1);
+			//laser.circle(center.x, center.y, i*maxRadius/totalBeats);
+		}
+
+		// Draw each position and fired rings
+		for (PolyState ps: poly.values()) {
+			//ps.draw(parent,wsize,totalBeats,pos,synth);
+			if (ps.playing)
+				laser.circle(center.x, center.y, ps.mybeat*maxRadius/totalBeats);
+		}
+		laser.bgEnd();
+	}
+
 }
 
