@@ -242,16 +242,19 @@ float Composite::getShapeScore(const Transform &transform) const {
     dbg("Composite.getShapeScore",5) << "Getting score for composite" << std::endl;
     float score;
     float fracScore=0;
+    float totalLen=0;
     for (unsigned int i=0;i<elements.size();i++) {
 	float s=elements[i]->getShapeScore(transform);
+	float len=elements[i]->getLength();
 	if (i==0)
 	    score=s;
 	else
 	    score=std::min(score,s);
-	fracScore+=std::min(1.0f,s);
+	fracScore+=std::min(1.0f,s)*len;
+	totalLen+=len;
     }
     if (score<1.0)
-	score=fracScore/elements.size();
+	score=fracScore/totalLen;
     dbg("Composite.getShapeScore",5) << "score=" << score << std::endl;
     return score;
 }
