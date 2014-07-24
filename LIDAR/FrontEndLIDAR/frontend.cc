@@ -307,9 +307,11 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     gettimeofday(&starttime,0);
     int frameStep=0;
     int lastframe=-1;
-    float maxlag=0;
-    float totallag=0;
-    int nlag=0;
+    float maxProcTime=0;
+    float totalProcTime=0;
+    float totalallProcTime=0;
+    int nProcTime=0;
+    int nallProcTime=0;
     std::vector<float> allperf;
     int minPerfFrame=1000000;
     int maxPerfFrame=-1;
@@ -385,24 +387,14 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    gettimeofday(&now,0);
 	
 	    long int waittime=(acquired.tv_sec-startfile.tv_sec-speedFactor*(now.tv_sec-starttime.tv_sec))*1000000+(acquired.tv_usec-startfile.tv_usec-speedFactor*(now.tv_usec-starttime.tv_usec));
-	    float lag=std::max(0l,-waittime)/1e6;
-	    totallag+=lag;
-	    maxlag=std::max(maxlag,lag);
-	    nlag++;
 	    if (waittime >1000) {
 		// When doing an overlay, timing is driven by file and data is sampled whenever overlay data is ready, if nothing is valid a frame is skipped
 		usleep(waittime);
 	    }
 	} /* else use real-time timing */
 
-	if (nlag>=100) {
-	    dbg("frontend",1) << "Playing frame " << frame << " with mean lag " <<  totallag/nlag << ", maxlag=" << maxlag << std::endl;
-	    printf("Playing frame %d with mean lag=%.3fs, maxlag=%.3fs\n",frame,totallag/nlag,maxlag);
-	    totallag=0;
-	    maxlag=0;
-	    nlag=0;
-	}
 	
+	struct timeval processStart; gettimeofday(&processStart,0);
 	if (overlayLive) {
 	    sick[0]->lock();
 	    sick[0]->waitForFrame();
@@ -422,6 +414,21 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    processFrames();
 	    assert(!sick[0]->isValid());
 	    sick[0]->unlock();
+	}
+	struct timeval processDone; gettimeofday(&processDone,0);
+	float procTime=(processDone.tv_sec-processStart.tv_sec)+(processDone.tv_usec-processStart.tv_usec)/1e6;
+	totalProcTime+=procTime;
+	totalallProcTime+=procTime;
+	maxProcTime=std::max(maxProcTime,procTime);
+	nProcTime++;
+	nallProcTime++;
+
+	if (frame%200==0) {
+	    dbg("frontend",1) << "Frame " << frame << ": mean frame proessing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
+	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",frame,totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
+	    nProcTime=0;
+	    maxProcTime=0;
+	    totalProcTime=0;
 	}
 
 	if (!matfile.empty()) {
@@ -478,17 +485,20 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     }
     fclose(fp);
 
+    float meanfps=nallProcTime/totalallProcTime;
     std::sort(allperf.begin(),allperf.end());
     float mean=std::accumulate(allperf.begin(),allperf.end(),0)/allperf.size();
     std::string allargs=arglist[0];
     for (unsigned int i=1;i<arglist.size();i++)
 	allargs+=" "+arglist[i];
     fprintf(perfFD,"\"%s\",\"%s\",\"%s\",\"%s\",%d,%d,%d,%d,%d,%ld,%g",allargs.c_str(),filename, gitrev,datestr, minPerfFrame, maxPerfFrame, activeFrames,maxPeople, world->getLastID(),allperf.size(), sqrt(mean)/UNITSPERM);
+    fprintf(perfFD,",%.2f",meanfps);
     float prctiles[]={0,0.5,0.9,0.95,0.99,1.0};
     for (int i=0;i<sizeof(prctiles)/sizeof(prctiles[0]);i++) {
 	int pos=(int)((allperf.size()-1)*prctiles[i]+0.5);
 	fprintf(perfFD,",%.0f,%f",100*prctiles[i],sqrt(allperf[pos])/UNITSPERM);
     }
+    
     fprintf(perfFD,"\n");
     fclose(perfFD);
 
