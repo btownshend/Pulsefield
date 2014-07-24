@@ -1,7 +1,7 @@
 #!/bin/sh 
 # Run tests, saving results in performance.csv
 FRAMERANGE=2000
-TESTS=(notmoving.ferec multi1.ferec multi3.ferec multi4.ferec multi6.ferec multi7.ferec ghost.ferec zero1-4541.ferec)
+TESTS=(fixedperson.ferec notmoving.ferec multi1.ferec multi3.ferec multi4.ferec multi6.ferec multi7.ferec ghost.ferec zero1-4541.ferec)
 /bin/echo -n "Notes? " 
 read notes
 {
