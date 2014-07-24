@@ -54,6 +54,14 @@ public class Laser {
 		sendMessage(msg);
 	}
 	
+	public void circle(float x1,float y1, float r) {
+		OscMessage msg = new OscMessage("/laser/circle");
+		msg.add(x1);
+		msg.add(y1);
+		msg.add(r);
+		sendMessage(msg);
+	}
+	
 	public void cubic(float x1,float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
 		OscMessage msg = new OscMessage("/laser/bezier/cubic");
 		msg.add(x1);
