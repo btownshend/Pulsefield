@@ -270,7 +270,7 @@ void Leg::updateVisibility() {
 }
 
 void Leg::updateDiameterEstimates(const Vis &vis, LegStats &ls) const {
-    // Update diameter estimate
+    // Update diameter estimate if we have a contiguous set of hits of adequate length
     if (scanpts.size() >= 5 && (scanpts[scanpts.size()-1]-scanpts[0])==(int)(scanpts.size()-1)) {
 	dbg("Leg.updateDiameterEstimates",3) << "Updating leg diameter using " << scanpts.size() << " scan points" << std::endl;
 	// check that the leg is clearly in the foreground

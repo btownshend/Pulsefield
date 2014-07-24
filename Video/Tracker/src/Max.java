@@ -24,7 +24,7 @@ public class Max extends Synth {
 		msg.add(velocity);
 		msg.add(track);
 		sendMessage(msg);
-		System.out.println("Send to MAX: play("+pitch+","+velocity+","+track+")");
+		//System.out.println("Send to MAX: play("+pitch+","+velocity+","+track+")");
 	}
 
 
