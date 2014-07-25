@@ -62,6 +62,7 @@ class Track {
 		this.trackNum=trackNum;
 		lowestSeenEmptyClip=MAXCLIPS;
 		highestSeenUsedClip=-1;
+		clipInfoRequest();
 	}
 
 	Clip getClip(int clip) {
