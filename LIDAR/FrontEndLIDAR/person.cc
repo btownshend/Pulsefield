@@ -493,11 +493,15 @@ void Person::addToMX(mxArray *people, int index) const {
 
     mxArray *pLikeCA=mxCreateCellMatrix(1,USEPERSONLIKE?4:2);
     for (int i=0;i<2;i++) {
+	if (legs[i].like.size()!=legs[i].likenx*legs[i].likeny) {
+	    dbg("Person.addToMX",1) << "legs["<< i << "i].like.size=" << legs[i].like.size() << ", but expected " << legs[i].likenx << "x" << legs[i].likeny << std::endl;
+	}
 	mxArray *pLike = mxCreateDoubleMatrix(legs[i].likeny,legs[i].likenx,mxREAL);
-	assert((int)legs[i].like.size()==legs[i].likenx*legs[i].likeny);
 	data = mxGetPr(pLike);
 	for (unsigned int j=0;j<legs[i].like.size();j++) 
 	    *data++=-legs[i].like[j];   // Use neg loglikes in the matlab version
+	for (unsigned int j=legs[i].like.size();j<legs[i].likenx*legs[i].likeny;j++) 
+	    *data++=0;
 	mxSetCell(pLikeCA,i,pLike);
     }
     
