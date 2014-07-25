@@ -139,7 +139,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    float dclr=1e10;
 	    for (unsigned int k=0;k<clearsel.size();k++)
 		dclr=std::min(dclr,segment2pt(Point(0,0),vis.getSick()->getPoint(clearsel[k]),pt));
-	    float clearlike=log(normcdf(log(dclr),LOGDIAMMU,LOGDIAMSIGMA));
+	    float clearlike=log(normcdf(log(dclr*2),LOGDIAMMU,LOGDIAMSIGMA));
 
 	    // Likelihood with respect to positive hits
 	    float glike=0;
