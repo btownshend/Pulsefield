@@ -29,8 +29,8 @@ public class VisualizerProximity extends VisualizerPS {
 		assignments.clear();
 	}
 
-	public int clipNumber(int id1, int id2) {
-		return (id1*7+id2)%ts.nclips;
+	public int clipNumber(int nclips,int id1, int id2) {
+		return (id1*7+id2)%nclips;
 	}
 	
 	public void update(PApplet parent, Positions allpos) {
@@ -70,8 +70,10 @@ public class VisualizerProximity extends VisualizerPS {
 //				if (current!=-1)
 //					Ableton.getInstance().stopClip(track, clipNumber(id1,closest));
 				assignments.put(id1,closest);
-				if (closest!=-1)
-					Ableton.getInstance().playClip(track,clipNumber(id1,closest));
+				if (closest!=-1) {
+					int nclips=Ableton.getInstance().getTrack(track).numClips();
+					Ableton.getInstance().playClip(track,clipNumber(nclips,id1,closest));
+				}
 			}
 		}
 

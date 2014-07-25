@@ -44,6 +44,7 @@ class Clip {
 }
 
 class Track {
+	static final int MAXCLIPS=60;
 	HashMap<Integer,Clip> clips;
 	float meter[] = new float[2];
 	String song;
@@ -51,6 +52,7 @@ class Track {
 	private String name;  // Use getName() to read
 	Clip playing, triggered;
 	int trackNum;
+	int lowestSeenEmptyClip, highestSeenUsedClip;
 	
 	Track(int trackNum) {
 		clips=new HashMap<Integer,Clip>();
@@ -58,6 +60,8 @@ class Track {
 		playing=null;
 		triggered=null;
 		this.trackNum=trackNum;
+		lowestSeenEmptyClip=MAXCLIPS;
+		highestSeenUsedClip=-1;
 	}
 
 	Clip getClip(int clip) {
@@ -87,6 +91,31 @@ class Track {
 	void setName(String name) {
 		this.name=name;
 	}
+	void setEmptyClip(int clip) {
+		if (clip<lowestSeenEmptyClip) {
+			PApplet.println("Decreasing lowest empty clip number from "+lowestSeenEmptyClip+" to "+clip);
+			lowestSeenEmptyClip=clip;
+		}
+		clipInfoRequest();
+	}
+	void setOccupiedClip(int clip) {
+		if (clip>highestSeenUsedClip) {
+			PApplet.println("Increasing highest seen clip number from "+highestSeenUsedClip+" to "+clip);
+			highestSeenUsedClip=clip;
+		}
+		clipInfoRequest();
+	}
+	void clipInfoRequest() {
+		if (highestSeenUsedClip+1<lowestSeenEmptyClip) {
+			PApplet.println("Track "+trackNum+" has between "+(highestSeenUsedClip+1)+" and "+lowestSeenEmptyClip+" clips.");
+			int checkClip=(int)(highestSeenUsedClip+lowestSeenEmptyClip)/2;
+			Ableton.getInstance().sendMessage(new OscMessage("/live/clip/info").add(trackNum).add(checkClip));
+		}
+	}
+	int numClips() {
+		clipInfoRequest();
+		return lowestSeenEmptyClip;
+	}
 }
 
 class TrackSet {
@@ -95,14 +124,12 @@ class TrackSet {
 	int numTracks;
 	float tempo;
 	boolean armed;
-	int nclips;
 	
-	TrackSet(String name, int firstTrack, int numTracks, float tempo, int nclips) {
+	TrackSet(String name, int firstTrack, int numTracks, float tempo) {
 		this.name=name;
 		this.firstTrack=firstTrack;
 		this.numTracks=numTracks;
 		this.tempo = tempo;
-		this.nclips = nclips;
 		armed=false;
 	}
 
@@ -143,11 +170,10 @@ public class Ableton {
 	int playstate = -1;
 
 	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips) {
-		tracksets.put(id,new TrackSet(name,firstTrack,numTracks,tempo,nclips));
+		tracksets.put(id,new TrackSet(name,firstTrack,numTracks,tempo));
 		for (int i=0;i<numTracks;i++) {
 			Track t=getTrack(i+firstTrack);
 			t.setSongTrack(id,i);
-
 		}
 	}
 	
@@ -274,6 +300,12 @@ public class Ableton {
 	 */
 	void setClipInfo(int track, int clip, int state) {
 		Track t=getTrack(track);
+		if (state==0) {
+			PApplet.println("Track "+track+" clip "+clip+" is empty.");
+			t.setEmptyClip(clip);
+			return;
+		}
+		t.setOccupiedClip(clip);
 		Clip c = t.getClip(clip);
 		PApplet.println("Track "+track+" ("+t.getName()+") clip "+clip+" state changed from "+c.state+" to "+state);
 		c.state = state;

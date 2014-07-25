@@ -13,7 +13,6 @@ public class VisualizerGrid extends VisualizerPS {
 	float gposx[], gposy[];
 	float gridwidth, gridheight;
 	int ncell;
-	int clipmap[];
 	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR"};
 	int song=0;
 	
@@ -22,11 +21,10 @@ public class VisualizerGrid extends VisualizerPS {
 		assignments = new HashMap<Integer,Integer>();
 		gridColors = new HashMap<Integer,String>();
 		song=0;
-		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);
-		setupGrid(ts.nclips);
+		setupGrid();
 	}
 	
-	public void setupGrid(int nclips) {
+	public void setupGrid() {
 		final float gridSpacing=0.5f;   // Grid spacing in meters
 		int nrow=(int)((Tracker.maxy-Tracker.miny)/gridSpacing+0.5);
 		int ncol=(int)((Tracker.maxx-Tracker.minx)/gridSpacing+0.5);
@@ -34,11 +32,9 @@ public class VisualizerGrid extends VisualizerPS {
 		PApplet.println("Grid has "+nrow+" rows over "+(Tracker.maxy-Tracker.miny)+" meters and "+ncol+" columns over "+(Tracker.maxx-Tracker.minx)+" meters");
 		gposx=new float[ncell];
 		gposy=new float[ncell];
-		clipmap=new int[ncell];
 		for (int r=0;r<nrow;r++) {
 			for (int c=0;c<ncol;c++) {
 				int cell=r*ncol+c;
-				clipmap[cell]=cell%nclips;
 				gposx[cell]=(2.0f*c+1)/ncol-1;
 				gposy[cell]=(2.0f*r+1)/nrow-1;
 			}
@@ -50,7 +46,7 @@ public class VisualizerGrid extends VisualizerPS {
 	public void start() {
 		song=(song+1)%songs.length;
 		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);
-		setupGrid(ts.nclips);
+		setupGrid();
 		PApplet.println("Starting grid with song "+song+": "+ts.name);
 	}
 	public void stop() {
@@ -87,7 +83,8 @@ public class VisualizerGrid extends VisualizerPS {
 //				if (current!=-1)
 //					Ableton.getInstance().stopClip(track, current);
 				assignments.put(pos.id,closest);
-				Ableton.getInstance().playClip(track,clipmap[closest]);
+				int nclips=Ableton.getInstance().getTrack(track).numClips();
+				Ableton.getInstance().playClip(track,closest%nclips);
 			}
 		}
 
@@ -121,7 +118,7 @@ public class VisualizerGrid extends VisualizerPS {
 			parent.fill(255);
 			TrackSet ts=Ableton.getInstance().trackSet;
 			Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
-			Clip clip=track.getClip(clipmap[cell]);
+			Clip clip=track.getClip(cell%track.numClips());
 			
 			parent.text(track.getName()+"-"+clip.getName()+" P"+id,wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
 		}
