@@ -284,7 +284,7 @@ void Person::analyzeLikelihoods() {
 }
 
 void Person::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs[2], int nstep,float fps) {
-    // Need to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods
+    // May eed to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods (or swapped of this)
     setupGrid(vis,fs);
     legs[0].update(vis,bglike,fs[0],legStats,NULL);
     legs[1].update(vis,bglike,fs[1],legStats,NULL);
