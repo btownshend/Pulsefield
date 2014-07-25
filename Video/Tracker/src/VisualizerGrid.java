@@ -50,8 +50,9 @@ public class VisualizerGrid extends VisualizerPS {
 		PApplet.println("Starting grid with song "+song+": "+ts.name);
 	}
 	public void stop() {
+		Ableton.getInstance().setTrackSet(null);
 		assignments.clear();
-		}
+	}
 
 	public void update(PApplet parent, Positions allpos) {
 		super.update(parent,allpos);

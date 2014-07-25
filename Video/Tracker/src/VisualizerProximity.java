@@ -20,12 +20,15 @@ public class VisualizerProximity extends VisualizerPS {
 		song=0;
 		ts=Ableton.getInstance().setTrackSet(songs[song]);
 	}
+	
 	public void start() {
 		song=(song+1)%songs.length;
 		ts=Ableton.getInstance().setTrackSet(songs[song]);
 		PApplet.println("Starting proximity with song "+song+": "+ts.name);
 	}
+	
 	public void stop() {
+		Ableton.getInstance().setTrackSet(null);
 		assignments.clear();
 	}
 
