@@ -286,12 +286,20 @@ void Person::analyzeLikelihoods() {
 void Person::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs[2], int nstep,float fps) {
     // May eed to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods (or swapped of this)
     setupGrid(vis,fs);
-    legs[0].update(vis,bglike,fs[0],legStats,NULL);
-    legs[1].update(vis,bglike,fs[1],legStats,NULL);
-    if (false) {
-	// TODO only if leg[1] adjusted, then do first leg again
-	dbg("Person.update",2) << "Re-running update of leg[0] since leg[1] position changed." << std::endl;
-	legs[0].update(vis,bglike,fs[0],legStats,&legs[1]);
+    // Process the leg with the most hits first
+    int first=0;
+    if (fs[0].size()<fs[1].size())
+	first=1;
+    if (fs[first].size() > 0)
+	legs[first].update(vis,bglike,fs[first],legStats,NULL);
+    if (fs[1-first].size()>0)  {
+	legs[1-first].update(vis,bglike,fs[1-first],legStats,&legs[first]);
+	// Probably shouldn't propagate separation from leg with leasst measurements to one with more
+	if (fs[first].size() == fs[1-first].size() && false) {
+	    // Have the same number of hits, so go ahead an propagate back the leg separation effect
+	    dbg("Person.update",2) << "Re-running update of leg[" << first << "] since leg[" << 1-first << "] position changed." << std::endl;
+	    legs[first].update(vis,bglike,fs[first],legStats,&legs[1-first]);
+	}
     }
 
     // Combine individual leg likelihoods to make person estimates
