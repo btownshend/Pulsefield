@@ -30,10 +30,11 @@ class Leg {
     friend std::ostream &operator<<(std::ostream &s, const Leg &l);
     float getObsLike(const Point &pt, int frame,const LegStats &ls) const;
     Point getPosition() const { return position; }
+    Point getVelocity() const { return velocity; }
     void predict(int nstep, float fps);
     void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, const LegStats &ls, const Leg *otherLeg=0);
     void updateVisibility();
-    void updateVelocity(int nstep, float fps);
+    void updateVelocity(int nstep, float fps,Point otherLegVelocity);
     void updateDiameterEstimates(const Vis &vis, LegStats &ls) const;   // Update given legstats diameter if possible
     void sendMessages(lo_address &addr, int frame, int id, int legnum) const;
     bool isVisible() const { return consecutiveInvisibleCount==0; }

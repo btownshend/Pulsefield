@@ -263,7 +263,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     dbg("Leg.update",3) << "Leg position= " << position << " +/- " << sqrt(posvar) << " with like= " << *mle << std::endl;
 }
 
-void Leg::updateVelocity(int nstep, float fps) {
+void Leg::updateVelocity(int nstep, float fps,Point otherLegVelocity) {
     if (nstep>0 && maxlike >= MINLIKEFORUPDATES && scanpts.size()>2) {
 	// Update velocities
 	velocity=velocity*(1-1.0f/VELUPDATETC)+(position-prevPosition)/nstep*fps/VELUPDATETC;

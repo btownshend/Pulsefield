@@ -340,8 +340,9 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     dbg("Person.predict",2) << "After adjusting leg seps: " << *this << std::endl;
 
     // Update velocities
-    legs[0].updateVelocity(nstep,fps);
-    legs[1].updateVelocity(nstep,fps);
+    Point l0vel=legs[0].getVelocity();
+    legs[0].updateVelocity(nstep,fps,legs[1].getVelocity());
+    legs[1].updateVelocity(nstep,fps,l0vel);
 
     /*
     if (!legs[0].isVisible() && !legs[1].isVisible()) {
