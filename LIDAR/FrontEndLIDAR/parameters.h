@@ -42,7 +42,7 @@ static const float TARGETMAXIMADEPTH=50;   // Minimum depth of a local range max
 
 // ***** Tracking
 static const float INITIALPOSITIONVAR=100*100;  // Variance of initial position estimates
-static const float MAXPOSITIONVAR=60*60;  // Never let the position variance go above this during predictions
+static const float MAXPOSITIONVAR=300*300;  // Never let the position variance go above this during predictions (set to ~MAXLEGSEP/2)
 static const float MAXLEGSPEED=4000;	// Maximum speed of a leg in mm/s
 static const float VELUPDATETC=10;	// Velocity update time constant in frames (tested with runtests.sh for 5,10,25,50 -- 10 was best, slightly)
 static const float VELDAMPING=0.95;	// Damping (multiplicative factor) for legvelocity when not visible
