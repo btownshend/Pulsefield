@@ -343,13 +343,14 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     legs[0].updateVelocity(nstep,fps);
     legs[1].updateVelocity(nstep,fps);
 
+    /*
     if (!legs[0].isVisible() && !legs[1].isVisible()) {
 	// Both legs hidden, maintain both at average velocity (already damped by legs.update())
 	dbg("Person.update",2) << "Person " << id << ": both legs hidden" << std::endl;
 	legs[0].velocity=(legs[0].velocity+legs[1].velocity)/2.0;
 	legs[1].velocity=legs[0].velocity;
     }
-
+    */
     if (!USEPERSONLIKE) {
 	// Average velocity of legs
 	velocity=(legs[0].velocity+legs[1].velocity)/2.0;
