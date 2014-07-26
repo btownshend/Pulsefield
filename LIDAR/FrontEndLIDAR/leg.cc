@@ -13,6 +13,8 @@
 #include "vis.h"
 #include "lookuptable.h"
 
+static const bool USEMLE=false;  // True to use MLE from likelihood grid; otherwise use mean
+
 Leg::Leg(const Point &pt) {
     position=pt;
     predictedPosition=pt;
@@ -215,7 +217,11 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     Point mean=sum/tprob;
 
     dbg("Leg.update",3) << "Got MLE=" << mlepos << " with like=" << *mle << ", mean position=" << mean << ", tprob=" << tprob << std::endl;
-    Point newposition(mean);
+    Point newposition;
+    if (USEMLE)
+	newposition=mlepos;
+    else
+	newposition=mean;
     if (velocity.norm() <= STATIONARYVELOCITY ) {
 	// Not moving, keep position a little more stable
 	dbg("Leg.update",3) << "Speed = " << velocity.norm() << " mm/frame, stabilizing position" << std::endl;
