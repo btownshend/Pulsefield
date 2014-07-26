@@ -10,6 +10,7 @@
 #include "groups.h"
 
 static const bool USEPERSONLIKE=false;
+static const bool USELIKEGRIDFORALL=false;
 
 Person::Person(int _id, const Point &leg1, const Point &leg2) {
     id=_id;
@@ -290,9 +291,9 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     int first=0;
     if (fs[0].size()<fs[1].size())
 	first=1;
-    if (fs[first].size() > 0)
+    if (fs[first].size() > 0 || USELIKEGRIDFORALL)
 	legs[first].update(vis,bglike,fs[first],legStats,NULL);
-    if (fs[1-first].size()>0)  {
+    if (fs[1-first].size()>0 || USELIKEGRIDFORALL)  {
 	legs[1-first].update(vis,bglike,fs[1-first],legStats,&legs[first]);
 	// Probably shouldn't propagate separation from leg with leasst measurements to one with more
 	if (fs[first].size() == fs[1-first].size() && false) {
