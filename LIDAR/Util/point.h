@@ -47,6 +47,7 @@ class Point {
     Point operator+(const Point &p2) const { return Point(x+p2.X(),y+p2.Y()); }
     Point operator/(float s) const { return Point(x/s,y/s); }
     Point operator*(float s) const { return Point(x*s,y*s); }
+    friend Point operator*(float s,Point p);
     Point operator-(float s) const { return Point(x-s,y-s); }
     Point operator+(float s) const { return Point(x+s,y+s); }
     float norm() const { return getRange(); }
@@ -57,6 +58,8 @@ class Point {
     Point max(const Point &p2) const { return Point(std::max(x,p2.X()),std::max(y,p2.Y())); }
     bool operator==(const Point &p2) const { return x==p2.X() && y==p2.Y(); }
 };
+
+inline Point operator*(float s,Point p) { return Point(p.x*s,p.y*s); }
 
 // TODO Don't really belong here
 inline std::ostream& operator<< (std::ostream& os, const std::vector<int>& v) 
