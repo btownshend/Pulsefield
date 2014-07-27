@@ -343,7 +343,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	legs[1].position=legs[1].position-vec*(legs[1].posvar/(legs[0].posvar+legs[1].posvar));
     }
 
-    dbg("Person.predict",2) << "After adjusting leg seps: " << *this << std::endl;
+    dbg("Person.update",2) << "After adjusting leg seps: " << *this << std::endl;
 
     // Update velocities
     Point l0vel=legs[0].getVelocity();
@@ -371,8 +371,10 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     if (legs[0].isVisible() || legs[1].isVisible()) {
 	consecutiveInvisibleCount=0;
 	totalVisibleCount++;
-    } else 
+    } else  {
+	dbg("Person.update",3) << "Both legs invisible -- updating count" << std::endl;
 	consecutiveInvisibleCount++;
+    }
     age++;
 
     dbg("Person.update",2) << "Done: " << *this << std::endl;
