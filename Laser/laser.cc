@@ -192,7 +192,11 @@ int Laser::blanking() {
     if (pts.size()<2)
 	return 0;
     std::vector<etherdream_point> result;
-    etherdream_point prevpos=pts.back();
+    // Always put enough blanking at beginning and end to jump to (0,0)
+    // This will allow a clean move when switching to an etherdream frame that has a different start/end from current frame
+    etherdream_point homepos;
+    homepos.x=0;homepos.y=0;homepos.g=65535;
+    etherdream_point prevpos=homepos;
     bool jumped=true;
     int nblanks=0;
     for (unsigned int i=0;i<pts.size();i++) {
@@ -212,9 +216,9 @@ int Laser::blanking() {
 	    jumped=true;
 	}
     }
-    if (jumped && result.size()>0) {
-	// Insert blanks from prevpoint to here
-	std::vector<etherdream_point> blanks = getBlanks(prevpos,result.front());
+    if (result.size()>0) {
+	// Insert blanks from lastpoint to home
+	std::vector<etherdream_point> blanks = getBlanks(prevpos,homepos);
 	dbg("Laser.blanking",3) << "Adding " << blanks.size() << " blanks at end " << std::endl;
 	result.insert(result.end(), blanks.begin(), blanks.end());
 	nblanks+=blanks.size();
