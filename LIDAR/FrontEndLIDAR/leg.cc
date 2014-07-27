@@ -50,6 +50,7 @@ Leg::Leg(const Point &pt) {
     dbg("Leg.Leg",1) << "Damping = " << totalDamping << ", " << sameDamping << "  Weights=[";
     for (int i=0;i<nweights;i+=2) {
 	predictWeights[i] *= desiredTotal/sum;
+	predictWeights[i+1] *= desiredTotal/sum;
 	dbgn("Leg.Leg",1) << "(" << predictWeights[i]*(nweights/2) << "," << predictWeights[i+1]*(nweights/2) << ") ";
     }
     dbgn("Leg.Leg",1) << "]" << std::endl;
