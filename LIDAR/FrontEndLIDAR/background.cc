@@ -73,8 +73,8 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
 		    //		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i-1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
 		}
 		if (i+1<sick.getNumMeasurements() && ((srange[i]>range[0][i]) != (srange[i]>range[0][i+1]))) {
-		    result[i]=freq[0][i]*freq[0][i+1]*INTERPSCANBGWEIGHT/fabs(range[0][i]-range[0][i+1]);
 		    //		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0)  <<std::fixed <<  srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i+1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
+		    result[i]+=(1-result[i])*freq[0][i]*freq[0][i+1]*INTERPSCANBGWEIGHT/fabs(range[0][i]-range[0][i+1]);
 		}
 	    }
 	    if (result[i]>1.0) {
@@ -104,7 +104,8 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	if (srange[i]<MINRANGE)
 	    continue;  // Ignore short points, not even including them in update.   That way all the bg probs are conditional on the LIDAR being able to scan the active area
 	// Out of range, distant points are still handled as background since they do not prevent a target from being hit and thus the bg probs are not conditional on these
-	if (!all && assignments[i]!=-1)
+	if (!all && assignments[i]>=0)
+	    // If it's assigned to a person, then ignore it in background computations
 	    continue;
 	// Find which background fits best
 	int bestk=-1;
@@ -151,7 +152,9 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	}
 	bool dodump=false;
 	for (int k=NRANGES-2;k>=0;k--) {
-	    float maxInv=(k==0?BGLONGDISTLIFE:MAXBGINVISIBLE)+3.0/freq[k][i];	// Wait fixed amount of time (in case there's an obstruction) plus 3*expected repetition time
+	    int maxInv=(k==0?BGLONGDISTLIFE:MAXBGINVISIBLE);	// Wait fixed amount of time (in case there's an obstruction) plus 3*expected repetition time
+	    if (freq[k][i]>0)
+		maxInv+=std::min(MAXBGINVISIBLE,(int)(3.0f/freq[k][i]));
 	    if (consecutiveInvisible[k][i]>maxInv) {
 		dbg("Background.update",2) << "Frame " << sick.getFrame() << ": background " << k << " at scan " << i << " with range=" << range[k][i] << ", freq=" << freq[k][i] << " has not been seen for " << consecutiveInvisible[k][i] << " frames (>" << maxInv << ") removing it." << std::endl;
 		freq[k][i]=0;
