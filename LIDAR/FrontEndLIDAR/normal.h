@@ -1,6 +1,7 @@
 #pragma once
 
 #include <math.h>
+#include "parameters.h"
 
 inline double normcdf(double value,double mu=0.0, double sigma=1.0) {
     double z=(value-mu)/sigma;
@@ -12,6 +13,15 @@ inline double normpdf(double value, double mu=0.0, double sigma=1.0) {
     static const double inv_sqrt_2pi = 0.3989422804014327; 
     double z=(value-mu)/sigma;
     return inv_sqrt_2pi / sigma*exp(-0.5 * z * z);
+}
+
+// log(normpdf(...))
+inline double normlike(double value, double mu=0.0, double sigma=1.0) {
+    // NOTE: probability densities are prob/unit of the input, so if its in mm, the result would be 1000 times more than if it is meters.
+    // Assume all the inputs to this are in distance units (i.e. mm) and rescale from meters
+    static const double inv_sqrt_2pi = 0.3989422804014327; 
+    double z=(value-mu)/sigma;
+    return log(inv_sqrt_2pi / sigma*UNITSPERM)-0.5 * z * z;
 }
 
 

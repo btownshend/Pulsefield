@@ -126,10 +126,10 @@ Point Leg::getPriorPosition(int n) const {
 float Leg::getObsLike(const Point &pt, int frame,const LegStats &ls) const {
     float dpt=(pt-position).norm();
     float sigma=sqrt(pow(ls.getDiamSigma()/2,2.0)+posvar);  // hack: use positition sigma inflated by leg diam variance
-    // float like=log(normpdf(dpt, ls.getDiam()/2,sigma)*UNITSPERM);
+    // float like=normlike(dpt, ls.getDiam()/2,sigma);
     Point delta=pt-position;
     Point diamOffset=delta/delta.norm()*ls.getDiam()/2;
-    float like=log(normpdf(delta.X(),diamOffset.X(),sigma)*UNITSPERM)+log(normpdf(delta.Y(),diamOffset.Y(),sigma)*UNITSPERM);
+    float like=normlike(delta.X(),diamOffset.X(),sigma)+normlike(delta.Y(),diamOffset.Y(),sigma);
     // And check the likelihood that the echo is in front of the true leg position
     float frontlike=log(1-normcdf(pt.norm(),position.norm(),sqrt(posvar)));
     dbg("Leg.getObsLike",20) << "pt=" << pt << ", leg=" << position << ", pt-leg=" << (pt-position) << ", diam=" << ls.getDiam() << ", dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", frontlike=" << frontlike << std::endl;
@@ -198,10 +198,10 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    // float adist=(position-pt).norm();
 	    
 	    // a priori likelihood
-	    // float apriori=log(normpdf(adist,0,apriorisigma)*UNITSPERM);  // WRONG computation!
+	    // float apriori=normlike(adist,0,apriorisigma);  // WRONG computation!
 
 	    Point delta=position-pt;
-	    float apriori=log(normpdf(delta.X(),0,apriorisigma)*UNITSPERM)+log(normpdf(delta.Y(),0,apriorisigma)*UNITSPERM);   // Assume apriorsigma applies in both directions, no covariance
+	    float apriori=normlike(delta.X(),0,apriorisigma)+normlike(delta.Y(),0,apriorisigma);   // Assume apriorsigma applies in both directions, no covariance
 
 	    // Likelihood with respect to unobstructed paths (leg can't be in these paths)
 	    float dclr=1e10;

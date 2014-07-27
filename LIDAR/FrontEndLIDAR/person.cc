@@ -168,7 +168,7 @@ void Person::analyzeLikelihoods() {
 	for (int iy=0;iy<likeny;iy++) {
 	    float y=minval.Y()+iy*stepy;
 	    Point pt(x,y);
-	    double apriorilike=log(normpdf(pt.X(),position.X(),posstd)*UNITSPERM) + log(normpdf(pt.Y(),position.Y(),posstd)*UNITSPERM);
+	    double apriorilike=normlike(pt.X(),position.X(),posstd) + normlike(pt.Y(),position.Y(),posstd);
 	    like[ix*likeny+iy]+=apriorilike;
 	}
     }
@@ -254,7 +254,7 @@ void Person::analyzeLikelihoods() {
 	    Point p0=legs[0].minval+Point(ix2*stepx,iy2*stepy);
 	    Point p1=legs[1].minval+Point(ix*stepx,iy*stepy);
 	    Point newsepvec=p1-p0;
-	    double apriorilike=log(normpdf(newsepvec.X(),oldsepvec.X(),sepstd)*UNITSPERM) + log(normpdf(newsepvec.Y(),oldsepvec.Y(),sepstd)*UNITSPERM);
+	    double apriorilike=normlike(newsepvec.X(),oldsepvec.X(),sepstd) + normlike(newsepvec.Y(),oldsepvec.Y(),sepstd);
 	    
 	    int index2=ix2*likeny+iy2;
 	    seplike[index1]=like2[index1]+like1[index2]+apriorilike;
