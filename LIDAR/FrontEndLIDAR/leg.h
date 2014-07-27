@@ -24,6 +24,8 @@ class Leg {
     int likenx, likeny;
     Point minval, maxval;
     void init(const Point &pt);
+    // Weights for predicting next delta
+    std::vector<float> predictWeights;   // interleaved:   this leg[-1],otherleg[-1],thisleg[-2],...
  public:
     Leg();
     Leg(const Point &pos);
@@ -36,7 +38,7 @@ class Leg {
     // Get delta from n frames ago (n>0)
     Point getPriorDelta(int n) const;
     Point getVelocity() const { return velocity; }
-    void predict(int nstep, float fps);
+    void predict(const Leg &otherLeg);
     void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, const LegStats &ls, const Leg *otherLeg=0);
     void updateVisibility();
     void updateVelocity(int nstep, float fps,Point otherLegVelocity);

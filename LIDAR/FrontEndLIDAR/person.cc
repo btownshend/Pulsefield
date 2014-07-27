@@ -68,8 +68,10 @@ void Person::predict(int nstep, float fps) {
     if (nstep==0)
 	return;
 
-    for (int i=0;i<2;i++) 
-	legs[i].predict(nstep,fps);
+    for (int step=0;step<nstep;step++) {
+	for (int i=0;i<2;i++) 
+	    legs[i].predict(legs[1-i]);
+
 	for (int i=0;i<2;i++) 
 	    legs[i].savePriorPositions();
     }

@@ -22,6 +22,37 @@ Leg::Leg(const Point &pt) {
     prevposvar=posvar;
     consecutiveInvisibleCount=0;
     velocity=Point(0,0);
+
+    //static const float weights[]={0.8234,0.0699,0.8303,0.0862,0.7780,0.1283,.7262,.1585,.6818,.1866,.6289,.2169};  // Need scaling by nweight/2 
+    //static const int nweights=sizeof(weights)/sizeof(weights[0]);
+    //predictWeights.assign(weights,weights+nweights);
+
+    const int nweights=50;
+    predictWeights.resize(nweights);
+    predictWeights[0]=.8234/(nweights/2);
+    predictWeights[1]=.0699/(nweights/2);
+    const int strideFrames=61;   // Number of frames for a complete stride
+    const float totalDamping=0.9864;
+    // damp things so legs reach equal predicted velocity in 1/4 stride
+    const float sameDamping=pow(2.0,-1.0f/(strideFrames/4))*totalDamping;
+    //    const float sameDamping=0.9475;
+    const float desiredTotal=0.90;
+    float sum=predictWeights[0]+predictWeights[1];
+    for (int i=2;i<nweights;i+=2) {
+	predictWeights[i]=predictWeights[i-2]*sameDamping;
+	predictWeights[i+1]=(predictWeights[i-2]+predictWeights[i-1])*totalDamping-predictWeights[i];
+	if (predictWeights[i+1]>predictWeights[i]) {
+	    predictWeights[i]=(predictWeights[i]+predictWeights[i+1])/2;
+	    predictWeights[i+1]=predictWeights[i];
+	}
+	sum+=predictWeights[i]+predictWeights[i+1];
+    }
+    dbg("Leg.Leg",1) << "Damping = " << totalDamping << ", " << sameDamping << "  Weights=[";
+    for (int i=0;i<nweights;i+=2) {
+	predictWeights[i] *= desiredTotal/sum;
+	dbgn("Leg.Leg",1) << "(" << predictWeights[i]*(nweights/2) << "," << predictWeights[i+1]*(nweights/2) << ") ";
+    }
+    dbgn("Leg.Leg",1) << "]" << std::endl;
 }
 
 // Empty constructor used to initialize array, gets overwritten using above ctor subsequently
@@ -38,12 +69,25 @@ std::ostream &operator<<(std::ostream &s, const Leg &l) {
     return s;
 }
 
-void Leg::predict(int nstep, float fps) {
-    position.setX(position.X()+velocity.X()*nstep/fps);
-    position.setY(position.Y()+velocity.Y()*nstep/fps);
+// Predict next leg position from current one
+// Parameters from optimalveldamping2.m
+void Leg::predict(const Leg &otherLeg) {
+    Point newDelta(0,0);
+    float rmse;
+    for (int i=0;i<predictWeights.size();i+=2)
+	newDelta=newDelta+predictWeights[i]*getPriorDelta(i/2+1);
+    for (int i=1;i<predictWeights.size();i+=2)
+	newDelta=newDelta+predictWeights[i]*otherLeg.getPriorDelta((i+1)/2);
+    //    rmse=newDelta.norm()*0.16+10;
+    rmse=newDelta.norm()*0.08+7;
+
+    dbg("Leg.predict",5) << "newDelta=" << newDelta << ", rmse=" << rmse << std::endl;
+
+    position=position+newDelta;
     prevposvar=posvar;
-    posvar=std::min(posvar+DRIFTVAR*nstep,MAXPOSITIONVAR);
-    predictedPosition=position;   // Save this for subsequent analyses
+    posvar=std::min(posvar+rmse*rmse,MAXPOSITIONVAR);
+    predictedPosition=position;   // Save this before applying measurements for subsequent analyses
+
     // Clear out variables that are no longer valid
     like.clear();
     scanpts.clear();
