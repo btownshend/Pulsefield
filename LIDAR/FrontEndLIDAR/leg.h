@@ -13,9 +13,9 @@ class Leg {
     Point position;   // Estimate of position of leg
     Point predictedPosition;  // Current predicted position before incorporating measurements
     float posvar;
-    Point prevPosition;
     float prevposvar;
-    Point velocity;
+    std::vector<Point> priorPositions;	// Last n priorPositions (interpolated if we advanced multiple steps)
+    Point velocity;	// Velocity for publishing to OSC; not for kinematics
     std::vector<int> scanpts;
     float maxlike; 	   // Likelihood of maximum likelihood estimator
     int consecutiveInvisibleCount;
@@ -30,6 +30,11 @@ class Leg {
     friend std::ostream &operator<<(std::ostream &s, const Leg &l);
     float getObsLike(const Point &pt, int frame,const LegStats &ls) const;
     Point getPosition() const { return position; }
+    void savePriorPositions();
+    // Get prior position from n frames ago (n>0)
+    Point getPriorPosition(int n) const;
+    // Get delta from n frames ago (n>0)
+    Point getPriorDelta(int n) const;
     Point getVelocity() const { return velocity; }
     void predict(int nstep, float fps);
     void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, const LegStats &ls, const Leg *otherLeg=0);

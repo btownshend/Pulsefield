@@ -18,7 +18,6 @@ static const bool USEMLE=false;  // True to use MLE from likelihood grid; otherw
 Leg::Leg(const Point &pt) {
     position=pt;
     predictedPosition=pt;
-    prevPosition=pt;
     posvar=INITIALPOSITIONVAR;
     prevposvar=posvar;
     consecutiveInvisibleCount=0;
@@ -40,7 +39,6 @@ std::ostream &operator<<(std::ostream &s, const Leg &l) {
 }
 
 void Leg::predict(int nstep, float fps) {
-    prevPosition=position;
     position.setX(position.X()+velocity.X()*nstep/fps);
     position.setY(position.Y()+velocity.Y()*nstep/fps);
     prevposvar=posvar;
@@ -54,6 +52,27 @@ void Leg::predict(int nstep, float fps) {
     likeny=0;
     minval=Point(nan(""),nan(""));
     maxval=Point(nan(""),nan(""));
+}
+
+void Leg::savePriorPositions() {
+    priorPositions.push_back(position);
+    // Keep the size under control
+    if (priorPositions.size()>1000)
+	priorPositions.erase(priorPositions.begin(),priorPositions.begin()+500);
+}
+
+Point Leg::getPriorDelta(int n) const {
+    assert(n>0);
+    if (n+1  > priorPositions.size())
+	return Point(0,0);
+    return priorPositions[priorPositions.size()-n]-priorPositions[priorPositions.size()-n-1];
+}
+
+Point Leg::getPriorPosition(int n) const {
+    assert(n>0);
+    if (n  > priorPositions.size())
+	return Point(0,0);
+    return priorPositions[priorPositions.size()-n];
 }
 
 // Get likelihood of an observed echo at pt hitting leg given current model

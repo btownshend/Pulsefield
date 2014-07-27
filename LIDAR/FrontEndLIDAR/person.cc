@@ -70,6 +70,10 @@ void Person::predict(int nstep, float fps) {
 
     for (int i=0;i<2;i++) 
 	legs[i].predict(nstep,fps);
+	for (int i=0;i<2;i++) 
+	    legs[i].savePriorPositions();
+    }
+
 
     position=(legs[0].position+legs[1].position)/2;
     posvar=(legs[0].posvar+legs[1].posvar)/4;
@@ -219,7 +223,7 @@ void Person::analyzeLikelihoods() {
     double sepmaxlike=-1e99;
     int sepmleix,sepmleiy;
     Point sepvec;
-    Point oldsepvec=legs[1].prevPosition-legs[0].prevPosition;
+    Point oldsepvec=legs[1].getPriorPosition(1)-legs[0].getPriorPosition(1);
     double sepstd=legStats.getSepSigma();
     dbg("Person.analyzeLikelihoods",3) << "ID " << id << " Analyzing leg separation using prior sepvec=" << oldsepvec << " with std=" << sepstd << std::endl;
     seplike.resize(like.size());
@@ -542,10 +546,10 @@ void Person::addToMX(mxArray *people, int index) const {
 
     mxArray *pPrevlegs = mxCreateDoubleMatrix(2,2,mxREAL);
     data = mxGetPr(pPrevlegs);
-    *data++=legs[0].prevPosition.X()/UNITSPERM;
-    *data++=legs[1].prevPosition.X()/UNITSPERM;
-    *data++=legs[0].prevPosition.Y()/UNITSPERM;
-    *data++=legs[1].prevPosition.Y()/UNITSPERM;
+    *data++=legs[0].getPriorPosition(1).X()/UNITSPERM;
+    *data++=legs[1].getPriorPosition(1).X()/UNITSPERM;
+    *data++=legs[0].getPriorPosition(1).Y()/UNITSPERM;
+    *data++=legs[1].getPriorPosition(1).Y()/UNITSPERM;
     mxSetField(people,index,"prevlegs",pPrevlegs);
 
     mxArray *pLegvel = mxCreateDoubleMatrix(2,2,mxREAL);
