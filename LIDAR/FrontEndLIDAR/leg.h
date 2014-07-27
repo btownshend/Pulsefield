@@ -40,7 +40,7 @@ class Leg {
     Point getVelocity() const { return velocity; }
     void predict(const Leg &otherLeg);
     void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, const LegStats &ls, const Leg *otherLeg=0);
-    void updateVisibility();
+    void updateVisibility(const std::vector<float> &bglike);
     void updateVelocity(int nstep, float fps,Point otherLegVelocity);
     void updateDiameterEstimates(const Vis &vis, LegStats &ls) const;   // Update given legstats diameter if possible
     void sendMessages(lo_address &addr, int frame, int id, int legnum) const;

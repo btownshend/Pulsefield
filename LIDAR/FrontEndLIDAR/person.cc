@@ -314,8 +314,8 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	analyzeLikelihoods();
 
     // Update visibility counters
-    legs[0].updateVisibility();
-    legs[1].updateVisibility();
+    legs[0].updateVisibility(bglike);
+    legs[1].updateVisibility(bglike);
 
     // Update leg diameter estimates in legStats
     legs[0].updateDiameterEstimates(vis,legStats);

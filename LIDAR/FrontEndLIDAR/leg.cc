@@ -347,11 +347,22 @@ void Leg::updateVelocity(int nstep, float fps,Point otherLegVelocity) {
 	velocity=velocity*(MAXLEGSPEED/spd);
 }
 
-void Leg::updateVisibility() {
-    if (maxlike < MINLIKEFORUPDATES || scanpts.size()==0)
+void Leg::updateVisibility(const std::vector<float> &bglike) {
+    static const float MAXBGLIKEFORVISIBLE=20;
+    if (maxlike < MINLIKEFORUPDATES || scanpts.size()==0) {
+	dbg("Leg.updateVisiblity",5) << "Leg has maxlike=" << maxlike << ", #scanpts=" << scanpts.size() << "; marking as invisible" << std::endl;
 	consecutiveInvisibleCount++;
-    else 
-	consecutiveInvisibleCount=0;
+    } else  {
+	for (int i=0;i<scanpts.size();i++)
+	    if (bglike[scanpts[i]]< maxlike-MAXBGLIKEFORVISIBLE) {
+		dbg("Leg.updateVisiblity",5) << "scan " << scanpts[i] << " has bglike=" << bglike[scanpts[i]] << " < " << MAXBGLIKEFORVISIBLE << " -> leg visible" << std::endl;
+		dbg("Leg.updateVisibility",5) << "bglike[23..25]=" << bglike[23] << ", " << bglike[24] << ", " << bglike[25] << std::endl;
+		consecutiveInvisibleCount=0;
+		return;
+	    }
+    }
+    dbg("Leg.updateVisiblity",5) << "Leg has all " << scanpts.size() << " scanpts with bglike>" << MAXBGLIKEFORVISIBLE << "; marking as invisible" << std::endl;
+    consecutiveInvisibleCount++;
 }
 
 void Leg::updateDiameterEstimates(const Vis &vis, LegStats &ls) const {
