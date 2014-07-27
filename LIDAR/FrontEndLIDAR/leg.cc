@@ -327,18 +327,13 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 }
 
 void Leg::updateVelocity(int nstep, float fps,Point otherLegVelocity) {
-    velocity=velocity*VELDAMPING[0]+otherLegVelocity*VELDAMPING[1]; // Next frame velocity predictor (from optimveldamping.m)
-    if (nstep>0 && maxlike >= MINLIKEFORUPDATES && scanpts.size()>2) {
-	// Update velocities
-	velocity=velocity*(1-1.0f/VELUPDATETC)+(position-prevPosition)/nstep*fps/VELUPDATETC;
+    // Update velocities
+    velocity=velocity*(1-1.0f/VELUPDATETC)+getPriorDelta(1)*fps/VELUPDATETC;
 
-	// Reduce speed if over maximum
-	float spd=velocity.norm();
-	if (spd>MAXLEGSPEED)
-	    velocity=velocity*(MAXLEGSPEED/spd);
-    } else {
-	dbg("Leg.updateVelocity",1) << "Damping leg speed to " << velocity << std::endl;
-    }
+    // Reduce speed if over maximum
+    float spd=velocity.norm();
+    if (spd>MAXLEGSPEED)
+	velocity=velocity*(MAXLEGSPEED/spd);
 }
 
 void Leg::updateVisibility() {
