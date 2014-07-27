@@ -29,14 +29,16 @@ Leg::Leg(const Point &pt) {
 
     const int nweights=50;
     predictWeights.resize(nweights);
-    predictWeights[0]=.8234/(nweights/2);
-    predictWeights[1]=.0699/(nweights/2);
+
     const int strideFrames=61;   // Number of frames for a complete stride
+
+    // Initial weight is best predictor of a sine wave offset by 1/strideFrames of a cycle
+    predictWeights[0]=cos(2*M_PI/strideFrames);
+    predictWeights[1]=sin(2*M_PI/strideFrames);
     const float totalDamping=0.9864;
     // damp things so legs reach equal predicted velocity in 1/4 stride
     const float sameDamping=pow(2.0,-1.0f/(strideFrames/4))*totalDamping;
-    //    const float sameDamping=0.9475;
-    const float desiredTotal=0.90;
+    const float desiredTotal=0.85;
     float sum=predictWeights[0]+predictWeights[1];
     for (int i=2;i<nweights;i+=2) {
 	predictWeights[i]=predictWeights[i-2]*sameDamping;
