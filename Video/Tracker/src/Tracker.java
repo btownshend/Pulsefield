@@ -93,9 +93,9 @@ public class Tracker extends PApplet {
 		vis[7]=new VisualizerGuitar(this,synth);
 		vis[8]=new VisualizerDot(this);
 		vis[9]=new VisualizerChuck(this);
-		setapp(3);
 		vis[10]=new VisualizerProximity(this);
-
+		setapp(0);
+		
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
 		oscP5.plug(this, "pfupdate", "/pf/update");
@@ -235,6 +235,9 @@ public class Tracker extends PApplet {
 			PApplet.println("Mouse ID "+mouseID+" exitting.");
 			pfexit(0,0,mouseID);
 			PApplet.println("Finished mouse exit");
+		} else if (key=='a' || key=='A') {
+			// Advance to next app
+			cycle();
 		}
 	}
 
@@ -409,19 +412,18 @@ public class Tracker extends PApplet {
 	}
 	
 	public void cycle() {
-		if (autocycle) {
-			Calendar cal=Calendar.getInstance();
-			int hour=cal.get(Calendar.HOUR_OF_DAY);
-			PApplet.println("Autocycling hour = "+hour);
-			cycler.change(hour>=7 && hour <= 19);
-		}
+		setapp((currentvis+1)%vis.length);
+//		Calendar cal=Calendar.getInstance();
+//		int hour=cal.get(Calendar.HOUR_OF_DAY);
+//		PApplet.println("Autocycling hour = "+hour);
+//		cycler.change(hour>=7 && hour <= 19);
 	}
 	
 	synchronized public void pfsetnpeople(int n) {
 		PApplet.println("/pf/set/npeople: now have "+n+" people, size="+positions.positions.size());
 		if (n==0)
 			setapp(currentvis);   // Cause a reset
-		if (n==0 && positions.positions.size()>0)
+		if (n==0 && positions.positions.size()>0 && autocycle)
 			cycle();
 		positions.setnpeople(n);  // Also clears positions
 	}
@@ -429,7 +431,7 @@ public class Tracker extends PApplet {
 	synchronized public void pfexit(int sampnum, float elapsed, int id) {
 		PApplet.println("exit: sampnum="+sampnum+", elapsed="+elapsed+", id="+id);
 		positions.exit(id);
-		if (positions.positions.size()==0)
+		if (positions.positions.size()==0 && autocycle)
 			cycle();
 	}
 
