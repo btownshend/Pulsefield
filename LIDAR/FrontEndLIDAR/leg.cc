@@ -23,6 +23,14 @@ Leg::Leg(const Point &pt) {
     consecutiveInvisibleCount=0;
     velocity=Point(0,0);
 
+    like.clear();
+    scanpts.clear();
+    maxlike=nan("");
+    likenx=0;
+    likeny=0;
+    minval=Point(nan(""),nan(""));
+    maxval=Point(nan(""),nan(""));
+
     //static const float weights[]={0.8234,0.0699,0.8303,0.0862,0.7780,0.1283,.7262,.1585,.6818,.1866,.6289,.2169};  // Need scaling by nweight/2 
     //static const int nweights=sizeof(weights)/sizeof(weights[0]);
     //predictWeights.assign(weights,weights+nweights);
