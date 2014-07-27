@@ -71,14 +71,16 @@ for i=1:length(p)
   d2=nanmean(sum(deltalegs2.^2,3),2);
   legmatch=d1-d2;
   lframes=1:length(legmatch);
-  lframes=lframes(abs(legmatch)>0.02);
-  legmatch=legmatch(abs(legmatch)>0.02);
+  if (any(abs(legmatch)>.02))
+    lframes=lframes(abs(legmatch)>0.02);
+    legmatch=legmatch(abs(legmatch)>0.02);
+  end
   s1=[legmatch(1),legmatch'];
   s2=[legmatch',legmatch(end)];
-  legswaps{i}=s1.*s2<0 & isfinite(s1) & isfinite(s2);
+  legswaps{i}=lframes(s1.*s2<0 & isfinite(s1) & isfinite(s2));
   % Get rid of single frame glitches
   
-  fprintf('Multi%d has %d leg swaps at frames %s\n', i, sum(legswaps{i}),sprintf('%d ',lframes(legswaps{i})));
+  fprintf('Multi%d has %d leg swaps at frames %s\n', i, sum(legswaps{i}),sprintf('%d ',legswaps{i}));
 end
 
 setfig('multicompare'); clf;
@@ -91,7 +93,7 @@ ylabel('x-position');
 title('X position');
 
 subplot(3,1,2);
-plot(track(:,:,2)','-','MarkerSize',mrkrsize);
+plot(track(2:end,:,2)','-','MarkerSize',mrkrsize);
 xlabel('frame');
 ylabel('y-position');
 title('Y Position');
@@ -102,26 +104,26 @@ for i=1:length(m)
   diff=squeeze(track(i,:,:))-groundtruth;
   err(i,:)=sqrt(diff(:,1).^2+diff(:,2).^2);
 end
+err(1,:)=nan;   % Not meaningul
 plot(err','-','MarkerSize',mrkrsize);
 hold on;
 % Plot leg swp markers
 for i=1:length(legswaps)
-  lpos=find(legswaps{i});
-  plot(lpos,0.2+0*lpos,'+')
+  plot(legswaps{i},0.1+0*legswaps{i},'+')
 end
 xlabel('frame');
 ylabel('error');
 tol=100/1000;
 leg={};
 totalbad=0;
-for i=1:length(m)
+for i=2:length(m)
   nbad=nansum(err(i,:)>tol);
   nframes=sum(isfinite(err(i,:)));
   fracbad=nbad/nframes;
-  fprintf('multi%d.%d: RMS error=%.1f mm, %.1f%% (%d) of  frames (%d) with >%.0fmm error, %d swaps\n', i, trackid(i),sqrt(nanmean(err(i,:).^2))*1000,100*fracbad,nbad,nframes,tol*1000,sum(legswaps{i}));
-  leg{i}=sprintf('%d.%d - %.1fmm, %.1f%% bad, %d swaps',i,trackid(i),sqrt(nanmean(err(i,:).^2))*1000,fracbad*100,sum(legswaps{i}));
+  fprintf('multi%d.%d: RMS error=%.1f mm, %.1f%% (%d) of frames (%d) have >%.0fmm error, %d swaps\n', i, trackid(i),sqrt(nanmean(err(i,:).^2))*1000,100*fracbad,nbad,nframes,tol*1000,length(legswaps{i}));
+  leg{i-1}=sprintf('%d.%d - %.1fmm, %.1f%% bad, %d swaps',i,trackid(i),sqrt(nanmean(err(i,:).^2))*1000,fracbad*100,length(legswaps{i}));
   totalbad=totalbad+nbad;
 end
 suptitle(datestr(now));
 legend(leg);
-title(sprintf('GT=multi%d.%d Error %.1f mm - Total frames with err>%.0f mm=%d, swaps=%d',args.gtnum, args.gttrack, sqrt(nanmean(err(:).^2))*1000, tol*1000,totalbad,sum(cellfun(@(z) sum(z),legswaps))));
+title(sprintf('GT=multi%d.%d Error %.1f mm - Total frames with err>%.0f mm=%d, swaps=%d',args.gtnum, args.gttrack, sqrt(nanmean(err(:).^2))*1000, tol*1000,totalbad,sum(cellfun(@(z) length(z),legswaps))));
