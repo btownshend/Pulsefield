@@ -326,7 +326,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     float legsep=(legs[0].position-legs[1].position).norm();
     float maxLegSep=MAXLEGSEP;
     if (legsep>maxLegSep) {
-	dbg("Person.update",2) << "legs are " << legsep << " apart (> " << maxLegSep << "), moving together" << std::endl;
+	dbg("Person.update",1) << "legs are " << legsep << " apart (> " << maxLegSep << "), moving together" << std::endl;
 	Point vec;
 	vec=(legs[0].position-legs[1].position)*(maxLegSep/legsep-1);
 	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
@@ -334,7 +334,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     }
     float minLegSep=std::max(MINLEGSEP,legStats.getDiam());
     if (legsep<minLegSep) {
-	dbg("Person.predict",2) << "legs are " << legsep << " apart (< " << minLegSep << "), moving apart" << std::endl;
+	dbg("Person.predict",1) << "legs are " << legsep << " apart (< " << minLegSep << "), moving apart" << std::endl;
 	Point vec;
 	vec=(legs[0].position-legs[1].position)*(minLegSep/legsep-1);
 	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
