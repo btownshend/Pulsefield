@@ -44,6 +44,11 @@ public class Laser {
 		OscMessage msg = new OscMessage("/laser/bg/end");
 		sendMessage(msg);
 	}
+	public void setFlag(String flag, float value) {
+		OscMessage msg = new OscMessage("/ui/laser/"+flag);
+		msg.add(value);
+		sendMessage(msg);
+	}
 
 	public void line(float x1,float y1, float x2, float y2) {
 		OscMessage msg = new OscMessage("/laser/line");
@@ -51,6 +56,16 @@ public class Laser {
 		msg.add(y1);
 		msg.add(x2);
 		msg.add(y2);
+		sendMessage(msg);
+	}
+	
+	public void svgfile(String path,float x, float y, float scaling, float rotateDeg) {
+		OscMessage msg = new OscMessage("/laser/svgfile");
+		msg.add(path);
+		msg.add(x);
+		msg.add(y);
+		msg.add(scaling);
+		msg.add(rotateDeg);
 		sendMessage(msg);
 	}
 	
