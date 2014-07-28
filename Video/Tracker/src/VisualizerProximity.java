@@ -2,7 +2,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PVector;
