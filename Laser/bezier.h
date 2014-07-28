@@ -18,4 +18,9 @@ class Bezier {
 
     // Get length along path
     float getLength(float res=0.01) const;
+
+    void translate(Point t) { 
+	for (int i=0;i<controlPoints.size();i++)
+	    controlPoints[i]=controlPoints[i]+t;
+    }
 };

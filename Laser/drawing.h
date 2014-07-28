@@ -34,6 +34,8 @@ protected:
     }
 
     virtual float getLength() const { return 0.0; }
+
+    virtual void translate(Point t) = 0; 
 };
 
 class Circle: public Primitive {
@@ -47,6 +49,7 @@ class Circle: public Primitive {
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const { return radius*2*M_PI; }
     float getShapeScore(const Transform &transform) const;
+    void translate(Point t) { center=center+t; }
 };
 
 class Arc: public Primitive {
@@ -56,6 +59,7 @@ class Arc: public Primitive {
     Arc(Point _center, Point _p, float _angle, Color c): Primitive(c) { center=_center; p=_p; angle=_angle; }
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     //    float getShapeScore(const Transform &transform) const;
+    void translate(Point t) { center=center+t; p=p+t; }
 };
 
 class Line:public Primitive {
@@ -65,6 +69,7 @@ class Line:public Primitive {
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const { return (p1-p2).norm(); }
     float getShapeScore(const Transform &transform) const;
+    void translate(Point t) { p1=p1+t; p2=p2+t; }
 };
 
 class Cubic:public Primitive {
@@ -74,6 +79,7 @@ class Cubic:public Primitive {
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const { return b.getLength(); }
     float getShapeScore(const Transform &transform) const;
+    void translate(Point t) { b.translate(t); }
 };
 
 // A path formed by a set of beziers
@@ -84,6 +90,10 @@ class Path:public Primitive {
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const;
     float getShapeScore(const Transform &transform) const;
+    void translate(Point t) { 
+	for (int i=0;i<controlPts.size();i++)
+	    controlPts[i]=controlPts[i]+t;
+    }
 };
 
 
@@ -94,6 +104,10 @@ class Polygon: public Primitive {
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const;
     //    float getShapeScore(const Transform &transform) const;
+    void translate(Point t) { 
+	for (int i=0;i<points.size();i++)
+	    points[i]=points[i]+t;
+    }
 };
 
 class Composite: public Primitive {
@@ -118,6 +132,10 @@ public:
 	return len;
     }
     float getShapeScore(const Transform &transform) const;
+    void translate(Point t) { 
+	for (int i=0;i<elements.size();i++)
+	    elements[i]->translate(t);
+    }
 };
 
 
@@ -146,7 +164,11 @@ class Drawing {
 	dbg("Drawing.getLength",3) << "length=" << len << " for " << elements.size() << " elements." << std::endl;
 	return len;
     }
-
+    
+    void translate(Point t) {
+	for (unsigned int i=0;i<elements.size();i++)
+	    elements[i]->translate(t);
+    }
 
     // Clear drawing
     void clear() {
