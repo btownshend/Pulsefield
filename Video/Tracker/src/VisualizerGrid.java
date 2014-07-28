@@ -133,18 +133,18 @@ public class VisualizerGrid extends VisualizerPS {
 	public void drawLaser(PApplet parent, Positions p) {
 		super.drawLaser(parent,p);
 		Laser laser=Laser.getInstance();
+		laser.bgBegin();
 		PVector gridOffset=new PVector(gridwidth/2, gridheight/2);
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
 			int id=entry.getKey();
 			int cell=entry.getValue();
-			laser.cellBegin(id);
 			PVector gcenter=new PVector(gposx[cell],gposy[cell]);
 			PVector tl = Tracker.unMapPosition(PVector.sub(gcenter, gridOffset));
 			PVector br = Tracker.unMapPosition(PVector.add(gcenter, gridOffset));
 			//PApplet.println("Drawing rect "+tl+" to "+br);
 			laser.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
-			laser.cellEnd(id);
 		}
+		laser.bgEnd();
 	}
 	
 	public void setnpeople(int n) {
