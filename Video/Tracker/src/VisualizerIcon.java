@@ -70,7 +70,7 @@ public class VisualizerIcon extends Visualizer {
 		for (Position ps: p.positions.values()) {  
 			String icon=icons[ps.id%icons.length];
 			laser.cellBegin(ps.id);
-			laser.svgfile(icon,0.0f,0.0f,0.5f,0.0f);
+			laser.svgfile(icon,0.0f,0.0f,0.7f,0.0f);
 			laser.cellEnd(ps.id);
 		}
 	}
