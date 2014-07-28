@@ -130,10 +130,8 @@ void People::incrementAge_impl() {
 
 void People::draw_impl(Drawing &d)  const {
     dbg("People.draw",3) << "Draw for " << p.size() << " people." << std::endl;
-    if (Lasers::instance()->getFlag("body") || Lasers::instance()->getFlag("legs"))  {
-	for (std::map<int,Person>::const_iterator a=p.begin(); a!=p.end();a++)
-	    a->second.draw(d);
-    }
+    for (std::map<int,Person>::const_iterator a=p.begin(); a!=p.end();a++)
+	a->second.draw(d);
 }
 
 void Person::draw(Drawing &d) const  {
