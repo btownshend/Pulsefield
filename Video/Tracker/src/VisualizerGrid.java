@@ -136,7 +136,6 @@ public class VisualizerGrid extends VisualizerPS {
 		laser.bgBegin();
 		PVector gridOffset=new PVector(gridwidth/2, gridheight/2);
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
-			int id=entry.getKey();
 			int cell=entry.getValue();
 			PVector gcenter=new PVector(gposx[cell],gposy[cell]);
 			PVector tl = Tracker.unMapPosition(PVector.sub(gcenter, gridOffset));
