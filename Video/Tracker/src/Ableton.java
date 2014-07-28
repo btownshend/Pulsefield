@@ -53,6 +53,7 @@ class Track {
 	Clip playing, triggered;
 	int trackNum;
 	int lowestSeenEmptyClip, highestSeenUsedClip;
+	int infoRequestsPending;  // Incremented when we request clip info, zeroed when we get a reply
 	
 	Track(int trackNum) {
 		clips=new HashMap<Integer,Clip>();
@@ -62,6 +63,7 @@ class Track {
 		this.trackNum=trackNum;
 		lowestSeenEmptyClip=MAXCLIPS;
 		highestSeenUsedClip=-1;
+		infoRequestsPending=0;
 		clipInfoRequest();
 	}
 
@@ -93,6 +95,7 @@ class Track {
 		this.name=name;
 	}
 	void setEmptyClip(int clip) {
+		infoRequestsPending=0;
 		if (clip<lowestSeenEmptyClip) {
 			PApplet.println("Decreasing lowest empty clip number from "+lowestSeenEmptyClip+" to "+clip);
 			lowestSeenEmptyClip=clip;
@@ -100,6 +103,7 @@ class Track {
 		clipInfoRequest();
 	}
 	void setOccupiedClip(int clip) {
+		infoRequestsPending=0;
 		if (clip>highestSeenUsedClip) {
 			PApplet.println("Increasing highest seen clip number from "+highestSeenUsedClip+" to "+clip);
 			highestSeenUsedClip=clip;
@@ -108,9 +112,13 @@ class Track {
 	}
 	void clipInfoRequest() {
 		if (highestSeenUsedClip+1<lowestSeenEmptyClip) {
-			PApplet.println("Track "+trackNum+" has between "+(highestSeenUsedClip+1)+" and "+lowestSeenEmptyClip+" clips.");
+//			PApplet.println("Track "+trackNum+" has between "+(highestSeenUsedClip+1)+" and "+lowestSeenEmptyClip+" clips.");
 			int checkClip=(int)(highestSeenUsedClip+lowestSeenEmptyClip)/2;
 			Ableton.getInstance().sendMessage(new OscMessage("/live/clip/info").add(trackNum).add(checkClip));
+			
+			infoRequestsPending++;
+			if (infoRequestsPending%100==0)
+				PApplet.println("Ableton not responding to clip info requests -- have "+infoRequestsPending+" requests pending");
 		}
 	}
 	int numClips() {
