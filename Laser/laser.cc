@@ -16,6 +16,10 @@ static const float FOV=M_PI/2;
 static const float MAXSLEWMETERS=MAXSLEWDISTANCE/65535.0*MEANTARGETDIST*FOV;
 static const int MINPOINTS=400;   // Minimum points per frame to avoid having laser focussed too tightly (brightly)
 
+// Etherdream ID's in the order of units
+static const unsigned long etherdreamIDS[]={0xe87f2f, 0xe74a90, 0xe7a2b2, 0xe7c3b0};
+static const int MAXUNIT=sizeof(etherdreamIDS)/sizeof(etherdreamIDS[0]);
+
 Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     unit=_unit;
     PPS=40000;
@@ -30,6 +34,11 @@ Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
 }
 
 int Laser::open() {
+    if (unit<0 || unit>=MAXUNIT)  {
+	std::cerr << "Bad laser unit -- must be between 0 and " << MAXUNIT << std::endl;
+	exit(0);
+    }
+
     /* Sleep for a bit over a second, to ensure that we see broadcasts
      * from all available DACs. */
     usleep(1200000);
@@ -40,22 +49,20 @@ int Laser::open() {
 	return -1;
     }
 
-    int i;
-    for (i = 0; i < cc; i++) {
-	printf("%d: Ether Dream %06lx\n", i,etherdream_get_id(etherdream_get(i)));
+    printf("Looking for unit %d: 0x%lx:\n", unit, etherdreamIDS[unit]);
+    int myed=-1;
+    for (int i = 0; i < cc; i++) {
+	unsigned long int eid=etherdream_get_id(etherdream_get(i));
+	printf("%d: Ether Dream %06lx\n", i,eid);
+	if (eid==etherdreamIDS[unit])
+	    myed=i;
     }
-
-    if (cc<=unit) {
-	printf("Requested laser unit %d, but only have %d lasers\n", unit, cc);
-	return -1;
+    if (myed==-1) {
+	std::cerr << "Etherdream unit " << unit << "(" << etherdreamIDS[unit] << " ) not found -- is it connected and on?";
+	return  -1;
     }
-    // Kludge to make sure we get ordered id's (TODO: make general)
-    if (cc==2 && etherdream_get_id(etherdream_get(0)) < etherdream_get_id(etherdream_get(1))) {
-	std::cout << "Swapped etherdream order" << std::endl;
-	d = etherdream_get(1-unit);    
-    } else
-	d = etherdream_get(unit);
-    printf("Connecting to laser %d...\n",unit);
+    d = etherdream_get(myed);
+    printf("Connecting to laser %d (0x%lx)...\n",unit,etherdreamIDS[unit]);
     if (etherdream_connect(d) < 0)
 	return -1;
     return 0;
