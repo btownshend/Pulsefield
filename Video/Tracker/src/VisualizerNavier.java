@@ -43,12 +43,13 @@ class VisualizerNavier extends Visualizer {
 
 	@Override
 	public void start() {
+		super.start();
 		Ableton.getInstance().setTrackSet("Navier");
 	}
 
 	@Override
 	public void stop() {
-		Ableton.getInstance().setTrackSet(null);
+		super.stop();
 	}
 
 

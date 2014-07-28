@@ -427,12 +427,14 @@ public class VisualizerChuck extends Visualizer {
 
 	@Override
 	public void start() {
+		super.start();
 		OscMessage msg = new OscMessage("/chuck/start");
 		Tracker.sendOSC("CK",msg);
 	}
 
 	@Override
 	public void stop() {
+		super.stop();
 		fiducials.removeAll();
 		OscMessage msg = new OscMessage("/chuck/stop");
 		Tracker.sendOSC("CK",msg);

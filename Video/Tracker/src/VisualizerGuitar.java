@@ -92,15 +92,13 @@ public class VisualizerGuitar extends VisualizerPS {
 
 	@Override
 	public void start() {
+		super.start();
 		trackSet=Ableton.getInstance().setTrackSet("Guitar");
 	}
 
 	@Override
 	public void stop() {
-		Ableton.getInstance().setTrackSet(null);
-		Laser laser=Laser.getInstance();
-		laser.bgBegin();
-		laser.bgEnd();
+		super.stop();
 	}
 
 

@@ -97,12 +97,13 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 	@Override
 	public void start() {
+		super.start();
 		trackSet=Ableton.getInstance().setTrackSet("Harp");
 	}
 
 	@Override
 	public void stop() {
-		Ableton.getInstance().setTrackSet(null);
+		super.stop();
 	}
 
 

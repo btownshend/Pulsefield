@@ -10,13 +10,10 @@ public class VisualizerPads extends VisualizerPS {
 
 	@Override
 	public void start() {
+		super.start();
 		Ableton.getInstance().setTrackSet("Pads");
 	}
 
-	@Override
-	public void stop() {
-		Ableton.getInstance().setTrackSet(null);
-	}
 
 	@Override
 	public void update(PApplet parent, Positions allpos) {

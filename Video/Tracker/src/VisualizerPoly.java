@@ -143,11 +143,12 @@ public class VisualizerPoly extends Visualizer {
 	@Override
 	public void start() {
 		Ableton.getInstance().setTrackSet("Poly");
+		super.start();
 	}
 
 	@Override
 	public void stop() {
-		Ableton.getInstance().setTrackSet(null);
+		super.stop();
 	}
 
 

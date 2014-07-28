@@ -33,7 +33,12 @@ public abstract class Visualizer {
 	
 	abstract public void update(PApplet parent, Positions p);
 	public void start() {;}
-	public void stop() {;}
+	public void stop() {
+		Ableton.getInstance().setTrackSet(null);
+		Laser laser=Laser.getInstance();
+		laser.bgBegin();
+		laser.bgEnd();
+		}
 
 	public void stats() { }
 

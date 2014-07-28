@@ -44,13 +44,14 @@ public class VisualizerGrid extends VisualizerPS {
 	}
 	
 	public void start() {
+		super.start();
 		song=(song+1)%songs.length;
 		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);
 		setupGrid();
 		PApplet.println("Starting grid with song "+song+": "+ts.name);
 	}
 	public void stop() {
-		Ableton.getInstance().setTrackSet(null);
+		super.stop();
 		assignments.clear();
 	}
 

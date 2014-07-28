@@ -143,6 +143,7 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 	public void start() {
+		super.start();
 		startTime=System.currentTimeMillis();
 		PApplet.println("Starting DDR at "+startTime);
 		active=true;
@@ -150,6 +151,7 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 	public void stop() {
+		super.stop();
 		PApplet.println("Stopping DDR at "+System.currentTimeMillis());
 		Ableton.getInstance().stopClip(cursong.track,cursong.clipNumber);
 		active=false;

@@ -57,15 +57,14 @@ public class VisualizerTron extends Visualizer {
 
 	@Override
 	public void start() {
+		super.start();
 		trackSet=Ableton.getInstance().setTrackSet("Tron");
 	}
 
 	@Override
 	public void stop() {
-		Ableton.getInstance().setTrackSet(null);
+		super.stop();
 	}
-
-
 
 	int postogrid(PVector p) {
 		int gpos=postogridx(p.x)*gridHeight+postogridy(p.y);
