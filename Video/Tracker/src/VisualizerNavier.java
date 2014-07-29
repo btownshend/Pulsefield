@@ -124,12 +124,8 @@ class VisualizerNavier extends Visualizer {
 		rainbow++;
 		rainbow = (rainbow > 255) ? 0 : rainbow;
 
-		final boolean drawBorder=true;
-		if (drawBorder) {
-		parent.stroke(bordercolor,127);
-		parent.fill(0,0,0,0);
-		drawBorders(parent, true, wsize);
-		}
+		drawBorders(parent, true, wsize, 7, bordercolor, 127);
+
 		parent.ellipseMode(PConstants.CENTER);
 		for (Position ps: p.positions.values()) {  
 			int c=ps.getcolor(parent);
