@@ -10,7 +10,8 @@ public class Position {
 	int id;
 	int groupid;
 	int groupsize;
-
+	Leg[] legs;
+	
 	public Position(PVector origin, int channel, int id) {
 		this.origin=origin;
 		this.avgspeed=new PVector(0f,0f);
@@ -19,6 +20,9 @@ public class Position {
 		this.id = id;
 		this.groupid = id;
 		this.groupsize = 1;
+		this.legs=new Leg[2];
+		for (int i=0;i<legs.length;i++)
+			this.legs[i]=new Leg();
 	}
 	
 	public Position(int channel) {
@@ -56,6 +60,8 @@ public class Position {
 		lastmovetime=elapsed;
 		this.groupid=groupid;
 		this.groupsize=groupsize;
+		for (int i=0;i<legs.length;i++)
+			legs[i].move(newpos,avgspeed); // TODO - use individual estimates
 	}
 	
 
