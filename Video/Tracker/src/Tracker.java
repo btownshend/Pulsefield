@@ -284,10 +284,6 @@ public class Tracker extends PApplet {
 		}  /* print the address pattern and the typetag of the received OscMessage */
 	}
 
-	public static PVector normalizePosition(PVector pos) {
-		return new PVector(pos.x*2f/(Tracker.maxx-Tracker.minx),pos.y*2f/(Tracker.maxy-Tracker.miny));
-	}
-	
 	public static float normalizeDistance(float distInMeters) {
 		return 2f/(Tracker.maxx-Tracker.minx);
 	}
@@ -297,12 +293,15 @@ public class Tracker extends PApplet {
 		return mapPosition(new PVector(x,y));
 	}
 
+	// Map position in meters to normalized position where (minx,miny) maps to (-1,1) and (max,maxy) maps to (1,-1)
+	// (flipped y-coord for screen use)
 	public static PVector mapPosition(PVector raw) {
 		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
 		PVector result=PVector.sub(raw,mid);
 		result.rotate((float)Math.toRadians(Tracker.screenrotation));
 		// Flip y-axis since screen has origin in top left
 		result.y=-result.y;
+		result.set(result.x*2f/(Tracker.maxx-Tracker.minx),result.y*2f/(Tracker.maxy-Tracker.miny));
 //		PApplet.println("Mapped ("+raw+") to ("+result);
 		return result;
 	}

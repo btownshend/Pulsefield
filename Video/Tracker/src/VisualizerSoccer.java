@@ -24,7 +24,7 @@ class Ball {
 		parent.fill(color,255);
 		parent.stroke(color,255);
 //		PApplet.println("Ball at "+((position.x+1)*wsize.x/2)+","+((position.y+1)*wsize.y/2));
-		PVector p=Tracker.normalizePosition(Tracker.mapPosition(position));
+		PVector p=Tracker.mapPosition(position);
 		parent.ellipse((p.x+1)*wsize.x/2, (p.y+1)*wsize.y/2, sz, sz);
 	}
 	
