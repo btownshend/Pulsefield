@@ -17,6 +17,7 @@ public class Leg {
 	void move(PVector newpos, PVector newvel) {
 		position=newpos;
 		velocity=newvel;
+//		PApplet.println("Leg moved to "+newpos+" with velocity "+newvel);
 	}
 	PVector getOriginInMeters() {
 		return position;

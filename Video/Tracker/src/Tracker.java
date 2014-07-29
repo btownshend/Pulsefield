@@ -226,7 +226,7 @@ public class Tracker extends PApplet {
 			legs[0].move(PVector.add(mousePos,new PVector(0.0f,-0.3f)),mouseVel);
 			legs[1].move(PVector.add(mousePos,new PVector(0.0f,0.3f)), mouseVel);
 			prevMousePos=mousePos;
-			PApplet.println("Moved mouse ID "+mouseID+" to "+mousePos+" with velocity "+p.getVelocityInMeters());
+//			PApplet.println("Moved mouse ID "+mouseID+" to "+mousePos+" with velocity "+p.getVelocityInMeters());
 		} else {
 			mouseVel.set(0f,0f);
 			p.setVelocity(mouseVel);
