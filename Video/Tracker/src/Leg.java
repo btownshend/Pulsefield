@@ -12,7 +12,7 @@ public class Leg {
 	PVector position;
 	PVector velocity;
 	
-	Leg() {; }
+	Leg(PVector position) { this.position=new PVector(position.x,position.y); }
 	
 	void move(PVector newpos, PVector newvel) {
 		position=newpos;

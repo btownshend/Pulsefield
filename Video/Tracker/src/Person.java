@@ -19,7 +19,7 @@ public class Person {
 		this.groupsize = 1;
 		this.legs=new Leg[2];
 		for (int i=0;i<legs.length;i++)
-			this.legs[i]=new Leg();
+			this.legs[i]=new Leg(origin);
 	}
 	
 	// Convert to normalized position - in range [-1,1] for extent of pulsefield
