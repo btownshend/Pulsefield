@@ -1,8 +1,10 @@
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import oscP5.OscMessage;
+import processing.core.PApplet;
 
 class MidiProgram {
 	int instrument;
@@ -72,6 +74,16 @@ abstract public class Synth {
 		//System.out.println("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to track "+track+" for channel "+channel);
 	}
 
+	// Stop all currently playing notes
+	public void endallnotes() {
+		for (Map.Entry<Integer,HashMap<Integer,NoteOff>> t: playing.entrySet()) {
+			for (Map.Entry<Integer, NoteOff> n: t.getValue().entrySet()) {
+				PApplet.println("Endallnotes: track "+t.getKey()+", pitch "+n.getKey());
+				play(n.getKey(),0,t.getKey());
+			}
+		}
+	}
+	
 	public void endnote(int track, int pitch, int velocity) {
 		if (playing.get(track).get(pitch)==null)
 			System.out.println("Received endnote for note that isn't playing; channel="+track+", pitch="+pitch);
