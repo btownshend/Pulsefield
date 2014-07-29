@@ -1,8 +1,5 @@
-import processing.opengl.*;
 import processing.core.PApplet;
-import processing.core.PConstants;
 import processing.core.PVector;
-import processing.opengl.PGL;
 
 public class VisualizerTemplate extends Visualizer {
 

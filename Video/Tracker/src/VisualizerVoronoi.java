@@ -2,12 +2,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import processing.opengl.*;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PVector;
-import processing.opengl.PGL;
-import delaunay.*;
+import delaunay.Pnt;
+import delaunay.Triangle;
+import delaunay.Triangulation;
 
 class Voice {
 	int id;

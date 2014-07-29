@@ -1,12 +1,11 @@
 import java.util.HashMap;
 import java.util.Map;
 
-import processing.opengl.*;
 import processing.core.PApplet;
-import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PVector;
 import processing.opengl.PGL;
+import processing.opengl.PGraphicsOpenGL;
 
 public class VisualizerPS extends Visualizer {
 	PImage img;

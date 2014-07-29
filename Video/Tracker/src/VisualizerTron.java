@@ -1,11 +1,8 @@
 import java.util.HashMap;
 import java.util.Iterator;
 
-import processing.opengl.*;
 import processing.core.PApplet;
-import processing.core.PConstants;
 import processing.core.PVector;
-import processing.opengl.PGL;
 
 class GridData {
 	int id;

@@ -3,8 +3,6 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PVector;
-import processing.opengl.PGL;
-import processing.opengl.PGraphicsOpenGL;
 
 
 class VisualizerNavier extends Visualizer {

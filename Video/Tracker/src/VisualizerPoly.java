@@ -2,11 +2,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import oscP5.OscMessage;
-import processing.opengl.*;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PVector;
-import processing.opengl.PGL;
 
 // Visualizer based on iPad app "Poly" by James Milton
 class PolyState {
