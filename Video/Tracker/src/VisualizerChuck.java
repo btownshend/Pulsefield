@@ -1,16 +1,15 @@
+import java.util.ArrayList;
 import java.util.HashMap;
+
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PVector;
-import processing.opengl.PGL;
-import processing.opengl.PGraphicsOpenGL;
-import java.util.ArrayList;
 
 // Visualizer that sends messages to chuck
 abstract class Fiducial extends Person {
 	Fiducial(Person ps) {
-		super(ps.getNormalizedPosition(),ps.channel,ps.id);
+		super(ps.getOriginInMeters(),ps.channel,ps.id);
 	}
 
 	void update(Person ps) {
