@@ -510,14 +510,14 @@ public class Ableton {
 		for (Person p: allpos.pmap.values()) {	
 			ControlValues c=lastpos.get(p.id);
 			if (c==null) {
-				c=new ControlValues(p.position);
+				c=new ControlValues(p.getNormalizedPosition());
 			}
 
-			int ccx=(int)((p.position.x+1)/2*127);ccx=(ccx<0)? 0:(ccx>127?127:ccx);
-			int ccy=(int)((p.position.y+1)/2*127);ccy=(ccy<0)? 0:(ccy>127?127:ccy);
-			int ccdx=(int)((p.velocity.x*3+1)/2*127); ccdx=(ccdx<0)? 0:(ccdx>127?127:ccdx);
-			int ccdy=(int)((p.velocity.y*3+1)/2*127);ccdy=(ccdy<0)? 0:(ccdy>127?127:ccdy);
-			int ccspeed=(int)(p.velocity.mag()*2*127);ccspeed=(ccspeed<0)? 0:(ccspeed>127?127:ccspeed);
+			int ccx=(int)((p.getNormalizedPosition().x+1)/2*127);ccx=(ccx<0)? 0:(ccx>127?127:ccx);
+			int ccy=(int)((p.getNormalizedPosition().y+1)/2*127);ccy=(ccy<0)? 0:(ccy>127?127:ccy);
+			int ccdx=(int)((p.getNormalizedVelocity().x*3+1)/2*127); ccdx=(ccdx<0)? 0:(ccdx>127?127:ccdx);
+			int ccdy=(int)((p.getNormalizedVelocity().y*3+1)/2*127);ccdy=(ccdy<0)? 0:(ccdy>127?127:ccdy);
+			int ccspeed=(int)(p.getNormalizedVelocity().mag()*2*127);ccspeed=(ccspeed<0)? 0:(ccspeed>127?127:ccspeed);
 			//System.out.println("OLD="+c.ccx+","+c.ccy+", new="+ccx+","+ccy);
 
 			int track=trackSet.getTrack(p.channel);
@@ -536,7 +536,7 @@ public class Ableton {
 			c.ccdx=ccdx;
 			c.ccdy=ccdy;
 			c.ccspeed=ccspeed;
-			c.pos=p.position;
+			c.pos=p.getNormalizedPosition();
 			curpos.put(p.id, c);
 		}
 		lastpos=curpos;

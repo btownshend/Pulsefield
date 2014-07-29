@@ -10,11 +10,11 @@ import java.util.ArrayList;
 // Visualizer that sends messages to chuck
 abstract class Fiducial extends Person {
 	Fiducial(Person ps) {
-		super(ps.position,ps.channel,ps.id);
+		super(ps.getNormalizedPosition(),ps.channel,ps.id);
 	}
 
 	void update(Person ps) {
-		position=ps.position;
+		setNormalizedPosition(ps.getNormalizedPosition());
 	}
 
 	abstract void draw(PApplet parent, PVector wsize, float sz);
@@ -154,17 +154,17 @@ class Generator extends Fiducial {
 	void update(Person ps) {
 		super.update(ps);
 		OscMessage msg = new OscMessage("/chuck/dev/"+id+"/pan");
-		msg.add((ps.position.x+1f)/2f);
+		msg.add((ps.getNormalizedPosition().x+1f)/2f);
 		Tracker.sendOSC("CK",msg);
 		msg = new OscMessage("/chuck/dev/"+id+"/y");
-		msg.add((-ps.position.y+1f)/2f); // Flip direction so top of screen (far side of PF) is 1.0
+		msg.add((-ps.getNormalizedPosition().y+1f)/2f); // Flip direction so top of screen (far side of PF) is 1.0
 		Tracker.sendOSC("CK",msg);
 	}
 
 	@Override 
 	void draw(PApplet parent, PVector wsize, float sz) {
-		float x=(position.x+1)*wsize.x/2;
-		float y=(position.y+1)*wsize.y/2;
+		float x=(getNormalizedPosition().x+1)*wsize.x/2;
+		float y=(getNormalizedPosition().y+1)*wsize.y/2;
 		parent.fill(genType.color);
 		parent.stroke(genType.color);
 		parent.ellipseMode(PConstants.CENTER);
@@ -191,8 +191,8 @@ class Controller extends Fiducial {
 	void update(Person ps) {
 		super.update(ps);
 		if (parent!=null) {
-			float dir=PVector.sub(parent.position,position).heading();
-			float dist=PVector.dist(parent.position,position);
+			float dir=PVector.sub(parent.getNormalizedPosition(),getNormalizedPosition()).heading();
+			float dist=PVector.dist(parent.getNormalizedPosition(),getNormalizedPosition());
 			if (cc.cc1!=-1) {
 				OscMessage msg = new OscMessage("/chuck/dev/"+parent.id+"/cc");
 				msg.add(cc.cc1);
@@ -218,14 +218,14 @@ class Controller extends Fiducial {
 
 	@Override 
 	void draw(PApplet parent, PVector wsize, float sz) {
-		float x=(position.x+1)*wsize.x/2;
-		float y=(position.y+1)*wsize.y/2;
+		float x=(getNormalizedPosition().x+1)*wsize.x/2;
+		float y=(getNormalizedPosition().y+1)*wsize.y/2;
 		if (cc!=null) {
 			parent.fill(cc.color);
 			parent.stroke(cc.color);
 		}
 		if (this.parent!=null) {
-			parent.line((position.x+1)*wsize.x/2, (position.y+1)*wsize.y/2, (this.parent.position.x+1)*wsize.x/2, (this.parent.position.y+1)*wsize.y/2);
+			parent.line((getNormalizedPosition().x+1)*wsize.x/2, (getNormalizedPosition().y+1)*wsize.y/2, (this.parent.getNormalizedPosition().x+1)*wsize.x/2, (this.parent.getNormalizedPosition().y+1)*wsize.y/2);
 		}
 		if (cc != null && cc.cc1==200)
 			// Use triangles for patterns
@@ -339,7 +339,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 				Controller c=(Controller)f;
 				if (c.parent != null) {
 					// Check if we need to break connection
-					float dist=PVector.dist(c.position,c.parent.position);
+					float dist=PVector.dist(c.getNormalizedPosition(),c.parent.getNormalizedPosition());
 					if (dist>DISTBREAK) {
 						c.disconnect();
 					}
@@ -350,7 +350,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 					Generator newparent=null;
 					for (Fiducial f2: values()) {
 						if (f2 instanceof Generator) {
-							float dist=PVector.dist(c.position, f2.position);
+							float dist=PVector.dist(c.getNormalizedPosition(), f2.getNormalizedPosition());
 							//PApplet.println("Distance from "+f.id+" to "+f2.id+" = "+dist);
 							if (dist<mindist) {
 								mindist=dist;

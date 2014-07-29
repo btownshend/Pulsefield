@@ -48,7 +48,7 @@ public class VisualizerIcon extends Visualizer {
 			//icon.translate(-icon.width/2, -icon.height/2);
 			//PApplet.println("Display shape "+icon+" at "+ps.origin);
 			float scale=Math.min(sz/icon.width,sz/icon.height);
-			parent.shape(icon,(ps.position.x+1)*wsize.x/2, (ps.position.y+1)*wsize.y/2,icon.width*scale,icon.height*scale);
+			parent.shape(icon,(ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2,icon.width*scale,icon.height*scale);
 			//icon.resetMatrix();
 		}
 	}

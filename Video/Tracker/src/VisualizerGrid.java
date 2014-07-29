@@ -68,11 +68,11 @@ public class VisualizerGrid extends VisualizerPS {
 			if (assignments.containsKey(pos.id)) {
 				current=assignments.get(pos.id);
 				closest=current;
-				mindist=(Math.pow(gposx[closest]-pos.position.x,2)+Math.pow(gposy[closest]-pos.position.y,2))*0.8;  // Make it appear a little closer to create hysteresis
+				mindist=(Math.pow(gposx[closest]-pos.getNormalizedPosition().x,2)+Math.pow(gposy[closest]-pos.getNormalizedPosition().y,2))*0.8;  // Make it appear a little closer to create hysteresis
 				//PApplet.println("Had existing grid "+closest+" at distance "+Math.sqrt(mindist));	
 			}
 			for (int i=0;i<ncell;i++) {
-				double dist2=Math.pow(gposx[i]-pos.position.x,2)+Math.pow(gposy[i]-pos.position.y,2);
+				double dist2=Math.pow(gposx[i]-pos.getNormalizedPosition().x,2)+Math.pow(gposy[i]-pos.getNormalizedPosition().y,2);
 				if (dist2 < mindist) {
 					mindist=dist2;
 					closest=i;

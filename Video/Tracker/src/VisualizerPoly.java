@@ -10,7 +10,7 @@ import processing.opengl.PGL;
 
 // Visualizer based on iPad app "Poly" by James Milton
 class PolyState {
-	final float DRUMMERPROB=1f;
+	final float DRUMMERPROB=0.1f;
 	boolean playing;
 	float startBeat;
 	float noteDuration;
@@ -37,19 +37,19 @@ class PolyState {
 			//PApplet.println("Stopped channel "+pos.channel+" at beat "+beat);
 			playing=false;
 		}
-		float radius=pos.position.mag();
+		float radius=pos.getNormalizedPosition().mag();
 		mybeat=(int)(radius*totalBeats+0.5);
 		if (mybeat==0)
 			mybeat=1;
 
 		if (!playing && (((int)(beat*4)-(int)(startBeat*4))>=mybeat || pos.groupsize>1 ) && (int)(beat*4) != (int)(startBeat*4)) {
 			if (isDrummer) {
-				int pitch=(int)((pos.position.heading()+Math.PI)/(2*Math.PI)*46+35);
+				int pitch=(int)((pos.getNormalizedPosition().heading()+Math.PI)/(2*Math.PI)*46+35);
 				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), 10);
 			} else {	
 				// Play note
 				curnote=0;   // Override multiple pitches/person
-				int pitch=scale.map2note(pos.position.heading(), (float) -Math.PI, (float)Math.PI,curnote,3);
+				int pitch=scale.map2note(pos.getNormalizedPosition().heading(), (float) -Math.PI, (float)Math.PI,curnote,3);
 				curnote=curnote+2;
 				if (curnote>=6)
 					curnote=0;
@@ -73,6 +73,7 @@ class PolyState {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	void draw(PApplet parent,PVector wsize, int totalBeats, int row, Synth synth) {
 		final int NUMROWS=20;
 		float rowheight=wsize.y/2/NUMROWS;
@@ -82,7 +83,7 @@ class PolyState {
 			parent.fill(color);
 		else
 			parent.fill(color,127);
-		parent.ellipse((pos.position.x+1)*wsize.x/2, (pos.position.y+1)*wsize.y/2, 30, 30);
+		parent.ellipse((pos.getNormalizedPosition().x+1)*wsize.x/2, (pos.getNormalizedPosition().y+1)*wsize.y/2, 30, 30);
 		if (playing) {
 			parent.fill(0);
 			parent.stroke(color);
@@ -94,7 +95,7 @@ class PolyState {
 			for (int k=0;k<NBOLTS;k++)
 				if (Math.random() < 0.2) {
 					PVector delta=new PVector((float)Math.cos(Math.PI*2*k/NBOLTS)*BOLTLENGTH,(float)Math.sin(Math.PI*2*k/NBOLTS)*BOLTLENGTH);
-					PVector center=new PVector((pos.position.x+1)*wsize.x/2,(pos.position.y+1)*wsize.y/2);
+					PVector center=new PVector((pos.getNormalizedPosition().x+1)*wsize.x/2,(pos.getNormalizedPosition().y+1)*wsize.y/2);
 					parent.fill(color,127);
 					parent.line(center.x,center.y,center.x+delta.x,center.y+delta.y);
 				}
@@ -110,12 +111,14 @@ class PolyState {
 			parent.fill(255);
 			parent.textAlign(PConstants.LEFT,PConstants.CENTER);
 			parent.textSize(0.8f*rowheight);
+			if (false) {
 			if (isDrummer)
 				parent.text("DRUMMER",2+dotsize,rowpos);
 			else {
 				MidiProgram mp=synth.getMidiProgam(pos.channel);
 				if (mp!=null)
 					parent.text(mp.name,2+dotsize,rowpos);
+			}
 			}
 		}
 	}
@@ -129,9 +132,7 @@ public class VisualizerPoly extends Visualizer {
 	float noteDuration=0.25f ;   // in beats
 	Scale scale;
 	Synth synth;
-	String songs[]={"Poly"}; //,"Poly2"};
-	int song=0;
-
+	
 	VisualizerPoly(PApplet parent, Scale scale, Synth synth) {
 		super();
 		poly=new HashMap<Integer,PolyState>();
@@ -141,11 +142,8 @@ public class VisualizerPoly extends Visualizer {
 	
 	@Override
 	public void start() {
+		Ableton.getInstance().setTrackSet("Poly");
 		super.start();
-		song=(song+1)%songs.length;
-		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);		
-		assert(ts!=null);
-		PApplet.println("Starting poly with song "+song+": "+ts.name);
 	}
 
 	@Override

@@ -127,7 +127,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 		}
 
 		for (Person p: allpos.pmap.values()) {
-			dt.delaunayPlace(new PntWithID(p.id,p.position.x,p.position.y));
+			dt.delaunayPlace(new PntWithID(p.id,p.getNormalizedPosition().x,p.getNormalizedPosition().y));
 		}
 		float beat=MasterClock.getBeat();
 		if (beat-last >= noteDuration) {

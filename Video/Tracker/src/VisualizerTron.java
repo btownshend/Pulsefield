@@ -157,7 +157,7 @@ public class VisualizerTron extends Visualizer {
 
 		for (int id: positions.pmap.keySet()) {
 			Person ps=positions.get(id);
-			PVector newpos=ps.position;
+			PVector newpos=ps.getNormalizedPosition();
 			int gpos=postogrid(newpos);
 			if (currentgrid.containsKey(id)  && currentgrid.get(id)!=-1) {
 				int oldgpos=currentgrid.get(id);

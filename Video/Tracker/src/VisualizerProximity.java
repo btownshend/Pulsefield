@@ -41,7 +41,7 @@ public class VisualizerProximity extends VisualizerPS {
 	//	HashMap<Integer,Integer> newAssignments=new HashMap<Integer,Integer>();
 		for (Map.Entry<Integer,Person> e1: allpos.pmap.entrySet()) {
 			int id1=e1.getKey();
-			PVector pos1=e1.getValue().position;
+			PVector pos1=e1.getValue().getNormalizedPosition();
 			// Find closest NEIGHBOR	
 			int closest=-1;
 			double mindist=MAXSEP;
@@ -53,7 +53,7 @@ public class VisualizerProximity extends VisualizerPS {
 				int id2=e2.getKey();
 				if (id1==id2)
 					continue;
-				PVector pos2=e2.getValue().position;
+				PVector pos2=e2.getValue().getNormalizedPosition();
 				
 				double dist2=Math.pow(pos1.x-pos2.x,2)+Math.pow(pos1.y-pos2.y,2);
 				if (id2==current)
@@ -103,7 +103,7 @@ public class VisualizerProximity extends VisualizerPS {
 			parent.fill(127,0,0,127);
 			parent.strokeWeight(5);
 			parent.stroke(127,0,0);
-			parent.line((p.get(id1).position.x+1)*wsize.x/2, (p.get(id1).position.y+1)*wsize.y/2, (p.get(id2).position.x+1)*wsize.x/2, (p.get(id2).position.y+1)*wsize.y/2);
+			parent.line((p.get(id1).getNormalizedPosition().x+1)*wsize.x/2, (p.get(id1).getNormalizedPosition().y+1)*wsize.y/2, (p.get(id2).getNormalizedPosition().x+1)*wsize.x/2, (p.get(id2).getNormalizedPosition().y+1)*wsize.y/2);
 			}
 		}
 		parent.fill(127);
@@ -121,8 +121,8 @@ public class VisualizerProximity extends VisualizerPS {
 			if (id2==-1)
 				continue;
 			laser.cellBegin(id1);
-			PVector p1 = Tracker.unMapPosition(p.get(id1).position);
-			PVector p2 = Tracker.unMapPosition(p.get(id2).position);
+			PVector p1 = Tracker.unMapPosition(p.get(id1).getNormalizedPosition());
+			PVector p2 = Tracker.unMapPosition(p.get(id2).getNormalizedPosition());
 //			PApplet.println("Drawing line "+p1+" to "+p2);
 			laser.line(p1.x,p1.y,p2.x,p2.y);
 			laser.cellEnd(id1);

@@ -134,7 +134,7 @@ class VisualizerNavier extends Visualizer {
 			float sz=5;
 			if (ps.groupsize > 1)
 				sz=20*ps.groupsize;
-			parent.ellipse((ps.position.x+1)*wsize.x/2, (ps.position.y+1)*wsize.y/2, sz, sz);
+			parent.ellipse((ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2, sz, sz);
 		}
 	}
 
@@ -142,19 +142,19 @@ class VisualizerNavier extends Visualizer {
 		Ableton.getInstance().updateMacros(p);
 		for (Person pos: p.pmap.values()) {
 			//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
-			if (pos.velocity.mag() > 0.1)
+			if (pos.getNormalizedVelocity().mag() > 0.1)
 				synth.play(pos.id,pos.channel+35,127,480,pos.channel);
 		}
 		long t1=System.nanoTime();
 		int n = NavierStokesSolver.N;
 		for (Person pos: p.pmap.values()) {
 			//PApplet.println("update("+p.channel+"), enabled="+p.enabled);
-			int cellX = (int)( (pos.position.x+1)*n / 2);
+			int cellX = (int)( (pos.getNormalizedPosition().x+1)*n / 2);
 			cellX=Math.max(0,Math.min(cellX,n));
-			int cellY = (int) ((pos.position.y+1)*n/ 2);
+			int cellY = (int) ((pos.getNormalizedPosition().y+1)*n/ 2);
 			cellY=Math.max(0,Math.min(cellY,n));
-			double dx=pos.velocity.x/parent.frameRate*100;
-			double dy=pos.velocity.y/parent.frameRate*100;
+			double dx=pos.getNormalizedVelocity().x/parent.frameRate*100;
+			double dy=pos.getNormalizedVelocity().y/parent.frameRate*100;
 			//PApplet.println("Cell="+cellX+","+cellY+", dx="+dx+", dy="+dy);
 
 			dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;

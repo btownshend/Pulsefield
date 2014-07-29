@@ -14,7 +14,7 @@ class GString {
 	final static float bridge=0.9f;
 	final static float minstring=-0.48f;  // Range of X-coords for strings in [-1,1] normalized coordinates
 	final static float maxstring=0.49f;
-	final static int vibrateTime=2000;   // Milliseconds
+	final static int vibrateTime=1000;   // Milliseconds
 	int fretpitch;
 	float position;  // X-coord of string (in range -1 to 1)
 	boolean vibrating;
@@ -37,10 +37,10 @@ class GString {
 	}
 
 	public void strike(Synth synth, Person p, int color) {
-		PApplet.println("Strike ("+p.position.x+","+p.position.y+") Color="+color);
+		PApplet.println("Strike ("+p.getNormalizedPosition().x+","+p.getNormalizedPosition().y+") Color="+color);
 		int i;
 		for (i=0;i<frets.length;i++)
-			if (p.position.x<frets[i])
+			if (p.getNormalizedPosition().x<frets[i])
 				break;
 		//PApplet.println("x="+p.origin.x+", i="+i);
 		if (i==0 || i>=frets.length)
@@ -50,7 +50,7 @@ class GString {
 		vibrating=true;
 		this.color=color;
 		strikeTime=System.currentTimeMillis();
-		int velocity=(int)(p.velocity.mag()*500);
+		int velocity=(int)(p.getNormalizedVelocity().mag()*500);
 		if (velocity>127)
 			velocity=127;
 		this.velocity=velocity;
@@ -176,7 +176,7 @@ public class VisualizerGuitar extends VisualizerPS {
 					//PApplet.println("y="+lastp.y+" -> "+p.origin.y);
 					for (int i=0;i<strings.length;i++) {
 						GString s=strings[i];
-						if ( (p.position.y > s.position) != (lastp.y >s.position) ) {
+						if ( (p.getNormalizedPosition().y > s.position) != (lastp.y >s.position) ) {
 							// Crossed a string
 							s.strike(synth, p, p.getcolor(parent));
 						}
@@ -185,6 +185,6 @@ public class VisualizerGuitar extends VisualizerPS {
 			}
 		lastpos.clear();
 		for (int id: allpos.pmap.keySet()) 
-			lastpos.put(id, new PVector(allpos.get(id).position.x,allpos.get(id).position.y));
+			lastpos.put(id, new PVector(allpos.get(id).getNormalizedPosition().x,allpos.get(id).getNormalizedPosition().y));
 	}
 }

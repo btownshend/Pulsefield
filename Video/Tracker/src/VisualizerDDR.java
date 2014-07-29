@@ -123,8 +123,8 @@ public class VisualizerDDR extends Visualizer {
 		// Update internal state of the dancers
 		for (int id: allpos.pmap.keySet()) {
 			if (!dancers.containsKey(id))
-				dancers.put(id,new Dancer(allpos.get(id).position));
-			PVector currentpos=allpos.get(id).position;
+				dancers.put(id,new Dancer(allpos.get(id).getNormalizedPosition()));
+			PVector currentpos=allpos.get(id).getNormalizedPosition();
 			dancers.get(id).update(currentpos);
 			//PApplet.println("Dancer "+id+" moved to "+currentpos.toString());
 		}
