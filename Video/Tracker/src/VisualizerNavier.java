@@ -151,8 +151,8 @@ class VisualizerNavier extends Visualizer {
 			cellX=Math.max(0,Math.min(cellX,n));
 			int cellY = (int) ((pos.getNormalizedPosition().y+1)*n/ 2);
 			cellY=Math.max(0,Math.min(cellY,n));
-			double dx=pos.getNormalizedVelocity().x/parent.frameRate*100;
-			double dy=pos.getNormalizedVelocity().y/parent.frameRate*100;
+			double dx=pos.getVelocityInMeters().x/parent.frameRate*10;
+			double dy=-pos.getVelocityInMeters().y/parent.frameRate*10;
 			//PApplet.println("Cell="+cellX+","+cellY+", dx="+dx+", dy="+dy);
 
 			dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
