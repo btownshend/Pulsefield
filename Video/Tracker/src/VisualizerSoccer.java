@@ -54,20 +54,21 @@ class Ball {
 	
 	// Check for collision with person at position p
 	public void collisionDetect(Position p) {
-//		if (inCollision>0)
-//			return;
-//		for (int i=0;i<2;i++) {
-//			Leg leg=p.legs[i];
-//
-//			float sep=PVector.dist(leg.getOriginInMeters(),position);
-//			float minSep=p.getDiameterInMeters()/2+radius;
-//			if (sep<minSep && PVector.dot(velocity, leg.getVelocityInMeters())<=0) {
-//				PApplet.println("Ball at "+position+" collided with leg at "+leg.getOriginInMeters());
-//				// Assume a kick (but TOOD: if leg is slow, this may be more of a bounce)
-//				velocity=PVector.mult(leg.getVelocityInMeters(),leg.getMassInKg()/(leg.getMassInKg()+mass)*(1+restitution));
-//				inCollision=2;
-//			}
-//		}
+		if (inCollision>0)
+			return;
+		for (int i=0;i<2;i++) {
+			Leg leg=p.legs[i];
+
+			float sep=PVector.dist(leg.getOriginInMeters(),position);
+			float minSep=leg.getDiameterInMeters()/2+radius;
+			if (sep<minSep && PVector.dot(velocity, leg.getVelocityInMeters())<=0) {
+				PApplet.println("Ball at "+position+" with velocity="+velocity+" collided with leg at "+leg.getOriginInMeters()+", velocity="+leg.getVelocityInMeters()+", minsep="+minSep);
+				// Assume a kick (but TOOD: if leg is slow, this may be more of a bounce)
+				velocity=PVector.mult(leg.getVelocityInMeters(),leg.getMassInKg()/(leg.getMassInKg()+mass)*(1+restitution));
+				PApplet.println("New ball velocity="+velocity);
+				inCollision=2;
+			}
+		}
 	}
 }
 

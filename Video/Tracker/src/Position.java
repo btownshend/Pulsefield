@@ -53,7 +53,7 @@ public class Position {
 			avgspeed.mult(1-k);
 			moved.mult(k);
 			avgspeed.add(moved);
-			//PApplet.println("\t\t\t\tk="+k+", Speed="+avgspeed);
+			PApplet.println("\t\t\t\tk="+k+", Speed="+avgspeed);
 		}
 		origin=newpos;
 		lastmovetime=elapsed;
@@ -70,9 +70,7 @@ public class Position {
 	PVector getVelocityInMeters() {
 		return Tracker.unMapPosition(avgspeed);
 	}
-	float getDiameterInMeters() {
-		return legs[0].getDiameterInMeters()+legs[1].getDiameterInMeters()+getLegSeparationInMeters();
-	}
+	
 	float getLegSeparationInMeters() {
 		return 0.1f;  // TODO
 	}
