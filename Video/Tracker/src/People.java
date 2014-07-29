@@ -16,17 +16,6 @@ public class People {
 		pmap.put(id,ps);
 	}
 
-
-	public void move(int id, int channel, PVector newpos, int groupid, int groupsize, float elapsed) {
-		Person ps=pmap.get(id);
-		if (ps==null) {
-			PApplet.println("Unable to locate user "+id+", creating it.");
-			add(id,channel);
-			ps=pmap.get(id);
-		}
-		ps.move(newpos,groupid, groupsize, elapsed);
-		//PApplet.println("ID "+id+" moved to "+newpos);
-	}
 	public void exit(int id) {
 		Person ps=pmap.get(id);
 		if (ps==null)
@@ -48,5 +37,15 @@ public class People {
 	
 	public Person get(int id) {
 		return pmap.get(id);
+	}
+	
+	public Person getOrCreate(int id, int channel) {
+		Person ps=pmap.get(id);
+		if (ps==null) {
+			PApplet.println("Unable to locate user "+id+", creating it.");
+			add(id,channel);
+			ps=pmap.get(id);
+		}
+		return ps;
 	}
 }

@@ -56,27 +56,11 @@ public class Person {
 		return col;
 	}
 
-	void move(PVector newpos, int groupid, int groupsize, float elapsed) {
-		//PApplet.println("move("+newpos+","+elapsed+"), lastmovetime="+lastmovetime);
-		if (lastmovetime!=0.0 && elapsed>lastmovetime) {
-			PVector moved=newpos.get();
-			moved.sub(getNormalizedPosition());
-			moved.mult(1.0f/(elapsed-lastmovetime));
-			// Running average using exponential decay
-			float k=(elapsed-lastmovetime)/averagingTime;
-			if (k>1.0f)
-				k=1.0f;
-			getNormalizedVelocity().mult(1-k);
-			moved.mult(k);
-			getNormalizedVelocity().add(moved);
-			PApplet.println("\t\t\t\tk="+k+", Speed="+getNormalizedVelocity());
-		}
-		setNormalizedPosition(newpos);
-		lastmovetime=elapsed;
+	void move(PVector newpos, PVector newvel, int groupid, int groupsize, float elapsed) {
+		position=newpos;
+		velocity=newvel;
 		this.groupid=groupid;
 		this.groupsize=groupsize;
-		for (int i=0;i<legs.length;i++)
-			legs[i].move(newpos,getNormalizedVelocity()); // TODO - use individual estimates
 	}
 	
 	PVector getOriginInMeters() {

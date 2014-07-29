@@ -379,7 +379,7 @@ public class Tracker extends PApplet {
 			PApplet.println("Got ypos ("+ypos+") greater than maxy ("+Tracker.rawmaxy+"),");
 		}
 
-		people.move(id, channel, normalizePosition(mapPosition(xpos, ypos)), groupid, groupsize, elapsed);
+		people.getOrCreate(id,channel).move(new PVector(xpos, ypos), new PVector(xvelocity, yvelocity), groupid, groupsize, elapsed);
 	}
 	
 	synchronized public void pfbody(int sampnum,int id,
