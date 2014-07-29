@@ -29,8 +29,8 @@ public class Tracker extends PApplet {
 	VisualizerDDR visDDR;
 	VisualizerDot visDot;
 	VisualizerChuck visChuck;
-	String visnames[]={"Pads","Navier","Tron","Ableton","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Icon"};
-	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2"};
+	String visnames[]={"Pads","Navier","Tron","Ableton","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Icon","Soccer"};
+	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3"};
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK;
 	Positions positions;
@@ -94,7 +94,8 @@ public class Tracker extends PApplet {
 		vis[9]=new VisualizerChuck(this);
 		vis[10]=new VisualizerProximity(this);
 		vis[11]=new VisualizerIcon(this);
-		setapp(0);
+		vis[12]=new VisualizerSoccer(this);
+		setapp(vis.length-1);
 		
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
