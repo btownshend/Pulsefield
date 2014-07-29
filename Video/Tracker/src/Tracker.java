@@ -300,9 +300,12 @@ public class Tracker extends PApplet {
 	}
 
 	public static float normalizeDistance(float distInMeters) {
-		return 2f/(Tracker.maxx-Tracker.minx);
+		return 2f/(Tracker.maxx-Tracker.minx)*distInMeters;
 	}
 	
+	public static PVector mapVelocity(PVector velInMetersPerSecond) {
+		return new PVector(velInMetersPerSecond.x*2f/(Tracker.maxx-Tracker.minx),-velInMetersPerSecond.y*2f/(Tracker.maxy-Tracker.miny));
+	}
 	
 	public static PVector mapPosition(float x, float y) {
 		return mapPosition(new PVector(x,y));
