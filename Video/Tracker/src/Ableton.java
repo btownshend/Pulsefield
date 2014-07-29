@@ -515,9 +515,9 @@ public class Ableton {
 
 			int ccx=(int)((p.getNormalizedPosition().x+1)/2*127);ccx=(ccx<0)? 0:(ccx>127?127:ccx);
 			int ccy=(int)((p.getNormalizedPosition().y+1)/2*127);ccy=(ccy<0)? 0:(ccy>127?127:ccy);
-			int ccdx=(int)((p.getNormalizedVelocity().x*3+1)/2*127); ccdx=(ccdx<0)? 0:(ccdx>127?127:ccdx);
-			int ccdy=(int)((p.getNormalizedVelocity().y*3+1)/2*127);ccdy=(ccdy<0)? 0:(ccdy>127?127:ccdy);
-			int ccspeed=(int)(p.getNormalizedVelocity().mag()*2*127);ccspeed=(ccspeed<0)? 0:(ccspeed>127?127:ccspeed);
+			int ccdx=(int)(p.getVelocityInMeters().x*32+64); ccdx=(ccdx<0)? 0:(ccdx>127?127:ccdx);
+			int ccdy=(int)(p.getVelocityInMeters().y*32+64);ccdy=(ccdy<0)? 0:(ccdy>127?127:ccdy);
+			int ccspeed=(int)(p.getVelocityInMeters().mag()*64);ccspeed=(ccspeed<0)? 0:(ccspeed>127?127:ccspeed);
 			//System.out.println("OLD="+c.ccx+","+c.ccy+", new="+ccx+","+ccy);
 
 			int track=trackSet.getTrack(p.channel);
