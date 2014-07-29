@@ -31,7 +31,7 @@ public class Position {
 		this.lastmovetime = 0f;
 		this.channel = channel;
 	}
-
+	
 	int getcolor(PApplet parent) {
 		final int colors[] = {0xffffffff, 0xff00ff00, 0xff0000ff, 0xffFFFF00, 0xffFF00FF, 0xff00ffff};
 		
@@ -39,7 +39,6 @@ public class Position {
 		//PApplet.println("Color="+String.format("%x", col));
 		return col;
 	}
-
 
 	void move(PVector newpos, int groupid, int groupsize, float elapsed) {
 		//PApplet.println("move("+newpos+","+elapsed+"), lastmovetime="+lastmovetime);
@@ -64,5 +63,18 @@ public class Position {
 			legs[i].move(newpos,avgspeed); // TODO - use individual estimates
 	}
 	
+	PVector getOriginInMeters() {
+		return Tracker.unMapPosition(origin);
+	}
+		
+	PVector getVelocityInMeters() {
+		return Tracker.unMapPosition(avgspeed);
+	}
+	float getDiameterInMeters() {
+		return legs[0].getDiameterInMeters()+legs[1].getDiameterInMeters()+getLegSeparationInMeters();
+	}
+	float getLegSeparationInMeters() {
+		return 0.1f;  // TODO
+	}
 
 }
