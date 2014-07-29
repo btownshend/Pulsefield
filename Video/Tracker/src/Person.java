@@ -2,8 +2,6 @@ import processing.core.PApplet;
 import processing.core.PVector;
 
 public class Person {
-	float lastmovetime;   // Last moved time in seconds
-	static float averagingTime =0.1f;   // Averaging time in seconds
 	private PVector position;  // Position in meters (in absolute coordinate)
 	private PVector velocity;  // Velocity in meters/sec
 	int channel;
@@ -13,7 +11,6 @@ public class Person {
 	Leg[] legs;
 	
 	public Person(PVector origin, int channel, int id) {
-		this.lastmovetime= 0f;
 		this.position=new PVector(origin.x,origin.y);
 		this.velocity=new PVector(0f,0f);
 		this.channel = channel;
