@@ -119,19 +119,19 @@ public class VisualizerDDR extends Visualizer {
 			Ableton.getInstance().playClip(cursong.track,cursong.clipNumber);
 	}
 	
-	public void update(PApplet parent, Positions allpos) {
+	public void update(PApplet parent, People allpos) {
 		// Update internal state of the dancers
-		for (int id: allpos.positions.keySet()) {
+		for (int id: allpos.pmap.keySet()) {
 			if (!dancers.containsKey(id))
-				dancers.put(id,new Dancer(allpos.get(id).origin));
-			PVector currentpos=allpos.get(id).origin;
+				dancers.put(id,new Dancer(allpos.get(id).position));
+			PVector currentpos=allpos.get(id).position;
 			dancers.get(id).update(currentpos);
 			//PApplet.println("Dancer "+id+" moved to "+currentpos.toString());
 		}
 		// Remove dancers for which we no longer have a position (exitted)
 		for (Iterator<Integer> iter = dancers.keySet().iterator();iter.hasNext();) {
 			int id=iter.next().intValue();
-			if (!allpos.positions.containsKey(id)) {
+			if (!allpos.pmap.containsKey(id)) {
 				PApplet.println("Removing ID "+id);
 				iter.remove();
 			}
@@ -158,7 +158,7 @@ public class VisualizerDDR extends Visualizer {
 		cursong=null;
 	}
 
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		final float leftwidth=150;
 		final float rightwidth=250;
 		final float rightmargin=50;
@@ -167,7 +167,7 @@ public class VisualizerDDR extends Visualizer {
 		parent.imageMode(PConstants.CORNERS);
 		//parent.image(banner, 0, 0, wsize.x, wsize.y);
 		parent.colorMode(PConstants.RGB, 255);
-		if (p.positions.isEmpty())
+		if (p.pmap.isEmpty())
 			drawWelcome(parent,wsize);
 
 		drawScores(parent,p,new PVector(leftwidth,wsize.y));
@@ -181,7 +181,7 @@ public class VisualizerDDR extends Visualizer {
 		}
 	}
 
-	public void drawPF(PApplet parent, Positions allpos, PVector wsize) {
+	public void drawPF(PApplet parent, People allpos, PVector wsize) {
 		final float ARROWSIZE=DOTSIZE;
 		final float ARROWDIST=(ARROWSIZE+DOTSIZE)/2;
 
@@ -192,7 +192,7 @@ public class VisualizerDDR extends Visualizer {
 		// Add drawing code here
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
-			Position p=allpos.get(id);
+			Person p=allpos.get(id);
 			PVector offset = d.current;
 			offset.sub(d.neutral);
 			float angle=offset.heading();
@@ -210,7 +210,7 @@ public class VisualizerDDR extends Visualizer {
 		}
 	}
 
-	public void drawScores(PApplet parent, Positions allpos, PVector wsize) {
+	public void drawScores(PApplet parent, People allpos, PVector wsize) {
 		float lineHeight=wsize.y/12;
 
 		parent.stroke(255);
@@ -229,7 +229,7 @@ public class VisualizerDDR extends Visualizer {
 
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
-			Position p=allpos.get(id);
+			Person p=allpos.get(id);
 			if (p==null)
 				continue;
 			

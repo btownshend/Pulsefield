@@ -98,11 +98,11 @@ class VisualizerNavier extends Visualizer {
 	}
 
 	@Override
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 //		Don't call parent.draw since it draws the defaults border and fills the background
 //		super.draw(parent,p,wsize);
 		
-		if (p.positions.isEmpty()) {
+		if (p.pmap.isEmpty()) {
 			drawWelcome(parent,wsize);
 			return;
 		}
@@ -125,7 +125,7 @@ class VisualizerNavier extends Visualizer {
 		drawBorders(parent, true, wsize, 7, bordercolor, 127);
 
 		parent.ellipseMode(PConstants.CENTER);
-		for (Position ps: p.positions.values()) {  
+		for (Person ps: p.pmap.values()) {  
 			int c=ps.getcolor(parent);
 			parent.fill(c,255);
 			parent.stroke(c,255);
@@ -134,27 +134,27 @@ class VisualizerNavier extends Visualizer {
 			float sz=5;
 			if (ps.groupsize > 1)
 				sz=20*ps.groupsize;
-			parent.ellipse((ps.origin.x+1)*wsize.x/2, (ps.origin.y+1)*wsize.y/2, sz, sz);
+			parent.ellipse((ps.position.x+1)*wsize.x/2, (ps.position.y+1)*wsize.y/2, sz, sz);
 		}
 	}
 
-	public void update(PApplet parent, Positions p) {
+	public void update(PApplet parent, People p) {
 		Ableton.getInstance().updateMacros(p);
-		for (Position pos: p.positions.values()) {
+		for (Person pos: p.pmap.values()) {
 			//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
-			if (pos.avgspeed.mag() > 0.1)
+			if (pos.velocity.mag() > 0.1)
 				synth.play(pos.id,pos.channel+35,127,480,pos.channel);
 		}
 		long t1=System.nanoTime();
 		int n = NavierStokesSolver.N;
-		for (Position pos: p.positions.values()) {
+		for (Person pos: p.pmap.values()) {
 			//PApplet.println("update("+p.channel+"), enabled="+p.enabled);
-			int cellX = (int)( (pos.origin.x+1)*n / 2);
+			int cellX = (int)( (pos.position.x+1)*n / 2);
 			cellX=Math.max(0,Math.min(cellX,n));
-			int cellY = (int) ((pos.origin.y+1)*n/ 2);
+			int cellY = (int) ((pos.position.y+1)*n/ 2);
 			cellY=Math.max(0,Math.min(cellY,n));
-			double dx=pos.avgspeed.x/parent.frameRate*100;
-			double dy=pos.avgspeed.y/parent.frameRate*100;
+			double dx=pos.velocity.x/parent.frameRate*100;
+			double dy=pos.velocity.y/parent.frameRate*100;
 			//PApplet.println("Cell="+cellX+","+cellY+", dx="+dx+", dy="+dy);
 
 			dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;

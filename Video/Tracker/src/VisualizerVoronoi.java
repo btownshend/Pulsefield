@@ -109,7 +109,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 	@SuppressWarnings("unused")
 	@Override
-	public void update(PApplet parent, Positions allpos) {
+	public void update(PApplet parent, People allpos) {
 		super.update(parent, allpos);
 
 		// Create Delaunay triangulation
@@ -126,8 +126,8 @@ public class VisualizerVoronoi extends VisualizerPS {
 			}
 		}
 
-		for (Position p: allpos.positions.values()) {
-			dt.delaunayPlace(new PntWithID(p.id,p.origin.x,p.origin.y));
+		for (Person p: allpos.pmap.values()) {
+			dt.delaunayPlace(new PntWithID(p.id,p.position.x,p.position.y));
 		}
 		float beat=MasterClock.getBeat();
 		if (beat-last >= noteDuration) {
@@ -148,7 +148,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 				newvoice=firstvoice;
 			if (newvoice!=null) {
 				curVoice=newvoice;
-				Position pos=allpos.get(curVoice.id);
+				Person pos=allpos.get(curVoice.id);
 				if (pos==null) {
 					PApplet.println("Delete voice for ID "+curVoice.id);
 					voices.remove(curVoice);
@@ -162,7 +162,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 	}
 
 	@Override
-	public void draw(PApplet parent, Positions allpos, PVector wsize) {
+	public void draw(PApplet parent, People allpos, PVector wsize) {
 		super.draw(parent, allpos, wsize);
 
 		// Draw Voronoi diagram

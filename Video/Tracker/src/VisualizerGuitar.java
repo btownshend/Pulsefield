@@ -36,11 +36,11 @@ class GString {
 		this.position = position;
 	}
 
-	public void strike(Synth synth, Position p, int color) {
-		PApplet.println("Strike ("+p.origin.x+","+p.origin.y+") Color="+color);
+	public void strike(Synth synth, Person p, int color) {
+		PApplet.println("Strike ("+p.position.x+","+p.position.y+") Color="+color);
 		int i;
 		for (i=0;i<frets.length;i++)
-			if (p.origin.x<frets[i])
+			if (p.position.x<frets[i])
 				break;
 		//PApplet.println("x="+p.origin.x+", i="+i);
 		if (i==0 || i>=frets.length)
@@ -50,7 +50,7 @@ class GString {
 		vibrating=true;
 		this.color=color;
 		strikeTime=System.currentTimeMillis();
-		int velocity=(int)(p.avgspeed.mag()*500);
+		int velocity=(int)(p.velocity.mag()*500);
 		if (velocity>127)
 			velocity=127;
 		this.velocity=velocity;
@@ -102,7 +102,7 @@ public class VisualizerGuitar extends VisualizerPS {
 	}
 
 
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent,p,wsize);
 		parent.tint(127);
 		parent.imageMode(PConstants.CENTER);
@@ -137,7 +137,7 @@ public class VisualizerGuitar extends VisualizerPS {
 		}
 	}
 	
-	public void drawLaser(PApplet parent, Positions p) {
+	public void drawLaser(PApplet parent, People p) {
 		super.drawLaser(parent,p);
 		//PApplet.println("Guitar drawLaser");
 		Laser laser=Laser.getInstance();
@@ -166,17 +166,17 @@ public class VisualizerGuitar extends VisualizerPS {
 		laser.bgEnd();
 	}
 
-	public void update(PApplet parent, Positions allpos) {
+	public void update(PApplet parent, People allpos) {
 		super.update(parent,allpos);
 		if (lastpos != null)
-			for (int id: allpos.positions.keySet()) {
-				Position p=allpos.positions.get(id);
+			for (int id: allpos.pmap.keySet()) {
+				Person p=allpos.pmap.get(id);
 				PVector lastp=lastpos.get(id);
 				if (lastp!=null) {
 					//PApplet.println("y="+lastp.y+" -> "+p.origin.y);
 					for (int i=0;i<strings.length;i++) {
 						GString s=strings[i];
-						if ( (p.origin.y > s.position) != (lastp.y >s.position) ) {
+						if ( (p.position.y > s.position) != (lastp.y >s.position) ) {
 							// Crossed a string
 							s.strike(synth, p, p.getcolor(parent));
 						}
@@ -184,7 +184,7 @@ public class VisualizerGuitar extends VisualizerPS {
 				}
 			}
 		lastpos.clear();
-		for (int id: allpos.positions.keySet()) 
-			lastpos.put(id, new PVector(allpos.get(id).origin.x,allpos.get(id).origin.y));
+		for (int id: allpos.pmap.keySet()) 
+			lastpos.put(id, new PVector(allpos.get(id).position.x,allpos.get(id).position.y));
 	}
 }

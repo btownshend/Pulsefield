@@ -8,13 +8,13 @@ import processing.opengl.PGraphicsOpenGL;
 import java.util.ArrayList;
 
 // Visualizer that sends messages to chuck
-abstract class Fiducial extends Position {
-	Fiducial(Position ps) {
-		super(ps.origin,ps.channel,ps.id);
+abstract class Fiducial extends Person {
+	Fiducial(Person ps) {
+		super(ps.position,ps.channel,ps.id);
 	}
 
-	void update(Position ps) {
-		origin=ps.origin;
+	void update(Person ps) {
+		position=ps.position;
 	}
 
 	abstract void draw(PApplet parent, PVector wsize, float sz);
@@ -130,7 +130,7 @@ class Generator extends Fiducial {
 	GeneratorType genType;
 	ArrayList<Controller> children;
 
-	Generator(Position ps, GeneratorType genType) {
+	Generator(Person ps, GeneratorType genType) {
 		super(ps);
 		this.genType=genType;
 		OscMessage msg = new OscMessage("/chuck/new");
@@ -151,20 +151,20 @@ class Generator extends Fiducial {
 	}
 
 	@Override
-	void update(Position ps) {
+	void update(Person ps) {
 		super.update(ps);
 		OscMessage msg = new OscMessage("/chuck/dev/"+id+"/pan");
-		msg.add((ps.origin.x+1f)/2f);
+		msg.add((ps.position.x+1f)/2f);
 		Tracker.sendOSC("CK",msg);
 		msg = new OscMessage("/chuck/dev/"+id+"/y");
-		msg.add((-ps.origin.y+1f)/2f); // Flip direction so top of screen (far side of PF) is 1.0
+		msg.add((-ps.position.y+1f)/2f); // Flip direction so top of screen (far side of PF) is 1.0
 		Tracker.sendOSC("CK",msg);
 	}
 
 	@Override 
 	void draw(PApplet parent, PVector wsize, float sz) {
-		float x=(origin.x+1)*wsize.x/2;
-		float y=(origin.y+1)*wsize.y/2;
+		float x=(position.x+1)*wsize.x/2;
+		float y=(position.y+1)*wsize.y/2;
 		parent.fill(genType.color);
 		parent.stroke(genType.color);
 		parent.ellipseMode(PConstants.CENTER);
@@ -181,18 +181,18 @@ class Controller extends Fiducial {
 	CCPair cc;   // Controller numbers to use for (dir,dist), -1 to ignore
 	float cc1val, cc2val;
 
-	Controller(Position ps) {
+	Controller(Person ps) {
 		super(ps);
 		parent=null;
 		cc=null;
 	}
 
 	@Override
-	void update(Position ps) {
+	void update(Person ps) {
 		super.update(ps);
 		if (parent!=null) {
-			float dir=PVector.sub(parent.origin,origin).heading();
-			float dist=PVector.dist(parent.origin,origin);
+			float dir=PVector.sub(parent.position,position).heading();
+			float dist=PVector.dist(parent.position,position);
 			if (cc.cc1!=-1) {
 				OscMessage msg = new OscMessage("/chuck/dev/"+parent.id+"/cc");
 				msg.add(cc.cc1);
@@ -218,14 +218,14 @@ class Controller extends Fiducial {
 
 	@Override 
 	void draw(PApplet parent, PVector wsize, float sz) {
-		float x=(origin.x+1)*wsize.x/2;
-		float y=(origin.y+1)*wsize.y/2;
+		float x=(position.x+1)*wsize.x/2;
+		float y=(position.y+1)*wsize.y/2;
 		if (cc!=null) {
 			parent.fill(cc.color);
 			parent.stroke(cc.color);
 		}
 		if (this.parent!=null) {
-			parent.line((origin.x+1)*wsize.x/2, (origin.y+1)*wsize.y/2, (this.parent.origin.x+1)*wsize.x/2, (this.parent.origin.y+1)*wsize.y/2);
+			parent.line((position.x+1)*wsize.x/2, (position.y+1)*wsize.y/2, (this.parent.position.x+1)*wsize.x/2, (this.parent.position.y+1)*wsize.y/2);
 		}
 		if (cc != null && cc.cc1==200)
 			// Use triangles for patterns
@@ -303,7 +303,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 		super.clear();
 	}
 
-	void addNew(Position pos, int id) {
+	void addNew(Person pos, int id) {
 		int ngen=0, nctrl=0;
 		for (Fiducial f: values()) {
 			if (f instanceof Generator)
@@ -339,7 +339,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 				Controller c=(Controller)f;
 				if (c.parent != null) {
 					// Check if we need to break connection
-					float dist=PVector.dist(c.origin,c.parent.origin);
+					float dist=PVector.dist(c.position,c.parent.position);
 					if (dist>DISTBREAK) {
 						c.disconnect();
 					}
@@ -350,7 +350,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 					Generator newparent=null;
 					for (Fiducial f2: values()) {
 						if (f2 instanceof Generator) {
-							float dist=PVector.dist(c.origin, f2.origin);
+							float dist=PVector.dist(c.position, f2.position);
 							//PApplet.println("Distance from "+f.id+" to "+f2.id+" = "+dist);
 							if (dist<mindist) {
 								mindist=dist;
@@ -399,9 +399,9 @@ public class VisualizerChuck extends Visualizer {
 	}
 
 	@Override
-	public void update(PApplet parent, Positions allpos) {
+	public void update(PApplet parent, People allpos) {
 		// Update internal state of the dancers
-		for (int id: allpos.positions.keySet()) {
+		for (int id: allpos.pmap.keySet()) {
 			if (!fiducials.containsKey(id)) {
 				fiducials.addNew(allpos.get(id),id);
 			}
@@ -414,7 +414,7 @@ public class VisualizerChuck extends Visualizer {
 		do {
 			done=true;
 			for (int id: fiducials.keySet()) {
-				if (!allpos.positions.containsKey(id)) {
+				if (!allpos.pmap.containsKey(id)) {
 					PApplet.println("Removing ID "+id);
 					fiducials.remove(id);
 					done=false;
@@ -441,7 +441,7 @@ public class VisualizerChuck extends Visualizer {
 	}
 
 	@Override
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
 		fiducials.draw(parent,wsize);
 	}

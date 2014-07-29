@@ -116,7 +116,7 @@ public class VisualizerTron extends Visualizer {
 			return oldgpos+((dy>0)?1:-1);
 	}
 
-	public void update(PApplet parent, Positions positions) {
+	public void update(PApplet parent, People positions) {
 		float beat=MasterClock.getBeat();
 		if ((int)(beat/notedur) != (int)(lastbeat/notedur)) {
 			for (int id: playgrid.keySet()) {
@@ -155,9 +155,9 @@ public class VisualizerTron extends Visualizer {
 		}
 
 
-		for (int id: positions.positions.keySet()) {
-			Position ps=positions.get(id);
-			PVector newpos=ps.origin;
+		for (int id: positions.pmap.keySet()) {
+			Person ps=positions.get(id);
+			PVector newpos=ps.position;
 			int gpos=postogrid(newpos);
 			if (currentgrid.containsKey(id)  && currentgrid.get(id)!=-1) {
 				int oldgpos=currentgrid.get(id);
@@ -208,7 +208,7 @@ public class VisualizerTron extends Visualizer {
 		}
 		for (Iterator<Integer> iter = currentgrid.keySet().iterator();iter.hasNext();) {
 			int id=iter.next().intValue();
-			if (!positions.positions.containsKey(id)) {
+			if (!positions.pmap.containsKey(id)) {
 				PApplet.println("Removing ID "+id);
 				playgrid.remove(id);
 				clear(id);
@@ -217,7 +217,7 @@ public class VisualizerTron extends Visualizer {
 		}
 	}
 
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent,p,wsize);
 
 		for (int i=0;i<gridWidth;i++)
@@ -265,7 +265,7 @@ public class VisualizerTron extends Visualizer {
 			}	
 	}
 	
-	public void drawLaser(PApplet parent, Positions p) {
+	public void drawLaser(PApplet parent, People p) {
 		super.drawLaser(parent,p);
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();

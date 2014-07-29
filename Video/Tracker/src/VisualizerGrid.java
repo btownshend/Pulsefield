@@ -55,10 +55,10 @@ public class VisualizerGrid extends VisualizerPS {
 		assignments.clear();
 	}
 
-	public void update(PApplet parent, Positions allpos) {
+	public void update(PApplet parent, People allpos) {
 		super.update(parent,allpos);
 	//	HashMap<Integer,Integer> newAssignments=new HashMap<Integer,Integer>();
-		for (Position pos: allpos.positions.values()) {
+		for (Person pos: allpos.pmap.values()) {
 			//PApplet.println("ID "+pos.id+" pos="+pos.origin);
 			// Find closest grid position
 			int closest=-1;
@@ -68,11 +68,11 @@ public class VisualizerGrid extends VisualizerPS {
 			if (assignments.containsKey(pos.id)) {
 				current=assignments.get(pos.id);
 				closest=current;
-				mindist=(Math.pow(gposx[closest]-pos.origin.x,2)+Math.pow(gposy[closest]-pos.origin.y,2))*0.8;  // Make it appear a little closer to create hysteresis
+				mindist=(Math.pow(gposx[closest]-pos.position.x,2)+Math.pow(gposy[closest]-pos.position.y,2))*0.8;  // Make it appear a little closer to create hysteresis
 				//PApplet.println("Had existing grid "+closest+" at distance "+Math.sqrt(mindist));	
 			}
 			for (int i=0;i<ncell;i++) {
-				double dist2=Math.pow(gposx[i]-pos.origin.x,2)+Math.pow(gposy[i]-pos.origin.y,2);
+				double dist2=Math.pow(gposx[i]-pos.position.x,2)+Math.pow(gposy[i]-pos.position.y,2);
 				if (dist2 < mindist) {
 					mindist=dist2;
 					closest=i;
@@ -93,14 +93,14 @@ public class VisualizerGrid extends VisualizerPS {
 		Iterator<Map.Entry<Integer,Integer> > i = assignments.entrySet().iterator();
 		while (i.hasNext()) {
 			int id=i.next().getKey();
-			if (!allpos.positions.containsKey(id)) {
+			if (!allpos.pmap.containsKey(id)) {
 				PApplet.println("update: no update info for assignment for id "+id);
 				i.remove();
 			}
 		}
 	}
 
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent,p, wsize);
 
 		parent.textSize(16);
@@ -126,7 +126,7 @@ public class VisualizerGrid extends VisualizerPS {
 		parent.text(Ableton.getInstance().trackSet.name,5,5);
 	}
 
-	public void drawLaser(PApplet parent, Positions p) {
+	public void drawLaser(PApplet parent, People p) {
 		super.drawLaser(parent,p);
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();

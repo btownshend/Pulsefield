@@ -24,21 +24,21 @@ public abstract class Visualizer {
 		parent.text("Please enter...", wsize.x/2,wsize.y/2+2.5f*lineSize);
 	}
 	
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		parent.background(0, 0, 0);  
 		parent.colorMode(PConstants.RGB, 255);
 
-		if (p.positions.isEmpty())
+		if (p.pmap.isEmpty())
 			drawWelcome(parent,wsize);
 		drawBorders(parent, false, wsize);
 	}
 
 	// Draw to laser
-	public void drawLaser(PApplet parent, Positions p) {
+	public void drawLaser(PApplet parent, People p) {
 	;	
 	}
 	
-	abstract public void update(PApplet parent, Positions p);
+	abstract public void update(PApplet parent, People p);
 	public void start() {;}
 	public void stop() {
 		Ableton.getInstance().setTrackSet(null);

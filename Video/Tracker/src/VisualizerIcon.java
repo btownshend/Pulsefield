@@ -31,16 +31,16 @@ public class VisualizerIcon extends Visualizer {
 	}
 
 	
-	public void update(PApplet parent, Positions p) {
+	public void update(PApplet parent, People p) {
 		;
 	}
 
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
 		parent.background(127,127,127);
 		parent.shapeMode(PApplet.CENTER);
 		final float sz=20;  // Size to make the icon's largest dimension, in pixels
-		for (Position ps: p.positions.values()) {  
+		for (Person ps: p.pmap.values()) {  
 			int c=ps.getcolor(parent);
 			parent.fill(c,255);
 			parent.stroke(c,255);
@@ -48,14 +48,14 @@ public class VisualizerIcon extends Visualizer {
 			//icon.translate(-icon.width/2, -icon.height/2);
 			//PApplet.println("Display shape "+icon+" at "+ps.origin);
 			float scale=Math.min(sz/icon.width,sz/icon.height);
-			parent.shape(icon,(ps.origin.x+1)*wsize.x/2, (ps.origin.y+1)*wsize.y/2,icon.width*scale,icon.height*scale);
+			parent.shape(icon,(ps.position.x+1)*wsize.x/2, (ps.position.y+1)*wsize.y/2,icon.width*scale,icon.height*scale);
 			//icon.resetMatrix();
 		}
 	}
 	
-	public void drawLaser(PApplet parent, Positions p) {
+	public void drawLaser(PApplet parent, People p) {
 		Laser laser=Laser.getInstance();
-		for (Position ps: p.positions.values()) {  
+		for (Person ps: p.pmap.values()) {  
 			String icon=icons[ps.id%icons.length];
 			laser.cellBegin(ps.id);
 			laser.svgfile(icon,0.0f,0.0f,0.7f,0.0f);

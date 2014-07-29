@@ -16,12 +16,12 @@ public class VisualizerPads extends VisualizerPS {
 
 
 	@Override
-	public void update(PApplet parent, Positions allpos) {
+	public void update(PApplet parent, People allpos) {
 		super.update(parent,allpos);
 		Ableton.getInstance().updateMacros(allpos);
-		for (Position pos: allpos.positions.values()) {
+		for (Person pos: allpos.pmap.values()) {
 			//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
-			if (pos.avgspeed.mag() > 0.1)
+			if (pos.velocity.mag() > 0.1)
 				synth.play(pos.id,pos.channel+35,127,480,pos.channel);
 		}
 	}

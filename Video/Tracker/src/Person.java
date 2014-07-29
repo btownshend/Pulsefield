@@ -1,9 +1,9 @@
 import processing.core.PApplet;
 import processing.core.PVector;
 
-public class Position {
-	PVector origin;
-	PVector avgspeed; // Average speed in pixels/second
+public class Person {
+	PVector position;
+	PVector velocity; // Average speed in pixels/second
 	float lastmovetime;   // Last moved time in seconds
 	static float averagingTime =0.1f;   // Averaging time in seconds
 	int channel;
@@ -12,9 +12,9 @@ public class Position {
 	int groupsize;
 	Leg[] legs;
 	
-	public Position(PVector origin, int channel, int id) {
-		this.origin=origin;
-		this.avgspeed=new PVector(0f,0f);
+	public Person(PVector origin, int channel, int id) {
+		this.position=origin;
+		this.velocity=new PVector(0f,0f);
 		this.lastmovetime= 0f;
 		this.channel = channel;
 		this.id = id;
@@ -25,9 +25,9 @@ public class Position {
 			this.legs[i]=new Leg();
 	}
 	
-	public Position(int channel) {
-		this.origin = new PVector(0f,0f);
-		this.avgspeed=new PVector(0f,0f);
+	public Person(int channel) {
+		this.position = new PVector(0f,0f);
+		this.velocity=new PVector(0f,0f);
 		this.lastmovetime = 0f;
 		this.channel = channel;
 	}
@@ -44,31 +44,31 @@ public class Position {
 		//PApplet.println("move("+newpos+","+elapsed+"), lastmovetime="+lastmovetime);
 		if (lastmovetime!=0.0 && elapsed>lastmovetime) {
 			PVector moved=newpos.get();
-			moved.sub(origin);
+			moved.sub(position);
 			moved.mult(1.0f/(elapsed-lastmovetime));
 			// Running average using exponential decay
 			float k=(elapsed-lastmovetime)/averagingTime;
 			if (k>1.0f)
 				k=1.0f;
-			avgspeed.mult(1-k);
+			velocity.mult(1-k);
 			moved.mult(k);
-			avgspeed.add(moved);
-			PApplet.println("\t\t\t\tk="+k+", Speed="+avgspeed);
+			velocity.add(moved);
+			PApplet.println("\t\t\t\tk="+k+", Speed="+velocity);
 		}
-		origin=newpos;
+		position=newpos;
 		lastmovetime=elapsed;
 		this.groupid=groupid;
 		this.groupsize=groupsize;
 		for (int i=0;i<legs.length;i++)
-			legs[i].move(newpos,avgspeed); // TODO - use individual estimates
+			legs[i].move(newpos,velocity); // TODO - use individual estimates
 	}
 	
 	PVector getOriginInMeters() {
-		return Tracker.unMapPosition(origin);
+		return Tracker.unMapPosition(position);
 	}
 		
 	PVector getVelocityInMeters() {
-		return Tracker.unMapPosition(avgspeed);
+		return Tracker.unMapPosition(velocity);
 	}
 	
 	float getLegSeparationInMeters() {

@@ -33,7 +33,7 @@ public class Tracker extends PApplet {
 	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3"};
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK;
-	Positions positions;
+	People people;
 	Ableton ableton;
 	boolean useMAX;
 	Synth synth;
@@ -60,7 +60,7 @@ public class Tracker extends PApplet {
 		cycler=new AutoCycler();
 		
 		frame.setBackground(new Color(0,0,0));
-		positions=new Positions();
+		people=new People();
 
 		// OSC Setup (but do plugs later so everything is setup for them)
 		oscP5 = new OscP5(this, config.getPort("VD"));
@@ -212,19 +212,19 @@ public class Tracker extends PApplet {
 		if (mousePressed) {
 			PVector mousePos=new PVector(mouseX*2f/width-1, mouseY*2f/height-1);
 			PVector mouseVel=PVector.div(PVector.sub(mousePos,prevMousePos),avgFrameRate);
-			positions.move(mouseID, mouseID%16, mousePos, mouseID, 1, tick/avgFrameRate);
-			Leg legs[]=positions.get(mouseID).legs;
+			people.move(mouseID, mouseID%16, mousePos, mouseID, 1, tick/avgFrameRate);
+			Leg legs[]=people.get(mouseID).legs;
 			legs[0].move(PVector.add(mousePos,new PVector(0.0f,-20.0f)),mouseVel);
 			legs[1].move(PVector.add(mousePos,new PVector(0.0f,20.0f)), mouseVel);
 			prevMousePos=mousePos;
 		}
 
 
-		vis[currentvis].update(this, positions);
+		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);
 
-		vis[currentvis].draw(this,positions,new PVector(width,height));
-		vis[currentvis].drawLaser(this,positions);
+		vis[currentvis].draw(this,people,new PVector(width,height));
+		vis[currentvis].drawLaser(this,people);
 	}
 
 	public void mouseReleased() {
@@ -337,7 +337,7 @@ public class Tracker extends PApplet {
 
 	synchronized public void pfstopped() {
 		PApplet.println("PF stopped");
-		positions.clear();
+		people.clear();
 	}
 
 	void pfframe(int frame) {
@@ -350,7 +350,7 @@ public class Tracker extends PApplet {
 	}
 
 	synchronized void add(int id, int channel) {
-		positions.add(id, channel);
+		people.add(id, channel);
 	}
 
 	synchronized public void pfupdate(int sampnum, float elapsed, int id, float xpos, float ypos, float xvelocity, float yvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
@@ -379,7 +379,7 @@ public class Tracker extends PApplet {
 			PApplet.println("Got ypos ("+ypos+") greater than maxy ("+Tracker.rawmaxy+"),");
 		}
 
-		positions.move(id, channel, normalizePosition(mapPosition(xpos, ypos)), groupid, groupsize, elapsed);
+		people.move(id, channel, normalizePosition(mapPosition(xpos, ypos)), groupid, groupsize, elapsed);
 	}
 	
 	synchronized public void pfbody(int sampnum,int id,
@@ -395,7 +395,6 @@ public class Tracker extends PApplet {
 			float x,float y,float ex,float ey,
 			float spd,float espd,float heading,float eheading,
 			int visibility) {
-	
 	}
 	public void pfsetminx(float minx) {  
 		Tracker.rawminx=minx;
@@ -435,24 +434,24 @@ public class Tracker extends PApplet {
 	}
 	
 	synchronized public void pfsetnpeople(int n) {
-		PApplet.println("/pf/set/npeople: now have "+n+" people, size="+positions.positions.size());
+		PApplet.println("/pf/set/npeople: now have "+n+" people, size="+people.pmap.size());
 		if (n==0)
 			setapp(currentvis);   // Cause a reset
-		if (n==0 && positions.positions.size()>0 && autocycle)
+		if (n==0 && people.pmap.size()>0 && autocycle)
 			cycle();
-		positions.setnpeople(n);  // Also clears positions
+		people.setnpeople(n);  // Also clears positions
 	}
 
 	synchronized public void pfexit(int sampnum, float elapsed, int id) {
 		PApplet.println("exit: sampnum="+sampnum+", elapsed="+elapsed+", id="+id);
-		positions.exit(id);
-		if (positions.positions.size()==0 && autocycle)
+		people.exit(id);
+		if (people.pmap.size()==0 && autocycle)
 			cycle();
 	}
 
 	synchronized public void pfentry(int sampnum, float elapsed, int id, int channel) {
 		add(id,channel);
-		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel+", color="+positions.get(id).getcolor(this));
+		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel+", color="+people.get(id).getcolor(this));
 	}
 
 	public void noteOn(int channel, int pitch, int velocity) {

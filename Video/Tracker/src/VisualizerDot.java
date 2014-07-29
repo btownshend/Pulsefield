@@ -13,15 +13,15 @@ public class VisualizerDot extends Visualizer {
 
 	}
 	
-	public void update(PApplet parent, Positions p) {
+	public void update(PApplet parent, People p) {
 		;
 	}
 
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
 
 		parent.ellipseMode(PConstants.CENTER);
-		for (Position ps: p.positions.values()) {  
+		for (Person ps: p.pmap.values()) {  
 			int c=ps.getcolor(parent);
 			parent.fill(c,255);
 			parent.stroke(c,255);

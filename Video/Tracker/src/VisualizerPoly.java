@@ -14,7 +14,7 @@ class PolyState {
 	boolean playing;
 	float startBeat;
 	float noteDuration;
-	Position pos;
+	Person pos;
 	int color;
 	int mybeat;
 	float lastbeat;
@@ -22,7 +22,7 @@ class PolyState {
 	float lastGrouping;
 	boolean isDrummer;
 	
-	PolyState(Position pos, float noteDuration, int color) {
+	PolyState(Person pos, float noteDuration, int color) {
 		this.noteDuration=noteDuration;
 		this.color=color;
 		this.pos=pos;
@@ -37,19 +37,19 @@ class PolyState {
 			//PApplet.println("Stopped channel "+pos.channel+" at beat "+beat);
 			playing=false;
 		}
-		float radius=pos.origin.mag();
+		float radius=pos.position.mag();
 		mybeat=(int)(radius*totalBeats+0.5);
 		if (mybeat==0)
 			mybeat=1;
 
 		if (!playing && (((int)(beat*4)-(int)(startBeat*4))>=mybeat || pos.groupsize>1 ) && (int)(beat*4) != (int)(startBeat*4)) {
 			if (isDrummer) {
-				int pitch=(int)((pos.origin.heading()+Math.PI)/(2*Math.PI)*16+35);
+				int pitch=(int)((pos.position.heading()+Math.PI)/(2*Math.PI)*46+35);
 				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), 10);
 			} else {	
 				// Play note
 				curnote=0;   // Override multiple pitches/person
-				int pitch=scale.map2note(pos.origin.heading(), (float) -Math.PI, (float)Math.PI,curnote,3);
+				int pitch=scale.map2note(pos.position.heading(), (float) -Math.PI, (float)Math.PI,curnote,3);
 				curnote=curnote+2;
 				if (curnote>=6)
 					curnote=0;
@@ -82,7 +82,7 @@ class PolyState {
 			parent.fill(color);
 		else
 			parent.fill(color,127);
-		parent.ellipse((pos.origin.x+1)*wsize.x/2, (pos.origin.y+1)*wsize.y/2, 30, 30);
+		parent.ellipse((pos.position.x+1)*wsize.x/2, (pos.position.y+1)*wsize.y/2, 30, 30);
 		if (playing) {
 			parent.fill(0);
 			parent.stroke(color);
@@ -94,7 +94,7 @@ class PolyState {
 			for (int k=0;k<NBOLTS;k++)
 				if (Math.random() < 0.2) {
 					PVector delta=new PVector((float)Math.cos(Math.PI*2*k/NBOLTS)*BOLTLENGTH,(float)Math.sin(Math.PI*2*k/NBOLTS)*BOLTLENGTH);
-					PVector center=new PVector((pos.origin.x+1)*wsize.x/2,(pos.origin.y+1)*wsize.y/2);
+					PVector center=new PVector((pos.position.x+1)*wsize.x/2,(pos.position.y+1)*wsize.y/2);
 					parent.fill(color,127);
 					parent.line(center.x,center.y,center.x+delta.x,center.y+delta.y);
 				}
@@ -154,16 +154,16 @@ public class VisualizerPoly extends Visualizer {
 	}
 
 	@Override
-	public void update(PApplet parent, Positions allpos) {
+	public void update(PApplet parent, People allpos) {
 		Ableton.getInstance().updateMacros(allpos);
 
 		// Update current radius of all players
 		float beat=MasterClock.getBeat();
 		//PApplet.println("Beat "+beat);
-		for (int id: allpos.positions.keySet()) {
+		for (int id: allpos.pmap.keySet()) {
 			PolyState ps=poly.get(id);
 			if (ps==null) {
-				Position p=allpos.get(id);
+				Person p=allpos.get(id);
 				ps=new PolyState(p,noteDuration,p.getcolor(parent));
 				poly.put(id, ps);
 			}
@@ -172,7 +172,7 @@ public class VisualizerPoly extends Visualizer {
 		// Remove polys for which we no longer have a position (exitted)
 		for (Iterator<Integer> iter = poly.keySet().iterator();iter.hasNext();) {
 			int id=iter.next().intValue();
-			if (!allpos.positions.containsKey(id)) {
+			if (!allpos.pmap.containsKey(id)) {
 				PApplet.println("Removing ID "+id);
 				iter.remove();
 			}
@@ -180,7 +180,7 @@ public class VisualizerPoly extends Visualizer {
 	}
 
 	@Override
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
 
 		// Draw rings in gray
@@ -203,7 +203,7 @@ public class VisualizerPoly extends Visualizer {
 	}
 	
 	@Override
-	public void drawLaser(PApplet parent, Positions p) {
+	public void drawLaser(PApplet parent, People p) {
 		super.drawLaser(parent,p);
 		PVector center=Tracker.unMapPosition(new PVector(0,0));
 		PVector tl=Tracker.unMapPosition(new PVector(-1.0f,-1.0f));

@@ -36,12 +36,12 @@ public class VisualizerProximity extends VisualizerPS {
 		return (id1*7+id2)%nclips;
 	}
 	
-	public void update(PApplet parent, Positions allpos) {
+	public void update(PApplet parent, People allpos) {
 		super.update(parent,allpos);
 	//	HashMap<Integer,Integer> newAssignments=new HashMap<Integer,Integer>();
-		for (Map.Entry<Integer,Position> e1: allpos.positions.entrySet()) {
+		for (Map.Entry<Integer,Person> e1: allpos.pmap.entrySet()) {
 			int id1=e1.getKey();
-			PVector pos1=e1.getValue().origin;
+			PVector pos1=e1.getValue().position;
 			// Find closest NEIGHBOR	
 			int closest=-1;
 			double mindist=MAXSEP;
@@ -49,11 +49,11 @@ public class VisualizerProximity extends VisualizerPS {
 			if (assignments.containsKey(id1))
 				current=assignments.get(id1);
 			
-			for (Map.Entry<Integer,Position> e2: allpos.positions.entrySet()) {
+			for (Map.Entry<Integer,Person> e2: allpos.pmap.entrySet()) {
 				int id2=e2.getKey();
 				if (id1==id2)
 					continue;
-				PVector pos2=e2.getValue().origin;
+				PVector pos2=e2.getValue().position;
 				
 				double dist2=Math.pow(pos1.x-pos2.x,2)+Math.pow(pos1.y-pos2.y,2);
 				if (id2==current)
@@ -83,14 +83,14 @@ public class VisualizerProximity extends VisualizerPS {
 		Iterator<Map.Entry<Integer,Integer> > i = assignments.entrySet().iterator();
 		while (i.hasNext()) {
 			int id=i.next().getKey();
-			if (!allpos.positions.containsKey(id)) {
+			if (!allpos.pmap.containsKey(id)) {
 				PApplet.println("update: no update info for assignment for id "+id);
 				i.remove();
 			}
 		}
 	}
 
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent,p, wsize);
 
 		parent.textSize(16);
@@ -103,7 +103,7 @@ public class VisualizerProximity extends VisualizerPS {
 			parent.fill(127,0,0,127);
 			parent.strokeWeight(5);
 			parent.stroke(127,0,0);
-			parent.line((p.get(id1).origin.x+1)*wsize.x/2, (p.get(id1).origin.y+1)*wsize.y/2, (p.get(id2).origin.x+1)*wsize.x/2, (p.get(id2).origin.y+1)*wsize.y/2);
+			parent.line((p.get(id1).position.x+1)*wsize.x/2, (p.get(id1).position.y+1)*wsize.y/2, (p.get(id2).position.x+1)*wsize.x/2, (p.get(id2).position.y+1)*wsize.y/2);
 			}
 		}
 		parent.fill(127);
@@ -112,7 +112,7 @@ public class VisualizerProximity extends VisualizerPS {
 		parent.text(ts.name,5,5);
 	}
 
-	public void drawLaser(PApplet parent, Positions p) {
+	public void drawLaser(PApplet parent, People p) {
 		super.drawLaser(parent,p);
 		Laser laser=Laser.getInstance();
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
@@ -121,8 +121,8 @@ public class VisualizerProximity extends VisualizerPS {
 			if (id2==-1)
 				continue;
 			laser.cellBegin(id1);
-			PVector p1 = Tracker.unMapPosition(p.get(id1).origin);
-			PVector p2 = Tracker.unMapPosition(p.get(id2).origin);
+			PVector p1 = Tracker.unMapPosition(p.get(id1).position);
+			PVector p2 = Tracker.unMapPosition(p.get(id2).position);
 //			PApplet.println("Drawing line "+p1+" to "+p2);
 			laser.line(p1.x,p1.y,p2.x,p2.y);
 			laser.cellEnd(id1);

@@ -53,7 +53,7 @@ class Ball {
 	}
 	
 	// Check for collision with person at position p
-	public void collisionDetect(Position p) {
+	public void collisionDetect(Person p) {
 		if (inCollision>0)
 			return;
 		for (int i=0;i<2;i++) {
@@ -94,22 +94,22 @@ public class VisualizerSoccer extends VisualizerDot {
 	}
 
 	@Override
-	public void update(PApplet parent, Positions p) {
+	public void update(PApplet parent, People p) {
 		// Update internal state
 		ball.update(parent);
-		for (Position ps: p.positions.values()) {  
+		for (Person ps: p.pmap.values()) {  
 			ball.collisionDetect(ps);
 		}
 	}
 
 	@Override
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
 		ball.draw(parent,wsize);
 	}
 	
 	@Override
-	public void drawLaser(PApplet parent, Positions p) {
+	public void drawLaser(PApplet parent, People p) {
 //		Laser laser=Laser.getInstance();
 //		laser.bgBegin();   // Start a background drawing
 //		for (Position ps: p.positions.values()) {  

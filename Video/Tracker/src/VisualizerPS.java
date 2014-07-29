@@ -20,9 +20,9 @@ public class VisualizerPS extends Visualizer {
 		img = parent.loadImage("texture.png");
 	}
 
-	public void update(PApplet parent, Positions p) {
-		for (int id: p.positions.keySet()) {
-			Position pos=p.positions.get(id);
+	public void update(PApplet parent, People p) {
+		for (int id: p.pmap.keySet()) {
+			Person pos=p.pmap.get(id);
 			ParticleSystem ps=systems.get(id);
 			if (ps==null) {
 				PApplet.println("Added new particle system for ID "+id);
@@ -34,11 +34,11 @@ public class VisualizerPS extends Visualizer {
 			for (ParticleSystem ps2: systems.values()) {
 				// if (ps!=ps2) 
 				//ps.attractor(ps2.origin, attractionForce);
-				ps2.push(pos.origin, PVector.div(pos.avgspeed,parent.frameRate));   // Convert velocity into pixels/frame
+				ps2.push(pos.position, PVector.div(pos.velocity,parent.frameRate));   // Convert velocity into pixels/frame
 			}
 
 			for (int k=0;k<birthrate;k++)
-				ps.addParticle(pos.origin,pos.getcolor(parent));
+				ps.addParticle(pos.position,pos.getcolor(parent));
 		}
 		int toRemove=-1;
 
@@ -58,7 +58,7 @@ public class VisualizerPS extends Visualizer {
 		}
 	}
 
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent,p,wsize);
 		parent.resetShader();
 		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;

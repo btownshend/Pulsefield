@@ -23,19 +23,19 @@ public class VisualizerTemplate extends Visualizer {
 	}
 
 	@Override
-	public void update(PApplet parent, Positions p) {
+	public void update(PApplet parent, People p) {
 		// Update internal state
 	}
 
 	@Override
-	public void draw(PApplet parent, Positions p, PVector wsize) {
+	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
 
 		// Add drawing code here
 	}
 	
 	@Override
-	public void drawLaser(PApplet parent, Positions p) {
+	public void drawLaser(PApplet parent, People p) {
 //		Laser laser=Laser.getInstance();
 //		laser.bgBegin();   // Start a background drawing
 //		for (Position ps: p.positions.values()) {  

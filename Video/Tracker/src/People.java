@@ -4,49 +4,49 @@ import processing.core.PApplet;
 import processing.core.PVector;
 
 
-public class Positions {
-	HashMap<Integer, Position> positions;
+public class People {
+	HashMap<Integer, Person> pmap;
 
-	Positions() {
-		positions=new HashMap<Integer,Position>();
+	People() {
+		pmap=new HashMap<Integer,Person>();
 	}
 
 	public void add(int id, int channel) {
-		Position ps=new Position(new PVector(0f,0f),channel, id);
-		positions.put(id,ps);
+		Person ps=new Person(new PVector(0f,0f),channel, id);
+		pmap.put(id,ps);
 	}
 
 
 	public void move(int id, int channel, PVector newpos, int groupid, int groupsize, float elapsed) {
-		Position ps=positions.get(id);
+		Person ps=pmap.get(id);
 		if (ps==null) {
 			PApplet.println("Unable to locate user "+id+", creating it.");
 			add(id,channel);
-			ps=positions.get(id);
+			ps=pmap.get(id);
 		}
 		ps.move(newpos,groupid, groupsize, elapsed);
 		//PApplet.println("ID "+id+" moved to "+newpos);
 	}
 	public void exit(int id) {
-		Position ps=positions.get(id);
+		Person ps=pmap.get(id);
 		if (ps==null)
 			PApplet.println("Unable to locate user "+id+" at exit, ignoring.");
 		else
-			positions.remove(id);
+			pmap.remove(id);
 	}
 
 	public void clear() {
-		positions.clear();
+		pmap.clear();
 	}
 
 	public void setnpeople(int n) {
-		if (n!=positions.size()) {
-			PApplet.println("Had "+positions.size()+" people, but got message that there are "+n+" .. cleared.");
-			positions.clear();
+		if (n!=pmap.size()) {
+			PApplet.println("Had "+pmap.size()+" people, but got message that there are "+n+" .. cleared.");
+			pmap.clear();
 		}
 	}
 	
-	public Position get(int id) {
-		return positions.get(id);
+	public Person get(int id) {
+		return pmap.get(id);
 	}
 }
