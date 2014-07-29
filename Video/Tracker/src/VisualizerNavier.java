@@ -97,13 +97,11 @@ class VisualizerNavier extends Visualizer {
 		statsUpdate=0;
 	}
 
+	@Override
 	public void draw(PApplet parent, Positions p, PVector wsize) {
-
-		parent.resetShader();
+//		Don't call parent.draw since it draws the defaults border and fills the background
+//		super.draw(parent,p,wsize);
 		
-		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
-		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA);
-		pgl.blendEquation(PGL.FUNC_ADD);  
 		if (p.positions.isEmpty()) {
 			drawWelcome(parent,wsize);
 			return;
