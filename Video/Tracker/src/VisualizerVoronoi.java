@@ -163,9 +163,6 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 	@Override
 	public void draw(PApplet parent, Positions allpos, PVector wsize) {
-		parent.background(0, 0, 0);  
-		parent.colorMode(PConstants.RGB, 255);
-
 		super.draw(parent, allpos, wsize);
 
 		// Draw Voronoi diagram

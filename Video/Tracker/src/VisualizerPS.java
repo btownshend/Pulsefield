@@ -60,18 +60,12 @@ public class VisualizerPS extends Visualizer {
 
 	public void draw(PApplet parent, Positions p, PVector wsize) {
 		super.draw(parent,p,wsize);
+		parent.resetShader();
 		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
-		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
-		pgl.blendEquation(PGL.FUNC_ADD);  
-		parent.background(0, 0, 0);  
-		parent.colorMode(PConstants.RGB, 255);
+		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA); 
+		pgl.blendEquation(PGL.FUNC_ADD);
+
 		
-		parent.stroke(127);
-		parent.strokeWeight(1);
-		parent.fill(0);
-		drawBorders(parent,true,wsize);
-
-
 		for (Map.Entry<Integer,ParticleSystem> me: systems.entrySet()) {
 			ParticleSystem ps=me.getValue();
 			ps.draw(parent, wsize);

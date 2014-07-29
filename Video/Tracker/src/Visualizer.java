@@ -25,6 +25,11 @@ public abstract class Visualizer {
 	}
 	
 	public void draw(PApplet parent, Positions p, PVector wsize) {
+		parent.background(0, 0, 0);  
+		parent.colorMode(PConstants.RGB, 255);
+
+		if (p.positions.isEmpty())
+			drawWelcome(parent,wsize);
 		drawBorders(parent, false, wsize);
 	}
 
@@ -67,6 +72,12 @@ public abstract class Visualizer {
 			parent.line(wsize.x-1, 0, wsize.x-1, wsize.y-1);
 			parent.line(0, wsize.y-1, wsize.x-1, wsize.y-1);
 		}
+		// Narrow remaining window
+		parent.translate(wsize.x/2, wsize.y/2);
+		PVector scale=new PVector((wsize.x-strokeWeight*2)/wsize.x,(wsize.y-strokeWeight*2)/wsize.y);
+//		PApplet.println("Scale="+scale);
+		parent.scale(scale.x,scale.y);
+		parent.translate(-wsize.x/2, -wsize.y/2);
 	}
 
 	public void handleMessage(OscMessage theOscMessage) {
