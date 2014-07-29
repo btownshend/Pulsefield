@@ -288,6 +288,11 @@ public class Tracker extends PApplet {
 		return new PVector(pos.x*2f/(Tracker.maxx-Tracker.minx),pos.y*2f/(Tracker.maxy-Tracker.miny));
 	}
 	
+	public static float normalizeDistance(float distInMeters) {
+		return 2f/(Tracker.maxx-Tracker.minx);
+	}
+	
+	
 	public static PVector mapPosition(float x, float y) {
 		return mapPosition(new PVector(x,y));
 	}
