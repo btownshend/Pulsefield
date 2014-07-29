@@ -19,11 +19,11 @@ public class Leg {
 		velocity=newvel;
 	}
 	PVector getOriginInMeters() {
-		return Tracker.unMapPosition(position);
+		return position;
 	}
 		
 	PVector getVelocityInMeters() {
-		return Tracker.unMapPosition(velocity);
+		return velocity;
 	}
 	float getDiameterInMeters() {
 		return 0.2f; // TODO

@@ -2,10 +2,10 @@ import processing.core.PApplet;
 import processing.core.PVector;
 
 public class Person {
-	private PVector position;
-	private PVector velocity; // Average speed in pixels/second
 	float lastmovetime;   // Last moved time in seconds
 	static float averagingTime =0.1f;   // Averaging time in seconds
+	private PVector position;  // Position in meters (in absolute coordinate)
+	private PVector velocity;  // Velocity in meters/sec
 	int channel;
 	int id;
 	int groupid;
@@ -13,9 +13,9 @@ public class Person {
 	Leg[] legs;
 	
 	public Person(PVector origin, int channel, int id) {
-		this.setNormalizedPosition(origin);
-		this.setNormalizedVelocity(new PVector(0f,0f));
 		this.lastmovetime= 0f;
+		this.position=new PVector(origin.x,origin.y);
+		this.velocity=new PVector(0f,0f);
 		this.channel = channel;
 		this.id = id;
 		this.groupid = id;
@@ -25,27 +25,17 @@ public class Person {
 			this.legs[i]=new Leg();
 	}
 	
-	public Person(int channel) {
-		this.setNormalizedPosition(new PVector(0f,0f));
-		this.setNormalizedVelocity(new PVector(0f,0f));
-		this.lastmovetime = 0f;
-		this.channel = channel;
-	}
-	
+	// Convert to normalized position - in range [-1,1] for extent of pulsefield
 	PVector getNormalizedPosition() {
-		return position;
+		return Tracker.mapPosition(position);
 	}
 
 	void setNormalizedPosition(PVector position) {
-		this.position = position;
+		this.position = Tracker.unMapPosition(position);
 	}
 
 	PVector getNormalizedVelocity() {
-		return velocity;
-	}
-
-	void setNormalizedVelocity(PVector velocity) {
-		this.velocity = velocity;
+		return Tracker.mapVelocity(velocity);
 	}
 
 	int getcolor(PApplet parent) {
@@ -64,12 +54,14 @@ public class Person {
 	}
 	
 	PVector getOriginInMeters() {
-		return Tracker.unMapPosition(getNormalizedPosition());
+		return position;
 	}
 		
 	PVector getVelocityInMeters() {
-		return Tracker.unMapPosition(getNormalizedVelocity());
+		return velocity;
 	}
+	
+	void setVelocity(PVector vel) { velocity=vel; }
 	
 	float getLegSeparationInMeters() {
 		return 0.1f;  // TODO
