@@ -42,7 +42,8 @@ public class Tracker extends PApplet {
 	String configFile;
 	URLConfig config;
 	AutoCycler cycler;
-
+	PVector prevMousePos;
+	
 	public void setup() {
 		configFile="/Users/bst/DropBox/Pulsefield/config/urlconfig.txt";
 
@@ -80,6 +81,7 @@ public class Tracker extends PApplet {
 		synth.play(0,64,100,100,1);
 		Scale scale=new Scale("Major","C");
 		
+		prevMousePos=new PVector(0f,0f);
 		// Visualizers
 		vis=new Visualizer[visnames.length];
 		vis[0]=new VisualizerPads(this, synth);
@@ -207,8 +209,15 @@ public class Tracker extends PApplet {
 			vis[currentvis].stats();
 		}
 
-		if (mousePressed) 
-			positions.move(mouseID, mouseID%16, new PVector(mouseX*2f/width-1, mouseY*2f/height-1), mouseID, 1, tick/avgFrameRate);
+		if (mousePressed) {
+			PVector mousePos=new PVector(mouseX*2f/width-1, mouseY*2f/height-1);
+			PVector mouseVel=PVector.div(PVector.sub(mousePos,prevMousePos),avgFrameRate);
+			positions.move(mouseID, mouseID%16, mousePos, mouseID, 1, tick/avgFrameRate);
+			Leg legs[]=positions.get(mouseID).legs;
+			legs[0].move(PVector.add(mousePos,new PVector(0.0f,-20.0f)),mouseVel);
+			legs[1].move(PVector.add(mousePos,new PVector(0.0f,20.0f)), mouseVel);
+			prevMousePos=mousePos;
+		}
 
 
 		vis[currentvis].update(this, positions);
