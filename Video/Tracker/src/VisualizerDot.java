@@ -21,12 +21,15 @@ public class VisualizerDot extends Visualizer {
 		super.draw(parent, p, wsize);
 
 		parent.ellipseMode(PConstants.CENTER);
-		float sz=20;
 		for (Position ps: p.positions.values()) {  
 			int c=ps.getcolor(parent);
 			parent.fill(c,255);
 			parent.stroke(c,255);
-			parent.ellipse((ps.origin.x+1)*wsize.x/2, (ps.origin.y+1)*wsize.y/2, sz, sz);
+			for (int i=0;i<ps.legs.length;i++) {
+				Leg leg=ps.legs[i];
+				float sz=Tracker.normalizeDistance(leg.getDiameterInMeters());
+				parent.ellipse((leg.position.x+1)*wsize.x/2, (leg.position.y+1)*wsize.y/2, sz*wsize.x/2, sz*wsize.y/2);
+			}
 		}
 	}
 }
