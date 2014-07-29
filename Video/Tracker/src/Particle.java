@@ -62,7 +62,7 @@ class Particle {
 		//println("display(): location="+location);
 		parent.imageMode(PConstants.CENTER);
 		//float kscale= 0.05f;//lifespan/maxlifespan/10;
-		float kscale=(float)Math.pow(1.0-lifespan/(2*maxlifespan),0.1)/10+0.1f;
+		float kscale=(float)Math.pow(1.0-lifespan/(2*maxlifespan),0.1)/100+0.05f;
 		kscale=0.05f;
 		parent.tint(color,(int)(kscale*255.0));
 		parent.image(img, (location.x+1)*wsize.x/2, (location.y+1)*wsize.y/2);
