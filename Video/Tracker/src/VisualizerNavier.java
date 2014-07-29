@@ -98,13 +98,16 @@ class VisualizerNavier extends Visualizer {
 	}
 
 	public void draw(PApplet parent, Positions p, PVector wsize) {
-		super.draw(parent, p, wsize);
 
 		parent.resetShader();
 		
 		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
 		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA);
 		pgl.blendEquation(PGL.FUNC_ADD);  
+		if (p.positions.isEmpty()) {
+			drawWelcome(parent,wsize);
+			return;
+		}
 
 		double dt = 1 / parent.frameRate;
 		long t1 = System.nanoTime();
