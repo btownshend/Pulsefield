@@ -412,6 +412,9 @@ public class Tracker extends PApplet {
 			float x,float y,float ex,float ey,
 			float spd,float espd,float heading,float eheading,
 			int visibility) {
+		Person p=people.get(id);
+		if (p!=null)
+			p.legs[leg].move(new PVector(x,y),new PVector((float)(spd*Math.sin(heading*Math.PI/180)),(float)(-spd*Math.cos(heading*Math.PI/180))));
 	}
 	public void pfsetminx(float minx) {  
 		Tracker.rawminx=minx;
