@@ -35,7 +35,6 @@ class GString {
 	}
 
 	public void strike(Synth synth, Person p, int color) {
-		PApplet.println("Strike ("+p.getNormalizedPosition().x+","+p.getNormalizedPosition().y+") Color="+color);
 		int i;
 		for (i=0;i<frets.length;i++)
 			if (p.getNormalizedPosition().x<frets[i])
@@ -48,10 +47,11 @@ class GString {
 		vibrating=true;
 		this.color=color;
 		strikeTime=System.currentTimeMillis();
-		int velocity=(int)(p.getNormalizedVelocity().mag()*500);
+		int velocity=(int)(p.getVelocityInMeters().mag()*64);
 		if (velocity>127)
 			velocity=127;
 		this.velocity=velocity;
+		PApplet.println("Strike ("+p.getNormalizedPosition().x+","+p.getNormalizedPosition().y+") Vel="+velocity+", Color="+color);
 		synth.play(p.id, fretpitch+fret, velocity, vibrateTime, p.channel);
 	}
 
@@ -123,7 +123,7 @@ public class VisualizerGuitar extends VisualizerPS {
 				PVector pf=this.convertToScreen(new PVector(GString.frets[s.fret],ypos), wsize);	
 				float vfrac=s.fracOfVibrate();
 				PVector mid=PVector.add(PVector.mult(pf,1-vfrac),PVector.mult(p2,vfrac));
-				mid.y+=Math.sin(2*Math.PI*s.elapsedTime()*5)*(strings[1].position-strings[0].position)*0.5;  // Max amplitude is 1/2 the spacing
+				mid.y+=s.velocity/127f*(1-vfrac)*Math.sin(2*Math.PI*s.elapsedTime()*5)*(strings[1].position-strings[0].position)*wsize.y/4;  // Max amplitude is 1/2 the spacing
 				parent.stroke(s.color);
 				parent.line(p1.x,p1.y,pf.x,pf.y);
 				parent.line(pf.x,pf.y,mid.x,mid.y);
