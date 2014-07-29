@@ -26,11 +26,6 @@ public class VisualizerDot extends Visualizer {
 
 		super.draw(parent, p, wsize);
 
-		parent.stroke(127);
-		parent.strokeWeight(1);
-		parent.fill(0);
-		drawBorders(parent,true,wsize);
-
 		parent.ellipseMode(PConstants.CENTER);
 		float sz=20;
 		for (Position ps: p.positions.values()) {  

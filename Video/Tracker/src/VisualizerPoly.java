@@ -186,11 +186,6 @@ public class VisualizerPoly extends Visualizer {
 
 		super.draw(parent, p, wsize);
 
-		parent.stroke(127);
-		parent.strokeWeight(1);
-		parent.fill(0);
-		drawBorders(parent,true,wsize);
-
 		// Draw rings in gray
 		parent.fill(0);
 		parent.stroke(20);

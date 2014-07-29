@@ -449,12 +449,6 @@ public class VisualizerChuck extends Visualizer {
 		parent.colorMode(PConstants.RGB, 255);
 
 		super.draw(parent, p, wsize);
-
-		parent.stroke(127);
-		parent.strokeWeight(1);
-		parent.fill(0);
-		drawBorders(parent,true,wsize);
-
 		fiducials.draw(parent,wsize);
 	}
 }

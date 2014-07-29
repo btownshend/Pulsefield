@@ -37,11 +37,6 @@ public class VisualizerTemplate extends Visualizer {
 
 		super.draw(parent, p, wsize);
 
-		parent.stroke(127);
-		parent.strokeWeight(1);
-		parent.fill(0);
-		drawBorders(parent,true,wsize);
-
 		// Add drawing code here
 	}
 	

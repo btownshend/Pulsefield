@@ -43,11 +43,7 @@ public class VisualizerIcon extends Visualizer {
 		parent.colorMode(PConstants.RGB, 255);
 
 		super.draw(parent, p, wsize);
-
-		parent.stroke(127);
-		parent.strokeWeight(1);
-		parent.fill(0);
-		drawBorders(parent,true,wsize);
+		parent.background(127,127,127);
 		parent.shapeMode(PApplet.CENTER);
 		final float sz=20;  // Size to make the icon's largest dimension, in pixels
 		for (Position ps: p.positions.values()) {  

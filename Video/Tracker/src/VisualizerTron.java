@@ -223,11 +223,8 @@ public class VisualizerTron extends Visualizer {
 		pgl.blendEquation(PGL.FUNC_ADD);  
 		parent.background(0, 0, 0);  
 		parent.colorMode(PConstants.RGB, 255);
-		parent.stroke(127);
-		parent.strokeWeight(1);
-		parent.fill(0,32,0);
-		drawBorders(parent,true,wsize);
 		parent.stroke(0);
+		super.draw(parent,p,wsize);
 		for (int i=0;i<gridWidth;i++)
 			for (int j=0;j<gridHeight;j++) {
 				GridData g=grid[i*gridHeight+j];
@@ -271,7 +268,6 @@ public class VisualizerTron extends Visualizer {
 					}
 				}
 			}	
-		super.draw(parent, p, wsize);
 	}
 	
 	public void drawLaser(PApplet parent, Positions p) {

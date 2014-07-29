@@ -59,6 +59,7 @@ public class VisualizerPS extends Visualizer {
 	}
 
 	public void draw(PApplet parent, Positions p, PVector wsize) {
+		super.draw(parent,p,wsize);
 		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
 		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
 		pgl.blendEquation(PGL.FUNC_ADD);  
@@ -75,8 +76,6 @@ public class VisualizerPS extends Visualizer {
 			ParticleSystem ps=me.getValue();
 			ps.draw(parent, wsize);
 		}
-
-		super.draw(parent, p, wsize);
 	}
 
 }

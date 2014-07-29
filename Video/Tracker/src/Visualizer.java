@@ -24,6 +24,7 @@ public abstract class Visualizer {
 			parent.text(name, wsize.x/2,wsize.y/2+lineSize);
 			parent.text("Please enter...", wsize.x/2,wsize.y/2+2.5f*lineSize);
 		}
+		drawBorders(parent, false, wsize);
 	}
 
 	// Draw to laser
@@ -45,7 +46,14 @@ public abstract class Visualizer {
 	public void setName(String name) { this.name=name; }
 	
 	public void drawBorders(PApplet parent, boolean octagon, PVector wsize) {
+		this.drawBorders(parent, octagon, wsize, 2.0f,127,255);
+	}
+	
+	public void drawBorders(PApplet parent, boolean octagon, PVector wsize, float strokeWeight, int color,int alpha) {
 		octagon=false;
+		parent.stroke(color,alpha);
+		parent.fill(0);
+		parent.strokeWeight(strokeWeight);
 		if (octagon) {
 			parent.beginShape();
 			float gapAngle=(float)(10f*Math.PI /180);

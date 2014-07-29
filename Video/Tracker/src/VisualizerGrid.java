@@ -102,10 +102,6 @@ public class VisualizerGrid extends VisualizerPS {
 
 	public void draw(PApplet parent, Positions p, PVector wsize) {
 		super.draw(parent,p, wsize);
-		parent.fill(0);
-		parent.stroke(255);
-		parent.strokeWeight(1);
-		super.drawBorders(parent, true, wsize);
 
 		parent.textSize(16);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
