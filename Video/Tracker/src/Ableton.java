@@ -299,6 +299,9 @@ public class Ableton {
 		sendMessage(new OscMessage("/live/master/volume").add(volume));
 	}
 	
+	public void stop() {
+		sendMessage(new OscMessage("/live/stop"));
+	}
 	void deviceParam(int track, int device, int parameter, float value, String name) {
 		//PApplet.println("Track "+track+" device "+device+" parameter "+parameter+"("+name+"): "+value);
 	}

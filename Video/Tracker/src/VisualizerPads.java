@@ -14,6 +14,11 @@ public class VisualizerPads extends VisualizerPS {
 		Ableton.getInstance().setTrackSet("Pads");
 	}
 
+	@Override
+	public void stop() {
+		super.stop();
+		synth.endallnotes();  // This doesn't seem to do anything...
+	}
 
 	@Override
 	public void update(PApplet parent, People allpos) {

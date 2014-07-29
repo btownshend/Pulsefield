@@ -42,6 +42,7 @@ public abstract class Visualizer {
 	public void start() {;}
 	public void stop() {
 		Ableton.getInstance().setTrackSet(null);
+		Ableton.getInstance().stop();
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();
 		laser.bgEnd();
