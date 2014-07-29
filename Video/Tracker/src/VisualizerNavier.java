@@ -140,7 +140,7 @@ class VisualizerNavier extends Visualizer {
 		Ableton.getInstance().updateMacros(p);
 		for (Person pos: p.pmap.values()) {
 			//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
-			if (pos.getNormalizedVelocity().mag() > 0.1)
+			if (pos.isMoving())
 				synth.play(pos.id,pos.channel+35,127,480,pos.channel);
 		}
 		long t1=System.nanoTime();

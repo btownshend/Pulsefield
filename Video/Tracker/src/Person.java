@@ -74,5 +74,7 @@ public class Person {
 	float getLegSeparationInMeters() {
 		return 0.1f;  // TODO
 	}
-
+	Boolean isMoving() {
+		return velocity.mag() > 0.1;
+	}
 }
