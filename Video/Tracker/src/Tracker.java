@@ -43,6 +43,8 @@ public class Tracker extends PApplet {
 	URLConfig config;
 	AutoCycler cycler;
 	PVector prevMousePos;
+	Boolean prevMousePressed;
+	PVector mouseVel;  // Average mouse velocity
 	
 	public void setup() {
 		configFile="/Users/bst/DropBox/Pulsefield/config/urlconfig.txt";
@@ -82,6 +84,9 @@ public class Tracker extends PApplet {
 		Scale scale=new Scale("Major","C");
 		
 		prevMousePos=new PVector(0f,0f);
+		prevMousePressed=false;
+		mouseVel=new PVector(0f,0f);
+		
 		// Visualizers
 		vis=new Visualizer[visnames.length];
 		vis[0]=new VisualizerPads(this, synth);
@@ -209,15 +214,25 @@ public class Tracker extends PApplet {
 			vis[currentvis].stats();
 		}
 
+		Person p=people.getOrCreate(mouseID,mouseID%16);
 		if (mousePressed) {
-			PVector mousePos=new PVector(mouseX*2f/width-1, mouseY*2f/height-1);
-			PVector mouseVel=PVector.div(PVector.sub(mousePos,prevMousePos),avgFrameRate);
-			people.move(mouseID, mouseID%16, mousePos, mouseID, 1, tick/avgFrameRate);
+			PVector mousePos=unMapPosition(new PVector(mouseX*2f/width-1, mouseY*2f/height-1));
+			if (prevMousePressed) {
+				mouseVel.mult(0.9f);
+				mouseVel.add(PVector.mult(PVector.sub(mousePos, prevMousePos),0.1f*frameRate));
+			}
+			p.move(mousePos, mouseVel, mouseID, 1, tick/avgFrameRate);
 			Leg legs[]=people.get(mouseID).legs;
-			legs[0].move(PVector.add(mousePos,new PVector(0.0f,-20.0f)),mouseVel);
-			legs[1].move(PVector.add(mousePos,new PVector(0.0f,20.0f)), mouseVel);
+			legs[0].move(PVector.add(mousePos,new PVector(0.0f,-0.3f)),mouseVel);
+			legs[1].move(PVector.add(mousePos,new PVector(0.0f,0.3f)), mouseVel);
 			prevMousePos=mousePos;
+			PApplet.println("Moved mouse ID "+mouseID+" to "+mousePos+" with velocity "+p.getVelocityInMeters());
+		} else {
+			mouseVel.set(0f,0f);
+			p.setVelocity(mouseVel);
 		}
+		prevMousePressed=mousePressed;
+
 
 
 		vis[currentvis].update(this, people);
