@@ -26,7 +26,7 @@ public class Leg {
 		return Tracker.unMapPosition(velocity);
 	}
 	float getDiameterInMeters() {
-		return 0.4f; // TODO
+		return 0.2f; // TODO
 	}
 	float getMassInKg() {
 		return 8.0f;  // TODO

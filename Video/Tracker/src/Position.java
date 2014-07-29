@@ -5,7 +5,7 @@ public class Position {
 	PVector origin;
 	PVector avgspeed; // Average speed in pixels/second
 	float lastmovetime;   // Last moved time in seconds
-	static float averagingTime =1.0f;   // Averaging time in seconds
+	static float averagingTime =0.1f;   // Averaging time in seconds
 	int channel;
 	int id;
 	int groupid;
