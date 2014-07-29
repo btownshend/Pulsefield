@@ -10,7 +10,7 @@ import processing.opengl.PGL;
 
 // Visualizer based on iPad app "Poly" by James Milton
 class PolyState {
-	final float DRUMMERPROB=0.1f;
+	final float DRUMMERPROB=1f;
 	boolean playing;
 	float startBeat;
 	float noteDuration;
@@ -44,7 +44,7 @@ class PolyState {
 
 		if (!playing && (((int)(beat*4)-(int)(startBeat*4))>=mybeat || pos.groupsize>1 ) && (int)(beat*4) != (int)(startBeat*4)) {
 			if (isDrummer) {
-				int pitch=(int)((pos.origin.heading()+Math.PI)/(2*Math.PI)*46+35);
+				int pitch=(int)((pos.origin.heading()+Math.PI)/(2*Math.PI)*16+35);
 				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), 10);
 			} else {	
 				// Play note
@@ -73,7 +73,6 @@ class PolyState {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	void draw(PApplet parent,PVector wsize, int totalBeats, int row, Synth synth) {
 		final int NUMROWS=20;
 		float rowheight=wsize.y/2/NUMROWS;
@@ -111,14 +110,12 @@ class PolyState {
 			parent.fill(255);
 			parent.textAlign(PConstants.LEFT,PConstants.CENTER);
 			parent.textSize(0.8f*rowheight);
-			if (false) {
 			if (isDrummer)
 				parent.text("DRUMMER",2+dotsize,rowpos);
 			else {
 				MidiProgram mp=synth.getMidiProgam(pos.channel);
 				if (mp!=null)
 					parent.text(mp.name,2+dotsize,rowpos);
-			}
 			}
 		}
 	}
@@ -132,7 +129,9 @@ public class VisualizerPoly extends Visualizer {
 	float noteDuration=0.25f ;   // in beats
 	Scale scale;
 	Synth synth;
-	
+	String songs[]={"Poly"}; //,"Poly2"};
+	int song=0;
+
 	VisualizerPoly(PApplet parent, Scale scale, Synth synth) {
 		super();
 		poly=new HashMap<Integer,PolyState>();
@@ -142,8 +141,11 @@ public class VisualizerPoly extends Visualizer {
 	
 	@Override
 	public void start() {
-		Ableton.getInstance().setTrackSet("Poly");
 		super.start();
+		song=(song+1)%songs.length;
+		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);		
+		assert(ts!=null);
+		PApplet.println("Starting poly with song "+song+": "+ts.name);
 	}
 
 	@Override
@@ -151,7 +153,7 @@ public class VisualizerPoly extends Visualizer {
 		super.stop();
 	}
 
-
+	@Override
 	public void update(PApplet parent, Positions allpos) {
 		Ableton.getInstance().updateMacros(allpos);
 
@@ -177,13 +179,8 @@ public class VisualizerPoly extends Visualizer {
 		}
 	}
 
+	@Override
 	public void draw(PApplet parent, Positions p, PVector wsize) {
-		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
-		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
-		pgl.blendEquation(PGL.FUNC_ADD);  
-		parent.background(0, 0, 0);  
-		parent.colorMode(PConstants.RGB, 255);
-
 		super.draw(parent, p, wsize);
 
 		// Draw rings in gray
@@ -205,6 +202,7 @@ public class VisualizerPoly extends Visualizer {
 		}
 	}
 	
+	@Override
 	public void drawLaser(PApplet parent, Positions p) {
 		super.drawLaser(parent,p);
 		PVector center=Tracker.unMapPosition(new PVector(0,0));

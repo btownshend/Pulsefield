@@ -163,9 +163,6 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 	@Override
 	public void draw(PApplet parent, Positions allpos, PVector wsize) {
-		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
-		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
-		pgl.blendEquation(PGL.FUNC_ADD);  
 		parent.background(0, 0, 0);  
 		parent.colorMode(PConstants.RGB, 255);
 

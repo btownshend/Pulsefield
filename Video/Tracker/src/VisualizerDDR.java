@@ -162,15 +162,13 @@ public class VisualizerDDR extends Visualizer {
 		final float leftwidth=150;
 		final float rightwidth=250;
 		final float rightmargin=50;
-		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
-		pgl.blendFunc(PGL.SRC_ALPHA, PGL.DST_ALPHA);
-		pgl.blendEquation(PGL.FUNC_ADD);  
+
 		parent.background(0, 0, 0);  
 		parent.imageMode(PConstants.CORNERS);
 		//parent.image(banner, 0, 0, wsize.x, wsize.y);
 		parent.colorMode(PConstants.RGB, 255);
-		super.draw(parent, p, wsize);
-
+		if (p.positions.isEmpty())
+			drawWelcome(parent,wsize);
 
 		drawScores(parent,p,new PVector(leftwidth,wsize.y));
 		parent.translate(leftwidth,0);
@@ -187,10 +185,6 @@ public class VisualizerDDR extends Visualizer {
 		final float ARROWSIZE=DOTSIZE;
 		final float ARROWDIST=(ARROWSIZE+DOTSIZE)/2;
 
-
-		parent.stroke(255);
-		parent.strokeWeight(1);
-		parent.fill(0);
 		drawBorders(parent,true,wsize);
 		parent.imageMode(PConstants.CENTER);
 		parent.tint(255);

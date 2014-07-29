@@ -218,13 +218,8 @@ public class VisualizerTron extends Visualizer {
 	}
 
 	public void draw(PApplet parent, Positions p, PVector wsize) {
-		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
-		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA);
-		pgl.blendEquation(PGL.FUNC_ADD);  
-		parent.background(0, 0, 0);  
-		parent.colorMode(PConstants.RGB, 255);
-		parent.stroke(0);
 		super.draw(parent,p,wsize);
+
 		for (int i=0;i<gridWidth;i++)
 			for (int j=0;j<gridHeight;j++) {
 				GridData g=grid[i*gridHeight+j];

@@ -14,7 +14,7 @@ class GString {
 	final static float bridge=0.9f;
 	final static float minstring=-0.48f;  // Range of X-coords for strings in [-1,1] normalized coordinates
 	final static float maxstring=0.49f;
-	final static int vibrateTime=1000;   // Milliseconds
+	final static int vibrateTime=2000;   // Milliseconds
 	int fretpitch;
 	float position;  // X-coord of string (in range -1 to 1)
 	boolean vibrating;
@@ -103,10 +103,6 @@ public class VisualizerGuitar extends VisualizerPS {
 
 
 	public void draw(PApplet parent, Positions p, PVector wsize) {
-		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
-		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA);
-		pgl.blendEquation(PGL.FUNC_ADD);  
-
 		super.draw(parent,p,wsize);
 		parent.tint(127);
 		parent.imageMode(PConstants.CENTER);
