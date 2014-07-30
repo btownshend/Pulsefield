@@ -178,7 +178,9 @@ public class VisualizerPoly extends Visualizer {
 	@Override
 	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
-
+		if (p.pmap.isEmpty())
+			return;
+		
 		// Draw rings in gray
 		parent.fill(0);
 		parent.stroke(20);

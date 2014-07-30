@@ -36,7 +36,8 @@ public class VisualizerIcon extends Visualizer {
 
 	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
-		parent.background(127,127,127);
+		if (p.pmap.isEmpty())
+			return;
 		parent.shapeMode(PApplet.CENTER);
 		final float sz=20;  // Size to make the icon's largest dimension, in pixels
 		for (Person ps: p.pmap.values()) {  
