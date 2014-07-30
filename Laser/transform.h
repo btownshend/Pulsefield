@@ -23,7 +23,7 @@ class Transform {
     std::vector<Point> flatToDevice(const std::vector<Point> &flatPts) const;
  public:
     Transform();
-    void clear();
+    void clear(float minx=-3, float miny=0, float maxx=3, float maxy=3);
 
     // Set projector field of view (in Radians)
     void setHFOV(float hfov) { this->hfov=hfov; recompute(); }

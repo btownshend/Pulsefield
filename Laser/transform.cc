@@ -66,16 +66,16 @@ Transform::Transform(): floorpts(4), devpts(4) {
     }
 }
 
-void Transform::clear() {
+void Transform::clear(float floorMinx, float floorMiny, float floorMaxx, float floorMaxy) {
     // Default mapping
     // Point indices are order based on laser positions: BL, BR, TR, TL
-    floorpts[0]=Point(-3,3);
+    floorpts[0]=Point(floorMinx,floorMaxy);
     devpts[0]=Point(-32767,32768);
-    floorpts[1]=Point(3,3);
+    floorpts[1]=Point(floorMaxx,floorMaxy);
     devpts[1]=Point(32767,32768);
-    floorpts[2]=Point(3,0);
+    floorpts[2]=Point(floorMaxx,floorMiny);
     devpts[2]=Point(32767,-32768);
-    floorpts[3]=Point(-3,0);
+    floorpts[3]=Point(floorMinx,floorMiny);
     devpts[3]=Point(-32767,-32768);
 
     recompute();
@@ -104,6 +104,7 @@ void Transform::recompute() {
 	invTransform=cv::getPerspectiveTransform(convertPoints(deviceToFlat(devpts)),convertPoints(floorpts));
     }
     dbg("Transform.recompute",1) << "Done" << std::endl;
+    // Calculate location of laser and its field of view in 3d space
 }
 
 // Convert  device coord to flat space (i.e. laser projection grid)

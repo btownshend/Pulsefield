@@ -66,7 +66,8 @@ public:
     // Save/load all transforms of all lasers
     void saveTransforms(std::ostream &s) const;
     void loadTransforms(std::istream &s);
-    void clearTransforms();
+    // Clear transforms so that given real world bounds are at laser extents
+    void clearTransforms(float floorMinx, float floorMiny, float floorMaxx, float floorMaxy);
 
     void setBackground(int scanpt, int totalpts, float angleDeg, float range);
 

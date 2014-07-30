@@ -62,7 +62,7 @@ class Video: public DisplayDevice {
     void update();
     void save(std::ostream &s) const { lasers->saveTransforms(s); }
     void load(std::istream &s);
-    void clearTransforms() { lasers->clearTransforms(); }
+    void clearTransforms() { lasers->clearTransforms(minLeft,minBottom,maxRight,maxTop); }
  public:
     // Local window routines
     Video(std::shared_ptr<Lasers> lasers);

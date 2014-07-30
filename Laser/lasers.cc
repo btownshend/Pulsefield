@@ -215,9 +215,9 @@ void Lasers::loadTransforms(std::istream &s) {
     needsRender=true;
 }
 
-void Lasers::clearTransforms() {
+void Lasers::clearTransforms(float minx, float miny, float maxx, float maxy) {
     for (unsigned int i=0;i<lasers.size();i++)
-	lasers[i]->getTransform()=Transform();
+	lasers[i]->getTransform().clear(minx,miny,maxx,maxy);
     needsRender=true;
 }
 
