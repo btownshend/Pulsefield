@@ -46,8 +46,9 @@ public class Person {
 	}
 
 	void move(PVector newpos, PVector newvel, int groupid, int groupsize, float elapsed) {
-		position=newpos;
-		velocity=newvel;
+//		PApplet.println("Set ID "+id+" to pos="+newpos+", vel="+newvel);
+		position=new PVector(newpos.x,newpos.y);
+		velocity=new PVector(newvel.x,newvel.y);
 		this.groupid=groupid;
 		this.groupsize=groupsize;
 	}
@@ -60,7 +61,7 @@ public class Person {
 		return velocity;
 	}
 	
-	void setVelocity(PVector vel) { velocity=vel; }
+	void setVelocity(PVector vel) { velocity=new PVector(vel.x,vel.y); }
 	
 	float getLegSeparationInMeters() {
 		return sep;

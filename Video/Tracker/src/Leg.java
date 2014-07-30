@@ -15,8 +15,8 @@ public class Leg {
 	Leg(PVector position) { this.position=new PVector(position.x,position.y); }
 	
 	void move(PVector newpos, PVector newvel) {
-		position=newpos;
-		velocity=newvel;
+		position=new PVector(newpos.x,newpos.y);
+		velocity=new PVector(newvel.x,newvel.y);
 //		PApplet.println("Leg moved to "+newpos+" with velocity "+newvel);
 	}
 	PVector getOriginInMeters() {
