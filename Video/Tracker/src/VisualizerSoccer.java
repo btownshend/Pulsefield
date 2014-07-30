@@ -9,12 +9,10 @@ class Ball {
 	final float restitution=0.7f;   // Coeff of restitution (see http://www.mathematicshed.com/uploads/1/2/5/7/12572836/physicsofkickingsoccerball.pdf )
 	final float mass=0.430f;			// Mass of ball in kg (FIFA says 410-450g )
 	final float radius=(float)(0.69/2/Math.PI);			// Radius of ball in meters (FIFA say 68-70cm in circumference )
-	int inCollision;  // nonzero while in a collision so we don't get multiple hits
 	
 	public Ball(PVector position, PVector velocity) {
 		this.position=position;
 		this.velocity=velocity;
-		this.inCollision=0;
 	}
 	
 	public void draw(PApplet parent, PVector wsize) {
@@ -49,24 +47,27 @@ class Ball {
 		}
 		velocity.mult(1-deceleration*elapsed);
 //		PApplet.println("New ball position="+position+", velocity="+velocity+", inCollision="+inCollision);
-		inCollision=Math.max(0,inCollision-1);   // Countdown 
 	}
 	
 	// Check for collision with person at position p
 	public void collisionDetect(Person p) {
-		if (inCollision>0)
-			return;
 		for (int i=0;i<2;i++) {
 			Leg leg=p.legs[i];
 
 			float sep=PVector.dist(leg.getOriginInMeters(),position);
 			float minSep=leg.getDiameterInMeters()/2+radius;
-			if (sep<minSep && PVector.dot(velocity, leg.getVelocityInMeters())<=0) {
+			if (sep<minSep) { // && PVector.dot(velocity, leg.getVelocityInMeters())<=0) {
 				PApplet.println("Ball at "+position+" with velocity="+velocity+" collided with leg at "+leg.getOriginInMeters()+", velocity="+leg.getVelocityInMeters()+", minsep="+minSep);
-				// Assume a kick (but TOOD: if leg is slow, this may be more of a bounce)
-				velocity=PVector.mult(leg.getVelocityInMeters(),leg.getMassInKg()/(leg.getMassInKg()+mass)*(1+restitution));
+				// Perform a kick in the ball-not-moving frame of reference
+				// Calculate a kick velocity
+				PVector kickvelocity=PVector.mult(PVector.sub(leg.getVelocityInMeters(),velocity),leg.getMassInKg()/(leg.getMassInKg()+mass)*(1+restitution));
+				// And add the kickvelocity to its current velocity (ie switch back to work frame of reference)
+				velocity.add(kickvelocity);
 				PApplet.println("New ball velocity="+velocity);
-				inCollision=2;
+				// And make sure the ball stays outside the leg
+				PVector shiftDir=new PVector(velocity.x,velocity.y);
+				shiftDir.setMag(minSep-sep);
+				position.add(shiftDir);
 			}
 		}
 	}
