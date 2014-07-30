@@ -25,8 +25,9 @@ public class VisualizerDot extends Visualizer {
 			parent.stroke(c,255);
 			for (int i=0;i<ps.legs.length;i++) {
 				Leg leg=ps.legs[i];
-				float sz=Tracker.normalizeDistance(leg.getDiameterInMeters());
-				parent.ellipse((leg.position.x+1)*wsize.x/2, (leg.position.y+1)*wsize.y/2, sz*wsize.x/2, sz*wsize.y/2);
+				PVector sz=Tracker.mapVelocity(new PVector(leg.getDiameterInMeters(),leg.getDiameterInMeters()));
+				PVector pos=Tracker.mapPosition(leg.getOriginInMeters());
+				parent.ellipse((pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2, sz.x*wsize.x/2, sz.y*wsize.y/2);
 			}
 		}
 	}
