@@ -56,7 +56,7 @@ public class Tracker extends PApplet {
 			System.exit(1);
 		}
 
-		size(1024,768, OPENGL);
+		size(1280,720, OPENGL);
 		frameRate(30);
 		mouseID=90;
 		cycler=new AutoCycler();
