@@ -96,6 +96,7 @@ void Transform::recompute() {
     for (unsigned int i=0;i<floorpts.size();i++) {
 	dbg("Transform.recompute",1) << "W@" << floorpts[i] << "->D@" << devpts[i] << std::endl;
     }
+    dbg("Transform.recompute",1) << "VFOV=" << vfov << ", HFOV=" << hfov << std::endl;
     if (floorpts.size() != 4) {
 	dbg("Transform.recompute",0) << "recompute() called after " <<floorpts.size() << " points added -- must be exactly 4" << std::endl;
     } else {

@@ -41,6 +41,8 @@ class Laser: public DisplayDevice  {
     void setPreBlanks(int n) { preBlanks=n; TouchOSC::instance()->send("/ui/laser/preblank/label",std::to_string(preBlanks)+"post-blank");}
     void setPostBlanks(int n) { postBlanks=n; TouchOSC::instance()->send("/ui/laser/postblank/label",std::to_string(postBlanks)+" pre-blank");}
     void setPPS(int _pps) { PPS=_pps; TouchOSC::instance()->send("/ui/laser/pps/label",std::to_string(PPS)+" PPS");}
+    void setVFOV(float vfov) { transform.setVFOV(vfov); TouchOSC::instance()->send("/ui/laser/vfov/"+std::to_string(unit+1)+"/label",std::to_string((int)(vfov*180/M_PI)));}
+    void setHFOV(float hfov) { transform.setHFOV(hfov); TouchOSC::instance()->send("/ui/laser/hfov/"+std::to_string(unit+1)+"/label",std::to_string((int)(hfov*180/M_PI)));}
     // Convert drawing into a set of etherdream points
     // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
     void render(const Drawing &drawing);

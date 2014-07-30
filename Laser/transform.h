@@ -25,6 +25,12 @@ class Transform {
     Transform();
     void clear();
 
+    // Set projector field of view (in Radians)
+    void setHFOV(float hfov) { this->hfov=hfov; recompute(); }
+    void setVFOV(float vfov) { this->vfov=vfov; recompute(); }
+    float getHFOV() const { return hfov; }
+    float getVFOV() const { return vfov; }
+
     // Mapping, if out-of-range, return clipped point
     etherdream_point mapToDevice(CPoint floorPt) const;
     Point mapToDevice(Point floorPt) const;

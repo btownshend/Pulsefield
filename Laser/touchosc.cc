@@ -385,6 +385,26 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		    dbg("TouchOSC",1) << "Got /ui/laser/enable, row=" << row << ", col=" << col << ", value=" << argv[0]->f << std::endl;
 		    Lasers::instance()->enable(col,argv[0]->f>0.5);
 		    handled=true;
+		} else if (strcmp(tok,"vfov")==0) {
+		    int lnum=atoi(strtok(NULL,"/"))-1;
+		    dbg("TouchOSC",1) << "Laser " << lnum << ", set VFOV to " << argv[0]->f << std::endl;
+		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(lnum);
+		    if (laser!=nullptr) {
+			Lasers::instance()->lock();   // In case another thread tries to use the transform while we're changing it
+			laser->setVFOV(argv[0]->f*M_PI/180.0);
+			Lasers::instance()->unlock();
+		    }
+		    handled=true;
+		} else if (strcmp(tok,"hfov")==0) {
+		    int lnum=atoi(strtok(NULL,"/"))-1;
+		    dbg("TouchOSC",1) << "Laser " << lnum << ", set HFOV to " << argv[0]->f << std::endl;
+		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(lnum);
+		    if (laser!=nullptr)  {
+			Lasers::instance()->lock();   // In case another thread tries to use the transform while we're changing it
+			laser->setHFOV(argv[0]->f*M_PI/180.0);
+			Lasers::instance()->unlock();
+		    }
+		    handled=true;
 		}
 	    }
 	} else if (strcmp(tok,"attrenable")==0) {
