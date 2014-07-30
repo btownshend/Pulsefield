@@ -30,11 +30,13 @@ public class VisualizerPS extends Visualizer {
 			}
 
 			// Push the other systems with each positions velocity
-			for (ParticleSystem ps2: systems.values()) {
-				// if (ps!=ps2) 
-				//ps.attractor(ps2.origin, attractionForce);
-				ps2.push(pos.getNormalizedPosition(), PVector.div(pos.getNormalizedVelocity(),parent.frameRate));   // Convert velocity into pixels/frame
-			}
+			if (pos.isMoving())
+				for (ParticleSystem ps2: systems.values()) {
+					// if (ps!=ps2) 
+					//ps.attractor(ps2.origin, attractionForce);
+//					PApplet.println("Pushing PS "+ps2+" from "+pos.getNormalizedPosition()+" with vel="+pos.getNormalizedVelocity());
+					ps2.push(pos.getNormalizedPosition(), PVector.div(pos.getNormalizedVelocity(),parent.frameRate));   // Convert velocity into normalized units/frame
+				}
 
 			for (int k=0;k<birthrate;k++)
 				ps.addParticle(pos.getNormalizedPosition(),pos.getcolor(parent));
