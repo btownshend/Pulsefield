@@ -30,21 +30,22 @@ class Ball {
 	public void update(PApplet parent) {
 		float elapsed=1.0f/parent.frameRate;
 		position.add(PVector.mult(velocity,elapsed));
-		if (position.x>Tracker.maxx && velocity.x>0) {
+		if (position.x+radius>Tracker.maxx && velocity.x>0) {
 			velocity.x*=-restitution;
-			position.x=2*Tracker.maxx-position.x;
+			position.x=2*(Tracker.maxx-radius)-position.x;
 		}
-		if (position.x<Tracker.minx && velocity.x<0) {
+		if (position.x-radius<Tracker.minx && velocity.x<0) {
 			velocity.x*=-restitution;
-			position.x=2*Tracker.minx-position.x;
+			position.x=2*(Tracker.minx+radius)-position.x;
 		}
-		if (position.y>Tracker.maxy && velocity.y>0 ) {
+		if (position.y+radius>Tracker.maxy && velocity.y>0 ) {
+			PApplet.println("Position.y="+position.y+", radius="+radius+", maxy="+Tracker.maxy);
 			velocity.y*=-restitution;
-			position.y=2*Tracker.maxy-position.y;
+			position.y=2*(Tracker.maxy-radius)-position.y;
 		}
-		if (position.y<Tracker.miny && velocity.y<0) {
+		if (position.y-radius<Tracker.miny && velocity.y<0) {
 			velocity.y*=-restitution;
-			position.y=2*Tracker.miny-position.y;
+			position.y=2*(Tracker.miny+radius)-position.y;
 		}
 		velocity.mult(1-deceleration*elapsed);
 //		PApplet.println("New ball position="+position+", velocity="+velocity+", inCollision="+inCollision);
