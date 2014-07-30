@@ -9,8 +9,8 @@ import processing.core.PVector;
  *
  */
 public class Leg {
-	PVector position;
-	PVector velocity;
+	private PVector position;
+	private PVector velocity;
 	
 	Leg(PVector position) { this.position=new PVector(position.x,position.y); }
 	
