@@ -16,14 +16,15 @@ class Ball {
 	}
 	
 	public void draw(PApplet parent, PVector wsize) {
-		final int color=0xff7f007f;
+		final int color=0xffffffff;
 		parent.ellipseMode(PConstants.CENTER);
-		float sz=20;
-		parent.fill(color,255);
+		parent.fill(color,0);
+		parent.strokeWeight(2.0f);
 		parent.stroke(color,255);
 //		PApplet.println("Ball at "+((position.x+1)*wsize.x/2)+","+((position.y+1)*wsize.y/2));
 		PVector p=Tracker.mapPosition(position);
-		parent.ellipse((p.x+1)*wsize.x/2, (p.y+1)*wsize.y/2, sz, sz);
+		PVector nRadius=Tracker.mapVelocity(new PVector(radius,radius));
+		parent.ellipse((p.x+1)*wsize.x/2, (p.y+1)*wsize.y/2, nRadius.x*2*wsize.x/2, nRadius.y*2*wsize.y/2);
 	}
 	
 	public void update(PApplet parent) {
