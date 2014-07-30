@@ -8,6 +8,8 @@ public class Person {
 	int id;
 	int groupid;
 	int groupsize;
+	float sep;   		// Leg separation in meters
+	float diam;			// Leg diameter in meters
 	Leg[] legs;
 	
 	public Person(PVector origin, int channel, int id) {
@@ -61,7 +63,13 @@ public class Person {
 	void setVelocity(PVector vel) { velocity=vel; }
 	
 	float getLegSeparationInMeters() {
-		return 0.1f;  // TODO
+		return sep;
+	}
+	void setLegSeparation(float sep) {
+		this.sep=sep;
+	}
+	void setLegDiameter(float diam) {
+		this.diam=diam;
 	}
 	Boolean isMoving() {
 		return velocity.mag() > 0.1;

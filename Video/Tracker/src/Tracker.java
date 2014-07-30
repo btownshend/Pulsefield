@@ -406,7 +406,11 @@ public class Tracker extends PApplet {
 			float diam,float sigmadiam,
 			float sep,float sigmasep,
 			float leftness,int visibility) {
-
+		Person p=people.get(id);
+		if (p!=null) {
+			p.setLegSeparation(sep);
+			p.setLegDiameter(diam);
+		}
 	}
 	synchronized public void pfleg(int sampnum,int id,int leg,int nlegs,
 			float x,float y,float ex,float ey,
