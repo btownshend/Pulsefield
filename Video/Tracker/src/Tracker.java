@@ -214,8 +214,8 @@ public class Tracker extends PApplet {
 			vis[currentvis].stats();
 		}
 
-		Person p=people.getOrCreate(mouseID,mouseID%16);
 		if (mousePressed) {
+			Person p=people.getOrCreate(mouseID,mouseID%16);
 			PVector mousePos=unMapPosition(new PVector(mouseX*2f/width-1, mouseY*2f/height-1));
 			if (prevMousePressed) {
 				mouseVel.mult(0.9f);
@@ -229,7 +229,6 @@ public class Tracker extends PApplet {
 //			PApplet.println("Moved mouse ID "+mouseID+" to "+mousePos+" with velocity "+p.getVelocityInMeters());
 		} else {
 			mouseVel.set(0f,0f);
-			p.setVelocity(mouseVel);
 		}
 		prevMousePressed=mousePressed;
 
