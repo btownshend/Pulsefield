@@ -249,7 +249,7 @@ void Laser::showTest() {
     etherdream_point pt;
     pts.clear();
     pt.r=0;pt.g=0;pt.r=0;
-    static const int ngrid=9;
+    static const int ngrid=7;
     static const int npoints=10000;
     static const int fullrange=32767;
     static const int step=2*fullrange*ngrid*2/npoints;
