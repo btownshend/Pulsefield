@@ -293,12 +293,14 @@ void Laser::showTest() {
 
 
 void Laser::showOutline() {
+    const Color outlineColor=Color(0.0,1.0,0.0);
+
     pts.clear();
     // Need to be inside maximums by at least one pixel or pruning will think its saturated and take it out
     Transform &t=getTransform();
 
     CPoint p;
-    p.setColor(Color(0.0,1.0,0.0));
+    p.setColor(outlineColor);
     static const int nsegments=200;
     p.setX(t.getMinX());
     for (int i=0;i<nsegments;i++) {

@@ -105,7 +105,6 @@ int Lasers::render() {
 
     const Color bgColor=Color(0.0,1.0,0.0);
     const Color gridColor=Color(0.0,1.0,0.0);
-    const Color outlineColor=Color(0.0,1.0,0.0);
 
     if (getFlag("background") && background.size()>0)
 	globalDrawing.drawPolygon(background,bgColor);
