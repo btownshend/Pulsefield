@@ -18,6 +18,7 @@ class Transform {
     std::vector<Point> floorpts, devpts;
     float hfov, vfov;  // Field of view corresponding to full device range around origin (e.g. [-32767,0]:[32767,0] covers hfov); assumes laser mirrors are centered for (0,0)
     static std::vector<cv::Point2f> convertPoints(const std::vector<Point> &pts);
+    etherdream_point cPointToEtherdream(CPoint devPt) const;
  public:
     Transform();
     void clear(float minx=-3, float miny=0, float maxx=3, float maxy=3);

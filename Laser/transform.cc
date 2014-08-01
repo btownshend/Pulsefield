@@ -148,6 +148,12 @@ Point Transform::flatToDevice(Point flatPt) const {
     return devPt;
 }
 
+// Convert  flat space coord to device coords
+etherdream_point Transform::flatToDevice(CPoint flatPt) const {
+    CPoint devPt(flatToDevice((Point)flatPt),flatPt.getColor());
+    return cPointToEtherdream(devPt);
+}
+
 std::vector<Point> Transform::deviceToFlat(const std::vector<Point> &devPts) const {
     std::vector<Point> result(devPts.size());
     for (unsigned int i=0;i<devPts.size();i++)
@@ -162,8 +168,7 @@ std::vector<Point> Transform::flatToDevice(const std::vector<Point> &flatPts) co
     return result;
 }
 
-etherdream_point Transform::mapToDevice(CPoint floorPt) const {
-    Point devPt=mapToDevice((Point)floorPt);
+etherdream_point Transform::cPointToEtherdream(CPoint devPt) const {
     etherdream_point p;
     int x=round(devPt.X());
     if (x<-32768)
@@ -186,6 +191,9 @@ etherdream_point Transform::mapToDevice(CPoint floorPt) const {
     p.g=(int)(c.green() * 65535);
     p.b=(int)(c.blue() * 65535);
 
+etherdream_point Transform::mapToDevice(CPoint floorPt) const {
+    CPoint devPt(mapToDevice((Point)floorPt),floorPt.getColor());
+    etherdream_point p=cPointToEtherdream(devPt);
     dbg("Transform.mapToDevice(CP)",10) << floorPt << " -> " << "[" << p.x << "," <<p.y << "]" << std::endl;
     return p;
 }
