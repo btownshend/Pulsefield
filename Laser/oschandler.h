@@ -32,6 +32,7 @@ class OSCHandler {
     bool dirty;
 
     int lastUpdateFrame;   // Frame of last /laser/update message received
+    struct timeval lastFrameTime;	// Time of receipt of last frame message
     Drawing *currentDrawing();   // Get currently targetted drawing or NULL if none.
  public:
     OSCHandler(int port, std::shared_ptr<Lasers> lasers, std::shared_ptr<Video> video);

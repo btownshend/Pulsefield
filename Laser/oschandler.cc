@@ -128,6 +128,7 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
     minx=-5; maxx=5;
     miny=0; maxy=0;
 
+    gettimeofday(&lastFrameTime,0);
 	serverPort=port;
 
 	/* start a new server on OSC port  */
@@ -243,6 +244,13 @@ void OSCHandler::processIncoming() {
     while (true) {
 	// TODO: Should set timeout to 0 if geometry is dirty, longer timeout if its clean
 	if  (lo_server_recv_noblock(s,1) == 0) {
+	    static const float FRAMETIMEOUT= 1.0f;	// Timeout to inject a fake frame to keep the UI running
+	    struct timeval now;
+	    gettimeofday(&now,0);
+	    if ((now.tv_sec-lastFrameTime.tv_sec)+(now.tv_usec-lastFrameTime.tv_usec)/1e6 > FRAMETIMEOUT) {
+		dbg("OSCHanler.processingIncoming",1) << "Faking a frame message" << std::endl;
+		pfframe(lastUpdateFrame?0:1);	// Simulate a frame message
+	    }
 	    // Render lasrs only when nothing in queue
 	    if (lasers->render()) 
 		// If they've changed, mark the video for update too
@@ -450,6 +458,7 @@ void OSCHandler::update(int frame) {
 
 void OSCHandler::pfframe(int frame) {
     dbg("OSCHandler.pfframe",1) << "pfframe(" << frame << "), lastUpdateFrame=" << lastUpdateFrame << std::endl;
+    gettimeofday(&lastFrameTime,0);
     lastUpdateFrame=frame;
     lasers->setFrame(frame);
 
