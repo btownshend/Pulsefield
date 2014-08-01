@@ -171,8 +171,8 @@ std::vector<Point> Transform::flatToDevice(const std::vector<Point> &flatPts) co
 etherdream_point Transform::cPointToEtherdream(CPoint devPt) const {
     etherdream_point p;
     int x=round(devPt.X());
-    if (x<-32768)
-	p.x=-32768;
+    if (x<-32767)
+	p.x=-32767;
     else if (x>32767)
 	p.x=32767;
     else
