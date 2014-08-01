@@ -291,3 +291,57 @@ void Laser::showTest() {
     update();
 }
 
+
+void Laser::showOutline() {
+    pts.clear();
+    // Need to be inside maximums by at least one pixel or pruning will think its saturated and take it out
+    Transform &t=getTransform();
+
+    CPoint p;
+    p.setColor(Color(0.0,1.0,0.0));
+    static const int nsegments=200;
+    p.setX(t.getMinX());
+    for (int i=0;i<nsegments;i++) {
+	p.setY(t.getMinY()+i*(t.getMaxY()-t.getMinY())/(nsegments-1));
+	pts.push_back(t.flatToDevice(p));
+    }
+    for (int i=0;i<nsegments;i++) {
+	p.setX(t.getMinX()+i*(t.getMaxX()-t.getMinX())/(nsegments-1));
+	pts.push_back(t.flatToDevice(p));
+    }
+    for (int i=0;i<nsegments;i++) {
+	p.setY(t.getMinY()+(nsegments-i-1)*(t.getMaxY()-t.getMinY())/(nsegments-1));
+	pts.push_back(t.flatToDevice(p));
+    }
+    for (int i=0;i<nsegments;i++) {
+	p.setX(t.getMinX()+(nsegments-i-1)*(t.getMaxX()-t.getMinX())/(nsegments-1));
+	pts.push_back(t.flatToDevice(p));
+    }
+    // Diagonal
+    for (int i=0;i<nsegments;i++) {
+	p.setX(t.getMinX()+(i-1)*(t.getMaxX()-t.getMinX())/(nsegments-1));
+	p.setY(p.X());
+	pts.push_back(t.flatToDevice(p));
+    }
+    // Return to a good position
+    for (int i=0;i<nsegments;i++) {
+	p.setY(t.getMinY()+(nsegments-i-1)*(t.getMaxY()-t.getMinY())/(nsegments-1));
+	pts.push_back(t.flatToDevice(p));
+    }
+    // Diagonal
+    for (int i=0;i<nsegments;i++) {
+	p.setX(t.getMinX()+(nsegments-i-1)*(t.getMaxX()-t.getMinX())/(nsegments-1));
+	p.setY(-p.X());
+	pts.push_back(t.flatToDevice(p));
+    }
+    // Return to a good position
+    for (int i=0;i<nsegments;i++) {
+	p.setY(t.getMinY()+(nsegments-i-1)*(t.getMaxY()-t.getMinY())/(nsegments-1));
+	pts.push_back(t.flatToDevice(p));
+    }
+    dbg("Lasers.render",3) << "outline=";
+    for (int j=0;j<pts.size();j++)
+	dbgn("Lasers.render",3) << "(" << pts[j].x << "," << pts[j].y << ")  ";
+    dbgn("Lasers.render",3) << std::endl;
+    update();
+}

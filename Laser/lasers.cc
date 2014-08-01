@@ -161,38 +161,9 @@ int Lasers::render() {
     }
     for (unsigned int i=0;i<lasers.size();i++) {
 	if (getFlag("outline")) {
-	  std::vector<etherdream_point> outline;
-	    // Need to be inside maximums by at least one pixel or pruning will think its saturated and take it out
-	    int maxx=30000;
-	    int maxy=32766;
-	    etherdream_point p;
-	    static const int nsegments=20;
-	    p.x=-maxx;
-	    for (int i=0;i<nsegments;i++) {
-	      p.y=-maxy+2*i*maxy/(nsegments-1);
-	      outline.push_back(p);
-	    }
-	    for (int i=0;i<nsegments;i++) {
-	      p.x=-maxx+2*i*maxx/(nsegments-1);
-	      outline.push_back(p);
-	    }
-	    for (int i=0;i<nsegments;i++) {
-	      p.y=-maxy+2*(nsegments-i-1)*maxy/(nsegments-1);
-	      outline.push_back(p);
-	    }
-	    for (int i=0;i<nsegments;i++) {
-	      p.x=-maxx+2*(nsegments-i-1)*maxx/(nsegments-1);
-	      outline.push_back(p);
-	    }
-	    // Convert to world 
-	    std::vector<Point> outlineWorld=CPoint::convertToPointVector(lasers[i]->getTransform().mapToWorld(outline));
-	    dbg("Lasers.render",3) << "outlineWorld=";
-	    for (int j=0;j<outlineWorld.size();j++)
-		dbgn("Lasers.render",3) << outlineWorld[j] << " ";
-	    dbgn("Lasers.render",3) << std::endl;
-	    dtmp[i].drawPolygon(outlineWorld,outlineColor);
+	    lasers[i]->showOutline();
 	}
-	if (getFlag("test")) {
+	else if (getFlag("test")) {
 	    lasers[i]->showTest();
 	} else {
 	    dtmp[i].append(globalDrawing);

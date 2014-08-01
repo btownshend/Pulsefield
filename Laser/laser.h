@@ -21,7 +21,7 @@ class Laser: public DisplayDevice  {
     int preBlanks;	// Blanks before a move begins
     int postBlanks;  // Blanks after a move ends
     struct etherdream *d;
-    std::vector<etherdream_point> pts;
+    std::vector<etherdream_point> pts;  // Points to send/sent to etherdream buffer
     float spacing;  // Separation in world coordinates of point spacing
     int unit;
     Color labelColor;
@@ -61,4 +61,5 @@ class Laser: public DisplayDevice  {
     void toggleEnable() { showLaser=!showLaser; }
     void dumpPoints() const;
     void showTest();
+    void showOutline();
 };
