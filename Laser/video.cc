@@ -10,9 +10,6 @@
 #include "transform.h"
 #include "dbg.h"
 
-// Bounds of laser hardware interface (laser may actually only be able to draw a region smaller than this)
-const int MAXVALUE=32767;
-const int MINVALUE=-32768;
 const float titleHeight=15;   // in pixels
 
 Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(4) {
@@ -339,7 +336,7 @@ void XRefs::refresh(cairo_t *cr, std::shared_ptr<Laser>laser,  Video &video, int
 			       << " to " << Point(wx,wy) << std::endl;
 	if (entry->dev) {
 	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " device anchor " << anchorNumber << " to " <<std::fixed <<  std::setprecision(0) << Point(wx,wy) << std::endl << std::setprecision(3);
-	    entry->laser->getTransform().setDevPoint(anchorNumber,Point(std::min(MAXVALUE,std::max(MINVALUE,(int)wx)),std::min(MAXVALUE,std::max(MINVALUE,(int)wy))));
+	    entry->laser->getTransform().setDevPoint(anchorNumber,Point(std::min(Laser::MAXDEVICEVALUE,std::max(Laser::MINDEVICEVALUE,(int)wx)),std::min(Laser::MAXDEVICEVALUE,std::max(Laser::MINDEVICEVALUE,(int)wy))));
 	} else {
 	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " world anchor " << anchorNumber << " to "<< std::setprecision(3)  << Point(wx,wy) << std::endl;
 	    entry->laser->getTransform().setFloorPoint(anchorNumber,video.constrainPoint(Point(wx,wy)));
@@ -437,7 +434,7 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
 
      // Translate to center
      cairo_translate(cr,width/2.0,height/2.0);
-     float scale=std::min(width/(MAXVALUE*2.0),height/(MAXVALUE*2.0));
+     float scale=std::min(width/(Laser::MAXDEVICEVALUE*2.0),height/(Laser::MAXDEVICEVALUE*2.0));
      cairo_scale(cr,scale,scale);
      float pixel=1.0/scale;
 
@@ -457,11 +454,11 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
      cairo_set_line_width(cr,1*pixel);
      Color c=laser->getLabelColor();
      cairo_set_source_rgb (cr,c.red(),c.green(),c.blue());
-     cairo_move_to(cr,MINVALUE,MINVALUE);
-     cairo_line_to(cr,MINVALUE,MAXVALUE);
-     cairo_line_to(cr,MAXVALUE,MAXVALUE);
-     cairo_line_to(cr,MAXVALUE,MINVALUE);
-     cairo_line_to(cr,MINVALUE,MINVALUE);
+     cairo_move_to(cr,Laser::MINDEVICEVALUE,Laser::MINDEVICEVALUE);
+     cairo_line_to(cr,Laser::MINDEVICEVALUE,Laser::MAXDEVICEVALUE);
+     cairo_line_to(cr,Laser::MAXDEVICEVALUE,Laser::MAXDEVICEVALUE);
+     cairo_line_to(cr,Laser::MAXDEVICEVALUE,Laser::MINDEVICEVALUE);
+     cairo_line_to(cr,Laser::MINDEVICEVALUE,Laser::MINDEVICEVALUE);
      cairo_stroke(cr);
 
      // Draw anchor points

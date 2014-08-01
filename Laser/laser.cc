@@ -9,6 +9,9 @@
 #include "point.h"
 #include "drawing.h"
 
+const int Laser::MAXDEVICEVALUE=32767;
+const int Laser::MINDEVICEVALUE=-32768;
+
 static const int MAXSLEWDISTANCE=65535/20;
 // slewing is relative to mirror speed, but we need to figure out blanking in floor space (meters) coordinate space, so do rough conversion
 static const float MEANTARGETDIST=4.0;   // Adjust for 4m
@@ -251,21 +254,20 @@ void Laser::showTest() {
     pt.r=0;pt.g=0;pt.r=0;
     static const int ngrid=7;
     static const int npoints=10000;
-    static const int fullrange=32767;
-    static const int step=2*fullrange*ngrid*2/npoints;
+    static const int step=(MAXDEVICEVALUE-MINDEVICEVALUE)*ngrid*2/npoints;
     dbg("Laser.showTest",1) << "Showing laser test pattern with step size of " << step << std::endl;
     // Start and finish each scan at full range, but scan based on visible range stored in transform
     pt.g=65535;
-    pt.x=-fullrange; pt.y=-fullrange;
+    pt.x=MINDEVICEVALUE; pt.y=MINDEVICEVALUE;
     for (int i=0;i<ngrid;i++) {
-      pt.y=(transform.getMaxY()-transform.getMinY())*i/(ngrid-1)+transform.getMinY();
+      pt.y=(MAXDEVICEVALUE-MINDEVICEVALUE)*i/(ngrid-1)+MINDEVICEVALUE;
       if (pt.x<0) {
-	for (int x=-fullrange;x<fullrange;x+=step) {
+	for (int x=MINDEVICEVALUE;x<MAXDEVICEVALUE;x+=step) {
 	  pt.x=x;
 	  pts.push_back(pt);
 	}
       } else {
-	for (int x=fullrange;x>-fullrange;x-=step)  {
+	for (int x=MAXDEVICEVALUE;x>MINDEVICEVALUE;x-=step)  {
 	  pt.x=x;
 	  pts.push_back(pt);
 	}
@@ -273,18 +275,18 @@ void Laser::showTest() {
     }
     // Now we should be near (range,range) assuming ngrid is odd
     for (int i=0;i<ngrid;i++) {
-      pt.x=(transform.getMaxX()-transform.getMinX())*(ngrid-1-i)/(ngrid-1)+transform.getMinX();
-      if (pt.y<0) {
-	for (int y=-fullrange;y<fullrange;y+=step)  {
-	  pt.y=y;
-	  pts.push_back(pt);
+	pt.x=(MAXDEVICEVALUE-MINDEVICEVALUE)*(ngrid-1-i)/(ngrid-1)+MINDEVICEVALUE;
+	if (pt.y<0) {
+	    for (int y=MINDEVICEVALUE;y<MAXDEVICEVALUE;y+=step)  {
+		pt.y=y;
+		pts.push_back(pt);
+	    }
+	} else {
+	    for (int y=MAXDEVICEVALUE;y>MINDEVICEVALUE;y-=step)  {
+		pt.y=y;
+		pts.push_back(pt);
+	    }
 	}
-      } else {
-	for (int y=fullrange;y>-fullrange;y-=step)  {
-	  pt.y=y;
-	  pts.push_back(pt);
-	}
-      }
     }
     update();
 }

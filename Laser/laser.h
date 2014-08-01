@@ -9,6 +9,11 @@
 class Drawing;
 
 class Laser: public DisplayDevice  {
+ public:
+    // Bounds of laser hardware interface (laser may actually only be able to draw a region smaller than this)
+    static const int MAXDEVICEVALUE;
+    static const int MINDEVICEVALUE;
+ private:
     int PPS;
     int npoints;
     float targetSegmentLen;   // Target segment length -- if we can achieve this with < npoints, then use that, otherwise limit by npoints
