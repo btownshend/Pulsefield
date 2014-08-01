@@ -55,8 +55,8 @@ public:
     void setFrame(int _frame) { frame=_frame; setDirty(); }
     void setDirty() { needsRender=true; }
     int getDrawingFrame() const { return frame; }
-    std::shared_ptr<Laser>  getLaser(int unit) { return lasers[unit]; }
-    std::shared_ptr<const Laser> getLaser(int unit) const  { return lasers[unit]; }
+    std::shared_ptr<Laser>  getLaser(int unit) { if (unit<lasers.size()) return lasers[unit]; else return nullptr; }
+    std::shared_ptr<const Laser> getLaser(int unit) const  { if (unit<lasers.size()) return lasers[unit]; else return nullptr; }
     unsigned int size() const { return lasers.size(); }
 
     // Locking
