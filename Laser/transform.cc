@@ -111,7 +111,7 @@ void Transform::recompute() {
 Point Transform::deviceToFlat(Point devPt) const {
     float phi=devPt.X()*hfov/65535;
     float theta=devPt.Y()*vfov/65535;
-    Point flatPt(phi/cos(theta)/cos(phi)*2.0/hfov, theta/cos(theta)*2.0/vfov);
+    Point flatPt(phi/cos(theta)/cos(phi)*2.0/hfov*cos(hfov/2), theta/cos(theta)*2.0/vfov*cos(vfov/2));
     dbg("Transform.deviceToFlat",10) << devPt << " -> phi = " <<  phi << ", theta=" << theta << " -> " << flatPt << std::endl;
     return flatPt;
 }
@@ -141,8 +141,8 @@ static float unmap(float y) {
 
 // Convert  flat space coord to device coords
 Point Transform::flatToDevice(Point flatPt) const {
-    float theta=unmap(flatPt.Y()*vfov/2);
-    float phi=unmap(flatPt.X()*cos(theta)*hfov/2);
+    float theta=unmap(flatPt.Y()*vfov/2/cos(vfov/2));
+    float phi=unmap(flatPt.X()*cos(theta)*hfov/2/cos(hfov/2));
     Point devPt(phi*65535/hfov, theta*65535/vfov);
     dbg("Transform.flatToDevice",10) << flatPt << " -> phi = " <<  phi << ", theta=" << theta << " -> " << devPt << std::endl;
     return devPt;
