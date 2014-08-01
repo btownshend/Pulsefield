@@ -405,6 +405,27 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 			Lasers::instance()->unlock();
 		    }
 		    handled=true;
+		} else if (strcmp(tok,"xmin")==0 ||strcmp(tok,"ymin")==0 ||strcmp(tok,"xmax")==0 ||strcmp(tok,"ymax")==0) {
+		    dbg("TouchOSC",1) << "Normalize range[ " << tok << "] set to " << argv[0]->f << std::endl;
+		    Lasers::instance()->lock();   // In case another thread tries to use the transform while we're changing it
+		    for (int lnum=0;lnum< Lasers::instance()->size();lnum++) {
+			std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(lnum);
+			if (strcmp(tok,"xmin")==0)
+			    laser->getTransform().setMinX(argv[0]->f);
+			else if (strcmp(tok,"ymin")==0)
+			    laser->getTransform().setMinY(argv[0]->f);
+			else if (strcmp(tok,"xmax")==0)
+			    laser->getTransform().setMaxX(argv[0]->f);
+			else if (strcmp(tok,"ymax")==0)
+			    laser->getTransform().setMaxY(argv[0]->f);
+			
+			send("/ui/laser/xmin/label",laser->getTransform().getMinX());
+			send("/ui/laser/ymin/label",laser->getTransform().getMinY());
+			send("/ui/laser/xmax/label",laser->getTransform().getMaxX());
+			send("/ui/laser/ymax/label",laser->getTransform().getMaxY());
+		    }
+		    Lasers::instance()->unlock();
+		    handled=true;
 		}
 	    }
 	} else if (strcmp(tok,"attrenable")==0) {
