@@ -18,12 +18,6 @@ class Transform {
     std::vector<Point> floorpts, devpts;
     float hfov, vfov;  // Field of view corresponding to full device range around origin (e.g. [-32767,0]:[32767,0] covers hfov); assumes laser mirrors are centered for (0,0)
     static std::vector<cv::Point2f> convertPoints(const std::vector<Point> &pts);
-    // Convert  device coord to flat space (i.e. laser projection grid)
-    Point deviceToFlat(Point devPt) const;
-    std::vector<Point> deviceToFlat(const std::vector<Point> &devPts) const;
-    // Convert  flat space coord to device coords
-    Point flatToDevice(Point flatPt) const;
-    std::vector<Point> flatToDevice(const std::vector<Point> &flatPts) const;
  public:
     Transform();
     void clear(float minx=-3, float miny=0, float maxx=3, float maxy=3);
@@ -41,6 +35,16 @@ class Transform {
     // Inverse mapping from laser to world
     Point mapToWorld(Point p) const;
     CPoint mapToWorld(etherdream_point p) const;
+
+    // Normalized space to world
+    Point flatToWorld(Point flatPt) const;
+    // Convert  device coord to flat space (i.e. laser projection grid)
+    Point deviceToFlat(Point devPt) const;
+    std::vector<Point> deviceToFlat(const std::vector<Point> &devPts) const;
+    // Convert  flat space coord to device coords
+    Point flatToDevice(Point flatPt) const;
+    etherdream_point  flatToDevice(CPoint flatPt) const;
+    std::vector<Point> flatToDevice(const std::vector<Point> &flatPts) const;
 
     std::vector<etherdream_point> mapToDevice(const std::vector<CPoint> &floorPts) const;
     std::vector<Point> mapToDevice(const std::vector<Point> &floorPts) const;
