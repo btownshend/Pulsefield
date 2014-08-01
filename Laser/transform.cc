@@ -8,11 +8,11 @@
 Transform::Transform(): floorpts(4), devpts(4) {
     hfov=90*M_PI/180;
     vfov=90*M_PI/180;
-    minx=-32000;
-    maxx=32000;
-    miny=-32766;  // Needs to be less than extreme values in etherdream (short) values 
-    maxy=32766;
-    clear();
+    minx=-.96f;
+    maxx=.96f;
+    miny=-.76f;  // Needs to be less than extreme values in etherdream (short) values 
+    maxy=.96f;
+    clear(-6,0,6,6);
 
     if (false) {
 	// Test conversions
@@ -70,13 +70,13 @@ void Transform::clear(float floorMinx, float floorMiny, float floorMaxx, float f
     // Default mapping
     // Point indices are order based on laser positions: BL, BR, TR, TL
     floorpts[0]=Point(floorMinx,floorMaxy);
-    devpts[0]=Point(-32767,32768);
+    devpts[0]=flatToDevice(Point(minx,maxy));
     floorpts[1]=Point(floorMaxx,floorMaxy);
-    devpts[1]=Point(32767,32768);
+    devpts[1]=flatToDevice(Point(maxx,maxy));
     floorpts[2]=Point(floorMaxx,floorMiny);
-    devpts[2]=Point(32767,-32768);
+    devpts[2]=flatToDevice(Point(maxx,miny));
     floorpts[3]=Point(floorMinx,floorMiny);
-    devpts[3]=Point(-32767,-32768);
+    devpts[3]=flatToDevice(Point(minx,miny));
 
     recompute();
 }
@@ -248,7 +248,12 @@ std::vector<CPoint> Transform::mapToWorld(const std::vector<etherdream_point> &p
 
 // Check if a given device coordinate is "on-screen" (can be projected)
 bool Transform::onScreen(Point devPt) const {
-    return devPt.X()>=minx && devPt.X()<=maxx && devPt.Y() >=miny && devPt.Y() <= maxy;
+    if  (devPt.X()<-32767 || devPt.X()>32766 || devPt.Y() <-32767 || devPt.Y() >32766)
+	// Can't move the laser to this position
+	return false;
+    // Otherwise, check if it makes it past the window
+    Point flatPt=deviceToFlat(devPt);
+    return flatPt.X()>=minx && flatPt.X()<=maxx && flatPt.Y() >=miny && flatPt.Y() <= maxy;
 }
 
 void Transform::save(std::ostream &s) const {

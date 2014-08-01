@@ -551,8 +551,8 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 
 	 // Draw coverage area of laser
 	 // Translate to center
-	 Point worldBL=transform.mapToWorld(Point(transform.getMinX(), transform.getMinY()));
-	 Point worldBR=transform.mapToWorld(Point(transform.getMaxX(), transform.getMinY()));
+	 Point worldBL=transform.flatToWorld(Point(transform.getMinX(), transform.getMinY()));
+	 Point worldBR=transform.flatToWorld(Point(transform.getMaxX(), transform.getMinY()));
 	 dbg("Video.drawWorld",3) << "BL=" << worldBL << ", BR=" << worldBR << std::endl;
 	 cairo_set_line_width(cr,1*pixel);
 	 cairo_move_to(cr,worldBL.X(),worldBL.Y());
@@ -561,9 +561,9 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	 Point prevpt=worldBR;
 	 for (int iy=0;iy<ninterp;iy++) {
 	     float y=iy*(transform.getMaxY()-transform.getMinY())/(ninterp-1)+transform.getMinY();
-	     Point devpt=Point(transform.getMaxX(), y);
-	     dbg("Video.drawWorld",3) << "devpt=" << devpt << std::endl;
-	     Point pt=transform.mapToWorld(devpt);
+	     Point flatpt=Point(transform.getMaxX(), y);
+	     dbg("Video.drawWorld",3) << "flatpt=" << flatpt << std::endl;
+	     Point pt=transform.flatToWorld(flatpt);
 	     dbg("Video.drawWorld",3) << "pt=" << pt << std::endl;
 	     if (pt.X()>=minLeft && pt.X()<=maxRight && pt.Y()>=minBottom && pt.Y()<=maxTop) {
 		 dbg("Video.drawWorld",3) << "in bounds" << std::endl;
@@ -575,9 +575,9 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	 prevpt=worldBL;
 	 for (int iy=0;iy<ninterp;iy++) {
 	     float y=iy*(transform.getMaxY()-transform.getMinY())/(ninterp-1)+transform.getMinY();
-	     Point devpt=Point(transform.getMinX(), y);
-	     dbg("Video.drawWorld",3) << "devpt=" << devpt << std::endl;
-	     Point pt=transform.mapToWorld(devpt);
+	     Point flatpt=Point(transform.getMinX(), y);
+	     dbg("Video.drawWorld",3) << "flatpt=" << flatpt << std::endl;
+	     Point pt=transform.flatToWorld(flatpt);
 	     dbg("Video.drawWorld",3) << "pt=" << pt << std::endl;
 	     if (pt.X()>=minLeft && pt.X()<=maxRight && pt.Y()>=minBottom && pt.Y()<=maxTop) {
 		 dbg("Video.drawWorld",3) << "in bounds" << std::endl;

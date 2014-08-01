@@ -8,13 +8,16 @@
 
 class Color;
 
-// Transformation between floor (meter) space and device (-32767:32767) space
+// Transformation between floor (meter) space, flat  device window [-1:1] and  device (-32767:32767) space
+// Floor<-> Flat is a perspective transformation (imagine flat/normalized as a viewport perpendicular to the scanner, such as the physical window)
+// Flat <-> Device has a cos() warping transformation :  fy=dy/32767/cos(dy/32767*vfov/2);   fx=dx/32767/cos(dy/32767*vfov/2)/cos(dx/32767*hfov/2)
+// In addition, keep track of the physical window (the range of usable projection) in flat space, values between -1 and 1.  Use flat because the view window is approximately rectangular in this space.
+
 class Transform {
     cv::Mat transform, invTransform; 
     std::vector<Point> floorpts, devpts;
-    float hfov, vfov;
+    float hfov, vfov;  // Field of view corresponding to full device range around origin (e.g. [-32767,0]:[32767,0] covers hfov); assumes laser mirrors are centered for (0,0)
     static std::vector<cv::Point2f> convertPoints(const std::vector<Point> &pts);
-    int minx, maxx, miny, maxy;   // Bounds of laser projection (in device cooords)
     // Convert  device coord to flat space (i.e. laser projection grid)
     Point deviceToFlat(Point devPt) const;
     std::vector<Point> deviceToFlat(const std::vector<Point> &devPts) const;
@@ -46,10 +49,16 @@ class Transform {
     // Check if a given device coordinate is "on-screen" (can be projected)
     bool onScreen(Point devPt) const;
     bool onScreen(etherdream_point devPt) const { return onScreen(Point(devPt.x,devPt.y)); }
+
+    // Get/set min/max of device window (in normalized coords -1:1 )
     float getMinX() const { return minx; } 
     float getMaxX() const { return maxx; } 
     float getMinY() const { return miny; } 
     float getMaxY() const { return maxy; } 
+    void setMinX(float minx)  { this->minx=minx; }
+    void setMaxX(float maxx)  { this->maxx=maxx; }
+    void setMinY(float miny)  { this->miny=miny; }
+    void setMaxY(float maxy)  { this->maxy=maxy; }
     
     // Clip a line to the onScreen portion
     void clipLine(Point &floorPt1, Point &floorPt2) const;
