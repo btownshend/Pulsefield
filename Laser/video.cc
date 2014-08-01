@@ -422,7 +422,7 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
 
     if (height>titleHeight*4) {
 	std::ostringstream msg2;
-	msg2 << std::fixed << "Laser " << laser->getUnit() << ": " << laser->getPoints().size() << " @ " << std::setprecision(1) << laser->getSpacing()*1000 << std::setprecision(3);
+	msg2 << std::fixed << "Laser " << (laser->getUnit()+1) << ": " << laser->getPoints().size() << " @ " << std::setprecision(1) << laser->getSpacing()*1000 << std::setprecision(3);
 	if (!laser->isEnabled())
 	    msg2 << " (DISABLED)";
 	drawText(cr,0,0,width,titleHeight,msg2.str().c_str());

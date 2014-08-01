@@ -61,7 +61,7 @@ int Laser::open() {
 	    myed=i;
     }
     if (myed==-1) {
-	std::cerr << "Etherdream unit " << unit << "(" << etherdreamIDS[unit] << " ) not found -- is it connected and on?";
+	std::cerr << "Etherdream unit " << unit << "(" << std::hex << etherdreamIDS[unit] << std::dec << " ) not found -- is it connected and on?" << std::endl;
 	return  -1;
     }
     d = etherdream_get(myed);
