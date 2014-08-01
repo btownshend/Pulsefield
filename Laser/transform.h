@@ -22,7 +22,7 @@ class Transform {
     etherdream_point cPointToEtherdream(CPoint devPt) const;
  public:
     Transform();
-    void clear(float minx=-3, float miny=0, float maxx=3, float maxy=3);
+    void clear(float floorMinx, float floorMiny, float floorMaxx, float floorMaxy);
 
     // Set projector field of view (in Radians)
     void setHFOV(float hfov) { this->hfov=hfov; recompute(); }
