@@ -587,15 +587,6 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	     prevpt=pt;
 	 }
 
-	 // cairo_move_to(cr,worldTL.X(),worldTL.Y());
-	 // for (int iy=0;iy<ninterp;iy++) {
-	 //     float y=iy*(transform.getMaxY()-transform.getMinY())/(ninterp-1)+transform.getMinY();
-	 //     Point devpt=Point(transform.getMaxX(), y);
-	 //     if (transform.onScreen(devpt)) {
-	 // 	 Point pt=transform.mapToWorld(devpt);
-	 // 	 cairo_line_to(cr,pt.X(),pt.Y());
-	 //     }
-	 // }
 	 cairo_stroke(cr);
 
 	 // Draw anchor points
