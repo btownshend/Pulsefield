@@ -133,9 +133,10 @@ int Lasers::render() {
     }
     if (getFlag("grid")) {
 	int ngrid=7;
-	float width=6;
+	// Assumes active region is 7m x 14m
+	float width=13;
 	float depth=6;
-	float minx=-width/2,maxx=width/2,miny=0,maxy=depth;
+	float minx=-width/2+0.5f,maxx=width/2-0.5f,miny=0.5f,maxy=depth-0.5f;
 	float xstep=(maxx-minx)/(ngrid-1);
 	for (int i=0;i<ngrid;i++) {
 	    float x=minx+i*xstep;
