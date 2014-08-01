@@ -186,10 +186,12 @@ etherdream_point Transform::cPointToEtherdream(CPoint devPt) const {
     else
 	p.y=y;
 
-    Color c=floorPt.getColor();
+    Color c=devPt.getColor();
     p.r=(int)(c.red() * 65535);
     p.g=(int)(c.green() * 65535);
     p.b=(int)(c.blue() * 65535);
+    return p;
+}
 
 etherdream_point Transform::mapToDevice(CPoint floorPt) const {
     CPoint devPt(mapToDevice((Point)floorPt),floorPt.getColor());
@@ -221,15 +223,19 @@ CPoint Transform::mapToWorld(etherdream_point p) const {
 }
 
 Point Transform::mapToWorld(Point devPt) const {
-    std::vector<cv::Point2f> src(1);
     Point flatPt=deviceToFlat(devPt);
+    return flatToWorld(flatPt);
+}
+
+Point Transform::flatToWorld(Point flatPt) const {
+    std::vector<cv::Point2f> src(1);
     src[0].x=flatPt.X();
     src[0].y=flatPt.Y();
     std::vector<cv::Point2f> dst;
     cv::perspectiveTransform(src,dst,invTransform);
     Point result(dst[0].x,dst[0].y);
 
-    dbg("Transform.mapToWorld",10)  <<  devPt << "  -> " << result << std::endl;
+    dbg("Transform.flatToWorld",10)  <<  flatPt << "  -> " << result << std::endl;
     return result;
 }
 
