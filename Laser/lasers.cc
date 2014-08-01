@@ -75,6 +75,28 @@ int Lasers::render() {
     People::draw(drawing);
     dbg("Lasers.render",1) << "BG+People+Connections+Groups have " << drawing.getNumElements() << " elements." << std::endl;
 
+    if (getFlag("allocationTest")) {
+	// Allocation test pattern
+	// Draw circles over a uniform grid to see where they get allocated
+	static const int ngrid=13;
+	// Assumes active region is 7m x 14m
+	static const float width=13.5;
+	static const float depth=6.5;
+	static const float radius=0.1;
+
+	float minx=-width/2+0.5f,maxx=width/2-0.5f,miny=0.5f,maxy=depth-0.5f;
+	float xstep=(maxx-minx)/(ngrid-1);
+	float ystep=(maxy-miny)/(ngrid-1);
+	for (int i=0;i<ngrid;i++) {
+	    float x=minx+i*xstep;
+	    for (int j=0;j<ngrid;j++) {
+		float y=miny+j*ystep;
+		drawing.drawCircle(Point(x,y),radius,Color(0.0,1.0,0.0));
+	    }
+	}
+	dbg("Lasers.render",1) << "After adding allocatin test pattern, have " << drawing.getNumElements() << " elements." << std::endl;
+    }
+
     // Split drawing among lasers
     std::vector<Drawing> dtmp=allocate(drawing);
 
@@ -85,9 +107,9 @@ int Lasers::render() {
     const Color gridColor=Color(0.0,1.0,0.0);
     const Color outlineColor=Color(0.0,1.0,0.0);
 
-    if (getFlag("background"))
+    if (getFlag("background") && background.size()>0)
 	globalDrawing.drawPolygon(background,bgColor);
-    if (getFlag("alignment"))  {
+    if (getFlag("alignment") && background.size()>0)  {
 	// TODO: Draw alignment pattern
 	static const float MINTARGETDISTFROMBG=0.5;   // Minimum distance of target from background
 	static const float MAXTARGETRANGEDIFF=0.3;

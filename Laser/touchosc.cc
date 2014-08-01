@@ -367,7 +367,7 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	    handled=true;
 	} else if (strcmp(tok,"laser")==0) {
 	    tok=strtok(NULL,"/");
-	    std::string flags[]={"body","legs","grid","background","alignment","test","outline"};
+	    std::string flags[]={"body","legs","grid","background","alignment","test","outline","allocationTest"};
 	    for (int i=0;i<sizeof(flags)/sizeof(flags[0]);i++) {
 		if (flags[i]==tok) {
 		    Lasers::instance()->setFlag(tok,argv[0]->f>0.5);

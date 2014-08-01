@@ -140,6 +140,10 @@ void *Video::runDisplay(void *arg) {
 			// Test pattern toggle
 			Lasers::instance()->toggleFlag("test");
 			world->newMessage() << "Toggled laser test pattern";
+		    } else if (key==XK_c) {
+			// Field of circles (for testing allocation)
+			Lasers::instance()->toggleFlag("allocationTest");
+			world->newMessage() << "Toggled allocation test pattern";
 		    } else if (key>=XK_1 && key<=XK_9) {
 			Lasers::instance()->toggleEnable(key-XK_1);
 			world->newMessage() << "Toggled laser " << (int)(key-'0') << std::endl;
