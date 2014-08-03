@@ -103,8 +103,15 @@ void Transform::recompute() {
 	transform=cv::getPerspectiveTransform(convertPoints(floorpts),convertPoints(deviceToFlat(devpts)));
 	invTransform=cv::getPerspectiveTransform(convertPoints(deviceToFlat(devpts)),convertPoints(floorpts));
     }
-    dbg("Transform.recompute",1) << "Done" << std::endl;
+    // Calculate down tilt of laser
+    // Point aimed=deviceToWorld(Point(0,0));
+    // Point closer=deviceToWorld(Point(0,-1000));
+    // Point distant=closer+(aimed-closer)*1000;  // Very far away
+    // Point devDistant=worldToDevice(distant);
+
     // Calculate location of laser and its field of view in 3d space
+    origin=flatToWorld(Point(0,-5));   // Just use the projection down in laser coord system (will be behind true origin due to tilt, height (TODO: FIX)
+    dbg("Transform.recompute",1) << "origin=" << origin << std::endl;
 }
 
 // Convert  device coord to flat space (i.e. laser projection grid)

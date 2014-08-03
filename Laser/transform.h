@@ -20,6 +20,7 @@ class Transform {
     static std::vector<cv::Point2f> convertPoints(const std::vector<Point> &pts);
     float minx, maxx, miny, maxy;   // Bounds of laser projection (in flat cooords)
     etherdream_point cPointToEtherdream(CPoint devPt) const;
+    Point origin;   // Location of projector in floor coordinate space (with z-value ignored)
  public:
     Transform();
     void clear(float floorMinx, float floorMiny, float floorMaxx, float floorMaxy);
@@ -82,5 +83,8 @@ class Transform {
     // Load/save 
     void save(std::ostream &s) const;
     void load(std::istream &s);
+
+    // Origin
+    Point getOrigin() const { return origin; }
 };
 
