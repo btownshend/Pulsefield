@@ -26,9 +26,10 @@ class Voice {
 		PVector diff=new PVector(mainline[0].x,mainline[0].y);
 		diff.sub(mainline[1]);
 		float mag=diff.mag();
-		//PApplet.println("Mag="+mag); // Mag can be from 0 to 2*sqrt(2)
-		mag=(mag>1.5)?1.5f:mag;
-		int pitch=scale.map2note(1.5f-mag, 0f, 1.5f, 0, 3);
+		PApplet.println("Mag="+mag); // Mag can be from 0 to 2*sqrt(2)
+		mag=(mag>1.0)?1.0f:mag;
+		int pitch=scale.map2note(1.0f-mag, 0f, 1.0f, 0, 3);
+		PApplet.println("Pitch="+pitch);
 		int velocity=127;
 		synth.play(id, pitch, velocity, duration, channel);
 	}
@@ -71,7 +72,7 @@ class Voice {
 
 public class VisualizerVoronoi extends VisualizerPS {
 	Triangle initialTriangle;
-	final int initialSize=3;
+	final float initialSize=3.5f;  // Big enough to be outside [-1,-1]:[1,1] normalized coordinates
 	Triangulation dt;
 	List <Voice> voices;
 	float last;
@@ -93,16 +94,19 @@ public class VisualizerVoronoi extends VisualizerPS {
 		curVoice=null;
 		dt=new Triangulation(initialTriangle);
 		this.scale=scale;
+		PApplet.println("VisualizerVoronoi() done");
 	}
 
 	@Override
 	public void start() {
+		PApplet.println("Voronoi::Start");
 		super.start();
 		trackSet=Ableton.getInstance().setTrackSet("Harp");
 	}
 
 	@Override
 	public void stop() {
+		PApplet.println("Voronoi::Stop");
 		super.stop();
 	}
 
@@ -114,7 +118,12 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 		// Create Delaunay triangulation
 		dt=new Triangulation(initialTriangle);
-
+		// Put points in corners
+		float cornerDist=1.0f;
+		dt.delaunayPlace(new PntWithID(0,-cornerDist,-cornerDist));
+		dt.delaunayPlace(new PntWithID(0,-cornerDist,cornerDist));
+		dt.delaunayPlace(new PntWithID(0,cornerDist,-cornerDist));
+		dt.delaunayPlace(new PntWithID(0,cornerDist,cornerDist));
 		if (false) {
 			float gapAngle=(float)(10f*Math.PI /180);
 			float step=(float)(2*Math.PI-gapAngle)/8;
@@ -238,6 +247,81 @@ public class VisualizerVoronoi extends VisualizerPS {
 				}
 			}
 		}
+	}
+	
+	PVector pntToWorld(Pnt p) {
+		PVector normalized=new PVector((float)p.coord(0),(float)p.coord(1));
+		return Tracker.unMapPosition(normalized);
+	}
+	
+	// Draw to laser
+	public void drawLaser(PApplet parent, People p) {
+		super.drawLaser(parent,p);
+		Laser laser=Laser.getInstance();
+		laser.bgBegin();
+		
+
+		// Draw Voronoi diagram
+		// Keep track of sites done; no drawing for initial triangles sites
+		HashSet<Pnt> done = new HashSet<Pnt>(initialTriangle);
+		for (Triangle triangle : dt) {
+//			for (int i=0;i<3;i++) {
+//				PVector c1=pntToWorld(triangle.get(i));
+//				PVector c2=pntToWorld(triangle.get((i+1)%3));
+//				laser.line(c1.x, c1.y, c2.x, c2.y);
+//			}
+
+
+//			PVector cc=pntToWorld(triangle.getCircumcenter());
+			for (Pnt site: triangle) {
+				if (done.contains(site)) continue;
+				done.add(site);
+				PntWithID idsite=((PntWithID)site);
+
+
+				List<Triangle> list = dt.surroundingTriangles(site, triangle);
+				// Draw all the surrounding triangles
+				PVector prev=pntToWorld(list.get(list.size()-1).getCircumcenter());
+				for (Triangle tri: list) {
+					PVector c=pntToWorld(tri.getCircumcenter());
+					laser.line(prev.x,prev.y,c.x,c.y);
+					prev=c;
+				}
+
+				// Save one voronoi line as the note marker
+				Voice v=null;
+				for (int i=0;i<voices.size();i++)
+					if (voices.get(i).id==idsite.id) {
+						v=voices.get(i);
+						break;
+					}
+
+				if (v == null) {
+					v=new Voice(idsite.id);
+					voices.add(v);
+				}
+				boolean hasLine=false;
+				for (int i=0;i<list.size()-1;i++) {
+					Pnt c1=list.get(i).getCircumcenter();
+					Pnt c2=list.get(i+1).getCircumcenter();
+					if (v.set(new PVector((float)c1.coord(0),(float)c1.coord(1)),new PVector((float)c2.coord(0),(float)c2.coord(1)))) {
+						hasLine=true;
+						break;
+					}
+				}
+
+				// Draw the major line
+				if (hasLine && v.playing) {
+					float rx=parent.randomGaussian()*0.1f;
+					float ry=parent.randomGaussian()*0.1f;
+					PVector scoord1=Tracker.unMapPosition(v.mainline[0]);
+					PVector scoord2=Tracker.unMapPosition(v.mainline[1]);
+					laser.line(scoord1.x+rx, scoord1.y+ry, scoord2.x+rx, scoord2.y+ry);
+				}
+			}
+		}
+		
+		laser.bgEnd();
 	}
 }
 
