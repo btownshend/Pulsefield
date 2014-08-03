@@ -29,6 +29,7 @@ TouchOSC::TouchOSC()  {
 
     // Setup 
     selectedGroup=0;
+    frozen=false;
     layeringEnabled=false;
     onePerEnabled=true;
     attrsEnabled=true;
