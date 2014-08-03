@@ -10,6 +10,7 @@
 #include "color.h"
 #include "attributes.h"
 #include "cpoint.h"
+#include "ranges.h"
 
 class Transform;
 class Drawing;
@@ -28,7 +29,7 @@ protected:
     // A shape which is completely on-screen has a score equal to 1.0+1.0/(average line-width)
     // If part of it is off-screen, then the score is frac(oncreen) (goes from 0.0 to 1.0)
     // Full offscreen has a score of 0
-    virtual float getShapeScore(const Transform &transform) const {
+    virtual float getShapeScore(const Transform &transform, const Ranges &ranges) const {
 	// Should be overridden
 	assert(0);
     }
@@ -48,7 +49,7 @@ class Circle: public Primitive {
     }
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const { return radius*2*M_PI; }
-    float getShapeScore(const Transform &transform) const;
+    float getShapeScore(const Transform &transform, const Ranges &ranges) const;
     void translate(Point t) { center=center+t; }
 };
 
@@ -68,7 +69,7 @@ class Line:public Primitive {
     Line(Point _p1, Point _p2, Color c): Primitive(c) { p1=_p1; p2=_p2;  }
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const { return (p1-p2).norm(); }
-    float getShapeScore(const Transform &transform) const;
+    float getShapeScore(const Transform &transform, const Ranges &ranges) const;
     void translate(Point t) { p1=p1+t; p2=p2+t; }
 };
 
@@ -78,7 +79,7 @@ class Cubic:public Primitive {
     Cubic(const std::vector<Point> &pts, Color c): Primitive(c), b(pts) {;}
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const { return b.getLength(); }
-    float getShapeScore(const Transform &transform) const;
+    float getShapeScore(const Transform &transform, const Ranges &ranges) const;
     void translate(Point t) { b.translate(t); }
 };
 
@@ -89,7 +90,7 @@ class Path:public Primitive {
     Path(const std::vector<Point> &p, Color c): Primitive(c), controlPts(p) {;}
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
     float getLength() const;
-    float getShapeScore(const Transform &transform) const;
+    float getShapeScore(const Transform &transform, const Ranges &ranges) const;
     void translate(Point t) { 
 	for (int i=0;i<controlPts.size();i++)
 	    controlPts[i]=controlPts[i]+t;
@@ -131,7 +132,7 @@ public:
 	}
 	return len;
     }
-    float getShapeScore(const Transform &transform) const;
+    float getShapeScore(const Transform &transform, const Ranges &ranges) const;
     void translate(Point t) { 
 	for (int i=0;i<elements.size();i++)
 	    elements[i]->translate(t);
@@ -179,7 +180,7 @@ class Drawing {
     }
 
     // Get quality score of reproduction for each of the elements within the drawing using the given transform
-    std::map<int,float> getShapeScores(const Transform &transform) const;
+    std::map<int,float> getShapeScores(const Transform &transform, const Ranges &ranges) const;
 
     // Get a subset of the drawing containing only the given elements
     Drawing select(std::set<int> elements) const ;

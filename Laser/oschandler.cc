@@ -270,7 +270,7 @@ void OSCHandler::processIncoming() {
 		pfframe(lastUpdateFrame?0:1);	// Simulate a frame message
 	    }
 	    // Render lasrs only when nothing in queue
-	    if (lasers->render()) 
+	    if (lasers->render(ranges)) 
 		// If they've changed, mark the video for update too
 		video->setDirty();
 	}

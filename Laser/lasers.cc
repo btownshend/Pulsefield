@@ -31,13 +31,13 @@ Lasers::~Lasers() {
 }
 
 // Allocate a drawing to the lasers
-std::vector<Drawing> Lasers::allocate(const Drawing &d)  const {
+std::vector<Drawing> Lasers::allocate(const Drawing &d, const Ranges &ranges)  const {
     std::map<int,float> bestScores;
     std::map<int,int> bestlasers;
     bool firstLaser=true;
     for (unsigned int i=0;i<lasers.size(); i++) {
 	if (lasers[i]->isEnabled()) {
-	    std::map<int,float> scores=d.getShapeScores(lasers[i]->getTransform());
+	    std::map<int,float> scores=d.getShapeScores(lasers[i]->getTransform(),ranges);
 	    for (std::map<int,float>::iterator s=scores.begin();s!=scores.end();s++) {
 		if (firstLaser || s->second > bestScores[s->first]) {
 		    bestScores[s->first]=s->second;
@@ -59,7 +59,7 @@ std::vector<Drawing> Lasers::allocate(const Drawing &d)  const {
     return result;
 }
 
-int Lasers::render() {
+int Lasers::render(const Ranges &ranges) {
     if (!needsRender) {
 	dbg("Lasers.render",5) << "Not dirty" << std::endl;
 	return 0;
@@ -94,11 +94,11 @@ int Lasers::render() {
 		drawing.drawCircle(Point(x,y),radius,Color(0.0,1.0,0.0));
 	    }
 	}
-	dbg("Lasers.render",1) << "After adding allocatin test pattern, have " << drawing.getNumElements() << " elements." << std::endl;
+	dbg("Lasers.render",1) << "After adding allocation test pattern, have " << drawing.getNumElements() << " elements." << std::endl;
     }
 
     // Split drawing among lasers
-    std::vector<Drawing> dtmp=allocate(drawing);
+    std::vector<Drawing> dtmp=allocate(drawing,ranges);
 
     // Global drawing - applies to all lasers 
     Drawing globalDrawing;

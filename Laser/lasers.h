@@ -1,6 +1,7 @@
 #pragma once
 #include "laser.h"
 #include "drawing.h"
+#include "ranges.h"
 
 class Lasers {
     static std::shared_ptr<Lasers> theInstance;   // Singleton
@@ -15,7 +16,7 @@ class Lasers {
     pthread_mutex_t mutex;
 
     // Allocate to individual lasers
-    std::vector<Drawing> allocate(const Drawing &d) const;
+    std::vector<Drawing> allocate(const Drawing &d,const Ranges &ranges) const;
 
     // Current frame
     int frame;
@@ -51,7 +52,7 @@ public:
 	TouchOSC::instance()->send("/ui/laser/pps/label",std::to_string(pps)+" PPS");
     }
 
-    int render();  // Refresh; return 1 if anything changed
+    int render(const Ranges &ranges);    // Refresh; return 1 if anything changed
     void setFrame(int _frame) { frame=_frame; setDirty(); }
     void setDirty() { needsRender=true; }
     int getDrawingFrame() const { return frame; }

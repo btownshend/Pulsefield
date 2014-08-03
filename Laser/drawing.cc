@@ -50,22 +50,13 @@ std::vector<CPoint> Circle::getPoints(float pointSpacing, const CPoint *priorPoi
     return result;
 }
 
-float Circle::getShapeScore(const Transform &transform) const {
-    Point devCenter=transform.mapToDevice(center);
-    float devRadius=(transform.mapToDevice(Point(center.X(),center.Y()+radius))-devCenter).norm();
-    float score;
-    if (!transform.onScreen(devCenter+Point(devRadius,devRadius)) || ! transform.onScreen(devCenter-Point(devRadius,devRadius)))
-	score=0.0;  // off-screen (TODO: Handle partial off-screens)
-    else {
-	// All on-screen, compute maximum width of line (actually physical distance of small step in laser)
-	float delta=(center-transform.mapToWorld(devCenter+Point(0,DELTADIST))).norm();
-	score=1.0/delta+1.0;
-	dbg("Circle.getShapeScore",5) <<  center << " maps to " << devCenter << " delta=" << delta << ", score=" << score << std::endl;
-    }
-    return score;
+float Circle::getShapeScore(const Transform &transform, const Ranges &ranges) const {
+    // Same as a line perpendicular to LIDAR scan line
+    Line l(center+Point(radius,0),center-Point(radius,0),Color(0,0,0));
+    return l.getShapeScore(transform, ranges);
 }
 
-float Line::getShapeScore(const Transform &transform) const {
+float Line::getShapeScore(const Transform &transform, const Ranges &ranges) const {
     float length=(p1-p2).norm();
     float score;
     if (length==0) {
@@ -76,7 +67,9 @@ float Line::getShapeScore(const Transform &transform) const {
 	Point p2clipped=p2;
 	transform.clipLine(p1clipped,p2clipped);
 	float lengthOnScreen = (p2clipped-p1clipped).norm();
-	dbg("Line.getShapeScore",5) << "length on screen = " << lengthOnScreen << ", total Length=" << length << std::endl;
+	float shadowed=ranges.fracLineShadowed(transform.getOrigin(),p1,p2);
+	dbg("Line.getShapeScore",5) << "length on screen = " << lengthOnScreen << ", total Length=" << length << ", frac shadowed=" << shadowed << std::endl;
+	lengthOnScreen *= (1.0f-shadowed);
 	if (lengthOnScreen<length*0.99) 
 	    score=lengthOnScreen/length;
 	else {
@@ -130,7 +123,7 @@ std::vector<CPoint> Cubic::getPoints(float pointSpacing,const CPoint *priorPoint
     return cpts;
 }
 
-float Cubic::getShapeScore(const Transform &transform) const {
+float Cubic::getShapeScore(const Transform &transform, const Ranges &ranges) const {
     // Approximate with fixed number of segments
     std::vector<Point> pts = b.interpolate(5);
     float score;
@@ -140,7 +133,7 @@ float Cubic::getShapeScore(const Transform &transform) const {
 	// Temporary line
 	Line l(pts[i],pts[i+1],Color(0,0,0));
 	float len=l.getLength();
-	float s=l.getShapeScore(transform);
+	float s=l.getShapeScore(transform,ranges);
 	if (s<1)
 	    fracScore+=s*len;
 	else
@@ -185,13 +178,13 @@ float Path::getLength() const {
     return len;
 }
 
-float Path::getShapeScore(const Transform &transform) const {
+float Path::getShapeScore(const Transform &transform, const Ranges &ranges) const {
     dbg("Path.getShapeScore",5) << "Getting score for path" << std::endl;
     float score;
     float visLen=0;
     float totalLen=0;
     for (int i=0;i<controlPts.size()-3;i+=3) {
-	float s=Cubic(std::vector<Point> (controlPts.begin()+i,controlPts.begin()+i+4),c).getShapeScore(transform);
+	float s=Cubic(std::vector<Point> (controlPts.begin()+i,controlPts.begin()+i+4),c).getShapeScore(transform,ranges);
 	float len=Cubic(std::vector<Point> (controlPts.begin()+i, controlPts.begin()+i+4),c).getLength();
 	if (i==0)
 	    score=s;
@@ -234,13 +227,13 @@ std::vector<CPoint> Arc::getPoints(float pointSpacing, const CPoint *priorPoint)
 }
 
 
-float Composite::getShapeScore(const Transform &transform) const {
+float Composite::getShapeScore(const Transform &transform, const Ranges &ranges) const {
     dbg("Composite.getShapeScore",5) << "Getting score for composite" << std::endl;
     float score;
     float fracScore=0;
     float totalLen=0;
     for (unsigned int i=0;i<elements.size();i++) {
-	float s=elements[i]->getShapeScore(transform);
+	float s=elements[i]->getShapeScore(transform,ranges);
 	float len=elements[i]->getLength();
 	if (i==0)
 	    score=s;
@@ -256,10 +249,10 @@ float Composite::getShapeScore(const Transform &transform) const {
 }
 
 // Get quality score of reproduction for each of the elements within the drawing using the given transform
-std::map<int,float> Drawing::getShapeScores(const Transform &transform) const {
+std::map<int,float> Drawing::getShapeScores(const Transform &transform, const Ranges &ranges) const {
     std::map<int,float> scores;
     for (unsigned int i=0;i<elements.size();i++)
-	scores[i]=elements[i]->getShapeScore(transform);
+	scores[i]=elements[i]->getShapeScore(transform,ranges);
     return scores;
 }
 
