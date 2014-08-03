@@ -65,7 +65,10 @@ public class Tracker extends PApplet {
 		people=new People();
 
 		// OSC Setup (but do plugs later so everything is setup for them)
-		oscP5 = new OscP5(this, config.getPort("VD"));
+		OscProperties oscProps = new OscProperties();
+		oscProps.setDatagramSize(10000);  // Increase datagram size to handle incoming blobs
+		oscProps.setListeningPort(config.getPort("VD"));
+		oscP5 = new OscP5(this, oscProps);
 
 		TO = new NetAddress(config.getHost("TO"), config.getPort("TO"));
 		MPO = new NetAddress(config.getHost("MPO"), config.getPort("MPO"));
