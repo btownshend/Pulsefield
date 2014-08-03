@@ -33,6 +33,11 @@ class Ball {
 		parent.shape(ballShape,(p.x+1-nRadius.x)*wsize.x/2, (p.y+1-nRadius.y)*wsize.y/2,nRadius.x*2*wsize.x/2, nRadius.y*2*wsize.y/2);
 	}
 	
+	public void drawLaser(Laser laser,PApplet parent) {
+//		laser.circle(position.x,position.y, radius);
+		laser.svgfile("Soccerball.svg", position.x, position.y, radius*2, 0f);
+	}
+	
 	public void update(PApplet parent) {
 		float elapsed=1.0f/parent.frameRate;
 		position.add(PVector.mult(velocity,elapsed));
@@ -95,6 +100,7 @@ public class VisualizerSoccer extends VisualizerDot {
 	@Override
 	public void start() {
 		super.start();
+		Laser.getInstance().setFlag("body",0.0f);
 		// Other initialization when this app becomes active
 		ball=new Ball(Tracker.unMapPosition(new PVector(0f,0f)),Tracker.unMapPosition(new PVector(0.1f,0.2f)));
 	}
@@ -102,6 +108,7 @@ public class VisualizerSoccer extends VisualizerDot {
 	@Override
 	public void stop() {
 		super.stop();
+		Laser.getInstance().setFlag("body",1.0f);
 		// When this app is deactivated
 		ball=null;
 	}
@@ -123,13 +130,9 @@ public class VisualizerSoccer extends VisualizerDot {
 	
 	@Override
 	public void drawLaser(PApplet parent, People p) {
-//		Laser laser=Laser.getInstance();
-//		laser.bgBegin();   // Start a background drawing
-//		for (Position ps: p.positions.values()) {  
-//			laser.cellBegin(ps.id); // Start a cell-specific drawing
-//			Laser drawing code
-//			laser.cellEnd(ps.id);
-//		}
-//		laser.bgEnd();
+		Laser laser=Laser.getInstance();
+		laser.bgBegin();   // Start a background drawing
+		ball.drawLaser(laser,parent);
+		laser.bgEnd();
 	}
 }
