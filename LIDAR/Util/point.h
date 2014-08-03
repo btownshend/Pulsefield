@@ -21,6 +21,7 @@ class Point {
     void setX(float _x) { x=_x; }
     void setY(float _y) { y=_y; }
     float getRange() const { return sqrt(x*x+y*y); }
+    // Theta is angle from [0,1] CCW
     float getTheta() const {
 	float th=atan2(y,x)-M_PI/2;
 	if (th<-M_PI)
