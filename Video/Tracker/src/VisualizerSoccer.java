@@ -1,5 +1,6 @@
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PShape;
 import processing.core.PVector;
 
 class Ball {
@@ -9,13 +10,17 @@ class Ball {
 	final float restitution=0.7f;   // Coeff of restitution (see http://www.mathematicshed.com/uploads/1/2/5/7/12572836/physicsofkickingsoccerball.pdf )
 	final float mass=0.430f;			// Mass of ball in kg (FIFA says 410-450g )
 	final float radius=(float)(0.69/2/Math.PI);			// Radius of ball in meters (FIFA say 68-70cm in circumference )
+	PShape ballShape;
 	
 	public Ball(PVector position, PVector velocity) {
 		this.position=position;
 		this.velocity=velocity;
+		ballShape=null;
 	}
 	
 	public void draw(PApplet parent, PVector wsize) {
+		if (ballShape==null)
+			ballShape=parent.loadShape("Soccerball.svg");
 		final int color=0xffffffff;
 		parent.ellipseMode(PConstants.CENTER);
 		parent.fill(color,0);
@@ -24,7 +29,8 @@ class Ball {
 //		PApplet.println("Ball at "+((position.x+1)*wsize.x/2)+","+((position.y+1)*wsize.y/2));
 		PVector p=Tracker.mapPosition(position);
 		PVector nRadius=Tracker.mapVelocity(new PVector(radius,radius));
-		parent.ellipse((p.x+1)*wsize.x/2, (p.y+1)*wsize.y/2, nRadius.x*2*wsize.x/2, nRadius.y*2*wsize.y/2);
+//		parent.ellipse((p.x+1)*wsize.x/2, (p.y+1)*wsize.y/2, nRadius.x*2*wsize.x/2, nRadius.y*2*wsize.y/2);
+		parent.shape(ballShape,(p.x+1-nRadius.x)*wsize.x/2, (p.y+1-nRadius.y)*wsize.y/2,nRadius.x*2*wsize.x/2, nRadius.y*2*wsize.y/2);
 	}
 	
 	public void update(PApplet parent) {
