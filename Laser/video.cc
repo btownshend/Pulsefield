@@ -546,6 +546,8 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
      lasers->lock();
      for (unsigned int m=0;m<lasers->size();m++) {
 	 std::shared_ptr<Laser> laser=lasers->getLaser(m);
+	 if (!laser->isEnabled())
+	     continue;
 	 const std::vector<etherdream_point> &points=laser->getPoints();
 	 const Transform &transform=laser->getTransform();
 
