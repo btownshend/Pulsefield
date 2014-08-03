@@ -6,11 +6,13 @@
 #include "lo/lo.h"
 #include "drawing.h"
 #include "lasers.h"
+#include "ranges.h"
 
 class Video;
 
 class OSCHandler {
     Drawing bgDrawing,cellDrawing,conxDrawing;
+    Ranges ranges;	// Current sensor ranges
     enum { NONE,BACKGROUND,CELL,CONX} drawTarget;
     std::shared_ptr<Lasers> lasers;
     std::shared_ptr<Video> video;
@@ -81,6 +83,9 @@ class OSCHandler {
     void pfbackground(int scanpt, int totalpts, float angleDeg, float range) { 
 	lasers->setBackground(scanpt,totalpts,angleDeg,range);
     }
+
+    void range(int id, int frame, int sec, int usec, int echo, int nmeasure, lo_blob data);
+    const Ranges &getRanges() const { return ranges; }
 
     // Changing bounds
     void setMinX(float x) { minx=x; updateBounds(); }

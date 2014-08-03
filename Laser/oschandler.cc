@@ -121,6 +121,22 @@ static int pfbackground_handler(const char *path, const char *types, lo_arg **ar
 
 static int person_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   return People::handleOSCMessage(path,types,argv,argc,msg);  }
 static int group_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   return Groups::handleOSCMessage(path,types,argv,argc,msg);  }
+static int range_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->range(argv[0]->i,argv[1]->i,argv[2]->i,argv[3]->i,argv[4]->i,argv[5]->i,argv[6]); return 0; }
+
+void OSCHandler::range(int id, int frame, int sec, int usec, int echo, int nmeasure, lo_blob data) {
+    dbg("OSCHandler.range",3) << "Got range(id=" << id << ", frame=" << frame << ", T=(" << sec << "," << usec << "), echo=" << echo << ", n=" << nmeasure << ", blob size=" << lo_blob_datasize(data) << std::endl;
+    if (lo_blob_datasize(data) != nmeasure*sizeof(ranges.ranges[0])) {
+	dbg("OSCHandler.range",1) << "Unexpected blob size: " << lo_blob_datasize(data) << " (expected " << nmeasure*4 << ")" << std::endl;
+	return;
+    }
+    if (echo==0) {
+	// Save the range data
+	ranges.ranges.resize(nmeasure);
+	for (int i=0;i<nmeasure;i++)
+	    ranges.ranges[i]=((unsigned int *)data)[i]/1000.0;
+	dbg("OSCHandler.range",3) << "Save " << ranges.size() << " ranges (max="  << *std::max_element(ranges.ranges.begin(),ranges.ranges.end()) << ")" << std::endl;
+    }
+};
 
 OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_ptr<Video> _video) : lasers(_lasers), video(_video),  currentColor(0.0,1.0,0.0) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler()" << std::endl;
@@ -206,6 +222,8 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/pf/set/miny","f",pfsetminy_handler,this);
 	lo_server_add_method(s,"/pf/set/maxy","f",pfsetmaxy_handler,this);
 	lo_server_add_method(s,"/pf/background","iiff",pfbackground_handler,this);
+
+	lo_server_add_method(s,"/vis/range","iiiiiib",range_handler,this);
 
 	/* add method that will match any path and args if they haven't been caught above */
 	lo_server_add_method(s, NULL, NULL, generic_handler, this);

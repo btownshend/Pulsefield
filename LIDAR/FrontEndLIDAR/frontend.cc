@@ -128,7 +128,7 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]) {
 	// addDest("localhost",7771);
 
 	/* Set to always send only PF information */
-	sendAlways=PF;
+	sendAlways=PF|RANGE;
 }
 
 FrontEnd::~FrontEnd() {
