@@ -9,6 +9,7 @@ class Ranges {
     float getAngleRad(int i) const;
     bool isObstructed(Point p1, Point p2) const;
 public:
+    Ranges();
     std::vector<float> ranges;
     int size() const { return ranges.size(); }
     // Compute amount of given structures are shadowed

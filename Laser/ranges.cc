@@ -5,6 +5,10 @@
 
 const float Ranges::SHADOWSEP=0.5f;   // Distance an obstruction must be in front of an object for it to be considered shadowed
 
+Ranges::Ranges() {
+    ranges.assign(571,5.0f);   	// Default in case frontend not running
+}
+
 float Ranges::getScanRes() const {
     const float scanRes=190.0/(ranges.size()-1)*M_PI/180.0;
     return scanRes;
