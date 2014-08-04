@@ -45,7 +45,8 @@ class Song {
 		this.sfdir=sfdir;
 		this.sfname=sfname;
 		this.clipNumber=clipNumber;
-		track=91;
+		track=Ableton.getInstance().trackSet.firstTrack;
+		PApplet.println("DDR: Adding song "+sfname+" at track "+track+", clip "+clipNumber);
 		sf=null;
 	}
 	
@@ -79,9 +80,7 @@ public class VisualizerDDR extends Visualizer {
 		super();
 		dancers = new HashMap<Integer, Dancer>();
 		arrow = parent.loadImage("arrow3.png");
-		songs=new ArrayList<Song>();
-		songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/StepMix 1.0/Impossible Fidelity/","impossible.sm",0));
-		songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/Plaguemix Series/Super Trouper","supertrouper.sm",1));
+		songs=null;  // Initialize in start()
 	}
 
 	public void handleMessage(OscMessage msg) {
@@ -145,6 +144,12 @@ public class VisualizerDDR extends Visualizer {
 		startTime=System.currentTimeMillis();
 		PApplet.println("Starting DDR at "+startTime);
 		active=true;
+		Ableton.getInstance().setTrackSet("DD");
+		if (songs==null) {
+			songs=new ArrayList<Song>();
+			songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/StepMix 1.0/Impossible Fidelity/","impossible.sm",0));
+			songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/Plaguemix Series/Super Trouper","supertrouper.sm",1));
+		}
 		chooseSong();
 	}
 
@@ -174,9 +179,10 @@ public class VisualizerDDR extends Visualizer {
 		parent.translate(wsize.x-leftwidth-rightwidth,0);
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 		if (clip!=null) {
-		}
 //			PApplet.println("Clip at "+clip.position);
 			drawTicker(parent,new PVector(rightwidth-rightmargin,wsize.y),clip.position);
+		} else 
+			PApplet.println("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
 	}
 
 	public void drawPF(PApplet parent, People allpos, PVector wsize) {
@@ -253,7 +259,7 @@ public class VisualizerDDR extends Visualizer {
 	
 
 		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, now-HISTORY, now-HISTORY+DURATION);
-		
+//		PApplet.println("Have "+notes.size()+" notes.");
 		//parent.ellipse(wsize.x/2,wsize.y/2,100,100);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
 		parent.textSize(16);
