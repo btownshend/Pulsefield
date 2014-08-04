@@ -318,7 +318,7 @@ public class Tracker extends PApplet {
 		PVector result=PVector.sub(raw,mid);
 		result.rotate((float)Math.toRadians(Tracker.screenrotation));
 		// Flip y-axis since screen has origin in top left
-		result.y=-result.y;
+	//	result.y=-result.y;
 		result.set(result.x*2f/(Tracker.maxx-Tracker.minx),result.y*2f/(Tracker.maxy-Tracker.miny));
 //		PApplet.println("Mapped ("+raw+") to ("+result);
 		return result;
@@ -328,7 +328,7 @@ public class Tracker extends PApplet {
 		PVector result=new PVector(mapped.x,mapped.y);
 		result.x=mapped.x*(Tracker.maxx-Tracker.minx)/2.0f;
 		result.y=mapped.y*(Tracker.maxy-Tracker.miny)/2.0f;
-		result.y=-result.y;
+	//	result.y=-result.y;
 		result.rotate((float)Math.toRadians(Tracker.screenrotation));
 		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
 		result=PVector.add(result,mid);
