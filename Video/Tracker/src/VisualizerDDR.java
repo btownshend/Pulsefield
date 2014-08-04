@@ -69,7 +69,7 @@ public class VisualizerDDR extends Visualizer {
 	ArrayList<Song> songs;
 	Simfile sf;
 	long startTime;
-	PImage arrow;
+	PImage arrow;   // Left pointing arrow
 	Song cursong=null;
 	final float DOTSIZE=50f;
 	boolean active=false;
@@ -161,17 +161,19 @@ public class VisualizerDDR extends Visualizer {
 		cursong=null;
 	}
 
+	@Override
 	public void draw(PApplet parent, People p, PVector wsize) {
+		super.draw(parent,p,wsize);
+		if (p.pmap.isEmpty())
+			return;
+		
 		final float leftwidth=150;
 		final float rightwidth=250;
 		final float rightmargin=50;
 
-		parent.background(0, 0, 0);  
 		parent.imageMode(PConstants.CORNERS);
-		//parent.image(banner, 0, 0, wsize.x, wsize.y);
-		parent.colorMode(PConstants.RGB, 255);
-		if (p.pmap.isEmpty())
-			drawWelcome(parent,wsize);
+		parent.image(cursong.getSimfile().getBanner(parent), 0, 0, wsize.x, wsize.y);
+		
 
 		drawScores(parent,p,new PVector(leftwidth,wsize.y));
 		parent.translate(leftwidth,0);
@@ -288,6 +290,70 @@ public class VisualizerDDR extends Visualizer {
 		parent.strokeWeight(5);
 		parent.line(0,HISTORY*wsize.y/DURATION,0,wsize.x,HISTORY*wsize.y/DURATION,0);
 		parent.text(String.format("%.2f", now), 5, wsize.y-10);
+	}
+	
+	@Override
+	public void drawLaser(PApplet parent, People p) {
+		super.drawLaser(parent, p);
+		
+		if (p.pmap.isEmpty())
+			return;
+
+		drawLaserPF(parent,p);
+		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
+		if (clip!=null) {
+//			PApplet.println("Clip at "+clip.position);
+			drawLaserTicker(parent,clip.position);
+		} else 
+			PApplet.println("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
+	}
+
+	public void drawLaserPF(PApplet parent, People allpos) {
+		Laser laser=Laser.getInstance();
+		
+		for (int id: dancers.keySet()) {
+			laser.cellBegin(id);
+			Dancer d=dancers.get(id);
+			PVector offset = d.current;
+			offset.sub(d.neutral);
+			float angle=offset.heading();
+			int quad=(int)Math.round(angle/(Math.PI/2));
+			laser.svgfile("arrow4.svg", 0.0f, 0.0f, 0.5f, -quad*90+180);
+			laser.cellEnd(id);
+		}
+	}
+
+	public void drawLaserTicker(PApplet parent, float now) {
+		final float TICKERWIDTH=1.5f;	// Width of ticker in meters (centered)
+		final float ARROWSIZE=TICKERWIDTH/6;
+		final float DURATION=5.0f;  // Duration of display top to bottom (seconds)
+		final float HISTORY=1.0f;    // Amount of past showing
+		int pattern=cursong.getSimfile().findClosestDifficulty(0);
+
+
+		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, now-HISTORY, now-HISTORY+DURATION);
+
+		Laser laser=Laser.getInstance();
+		laser.bgBegin();
+		// Draw the zero-line arrows
+		final float angles[]={0f,(float)(Math.PI/2),(float)(3*Math.PI/2),(float)Math.PI};
+
+		float yposzero=Tracker.rawminy+HISTORY/DURATION*(Tracker.rawmaxy-Tracker.rawminy);
+		for (int i=0;i<angles.length;i++) {
+			float xpos=((((float)i)/(angles.length-1))-0.5f)*TICKERWIDTH;
+			laser.svgfile("arrow4.svg",xpos,yposzero,ARROWSIZE*1.5f,(float)(angles[i]*180/Math.PI));
+		}
+		for (NoteData n: notes) {
+			float ypos=Tracker.rawminy+(n.timestamp-(now-HISTORY))/DURATION*(Tracker.rawmaxy-Tracker.rawminy);
+			//PApplet.println("At "+n.timestamp+", notes="+n.notes+", y="+ypos);
+			for (int i=0;i<n.notes.length()&&i<4;i++) {
+				if (n.notes.charAt(i) != '0') {
+					float xpos=(Tracker.rawminx+Tracker.rawmaxx)/2.0f - ((((float)i)/(n.notes.length()-1))-0.5f)*TICKERWIDTH;
+					laser.svgfile("arrow4.svg",xpos,ypos,ARROWSIZE,(float)(180+angles[i]*180/Math.PI));
+				}
+			}
+		}
+		laser.bgEnd();
 	}
 }
 
