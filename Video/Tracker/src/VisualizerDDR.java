@@ -263,7 +263,7 @@ public class VisualizerDDR extends Visualizer {
 
 		float arrowsize=wsize.x/4f/1.2f;
 		for (NoteData n: notes) {
-			final float angles[]={0f,(float)(Math.PI/2),(float)(3*Math.PI/2),(float)Math.PI};
+			final float angles[]={0f,-(float)(Math.PI/2),-(float)(3*Math.PI/2),-(float)Math.PI};
 			float ypos=(n.timestamp-(now-HISTORY))/DURATION*wsize.y;
 			//PApplet.println("At "+n.timestamp+", notes="+n.notes+", y="+ypos);
 			for (int i=0;i<n.notes.length()&&i<4;i++) {
