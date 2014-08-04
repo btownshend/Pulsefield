@@ -45,7 +45,7 @@ class Clip {
 
 class Track {
 	static final int MAXCLIPS=60;
-	HashMap<Integer,Clip> clips;
+	private HashMap<Integer,Clip> clips;
 	float meter[] = new float[2];
 	String song;
 	int songTrack;
@@ -420,9 +420,11 @@ public class Ableton {
 	 */
 	public Clip getClip(int track, int clip) {
 		Track t=tracks.get(track);
-		if (t==null)
+		if (t==null) {
+			PApplet.println("getClip: track "+track+" not found");
 			return null;
-		return t.clips.get(clip);
+		}
+		return t.getClip(clip);
 	}
 
 	public static Ableton getInstance() {
