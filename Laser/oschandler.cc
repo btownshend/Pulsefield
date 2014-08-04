@@ -259,21 +259,38 @@ void *OSCHandler::processIncoming(void *arg) {
 void OSCHandler::processIncoming() {
     dbg("OSCHandler.processIncoming",1) << "Started: s=" << std::setbase(16) << s << std::setbase(10) << std::endl;
     // Process all queued messages
+    struct timeval laserRenderTime;
+    gettimeofday(&laserRenderTime,0);
+    static const float RENDERPERIOD=0.05;  // Laser update rate -- should be around the same time as a etherdream frame duration
+    static const float FRAMETIMEOUT= 1.0f;	// Timeout to inject a fake frame to keep the UI running
     while (true) {
-	// TODO: Should set timeout to 0 if geometry is dirty, longer timeout if its clean
-	if  (lo_server_recv_noblock(s,1) == 0) {
-	    static const float FRAMETIMEOUT= 1.0f;	// Timeout to inject a fake frame to keep the UI running
-	    struct timeval now;
-	    gettimeofday(&now,0);
-	    if ((now.tv_sec-lastFrameTime.tv_sec)+(now.tv_usec-lastFrameTime.tv_usec)/1e6 > FRAMETIMEOUT) {
-		dbg("OSCHanler.processingIncoming",1) << "Faking a frame message" << std::endl;
-		pfframe(lastUpdateFrame?0:1);	// Simulate a frame message
+	struct timeval now;
+	gettimeofday(&now,0);
+
+	float secsToNextRender=RENDERPERIOD-((now.tv_sec-laserRenderTime.tv_sec)+(now.tv_usec-laserRenderTime.tv_usec)/1e6);
+	dbg("OSCHandler.processIncoming",5) << "Time to next render: " <<  (int)(secsToNextRender*1000) << " milliseconds." << std::endl;
+	if (secsToNextRender <= 0) {
+	    if (secsToNextRender < -0.01f) {
+		dbg("OSCHandler.processIncoming",1) << "Rendering to lasers late by " << (int)(-secsToNextRender*1000) << " milliseconds." << std::endl;
+		laserRenderTime=now;	// Jump more than a RENDERPERIOD to get things in sync again
+	    } else {
+		laserRenderTime.tv_usec += (int)(RENDERPERIOD*1e6+0.5);	// Keep the mean period correct
+		laserRenderTime.tv_sec+=laserRenderTime.tv_usec/1000000;
+		laserRenderTime.tv_usec=laserRenderTime.tv_usec%1000000;
 	    }
-	    // Render lasrs only when nothing in queue
+	    // Render lasers only when nothing in queue and timeout exceeded
+	    dbg("OSCHandler.processIncoming",5) << "Rendering to lasers" << std::endl;
 	    if (lasers->render(ranges)) 
 		// If they've changed, mark the video for update too
 		video->setDirty();
+	    secsToNextRender=0;	// Only do a zero-timeout wait for incoming messages before checking again
 	}
+	if ((now.tv_sec-lastFrameTime.tv_sec)+(now.tv_usec-lastFrameTime.tv_usec)/1e6 > FRAMETIMEOUT) {
+	    dbg("OSCHandler.processIncoming",1) << "Faking a frame message" << std::endl;
+	    pfframe(lastUpdateFrame?0:1);	// Simulate a frame message
+	}
+	int nbytes=lo_server_recv_noblock(s,(int)(secsToNextRender*1000+1));
+	dbg("OSCHandler.processIncoming",5) << "Received " << nbytes << " of OSC data" << std::endl;
 	if (doQuit)
 	    break;
     }
