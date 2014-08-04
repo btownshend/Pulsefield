@@ -174,9 +174,9 @@ public class VisualizerDDR extends Visualizer {
 		parent.translate(wsize.x-leftwidth-rightwidth,0);
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 		if (clip!=null) {
-			//PApplet.println("Clip at "+clip.position);
-			drawTicker(parent,new PVector(rightwidth-rightmargin,wsize.y),clip.position/Ableton.getInstance().getTempo()*60f);
 		}
+//			PApplet.println("Clip at "+clip.position);
+			drawTicker(parent,new PVector(rightwidth-rightmargin,wsize.y),clip.position);
 	}
 
 	public void drawPF(PApplet parent, People allpos, PVector wsize) {
