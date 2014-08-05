@@ -2,6 +2,7 @@
 #include "connections.h"
 #include "person.h"
 #include "groups.h"
+#include "video.h"
 
 std::shared_ptr<Lasers> Lasers::theInstance;   // Singleton
 
@@ -59,7 +60,7 @@ std::vector<Drawing> Lasers::allocate(const Drawing &d, const Ranges &ranges)  c
     return result;
 }
 
-int Lasers::render(const Ranges &ranges) {
+int Lasers::render(const Ranges &ranges, const Video &video) {
     if (!needsRender) {
 	dbg("Lasers.render",5) << "Not dirty" << std::endl;
 	return 0;
@@ -106,8 +107,18 @@ int Lasers::render(const Ranges &ranges) {
     const Color bgColor=Color(0.0,1.0,0.0);
     const Color gridColor=Color(0.0,1.0,0.0);
 
-    if (getFlag("background") && background.size()>0)
-	globalDrawing.drawPolygon(background,bgColor);
+    if (getFlag("background") && ranges.size()>0) {
+	for (int i=0;i<ranges.size();i++) {
+	    Point p=ranges.getPoint(i);
+	    if (video.inActiveArea(p)) {
+		Point p1,p2;
+		// Make sure to order lines so the ends will be close together in order draw to minimize laser slewing
+		p1.setThetaRange(p.getTheta()-ranges.getScanRes()/2,p.norm());
+		p2.setThetaRange(p.getTheta()+ranges.getScanRes()/2,p.norm());
+		globalDrawing.drawLine(p1,p2,bgColor);
+	    }
+	}
+    }
     if (getFlag("alignment") && background.size()>0)  {
 	// TODO: Draw alignment pattern
 	static const float MINTARGETDISTFROMBG=0.5;   // Minimum distance of target from background

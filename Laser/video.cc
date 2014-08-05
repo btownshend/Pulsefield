@@ -362,6 +362,10 @@ Point Video::constrainPoint(Point p) const{
     return Point(std::min(maxRight,std::max(minLeft,p.X())),std::min(maxTop,std::max(minBottom,p.Y())));
 }
 
+bool Video::inActiveArea(Point p) const {
+    return  (p.X() >= minLeft) && (p.X() <=maxRight) && (p.Y() >= minBottom) && (p.Y() <= maxTop);
+}
+
 // Draw text
 void Video::drawText(cairo_t *cr, float left,  float top, float width, float height,const char *msg) const {
     cairo_save(cr);

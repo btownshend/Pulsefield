@@ -280,7 +280,7 @@ void OSCHandler::processIncoming() {
 	    }
 	    // Render lasers only when nothing in queue and timeout exceeded
 	    dbg("OSCHandler.processIncoming",5) << "Rendering to lasers" << std::endl;
-	    if (lasers->render(ranges)) 
+	    if (lasers->render(ranges,*video)) 
 		// If they've changed, mark the video for update too
 		video->setDirty();
 	    secsToNextRender=0;	// Only do a zero-timeout wait for incoming messages before checking again

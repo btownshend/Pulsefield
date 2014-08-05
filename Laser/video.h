@@ -69,8 +69,10 @@ class Video: public DisplayDevice {
     ~Video();
 
     int open();
+    // Set bounds of active area (values are in meters)
     void setBounds(const std::vector<Point> &_bounds);
-
+    bool inActiveArea(Point p) const;
+    // Constrain point to be inside active area (move  to closest edge point of bounding rectangle)
     Point constrainPoint(Point p) const;
     std::ostream &newMessage() { msg.str(""); msglife=50; return msg; }
 

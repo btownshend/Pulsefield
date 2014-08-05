@@ -19,4 +19,5 @@ public:
 	// Approx same as a line that is perpendicular to LIDAR scan line
 	return fracLineShadowed(laser,p1+Point(radius,0),p1+Point(-radius,0));
     }
+    Point getPoint(int i) const;
 };

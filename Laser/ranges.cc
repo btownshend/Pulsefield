@@ -38,6 +38,12 @@ int Ranges::pointToScan(Point p) const {
     return scan;
 }
 
+Point Ranges::getPoint(int i) const {
+    Point p;
+    p.setThetaRange(getAngleRad(i),ranges[i]);
+    return p;
+}
+
 // Return true if ray from p1 to p2 is obstructed by a target
 bool Ranges::isObstructed(Point p1, Point p2) const {
     static const float RANGEDEPTH=0.3f;   // Depth of a hit

@@ -3,6 +3,8 @@
 #include "drawing.h"
 #include "ranges.h"
 
+class Video;
+
 class Lasers {
     static std::shared_ptr<Lasers> theInstance;   // Singleton
     std::vector<std::shared_ptr<Laser> > lasers;
@@ -47,7 +49,7 @@ public:
 	for (int i=0;i<lasers.size();i++) lasers[i]->setPPS(pps);
     }
 
-    int render(const Ranges &ranges);    // Refresh; return 1 if anything changed
+    int render(const Ranges &ranges, const Video &video);    // Refresh; return 1 if anything changed
     void setFrame(int _frame) { frame=_frame; setDirty(); }
     void setDirty() { needsRender=true; }
     int getDrawingFrame() const { return frame; }
