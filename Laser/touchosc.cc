@@ -458,6 +458,13 @@ void TouchOSC::updateLaserUI() const {
 	send("/ui/laser/ymin/label","");
 	send("/ui/laser/xmax/label","");
 	send("/ui/laser/ymax/label","");
+	send("/ui/laser/points/label","points");
+	send("/ui/laser/skew/label","skew");
+	send("/ui/laser/preblank/label","pre-blank");
+	send("/ui/laser/postblank/label","post-blank");
+	send("/ui/laser/pps/label","PPS");
+	send("/ui/laser/vfov/label","");
+	send("/ui/laser/hfov/label","");
     } else {
 	std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
 	send("/ui/laser/xmin/label",laser->getTransform().getMinX());
@@ -471,7 +478,7 @@ void TouchOSC::updateLaserUI() const {
 
 	send("/ui/laser/points/label",std::to_string(laser->getNPoints())+" points");
 	send("/ui/laser/skew/label",std::to_string(laser->getSkew())+" skew");
-	send("/ui/laser/preblank/label",std::to_string(laser->getPreBlanks())+"pre-blank");
+	send("/ui/laser/preblank/label",std::to_string(laser->getPreBlanks())+" pre-blank");
 	send("/ui/laser/postblank/label",std::to_string(laser->getPostBlanks())+" post-blank");
 	send("/ui/laser/pps/label",std::to_string(laser->getPPS())+" PPS");
 	send("/ui/laser/vfov/label",std::to_string((int)(laser->getVFOV()*180/M_PI)));
@@ -487,8 +494,10 @@ void TouchOSC::updateLaserUI() const {
     }
     for (int i=0;i<nflags;i++)
 	send("/ui/laser/"+flags[i],Lasers::instance()->getFlag(flags[i])?1.0:0.0); 
-    for (int unit=0;unit<Lasers::instance()->size();unit++) 
+    for (int unit=0;unit<Lasers::instance()->size();unit++) {
 	send("/ui/laser/enable/1/"+std::to_string(unit+1),Lasers::instance()->getLaser(unit)->isEnabled()?1.0:0.0);
+	send("/ui/laser/select/1/"+std::to_string(unit+1),(unit==selectedLaser)?1.0:0.0);
+    }
 }
 
 void TouchOSC::save(std::string filename) const {
