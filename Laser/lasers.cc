@@ -193,6 +193,8 @@ int Lasers::render(const Ranges &ranges, const Video &video) {
 	}
     }
     for (unsigned int i=0;i<lasers.size();i++) {
+	if (!lasers[i]->isEnabled())
+	    continue;
 	if (getFlag("outline")) {
 	    lasers[i]->showOutline();
 	}
