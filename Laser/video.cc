@@ -27,6 +27,7 @@ Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(-6,0,6,6)
 	load(ifs);
     else
 	dbg("Video",1) << "Unable to open transforms.save for reading" << std::endl;
+    lasers->setFlag("fiducials",true);
 }
 
 Video::~Video() {
@@ -117,6 +118,10 @@ void *Video::runDisplay(void *arg) {
 			// legs  toggle
 			Lasers::instance()->toggleFlag("legs");
 			world->newMessage() << "Toggled legs";
+		    } else if (key==XK_f) {
+			// fiducials  toggle
+			Lasers::instance()->toggleFlag("fiducials");
+			world->newMessage() << "Toggled fiducials";
 		    } else if (key==XK_g) {
 			// Grid toggle
 			Lasers::instance()->toggleFlag("grid");
@@ -184,18 +189,19 @@ void *Video::runDisplay(void *arg) {
 	    case ButtonPress:
 		dbg("Video.runDisplay",5)  << "Button Pressed:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
 		world->dirty=true;
-		xrefs.markClosest(Point(e.xbutton.x,e.xbutton.y));
+		if (world->lasers->getFlag("fiducials"))
+		    xrefs.markClosest(Point(e.xbutton.x,e.xbutton.y));
 		break;
 	    case ButtonRelease:
 		dbg("Video.runDisplay",5)  << "Button Released:  " << e.xbutton.x << ", " << e.xbutton.y << std::endl;
-		if (moving) {
+		if (world->lasers->getFlag("fiducials") && moving) {
 		    xrefs.update(Point(e.xbutton.x,e.xbutton.y),true);
 		    world->dirty=true;
 		}
 		break;
 	    case MotionNotify:
 		dbg("Video.runDisplay",5)  << "Motion:  " << e.xmotion.x << ", " << e.xmotion.y << " with " << XPending(world->dpy) << " events queued" << std::endl;
-		if (moving) {
+		if (world->lasers->getFlag("fiducials") && moving) {
 		    world->dirty=true;
 		    xrefs.update(Point(e.xbutton.x,e.xbutton.y),false);
 		}
@@ -457,16 +463,18 @@ void Video::drawDevice(cairo_t *cr, float left, float top, float width, float he
      cairo_line_to(cr,Laser::MINDEVICEVALUE,Laser::MINDEVICEVALUE);
      cairo_stroke(cr);
 
-     // Draw anchor points
-     for (unsigned int i=0;i<4;i++) {
-	 Point pt=laser->getTransform().getDevPoint(i);
-	 //	 Color c=Color::getBasicColor(i);
-	 //	 cairo_set_source_rgb (cr,c.red(), c.green(), c.blue());
-	 cairo_move_to(cr,pt.X(),pt.Y());
-	 cairo_arc(cr,pt.X(),pt.Y(),10*pixel,-i*M_PI/2,-i*M_PI/2+3*M_PI/2);
-	 cairo_line_to(cr,pt.X(),pt.Y());
-	 cairo_stroke(cr);
-	 xrefs.refresh(cr,laser,*this,i,true,pt);
+     if (lasers->getFlag("fiducials")) {
+	 // Draw anchor points
+	 for (unsigned int i=0;i<4;i++) {
+	     Point pt=laser->getTransform().getDevPoint(i);
+	     //	 Color c=Color::getBasicColor(i);
+	     //	 cairo_set_source_rgb (cr,c.red(), c.green(), c.blue());
+	     cairo_move_to(cr,pt.X(),pt.Y());
+	     cairo_arc(cr,pt.X(),pt.Y(),10*pixel,-i*M_PI/2,-i*M_PI/2+3*M_PI/2);
+	     cairo_line_to(cr,pt.X(),pt.Y());
+	     cairo_stroke(cr);
+	     xrefs.refresh(cr,laser,*this,i,true,pt);
+	 }
      }
 
      // Draw points
@@ -594,18 +602,20 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	 }
 
 	 cairo_stroke(cr);
-
-	 // Draw anchor points
-	 for (unsigned int i=0;i<4;i++) {
-	     Point pt=laser->getTransform().getFloorPoint(i);
-	     //Color c=Color::getBasicColor(i);
-	     //	     cairo_set_source_rgb (cr,c.red(), c.green(), c.blue());
-	     cairo_move_to(cr,pt.X(),pt.Y());
-	     cairo_arc(cr,pt.X(),pt.Y(),10*pixel,-i*M_PI/2,-i*M_PI/2+3*M_PI/2);
-	     cairo_line_to(cr,pt.X(),pt.Y());
-	     cairo_stroke(cr);
-	     xrefs.refresh(cr,laser,*this,i,false,pt);
 	 }
+
+	 if (lasers->getFlag("fiducials"))
+	     // Draw anchor points
+	     for (unsigned int i=0;i<4;i++) {
+		 Point pt=laser->getTransform().getFloorPoint(i);
+		 //Color c=Color::getBasicColor(i);
+		 //	     cairo_set_source_rgb (cr,c.red(), c.green(), c.blue());
+		 cairo_move_to(cr,pt.X(),pt.Y());
+		 cairo_arc(cr,pt.X(),pt.Y(),10*pixel,-i*M_PI/2,-i*M_PI/2+3*M_PI/2);
+		 cairo_line_to(cr,pt.X(),pt.Y());
+		 cairo_stroke(cr);
+		 xrefs.refresh(cr,laser,*this,i,false,pt);
+	     }
 
 	 // Draw points
 	 if (points.size() > 1) {
