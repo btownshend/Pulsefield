@@ -31,25 +31,20 @@ public:
 	return theInstance;
     }
     ~Lasers();
-    void setPoints(int npoints) {
-	for (int i=0;i<lasers.size();i++) lasers[i]->setPoints(npoints);
-	TouchOSC::instance()->send("/ui/laser/points/label",std::to_string(npoints)+" points");
+    void setNPoints(int npoints) {
+	for (int i=0;i<lasers.size();i++) lasers[i]->setNPoints(npoints);
     }
     void setSkew(int skew) {
 	for (int i=0;i<lasers.size();i++) lasers[i]->setSkew(skew);
-	TouchOSC::instance()->send("/ui/laser/skew/label",std::to_string(skew)+" skew");
     }
     void setPreBlanks(int n) { 
 	for (int i=0;i<lasers.size();i++) lasers[i]->setPreBlanks(n);
-	TouchOSC::instance()->send("/ui/laser/preblank/label",std::to_string(n)+" pre-blank");
 }
     void setPostBlanks(int n) { 
 	for (int i=0;i<lasers.size();i++) lasers[i]->setPostBlanks(n);
-	TouchOSC::instance()->send("/ui/laser/postblank/label",std::to_string(n)+" post-blank");
     }
     void setPPS(int pps) { 
 	for (int i=0;i<lasers.size();i++) lasers[i]->setPPS(pps);
-	TouchOSC::instance()->send("/ui/laser/pps/label",std::to_string(pps)+" PPS");
     }
 
     int render(const Ranges &ranges);    // Refresh; return 1 if anything changed
@@ -72,7 +67,7 @@ public:
 
     void setBackground(int scanpt, int totalpts, float angleDeg, float range);
 
-    void setFlag(std::string flag, bool value) { flags[flag]=value; TouchOSC::instance()->send("/ui/laser/"+flag,value?1.0:0.0); }
+    void setFlag(std::string flag, bool value) { flags[flag]=value; }
     void toggleFlag(std::string flag) { setFlag(flag,!getFlag(flag)); }
     bool getFlag(std::string flag) { return flags[flag]; }
 

@@ -8,6 +8,8 @@
 #include "lasers.h"
 
 TouchOSC *TouchOSC::theInstance=NULL;
+static const std::string flags[]={"body","legs","grid","background","alignment","test","outline","allocationTest"};
+static const int nflags=sizeof(flags)/sizeof(flags[0]);
 
 TouchOSC::TouchOSC()  {
     theInstance=this;
@@ -29,6 +31,7 @@ TouchOSC::TouchOSC()  {
 
     // Setup 
     selectedGroup=0;
+    selectedLaser=-1;
     frozen=false;
     layeringEnabled=false;
     onePerEnabled=true;
@@ -40,6 +43,9 @@ TouchOSC::TouchOSC()  {
     pressTime.tv_sec=0;
     trackUID1=-1;
     trackUID2=-1;
+
+    // Update UI
+    updateLaserUI();
 }
 		       
 TouchOSC::~TouchOSC() {
@@ -142,22 +148,6 @@ void Settings::sendOSC(int selectedGroup) const {
 	return;
 }
 
-void TouchOSC::sendOSC() const {
-    // Send OSC to make UI reflect current values
-    dbg("TouchOSC.sendOSC",1) << "Sending OSC updates with group " << selectedGroup << " to " << lo_address_get_url(remote) << std::endl;
-    settings.sendOSC(selectedGroup);
-    if (send("/ui/laser/freeze",frozen?1.0:0.0) < 0) return;
-    if (send("/ui/laser/body",Lasers::instance()->getFlag("body")?1.0:0.0) < 0) return;
-    if (send("/ui/laser/legs",Lasers::instance()->getFlag("legs")?1.0:0.0) < 0) return;
-    if (send("/ui/attrenable",attrsEnabled?1.0:0.0) < 0) return;
-    if (send("/ui/layer",layeringEnabled?1.0:0.0) < 0) return;
-    if (send("/ui/oneper",onePerEnabled?1.0:0.0) < 0) return;
-    if (send("/ui/fusion",fusionEnabled?1.0:0.0) < 0) return;
-    if (send("/ui/maxconn/label","Max Connections: "+std::to_string(maxConnections))<0) return;
-    if (send("/ui/visthresh/label","Visual Threshold: "+std::to_string(round(visualThreshold*100)/100))<0) return;
-    if (send("/ui/condglobal/label","Conductor Global: "+std::to_string(round(conductorGlobal*100/100)))<0) return;
-}
-
 void TouchOSC::frameTick_impl(int frame) {
     dbg("TouchOSC.frameTick",3) << "Frame " << frame << std::endl;
     if (frame % 50 == 0) {
@@ -167,8 +157,8 @@ void TouchOSC::frameTick_impl(int frame) {
     if (frame % 50 == 4) {
 	updateConnectionMap();
     }
-    if (frame % 10 == 2) {
-	sendOSC();
+    if (frame % 100 == 2) {
+	updateLaserUI();
     }
 }
 
@@ -189,7 +179,7 @@ Fader *TouchOSC::getFader_impl(std::string groupName, std::string faderName) {
 	updatedUI=true;
     }
     if (updatedUI)
-	sendOSC();
+	updateLaserUI();
     return f;
 }
 
@@ -210,7 +200,7 @@ Button *TouchOSC::getButton_impl(std::string groupName, std::string buttonName) 
 	updatedUI=true;
     }
     if (updatedUI)
-	sendOSC();
+	updateLaserUI();
     return f;
 }
 
@@ -239,7 +229,7 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		    } else {
 			selectedGroup=gpos;
 			dbg("TouchOSC.conn",1) << "Switch to group " << newGroup->getGroupName() << std::endl;
-			sendOSC();
+			updateLaserUI();
 		    }
 		}
 		handled=true;
@@ -368,8 +358,7 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	    handled=true;
 	} else if (strcmp(tok,"laser")==0) {
 	    tok=strtok(NULL,"/");
-	    std::string flags[]={"body","legs","grid","background","alignment","test","outline","allocationTest"};
-	    for (int i=0;i<sizeof(flags)/sizeof(flags[0]);i++) {
+	    for (int i=0;i<nflags;i++) {
 		if (flags[i]==tok) {
 		    Lasers::instance()->setFlag(tok,argv[0]->f>0.5);
 		    handled=true;
@@ -378,39 +367,24 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	    if (!handled) {
 		if (strcmp(tok,"freeze")==0) {
 		    frozen=argv[0]->f>0.5;
-		    handled=true;
-		}
-		else if (strcmp(tok,"enable")==0) {
+		}  else if (strcmp(tok,"select")==0) {
+		    int row=atoi(strtok(NULL,"/"))-1;
+		    int col=atoi(strtok(NULL,"/"))-1;
+		    dbg("TouchOSC",1) << "Got /ui/laser/select, row=" << row << ", col=" << col << ", value=" << argv[0]->f << std::endl;
+		    if (argv[0]->f > 0.5)
+			selectedLaser=col;
+		    else
+			selectedLaser=-1;
+		} else if (strcmp(tok,"enable")==0) {
 		    int row=atoi(strtok(NULL,"/"))-1;
 		    int col=atoi(strtok(NULL,"/"))-1;
 		    dbg("TouchOSC",1) << "Got /ui/laser/enable, row=" << row << ", col=" << col << ", value=" << argv[0]->f << std::endl;
 		    Lasers::instance()->enable(col,argv[0]->f>0.5);
-		    handled=true;
-		} else if (strcmp(tok,"vfov")==0) {
-		    int lnum=atoi(strtok(NULL,"/"))-1;
-		    dbg("TouchOSC",1) << "Laser " << lnum << ", set VFOV to " << argv[0]->f << std::endl;
-		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(lnum);
+		} else if (strcmp(tok,"xmin")==0 ||strcmp(tok,"ymin")==0 ||strcmp(tok,"xmax")==0 ||strcmp(tok,"ymax")==0||strcmp(tok,"hfov")||strcmp(tok,"vfov")) {
+		    dbg("TouchOSC",1) << "Normalize range[ " << tok << "] set to " << argv[0]->f << std::endl;
+		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
 		    if (laser!=nullptr) {
 			Lasers::instance()->lock();   // In case another thread tries to use the transform while we're changing it
-			laser->setVFOV(argv[0]->f*M_PI/180.0);
-			Lasers::instance()->unlock();
-		    }
-		    handled=true;
-		} else if (strcmp(tok,"hfov")==0) {
-		    int lnum=atoi(strtok(NULL,"/"))-1;
-		    dbg("TouchOSC",1) << "Laser " << lnum << ", set HFOV to " << argv[0]->f << std::endl;
-		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(lnum);
-		    if (laser!=nullptr)  {
-			Lasers::instance()->lock();   // In case another thread tries to use the transform while we're changing it
-			laser->setHFOV(argv[0]->f*M_PI/180.0);
-			Lasers::instance()->unlock();
-		    }
-		    handled=true;
-		} else if (strcmp(tok,"xmin")==0 ||strcmp(tok,"ymin")==0 ||strcmp(tok,"xmax")==0 ||strcmp(tok,"ymax")==0) {
-		    dbg("TouchOSC",1) << "Normalize range[ " << tok << "] set to " << argv[0]->f << std::endl;
-		    Lasers::instance()->lock();   // In case another thread tries to use the transform while we're changing it
-		    for (int lnum=0;lnum< Lasers::instance()->size();lnum++) {
-			std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(lnum);
 			if (strcmp(tok,"xmin")==0)
 			    laser->getTransform().setMinX(argv[0]->f);
 			else if (strcmp(tok,"ymin")==0)
@@ -419,15 +393,14 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 			    laser->getTransform().setMaxX(argv[0]->f);
 			else if (strcmp(tok,"ymax")==0)
 			    laser->getTransform().setMaxY(argv[0]->f);
-			
-			send("/ui/laser/xmin/label",laser->getTransform().getMinX());
-			send("/ui/laser/ymin/label",laser->getTransform().getMinY());
-			send("/ui/laser/xmax/label",laser->getTransform().getMaxX());
-			send("/ui/laser/ymax/label",laser->getTransform().getMaxY());
+			else if (strcmp(tok,"hfov")==0)
+			    laser->setHFOV(argv[0]->f*M_PI/180.0);
+			else if (strcmp(tok,"vfov")==0)
+			    laser->setVFOV(argv[0]->f*M_PI/180.0);
+			Lasers::instance()->unlock();
 		    }
-		    Lasers::instance()->unlock();
-		    handled=true;
 		}
+		handled=true;
 	    }
 	} else if (strcmp(tok,"attrenable")==0) {
 	    attrsEnabled=argv[0]->f>0.5;
@@ -455,13 +428,67 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	}	    
     }
     if (handled) {
-	sendOSC();
+	updateLaserUI();
     } else {
 	dbg("TouchOSC.handleOSCMessage",1) << "Unhandled message: " << path << ": parse failed at token: " << tok << std::endl;
     }
     
     delete [] pathCopy;
     return handled?0:1;
+}
+
+// Update touchosc display relating to laser controls
+void TouchOSC::updateLaserUI() const {
+    // Send OSC to make UI reflect current values
+    dbg("TouchOSC.updateLaserUI",1) << "Sending OSC updates with group " << selectedGroup << " to " << lo_address_get_url(remote) << std::endl;
+
+    settings.sendOSC(selectedGroup);
+    if (send("/ui/laser/freeze",frozen?1.0:0.0) < 0) return;
+    if (send("/ui/attrenable",attrsEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/layer",layeringEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/oneper",onePerEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/fusion",fusionEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/maxconn/label","Max Connections: "+std::to_string(maxConnections))<0) return;
+    if (send("/ui/visthresh/label","Visual Threshold: "+std::to_string(round(visualThreshold*100)/100))<0) return;
+    if (send("/ui/condglobal/label","Conductor Global: "+std::to_string(round(conductorGlobal*100/100)))<0) return;
+
+    if (selectedLaser==-1) {
+	// Blank everything
+	send("/ui/laser/xmin/label","");
+	send("/ui/laser/ymin/label","");
+	send("/ui/laser/xmax/label","");
+	send("/ui/laser/ymax/label","");
+    } else {
+	std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
+	send("/ui/laser/xmin/label",laser->getTransform().getMinX());
+	send("/ui/laser/ymin/label",laser->getTransform().getMinY());
+	send("/ui/laser/xmax/label",laser->getTransform().getMaxX());
+	send("/ui/laser/ymax/label",laser->getTransform().getMaxY());
+	send("/ui/laser/xmin",laser->getTransform().getMinX());
+	send("/ui/laser/ymin",laser->getTransform().getMinY());
+	send("/ui/laser/xmax",laser->getTransform().getMaxX());
+	send("/ui/laser/ymax",laser->getTransform().getMaxY());
+
+	send("/ui/laser/points/label",std::to_string(laser->getNPoints())+" points");
+	send("/ui/laser/skew/label",std::to_string(laser->getSkew())+" skew");
+	send("/ui/laser/preblank/label",std::to_string(laser->getPreBlanks())+"pre-blank");
+	send("/ui/laser/postblank/label",std::to_string(laser->getPostBlanks())+" post-blank");
+	send("/ui/laser/pps/label",std::to_string(laser->getPPS())+" PPS");
+	send("/ui/laser/vfov/label",std::to_string((int)(laser->getVFOV()*180/M_PI)));
+	send("/ui/laser/hfov/label",std::to_string((int)(laser->getHFOV()*180/M_PI)));
+
+	send("/ui/laser/points",(float)laser->getNPoints());
+	send("/ui/laser/skew",(float)laser->getSkew());
+	send("/ui/laser/preblank",(float)laser->getPreBlanks());
+	send("/ui/laser/postblank",(float)laser->getPostBlanks());
+	send("/ui/laser/pps",(float)laser->getPPS());
+	send("/ui/laser/vfov",laser->getVFOV()*180/M_PI);
+	send("/ui/laser/hfov",laser->getHFOV()*180/M_PI);
+    }
+    for (int i=0;i<nflags;i++)
+	send("/ui/laser/"+flags[i],Lasers::instance()->getFlag(flags[i])?1.0:0.0); 
+    for (int unit=0;unit<Lasers::instance()->size();unit++) 
+	send("/ui/laser/enable/1/"+std::to_string(unit+1),Lasers::instance()->getLaser(unit)->isEnabled()?1.0:0.0);
 }
 
 void TouchOSC::save(std::string filename) const {
@@ -491,7 +518,7 @@ void TouchOSC::load(std::string filename) {
 	boost::archive::text_iarchive ia(ifs);
 	ia >> settings;
 	dbg("TouchOSC.save",1) << "Loaded settings from " << filename << "; now have " << settings.size() << "groups" << std::endl;
-	sendOSC();
+	updateLaserUI();
     } catch (std::ifstream::failure e) {
 	std::cerr << "Exception loading from " << filename << ": " << e.what() << std::endl;
     } catch (boost::archive::archive_exception e) {

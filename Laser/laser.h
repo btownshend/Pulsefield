@@ -40,14 +40,24 @@ class Laser: public DisplayDevice  {
     int open();
     void update();
     const std::vector<etherdream_point> &getPoints() const { return pts; }
+
     float getSpacing() const { return spacing; }
-    void setPoints(int _npoints) { npoints=_npoints; TouchOSC::instance()->send("/ui/laser/points/label",std::to_string(npoints)+" points"); }
-    void setSkew(int _skew) { blankingSkew=_skew; TouchOSC::instance()->send("/ui/laser/skew/label",std::to_string(blankingSkew)+" skew");}
-    void setPreBlanks(int n) { preBlanks=n; TouchOSC::instance()->send("/ui/laser/preblank/label",std::to_string(preBlanks)+"post-blank");}
-    void setPostBlanks(int n) { postBlanks=n; TouchOSC::instance()->send("/ui/laser/postblank/label",std::to_string(postBlanks)+" pre-blank");}
-    void setPPS(int _pps) { PPS=_pps; TouchOSC::instance()->send("/ui/laser/pps/label",std::to_string(PPS)+" PPS");}
-    void setVFOV(float vfov) { transform.setVFOV(vfov); TouchOSC::instance()->send("/ui/laser/vfov/"+std::to_string(unit+1)+"/label",std::to_string((int)(vfov*180/M_PI)));}
-    void setHFOV(float hfov) { transform.setHFOV(hfov); TouchOSC::instance()->send("/ui/laser/hfov/"+std::to_string(unit+1)+"/label",std::to_string((int)(hfov*180/M_PI)));}
+    void setNPoints(int _npoints) { npoints=_npoints;  }
+    void setSkew(int _skew) { blankingSkew=_skew; }
+    void setPreBlanks(int n) { preBlanks=n; }
+    void setPostBlanks(int n) { postBlanks=n; }
+    void setPPS(int _pps) { PPS=_pps; }
+    void setVFOV(float vfov) { transform.setVFOV(vfov); }
+    void setHFOV(float hfov) { transform.setHFOV(hfov); }
+
+    int getNPoints() const { return npoints;  }
+    int getSkew() const  { return blankingSkew; }
+    int getPreBlanks() const  { return preBlanks; }
+    int getPostBlanks() const { return postBlanks; }
+    int getPPS() const { return PPS; }
+    float getVFOV() const { return transform.getVFOV(); }
+    float getHFOV() const { return transform.getHFOV(); }
+
     // Convert drawing into a set of etherdream points
     // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
     void render(const Drawing &drawing);
@@ -55,7 +65,6 @@ class Laser: public DisplayDevice  {
     Color getMaxColor() const { return maxColor; }
     int getUnit() const { return unit; }
     void enable(bool enable) { showLaser=enable;
-	TouchOSC::instance()->send("/ui/laser/enable/1/"+std::to_string(unit+1),showLaser?1.0:0.0);
     }
     bool isEnabled() const { return showLaser; }
     void toggleEnable() { showLaser=!showLaser; }

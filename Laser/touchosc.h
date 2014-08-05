@@ -191,7 +191,7 @@ class TouchOSC {
     lo_address remote;
     Settings settings;
     unsigned int selectedGroup;
-    void sendOSC() const;
+    int selectedLaser;
     // TouchOSC UI
     TouchOSC();
     ~TouchOSC();
@@ -217,6 +217,7 @@ class TouchOSC {
     static int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
 	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
     }
+    void updateLaserUI() const;
     static Fader *getFader(std::string groupName, std::string faderName) { return instance()->getFader_impl(groupName,faderName); }
     static Button *getButton(std::string groupName, std::string optionName) { return instance()->getButton_impl(groupName,optionName); }
     // Get setting of fader applying useValue settings

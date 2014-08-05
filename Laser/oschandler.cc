@@ -308,22 +308,26 @@ void OSCHandler::setPPS(int pps) {
 
 void OSCHandler::setPoints(int n) {
     dbg("OSCHandler.setPPS",1) << "Setting points/frame to " << n << std::endl;
-    lasers->setPoints(n);
+    lasers->setNPoints(n);
+    TouchOSC::instance()->updateLaserUI();
 }
 
 void OSCHandler::setPreBlanking(int nblank) {
     dbg("OSCHandler.setBlanking",1) << "Setting pre blanking to " << nblank << std::endl;
     lasers->setPreBlanks(nblank);
+    TouchOSC::instance()->updateLaserUI();
 }
 
 void OSCHandler::setPostBlanking(int nblank) {
     dbg("OSCHandler.setBlanking",1) << "Setting post blanking to " << nblank << std::endl;
     lasers->setPostBlanks(nblank);
+    TouchOSC::instance()->updateLaserUI();
 }
 
 void OSCHandler::setSkew(int skew) {
     dbg("OSCHandler.setSkew",1) << "Setting skew to " << skew  << std::endl;
     lasers->setSkew(skew);
+    TouchOSC::instance()->updateLaserUI();
 }
 
 
