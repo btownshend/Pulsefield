@@ -103,6 +103,7 @@ std::vector<etherdream_point> Laser::getBlanks(int nblanks, etherdream_point pos
 
 // Get number of needed blanks for given slew
 std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdream_point final) {
+    static const int MINBLANKDIST=50;    // Minimum distance to bother with blanking (maps to about 1cm at 80deg FOV, 10m distance)
     std::vector<etherdream_point>  result;
     if (initial.r==0 &&initial.g==0 && initial.b==0 && final.r==0 &&final.g==0 && final.b==0) {
 	dbg("Laser.getBlanks",2) << "No blanks needed; initial or final are already blanked" << std::endl;
@@ -110,9 +111,10 @@ std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdr
     }
     // Calculate distance in device coords
     int devdist=std::max(abs(initial.x-final.x),abs(initial.y-final.y));
-    if (devdist>1) {
-	int nblanks=std::ceil(devdist/MAXSLEWDISTANCE)+postBlanks;
-	dbg("Laser.getBlanks",2) << "Inserting " << preBlanks << " + " << nblanks << " for a slew of distance " << devdist << " from " << initial.x << "," << initial.y << " to " << final.x << "," << final.y << std::endl;
+    if (devdist>MINBLANKDIST) {
+	int slewblanks=std::ceil(devdist/MAXSLEWDISTANCE);
+	int nblanks=slewblanks+postBlanks;
+	dbg("Laser.getBlanks",2) << "Inserting " << preBlanks << "(pre) + " << slewblanks << "(slew) + " << postBlanks << "(post) for a slew of distance " << devdist << " from " << initial.x << "," << initial.y << " to " << final.x << "," << final.y << std::endl;
 	result=getBlanks(preBlanks,initial);
 	std::vector<etherdream_point> blanks = getBlanks(nblanks,final);
 	result.insert(result.end(), blanks.begin(), blanks.end());
