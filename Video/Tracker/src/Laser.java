@@ -9,12 +9,14 @@ public class Laser {
 	OscP5 oscP5;
 	NetAddress addr;
 	static Laser theLaser;
+	int inShapeDepth;  // Nesting depth in shapes
 	
 	Laser(OscP5 oscP5, NetAddress addr) {
 		PApplet.println("Laser destination set to "+addr);
 		this.oscP5=oscP5;
 		this.addr=addr;
 		theLaser=this;
+		inShapeDepth=0;
 	}
 
 	public void sendMessage(OscMessage msg) {
@@ -43,6 +45,24 @@ public class Laser {
 	public void bgEnd() {
 		OscMessage msg = new OscMessage("/laser/bg/end");
 		sendMessage(msg);
+	}
+	public void shapeBegin() {
+		inShapeDepth++;
+		if (inShapeDepth==1) {
+			OscMessage msg = new OscMessage("/laser/shape/begin");
+			sendMessage(msg);
+		} else {
+			PApplet.println("Nested shape to depth of "+inShapeDepth);
+		}
+	}
+	public void shapeEnd() {
+		inShapeDepth--;
+		if (inShapeDepth==0) {
+			OscMessage msg = new OscMessage("/laser/shape/end");
+			sendMessage(msg);
+		} else {
+			PApplet.println("After shapeEnd, still have "+inShapeDepth+" shapes depths");
+		}
 	}
 	public void setFlag(String flag, float value) {
 		OscMessage msg = new OscMessage("/ui/laser/"+flag);
@@ -91,9 +111,11 @@ public class Laser {
 	}
 	
 	public void rect(float x, float y, float width, float height) {
+		shapeBegin();
 		line(x,y,x+width,y);
 		line(x+width,y,x+width,y+height);
 		line(x+width,y+height,x,y+height);
 		line(x,y+height,x,y);
+		shapeEnd();
 	}
 }

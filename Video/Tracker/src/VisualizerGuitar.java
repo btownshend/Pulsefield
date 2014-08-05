@@ -140,6 +140,7 @@ public class VisualizerGuitar extends VisualizerPS {
 		//PApplet.println("Guitar drawLaser");
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();
+		laser.shapeBegin();
 		for (int i=0;i<GString.nfrets;i++) {
 			float xpos=GString.frets[i]*laserScaling;
 			PVector p1=Tracker.unMapPosition(new PVector(xpos,laserScaling*(GString.minstring-.05f)));
@@ -161,6 +162,7 @@ public class VisualizerGuitar extends VisualizerPS {
 				laser.line(p1.x,p1.y,p2.x,p2.y);
 			}
 		}
+		laser.shapeEnd();
 		laser.bgEnd();
 	}
 

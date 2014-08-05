@@ -67,6 +67,9 @@ class OSCHandler {
     void conxEnd(const char *cid);
     void bgBegin();
     void bgEnd();
+    // Begin,end a composite shape (which is rendered by a single laser)
+    void shapeBegin();
+    void shapeEnd();
     void circle(Point center, float radius);
     void arc(Point center, Point perim,  float angleCW);
     void line(Point p1, Point p2);
