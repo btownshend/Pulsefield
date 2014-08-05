@@ -77,7 +77,7 @@ float Ranges::fracLineShadowed(Point c, Point p1, Point p2) const {
     static const float lineRes=0.1;   // 10cm resolution
     // Check each ray
     int nrays=int((p2-p1).norm()/lineRes)+1;
-    nrays=4;
+    //    nrays=4;
     int shadowed=0;
     for (int i=0;i<nrays;i++) {
 	Point p=(p1*i+p2*(nrays-1-i))/(nrays-1);
