@@ -70,7 +70,7 @@ bool Ranges::isObstructed(Point p1, Point p2) const {
 // Center of view is at c, line goes from (p1,p2)
 // Laser scans originate at (0,0)
 float Ranges::fracLineShadowed(Point c, Point p1, Point p2) const {
-    static const float lineRes=0.1;   // 10cm resolution
+    static const float lineRes=0.2;   // 20cm resolution
     // Check each ray
     int nrays=std::max(int((p2-p1).norm()/lineRes)+1,2);
     //    nrays=4;
