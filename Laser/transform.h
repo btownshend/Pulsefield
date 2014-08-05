@@ -20,7 +20,6 @@ class Transform {
     float hfov, vfov;  // Field of view corresponding to full device range around origin (e.g. [-32767,0]:[32767,0] covers hfov); assumes laser mirrors are centered for (0,0)
     static std::vector<cv::Point2f> convertPoints(const std::vector<Point> &pts);
     float minx, maxx, miny, maxy;   // Bounds of laser projection (in flat cooords)
-    etherdream_point cPointToEtherdream(CPoint devPt) const;
     Point origin;   // Location of projector in floor coordinate space (with z-value ignored)
  public:
     Transform();
@@ -31,6 +30,8 @@ class Transform {
     void setVFOV(float vfov) { this->vfov=vfov; recompute(); }
     float getHFOV() const { return hfov; }
     float getVFOV() const { return vfov; }
+
+    etherdream_point cPointToEtherdream(CPoint devPt) const;
 
     // Mapping, if out-of-range, return clipped point
     etherdream_point mapToDevice(CPoint floorPt) const;

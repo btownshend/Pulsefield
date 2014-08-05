@@ -70,5 +70,5 @@ class Laser: public DisplayDevice  {
     void toggleEnable() { showLaser=!showLaser; }
     void dumpPoints() const;
     void showTest();
-    void showOutline();
+    void showOutline(const Bounds &bounds);
 };

@@ -114,7 +114,7 @@ std::vector<CPoint> Cubic::getPoints(float pointSpacing,const CPoint *priorPoint
     std::vector<CPoint> cpts(pts.size());
     for (int i=0;i<pts.size();i++) {
 	cpts[i]=CPoint(pts[i],c);
-	if (isnan(cpts[i].X()) || isnan(cpts[i].Y())) {
+	if (cpts[i].isNan()) {
 	    dbg("Cubic.getPoints",1) << "Bad interpolation; pointSpacing=" << pointSpacing << ", npts=" << pts.size() << std::endl;
 	    assert(0);
 	}

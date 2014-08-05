@@ -21,11 +21,19 @@ class Bounds {
 
     // Constrain a point to be within bounds
     Point constrainPoint(Point p) const{ 
+	if (p.isNan())
+	    return p;
 	return Point(std::min(maxx,std::max(minx,p.X())),std::min(maxy,std::max(miny,p.Y())));
+    }
+    // Constrain a point to be within bounds
+    CPoint constrainPoint(CPoint p) const{ 
+	if (p.isNan())
+	    return p;
+	return CPoint(std::min(maxx,std::max(minx,p.X())),std::min(maxy,std::max(miny,p.Y())),p.getColor());
     }
     // Return true of point p is in bounds
     bool contains(Point p) const {
-	return  (p.X() >= minx) && (p.X() <=maxx) && (p.Y() >= miny) && (p.Y() <= maxy);
+	return  isfinite(p.X()) & isfinite(p.Y()) && (p.X() >= minx) && (p.X() <=maxx) && (p.Y() >= miny) && (p.Y() <= maxy);
     }
     float width() const { return maxx-minx; }
     float height() const { return maxy-miny; }

@@ -194,7 +194,7 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
     }
     for (unsigned int i=0;i<lasers.size();i++) {
 	if (getFlag("outline") && lasers[i]->isEnabled()) {
-	    lasers[i]->showOutline();
+	    lasers[i]->showOutline(bounds);
 	}
 	else if (getFlag("test") && lasers[i]->isEnabled()) {
 	    lasers[i]->showTest();

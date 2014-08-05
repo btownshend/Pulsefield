@@ -101,7 +101,20 @@ void Transform::recompute() {
 	dbg("Transform.recompute",0) << "recompute() called after " <<floorpts.size() << " points added -- must be exactly 4" << std::endl;
     } else {
 	transform=cv::getPerspectiveTransform(convertPoints(floorpts),convertPoints(deviceToFlat(devpts)));
+	dbg("Transform.recompute",1) << "Transform=" << std::endl;
+	for (int i=0;i<transform.rows;i++) {
+	    for (int j=0;j<transform.cols;j++)
+		dbgn("Transform.recompute",1) << transform.at<double>(i,j) << " ";
+	    dbgn("Transform.recompute",1) << std::endl;
+	}
+		
 	invTransform=cv::getPerspectiveTransform(convertPoints(deviceToFlat(devpts)),convertPoints(floorpts));
+	dbg("Transform.recompute",1) << "invTransform=" << std::endl;
+	for (int i=0;i<transform.rows;i++) {
+	    for (int j=0;j<transform.cols;j++)
+		dbgn("Transform.recompute",1) << invTransform.at<double>(i,j) << " ";
+	    dbgn("Transform.recompute",1) << std::endl;
+	}
     }
     // Calculate down tilt of laser
     // Point aimed=deviceToWorld(Point(0,0));
@@ -111,6 +124,15 @@ void Transform::recompute() {
 
     // Calculate location of laser and its field of view in 3d space
     origin=flatToWorld(Point(0,-5));   // Just use the projection down in laser coord system (will be behind true origin due to tilt, height (TODO: FIX)
+    if (origin.isNan())  {
+	dbg("Transform.recompute",1) << "origin is undefined -- trying with laser assumed to be tilted up" << std::endl;
+	origin=flatToWorld(Point(0,5));   // Just use the projection down in laser coord system (will be behind true origin due to tilt, height (TODO: FIX)
+	if (origin.isNan())  {
+	    dbg("Transform.recompute",1) << "origin still undefined, setting to 0,0" << std::endl;
+	    origin=Point(0,0);
+	}
+    }
+    
     dbg("Transform.recompute",1) << "origin=" << origin << std::endl;
 }
 
@@ -177,22 +199,27 @@ std::vector<Point> Transform::flatToDevice(const std::vector<Point> &flatPts) co
 
 etherdream_point Transform::cPointToEtherdream(CPoint devPt) const {
     etherdream_point p;
-    int x=round(devPt.X());
-    if (x<-32767)
-	p.x=-32767;
-    else if (x>32767)
-	p.x=32767;
-    else
-	p.x=x;
-
-    int y=round(devPt.Y());
-    if (y<-32768)
+    if (devPt.isNan()) {
+	p.x=-32768;
 	p.y=-32768;
-    else if (y>32767)
-	p.y=32767;
-    else
-	p.y=y;
+	dbg("Transform.cPointToEtherdream",5) << "Converted NaN point to [" << p.x << "," << p.y << "]" << std::endl;
+    } else {
+	int x=round(devPt.X());
+	if (x<-32767)
+	    p.x=-32767;
+	else if (x>32767)
+	    p.x=32767;
+	else
+	    p.x=x;
 
+	int y=round(devPt.Y());
+	if (y<-32768)
+	    p.y=-32768;
+	else if (y>32767)
+	    p.y=32767;
+	else
+	    p.y=y;
+    }
     Color c=devPt.getColor();
     p.r=(int)(c.red() * 65535);
     p.g=(int)(c.green() * 65535);
@@ -208,6 +235,9 @@ etherdream_point Transform::mapToDevice(CPoint floorPt) const {
 }
 
 Point Transform::mapToDevice(Point floorPt) const {
+    if (floorPt.isNan())
+	return floorPt;
+
     Point p;
     std::vector<cv::Point2f> src(1);
     src[0].x=floorPt.X();
@@ -215,14 +245,27 @@ Point Transform::mapToDevice(Point floorPt) const {
     std::vector<cv::Point2f> dst;
     //    dbg("Transform.mapToDevice",1) << "run persp" << std::endl;
     cv::perspectiveTransform(src,dst,transform);
+    cv::Vec3f src2(floorPt.X(),floorPt.Y(),1.0);
+    cv::Vec3f dst2=((cv::Matx33f)transform)*src2;
+    if (dst2[2]<=0) {
+	dbg("Transform.mapToDevice",5) << floorPt << " out of bound: dst=" << "[" << dst2[0] << "," << dst2[1] << "," << dst2[2] << "]" << std::endl;
+	return Point(nan(""),nan(""));
+    }
+
+    Point devPt2=flatToDevice(Point(dst2[0]/dst2[2], dst2[1]/dst2[2]));
     // dst is now in 'flat' space
     Point devPt=flatToDevice(Point(dst[0].x, dst[0].y));
-    dbg("Transform.mapToDevice",10) << floorPt << " -> " << "[" << dst[0].x << "," << dst[0].y << "] -> " << devPt << std::endl;
+    dbg("Transform.mapToDevice",10) << floorPt << " -> " << "[" << dst[0].x << "," << dst[0].y << "] -> " << devPt << " (or " << devPt2 << ")" << std::endl;
     return devPt;
 }
 
 CPoint Transform::mapToWorld(etherdream_point p) const {
-    Point floorPt=mapToWorld(Point(p.x,p.y));
+    Point floorPt;
+    if (p.x==-32768 && p.y==-32768)
+	floorPt=Point(nan(""),nan(""));
+    else
+	floorPt=mapToWorld(Point(p.x,p.y));
+
     CPoint result(floorPt,Color(p.r/65535.0,p.g/65535.0,p.b/65535.0));
 
     dbg("Transform.mapToWorld(EP)",10)  << "[" << p.x << "," <<p.y << "]  -> " << result << std::endl;
@@ -235,11 +278,21 @@ Point Transform::mapToWorld(Point devPt) const {
 }
 
 Point Transform::flatToWorld(Point flatPt) const {
+    if (flatPt.isNan())
+	return flatPt;
+
     std::vector<cv::Point2f> src(1);
     src[0].x=flatPt.X();
     src[0].y=flatPt.Y();
     std::vector<cv::Point2f> dst;
     cv::perspectiveTransform(src,dst,invTransform);
+    cv::Vec3f src2(flatPt.X(),flatPt.Y(),1.0);
+    cv::Vec3f dst2=((cv::Matx33f)invTransform)*src2;
+    if (dst2[2]<=0) {
+	dbg("Transform.flatToWorld",5)  <<  flatPt << " out of bound: dst=" << "[" << dst2[0] << "," << dst2[1] << "," << dst2[2] << "]" << std::endl;
+	return Point(nan(""),nan(""));
+    }
+
     Point result(dst[0].x,dst[0].y);
 
     dbg("Transform.flatToWorld",10)  <<  flatPt << "  -> " << result << std::endl;
@@ -269,11 +322,21 @@ std::vector<CPoint> Transform::mapToWorld(const std::vector<etherdream_point> &p
 
 // Check if a given device coordinate is "on-screen" (can be projected)
 bool Transform::onScreen(Point devPt) const {
-    if  (devPt.X()<-32767 || devPt.X()>32766 || devPt.Y() <-32767 || devPt.Y() >32766)
+    if (devPt.isNan()) {
+	dbg("Transform.onScreen",5) << "devPt is nan -> false" << std::endl;
+	return false;
+    }
+    if  (devPt.X()<-32767 || devPt.X()>32766 || devPt.Y() <-32767 || devPt.Y() >32766) {
+	dbg("Transform.onScreen",5) << "devPt " << devPt << " out of bounds -> false" << std::endl;
 	// Can't move the laser to this position
 	return false;
+    }
     // Otherwise, check if it makes it past the window
     Point flatPt=deviceToFlat(devPt);
+    if (flatPt.isNan()) {
+	dbg("Transform.onScreen",5) << "devPt " << devPt << " gives NaN flat Pt -> false" << std::endl;
+	return false;
+    }
     return flatPt.X()>=minx && flatPt.X()<=maxx && flatPt.Y() >=miny && flatPt.Y() <= maxy;
 }
 

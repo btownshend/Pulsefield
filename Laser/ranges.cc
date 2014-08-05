@@ -28,6 +28,7 @@ float Ranges::getAngleRad(int i) const {
 
 // Find which scan line hits closest to point
 int Ranges::pointToScan(Point p) const {
+    assert(isfinite(p.X()) && isfinite(p.Y()));
     float angle=p.getTheta();
     int scan=angleToScan(angle);
     if (scan<0)

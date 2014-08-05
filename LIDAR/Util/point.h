@@ -58,6 +58,7 @@ class Point {
     Point min(const Point &p2) const { return Point(std::min(x,p2.X()),std::min(y,p2.Y())); }
     Point max(const Point &p2) const { return Point(std::max(x,p2.X()),std::max(y,p2.Y())); }
     bool operator==(const Point &p2) const { return x==p2.X() && y==p2.Y(); }
+    bool isNan() const { return isnan(x) || isnan(y); }
 };
 
 inline Point operator*(float s,Point p) { return Point(p.x*s,p.y*s); }
