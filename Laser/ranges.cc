@@ -72,7 +72,7 @@ bool Ranges::isObstructed(Point p1, Point p2) const {
 float Ranges::fracLineShadowed(Point c, Point p1, Point p2) const {
     static const float lineRes=0.1;   // 10cm resolution
     // Check each ray
-    int nrays=int((p2-p1).norm()/lineRes)+1;
+    int nrays=std::max(int((p2-p1).norm()/lineRes)+1,2);
     //    nrays=4;
     int shadowed=0;
     for (int i=0;i<nrays;i++) {
