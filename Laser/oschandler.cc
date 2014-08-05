@@ -304,6 +304,7 @@ void OSCHandler::startStop(bool start) {
 void OSCHandler::setPPS(int pps) {
     dbg("OSCHandler.setPPS",1) << "Setting PPS to " << pps << " PPS" << std::endl;
     lasers->setPPS(pps);
+    TouchOSC::instance()->updateLaserUI();
 }
 
 void OSCHandler::setPoints(int n) {
