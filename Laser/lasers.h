@@ -49,7 +49,7 @@ public:
 	for (int i=0;i<lasers.size();i++) lasers[i]->setPPS(pps);
     }
 
-    int render(const Ranges &ranges, const Video &video);    // Refresh; return 1 if anything changed
+    int render(const Ranges &ranges, const Bounds &bounds);    // Refresh; return 1 if anything changed
     void setFrame(int _frame) { frame=_frame; setDirty(); }
     void setDirty() { needsRender=true; }
     int getDrawingFrame() const { return frame; }
@@ -65,7 +65,7 @@ public:
     void saveTransforms(std::ostream &s) const;
     void loadTransforms(std::istream &s);
     // Clear transforms so that given real world bounds are at laser extents
-    void clearTransforms(float floorMinx, float floorMiny, float floorMaxx, float floorMaxy);
+    void clearTransforms(const Bounds &floorBounds);
 
     void setBackground(int scanpt, int totalpts, float angleDeg, float range);
 

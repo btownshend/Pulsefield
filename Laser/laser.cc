@@ -124,7 +124,7 @@ std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdr
 
 // Convert drawing into a set of etherdream points
 // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
-void Laser::render(const Drawing &drawing) {
+void Laser::render(const Drawing &drawing, const Bounds &bounds) {
     if (d!=0) {
 	int fullness=etherdream_getfullness(d);
 	dbg("Laser.render",2) << "Fullness=" << fullness << std::endl;
@@ -136,19 +136,19 @@ void Laser::render(const Drawing &drawing) {
     if (showLaser && drawing.getNumElements()>0) {
 	float drawLength=drawing.getLength();
 	spacing=std::max(drawLength/npoints,targetSegmentLen);
-	pts = transform.mapToDevice(drawing.getPoints(spacing));
+	pts = transform.mapToDevice(drawing.clipPoints(drawing.getPoints(spacing),bounds));
 	prune();
 	int nblanks=blanking();
 	float effDrawLength=(pts.size()-nblanks)*spacing;
-	dbg("Laser.render",2) << "Initial point count = " << pts.size() << " with " << nblanks << " blanks at a spaing of " << spacing << " for " << drawing.getNumElements() << " elements." << std::endl;
+	dbg("Laser.render",2) << "Initial point count = " << pts.size() << " with " << nblanks << " blanks at a spacing of " << spacing << " for " << drawing.getNumElements() << " elements." << std::endl;
 	dbg("Laser.render",2) << "Total drawing length =" << drawLength << ", but effective length=" << effDrawLength << std::endl;
 
 	if (drawLength!=effDrawLength &&  pts.size() > nblanks+2) {
 	    spacing=std::max(effDrawLength/(npoints-nblanks),targetSegmentLen);
-	    pts=transform.mapToDevice(drawing.getPoints(spacing));
+	    pts = transform.mapToDevice(drawing.clipPoints(drawing.getPoints(spacing),bounds));
 	    prune();
 	    nblanks=blanking();
-	    dbg("Laser.render",2) << "Revised point count = " << pts.size() << " with " << nblanks << " blanks at a spaing of " << spacing << " for " << drawing.getNumElements() << " elements." << std::endl;
+	    dbg("Laser.render",2) << "Revised point count = " << pts.size() << " with " << nblanks << " blanks at a spacing of " << spacing << " for " << drawing.getNumElements() << " elements." << std::endl;
 	}
     } else {
 	pts.resize(0);

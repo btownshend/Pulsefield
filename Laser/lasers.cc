@@ -60,7 +60,7 @@ std::vector<Drawing> Lasers::allocate(const Drawing &d, const Ranges &ranges)  c
     return result;
 }
 
-int Lasers::render(const Ranges &ranges, const Video &video) {
+int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
     if (!needsRender) {
 	dbg("Lasers.render",5) << "Not dirty" << std::endl;
 	return 0;
@@ -110,7 +110,7 @@ int Lasers::render(const Ranges &ranges, const Video &video) {
     if (getFlag("background") && ranges.size()>0) {
 	for (int i=0;i<ranges.size();i++) {
 	    Point p=ranges.getPoint(i);
-	    if (video.inActiveArea(p)) {
+	    if (bounds.contains(p)) {
 		Point p1,p2;
 		// Make sure to order lines so the ends will be close together in order draw to minimize laser slewing
 		p1.setThetaRange(p.getTheta()-ranges.getScanRes()/2,p.norm());
@@ -193,16 +193,14 @@ int Lasers::render(const Ranges &ranges, const Video &video) {
 	}
     }
     for (unsigned int i=0;i<lasers.size();i++) {
-	if (!lasers[i]->isEnabled())
-	    continue;
-	if (getFlag("outline")) {
+	if (getFlag("outline") && lasers[i]->isEnabled()) {
 	    lasers[i]->showOutline();
 	}
-	else if (getFlag("test")) {
+	else if (getFlag("test") && lasers[i]->isEnabled()) {
 	    lasers[i]->showTest();
 	} else {
 	    dtmp[i].append(globalDrawing);
-	    lasers[i]->render(dtmp[i]);
+	    lasers[i]->render(dtmp[i],bounds);
 	}
     }
     dbg("Lasers.render",1) << "Render done" << std::endl;
@@ -221,9 +219,9 @@ void Lasers::loadTransforms(std::istream &s) {
     needsRender=true;
 }
 
-void Lasers::clearTransforms(float minx, float miny, float maxx, float maxy) {
+void Lasers::clearTransforms(const Bounds &floorBounds) {
     for (unsigned int i=0;i<lasers.size();i++)
-	lasers[i]->getTransform().clear(minx,miny,maxx,maxy);
+	lasers[i]->getTransform().clear(floorBounds);
     needsRender=true;
 }
 

@@ -12,18 +12,11 @@
 
 const float titleHeight=15;   // in pixels
 
-Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(4) {
+Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(-6,0,6,6) {
     if (pthread_mutex_init(&mutex,NULL)) {
 	std::cerr << "Failed to create video mutex" << std:: endl;
 	exit(1);
     }
-    // Default bounds for world view
-    std::vector<Point> bnds(4);  // Temporary bounds
-    bnds[0]=Point(-6,0);
-    bnds[1]=Point(6,0);
-    bnds[2]=Point(6,6);
-    bnds[3]=Point(-6,6);
-    setBounds(bnds);
     msg << "Initialized";
     msglife=100;
     dirty=true;
@@ -343,7 +336,7 @@ void XRefs::refresh(cairo_t *cr, std::shared_ptr<Laser>laser,  Video &video, int
 	    entry->laser->getTransform().setDevPoint(anchorNumber,Point(std::min(Laser::MAXDEVICEVALUE,std::max(Laser::MINDEVICEVALUE,(int)wx)),std::min(Laser::MAXDEVICEVALUE,std::max(Laser::MINDEVICEVALUE,(int)wy))));
 	} else {
 	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " world anchor " << anchorNumber << " to "<< std::setprecision(3)  << Point(wx,wy) << std::endl;
-	    entry->laser->getTransform().setFloorPoint(anchorNumber,video.constrainPoint(Point(wx,wy)));
+	    entry->laser->getTransform().setFloorPoint(anchorNumber,video.getBounds().constrainPoint(Point(wx,wy)));
 	}
 	entry->laser->getTransform().recompute();
 	entry->reset=false;
@@ -357,13 +350,8 @@ void XRefs::refresh(cairo_t *cr, std::shared_ptr<Laser>laser,  Video &video, int
     }
 }
 
-// Constrain a point to be within bounds
-Point Video::constrainPoint(Point p) const{ 
-    return Point(std::min(maxRight,std::max(minLeft,p.X())),std::min(maxTop,std::max(minBottom,p.Y())));
-}
-
 bool Video::inActiveArea(Point p) const {
-    return  (p.X() >= minLeft) && (p.X() <=maxRight) && (p.Y() >= minBottom) && (p.Y() <= maxTop);
+    return bounds.contains(p);
 }
 
 // Draw text
@@ -531,18 +519,20 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 
      // Flip y direction so LIDAR is at bottom center
      cairo_scale(cr,1.0,-1.0);
-     float scale=std::min((float)width/(maxRight-minLeft),(float)height/(maxTop-minBottom));
+     float scale=std::min((float)width/bounds.width(),(float)height/bounds.height());
      cairo_scale(cr,scale,scale);
      float pixel=1.0/scale;
-     dbg("Video.drawWorld",3) << "minLeft=" << minLeft << ", maxRight=" << maxRight << ", minBottom=" << minBottom << ", maxTop=" << maxTop << ", scale=" << scale << ", pixel=" << pixel << std::endl;
-     cairo_translate(cr,-(minLeft+maxRight)/2,-(minBottom+maxTop)/2);
+     dbg("Video.drawWorld",3) << "bounds=" << bounds << ", scale=" << scale << ", pixel=" << pixel << std::endl;
+     cairo_translate(cr,-(bounds.getMinX()+bounds.getMaxX())/2,-(bounds.getMinY()+bounds.getMaxY())/2);
 
      // Draw overall bounds
      cairo_set_line_width(cr,1*pixel);
      cairo_set_source_rgb (cr,1.0,1.0,1.0);
-     cairo_move_to(cr,bounds.back().X(), bounds.back().Y());
-     for (unsigned int i=0;i<bounds.size();i++)
-	 cairo_line_to(cr,bounds[i].X(),bounds[i].Y());
+     cairo_move_to(cr,bounds.getMinX(), bounds.getMinY());
+     cairo_line_to(cr,bounds.getMinX(),bounds.getMaxY());
+     cairo_line_to(cr,bounds.getMaxX(),bounds.getMaxY());
+     cairo_line_to(cr,bounds.getMaxX(),bounds.getMinY());
+     cairo_line_to(cr,bounds.getMinX(),bounds.getMinY());
      cairo_stroke(cr);
 
      cairo_set_operator(cr,CAIRO_OPERATOR_ADD);   // Add colors
@@ -581,7 +571,7 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	     dbg("Video.drawWorld",3) << "flatpt=" << flatpt << std::endl;
 	     Point pt=transform.flatToWorld(flatpt);
 	     dbg("Video.drawWorld",3) << "pt=" << pt << std::endl;
-	     if (pt.X()>=minLeft && pt.X()<=maxRight && pt.Y()>=minBottom && pt.Y()<=maxTop) {
+	     if (bounds.contains(pt)) {
 		 dbg("Video.drawWorld",3) << "in bounds" << std::endl;
 		 cairo_move_to(cr,prevpt.X(),prevpt.Y());
 		 cairo_line_to(cr,pt.X(),pt.Y());
@@ -595,7 +585,7 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	     dbg("Video.drawWorld",3) << "flatpt=" << flatpt << std::endl;
 	     Point pt=transform.flatToWorld(flatpt);
 	     dbg("Video.drawWorld",3) << "pt=" << pt << std::endl;
-	     if (pt.X()>=minLeft && pt.X()<=maxRight && pt.Y()>=minBottom && pt.Y()<=maxTop) {
+	     if (bounds.contains(pt)) {
 		 dbg("Video.drawWorld",3) << "in bounds" << std::endl;
 		 cairo_move_to(cr,prevpt.X(),prevpt.Y());
 		 cairo_line_to(cr,pt.X(),pt.Y());
@@ -641,7 +631,7 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 
 void Video::clearTransforms() {
     lasers->lock();
-    lasers->clearTransforms(minLeft,minBottom,maxRight,maxTop);
+    lasers->clearTransforms(bounds);
     lasers->unlock();
 }
 
@@ -652,7 +642,7 @@ void Video::load(std::istream &s) {
     for (unsigned int laser=0;laser<lasers->size();laser++) {
 	Transform &t=lasers->getLaser(laser)->getTransform();
 	for (int i=0;i<4;i++) 
-	    t.setFloorPoint(i,constrainPoint(t.getFloorPoint(i)));
+	    t.setFloorPoint(i,bounds.constrainPoint(t.getFloorPoint(i)));
 	t.recompute();
     }
     lasers->unlock();
@@ -725,34 +715,19 @@ void Video::unlock() {
     }
 }
 
-void Video::setBounds(const std::vector<Point> &_bounds) {
-     assert(_bounds.size()>=2);
-     if (bounds.size()==_bounds.size()) {
-	 // Check if any changed
-	 bool changed=false;
-	 for (int i=0;i<bounds.size();i++) 
-	     if (bounds[i].X()!= _bounds[i].X() || bounds[i].Y() != _bounds[i].Y()) {
-		 dbg("Video.setBounds",1) << "Bounds[" << i << "] changed from " << bounds[i] << " to " << _bounds[i] << std::endl;
-		 changed=true;
-	     }
-	 if (!changed) {
-	     dbg("Video.setBounds",3) << "Bounds not changed" << std::endl;
-	     return;
-	 }
-     }
-     dbg("Video.setBounds",1) << "Updating video bounds" << std::endl;
-     lock();
-    bounds=_bounds;
-    minLeft=bounds[0].X();
-    maxRight=bounds[0].X();
-    minBottom=bounds[0].Y();
-    maxTop=bounds[0].Y();
-    for (unsigned int i=1;i<bounds.size();i++) {
-	minLeft=std::min(minLeft, bounds[i].X());
-	maxRight=std::max(maxRight, bounds[i].Y());
-	minBottom=std::min(minBottom, bounds[i].Y());
-	maxTop=std::max(maxTop, bounds[i].X());
+void Video::setBounds(const Bounds &_bounds) {
+    // Check if any changed
+    bool changed=!(bounds==_bounds);
+    if (changed) {
+	dbg("Video.setBounds",1) << "Bounds changed from " << bounds << " to " << _bounds << std::endl;
+    } else {
+	dbg("Video.setBounds",3) << "Bounds not changed" << std::endl;
+	return;
     }
+
+    dbg("Video.setBounds",1) << "Updating video bounds" << std::endl;
+    lock();
+    bounds=_bounds;
     dirty=true;
     unlock();
 }

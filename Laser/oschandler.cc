@@ -91,6 +91,8 @@ static int cell_begin_handler(const char *path, const char *types, lo_arg **argv
 static int cell_end_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->cellEnd(argv[0]->i); return 0; }
 static int bg_begin_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->bgBegin(); return 0; }
 static int bg_end_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->bgEnd(); return 0; }
+static int shape_begin_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->shapeBegin(); return 0; }
+static int shape_end_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->shapeEnd(); return 0; }
 static int circle_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(argv[0]->f,argv[1]->f),argv[2]->f); return 0; }
 static int arc_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->arc(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),argv[4]->f); return 0; }
 static int cubic_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->cubic(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f),Point(argv[6]->f,argv[7]->f)); return 0; }
@@ -185,6 +187,8 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/laser/cell/end","i",cell_end_handler,this);
 	lo_server_add_method(s,"/laser/bg/begin","",bg_begin_handler,this);
 	lo_server_add_method(s,"/laser/bg/end","",bg_end_handler,this);
+	lo_server_add_method(s,"/laser/shape/begin","",shape_begin_handler,this);
+	lo_server_add_method(s,"/laser/shape/end","",shape_end_handler,this);
 	
 	lo_server_add_method(s,"/laser/circle","fff",circle_handler,this);
 	lo_server_add_method(s,"/laser/arc","fffff",arc_handler,this);
@@ -280,7 +284,7 @@ void OSCHandler::processIncoming() {
 	    }
 	    // Render lasers only when nothing in queue and timeout exceeded
 	    dbg("OSCHandler.processIncoming",5) << "Rendering to lasers" << std::endl;
-	    if (lasers->render(ranges,*video)) 
+	    if (lasers->render(ranges,video->getBounds())) 
 		// If they've changed, mark the video for update too
 		video->setDirty();
 	    secsToNextRender=0;	// Only do a zero-timeout wait for incoming messages before checking again
@@ -402,6 +406,20 @@ void OSCHandler::conxEnd(const char *cid) {
     drawTarget=NONE;
 }
 
+void OSCHandler::shapeBegin() {
+    dbg("OSCHandler.shapeBegin",3) << "shapeBegin" << std::endl;
+    Drawing *d=currentDrawing();
+    if (d!=NULL)
+	d->shapeBegin(Attributes());
+}
+
+void OSCHandler::shapeEnd() {
+    dbg("OSCHandler.shapeEnd",3) << "shapeEnd" << std::endl;
+    Drawing *d=currentDrawing();
+    if (d!=NULL)
+	d->shapeEnd();
+}
+
 void OSCHandler::bgBegin() {
     dbg("OSCHandler.bgBegin",3) << "bgBegin" << std::endl;
     if (drawTarget!=NONE) {
@@ -519,11 +537,5 @@ void OSCHandler::pfframe(int frame) {
 
 // Called when any of the bounds have been possibly changed
 void OSCHandler::updateBounds() {
-    std::vector<Point> bounds(4);
-    bounds[0]=Point(minx,miny);
-    bounds[1]=Point(maxx,miny);
-    bounds[2]=Point(maxx,maxy);
-    bounds[3]=Point(minx,maxy);
-
-    video->setBounds(bounds);  /// This will handle checking if there is any real change
+    video->setBounds(Bounds(minx,miny,maxx,maxy));  /// This will handle checking if there is any real change
 }

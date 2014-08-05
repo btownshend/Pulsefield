@@ -11,6 +11,7 @@
 #include "attributes.h"
 #include "cpoint.h"
 #include "ranges.h"
+#include "bounds.h"
 
 class Transform;
 class Drawing;
@@ -37,6 +38,7 @@ protected:
     virtual float getLength() const { return 0.0; }
 
     virtual void translate(Point t) = 0; 
+
 };
 
 class Circle: public Primitive {
@@ -156,6 +158,9 @@ class Drawing {
     // Get points to render drawing at given (meter) spacing
     std::vector<CPoint> getPoints(float spacing) const;
 
+    // Clip a vector of points by removing segments out of bounds and inserting blanks
+    std::vector<CPoint> clipPoints(const std::vector<CPoint> &pts, const Bounds &b) const;
+    
     // Get length of current drawing in floor space
     float getLength() const {
 	float len=0;

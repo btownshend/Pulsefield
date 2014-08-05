@@ -47,8 +47,7 @@ class Video: public DisplayDevice {
     void drawInfo(cairo_t *cr, float left,  float top, float width, float height) const;
 
     std::shared_ptr<Lasers> lasers;
-    std::vector<Point> bounds;  // Polygonal bounds of active area (in meters)
-    float minLeft, maxRight, minBottom, maxTop;   // Extreme values of bounds (in meters)
+    Bounds bounds;
     static XRefs xrefs;
     
     // Locking
@@ -69,11 +68,10 @@ class Video: public DisplayDevice {
     ~Video();
 
     int open();
-    // Set bounds of active area (values are in meters)
-    void setBounds(const std::vector<Point> &_bounds);
+    // Set/get bounds of active area (values are in meters)
+    void setBounds(const Bounds &bounds);
+    const Bounds &getBounds() const { return bounds; }
     bool inActiveArea(Point p) const;
-    // Constrain point to be inside active area (move  to closest edge point of bounding rectangle)
-    Point constrainPoint(Point p) const;
     std::ostream &newMessage() { msg.str(""); msglife=50; return msg; }
 
     // Display needs refresh

@@ -12,7 +12,7 @@ Transform::Transform(): floorpts(4), devpts(4) {
     maxx=.96f;
     miny=-.76f;  // Needs to be less than extreme values in etherdream (short) values 
     maxy=.96f;
-    clear(-6,0,6,6);
+    clear(Bounds(-6,0,6,6));
 
     if (false) {
 	// Test conversions
@@ -66,16 +66,16 @@ Transform::Transform(): floorpts(4), devpts(4) {
     }
 }
 
-void Transform::clear(float floorMinx, float floorMiny, float floorMaxx, float floorMaxy) {
+void Transform::clear(const Bounds &floorBounds) {
     // Default mapping
     // Point indices are order based on laser positions: BL, BR, TR, TL
-    floorpts[0]=Point(floorMinx,floorMaxy);
+    floorpts[0]=Point(floorBounds.getMinX(),floorBounds.getMaxY());
     devpts[0]=flatToDevice(Point(minx,maxy));
-    floorpts[1]=Point(floorMaxx,floorMaxy);
+    floorpts[1]=Point(floorBounds.getMaxX(),floorBounds.getMaxY());
     devpts[1]=flatToDevice(Point(maxx,maxy));
-    floorpts[2]=Point(floorMaxx,floorMiny);
+    floorpts[2]=Point(floorBounds.getMaxX(),floorBounds.getMinY());
     devpts[2]=flatToDevice(Point(maxx,miny));
-    floorpts[3]=Point(floorMinx,floorMiny);
+    floorpts[3]=Point(floorBounds.getMinX(),floorBounds.getMinY());
     devpts[3]=flatToDevice(Point(minx,miny));
 
     recompute();
@@ -319,4 +319,5 @@ void Transform::clipLine(Point &p1, Point &p2) const {
 	p2=good;
     else
 	p1=good;
+    dbg("Transform.clipLine",5) << "Clipped " << dp1 << "-" << dp2 << " to " <<  mapToDevice(p1) << "-" << mapToDevice(p2) << std::endl;
 }

@@ -60,7 +60,7 @@ class Laser: public DisplayDevice  {
 
     // Convert drawing into a set of etherdream points
     // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
-    void render(const Drawing &drawing);
+    void render(const Drawing &drawing, const Bounds &bounds);
     Color getLabelColor() const { return labelColor; }
     Color getMaxColor() const { return maxColor; }
     int getUnit() const { return unit; }

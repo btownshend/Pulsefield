@@ -7,6 +7,7 @@
 #include "etherdream_bst.h"
 
 class Color;
+class Bounds;
 
 // Transformation between floor (meter) space, flat  device window [-1:1] and  device (-32767:32767) space
 // Floor<-> Flat is a perspective transformation (imagine flat/normalized as a viewport perpendicular to the scanner, such as the physical window)
@@ -23,7 +24,7 @@ class Transform {
     Point origin;   // Location of projector in floor coordinate space (with z-value ignored)
  public:
     Transform();
-    void clear(float floorMinx, float floorMiny, float floorMaxx, float floorMaxy);
+    void clear(const Bounds &floorBounds);
 
     // Set projector field of view (in Radians)
     void setHFOV(float hfov) { this->hfov=hfov; recompute(); }

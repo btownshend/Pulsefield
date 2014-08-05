@@ -144,7 +144,7 @@ float Cubic::getShapeScore(const Transform &transform, const Ranges &ranges) con
 	    score=std::min(score,s);
 	totalLength+=len;
     }
-    if (score<1)
+    if (score<1.0 && totalLength>0)
 	// Partially off-screen
 	score= fracScore/totalLength;
 
@@ -193,7 +193,7 @@ float Path::getShapeScore(const Transform &transform, const Ranges &ranges) cons
 	visLen+=std::min(1.0f,s)*len;
 	totalLen+=len;
     }
-    if (score<1.0)
+    if (score<1.0 && totalLen>0)
 	score=visLen/totalLen;
     dbg("Path.getShapeScore",5) << "score=" << score << std::endl;
     return score;
@@ -228,7 +228,7 @@ std::vector<CPoint> Arc::getPoints(float pointSpacing, const CPoint *priorPoint)
 
 
 float Composite::getShapeScore(const Transform &transform, const Ranges &ranges) const {
-    dbg("Composite.getShapeScore",5) << "Getting score for composite" << std::endl;
+    dbg("Composite.getShapeScore",5) << "Getting score for composite with " << elements.size() << " elements"  << std::endl;
     float score;
     float fracScore=0;
     float totalLen=0;
@@ -242,7 +242,7 @@ float Composite::getShapeScore(const Transform &transform, const Ranges &ranges)
 	fracScore+=std::min(1.0f,s)*len;
 	totalLen+=len;
     }
-    if (score<1.0)
+    if (score<1.0 && totalLen>0)
 	score=fracScore/totalLen;
     dbg("Composite.getShapeScore",5) << "score=" << score << std::endl;
     return score;
@@ -343,4 +343,22 @@ std::vector<CPoint> Drawing::getPoints(float spacing) const {
     return result;
 }
 
-
+std::vector<CPoint> Drawing::clipPoints(const std::vector<CPoint> &pts, const Bounds &b) const {
+    std::vector<CPoint> result;
+    bool wasBlank=false;
+    for (int i=0;i<pts.size();i++) {
+	bool isBlank=(pts[i].getColor() == Color(0,0,0)) || !b.contains(pts[i]);
+	if (wasBlank && !isBlank) {
+	    result.push_back(CPoint(pts[i],Color(0,0,0)));  // Move to new point with blanking
+	}
+	if (!isBlank)
+	    result.push_back(pts[i]);
+	//	dbg("Drawing.clipPoints",4) << "i=" << i << ", wasBlank=" << wasBlank << ", isBlank=" << isBlank << ", result.size=" << result.size() << std::endl;
+	wasBlank=isBlank;
+    }
+    if (wasBlank)
+	// Make sure we get the final blank
+	result.push_back(CPoint(pts.back(),Color(0,0,0)));
+    dbg("Drawing.clipPoints",3) << "Clipped drawing from " << pts.size() << " to " << result.size() << " points." << std::endl;
+    return result;
+}
