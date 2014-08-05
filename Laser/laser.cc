@@ -189,7 +189,7 @@ void Laser::prune() {
 	    // In bounds
 	    if (oobs && result.size()>0) {
 		// Just came in bounds, insert a blank (will be expanded by blanking)
-		std::vector<etherdream_point> blanks = Laser::getBlanks(1,result.back());
+		std::vector<etherdream_point> blanks = Laser::getBlanks(1,pts[i]);
 		result.insert(result.end(), blanks.begin(), blanks.end());
 	    }
 	    result.push_back(pts[i]);
