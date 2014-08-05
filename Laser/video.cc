@@ -639,6 +639,12 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
     cairo_restore(cr);
 }
 
+void Video::clearTransforms() {
+    lasers->lock();
+    lasers->clearTransforms(minLeft,minBottom,maxRight,maxTop);
+    lasers->unlock();
+}
+
 void Video::load(std::istream &s) {
     lasers->lock();
     lasers->loadTransforms(s);
