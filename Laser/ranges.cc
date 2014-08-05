@@ -6,7 +6,9 @@
 const float Ranges::SHADOWSEP=0.5f;   // Distance an obstruction must be in front of an object for it to be considered shadowed
 
 Ranges::Ranges() {
-    ranges.assign(571,5.0f);   	// Default in case frontend not running
+    std::vector<float> r;
+    r.assign(571,5.0f);   	// Default in case frontend not running
+    setRanges(r);
 }
 
 float Ranges::getScanRes() const {
@@ -39,12 +41,6 @@ int Ranges::pointToScan(Point p) const {
     return scan;
 }
 
-Point Ranges::getPoint(int i) const {
-    Point p;
-    p.setThetaRange(getAngleRad(i),ranges[i]);
-    return p;
-}
-
 // Return true if ray from p1 to p2 is obstructed by a target
 bool Ranges::isObstructed(Point p1, Point p2) const {
     static const float RANGEDEPTH=0.3f;   // Depth of a hit
@@ -56,9 +52,8 @@ bool Ranges::isObstructed(Point p1, Point p2) const {
     float lineTheta=(p2-p1).getTheta();
     for (int i=scan1;i<=scan2;i++) {
 	Point hit1,hit2;
-	float angle=getAngleRad(i);
-	hit1.setThetaRange(angle,ranges[i]);
-	hit2.setThetaRange(angle,ranges[i]+RANGEDEPTH);
+	hit1=getPoint(i);
+	hit2=hit1*((ranges[i]+RANGEDEPTH)/ranges[i]);
 	// Check if the hit straddles the line
 	if (((hit1-p1).getTheta()>lineTheta) != ((hit2-p1).getTheta()>lineTheta)) 
 	    // And check if it is closer than the image we're trying to build
@@ -89,3 +84,9 @@ float Ranges::fracLineShadowed(Point c, Point p1, Point p2) const {
     return shadowed*1.0f/nrays;
 };
 
+void Ranges::setRanges(const std::vector<float> _ranges) {
+    ranges=_ranges;
+    points.resize(ranges.size());
+    for (int i=0;i<ranges.size();i++)
+	points[i].setThetaRange(getAngleRad(i),ranges[i]);
+}

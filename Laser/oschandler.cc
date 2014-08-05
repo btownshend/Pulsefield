@@ -127,16 +127,17 @@ static int range_handler(const char *path, const char *types, lo_arg **argv, int
 
 void OSCHandler::range(int id, int frame, int sec, int usec, int echo, int nmeasure, lo_blob data) {
     dbg("OSCHandler.range",3) << "Got range(id=" << id << ", frame=" << frame << ", T=(" << sec << "," << usec << "), echo=" << echo << ", n=" << nmeasure << ", blob size=" << lo_blob_datasize(data) << std::endl;
-    if (lo_blob_datasize(data) != nmeasure*sizeof(ranges.ranges[0])) {
-	dbg("OSCHandler.range",1) << "Unexpected blob size: " << lo_blob_datasize(data) << " (expected " << nmeasure*4 << ")" << std::endl;
+    if (lo_blob_datasize(data) != nmeasure*sizeof(float)) {
+	dbg("OSCHandler.range",1) << "Unexpected blob size: " << lo_blob_datasize(data) << " (expected " << nmeasure*sizeof(float) << ")" << std::endl;
 	return;
     }
     if (echo==0) {
 	// Save the range data
-	ranges.ranges.resize(nmeasure);
+	std::vector<float> r(nmeasure);
 	for (int i=0;i<nmeasure;i++)
-	    ranges.ranges[i]=((unsigned int *)data)[i]/1000.0;
-	dbg("OSCHandler.range",3) << "Save " << ranges.size() << " ranges (max="  << *std::max_element(ranges.ranges.begin(),ranges.ranges.end()) << ")" << std::endl;
+	    r[i]=((unsigned int *)data)[i]/1000.0;
+	ranges.setRanges(r);
+	dbg("OSCHandler.range",3) << "Save " << r.size() << " ranges (max="  << *std::max_element(r.begin(),r.end()) << ")" << std::endl;
     }
 };
 

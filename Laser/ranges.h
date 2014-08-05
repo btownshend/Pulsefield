@@ -8,9 +8,11 @@ class Ranges {
     int angleToScan(float angleInRad) const;
     float getAngleRad(int i) const;
     bool isObstructed(Point p1, Point p2) const;
+    std::vector<float> ranges;
+    std::vector<Point> points;
 public:
     Ranges();
-    std::vector<float> ranges;
+    void setRanges(const std::vector<float> _ranges);
     int size() const { return ranges.size(); }
     // Compute amount of given structures are shadowed
     float getScanRes() const;
@@ -19,5 +21,5 @@ public:
 	// Approx same as a line that is perpendicular to LIDAR scan line
 	return fracLineShadowed(laser,p1+Point(radius,0),p1+Point(-radius,0));
     }
-    Point getPoint(int i) const;
+    Point getPoint(int i) const { return points[i]; }
 };
