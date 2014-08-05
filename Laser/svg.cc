@@ -35,6 +35,7 @@ void SVG::addToDrawing(Drawing &d,Point origin, float scale, float rotateDeg, Co
     int nshapes=0;
     int npaths=0;
     scale/=std::max(image->width,image->height);
+    d.shapeBegin(Attributes());   // Wrap in a shape so that it is all drawn by a single laser
     for (NSVGshape* shape = image->shapes; shape != NULL; shape = shape->next) {
 	for (	NSVGpath* path = shape->paths; path != NULL; path = path->next) {
 	    std::vector<Point> pts;
@@ -50,5 +51,6 @@ void SVG::addToDrawing(Drawing &d,Point origin, float scale, float rotateDeg, Co
 	}
 	nshapes++;
     }
+    d.shapeEnd();
     dbg("SVG.addToDrawing",1) << "Added SVG with " << nshapes << " shapes containing a total of " << npaths << " paths" << std::endl;
 }
