@@ -303,7 +303,7 @@ std::vector<CPoint> Composite::getPoints(float spacing,const CPoint *priorPoint)
 	dbg("Composite.getPoints",3) << "Converted " << result.size() << " points into a convex hull of size " << dst.size() << std::endl;
 	result.resize(dst.size());
 	for (int i=0;i<dst.size();i++) {
-	    result[i]=CPoint(dst[i].x,dst[i].y,c);
+	    result[i]=CPoint(dst[i].x,dst[i].y,elements.front()->getColor());
 	}
 	result=CPoint::resample(result);
 	// TODO -- hull might have larger spacing between some points
