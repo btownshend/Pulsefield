@@ -135,7 +135,7 @@ void People::draw_impl(Drawing &d)  const {
 }
 
 void Person::draw(Drawing &d) const  {
-    d.shapeBegin(attributes);
+    d.shapeBegin("cell:"+std::to_string(id),attributes);
     if (Lasers::instance()->getFlag("body")) {
 	drawBody(d);
     }
@@ -149,7 +149,7 @@ void Person::draw(Drawing &d) const  {
 	d.append(viscopy);
 	dbg("Person.draw",1) << "Drawing now has " << d.getNumElements() << " elements" << std::endl;
     }
-    d.shapeEnd();
+    d.shapeEnd("cell:"+std::to_string(id));
 }
 
 void Person::drawBody(Drawing &d) const {

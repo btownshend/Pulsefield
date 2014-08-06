@@ -91,8 +91,8 @@ static int cell_begin_handler(const char *path, const char *types, lo_arg **argv
 static int cell_end_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->cellEnd(argv[0]->i); return 0; }
 static int bg_begin_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->bgBegin(); return 0; }
 static int bg_end_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->bgEnd(); return 0; }
-static int shape_begin_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->shapeBegin(); return 0; }
-static int shape_end_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->shapeEnd(); return 0; }
+static int shape_begin_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->shapeBegin(&argv[0]->s); return 0; }
+static int shape_end_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->shapeEnd(&argv[0]->s); return 0; }
 static int circle_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->circle(Point(argv[0]->f,argv[1]->f),argv[2]->f); return 0; }
 static int arc_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->arc(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),argv[4]->f); return 0; }
 static int cubic_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->cubic(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f),Point(argv[6]->f,argv[7]->f)); return 0; }
@@ -188,8 +188,8 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/laser/cell/end","i",cell_end_handler,this);
 	lo_server_add_method(s,"/laser/bg/begin","",bg_begin_handler,this);
 	lo_server_add_method(s,"/laser/bg/end","",bg_end_handler,this);
-	lo_server_add_method(s,"/laser/shape/begin","",shape_begin_handler,this);
-	lo_server_add_method(s,"/laser/shape/end","",shape_end_handler,this);
+	lo_server_add_method(s,"/laser/shape/begin","s",shape_begin_handler,this);
+	lo_server_add_method(s,"/laser/shape/end","s",shape_end_handler,this);
 	
 	lo_server_add_method(s,"/laser/circle","fff",circle_handler,this);
 	lo_server_add_method(s,"/laser/arc","fffff",arc_handler,this);
@@ -364,7 +364,7 @@ void OSCHandler::cellBegin(int uid) {
 	cellDrawing.clear();
     }
     drawTarget=CELL;
-    shapeBegin();
+    shapeBegin("cell:"+std::to_string(uid));
 }
 
 void OSCHandler::cellEnd(int uid) {
@@ -374,7 +374,7 @@ void OSCHandler::cellEnd(int uid) {
 	return;
     }
 	
-    shapeEnd();
+    shapeEnd("cell:"+std::to_string(uid));
     People::setVisual(uid,cellDrawing);
     cellDrawing.clear();
     drawTarget=NONE;
@@ -393,7 +393,7 @@ void OSCHandler::conxBegin(const char *cid) {
 	conxDrawing.clear();
     }
     drawTarget=CONX;
-    shapeBegin();
+    shapeBegin("conx:"+std::string(cid));
 }
 
 void OSCHandler::conxEnd(const char *cid) {
@@ -402,7 +402,7 @@ void OSCHandler::conxEnd(const char *cid) {
 	dbg("OSCHandler.conxEnd",0) << "Not in CONX drawing state" << std::endl;
 	return;
     }
-    shapeEnd();
+    shapeEnd("conx:"+std::string(cid));
     if (!Connections::instance()->connectionExists(cid)) {
 	dbg("OSCHandler.conxEnd",0) << "CID " << cid << " does not exist" << std::endl;
     } else
@@ -411,18 +411,18 @@ void OSCHandler::conxEnd(const char *cid) {
     drawTarget=NONE;
 }
 
-void OSCHandler::shapeBegin() {
-    dbg("OSCHandler.shapeBegin",3) << "shapeBegin" << std::endl;
+void OSCHandler::shapeBegin(const std::string &id) {
+    dbg("OSCHandler.shapeBegin",3) << "shapeBegin(" << id << ")" << std::endl;
     Drawing *d=currentDrawing();
     if (d!=NULL)
-	d->shapeBegin(Attributes());
+	d->shapeBegin(id,Attributes());
 }
 
-void OSCHandler::shapeEnd() {
-    dbg("OSCHandler.shapeEnd",3) << "shapeEnd" << std::endl;
+void OSCHandler::shapeEnd(const std::string &id) {
+    dbg("OSCHandler.shapeEnd",3) << "shapeEnd(" << id << ")" << std::endl;
     Drawing *d=currentDrawing();
     if (d!=NULL)
-	d->shapeEnd();
+	d->shapeEnd(id);
 }
 
 // Start accumulating drawing commands into 'background' drawing;  starts with clear drawing
@@ -437,7 +437,7 @@ void OSCHandler::bgBegin() {
     }
     drawTarget=BACKGROUND;
     // Start a composite shape by default -- client can also start new shapes if needed (as long as first composite is empty)
-    shapeBegin();
+    shapeBegin("bg_default");
 }
 
 // Finished with background drawing, save in lasers as visual until updated again
@@ -448,7 +448,7 @@ void OSCHandler::bgEnd() {
 	return;
     }
     // End the composite if hasn't already been explicitly ended
-    shapeEnd();
+    shapeEnd("bg_default");
     lasers->setVisual(bgDrawing);
     bgDrawing.clear();
     drawTarget=NONE;
@@ -541,6 +541,7 @@ void OSCHandler::pfframe(int frame) {
     // UI Tick
     TouchOSC::frameTick(frame);
     Music::instance()->frameTick(frame);
+    ShapeIDs::frameTick(frame);
 
     //    if (frame%1000 == 0)
     //	lasers->dumpPoints();

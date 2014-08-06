@@ -131,9 +131,9 @@ void Connection::draw(Drawing &d,float visThresh) const {
 	if (TouchOSC::instance()->isFusionEnabled()) {
 	    Attributes fusionOnly;
 	    fusionOnly.set("fusion",attributes.get("fusion"));
-	    d.shapeBegin(fusionOnly);   // Only the fusion attributes apply
+	    d.shapeBegin(cid,fusionOnly);   // Only the fusion attributes apply
 	    drawFusion(d,p1,p2,attributes.get("fusion").getValue());
-	    d.shapeEnd();
+	    d.shapeEnd(cid);
 	}
     } else {
 	Attributes aboveThresh = attributes.filter(visThresh);
@@ -147,7 +147,7 @@ void Connection::draw(Drawing &d,float visThresh) const {
 	    dbg("Connection.draw",2) << "No layering: " << cid << " had " << aboveThresh.size() << " attributes, keeping only 1" << std::endl;
 	    aboveThresh=attributes.keepStrongest();
 	}
-	d.shapeBegin(aboveThresh);
+	d.shapeBegin(cid,aboveThresh);
 	Point pt1=p1->get();
 	Point pt2=p2->get();
 	Point delta=pt2-pt1;
@@ -165,7 +165,7 @@ void Connection::draw(Drawing &d,float visThresh) const {
 	    pt4=Point(pt2.X(),mid.Y());
 	}
 	d.drawCubic(pt1,pt3,pt4,pt2,Color(0.0,1.0,0.0));
-	d.shapeEnd();
+	d.shapeEnd(cid);
     }
 }
 

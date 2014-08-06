@@ -92,7 +92,7 @@ void Groups::draw_impl(Drawing &d)  const {
 void Group::draw(Drawing &d) const  {
     dbg("Group.draw",3) << "Draw group " << id << " with " << getGroupSize() << " people." << std::endl;
     if (ids.size() > 1) {
-	d.shapeBegin(attributes,true); // Create  a composite drawing that we'll later image as a convex hull
+	d.shapeBegin("group:"+std::to_string(id),attributes,true); // Create  a composite drawing that we'll later image as a convex hull
 	// Draw all the person circles (will later be converted into a hull)
 	for (std::set<int>::const_iterator a=ids.begin();a!=ids.end();a++) {
 	    const Person *p=People::instance()->getPerson(*a);
@@ -100,6 +100,6 @@ void Group::draw(Drawing &d) const  {
 		p->drawBody(d);
 	}
 	// d.drawCircle(position,diameter/2,Color(0.0,1.0,0.0));
-	d.shapeEnd();
+	d.shapeEnd("group:"+std::to_string(id));
     }
 }

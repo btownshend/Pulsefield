@@ -46,19 +46,19 @@ public class Laser {
 		OscMessage msg = new OscMessage("/laser/bg/end");
 		sendMessage(msg);
 	}
-	public void shapeBegin() {
+	public void shapeBegin(String id) {
 		inShapeDepth++;
 		if (inShapeDepth==1) {
-			OscMessage msg = new OscMessage("/laser/shape/begin");
+			OscMessage msg = new OscMessage("/laser/shape/begin").add(id);
 			sendMessage(msg);
 		} else {
 			PApplet.println("Nested shape to depth of "+inShapeDepth);
 		}
 	}
-	public void shapeEnd() {
+	public void shapeEnd(String id) {
 		inShapeDepth--;
 		if (inShapeDepth==0) {
-			OscMessage msg = new OscMessage("/laser/shape/end");
+			OscMessage msg = new OscMessage("/laser/shape/end").add(id);
 			sendMessage(msg);
 		} else {
 			PApplet.println("After shapeEnd, still have "+inShapeDepth+" shapes depths");
@@ -111,11 +111,9 @@ public class Laser {
 	}
 	
 	public void rect(float x, float y, float width, float height) {
-		shapeBegin();
 		line(x,y,x+width,y);
 		line(x+width,y,x+width,y+height);
 		line(x+width,y+height,x,y+height);
 		line(x,y+height,x,y);
-		shapeEnd();
 	}
 }

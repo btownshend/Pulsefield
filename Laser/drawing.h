@@ -12,6 +12,7 @@
 #include "cpoint.h"
 #include "ranges.h"
 #include "bounds.h"
+#include "shapeid.h"
 
 class Transform;
 class Drawing;
@@ -118,11 +119,14 @@ class Composite  {
     std::vector<std::shared_ptr<Primitive> > elements;
     Attributes attrs;
     bool drawConvexHull;   // Draw convex hull rather than actual points
+    std::shared_ptr<ShapeID> shapeID;
 public:
-    Composite(const Attributes _attrs, bool _hull=false) {attrs=_attrs; drawConvexHull=_hull; }
+    Composite(const std::string &id, const Attributes _attrs, bool _hull=false) {shapeID=ShapeIDs::get(id); attrs=_attrs; drawConvexHull=_hull; }
     // Number of primitives
     int getNumElements() const { return elements.size(); }
 
+    // Shape ID
+    std::shared_ptr<ShapeID> getShapeID() const { return shapeID; }
     void append(std::shared_ptr<Primitive> p) { elements.push_back(p); }
     // Convert into a vector of points (actually segments), inserts a single blank point for moves
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
@@ -213,26 +217,36 @@ class Drawing {
 		}
 	    }
 	}
-	elements.push_back(prim);
+	assert(0);  // Should always be in a composite
+	//	elements.push_back(prim);
     }
 
     // Start a new shape
-    void shapeBegin(const Attributes &attr, bool drawConvexHull=false) {
-	dbg("Drawing.shapeBegin",3) << "begin shape with " << attr.size() << " attributes" << std::endl;
+    void shapeBegin(const std::string &id, const Attributes &attr, bool drawConvexHull=false) {
+	dbg("Drawing.shapeBegin",3) << "begin shape " << id << " with " << attr.size() << " attributes" << std::endl;
 	if (inComposite) {
-	    dbg("Drawing.shapeBegin",0) << "Was already in a composite with " << elements.back()->getNumElements()  << std::endl;
-	} else {
-	    elements.push_back(std::shared_ptr<Composite>(new Composite(attr,drawConvexHull)));
-	    inComposite=true;
-	}
+	    std::string lastShapeID=elements.back()->getShapeID()->getID() ;
+	    // OK if the current composite is empty
+	    if (elements.back()->getNumElements() == 0) {
+		dbg("Drawing.shapeBegin",0) << "Was already in empty composite " << lastShapeID <<  " when beginning " << id << std::endl;
+	    } else {
+		dbg("Drawing.shapeBegin",0) << "Was already in composite " << lastShapeID << " with " << elements.back()->getNumElements()  << " when beginning " << id << std::endl;
+	    }
+	    shapeEnd(lastShapeID);
+	} 
+	elements.push_back(std::shared_ptr<Composite>(new Composite(id, attr,drawConvexHull)));
+	inComposite=true;
     }
 
-    void shapeEnd() {
-	dbg("Drawing.shapeEnd",3) << "end shape" << std::endl;
+    void shapeEnd(const std::string &id) {
+	dbg("Drawing.shapeEnd",3) << "end shape " << id << std::endl;
 	if (!inComposite) {
-	    dbg("Drawing.shapeEnd",0) << "Was not in a composite -- ignoring" << std::endl;
-	} else 
-	    inComposite=false;
+	    dbg("Drawing.shapeEnd",0) << "Was not in a composite -- ignoring shapeEnd(" << id << ")" << std::endl;
+	    return;
+	} 
+	if (elements.back()->getShapeID()->getID() != id) 
+	    dbg("Drawing.shapeEnd",0) << "shapeEnd(" << id << "), but current shape is " << elements.back()->getShapeID()->getID() << std::endl;
+	inComposite=false;
     }
 
     // Append another drawing to this one 

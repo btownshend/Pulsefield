@@ -68,8 +68,8 @@ class OSCHandler {
     void bgBegin();
     void bgEnd();
     // Begin,end a composite shape (which is rendered by a single laser)
-    void shapeBegin();
-    void shapeEnd();
+    void shapeBegin(const std::string &id);
+    void shapeEnd(const std::string &id);
     void circle(Point center, float radius);
     void arc(Point center, Point perim,  float angleCW);
     void line(Point p1, Point p2);
