@@ -7,6 +7,7 @@ import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
+import processing.core.PShape;
 import processing.core.PVector;
 
 class Dancer {
@@ -323,11 +324,17 @@ public class VisualizerDDR extends Visualizer {
 			PVector offset=new PVector(d.current.x,d.current.y);
 			offset.sub(d.neutral);
 			float angle=offset.heading();
+			float dist=offset.mag();
 			int quad=(int)Math.round(angle/(Math.PI/2));
-			laser.svgfile("arrow4.svg", 0.0f, 0.0f, 0.5f, -quad*90+180);
+			//PApplet.println("Laser: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
+			if (dist>MINMOVEDIST)
+				laser.svgfile("arrow4.svg", 0.0f, 0.0f, 0.5f, quad*90+180);
+			else
+				laser.svgfile("dancer4.svg", 0.0f, 0.0f, 0.5f,0f);				
 			laser.cellEnd(id);
 		}
 	}
+
 
 	public void drawLaserTicker(PApplet parent, float now) {
 		final float TICKERWIDTH=1.5f;	// Width of ticker in meters (centered)
