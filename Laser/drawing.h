@@ -114,12 +114,12 @@ class Polygon: public Primitive {
     }
 };
 
-class Composite: public Primitive {
+class Composite  {
     std::vector<std::shared_ptr<Primitive> > elements;
     Attributes attrs;
     bool drawConvexHull;   // Draw convex hull rather than actual points
 public:
-    Composite(const Attributes _attrs, bool _hull=false): Primitive(Color(1,1,1)) {attrs=_attrs; drawConvexHull=_hull; }
+    Composite(const Attributes _attrs, bool _hull=false) {attrs=_attrs; drawConvexHull=_hull; }
     // Number of primitives
     int getNumElements() const { return elements.size(); }
 
@@ -147,7 +147,7 @@ public:
 
 
 class Drawing {
-    std::vector<std::shared_ptr<Primitive> > elements;
+    std::vector<std::shared_ptr<Composite> > elements;
     int frame;  // Frame number that this drawing corresponds to (or -1 if unknown)
     bool inComposite;
  public:
@@ -194,6 +194,7 @@ class Drawing {
     // Get a subset of the drawing containing only the given elements
     Drawing select(std::set<int> elements) const ;
 
+    bool isShapeOpen() const { return inComposite; };
 
     void append(std::shared_ptr<Primitive> prim) {
 	if (inComposite) {
@@ -221,7 +222,7 @@ class Drawing {
 	if (inComposite) {
 	    dbg("Drawing.shapeBegin",0) << "Was already in a composite with " << elements.back()->getNumElements()  << std::endl;
 	} else {
-	    append(std::shared_ptr<Primitive>(new Composite(attr,drawConvexHull)));
+	    elements.push_back(std::shared_ptr<Composite>(new Composite(attr,drawConvexHull)));
 	    inComposite=true;
 	}
     }
@@ -237,7 +238,7 @@ class Drawing {
     // Append another drawing to this one 
     void append(const Drawing &d) {
 	for (int i=0;i<d.elements.size();i++)
-	    append(d.elements[i]);
+	    elements.push_back(d.elements[i]);
     }
 
     // Add a circle to current drawing
