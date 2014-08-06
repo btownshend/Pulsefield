@@ -128,7 +128,7 @@ static int range_handler(const char *path, const char *types, lo_arg **argv, int
 void OSCHandler::range(int id, int frame, int sec, int usec, int echo, int nmeasure, lo_blob data) {
     dbg("OSCHandler.range",3) << "Got range(id=" << id << ", frame=" << frame << ", T=(" << sec << "," << usec << "), echo=" << echo << ", n=" << nmeasure << ", blob size=" << lo_blob_datasize(data) << std::endl;
     if (lo_blob_datasize(data) != nmeasure*sizeof(float)) {
-	dbg("OSCHandler.range",1) << "Unexpected blob size: " << lo_blob_datasize(data) << " (expected " << nmeasure*sizeof(float) << ")" << std::endl;
+	dbg("OSCHandler.range",0) << "Unexpected blob size: " << lo_blob_datasize(data) << " (expected " << nmeasure*sizeof(float) << ")" << std::endl;
 	return;
     }
     if (echo==0) {
@@ -247,7 +247,7 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 OSCHandler::~OSCHandler() {
     int rc=pthread_cancel(incomingThread);
     if (rc)
-	dbg("OSCHandler",1) << "pthread_cancel failed with error code " << rc << std::endl;
+	dbg("OSCHandler",0) << "pthread_cancel failed with error code " << rc << std::endl;
     lo_server_free(s);
 }
 
@@ -356,11 +356,11 @@ void OSCHandler::setDensity(float d ) {
 void OSCHandler::cellBegin(int uid) {
     dbg("OSCHandler.cellBegin",3) << "UID " << uid << std::endl;
     if (drawTarget!=NONE) {
-	dbg("OSCHandler.cellBegin",1) << "Already drawing to a target: " <<  drawTarget << "; switching to CELL" << std::endl;
+	dbg("OSCHandler.cellBegin",0) << "Already drawing to a target: " <<  drawTarget << "; switching to CELL" << std::endl;
     }
 	
     if (cellDrawing.getNumElements() > 0) {
-	dbg("OSCHandler.cellBegin",1) << "Cell drawing is not empty - clearing" << std::endl;
+	dbg("OSCHandler.cellBegin",0) << "Cell drawing is not empty - clearing" << std::endl;
 	cellDrawing.clear();
     }
     drawTarget=CELL;
@@ -369,7 +369,7 @@ void OSCHandler::cellBegin(int uid) {
 void OSCHandler::cellEnd(int uid) {
     dbg("OSCHandler.cellEnd",3) << "UID " << uid << std::endl;
     if (drawTarget!=CELL) {
-	dbg("OSCHandler.cellEnd",1) << "Not in CELL drawing state" << std::endl;
+	dbg("OSCHandler.cellEnd",0) << "Not in CELL drawing state" << std::endl;
 	return;
     }
 	
@@ -381,13 +381,13 @@ void OSCHandler::cellEnd(int uid) {
 void OSCHandler::conxBegin(const char *cid) {
     dbg("OSCHandler.conxBegin",3) << "CID " << cid << std::endl;
     if (drawTarget!=NONE) {
-	dbg("OSCHandler.conxBegin",1) << "Already drawing to a target: " <<  drawTarget << "; switching to CONX" << std::endl;
+	dbg("OSCHandler.conxBegin",0) << "Already drawing to a target: " <<  drawTarget << "; switching to CONX" << std::endl;
     }
     if (!Connections::instance()->connectionExists(cid))
-	dbg("OSCHandler.conxBegin",1) << "CID " << cid << " does not exist" << std::endl;
+	dbg("OSCHandler.conxBegin",0) << "CID " << cid << " does not exist" << std::endl;
 
     if (conxDrawing.getNumElements() > 0) {
-	dbg("OSCHandler.conxBegin",1) << "Drawing is not empty - clearing" << std::endl;
+	dbg("OSCHandler.conxBegin",0) << "Drawing is not empty - clearing" << std::endl;
 	conxDrawing.clear();
     }
     drawTarget=CONX;
@@ -396,11 +396,11 @@ void OSCHandler::conxBegin(const char *cid) {
 void OSCHandler::conxEnd(const char *cid) {
     dbg("OSCHandler.conxEnd",3) << "CID " << cid << std::endl;
     if (drawTarget!=CONX) {
-	dbg("OSCHandler.conxEnd",1) << "Not in CONX drawing state" << std::endl;
+	dbg("OSCHandler.conxEnd",0) << "Not in CONX drawing state" << std::endl;
 	return;
     }
     if (!Connections::instance()->connectionExists(cid)) {
-	dbg("OSCHandler.conxEnd",1) << "CID " << cid << " does not exist" << std::endl;
+	dbg("OSCHandler.conxEnd",0) << "CID " << cid << " does not exist" << std::endl;
     } else
 	Connections::setVisual(cid,conxDrawing);
     conxDrawing.clear();
@@ -424,10 +424,10 @@ void OSCHandler::shapeEnd() {
 void OSCHandler::bgBegin() {
     dbg("OSCHandler.bgBegin",3) << "bgBegin" << std::endl;
     if (drawTarget!=NONE) {
-	dbg("OSCHandler.bgBegin",1) << "Already drawing to a target: " <<  drawTarget << "; switching to BACKGROUND" << std::endl;
+	dbg("OSCHandler.bgBegin",0) << "Already drawing to a target: " <<  drawTarget << "; switching to BACKGROUND" << std::endl;
     }
     if (bgDrawing.getNumElements() > 0) {
-	dbg("OSCHandler.bgBegin",1) << "Drawing is not empty - clearing" << std::endl;
+	dbg("OSCHandler.bgBegin",0) << "Drawing is not empty - clearing" << std::endl;
 	bgDrawing.clear();
     }
     drawTarget=BACKGROUND;
@@ -436,7 +436,7 @@ void OSCHandler::bgBegin() {
 void OSCHandler::bgEnd() {
     dbg("OSCHandler.bgEnd",3) << "bgEnd"<< std::endl;
     if (drawTarget!=BACKGROUND) {
-	dbg("OSCHandler.bgEnd",1) << "Not in BACKGROUND drawing state" << std::endl;
+	dbg("OSCHandler.bgEnd",0) << "Not in BACKGROUND drawing state" << std::endl;
 	return;
     }
     lasers->setVisual(bgDrawing);
@@ -452,7 +452,7 @@ Drawing *OSCHandler::currentDrawing() {
     else if (drawTarget==BACKGROUND)
 	return &bgDrawing;
     else {
-	dbg("OSCHandler.currentDrawing",1) << "No current drawing set" << std::endl;
+	dbg("OSCHandler.currentDrawing",0) << "No current drawing set" << std::endl;
 	return NULL;
     }	
 }
@@ -489,7 +489,7 @@ void OSCHandler::svgfile(std::string filename,Point origin, float scaling,float 
 
 void OSCHandler::cubic(Point p1, Point p2, Point p3, Point p4) {
     if (p1==p2 && p2==p3 && p3==p4) {
-	dbg("OSCHandler.cubic",1) << "Cubic with identical points at  " << p1 << " ignored" << std::endl;
+	dbg("OSCHandler.cubic",0) << "Cubic with identical points at  " << p1 << " ignored" << std::endl;
 	return;
     }
     Drawing *d=currentDrawing();
@@ -499,11 +499,11 @@ void OSCHandler::cubic(Point p1, Point p2, Point p3, Point p4) {
 
 void OSCHandler::map(int unit,  int pt, Point devpt, Point floorpt) {
     if (unit<0 || unit>=(int)lasers->size()) {
-	dbg("OSCHandler.map",1)  << "Bad unit: " << unit << std::endl;
+	dbg("OSCHandler.map",0)  << "Bad unit: " << unit << std::endl;
 	return;
     }
     if (pt<0 || pt>3) {
-	dbg("OSCHandler.map",1)  << "Invalid point: " << pt << std::endl;
+	dbg("OSCHandler.map",0)  << "Invalid point: " << pt << std::endl;
 	return;
     }
     

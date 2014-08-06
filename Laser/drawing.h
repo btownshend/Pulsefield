@@ -195,12 +195,12 @@ class Drawing {
 	if (inComposite) {
 	    // Append to current composite 
 	    if (elements.size()==0) {
-		dbg("Drawing.append",1) << "inComposite but no elements" << std::endl;
+		dbg("Drawing.append",0) << "inComposite but no elements" << std::endl;
 		inComposite=false;
 	    } else {
 		std::shared_ptr<Composite> c=std::dynamic_pointer_cast<Composite>(elements.back());
 		if (c==std::shared_ptr<Composite>()) {
-		    dbg("Drawing.append",1) << "Last element is not a composite" << std::endl;
+		    dbg("Drawing.append",0) << "Last element is not a composite" << std::endl;
 		    inComposite=false;
 		} else {
 		    c->append(prim);
@@ -215,7 +215,7 @@ class Drawing {
     void shapeBegin(const Attributes &attr, bool drawConvexHull=false) {
 	dbg("Drawing.shapeBegin",3) << "begin shape with " << attr.size() << " attributes" << std::endl;
 	if (inComposite) {
-	    dbg("Drawing.shapeBegin",1) << "Was already in a composite -- ignoring" << std::endl;
+	    dbg("Drawing.shapeBegin",0) << "Was already in a composite with " << elements.back()->getNumElements()  << std::endl;
 	} else {
 	    append(std::shared_ptr<Primitive>(new Composite(attr,drawConvexHull)));
 	    inComposite=true;
@@ -223,9 +223,9 @@ class Drawing {
     }
 
     void shapeEnd() {
-	dbg("Drawing.shapeBegin",3) << "end shape" << std::endl;
+	dbg("Drawing.shapeEnd",3) << "end shape" << std::endl;
 	if (!inComposite) {
-	    dbg("Drawing.shapeBegin",1) << "Was not in a composite -- ignoring" << std::endl;
+	    dbg("Drawing.shapeEnd",0) << "Was not in a composite -- ignoring" << std::endl;
 	} else 
 	    inComposite=false;
     }
