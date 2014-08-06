@@ -39,6 +39,7 @@ protected:
 
     virtual void translate(Point t) = 0; 
 
+    Color getColor() const { return c; }
 };
 
 class Circle: public Primitive {
