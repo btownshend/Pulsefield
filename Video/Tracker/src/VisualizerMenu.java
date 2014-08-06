@@ -22,7 +22,7 @@ public class VisualizerMenu extends VisualizerDot {
 	static final float SELECTION_DISTANCE = 0.2f;
 	
 	/** Set of items currently being displayed. */
-	HashSet<MenuItem> menuItems = new HashSet<>();
+	HashSet<MenuItem> menuItems = new HashSet<MenuItem>();
 	
 	
 	VisualizerMenu(PApplet parent) {
@@ -34,7 +34,7 @@ public class VisualizerMenu extends VisualizerDot {
 	
 	/** Return next visualizer to serve up.  -1 indicates the special 'more' menu category */
 	private HashSet<Integer> getNextVisualizerIndexSet() {
-		HashSet<Integer> results = new HashSet<>();
+		HashSet<Integer> results = new HashSet<Integer>();
 		while(true) {
 			results.add(nextVisualizerIndex++);
 			// If we reached the end of the list, we stop adding.
@@ -62,7 +62,7 @@ public class VisualizerMenu extends VisualizerDot {
 	 */
 	private void initializeItems(PApplet parent, People p) {
 		menuItems.clear();
-		HashSet<PVector> allPositions = new HashSet<>();
+		HashSet<PVector> allPositions = new HashSet<PVector>();
 		
 		for (Person ps: p.pmap.values()) { 
 			for (Leg leg : ps.legs) {
@@ -139,12 +139,16 @@ public class VisualizerMenu extends VisualizerDot {
 	@Override
 	public void drawLaser(PApplet parent, People p) {
 		super.drawLaser(parent,p);
+		Laser laser = Laser.getInstance();
+		laser.bgBegin();
 		for(MenuItem item : menuItems) {
-			Laser laser = Laser.getInstance();
-			laser.bgBegin();
-			laser.circle(item.position.x, item.position.y, SELECTION_DISTANCE);
-			laser.bgEnd();
+			if (item.name=="Ableton")
+				laser.svgfile("appAbleton.svg",item.position.x, item.position.y, SELECTION_DISTANCE,0.0f);
+			else
+				laser.circle(item.position.x, item.position.y, SELECTION_DISTANCE);
+//			PApplet.println("Circle at "+item.position)
 		}
+		laser.bgEnd();
 	}
 }
 
