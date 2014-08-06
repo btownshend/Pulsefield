@@ -119,6 +119,9 @@ class Composite: public Primitive {
     bool drawConvexHull;   // Draw convex hull rather than actual points
 public:
     Composite(const Attributes _attrs, bool _hull=false): Primitive(Color(1,1,1)) {attrs=_attrs; drawConvexHull=_hull; }
+    // Number of primitives
+    int getNumElements() const { return elements.size(); }
+
     void append(std::shared_ptr<Primitive> p) { elements.push_back(p); }
     // Convert into a vector of points (actually segments), inserts a single blank point for moves
     std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
