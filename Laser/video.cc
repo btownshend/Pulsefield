@@ -563,6 +563,7 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	 cairo_arc(cr,laserPos.X(),laserPos.Y(),5*pixel,0,2*M_PI);
 	 cairo_stroke(cr);
 
+	 if (false) {
 	 // Draw coverage area of laser
 	 // Translate to center
 	 Point worldBL=transform.flatToWorld(Point(transform.getMinX(), transform.getMinY()));
