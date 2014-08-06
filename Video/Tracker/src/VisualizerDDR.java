@@ -202,7 +202,7 @@ public class VisualizerDDR extends Visualizer {
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
 			Person p=allpos.get(id);
-			PVector offset = d.current;
+			PVector offset=new PVector(d.current.x,d.current.y);
 			offset.sub(d.neutral);
 			float angle=offset.heading();
 			float dist=offset.mag();
@@ -320,7 +320,7 @@ public class VisualizerDDR extends Visualizer {
 		for (int id: dancers.keySet()) {
 			laser.cellBegin(id);
 			Dancer d=dancers.get(id);
-			PVector offset = d.current;
+			PVector offset=new PVector(d.current.x,d.current.y);
 			offset.sub(d.neutral);
 			float angle=offset.heading();
 			int quad=(int)Math.round(angle/(Math.PI/2));
