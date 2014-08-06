@@ -235,8 +235,13 @@ public class Tracker extends PApplet {
 			mouseVel.set(0f,0f);
 		}
 		prevMousePressed=mousePressed;
-
-
+		PVector menuHotSpot = new PVector(2, 1);
+		for(Person p : people.pmap.values()) {
+			PVector location = p.getOriginInMeters();
+			if(PVector.sub(location, menuHotSpot).mag() < 0.5) {
+				setapp(13);
+			}
+		}
 
 		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);
