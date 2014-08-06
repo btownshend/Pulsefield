@@ -70,6 +70,7 @@ public class VisualizerDDR extends Visualizer {
 	Simfile sf;
 	long startTime;
 	PImage arrow;   // Left pointing arrow
+	PShape dancer;
 	Song cursong=null;
 	final float DOTSIZE=50f;
 	boolean active=false;
@@ -80,6 +81,8 @@ public class VisualizerDDR extends Visualizer {
 		super();
 		dancers = new HashMap<Integer, Dancer>();
 		arrow = parent.loadImage("arrow3.png");
+		dancer=parent.loadShape("dancer4.svg");
+		assert(dancer!=null);
 		songs=null;  // Initialize in start()
 	}
 
@@ -208,10 +211,13 @@ public class VisualizerDDR extends Visualizer {
 			parent.translate((d.neutral.x+1)*wsize.x/2,(d.neutral.y+1)*wsize.y/2);
 			parent.fill(p.getcolor(parent));
 			parent.ellipse(0,0,DOTSIZE,DOTSIZE);
-			parent.rotate((float)(quad*Math.PI/2+Math.PI));
-			parent.translate(-ARROWDIST, 0);
-			if (dist >= MINMOVEDIST)
+//			PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
+			if (dist >= MINMOVEDIST) {
+				parent.rotate((float)(quad*Math.PI/2+Math.PI));
+				parent.translate(-ARROWDIST, 0);
 				parent.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
+			} else
+				parent.shape(dancer, 0, 0, ARROWSIZE, ARROWSIZE);
 			parent.popMatrix();
 		}
 	}
