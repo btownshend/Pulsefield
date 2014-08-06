@@ -16,10 +16,10 @@ public class VisualizerMenu extends VisualizerDot {
 	static final int ITEMS_PER_SCREENFUL = 5;
 	
 	/** Minimum distance from item to person/other item when initializing (in meters). */
-	static final float MIN_DISTANCE = 0.5f;
+	static final float MIN_DISTANCE = 1.0f;
 	
 	/** How far a person needs to be to be able to select the menu item (in meters). */
-	static final float SELECTION_DISTANCE = 0.2f;
+	static final float SELECTION_DISTANCE = 0.5f;
 	
 	/** Set of items currently being displayed. */
 	HashSet<MenuItem> menuItems = new HashSet<>();
@@ -57,10 +57,9 @@ public class VisualizerMenu extends VisualizerDot {
 	 * items so that they are distanced from people and each other.  Any existing positions are
 	 * cleared.
 	 * 
-	 * @param parent
 	 * @param p Current people on the board.
 	 */
-	private void initializeItems(PApplet parent, People p) {
+	private void initializeItems(People p) {
 		menuItems.clear();
 		HashSet<PVector> allPositions = new HashSet<>();
 		
@@ -99,10 +98,10 @@ public class VisualizerMenu extends VisualizerDot {
 	@Override
 	public void update(PApplet parent, People p) {
 		// Initialize menu items if necessary
-		if (menuItems.size() == 0) {
-			initializeItems(parent, p);
+		if(menuItems.isEmpty()) {
+			initializeItems(p);
 		}
-
+		
 		person:
 		for(Person ps: p.pmap.values()) { 
 			for(Leg leg : ps.legs) {
@@ -113,7 +112,7 @@ public class VisualizerMenu extends VisualizerDot {
 						if(item.visualizer != -1) {
 							((Tracker)parent).setapp(item.visualizer);
 						} else {
-							initializeItems(parent, p);
+							initializeItems(p);
 						}
 						break person;
 					}
@@ -126,6 +125,8 @@ public class VisualizerMenu extends VisualizerDot {
 	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
 		parent.ellipseMode(PConstants.CENTER);
+		parent.fill(0xffffffff,255);
+		parent.stroke(0xffffffff,255);
 		parent.textAlign(PConstants.CENTER, PConstants.CENTER);
 		parent.textSize(50);
 		for(MenuItem item : menuItems) {
@@ -145,6 +146,12 @@ public class VisualizerMenu extends VisualizerDot {
 			laser.circle(item.position.x, item.position.y, SELECTION_DISTANCE);
 			laser.bgEnd();
 		}
+	}
+	
+	@Override
+	public void start() {
+		super.start();
+		menuItems.clear();
 	}
 }
 
