@@ -265,4 +265,8 @@ class Drawing {
 	pts[0]=p1;pts[1]=p2;pts[2]=p3;pts[3]=p4;
 	append(std::shared_ptr<Primitive>(new Cubic(pts,c)));
     }
+
+    void drawPath(std::vector<Point> pts, Color c) {
+	append(std::shared_ptr<Primitive>(new Path(pts,c)));
+    }
 };

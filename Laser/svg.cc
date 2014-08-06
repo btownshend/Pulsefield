@@ -46,7 +46,7 @@ void SVG::addToDrawing(Drawing &d,Point origin, float scale, float rotateDeg, Co
 		p=p.rotateDegrees(rotateDeg);  // Rotate around center
 		pts.push_back(p*scale+origin); // Scale and translate to desired location
 	    }
-	    d.append(std::shared_ptr<Primitive>(new Path(pts,c)));
+	    d.drawPath(pts,c);
 	    npaths++;
 	}
 	nshapes++;
