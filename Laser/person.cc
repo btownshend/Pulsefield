@@ -143,7 +143,7 @@ void Person::draw(Drawing &d) const  {
 	drawLegs(d);
     }
     if (visual!=nullptr) {
-	dbg("Person.draw",1) << "Drawing visual with " << visual->getNumElements() << " elements on drawing with " << d.getNumElements() << " elements" << std::endl;
+	dbg("Person.draw",1) << "Drawing visual with " << visual->getNumElements() << " elements on drawing with " << d.getNumElements() << " elements at " << position << std::endl;
 	Drawing viscopy(*visual);
 	viscopy.translate(position);
 	d.append(viscopy);

@@ -52,5 +52,5 @@ void SVG::addToDrawing(Drawing &d,Point origin, float scale, float rotateDeg, Co
 	nshapes++;
     }
     d.shapeEnd();
-    dbg("SVG.addToDrawing",1) << "Added SVG with " << nshapes << " shapes containing a total of " << npaths << " paths" << std::endl;
+    dbg("SVG.addToDrawing",1) << "Added SVG at " << origin << " with " << nshapes << " shapes containing a total of " << npaths << " paths" << std::endl;
 }

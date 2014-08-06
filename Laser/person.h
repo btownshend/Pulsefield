@@ -100,9 +100,10 @@ public:
     static void draw(Drawing &d)  { instance()->draw_impl(d); }
     // Set the drawing commands to image a person rather than using internal drawing routines
     static void setVisual(int uid, const Drawing &d) {
-	if (personExists(uid))
+	if (personExists(uid)) {
+	    dbg("People.setVisual",1) << "Adding visual for ID " << uid << std::endl;
 	    instance()->p.at(uid).setVisual(d);
-	else {
+	} else {
 	    dbg("People.setVisual",1) << "Missing ID " << uid << std::endl;
 	}
     }
