@@ -203,6 +203,10 @@ public class VisualizerDDR extends Visualizer {
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
 			Person p=allpos.get(id);
+			if (p==null) {
+				PApplet.println("drawPF: Person "+id+" not found");
+				continue;
+			}
 			PVector offset=new PVector(d.current.x,d.current.y);
 			offset.sub(d.neutral);
 			float angle=offset.heading();
