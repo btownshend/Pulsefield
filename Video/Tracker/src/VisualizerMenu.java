@@ -143,10 +143,7 @@ public class VisualizerMenu extends VisualizerDot {
 		Laser laser = Laser.getInstance();
 		laser.bgBegin();
 		for(MenuItem item : menuItems) {
-			if (item.name=="Ableton")
-				laser.svgfile("appAbleton.svg",item.position.x, item.position.y, SELECTION_DISTANCE,0.0f);
-			else
-				laser.circle(item.position.x, item.position.y, SELECTION_DISTANCE);
+			laser.circle(item.position.x, item.position.y, SELECTION_DISTANCE);
 //			PApplet.println("Circle at "+item.position)
 		}
 		laser.bgEnd();
