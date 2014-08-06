@@ -158,6 +158,17 @@ Point Transform::deviceToFlat(Point devPt) const {
 
 // Solve y=theta/cos(theta) for theta
 static float unmap(float y) {
+    static std::map<int,float> cache;
+    static int cnt=0,misses=0;
+    
+    int yi=(int)(y*10000);
+    cnt++;
+    if (cache.count(yi)>0)
+	return cache[yi];
+    misses++;
+    if (misses%1000 == 0)
+	std::cout << "Cache stats:  cnt=" << cnt << ", misses=" << misses << " hit rate=" << 100-misses*100/cnt << std::endl;
+
     static const float TOL=.00001;
     int i;
     float theta1=-M_PI/2, theta2=M_PI/2;
@@ -165,7 +176,7 @@ static float unmap(float y) {
     for (i=0;i<100;i++) {	// Iterate to find final solution
 	theta=(theta1+theta2)/2;
 	float yhat=theta/cos(theta);
-	dbg("Transform.umap",11) << "i=" << i << ", theta=" <<theta << ", yhat=" << yhat << std::endl;
+	dbg("Transform.unmap",11) << "i=" << i << ", theta=" <<theta << ", yhat=" << yhat << std::endl;
 	if (yhat<y)
 	    theta1=theta;
 	else
@@ -176,6 +187,7 @@ static float unmap(float y) {
     if (i==100) {
 	dbg("Transform.unmap",1) << "Failed to converge:  y=" << y << ", theta=" << theta << std::endl;
     }
+    cache[yi]=theta;
     return theta;
 }
 
