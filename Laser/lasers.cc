@@ -85,6 +85,7 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 	static const float depth=6.5;
 	static const float radius=0.1;
 
+	drawing.shapeBegin(Attributes());
 	float minx=-width/2+0.5f,maxx=width/2-0.5f,miny=0.5f,maxy=depth-0.5f;
 	float xstep=(maxx-minx)/(ngrid-1);
 	float ystep=(maxy-miny)/(ngrid-1);
@@ -95,6 +96,7 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 		drawing.drawCircle(Point(x,y),radius,Color(0.0,1.0,0.0));
 	    }
 	}
+	drawing.shapeEnd();
 	dbg("Lasers.render",1) << "After adding allocation test pattern, have " << drawing.getNumElements() << " elements." << std::endl;
     }
 
@@ -108,6 +110,7 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
     const Color gridColor=Color(0.0,1.0,0.0);
 
     if (getFlag("background") && ranges.size()>0) {
+	globalDrawing.shapeBegin(Attributes());
 	for (int i=0;i<ranges.size();i++) {
 	    Point p=ranges.getPoint(i);
 	    if (bounds.contains(p)) {
@@ -118,6 +121,7 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 		globalDrawing.drawLine(p1,p2,bgColor);
 	    }
 	}
+	globalDrawing.shapeEnd();
     }
     if (getFlag("alignment") && background.size()>0)  {
 	// TODO: Draw alignment pattern
@@ -128,6 +132,7 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 	float lastBgRange=background[0].norm();
 	int inTargetCnt=0;
 	float tgtRange=0;
+	globalDrawing.shapeBegin(Attributes());
 	for (int i=0;i<background.size();i++) {
 	    float range=background[i].norm();
 	    dbg("Laser.showAlignment",10) <<  "i=" << i << ", range=" << range << ", inTargetCnt=" << inTargetCnt << std::endl;
@@ -162,6 +167,7 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 	      lastBgRange=range;
 	    }
 	}
+	globalDrawing.shapeEnd();
     }
     if (getFlag("grid")) {
 	int ngrid=7;
@@ -170,6 +176,7 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 	float depth=6;
 	float minx=-width/2+0.5f,maxx=width/2-0.5f,miny=0.5f,maxy=depth-0.5f;
 	float xstep=(maxx-minx)/(ngrid-1);
+	globalDrawing.shapeBegin(Attributes());
 	for (int i=0;i<ngrid;i++) {
 	    float x=minx+i*xstep;
 	    globalDrawing.drawLine(Point(x,miny),Point(x,maxy),gridColor);
@@ -191,6 +198,7 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 	    if (y+2*ystep<=maxy)
 		globalDrawing.drawLine(Point(minx,y+ystep),Point(minx,y+2*ystep),gridColor);
 	}
+	globalDrawing.shapeEnd();
     }
     for (unsigned int i=0;i<lasers.size();i++) {
 	if (getFlag("outline") && lasers[i]->isEnabled()) {

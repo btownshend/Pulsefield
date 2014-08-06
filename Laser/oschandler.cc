@@ -364,6 +364,7 @@ void OSCHandler::cellBegin(int uid) {
 	cellDrawing.clear();
     }
     drawTarget=CELL;
+    shapeBegin();
 }
 
 void OSCHandler::cellEnd(int uid) {
@@ -373,6 +374,7 @@ void OSCHandler::cellEnd(int uid) {
 	return;
     }
 	
+    shapeEnd();
     People::setVisual(uid,cellDrawing);
     cellDrawing.clear();
     drawTarget=NONE;
@@ -391,6 +393,7 @@ void OSCHandler::conxBegin(const char *cid) {
 	conxDrawing.clear();
     }
     drawTarget=CONX;
+    shapeBegin();
 }
 
 void OSCHandler::conxEnd(const char *cid) {
@@ -399,6 +402,7 @@ void OSCHandler::conxEnd(const char *cid) {
 	dbg("OSCHandler.conxEnd",0) << "Not in CONX drawing state" << std::endl;
 	return;
     }
+    shapeEnd();
     if (!Connections::instance()->connectionExists(cid)) {
 	dbg("OSCHandler.conxEnd",0) << "CID " << cid << " does not exist" << std::endl;
     } else
@@ -421,6 +425,7 @@ void OSCHandler::shapeEnd() {
 	d->shapeEnd();
 }
 
+// Start accumulating drawing commands into 'background' drawing;  starts with clear drawing
 void OSCHandler::bgBegin() {
     dbg("OSCHandler.bgBegin",3) << "bgBegin" << std::endl;
     if (drawTarget!=NONE) {
@@ -431,14 +436,19 @@ void OSCHandler::bgBegin() {
 	bgDrawing.clear();
     }
     drawTarget=BACKGROUND;
+    // Start a composite shape by default -- client can also start new shapes if needed (as long as first composite is empty)
+    shapeBegin();
 }
 
+// Finished with background drawing, save in lasers as visual until updated again
 void OSCHandler::bgEnd() {
     dbg("OSCHandler.bgEnd",3) << "bgEnd"<< std::endl;
     if (drawTarget!=BACKGROUND) {
 	dbg("OSCHandler.bgEnd",0) << "Not in BACKGROUND drawing state" << std::endl;
 	return;
     }
+    // End the composite if hasn't already been explicitly ended
+    shapeEnd();
     lasers->setVisual(bgDrawing);
     bgDrawing.clear();
     drawTarget=NONE;
