@@ -158,6 +158,24 @@ void World::draw(const Vis *vis) const {
      cairo_line_to(cr, getMinX(), getMinY());
      cairo_stroke(cr);
 
+     // Draw people
+     cairo_set_line_width(cr,2*pixel);
+     for (int j=0;j<people.size();j++) {
+	 if (people[j].getAge() >= AGETHRESHOLD) {
+	     for (int i=0;i<2;i++) {
+		 const Point &leg=people[j].getLeg(i).getPosition();
+		 if (i==0)
+		     cairo_set_source_rgb (cr, 0.0, 1.0, 0.0);
+		 else
+		     cairo_set_source_rgb (cr, 0.0, 0.0, 1.0);
+		 cairo_new_sub_path(cr);
+		 cairo_arc(cr,leg.X(), leg.Y(),people[j].getLegStats().getDiam()/2.0,0.0,2*M_PI);
+		 cairo_close_path(cr);
+		 cairo_stroke(cr);
+	     }
+	 }
+     }
+
      // Draw background
      float scanRes = bg.getScanRes()*M_PI/180;
      cairo_set_line_width(cr,1*pixel);
@@ -180,24 +198,6 @@ void World::draw(const Vis *vis) const {
 		 cairo_line_to(cr, p3.X(), p3.Y());
 		 cairo_line_to(cr, p4.X(), p4.Y());
 		 cairo_line_to(cr, p1.X(), p1.Y());
-		 cairo_stroke(cr);
-	     }
-	 }
-     }
-
-     // Draw people
-     cairo_set_line_width(cr,2*pixel);
-     for (int j=0;j<people.size();j++) {
-	 if (people[j].getAge() >= AGETHRESHOLD) {
-	     for (int i=0;i<2;i++) {
-		 const Point &leg=people[j].getLeg(i).getPosition();
-		 if (i==0)
-		     cairo_set_source_rgb (cr, 0.0, 1.0, 0.0);
-		 else
-		     cairo_set_source_rgb (cr, 0.0, 0.0, 1.0);
-		 cairo_new_sub_path(cr);
-		 cairo_arc(cr,leg.X(), leg.Y(),people[j].getLegStats().getDiam()/2.0,0.0,2*M_PI);
-		 cairo_close_path(cr);
 		 cairo_stroke(cr);
 	     }
 	 }
