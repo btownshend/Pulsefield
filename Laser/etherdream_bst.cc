@@ -376,6 +376,7 @@ static int check_data_response(struct etherdream *d) {
 	conn->dc_begin_sent = 0;
 
     if (conn->resp.command == 'd') {
+	dbg("Etherdream.check_data_response",10) << "prod=" << conn->ackbuf_prod << ", cons= " << conn->ackbuf_cons << ", pending=" << conn->pending_meta_acks << std::endl;
 	if (conn->ackbuf_prod == conn->ackbuf_cons) {
 	    dbg("Etherdream.check_data_response",0) <<  "Protocol error: unexpected data ack (" << conn->ackbuf_prod << " != " << conn->ackbuf_cons << ")" << std::endl;
 	    std::cerr <<  "Protocol error: unexpected data ack (" << conn->ackbuf_prod << " != " << conn->ackbuf_cons << ")" << std::endl;
@@ -478,12 +479,17 @@ static int dac_send_data(struct etherdream *d, struct dac_point *data,
 			8 + npoints * sizeof(struct dac_point))) < 0)
 	return res;
 
+    if (d->conn.ackbuf_cons == (d->conn.ackbuf_prod + 1) % MAX_LATE_ACKS)  {
+	dbg("Etherdream.dac_send_data",0) << "Overrun of ACK buffer" << std::endl;
+	assert(0);
+    }
     /* Expect two ACKs */
     d->conn.pending_meta_acks++;
     d->conn.ackbuf[d->conn.ackbuf_prod] = npoints;
     d->conn.ackbuf_prod = (d->conn.ackbuf_prod + 1) % MAX_LATE_ACKS;
     d->conn.unacked_points += npoints;
-
+    dbg("Etherdream.dac_send_data",10) <<  "prod=" << d->conn.ackbuf_prod << ", cons= " << d->conn.ackbuf_cons << ", pending=" << d->conn.pending_meta_acks << std::endl;
+ 
     return 0;
 }
 
