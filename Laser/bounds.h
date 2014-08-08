@@ -1,6 +1,6 @@
 #pragma once
 
-#include "point.h"
+#include "cpoint.h"
 
 // Class to deal with a rectangular bounds
 class Bounds {

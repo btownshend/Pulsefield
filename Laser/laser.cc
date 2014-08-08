@@ -8,6 +8,7 @@
 #include "dbg.h"
 #include "point.h"
 #include "drawing.h"
+#include "ranges.h"
 
 const int Laser::MAXDEVICEVALUE=32767;
 const int Laser::MINDEVICEVALUE=-32768;
@@ -106,7 +107,7 @@ std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdr
     static const int MINBLANKDIST=50;    // Minimum distance to bother with blanking (maps to about 1cm at 80deg FOV, 10m distance)
     std::vector<etherdream_point>  result;
     if (initial.r==0 &&initial.g==0 && initial.b==0 && final.r==0 &&final.g==0 && final.b==0) {
-	dbg("Laser.getBlanks",2) << "No blanks needed; initial or final are already blanked" << std::endl;
+	dbg("Laser.getBlanks",2) << "No blanks needed; initial and final are already blanked" << std::endl;
 	return result;
     }
     // Calculate distance in device coords
@@ -124,7 +125,7 @@ std::vector<etherdream_point> Laser::getBlanks(etherdream_point initial, etherdr
 
 // Convert drawing into a set of etherdream points
 // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
-void Laser::render(const Drawing &drawing, const Bounds &bounds) {
+void Laser::render(const Drawing &drawing) {
     if (d!=0) {
 	int fullness=etherdream_getfullness(d);
 	dbg("Laser.render",2) << "Fullness=" << fullness << std::endl;
@@ -136,16 +137,16 @@ void Laser::render(const Drawing &drawing, const Bounds &bounds) {
     if (showLaser && drawing.getNumElements()>0) {
 	float drawLength=drawing.getLength();
 	spacing=std::max(drawLength/npoints,targetSegmentLen);
-	pts = transform.mapToDevice(drawing.clipPoints(drawing.getPoints(spacing),bounds));
+	pts = transform.mapToDevice(drawing.getPoints(spacing).getPoints());
 	prune();
 	int nblanks=blanking();
 	float effDrawLength=(pts.size()-nblanks)*spacing;
 	dbg("Laser.render",2) << "Initial point count = " << pts.size() << " with " << nblanks << " blanks at a spacing of " << spacing << " for " << drawing.getNumElements() << " elements." << std::endl;
-	dbg("Laser.render",2) << "Total drawing length =" << drawLength << ", but effective length=" << effDrawLength << std::endl;
+	dbg("Laser.render",2) << "Total drawing length =" << drawLength << ", drawable length=" << effDrawLength << std::endl;
 
-	if (drawLength!=effDrawLength &&  pts.size() > nblanks+2) {
+	if (pts.size()>npoints &&  pts.size() > nblanks+2) {
 	    spacing=std::max(effDrawLength/(npoints-nblanks),targetSegmentLen);
-	    pts = transform.mapToDevice(drawing.clipPoints(drawing.getPoints(spacing),bounds));
+	    pts = transform.mapToDevice(drawing.getPoints(spacing).getPoints());
 	    prune();
 	    nblanks=blanking();
 	    dbg("Laser.render",2) << "Revised point count = " << pts.size() << " with " << nblanks << " blanks at a spacing of " << spacing << " for " << drawing.getNumElements() << " elements." << std::endl;
@@ -210,23 +211,22 @@ int Laser::blanking() {
     etherdream_point homepos;
     homepos.x=0;homepos.y=0;homepos.g=65535;
     etherdream_point prevpos=homepos;
-    bool jumped=true;
     int nblanks=0;
     for (unsigned int i=0;i<pts.size();i++) {
 	if (pts[i].r>0 || pts[i].g>0 || pts[i].b>0) {
-	    if (jumped) {
-		// Insert blanks from prevpoint to here
-		std::vector<etherdream_point> blanks = getBlanks(prevpos,pts[i]);
-		dbg("Laser.blanking",3) << "Adding " << blanks.size() << " blanks at position " << i << std::endl;
-		result.insert(result.end(), blanks.begin(), blanks.end());
-		nblanks+=blanks.size();
-		jumped=false;
-	    }
 	    result.push_back(pts[i]);
 	    prevpos=pts[i];
 	} else {
-	    // Blanking, mark 
-	    jumped=true;
+	    // Insert blanks from prevpoint to here
+	    std::vector<etherdream_point> blanks = getBlanks(prevpos,pts[i]);
+	    if (blanks.size() > 0) {
+		dbg("Laser.blanking",3) << "Adding " << blanks.size() << " blanks at position " << i << std::endl;
+		result.insert(result.end(), blanks.begin(), blanks.end());
+		nblanks+=blanks.size();
+		prevpos=pts[i];
+	    } else  {
+		dbg("Laser.blanking",3) << "No blanks needed at position " << i << std::endl;
+	    }
 	}
     }
     if (result.size()>0) {
@@ -379,3 +379,75 @@ void Laser::showOutline(const Bounds &b) {
 	dbgn("Lasers.showOutline",1) << pts[i].x << "," <<pts[i].y << "," <<pts[i].r << "," <<pts[i].g << "," <<pts[i].b << std::endl;
     update();
 }
+
+// Determine fraction of the object (in floor coordinates) is in the field of view of the given laser
+float Laser::fracOnScreen(const CPoints &cpts) const {
+    int viscnt=0;
+    const std::vector<CPoint> &pts=cpts.getPoints();
+    for (int i=0;i<pts.size();i++) {
+	Point devPt=transform.mapToDevice((Point)pts[i]);
+	if (transform.onScreen(devPt))
+	    viscnt++;
+    }
+    dbg("Laser.fracOnScreen",3) << viscnt << "/" << pts.size() << " point on screen" << std::endl;
+    return viscnt*1.0f/pts.size();
+}
+
+// Determine fraction of points (in floor coordinates) whose view from origin is obstructed by other objects
+// Only objects that are more than originGap from origin and more than targetGap from the point of interest are considered blockages
+float Laser::fracShadowed(const CPoints &cpts, const Ranges &ranges, float originGap, float targetGap) const {
+    Point origin=transform.getOrigin();
+    int shadowCnt=0;
+    const std::vector<CPoint> &pts=cpts.getPoints();
+    for (int i=0;i<pts.size();i++) {
+	if (ranges.isObstructed(origin,pts[i],originGap,targetGap))
+	    shadowCnt++;
+    }
+    dbg("Laser.fracShadowed",3) << "View from " << origin << " shadowed for " << shadowCnt << "/" << pts.size() << " points" << std::endl;
+    return shadowCnt*1.0f/pts.size();
+}
+
+// Remove shadowed points from a set of CPoints
+CPoints Laser::removeShadowed(const CPoints &cpts, const Ranges &ranges, float originGap, float targetGap) const {
+    CPoints result;
+    Point origin=transform.getOrigin();
+    const std::vector<CPoint> &pts=cpts.getPoints();
+    bool deleting=false;
+    for (int i=0;i<pts.size();i++) {
+	if (pts[i].getColor()==Color(0,0,0)) {
+	    // Blank
+	    result.push_back(pts[i]);
+	    deleting=false;  // No longer need to insert a blank when resuming
+	} else if (!ranges.isObstructed(origin,pts[i],originGap,targetGap)) {
+	    // Unobstructed
+	    if (deleting) {
+		// Add a soft blank after a deleted group
+		result.push_back(CPoint((Point)pts[i],Color(0,0,0)));
+		deleting=false;
+	    }
+	    result.push_back(pts[i]);
+	} else {
+	    // skip point
+	    deleting=true;
+	}
+    }
+    if (result.size()>0 && result.front().getColor()!=Color(0,0,0)) {
+	// Need a blank at the beginning
+	dbg("Laser.removeShadowed",0) << "No blank at beginning of " << result.size() << " points" << std::endl;
+    }
+    dbg("Laser.removeShadowed",3) << "View from " << origin << " reduced point count from " << cpts.size() << " to " << result.size() << std::endl;
+    return result;
+}
+
+// Compute mean distance of object from given point (typcial from laser origin or center of project)
+float Laser::meanDistance(const CPoints &cpts) const {
+    Point origin=transform.getOrigin();
+    float d=0;
+    const std::vector<CPoint> &pts=cpts.getPoints();
+    for (int i=0;i<pts.size();i++) {
+	d+=(origin-pts[i]).norm();
+    }
+    return d/pts.size();
+}
+
+

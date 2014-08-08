@@ -7,6 +7,7 @@
 #include "touchosc.h"
 
 class Drawing;
+class Ranges;
 
 class Laser: public DisplayDevice  {
  public:
@@ -60,7 +61,7 @@ class Laser: public DisplayDevice  {
 
     // Convert drawing into a set of etherdream points
     // Takes into account transformation to make all lines uniform brightness (i.e. separation of points is constant in floor dimensions)
-    void render(const Drawing &drawing, const Bounds &bounds);
+    void render(const Drawing &drawing);
     Color getLabelColor() const { return labelColor; }
     Color getMaxColor() const { return maxColor; }
     int getUnit() const { return unit; }
@@ -71,4 +72,15 @@ class Laser: public DisplayDevice  {
     void dumpPoints() const;
     void showTest();
     void showOutline(const Bounds &bounds);
+
+    // Determine fraction of the object (in floor coordinates) is in the field of view of the given laser
+    float fracOnScreen(const CPoints &cpts) const;
+    // Determine fraction of points (in floor coordinates) whose view from origin is obstructed by other objects
+    // Only objects that are more than originGap from origin and more than targetGap from the point of interest are considered blockages
+    float fracShadowed(const CPoints &cpts, const Ranges &ranges, float originGap, float targetGap) const;
+    // Remove shadowed points from a set of CPoints
+    CPoints removeShadowed(const CPoints &cpts, const Ranges &ranges, float originGap, float targetGap) const;
+    // Compute mean distance of object from given point (typcial from laser origin or center of project)
+    float meanDistance(const CPoints &cpts) const;
+
 };

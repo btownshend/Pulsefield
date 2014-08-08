@@ -5,6 +5,14 @@
 
 class Video;
 
+// Stats for imaging an object with a particular laser
+class LaserStat {
+ public:
+    float fracOnScreen;		// Fraction of object in laser's field of view
+    float fracShadowed;	// Fraction of object shadowed by other hits
+    float meanDistance;	// Mean distance from laser to object
+};
+
 class Lasers {
     static std::shared_ptr<Lasers> theInstance;   // Singleton
     std::vector<std::shared_ptr<Laser> > lasers;
@@ -18,7 +26,7 @@ class Lasers {
     pthread_mutex_t mutex;
 
     // Allocate to individual lasers
-    std::vector<Drawing> allocate(const Drawing &d,const Ranges &ranges) const;
+    std::vector<Drawing> allocate(Drawing &d,const Ranges &ranges) const;
 
     // Current frame
     int frame;
@@ -83,4 +91,7 @@ public:
 	dbg("Lasers.setVisual",1) << "Set bg visual to drawing with " << d.getNumElements() << " elements." << std::endl;
 	visual=std::shared_ptr<Drawing>(new Drawing(d));
     }
+
+    // Compute stats for allocation to lasers
+    std::vector<LaserStat> computeStats(const Composite &c, const Ranges &ranges) const;
 };

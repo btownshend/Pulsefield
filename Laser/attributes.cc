@@ -15,7 +15,7 @@ std::ostream &operator<<(std::ostream &s, const Attributes &attributes) {
     return s;
 }
 
-std::vector<CPoint> Attributes::applyMovements(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
+CPoints Attributes::applyMovements(std::string attrname, float attrValue,const CPoints &pts) const {
     dbg("Attributes.applyMovements",5) << "Attribute " << attrname << " enable=" << TouchOSC::getEnabled(attrname,"noise") << std::endl;
     float v=TouchOSC::getValue(attrname,"noise-amp",attrValue,0.0) * 0.5;
     float s=TouchOSC::getValue(attrname,"noise-scale",attrValue,0.5) * 5;
@@ -27,19 +27,19 @@ std::vector<CPoint> Attributes::applyMovements(std::string attrname, float attrV
     dbg("Attributes.applyMovements",5) << "Value=" << v << ", Scale=" << s << ", Phase=" << ph << ", Temporal=" << tx << "," << ty << std::endl;
     struct timeval now;
     gettimeofday(&now,0);
-    std::vector<CPoint> result(pts.size());
+    CPoints result;
     for (int i=0;i<pts.size();i++) {
 	Point np=pts[i]*s+ph;
 	np=np+Point(tx,ty)*(now.tv_sec%1000+now.tv_usec/1e6);
 	double noise1=Simplex::noise(np.X()*s,np.Y()*s)*v;
 	double noise2=Simplex::noise(np.X(),-np.Y())*v;
 	dbg("CPointMovement.apply",10) << "noise=[" << noise1 << "," << noise2 << "]" << std::endl;
-	result[i]=CPoint(pts[i].X()+noise1,pts[i].Y()+noise2,pts[i].getColor());
+	result.push_back(CPoint(pts[i].X()+noise1,pts[i].Y()+noise2,pts[i].getColor()));
     }
     return result;
 }
 
-std::vector<CPoint> Attributes::applyDashes(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
+CPoints Attributes::applyDashes(std::string attrname, float attrValue,const CPoints &pts) const {
     float onLength=TouchOSC::getValue(attrname,"dash-on",attrValue,0.0)*0.50;  // On-length in meters
     float offLength=TouchOSC::getValue(attrname,"dash-off",attrValue,0.5)*0.50;  // Off-length in meters
     float velocity=TouchOSC::getValue(attrname,"dash-vel",attrValue,0.0)*3.0;  // Dash-velocity in meters/s
@@ -48,7 +48,7 @@ std::vector<CPoint> Attributes::applyDashes(std::string attrname, float attrValu
     dbg("Attributes.applyDashes",5) << "On=" << onLength << ", off=" << offLength << ", vel=" << velocity << std::endl;
     struct timeval now;
     gettimeofday(&now,0);
-    std::vector<CPoint> result=pts;
+    CPoints result=pts;
     float totallen=onLength+offLength;
     float dist=fmod(((now.tv_sec+now.tv_usec/1e6)*velocity),totallen);
 
@@ -62,15 +62,11 @@ std::vector<CPoint> Attributes::applyDashes(std::string attrname, float attrValu
     return result;
 }
 
-float Attributes::getTotalLen(const std::vector<CPoint> &pts)  {
-    float totalLen=0;
-    for (int i=1;i<pts.size();i++) {
-	totalLen += (pts[i]-pts[i-1]).norm();
-    }
-    return totalLen;
+float Attributes::getTotalLen(const CPoints &pts)  {
+    return pts.getLength();
 }
 
-std::vector<CPoint> Attributes::applyMusic(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
+CPoints Attributes::applyMusic(std::string attrname, float attrValue,const CPoints &pts) const {
     static const int numShapes=6;
     float amplitude=TouchOSC::getValue(attrname,"music-amp",attrValue,0.0)*0.5;  // Amplitude
     float beat=TouchOSC::getValue(attrname,"music-beat",attrValue,1)*1.0;  // When in bar
@@ -81,7 +77,7 @@ std::vector<CPoint> Attributes::applyMusic(std::string attrname, float attrValue
 	return pts;
     float fracbar=Music::instance()->getFracBar();
 		    dbg("Attributes.applyMusic",2) << "Amp=" << amplitude << ", beat=" << beat << ", length=" << length << ",speed=" << speed << ", length=" << length << ", fracBar=" << fracbar << ", shape=" << shape <<  std::endl;
-    std::vector<CPoint> result=pts;
+    CPoints result=pts;
     float totalLen=getTotalLen(pts);
 
     float len=0;
@@ -126,7 +122,7 @@ std::vector<CPoint> Attributes::applyMusic(std::string attrname, float attrValue
     return result;
 }
 
-std::vector<CPoint> Attributes::applyStraighten(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
+CPoints Attributes::applyStraighten(std::string attrname, float attrValue,const CPoints &pts) const {
     if (!TouchOSC::getEnabled(attrname,"straighten"))
 	return pts;
     int  nTurns=(int)(TouchOSC::getValue(attrname,"straighten",attrValue,0.1)*10)+1;  // Number of turns
@@ -136,7 +132,7 @@ std::vector<CPoint> Attributes::applyStraighten(std::string attrname, float attr
     float blockSize=std::max(totalLen/nTurns/8,minDist/nTurns);
     dbg("Attributes.applyStraighten",2) << "nTurns=" << nTurns << ", delta=" << delta << ",blockSize=" << blockSize << std::endl;
     assert(blockSize>0);
-    std::vector<CPoint> results;
+    CPoints results;
     results.push_back(pts.front());
     // Draw manhattan path with blockSize blocks (in meters)
     float len=0;
@@ -161,11 +157,11 @@ std::vector<CPoint> Attributes::applyStraighten(std::string attrname, float attr
     priorpt.setX(results.back().X());
     results.push_back(priorpt);
     results.push_back(pts.back());
-    results=CPoint::resample(results,pts.size());
+    results=results.resample(pts.getLength()/pts.size());  // Resample uniformly at same spacing as original
     return results;
 }
 
-std::vector<CPoint> Attributes::applyDoubler(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const {
+CPoints Attributes::applyDoubler(std::string attrname, float attrValue,const CPoints &pts) const {
     if (!TouchOSC::getEnabled(attrname,"double"))
 	return pts;
     if (pts.size()<2)
@@ -174,8 +170,8 @@ std::vector<CPoint> Attributes::applyDoubler(std::string attrname, float attrVal
     float offset=TouchOSC::getValue(attrname,"dbl-offset",attrValue,0)*0.1;  // Offset of copies
     if (nCopies == 1)
 	return pts;
-    std::vector<CPoint> fwd;
-    std::vector<CPoint> rev;
+    CPoints fwd;
+    CPoints rev;
     for (int i=0;i<pts.size();i+=nCopies) {
 	fwd.push_back(pts[i]);
 	rev.push_back(pts[pts.size()-1-i]);
@@ -183,9 +179,9 @@ std::vector<CPoint> Attributes::applyDoubler(std::string attrname, float attrVal
     fwd.push_back(pts.back());
     rev.push_back(pts.front());
 
-    std::vector<CPoint> results=fwd;
+    CPoints results=fwd;
     for (int i=0;i<nCopies-1;i++) {
-	std::vector<CPoint> src;
+	CPoints src;
 	if (i%2==0)
 	    src=rev;
 	else
@@ -212,7 +208,9 @@ std::vector<CPoint> Attributes::applyDoubler(std::string attrname, float attrVal
     return results;
 }
 
-std::vector<CPoint> Attributes::apply(std::vector<CPoint> pts) const {
+CPoints Attributes::apply(const CPoints &pts) const {
+    CPoints result=pts;
+    
     if (!TouchOSC::instance()->isAttrsEnabled()) {
 	dbg("Attributes.apply",2) << "Atrributes disabled" << std::endl;
 	return pts;
@@ -226,32 +224,32 @@ std::vector<CPoint> Attributes::apply(std::vector<CPoint> pts) const {
 	    if (false && attrs.size()==1) {
 		// Remove line
 		dbg("Attributes.apply",2) << "Disabling connection since " << attrname << " is disabled and it is the only attribute" << std:: endl;
-		return std::vector<CPoint>();
+		return CPoints();
 	    }
 	} else {
 	    if (!applied[0]) {
-		pts=applyDoubler(attrname,a->second.getValue(),pts);
+		result=applyDoubler(attrname,a->second.getValue(),result);
 		//		applied[0]=true;
 	    }
 	    if (!applied[1]) {
-		pts=applyStraighten(attrname,a->second.getValue(),pts);
+		result=applyStraighten(attrname,a->second.getValue(),result);
 		//		applied[1]=true;
 	    }
 	    if (!applied[2]) {
-		pts=applyMovements(attrname,a->second.getValue(),pts);
+		result=applyMovements(attrname,a->second.getValue(),result);
 		//		applied[2]=true;
 	    }
 	    if (!applied[3]) {
-		pts=applyDashes(attrname,a->second.getValue(),pts);
+		result=applyDashes(attrname,a->second.getValue(),result);
 		//		applied[3]=true;
 	    }
 	    if (!applied[4]) {
-		pts=applyMusic(attrname,a->second.getValue(),pts);
+		result=applyMusic(attrname,a->second.getValue(),result);
 		//		applied[4]=true;
 	    }
 	}
     }
-    return pts;
+    return result;
 }
 
 // Keep only attributes >= minval

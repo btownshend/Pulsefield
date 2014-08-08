@@ -25,18 +25,7 @@ protected:
     Primitive(Color _c): c(_c) { }
     virtual ~Primitive() { ; }
     // Get list of discrete points spaced approximately by pointSpacing,  optimizes based on minimizing distance from priorPoint to first point
-    virtual std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const = 0;
-
-    // Get score for rendering using givent transform -- higher is better
-    // A shape which is completely on-screen has a score equal to 1.0+1.0/(average line-width)
-    // If part of it is off-screen, then the score is frac(oncreen) (goes from 0.0 to 1.0)
-    // Full offscreen has a score of 0
-    virtual float getShapeScore(const Transform &transform, const Ranges &ranges) const {
-	// Should be overridden
-	assert(0);
-    }
-
-    virtual float getLength() const { return 0.0; }
+    virtual CPoints getPoints(float pointSpacing,const CPoint *priorPoint) const = 0;
 
     virtual void translate(Point t) = 0; 
 
@@ -51,9 +40,7 @@ class Circle: public Primitive {
 	dbg("Circle",2) << "c=" <<_c << ", r=" << r << std::endl;
 	center=_c; radius=r;
     }
-    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
-    float getLength() const { return radius*2*M_PI; }
-    float getShapeScore(const Transform &transform, const Ranges &ranges) const;
+    CPoints getPoints(float pointSpacing,const CPoint *priorPoint) const;
     void translate(Point t) { center=center+t; }
 };
 
@@ -62,8 +49,7 @@ class Arc: public Primitive {
     float angle;
  public:
     Arc(Point _center, Point _p, float _angle, Color c): Primitive(c) { center=_center; p=_p; angle=_angle; }
-    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
-    //    float getShapeScore(const Transform &transform) const;
+    CPoints getPoints(float pointSpacing,const CPoint *priorPoint) const;
     void translate(Point t) { center=center+t; p=p+t; }
 };
 
@@ -71,9 +57,7 @@ class Line:public Primitive {
     Point p1,p2;
  public:
     Line(Point _p1, Point _p2, Color c): Primitive(c) { p1=_p1; p2=_p2;  }
-    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
-    float getLength() const { return (p1-p2).norm(); }
-    float getShapeScore(const Transform &transform, const Ranges &ranges) const;
+    CPoints getPoints(float pointSpacing,const CPoint *priorPoint) const;
     void translate(Point t) { p1=p1+t; p2=p2+t; }
 };
 
@@ -81,9 +65,7 @@ class Cubic:public Primitive {
     Bezier b;
  public:
     Cubic(const std::vector<Point> &pts, Color c): Primitive(c), b(pts) {;}
-    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
-    float getLength() const { return b.getLength(); }
-    float getShapeScore(const Transform &transform, const Ranges &ranges) const;
+    CPoints getPoints(float pointSpacing,const CPoint *priorPoint) const;
     void translate(Point t) { b.translate(t); }
 };
 
@@ -92,9 +74,7 @@ class Path:public Primitive {
     std::vector<Point> controlPts;
  public:
     Path(const std::vector<Point> &p, Color c): Primitive(c), controlPts(p) {;}
-    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
-    float getLength() const;
-    float getShapeScore(const Transform &transform, const Ranges &ranges) const;
+    CPoints getPoints(float pointSpacing,const CPoint *priorPoint) const;
     void translate(Point t) { 
 	for (int i=0;i<controlPts.size();i++)
 	    controlPts[i]=controlPts[i]+t;
@@ -106,9 +86,7 @@ class Polygon: public Primitive {
     std::vector<Point> points;
  public:
     Polygon(const std::vector<Point> _points,Color c): Primitive(c), points(_points) {;}
-    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
-    float getLength() const;
-    //    float getShapeScore(const Transform &transform) const;
+    CPoints getPoints(float pointSpacing,const CPoint *priorPoint) const;
     void translate(Point t) { 
 	for (int i=0;i<points.size();i++)
 	    points[i]=points[i]+t;
@@ -120,6 +98,8 @@ class Composite  {
     Attributes attrs;
     bool drawConvexHull;   // Draw convex hull rather than actual points
     std::shared_ptr<ShapeID> shapeID;
+    CPoints points;  // Result of converting all elements to points at a fixed spacing
+    float rasterSpacing;   // Spacing of points when rasterized, or 0 if not rasterized
 public:
     Composite(const std::string &id, const Attributes _attrs, bool _hull=false) {shapeID=ShapeIDs::get(id); attrs=_attrs; drawConvexHull=_hull; }
     // Number of primitives
@@ -127,25 +107,34 @@ public:
 
     // Shape ID
     std::shared_ptr<ShapeID> getShapeID() const { return shapeID; }
-    void append(std::shared_ptr<Primitive> p) { elements.push_back(p); }
-    // Convert into a vector of points (actually segments), inserts a single blank point for moves
-    std::vector<CPoint> getPoints(float pointSpacing,const CPoint *priorPoint) const;
+    void append(std::shared_ptr<Primitive> p) { elements.push_back(p);clearRaster(); }
 
+    // Convert into a vector of points (actually segments), inserts a single blank point for moves
+    void rasterize(float pointSpacing);
+    const CPoints &getPoints() const { return points; }
+    // Reset points, assumes rasterSpacing is unchanged
+    void setPoints(const CPoints &cpts) { points=cpts; }
     void setAttributes(const Attributes &a) { attrs=a; }
     // Get attributes, allowing them to be modified
     Attributes &getAttributes() { return attrs; }
 
-    float getLength() const {
-	float len=0;
-	for (unsigned int i=0;i<elements.size();i++) {
-	    len+=elements[i]->getLength();
-	}
-	return len;
-    }
-    float getShapeScore(const Transform &transform, const Ranges &ranges) const;
+    float getLength() const { return points.getLength(); }
+
     void translate(Point t) { 
+	assert(points.size()==0);	// Only before rasterizing
 	for (int i=0;i<elements.size();i++)
 	    elements[i]->translate(t);
+	clearRaster();
+    }
+    void clearRaster() {
+	points=CPoints();
+	rasterSpacing=0;
+    }
+    float getRasterSpacing() const { return rasterSpacing; }
+
+    // Clip a vector of points by removing segments out of bounds and inserting blanks
+    void  clip( const Bounds &b) {
+	points=points.clip(b);
     }
 };
 
@@ -162,13 +151,23 @@ class Drawing {
 
     // Number of primitives (which gives number of jumps)
     int getNumElements() const { return elements.size(); }
+    std::shared_ptr<Composite> &getElement(int i) { return elements[i]; }
 
     // Get points to render drawing at given (meter) spacing
-    std::vector<CPoint> getPoints(float spacing) const;
+    CPoints getPoints(float spacing) const;
 
-    // Clip a vector of points by removing segments out of bounds and inserting blanks
-    std::vector<CPoint> clipPoints(const std::vector<CPoint> &pts, const Bounds &b) const;
-    
+    // Rasterize all the subelements
+    void rasterize(float pointSpacing) { 
+	for (int i=0;i<getNumElements();i++)
+	    getElement(i)->rasterize(pointSpacing); 
+    }
+
+    // Clip all the subelements
+    void clip(const Bounds &b) { 
+	for (int i=0;i<getNumElements();i++)
+	    getElement(i)->clip(b); 
+    }
+
     // Get length of current drawing in floor space
     float getLength() const {
 	float len=0;
@@ -191,9 +190,6 @@ class Drawing {
 	inComposite=false;
 	frame=-1;
     }
-
-    // Get quality score of reproduction for each of the elements within the drawing using the given transform
-    std::map<int,float> getShapeScores(const Transform &transform, const Ranges &ranges) const;
 
     // Get a subset of the drawing containing only the given elements
     Drawing select(std::set<int> elements) const ;
@@ -253,6 +249,11 @@ class Drawing {
     void append(const Drawing &d) {
 	for (int i=0;i<d.elements.size();i++)
 	    elements.push_back(d.elements[i]);
+    }
+
+    // Append a composite
+    void append( std::shared_ptr<Composite> c) {
+	elements.push_back(c);
     }
 
     // Add a circle to current drawing

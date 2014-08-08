@@ -360,7 +360,9 @@ bool Transform::onScreen(Point devPt) const {
 	dbg("Transform.onScreen",5) << "devPt " << devPt << " gives NaN flat Pt -> false" << std::endl;
 	return false;
     }
-    return flatPt.X()>=minx && flatPt.X()<=maxx && flatPt.Y() >=miny && flatPt.Y() <= maxy;
+    bool result=flatPt.X()>=minx && flatPt.X()<=maxx && flatPt.Y() >=miny && flatPt.Y() <= maxy;
+    dbg("Transform.onScreen",5) << "devPt " << devPt << " has flatPt=" << flatPt << " -> " << result << std::endl;
+    return result;
 }
 
 void Transform::save(std::ostream &s) const {

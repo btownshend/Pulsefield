@@ -3,7 +3,7 @@
 #include "ranges.h"
 #include "dbg.h"
 
-const float Ranges::SHADOWSEP=0.5f;   // Distance an obstruction must be in front of an object for it to be considered shadowed
+static const float RANGEDEPTH=0.15f;   // Depth of a hit (distance behind a LIDAR still considered to be blocking something
 
 Ranges::Ranges() {
     std::vector<float> r;
@@ -42,26 +42,38 @@ int Ranges::pointToScan(Point p) const {
 }
 
 // Return true if ray from p1 to p2 is obstructed by a target
-bool Ranges::isObstructed(Point p1, Point p2) const {
-    static const float RANGEDEPTH=0.3f;   // Depth of a hit
-    int scan1=pointToScan(p1);
+bool Ranges::isObstructed(Point p1, Point p2, float p1gap, float p2gap) const {
+    // Inset p1, p2 by their respective gaps
+    Point dir=p2-p1; dir=dir/dir.norm();
+    p1=p1+dir*p1gap;
+    p2=p2-dir*p2gap;
+
+    int scan1=pointToScan(p1);	
     int scan2=pointToScan(p2);
     assert(scan1>=0 && scan2>=0 && scan1<ranges.size() && scan2<ranges.size());
     if (scan1>scan2) 
 	std::swap(scan1,scan2);
-    float lineTheta=(p2-p1).getTheta();
-    for (int i=scan1;i<=scan2;i++) {
-	Point hit1,hit2;
-	hit1=getPoint(i);
-	hit2=hit1*((ranges[i]+RANGEDEPTH)/ranges[i]);
-	// Check if the hit straddles the line
-	if (((hit1-p1).getTheta()>lineTheta) != ((hit2-p1).getTheta()>lineTheta)) 
-	    // And check if it is closer than the image we're trying to build
-	    if ((hit1-p1).norm() < (p2-p1).norm()-SHADOWSEP) {
-		dbg("Ranges.isObstructed",4) << "p1=" << p1 << ", p2=" << p2 << ", lineTheta=" << lineTheta << ", hit1=" << hit1 << ", hit2=" << hit2 << ", theta1=" << (hit1-p1).getTheta() << ", theta2=" << (hit2-p1).getTheta() << " -> TRUE" << std::endl;
-		return true;
-	    }
-	//	dbg("Ranges.isObstructed",4) << "i=" << i << ", p1=" << p1 << ", p2=" << p2 << ", lineTheta=" << lineTheta << ", hit1=" << hit1 << ", hit2=" << hit2 << ", theta1=" << (hit1-p1).getTheta() << ", theta2=" << (hit2-p1).getTheta() << ", range=" << ranges[i] << ", angle=" << angle << " -> NO" << std::endl;
+    float dx=p2.X()-p1.X();
+    float dy=p2.Y()-p1.Y();
+    float numerator=dy*p1.X()-dx*p1.Y();
+    // Only consider scan directions that definitely intersect p1-p2 line
+    for (int i=scan1+1;i<=scan2-1;i++) {
+	if (ranges[i]<0.2)
+	    // Probably dust on lens of lidar
+	    continue;
+	Point hit=getPoint(i);
+	Point v=hit/ranges[i];
+	// Calculate distance from LIDAR along scan line i to line connecting p1 and p2
+	float denom=(dy*v.X()-dx*v.Y());
+	if (denom==0)
+	    // No intersection
+	    continue;
+	float d=numerator/denom;   // Distance along LIDAR scan to line connecting p1 and p2
+	if (ranges[i]<=d && ranges[i]+RANGEDEPTH>=d) {
+	    // Hit is likely obstructing laser line
+	    dbg("Ranges.isObstructed",4) << "scan " << i << ": p1=" << p1 << ", p2=" << p2 << ", hit=" << hit << ", d=" << d << ", range=" << ranges[i] << " -> TRUE" << std::endl;
+	    return true;
+	}
     }
     return false;
 }
@@ -71,13 +83,14 @@ bool Ranges::isObstructed(Point p1, Point p2) const {
 // Laser scans originate at (0,0)
 float Ranges::fracLineShadowed(Point c, Point p1, Point p2) const {
     static const float lineRes=0.2;   // 20cm resolution
+    const float SHADOWSEP=0.5f;   // Distance an obstruction must be in front of an object for it to be considered shadowed
     // Check each ray
     int nrays=std::max(int((p2-p1).norm()/lineRes)+1,2);
     //    nrays=4;
     int shadowed=0;
     for (int i=0;i<nrays;i++) {
 	Point p=(p1*i+p2*(nrays-1-i))/(nrays-1);
-	if (isObstructed(c,p))
+	if (isObstructed(c,p,SHADOWSEP,SHADOWSEP))
 		shadowed++;
     }
     dbg("Ranges.fracLineShadowed",4) << shadowed << "/" << nrays << " rays shadowed" << std::endl;

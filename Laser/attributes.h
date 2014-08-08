@@ -20,12 +20,12 @@ class Attribute {
 
 class Attributes {
     std::map<std::string,Attribute> attrs;
-    std::vector<CPoint> applyMovements(std::string attrname, float attrValue, const std::vector<CPoint> &pts) const;
-    std::vector<CPoint> applyDashes(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const;
-    std::vector<CPoint> applyMusic(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const;
-    std::vector<CPoint> applyStraighten(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const;
-    std::vector<CPoint> applyDoubler(std::string attrname, float attrValue,const std::vector<CPoint> &pts) const;
-    static float getTotalLen(const std::vector<CPoint> &pts);
+    CPoints applyMovements(std::string attrname, float attrValue, const CPoints &pts) const;
+    CPoints applyDashes(std::string attrname, float attrValue,const CPoints &pts) const;
+    CPoints applyMusic(std::string attrname, float attrValue,const CPoints &pts) const;
+    CPoints applyStraighten(std::string attrname, float attrValue,const CPoints &pts) const;
+    CPoints applyDoubler(std::string attrname, float attrValue,const CPoints &pts) const;
+    static float getTotalLen(const CPoints &pts);
 public:
     Attributes() { ; }
     void set(std::string name, const Attribute &a) {	attrs[name]=a;  }
@@ -38,7 +38,7 @@ public:
     friend std::ostream &operator<<(std::ostream &s, const Attributes &attributes);
     unsigned int size() const { return attrs.size(); }
     // Apply all attributes to a vector of points
-    std::vector<CPoint> apply(std::vector<CPoint> pts) const;
+    CPoints apply(const CPoints &pts) const;
     std::vector<std::string > getAttributeNames() const {
 	std::vector<std::string > result;
 	for (std::map<std::string ,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++) {
