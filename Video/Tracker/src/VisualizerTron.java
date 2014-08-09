@@ -300,12 +300,14 @@ public class VisualizerTron extends Visualizer {
 						float inset=0.1f;
 						PVector c1=Tracker.unMapPosition(new PVector(i*2.0f/gridWidth-1,(j+1)*2.0f/gridHeight-1));
 						PVector c2=Tracker.unMapPosition(new PVector((i+1)*2.0f/gridWidth-1,j*2.0f/gridHeight-1));	
+						laser.shapeBegin("Grid"+(i*gridHeight+j));
 						if (currentgrid.containsKey(gid) && currentgrid.get(gid)==i*gridHeight+j) {
 //							PApplet.println("c1="+c1+", c2="+c2);
 							laser.rect(c1.x,c1.y,c2.x-c1.x,c2.y-c1.y);
 						}
 						if (playgrid.get(g.id).grid == i*gridHeight+j)
 							laser.rect(c1.x+inset*(c2.x-c1.x),c1.y+inset*(c2.y-c1.y),c2.x-c1.x-2*inset*(c2.x-c1.x),c2.y-c1.y-2*inset*(c2.y-c1.y));
+						laser.shapeEnd("Grid"+(i*gridHeight+j));
 					}
 				}
 			}	

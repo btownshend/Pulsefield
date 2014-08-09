@@ -139,7 +139,9 @@ public class VisualizerGrid extends VisualizerPS {
 			PVector tl = Tracker.unMapPosition(PVector.sub(gcenter, gridOffset));
 			PVector br = Tracker.unMapPosition(PVector.add(gcenter, gridOffset));
 			//PApplet.println("Drawing rect "+tl+" to "+br);
+			laser.shapeBegin("gridcell"+cell);
 			laser.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
+			laser.shapeEnd("gridcell"+cell);
 		}
 		laser.bgEnd();
 	}
