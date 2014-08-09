@@ -5,6 +5,7 @@
 #include "cpoint.h"
 #include "dbg.h"
 #include "bounds.h"
+#include "etherdream_bst.h"
 
 std::ostream& operator<<(std::ostream &s, const CPoint &p) {
     s << (Point)p << p.c;
@@ -17,6 +18,16 @@ std::ostream& operator<<(std::ostream &s, const CPoints &p) {
 	s << p.pts[i] << " ";
     s << "]";
     return s;
+}
+
+CPoint::CPoint(const etherdream_point &ep): Point(ep.x,ep.y), c(ep.r/65535.0,ep.g/65535.0,ep.b/65535.0) {
+    ;
+}
+
+CPoints::CPoints(const std::vector<etherdream_point> &epts) {
+    pts.resize(epts.size());
+    for (int i=0;i<epts.size();i++)
+	pts[i]=epts[i];
 }
 
 void CPoints::matlabDump(std::string desc) {

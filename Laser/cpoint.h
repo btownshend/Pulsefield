@@ -6,6 +6,7 @@
 #include "point.h"
 
 class Bounds;
+struct etherdream_point;
 
 class CPoint: public Point {
     Color c;   // Color used to move to this point
@@ -13,6 +14,7 @@ class CPoint: public Point {
     CPoint(): Point(), c(0,0,0) {;}
     CPoint(float _x, float _y,Color _c): Point(_x,_y), c(_c) {;}
     CPoint(const Point &p, Color _c): Point(p), c(_c) {;}
+    CPoint(const etherdream_point &ep);
     CPoint rot90() const {
 	return CPoint(Point::rot90(),c);
     }
@@ -40,6 +42,7 @@ class CPoint: public Point {
     }
 };
 
+
 // A list of points indicating drawing segments
 // Moves indicated with a destination point with color 0,0,0
 // Can be in any coordinate space, but some operations assume that the points are in world (floor) coordinates
@@ -47,6 +50,7 @@ class CPoints {
     std::vector<CPoint> pts;
  public:
     CPoints(const std::vector<CPoint> &_pts) { pts=_pts; }
+    CPoints(const std::vector<etherdream_point> &epts);
     CPoints() {;}
     const std::vector<CPoint> &getPoints() const { return pts; }
     unsigned int size() const { return pts.size(); } 
