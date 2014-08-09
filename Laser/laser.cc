@@ -400,15 +400,16 @@ float Laser::fracOnScreen(const CPoints &cpts) const {
 // Determine fraction of points (in floor coordinates) whose view from origin is obstructed by other objects
 // Only objects that are more than originGap from origin and more than targetGap from the point of interest are considered blockages
 float Laser::fracShadowed(const CPoints &cpts, const Ranges &ranges, float originGap, float targetGap) const {
+    static const int DOWNSAMPLE=4;
     Point origin=transform.getOrigin();
     int shadowCnt=0;
     const std::vector<CPoint> &pts=cpts.getPoints();
-    for (int i=0;i<pts.size();i++) {
+    for (int i=0;i<pts.size();i+=DOWNSAMPLE) {
 	if (ranges.isObstructed(origin,pts[i],originGap,targetGap))
 	    shadowCnt++;
     }
-    dbg("Laser.fracShadowed",3) << "View from " << origin << " shadowed for " << shadowCnt << "/" << pts.size() << " points" << std::endl;
-    return shadowCnt*1.0f/pts.size();
+    dbg("Laser.fracShadowed",3) << "View from " << origin << " shadowed for " << shadowCnt*DOWNSAMPLE << "/" << pts.size() << " points" << std::endl;
+    return shadowCnt*1.0f/pts.size()*DOWNSAMPLE;
 }
 
 // Remove shadowed points from a set of CPoints
