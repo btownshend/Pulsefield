@@ -27,7 +27,7 @@ Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(-6,0,6,6)
 	load(ifs);
     else
 	dbg("Video",1) << "Unable to open transforms.save for reading" << std::endl;
-    lasers->setFlag("fiducials",true);
+    lasers->setFlag("fiducials",false);
 }
 
 Video::~Video() {
