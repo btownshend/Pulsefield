@@ -93,6 +93,7 @@ CPoints Path::getPoints(float pointSpacing,const CPoint *priorPoint) const {
     for (int i=0;i<controlPts.size()-3;i+=3) {
 	Bezier b(std::vector<Point> (controlPts.begin()+i, controlPts.begin()+i+4));
 	std::vector<Point> bpts=b.interpolate(pointSpacing);
+	assert(bpts.size()>=2);
 	if (i==0)
 	    // Only need the first point from the first bezier (as a move), the others are redundant
 	    result.push_back(CPoint(bpts[0],Color(0,0,0)));

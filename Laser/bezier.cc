@@ -33,15 +33,11 @@ std::vector<Point> Bezier::interpolate(std::vector<float> t) const {
 
 // Return a uniform set of points along a bezier curve with approximate spacing as given
 std::vector<Point> Bezier::interpolate(float spacing) const {
-    if (spacing>getLength()*1.5) {
-	dbg("Bezier.interpolate",1) << "Curve with length " << getLength() << " has no points for interpolation at spacing=" << spacing << std::endl;
-	return std::vector<Point>();
-    }
+    std::vector<Point> result;
     if (spacing>getLength()*0.5) {
-	std::vector<Point> result;
 	result.push_back(controlPoints.front());
 	result.push_back(controlPoints.back());
-	dbg("Bezier.interpolate",1) << "Curve with length " << getLength() << " has 2 points for interpolation at spacing=" << spacing << std::endl;
+	dbg("Bezier.interpolate",1) << "Curve with length " << getLength() << " has <2 points for interpolation at spacing=" << spacing << std::endl;
 	return result;
     }
     int npoints=std::max(2,(int)ceil(getLength()/spacing)+1);
