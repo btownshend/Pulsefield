@@ -16,7 +16,7 @@ class Connection {
     int uid[2];
     Attributes attributes;
     int age; 	// Age counter -- reset whenever something is set, increment when aged
-    Drawing visual; 	// Drawing used to image this connection
+    std::shared_ptr<Drawing> visual; 	// Drawing used to image this connection
     void drawFusion(Drawing &d, const Person *p1, const Person *p2, float stage) const;
     void drawFusionHalf(Drawing &d, Point c, float r, Point ctr, float rpinch) const;
  public:
@@ -46,7 +46,9 @@ class Connection {
     }
     int getAge() const { return age; }
     void setAge(int _age)  { age=_age;}
-    void setVisual(const Drawing &d) { visual=d; }
+    void setVisual(const Drawing &d) {
+	visual=std::shared_ptr<Drawing>(new Drawing(d));
+    }
     void draw(Drawing &d, float visThresh) const;
     const Attributes &getAttributes() const { return attributes; }
     friend std::ostream &operator<<(std::ostream &s, const Connection &c);
