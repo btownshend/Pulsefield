@@ -25,6 +25,7 @@ class Person {
     int age; 	// Age counter -- reset whenever something is set, increment when aged
     Attributes attributes;
     std::shared_ptr<Drawing> visual;
+    Point visPosition;  // Location visual is currently positioned -- allows it to be incrementally translated to follow position
  public:
     Person(int _id) {id=_id; age=0; gid=0; gsize=1; set("allpeople",1.0,0.0); visual=std::shared_ptr<Drawing>(); }
     void incrementAge() {
@@ -70,6 +71,7 @@ class Person {
     void setVisual(const Drawing &d) {
 	dbg("Person.setVisual",1) << "Set visual for " << id << " to drawing with " << d.getNumElements() << " elements." << std::endl;
 	visual=std::shared_ptr<Drawing>(new Drawing(d));
+	visPosition=Point(0,0);  
     }
     void clearVisuals() {
 	visual.reset();

@@ -143,10 +143,10 @@ void Person::draw(Drawing &d) const  {
 	drawLegs(d);
     }
     if (visual!=nullptr) {
-	dbg("Person.draw",1) << "Drawing visual with " << visual->getNumElements() << " elements on drawing with " << d.getNumElements() << " elements at " << position << std::endl;
-	Drawing viscopy(*visual);
-	viscopy.translate(position);
-	d.append(viscopy);
+	dbg("Person.draw",1) << "Drawing visual with " << visual->getNumElements() << " elements on drawing with " << d.getNumElements() << " elements at " << position << " after translating it by " << position-visPosition << std::endl;
+	visual->translate(position-visPosition);
+	((Person *)this)->visPosition=position;  // Need to override CONST
+	d.append(*visual);
 	dbg("Person.draw",1) << "Drawing now has " << d.getNumElements() << " elements" << std::endl;
     }
     d.shapeEnd("cell:"+std::to_string(id));
