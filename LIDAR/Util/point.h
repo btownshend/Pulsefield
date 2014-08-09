@@ -50,6 +50,7 @@ class Point {
     Point operator*(float s) const { return Point(x*s,y*s); }
     friend Point operator*(float s,Point p);
     Point operator-(float s) const { return Point(x-s,y-s); }
+    Point operator-() const { return Point(-x,-y); }
     Point operator+(float s) const { return Point(x+s,y+s); }
     float norm() const { return getRange(); }
     float dot(const Point &p2) const { return p2.X()*x+p2.Y()*y; }
