@@ -55,6 +55,8 @@ public class VisualizerTron extends Visualizer {
 	@Override
 	public void start() {
 		super.start();
+		Laser.getInstance().setFlag("body",0.0f);
+		Laser.getInstance().setFlag("legs",0.0f);
 		trackSet=Ableton.getInstance().setTrackSet("Tron");
 	}
 

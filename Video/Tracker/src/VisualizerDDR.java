@@ -155,6 +155,8 @@ public class VisualizerDDR extends Visualizer {
 			songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/Plaguemix Series/Super Trouper","supertrouper.sm",1));
 		}
 		chooseSong();
+		Laser.getInstance().setFlag("body",0.0f);
+		Laser.getInstance().setFlag("legs",0.0f);
 	}
 
 	public void stop() {

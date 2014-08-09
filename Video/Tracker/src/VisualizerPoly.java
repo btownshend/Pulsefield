@@ -140,8 +140,10 @@ public class VisualizerPoly extends Visualizer {
 	
 	@Override
 	public void start() {
-		Ableton.getInstance().setTrackSet("Poly");
 		super.start();
+		Ableton.getInstance().setTrackSet("Poly");
+		Laser.getInstance().setFlag("body",1.0f);
+		Laser.getInstance().setFlag("legs",0.0f);
 	}
 
 	@Override

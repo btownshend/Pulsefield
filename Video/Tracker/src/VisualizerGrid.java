@@ -45,6 +45,8 @@ public class VisualizerGrid extends VisualizerPS {
 	
 	public void start() {
 		super.start();
+		Laser.getInstance().setFlag("body",0.0f);
+		Laser.getInstance().setFlag("legs",0.0f);
 		song=(song+1)%songs.length;
 		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);
 		setupGrid();

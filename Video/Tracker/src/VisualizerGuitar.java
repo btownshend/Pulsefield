@@ -92,6 +92,8 @@ public class VisualizerGuitar extends VisualizerPS {
 	public void start() {
 		super.start();
 		trackSet=Ableton.getInstance().setTrackSet("Guitar");
+		Laser.getInstance().setFlag("body",1.0f);
+		Laser.getInstance().setFlag("legs",0.0f);
 	}
 
 	@Override

@@ -25,6 +25,8 @@ public class VisualizerProximity extends VisualizerPS {
 		song=(song+1)%songs.length;
 		ts=Ableton.getInstance().setTrackSet(songs[song]);
 		PApplet.println("Starting proximity with song "+song+": "+ts.name);
+		Laser.getInstance().setFlag("body",1.0f);
+		Laser.getInstance().setFlag("legs",0.0f);
 	}
 	
 	public void stop() {

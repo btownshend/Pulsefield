@@ -101,6 +101,7 @@ public class VisualizerSoccer extends VisualizerDot {
 	public void start() {
 		super.start();
 		Laser.getInstance().setFlag("body",0.0f);
+		Laser.getInstance().setFlag("legs",1.0f);
 		// Other initialization when this app becomes active
 		ball=new Ball(Tracker.unMapPosition(new PVector(0f,0f)),Tracker.unMapPosition(new PVector(0.1f,0.2f)));
 	}

@@ -101,6 +101,8 @@ public class VisualizerVoronoi extends VisualizerPS {
 	public void start() {
 		PApplet.println("Voronoi::Start");
 		super.start();
+		Laser.getInstance().setFlag("body",1.0f);
+		Laser.getInstance().setFlag("legs",0.0f);
 		trackSet=Ableton.getInstance().setTrackSet("Harp");
 	}
 
