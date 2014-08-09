@@ -87,20 +87,23 @@ CPoints CPoints::resample(float spacing) const {
 
 CPoints CPoints::clip(const Bounds &b) const {
     CPoints result;
-    bool wasBlank=false;
+    int pendingBlank=-1;
     for (int i=0;i<pts.size();i++) {
 	bool isBlank=(pts[i].getColor() == Color(0,0,0)) || !b.contains(pts[i]);
-	if (wasBlank && !isBlank) {
-	    result.push_back(CPoint(pts[i],Color(0,0,0)));  // Move to new point with blanking
-	}
-	if (!isBlank)
+	if (isBlank)
+	    pendingBlank=i;
+	else {
+	    if (pendingBlank >= 0) {
+		CPoint ptmp=pts[pendingBlank];
+		ptmp.setColor(Color(0,0,0));
+		result.push_back(ptmp);
+	    }
 	    result.push_back(pts[i]);
-	//	dbg("CPoints.clip",4) << "i=" << i << ", wasBlank=" << wasBlank << ", isBlank=" << isBlank << ", result.size=" << result.size() << std::endl;
-	wasBlank=isBlank;
+	    pendingBlank=-1;
+	}
     }
-    if (wasBlank)
-	// Make sure we get the final blank
-	result.push_back(CPoint(pts.back(),Color(0,0,0)));
+    // Don't need trailing blanks
+
     dbg("CPoints.clip",3) << "Clipped drawing from " << pts.size() << " to " << result.size() << " points." << std::endl;
     return result;
 }
