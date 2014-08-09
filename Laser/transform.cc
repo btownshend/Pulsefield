@@ -145,6 +145,7 @@ void Transform::recompute() {
     }
     
     dbg("Transform.recompute",1) << "origin=" << origin << std::endl;
+    floorToDeviceCache.clear();
 }
 
 // Convert  device coord to flat space (i.e. laser projection grid)
@@ -260,7 +261,9 @@ etherdream_point Transform::mapToDevice(CPoint floorPt) const {
 Point Transform::mapToDevice(Point floorPt) const {
     if (floorPt.isNan())
 	return floorPt;
-
+    int fpRounded = (int)(floorPt.X()*1000+0.5)*20000+(int)(floorPt.Y()*1000+0.5);
+    if (floorToDeviceCache.count(fpRounded)>0)
+	return floorToDeviceCache.at(fpRounded);
     Point p;
     std::vector<cv::Point2f> src(1);
     src[0].x=floorPt.X();
@@ -272,6 +275,7 @@ Point Transform::mapToDevice(Point floorPt) const {
     cv::Vec3f dst2=((cv::Matx33f)transform)*src2;
     if (dst2[2]<=0) {
 	dbg("Transform.mapToDevice",5) << floorPt << " out of bound: dst=" << "[" << dst2[0] << "," << dst2[1] << "," << dst2[2] << "]" << std::endl;
+	((Transform *)this)->floorToDeviceCache[fpRounded]=Point(nan(""),nan(""));
 	return Point(nan(""),nan(""));
     }
 
@@ -279,6 +283,7 @@ Point Transform::mapToDevice(Point floorPt) const {
     // dst is now in 'flat' space
     Point devPt=flatToDevice(Point(dst[0].x, dst[0].y));
     dbg("Transform.mapToDevice",10) << floorPt << " -> " << "[" << dst[0].x << "," << dst[0].y << "] -> " << devPt << " (or " << devPt2 << ")" << std::endl;
+    ((Transform *)this)->floorToDeviceCache[fpRounded]=devPt;
     return devPt;
 }
 

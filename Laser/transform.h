@@ -21,6 +21,7 @@ class Transform {
     static std::vector<cv::Point2f> convertPoints(const std::vector<Point> &pts);
     float minx, maxx, miny, maxy;   // Bounds of laser projection (in flat cooords)
     Point origin;   // Location of projector in floor coordinate space (with z-value ignored)
+    std::map< int, Point> floorToDeviceCache;
  public:
     Transform();
     void clear(const Bounds &floorBounds);
