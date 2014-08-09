@@ -121,7 +121,7 @@ public:
     float getLength() const { return points.getLength(); }
 
     void translate(Point t) { 
-	assert(points.size()==0);	// Only before rasterizing
+	//	assert(points.size()==0);	// Only before rasterizing
 	for (int i=0;i<elements.size();i++)
 	    elements[i]->translate(t);
 	clearRaster();
@@ -213,8 +213,7 @@ class Drawing {
 		}
 	    }
 	}
-	assert(0);  // Should always be in a composite
-	//	elements.push_back(prim);
+	dbg("Drawing.append",0) << "Attempt to append an element when not in a composite" << std::endl;
     }
 
     // Start a new shape
@@ -224,7 +223,7 @@ class Drawing {
 	    std::string lastShapeID=elements.back()->getShapeID()->getID() ;
 	    // OK if the current composite is empty
 	    if (elements.back()->getNumElements() == 0) {
-		dbg("Drawing.shapeBegin",0) << "Was already in empty composite " << lastShapeID <<  " when beginning " << id << std::endl;
+		dbg("Drawing.shapeBegin",1) << "Was already in empty composite " << lastShapeID <<  " when beginning " << id << std::endl;
 	    } else {
 		dbg("Drawing.shapeBegin",0) << "Was already in composite " << lastShapeID << " with " << elements.back()->getNumElements()  << " when beginning " << id << std::endl;
 	    }
@@ -237,7 +236,7 @@ class Drawing {
     void shapeEnd(const std::string &id) {
 	dbg("Drawing.shapeEnd",3) << "end shape " << id << std::endl;
 	if (!inComposite) {
-	    dbg("Drawing.shapeEnd",0) << "Was not in a composite -- ignoring shapeEnd(" << id << ")" << std::endl;
+	    dbg("Drawing.shapeEnd",1) << "Was not in a composite -- ignoring shapeEnd(" << id << ")" << std::endl;
 	    return;
 	} 
 	if (elements.back()->getShapeID()->getID() != id) 

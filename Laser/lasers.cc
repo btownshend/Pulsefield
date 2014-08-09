@@ -312,7 +312,11 @@ void Lasers::setBackground(int scanpt, int totalpts, float angleDeg, float range
 // Compute stats for allocation to lasers
 std::vector<LaserStat> Lasers::computeStats(const Composite &c, const Ranges &ranges) const {
     const CPoints &points = c.getPoints();
-    dbg("Composite.computeStats",1) << "Stats for composite " << c.getShapeID()->getID() << " with " << points.size() << " points near " << points.front() << ", prior laser=" << c.getShapeID()->getLaser()  << std::endl;
+    if (points.size() > 0) {
+	dbg("Composite.computeStats",1) << "Stats for composite " << c.getShapeID()->getID() << " with " << points.size() << " points near " << points.front() << ", prior laser=" << c.getShapeID()->getLaser()  << std::endl;
+    } else {
+	dbg("Composite.computeStats",1) << "Stats for composite " << c.getShapeID()->getID() << " with " << points.size() << " points, prior laser=" << c.getShapeID()->getLaser()  << std::endl;
+    }
     std::vector<LaserStat> stats;
     for (int i=0;i<lasers.size();i++) {
 	LaserStat stat;
