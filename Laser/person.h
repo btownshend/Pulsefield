@@ -71,6 +71,9 @@ class Person {
 	dbg("Person.setVisual",1) << "Set visual for " << id << " to drawing with " << d.getNumElements() << " elements." << std::endl;
 	visual=std::shared_ptr<Drawing>(new Drawing(d));
     }
+    void clearVisuals() {
+	visual.reset();
+    }
 };
 
 class People {
@@ -106,6 +109,10 @@ public:
 	} else {
 	    dbg("People.setVisual",1) << "Missing ID " << uid << std::endl;
 	}
+    }
+    static void clearVisuals() {
+	for (std::map<int,Person>::iterator a=instance()->p.begin(); a!=instance()->p.end();a++)
+	    a->second.clearVisuals();
     }
     std::vector<int> getIDs() const {
 	std::vector<int> result;

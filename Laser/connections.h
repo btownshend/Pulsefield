@@ -49,6 +49,9 @@ class Connection {
     void setVisual(const Drawing &d) {
 	visual=std::shared_ptr<Drawing>(new Drawing(d));
     }
+    void clearVisuals() {
+	visual.reset();
+    }
     void draw(Drawing &d, float visThresh) const;
     const Attributes &getAttributes() const { return attributes; }
     friend std::ostream &operator<<(std::ostream &s, const Connection &c);
@@ -85,6 +88,11 @@ class Connections {
 	instance()->conns.at(cid).setVisual(d);
     }
     
+    static void clearVisuals() {
+	for (std::map<CIDType,Connection>::iterator a=instance()->conns.begin(); a!=instance()->conns.end();a++)
+	    a->second.clearVisuals();
+    }
+
     bool connectionExists(CIDType cid) const {
 	return conns.count(cid)>0;
     }

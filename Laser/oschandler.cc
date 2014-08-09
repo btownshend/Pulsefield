@@ -98,6 +98,7 @@ static int arc_handler(const char *path, const char *types, lo_arg **argv, int a
 static int cubic_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->cubic(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f),Point(argv[6]->f,argv[7]->f)); return 0; }
 static int line_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->line(Point(argv[0]->f,argv[1]->f),Point(argv[2]->f,argv[3]->f)); return 0; }
 static int svgfile_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->svgfile(&argv[0]->s,Point(argv[1]->f,argv[2]->f),argv[3]->f,argv[4]->f); return 0; }
+static int laserReset_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->laserReset(); return 0; }
 
 // Transforms
 static int map_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->map(argv[0]->i,argv[1]->i,Point(argv[2]->f,argv[3]->f),Point(argv[4]->f,argv[5]->f)); return 0; }
@@ -196,6 +197,7 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/laser/bezier/cubic","ffffffff",cubic_handler,this);
 	lo_server_add_method(s,"/laser/line","ffff",line_handler,this);
 	lo_server_add_method(s,"/laser/svgfile","sffff",svgfile_handler,this);
+	lo_server_add_method(s,"/laser/reset","",laserReset_handler,this);
 
 	/* Transforms */
 	lo_server_add_method(s,"/laser/map","iiffff",map_handler,this);
@@ -496,6 +498,14 @@ void OSCHandler::svgfile(std::string filename,Point origin, float scaling,float 
 	if (s!=nullptr)
 	    s->addToDrawing(*d,origin,scaling,rotateDeg,currentColor);
     }
+}
+
+void OSCHandler::laserReset() {
+    lasers->clearVisuals();
+    Connections::clearVisuals();
+    People::clearVisuals();
+    lasers->setFlag("body",1.0);
+    lasers->setFlag("legs",1.0);
 }
 
 void OSCHandler::cubic(Point p1, Point p2, Point p3, Point p4) {

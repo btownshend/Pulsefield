@@ -91,6 +91,9 @@ public:
 	dbg("Lasers.setVisual",1) << "Set bg visual to drawing with " << d.getNumElements() << " elements." << std::endl;
 	visual=std::shared_ptr<Drawing>(new Drawing(d));
     }
+    void clearVisuals() {
+	visual.reset();
+    }
 
     // Compute stats for allocation to lasers
     std::vector<LaserStat> computeStats(const Composite &c, const Ranges &ranges) const;
