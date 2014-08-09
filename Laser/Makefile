@@ -85,7 +85,7 @@ lasers.o: person.h groups.h video.h
 drawing.o: drawing.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h bezier.h
 drawing.o: color.h attributes.h cpoint.h Simplex.hpp touchosc.h
 drawing.o: ../LIDAR/Util/urlconfig.h ranges.h bounds.h shapeid.h transform.h
-drawing.o: etherdream_bst.h laser.h displaydevice.h
+drawing.o: etherdream_bst.h
 bezier.o: bezier.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h
 video.o: video.h displaydevice.h etherdream_bst.h transform.h
 video.o: ../LIDAR/Util/point.h cpoint.h color.h lasers.h laser.h touchosc.h
@@ -117,7 +117,8 @@ groups.o: groups.h drawing.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h
 groups.o: bezier.h color.h attributes.h cpoint.h Simplex.hpp touchosc.h
 groups.o: ../LIDAR/Util/urlconfig.h ranges.h bounds.h shapeid.h person.h
 groups.o: lasers.h laser.h etherdream_bst.h displaydevice.h transform.h
-cpoint.o: cpoint.h color.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h
+cpoint.o: cpoint.h color.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h bounds.h
+cpoint.o: etherdream_bst.h
 music.o: music.h touchosc.h ../LIDAR/Util/dbg.h ../LIDAR/Util/urlconfig.h
 conductor.o: conductor.h ../LIDAR/Util/dbg.h
 ../LIDAR/Util/urlconfig.o: ../LIDAR/Util/dbg.h ../LIDAR/Util/urlconfig.h
