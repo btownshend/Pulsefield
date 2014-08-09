@@ -108,7 +108,6 @@ public class VisualizerSoccer extends VisualizerDot {
 	@Override
 	public void stop() {
 		super.stop();
-		Laser.getInstance().setFlag("body",1.0f);
 		// When this app is deactivated
 		ball=null;
 	}

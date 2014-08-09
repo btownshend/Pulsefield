@@ -116,4 +116,7 @@ public class Laser {
 		line(x+width,y+height,x,y+height);
 		line(x,y+height,x,y);
 	}
+	public void reset() {
+		sendMessage(new OscMessage("/laser/reset"));
+	}
 }
