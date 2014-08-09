@@ -36,7 +36,7 @@ Lasers::~Lasers() {
 
 // Allocate a drawing to the lasers
 std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
-    static const float MINSHADOWTODROP=0.5;
+    static const float MINFRACTOKEEP=0.5;
     static const float FRACFUZZ=0.1;	// Fuzz in fractions -- fractions within this amount are considered equal
     static const float DISTFUZZ=3.0;   // Fuzz in distance of laser -- distances within this amount are considered equal
 
@@ -52,9 +52,15 @@ std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
 
 	do { // Dummy loop so we can do a break
 	    // If it is mostly obstructed, remove the assignment (since we are now free to assign at will)
-	    if (current >=0 && stats[current].fracShadowed*(1-stats[current].fracOnScreen) >= MINSHADOWTODROP) {
-		dbg("Lasers.allocate",1) << "Ignoring assignment to " << current << " since visible frac  = " << stats[current].fracShadowed*(1-stats[current].fracOnScreen) << ", which is >= " << MINSHADOWTODROP << std::endl;
-		current=-1;
+	    if (current >=0) {
+		if ((1-stats[current].fracShadowed)*stats[current].fracOnScreen < MINFRACTOKEEP) {
+		    dbg("Lasers.allocate",1) << "Ignoring assignment to " << current << " since visible frac  = " << (1-stats[current].fracShadowed)*stats[current].fracOnScreen << ", which is < " << MINFRACTOKEEP << std::endl;
+		    current=-1;
+		} else {
+		    // Keep existing assignment
+		    assignment=current;
+		    break;
+		}
 	    }
 	    float maxFrac=stats[0].fracOnScreen*(1-stats[0].fracShadowed);
 	    for (int j=1;j<stats.size();j++)
@@ -62,11 +68,7 @@ std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
 	    if (maxFrac==0)
 		// No assignment that works
 		break;
-	    if (current>=0 && stats[current].fracOnScreen*(1-stats[current].fracShadowed) >= maxFrac-FRACFUZZ)  {
-		dbg("Lasers.allocate",2) << "Keeping assignment to laser " << current << " since frac visible=" << stats[current].fracOnScreen*(1-stats[current].fracShadowed) << " is, or is close to, the best which is " << maxFrac << std::endl;
-		assignment=current;
-		break;
-	    }
+
 	    // Assign to least loaded  laser within FRACFUZZ of maxFrac, within DISTFUZZ of closest laser, 
 	    float bestDist=1e10;
 	    float  bestLength=1000;
