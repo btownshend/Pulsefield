@@ -184,20 +184,24 @@ void Laser::dumpPoints() const {
 // Prune a sequence of points by removing any segments that go out of bounds
 void Laser::prune() {
     std::vector<etherdream_point> result;
-    bool oobs=false;
+    int pendingBlank=-1;
     for (unsigned int i=0;i<pts.size();i++) {
-	if (transform.onScreen(pts[i])) {
+	bool isBlank=pts[i].r==0 && pts[i].g==0 &&pts[i].b==0;
+	if (isBlank || !transform.onScreen(pts[i])) 
+	    pendingBlank=i;
+	else {
 	    // In bounds
-	    if (oobs && result.size()>0) {
-		// Just came in bounds, insert a blank (will be expanded by blanking)
-		std::vector<etherdream_point> blanks = Laser::getBlanks(1,pts[i]);
-		result.insert(result.end(), blanks.begin(), blanks.end());
+	    if (pendingBlank >= 0) {
+		// Just came in bounds or visible, insert the last blank seen
+		etherdream_point ptmp=pts[pendingBlank];
+		ptmp.r=0;ptmp.g=0;ptmp.b=0;   // In case it was a non-blank, out of bounds point
+		result.push_back(ptmp);
 	    }
 	    result.push_back(pts[i]);
-	    oobs=false;
-	} else
-	    oobs=true;
+	    pendingBlank=-1;
+	}
     }
+    // Don't need to put in trailing blanks
     dbg("Laser.prune",2) << "Pruned points from " << pts.size() << " to " << result.size() << std::endl;
     pts=result;
 }
