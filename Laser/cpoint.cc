@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <assert.h>
 #include "opencv2/imgproc/imgproc.hpp"
 #include "cpoint.h"
@@ -18,6 +19,21 @@ std::ostream& operator<<(std::ostream &s, const CPoints &p) {
     return s;
 }
 
+void CPoints::matlabDump(std::string desc) {
+    static std::ostream *ofd=NULL;
+    if (ofd==NULL)  {
+	ofd=new std::ofstream("/tmp/cpoint.m");
+	*ofd << "cp={}; descs={};" << std::endl;
+    }
+    *ofd << "descs{end+1}='" << desc << "';" << std::endl;
+    *ofd << "cp{end+1}=[";
+    for (int i=0;i<pts.size();i++) {
+	if (pts[i].getColor()==Color(0,0,0))
+	    *ofd << "nan,nan,0" << std::endl;
+	*ofd << pts[i].X() << "," << pts[i].Y()  << "," << pts[i].getColor().green() << std::endl;
+    }
+    *ofd << "];" << std::endl;
+}
 
 // Resample a set of points
 // Assumes input has a single blank at each jump (effectively a move-to op)

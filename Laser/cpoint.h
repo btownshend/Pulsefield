@@ -72,4 +72,5 @@ class CPoints {
     CPoints convexHull(float spacing, Color c) const;
     CPoint &operator[](int i) { return pts[i]; }
     const CPoint &operator[](int i) const { return pts[i]; }
+    void matlabDump(std::string desc);
 };
