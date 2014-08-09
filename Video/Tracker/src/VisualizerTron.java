@@ -305,8 +305,9 @@ public class VisualizerTron extends Visualizer {
 //							PApplet.println("c1="+c1+", c2="+c2);
 							laser.rect(c1.x,c1.y,c2.x-c1.x,c2.y-c1.y);
 						}
-						if (playgrid.get(g.id).grid == i*gridHeight+j)
+						//if (playgrid.get(g.id).grid == i*gridHeight+j) {
 							laser.rect(c1.x+inset*(c2.x-c1.x),c1.y+inset*(c2.y-c1.y),c2.x-c1.x-2*inset*(c2.x-c1.x),c2.y-c1.y-2*inset*(c2.y-c1.y));
+						//}
 						laser.shapeEnd("Grid"+(i*gridHeight+j));
 					}
 				}
