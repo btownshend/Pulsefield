@@ -81,11 +81,12 @@ class PolyState {
 			parent.fill(color);
 		else
 			parent.fill(color,127);
-		parent.ellipse((pos.getNormalizedPosition().x+1)*wsize.x/2, (pos.getNormalizedPosition().y+1)*wsize.y/2, 30, 30);
+		float sz=Math.min(wsize.x,wsize.y);
+		parent.ellipse((pos.getNormalizedPosition().x)*sz/2+wsize.x/2, (pos.getNormalizedPosition().y)*sz/2+wsize.y/2, 30, 30);
 		if (playing) {
 			parent.fill(0);
 			parent.stroke(color);
-			parent.ellipse(wsize.x/2,wsize.y/2,mybeat*wsize.x/totalBeats,mybeat*wsize.y/totalBeats);
+			parent.ellipse(wsize.x/2,wsize.y/2,mybeat*sz/totalBeats,mybeat*sz/totalBeats);
 		}
 		if (pos.groupsize > 1) {
 			final int NBOLTS=20;
@@ -93,7 +94,7 @@ class PolyState {
 			for (int k=0;k<NBOLTS;k++)
 				if (Math.random() < 0.2) {
 					PVector delta=new PVector((float)Math.cos(Math.PI*2*k/NBOLTS)*BOLTLENGTH,(float)Math.sin(Math.PI*2*k/NBOLTS)*BOLTLENGTH);
-					PVector center=new PVector((pos.getNormalizedPosition().x+1)*wsize.x/2,(pos.getNormalizedPosition().y+1)*wsize.y/2);
+					PVector center=new PVector((pos.getNormalizedPosition().x)*sz/2+wsize.x/2,(pos.getNormalizedPosition().y)*sz/2+wsize.y/2);
 					parent.fill(color,127);
 					parent.line(center.x,center.y,center.x+delta.x,center.y+delta.y);
 				}
@@ -186,12 +187,13 @@ public class VisualizerPoly extends Visualizer {
 		// Draw rings in gray
 		parent.fill(0);
 		parent.stroke(20);
+		float sz=Math.min(wsize.x,wsize.y);
 		for (int i=1;i<=totalBeats;i++) {
 			if (i%4 == 0)
 				parent.strokeWeight(2);
 			else
 				parent.strokeWeight(1);
-			parent.ellipse(wsize.x/2,wsize.y/2,i*wsize.x/totalBeats,i*wsize.y/totalBeats);
+			parent.ellipse(wsize.x/2,wsize.y/2,i*sz/totalBeats,i*sz/totalBeats);
 		}
 
 		// Draw each position and fired rings
@@ -205,25 +207,15 @@ public class VisualizerPoly extends Visualizer {
 	@Override
 	public void drawLaser(PApplet parent, People p) {
 		super.drawLaser(parent,p);
-		PVector center=Tracker.unMapPosition(new PVector(0,0));
-		PVector tl=Tracker.unMapPosition(new PVector(-1.0f,-1.0f));
-		PVector rad=PVector.sub(tl, center);
-		float maxRadius=Math.min(Math.abs(rad.x),Math.abs(rad.y));
-		//PApplet.println("Poly drawLaser center="+center+", tl="+tl+", radius="+maxRadius);
+		PVector center=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2, (Tracker.rawminy+Tracker.rawmaxy)/2);
+		float maxRadius=Math.min(Tracker.rawmaxx-Tracker.rawminx,Tracker.rawmaxy-Tracker.rawminy)/2;
+		//PApplet.println("Poly drawLaser center="+center+", radius="+maxRadius);
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();
-		// Draw rings in gray
-		for (int i=1;i<=totalBeats;i++) {
-			if (i%4 == 0)
-				parent.strokeWeight(2);
-			else
-				parent.strokeWeight(1);
-			//laser.circle(center.x, center.y, i*maxRadius/totalBeats);
-		}
 
 		// Draw each position and fired rings
 		for (PolyState ps: poly.values()) {
-			//ps.draw(parent,wsize,totalBeats,pos,synth);
+			//ps.drawLaser(totalBeats,pos,synth);
 			if (ps.playing)
 				laser.circle(center.x, center.y, ps.mybeat*maxRadius/totalBeats);
 		}
