@@ -220,7 +220,7 @@ public class Tracker extends PApplet {
 
 		if (mousePressed) {
 			Person p=people.getOrCreate(mouseID,mouseID%16);
-			PVector mousePos=unMapPosition(new PVector(mouseX*2f/width-1, mouseY*2f/height-1));
+			PVector mousePos=normalizedToFloor(new PVector(mouseX*2f/width-1, mouseY*2f/height-1));
 			if (prevMousePressed) {
 				mouseVel.mult(0.9f);
 				mouseVel.add(PVector.mult(PVector.sub(mousePos, prevMousePos),0.1f*frameRate));
@@ -313,13 +313,13 @@ public class Tracker extends PApplet {
 		return new PVector(velInMetersPerSecond.x*2f/(Tracker.maxx-Tracker.minx),-velInMetersPerSecond.y*2f/(Tracker.maxy-Tracker.miny));
 	}
 	
-	public static PVector mapPosition(float x, float y) {
-		return mapPosition(new PVector(x,y));
+	public static PVector floorToNormalized(float x, float y) {
+		return floorToNormalized(new PVector(x,y));
 	}
 
 	// Map position in meters to normalized position where (minx,miny) maps to (-1,1) and (max,maxy) maps to (1,-1)
 	// (flipped y-coord for screen use)
-	public static PVector mapPosition(PVector raw) {
+	public static PVector floorToNormalized(PVector raw) {
 		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
 		PVector result=PVector.sub(raw,mid);
 		result.rotate((float)Math.toRadians(Tracker.screenrotation));
@@ -330,7 +330,7 @@ public class Tracker extends PApplet {
 		return result;
 	}
 	
-	public static PVector unMapPosition(PVector mapped) {
+	public static PVector normalizedToFloor(PVector mapped) {
 		PVector result=new PVector(mapped.x,mapped.y);
 		result.x=mapped.x*(Tracker.maxx-Tracker.minx)/2.0f;
 		result.y=mapped.y*(Tracker.maxy-Tracker.miny)/2.0f;
@@ -342,10 +342,10 @@ public class Tracker extends PApplet {
 	}
 	
 	public void resetcoords() {
-		PVector tl=mapPosition(Tracker.rawminx,Tracker.rawmaxy);
-		PVector tr=mapPosition(Tracker.rawmaxx,Tracker.rawmaxy);
-		PVector bl=mapPosition(Tracker.rawminx,Tracker.rawminy);
-		PVector br=mapPosition(Tracker.rawmaxx,Tracker.rawminy);
+		PVector tl=floorToNormalized(Tracker.rawminx,Tracker.rawmaxy);
+		PVector tr=floorToNormalized(Tracker.rawmaxx,Tracker.rawmaxy);
+		PVector bl=floorToNormalized(Tracker.rawminx,Tracker.rawminy);
+		PVector br=floorToNormalized(Tracker.rawmaxx,Tracker.rawminy);
 		Tracker.minx=Math.min(Math.min(tl.x,tr.x),Math.min(bl.x,br.x));
 		Tracker.maxx=Math.max(Math.max(tl.x,tr.x),Math.max(bl.x,br.x));
 		Tracker.miny=Math.min(Math.min(tl.y,tr.y),Math.min(bl.y,br.y));

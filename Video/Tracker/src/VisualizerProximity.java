@@ -124,8 +124,8 @@ public class VisualizerProximity extends VisualizerPS {
 			if (id2==-1)
 				continue;
 			laser.shapeBegin("prox:"+id1+"-"+id2);
-			PVector p1 = Tracker.unMapPosition(p.get(id1).getNormalizedPosition());
-			PVector p2 = Tracker.unMapPosition(p.get(id2).getNormalizedPosition());
+			PVector p1 = Tracker.normalizedToFloor(p.get(id1).getNormalizedPosition());
+			PVector p2 = Tracker.normalizedToFloor(p.get(id2).getNormalizedPosition());
 //			PApplet.println("Drawing line "+p1+" to "+p2);
 			laser.line(p1.x,p1.y,p2.x,p2.y);
 			laser.shapeEnd("prox:"+id1+"-"+id2);

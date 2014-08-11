@@ -253,7 +253,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 	
 	PVector pntToWorld(Pnt p) {
 		PVector normalized=new PVector((float)p.coord(0),(float)p.coord(1));
-		return Tracker.unMapPosition(normalized);
+		return Tracker.normalizedToFloor(normalized);
 	}
 	
 	// Draw to laser
@@ -316,8 +316,8 @@ public class VisualizerVoronoi extends VisualizerPS {
 				if (hasLine && v.playing) {
 					float rx=parent.randomGaussian()*0.1f;
 					float ry=parent.randomGaussian()*0.1f;
-					PVector scoord1=Tracker.unMapPosition(v.mainline[0]);
-					PVector scoord2=Tracker.unMapPosition(v.mainline[1]);
+					PVector scoord1=Tracker.normalizedToFloor(v.mainline[0]);
+					PVector scoord2=Tracker.normalizedToFloor(v.mainline[1]);
 					laser.line(scoord1.x+rx, scoord1.y+ry, scoord2.x+rx, scoord2.y+ry);
 				}
 			}

@@ -298,8 +298,8 @@ public class VisualizerTron extends Visualizer {
 //						}
 					} else {
 						float inset=0.1f;
-						PVector c1=Tracker.unMapPosition(new PVector(i*2.0f/gridWidth-1,(j+1)*2.0f/gridHeight-1));
-						PVector c2=Tracker.unMapPosition(new PVector((i+1)*2.0f/gridWidth-1,j*2.0f/gridHeight-1));	
+						PVector c1=Tracker.normalizedToFloor(new PVector(i*2.0f/gridWidth-1,(j+1)*2.0f/gridHeight-1));
+						PVector c2=Tracker.normalizedToFloor(new PVector((i+1)*2.0f/gridWidth-1,j*2.0f/gridHeight-1));	
 						laser.shapeBegin("Grid"+(i*gridHeight+j));
 						if (currentgrid.containsKey(gid) && currentgrid.get(gid)==i*gridHeight+j) {
 //							PApplet.println("c1="+c1+", c2="+c2);

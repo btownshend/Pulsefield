@@ -26,11 +26,11 @@ public class Person {
 	
 	// Convert to normalized position - in range [-1,1] for extent of pulsefield
 	PVector getNormalizedPosition() {
-		return Tracker.mapPosition(position);
+		return Tracker.floorToNormalized(position);
 	}
 
 	void setNormalizedPosition(PVector position) {
-		this.position = Tracker.unMapPosition(position);
+		this.position = Tracker.normalizedToFloor(position);
 	}
 
 	PVector getNormalizedVelocity() {

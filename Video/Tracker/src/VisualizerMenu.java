@@ -73,7 +73,7 @@ public class VisualizerMenu extends VisualizerDot {
 		for(int index : visualizerIndices) {
 			// TODO Improved location finding.
 			while(true) {
-				PVector proposedPosition = Tracker.unMapPosition(new PVector(
+				PVector proposedPosition = Tracker.normalizedToFloor(new PVector(
 						(float)((Math.random() * 1.8) - 0.9), 
 						(float)((Math.random() * 1.8) - 0.9)));
 				float minDistance = Float.NaN;
@@ -130,7 +130,7 @@ public class VisualizerMenu extends VisualizerDot {
 		parent.textAlign(PConstants.CENTER, PConstants.CENTER);
 		parent.textSize(50);
 		for(MenuItem item : menuItems) {
-			PVector pos = Tracker.mapPosition(item.position);
+			PVector pos = Tracker.floorToNormalized(item.position);
 			PVector sz = Tracker.mapVelocity(new PVector(SELECTION_DISTANCE, SELECTION_DISTANCE));
 			parent.ellipse((pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2, sz.x*wsize.x/2, sz.y*wsize.y/2);
 			parent.text(item.name, (pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2);

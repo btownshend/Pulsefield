@@ -145,8 +145,8 @@ public class VisualizerGuitar extends VisualizerPS {
 		laser.shapeBegin("frets");
 		for (int i=0;i<GString.nfrets;i++) {
 			float xpos=GString.frets[i]*laserScaling;
-			PVector p1=Tracker.unMapPosition(new PVector(xpos,laserScaling*(GString.minstring-.05f)));
-			PVector p2=Tracker.unMapPosition(new PVector(xpos,laserScaling*(GString.maxstring+.05f)));		
+			PVector p1=Tracker.normalizedToFloor(new PVector(xpos,laserScaling*(GString.minstring-.05f)));
+			PVector p2=Tracker.normalizedToFloor(new PVector(xpos,laserScaling*(GString.maxstring+.05f)));		
 			laser.line(p1.x,p1.y,p2.x,p2.y);
 		}
 		laser.shapeEnd("frets");
@@ -154,10 +154,10 @@ public class VisualizerGuitar extends VisualizerPS {
 		for (int i=0;i<strings.length;i++) {
 			GString s=strings[i];
 			float ypos=laserScaling*s.position;
-			PVector p1=Tracker.unMapPosition(new PVector(laserScaling*GString.nut,ypos));
-			PVector p2=Tracker.unMapPosition(new PVector(laserScaling*GString.bridge,ypos));	
+			PVector p1=Tracker.normalizedToFloor(new PVector(laserScaling*GString.nut,ypos));
+			PVector p2=Tracker.normalizedToFloor(new PVector(laserScaling*GString.bridge,ypos));	
 			if (s.isVibrating()) {
-				PVector pf=Tracker.unMapPosition(new PVector(GString.frets[s.fret],ypos));	
+				PVector pf=Tracker.normalizedToFloor(new PVector(GString.frets[s.fret],ypos));	
 				float amp=(1-s.fracOfVibrate())*s.velocity/127.0f ;
 				PVector mid=PVector.mult(PVector.add(pf,p2),0.5f);
 				mid.y+=Math.sin(2*Math.PI*s.elapsedTime()*5)*laserScaling*(strings[1].position-strings[0].position)*3*amp;  

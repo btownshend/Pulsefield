@@ -27,7 +27,7 @@ class Ball {
 		parent.strokeWeight(2.0f);
 		parent.stroke(color,255);
 //		PApplet.println("Ball at "+((position.x+1)*wsize.x/2)+","+((position.y+1)*wsize.y/2));
-		PVector p=Tracker.mapPosition(position);
+		PVector p=Tracker.floorToNormalized(position);
 		PVector nRadius=Tracker.mapVelocity(new PVector(radius,radius));
 //		parent.ellipse((p.x+1)*wsize.x/2, (p.y+1)*wsize.y/2, nRadius.x*2*wsize.x/2, nRadius.y*2*wsize.y/2);
 		parent.shape(ballShape,(p.x+1-nRadius.x)*wsize.x/2, (p.y+1-nRadius.y)*wsize.y/2,nRadius.x*2*wsize.x/2, nRadius.y*2*wsize.y/2);
@@ -103,7 +103,7 @@ public class VisualizerSoccer extends VisualizerDot {
 		Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",1.0f);
 		// Other initialization when this app becomes active
-		ball=new Ball(Tracker.unMapPosition(new PVector(0f,0f)),Tracker.unMapPosition(new PVector(0.1f,0.2f)));
+		ball=new Ball(Tracker.normalizedToFloor(new PVector(0f,0f)),Tracker.normalizedToFloor(new PVector(0.1f,0.2f)));
 	}
 	
 	@Override

@@ -136,8 +136,8 @@ public class VisualizerGrid extends VisualizerPS {
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
 			int cell=entry.getValue();
 			PVector gcenter=new PVector(gposx[cell],gposy[cell]);
-			PVector tl = Tracker.unMapPosition(PVector.sub(gcenter, gridOffset));
-			PVector br = Tracker.unMapPosition(PVector.add(gcenter, gridOffset));
+			PVector tl = Tracker.normalizedToFloor(PVector.sub(gcenter, gridOffset));
+			PVector br = Tracker.normalizedToFloor(PVector.add(gcenter, gridOffset));
 			//PApplet.println("Drawing rect "+tl+" to "+br);
 			laser.shapeBegin("gridcell"+cell);
 			laser.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
