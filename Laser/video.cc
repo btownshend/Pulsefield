@@ -605,18 +605,20 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 	 cairo_stroke(cr);
 	 }
 
-	 if (lasers->getFlag("fiducials"))
+	 if (lasers->getFlag("fiducials")) {
 	     // Draw anchor points
 	     for (unsigned int i=0;i<4;i++) {
 		 Point pt=laser->getTransform().getFloorPoint(i);
 		 //Color c=Color::getBasicColor(i);
 		 //	     cairo_set_source_rgb (cr,c.red(), c.green(), c.blue());
 		 cairo_move_to(cr,pt.X(),pt.Y());
-		 cairo_arc(cr,pt.X(),pt.Y(),10*pixel,-i*M_PI/2,-i*M_PI/2+3*M_PI/2);
+		 // Need to flip y orientiation of fiducial so it looks the same as in laser windows
+		 cairo_arc(cr,pt.X(),pt.Y(),10*pixel,-i*M_PI/2+M_PI,-i*M_PI/2+3*M_PI/2+M_PI);
 		 cairo_line_to(cr,pt.X(),pt.Y());
 		 cairo_stroke(cr);
 		 xrefs.refresh(cr,laser,*this,i,false,pt);
 	     }
+	 }
 
 	 // Draw points
 	 if (points.size() > 1) {
