@@ -15,7 +15,8 @@ class Dancer {
 	PVector neutral;
 	PVector current;
 	int score;
-
+	final float MINMOVEDIST=.01f;
+	
 	Dancer(PVector pos) {
 		neutral=new PVector();
 		neutral.x=pos.x; neutral.y=pos.y;
@@ -29,6 +30,21 @@ class Dancer {
 		current.x=newpos.x;
 		current.y=newpos.y;
 	}
+	public int getAim() {
+		PVector offset=new PVector(current.x,current.y);
+		offset.sub(neutral);
+		float angle=offset.heading();
+		float dist=offset.mag();
+		int quad=(int)Math.round(angle/(Math.PI/2));
+//		PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
+		if (dist >= MINMOVEDIST)
+			return (quad+4)%4;
+		return -1;
+	}
+	public void incrementScore() {
+		score++;
+	}
+	public void setScore(int s) { score=s; }
 }
 
 enum Direction {
@@ -66,7 +82,6 @@ class Song {
 
 // Dance revolution visualizer
 public class VisualizerDDR extends Visualizer {
-	final float MINMOVEDIST=.01f;
 	ArrayList<Song> songs;
 	Simfile sf;
 	long startTime;
@@ -75,6 +90,7 @@ public class VisualizerDDR extends Visualizer {
 	Song cursong=null;
 	final float DOTSIZE=50f;
 	boolean active=false;
+	float lastClipPosition;
 	
 	HashMap<Integer, Dancer> dancers;
 
@@ -137,10 +153,34 @@ public class VisualizerDDR extends Visualizer {
 				iter.remove();
 			}
 		}
+		beat();
 	}
 
+	
+	// Called each time a beat passes by
 	public void beat() {
-		// Called each time a beat passes by
+		final int AIMS[]={2,3,1,0};
+		// Note ordering in SIM file is left(0),up(1),down(2),right(3)
+		// Ordering based on angle goes CCW starting from right, so it right(0),down(1),left(2),up(3)
+		// Check current positions to see who is doing the right stuff
+		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
+		int pattern=cursong.getSimfile().findClosestDifficulty(0);
+		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, lastClipPosition, clip.position);
+		lastClipPosition=clip.position;
+		for (NoteData n: notes) {
+			PApplet.println("At clip time "+clip.position+", note timestamp "+n.timestamp+", notes="+n.notes);
+			for (int i=0;i<n.notes.length()&&i<4;i++) {
+				if (n.notes.charAt(i) != '0') {
+					for (int id: dancers.keySet()) {
+						Dancer d=dancers.get(id);
+						PApplet.println("Dancer "+id+" has aim "+d.getAim());
+						if (d.getAim() == AIMS[i])
+							d.incrementScore();
+						//d.setScore(d.getAim());
+					}
+				}
+			}
+		}
 	}
 
 	public void start() {
@@ -177,8 +217,8 @@ public class VisualizerDDR extends Visualizer {
 		final float rightwidth=250;
 		final float rightmargin=50;
 
-		parent.imageMode(PConstants.CORNERS);
-		parent.image(cursong.getSimfile().getBanner(parent), 0, 0, wsize.x, wsize.y);
+		parent.imageMode(PConstants.CORNER);
+		parent.image(cursong.getSimfile().getBanner(parent), wsize.x/4, 0, wsize.x/2, wsize.y/4);
 		
 
 		drawScores(parent,p,new PVector(leftwidth,wsize.y));
@@ -192,6 +232,7 @@ public class VisualizerDDR extends Visualizer {
 		} else 
 			PApplet.println("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
 	}
+
 
 	public void drawPF(PApplet parent, People allpos, PVector wsize) {
 		final float ARROWSIZE=DOTSIZE;
@@ -209,22 +250,19 @@ public class VisualizerDDR extends Visualizer {
 				PApplet.println("drawPF: Person "+id+" not found");
 				continue;
 			}
-			PVector offset=new PVector(d.current.x,d.current.y);
-			offset.sub(d.neutral);
-			float angle=offset.heading();
-			float dist=offset.mag();
-			int quad=(int)Math.round(angle/(Math.PI/2));
+			int quad=d.getAim();
 			parent.pushMatrix();
 			parent.translate((d.neutral.x+1)*wsize.x/2,(d.neutral.y+1)*wsize.y/2);
 			parent.fill(p.getcolor(parent));
 			parent.ellipse(0,0,DOTSIZE,DOTSIZE);
 //			PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
-			if (dist >= MINMOVEDIST) {
+			if (quad>=0) {
 				parent.rotate((float)(quad*Math.PI/2+Math.PI));
 				parent.translate(-ARROWDIST, 0);
 				parent.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
-			} else
-				parent.shape(dancer, 0, 0, ARROWSIZE, ARROWSIZE);
+			} else {
+				//parent.shape(dancer, 0, 0, ARROWSIZE, ARROWSIZE);
+			}
 			parent.popMatrix();
 		}
 	}
@@ -272,7 +310,10 @@ public class VisualizerDDR extends Visualizer {
 			((Tracker)parent).cycle();
 		}
 	
-
+		if (cursong==null) {
+			PApplet.println("cursong=null");
+			return;
+		}
 		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, now-HISTORY, now-HISTORY+DURATION);
 //		PApplet.println("Have "+notes.size()+" notes.");
 		//parent.ellipse(wsize.x/2,wsize.y/2,100,100);
@@ -327,13 +368,10 @@ public class VisualizerDDR extends Visualizer {
 		for (int id: dancers.keySet()) {
 			laser.cellBegin(id);
 			Dancer d=dancers.get(id);
-			PVector offset=new PVector(d.current.x,d.current.y);
-			offset.sub(d.neutral);
-			float angle=offset.heading();
-			float dist=offset.mag();
-			int quad=(int)Math.round(angle/(Math.PI/2));
+
+			int quad=d.getAim();
 			//PApplet.println("Laser: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
-			if (dist>MINMOVEDIST)
+			if (quad>=0)
 				laser.svgfile("arrow4.svg", 0.0f, 0.0f, 0.5f, quad*90+180);
 			else
 				laser.svgfile("dancer4.svg", 0.0f, 0.0f, 0.5f,0f);				
