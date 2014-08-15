@@ -36,7 +36,10 @@ public class VisualizerMenu extends VisualizerDot {
 	private HashSet<Integer> getNextVisualizerIndexSet() {
 		HashSet<Integer> results = new HashSet<Integer>();
 		while(true) {
-			results.add(nextVisualizerIndex++);
+			PApplet.println("getNextSet: "+nextVisualizerIndex+": "+Tracker.selectable[nextVisualizerIndex]);
+			if (Tracker.selectable[nextVisualizerIndex])
+				results.add(nextVisualizerIndex);
+			nextVisualizerIndex++;
 			// If we reached the end of the list, we stop adding.
 			if (nextVisualizerIndex >= Tracker.visnames.length) {
 				nextVisualizerIndex = 0;
@@ -49,6 +52,7 @@ public class VisualizerMenu extends VisualizerDot {
 				break;
 			}
 		}
+		PApplet.println("Result="+results);
 		return results;
 	}
 	

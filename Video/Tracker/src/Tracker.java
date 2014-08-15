@@ -31,6 +31,7 @@ public class Tracker extends PApplet {
 	VisualizerChuck visChuck;
 	public static final String visnames[]={"Pads","Navier","Tron","Ableton","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Icon","Soccer","Menu"};
 	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3","3/4"};
+	public static boolean selectable[]={true,true,true,true,true,true,true,true,true,true,true,true,true,false,true};
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK;
 	People people;
@@ -458,7 +459,11 @@ public class Tracker extends PApplet {
 	}
 	
 	public void cycle() {
-		setapp((currentvis+1)%vis.length);
+		int newvis=currentvis;
+		do {
+			newvis=(newvis+1)%vis.length;
+		} while (!selectable[newvis]);
+		setapp(newvis);
 //		Calendar cal=Calendar.getInstance();
 //		int hour=cal.get(Calendar.HOUR_OF_DAY);
 //		PApplet.println("Autocycling hour = "+hour);
