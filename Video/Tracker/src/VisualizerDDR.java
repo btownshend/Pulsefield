@@ -89,7 +89,6 @@ public class VisualizerDDR extends Visualizer {
 	PShape dancer;
 	Song cursong=null;
 	final float DOTSIZE=50f;
-	boolean active=false;
 	float lastClipPosition;
 	
 	HashMap<Integer, Dancer> dancers;
@@ -132,11 +131,21 @@ public class VisualizerDDR extends Visualizer {
 		OscMessage msg=new OscMessage("/video/ddr/song");
 		msg.add(cursong.sf.getTag("TITLE"));
 		TouchOSC.getInstance().sendMessage(msg);
-		if (active)
-			Ableton.getInstance().playClip(cursong.track,cursong.clipNumber);
+		Ableton.getInstance().playClip(cursong.track,cursong.clipNumber);
 	}
 	
 	public void update(PApplet parent, People allpos) {
+		if (allpos.pmap.isEmpty()) {
+			if (cursong!=null) {
+				Ableton.getInstance().stopClip(cursong.track,cursong.clipNumber);
+				cursong=null;
+			} 
+		} else if (cursong==null)
+			chooseSong();
+			
+		if (cursong==null)
+			return;
+		
 		// Update internal state of the dancers
 		for (int id: allpos.pmap.keySet()) {
 			if (!dancers.containsKey(id))
@@ -187,14 +196,13 @@ public class VisualizerDDR extends Visualizer {
 		super.start();
 		startTime=System.currentTimeMillis();
 		PApplet.println("Starting DDR at "+startTime);
-		active=true;
 		Ableton.getInstance().setTrackSet("DD");
 		if (songs==null) {
 			songs=new ArrayList<Song>();
 			songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/StepMix 1.0/Impossible Fidelity/","impossible.sm",0));
 			songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/Plaguemix Series/Super Trouper","supertrouper.sm",1));
 		}
-		chooseSong();
+		cursong=null;
 		Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
 	}
@@ -202,15 +210,16 @@ public class VisualizerDDR extends Visualizer {
 	public void stop() {
 		super.stop();
 		PApplet.println("Stopping DDR at "+System.currentTimeMillis());
-		Ableton.getInstance().stopClip(cursong.track,cursong.clipNumber);
-		active=false;
-		cursong=null;
+		if (cursong!=null) {
+			Ableton.getInstance().stopClip(cursong.track,cursong.clipNumber);
+			cursong=null;
+		}
 	}
 
 	@Override
 	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent,p,wsize);
-		if (p.pmap.isEmpty())
+		if (p.pmap.isEmpty() || cursong==null)
 			return;
 		
 		final float leftwidth=150;
