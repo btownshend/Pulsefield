@@ -225,7 +225,7 @@ void *Video::runDisplay(void *arg) {
 	    dbg("Video.runDisplay",5) << "No events" << std::endl;
 	    if (world->dirty)
 		world->update();
-	    usleep(1000);
+	    usleep(50000);
 	}
     }
 }
