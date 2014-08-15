@@ -311,7 +311,7 @@ public class Tracker extends PApplet {
 	}
 
 	public static PVector mapVelocity(PVector velInMetersPerSecond) {
-		return new PVector(velInMetersPerSecond.x*2f/(Tracker.maxx-Tracker.minx),-velInMetersPerSecond.y*2f/(Tracker.maxy-Tracker.miny));
+		return new PVector(-velInMetersPerSecond.x*2f/(Tracker.maxx-Tracker.minx),velInMetersPerSecond.y*2f/(Tracker.maxy-Tracker.miny));
 	}
 	
 	public static PVector floorToNormalized(float x, float y) {
