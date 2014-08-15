@@ -201,6 +201,7 @@ public class VisualizerDDR extends Visualizer {
 			songs=new ArrayList<Song>();
 			songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/StepMix 1.0/Impossible Fidelity/","impossible.sm",0));
 			songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/Plaguemix Series/Super Trouper","supertrouper.sm",1));
+			songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/Plaguemix Series/Krupa","krupa.sm",2));
 		}
 		cursong=null;
 		Laser.getInstance().setFlag("body",0.0f);
