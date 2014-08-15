@@ -1,0 +1,96 @@
+package MusicVisualizer;
+
+import ddf.minim.AudioSource;
+import processing.core.PApplet;
+import processing.core.PConstants;
+import processing.core.PGraphics;
+
+
+// the code for the isometric renderer was deliberately taken from Jared C.'s wavy sketch 
+// ( http://www.openprocessing.org/visuals/?visualID=5671 )
+
+public class IsometricRenderer extends FourierRenderer {
+
+  int r = 7;
+  float squeeze = .5f;
+
+  float a, d;
+  float val[];
+  int n;
+  PGraphics pg;
+
+  public IsometricRenderer(PApplet parent, AudioSource source) {
+    super(source);
+    n = (int)Math.ceil(Math.sqrt(2) * r);
+    d = Math.min(parent.width, parent.height) / r / 5;
+    val = new float[n];
+    reset(parent);
+  }
+
+  public void setup(PApplet parent) { 
+    reset(parent);
+  } 
+
+  void reset(PApplet parent) {
+    
+    // Offscreen P2D renderer (fastest)
+    pg = parent.createGraphics(parent.width, parent.height,PConstants.P2D);
+    
+    // Alternatively use Java2D (sharper)
+    // pg = createGraphics(width, height, JAVA2D);
+    
+  }
+
+  public void draw(PApplet parent) {
+
+    if (left != null) {
+
+      pg.beginDraw();
+      pg.colorMode(PApplet.RGB, 6, 6, 6); 
+      pg.stroke(0);
+      //pg.noSmooth();
+      super.calc(n);
+
+      // actual values react with a delay
+      for (int i=0; i<n; i++) val[i] = PApplet.lerp(val[i], (float)Math.pow(leftFFT[i], squeeze), .1f);
+
+      a -= 0.08; 
+      pg.background(6);  
+      for (int x = -r; x <= r; x++) { 
+        for (int z = -r; z <= r; z++) { 
+          int y = (int) ( parent.height/3 * val[(int) PApplet.dist(x, z, 0, 0)]); 
+
+          float xm = x*d - d/2; 
+          float xt = x*d + d/2; 
+          float zm = z*d - d/2; 
+          float zt = z*d + d/2; 
+
+          int w0 = (int) parent.width/2; 
+          int h0 = (int) parent.height * 2/3; 
+
+          int isox1 = (int)(xm - zm + w0); 
+          int isoy1 = (int)((xm + zm) * 0.5 + h0); 
+          int isox2 = (int)(xm - zt + w0); 
+          int isoy2 = (int)((xm + zt) * 0.5 + h0); 
+          int isox3 = (int)(xt - zt + w0); 
+          int isoy3 = (int)((xt + zt) * 0.5 + h0); 
+          int isox4 = (int)(xt - zm + w0); 
+          int isoy4 = (int)((xt + zm) * 0.5 + h0); 
+
+          // pg.hint(DISABLE_DEPTH_TEST);
+          pg.fill (2); 
+          pg.quad(isox2, isoy2-y, isox3, isoy3-y, isox3, isoy3+d, isox2, isoy2+d); 
+          pg.fill (4); 
+          pg.quad(isox3, isoy3-y, isox4, isoy4-y, isox4, isoy4+d, isox3, isoy3+d); 
+
+          pg.fill((int)(4 + y / 2.0 / d)); 
+          pg.quad(isox1, isoy1-y, isox2, isoy2-y, isox3, isoy3-y, isox4, isoy4-y); 
+          // pg.hint(ENABLE_DEPTH_TEST);
+        }
+      }
+    }
+    pg.endDraw();
+    parent.image(pg, 0, 0);
+  }
+}
+

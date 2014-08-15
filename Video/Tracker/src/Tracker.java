@@ -29,9 +29,9 @@ public class Tracker extends PApplet {
 	VisualizerDDR visDDR;
 	VisualizerDot visDot;
 	VisualizerChuck visChuck;
-	public static final String visnames[]={"Pads","Navier","Tron","Ableton","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Icon","Soccer","Menu"};
-	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3","3/4"};
+	public static final String visnames[]={"Pads","Navier","Tron","Grid","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Icon","Soccer","Menu","Visualizer"};
 	public static boolean selectable[]={true,true,true,true,true,true,true,true,true,true,true,true,true,false,true};
+	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3","3/4","3/5"};
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK;
 	People people;
@@ -107,7 +107,8 @@ public class Tracker extends PApplet {
 		vis[11]=new VisualizerIcon(this);
 		vis[12]=new VisualizerSoccer(this);
 		vis[13]=new VisualizerMenu(this);
-		setapp(13);
+		vis[14]=new VisualizerMinim(this);
+		setapp(14);
 		
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");

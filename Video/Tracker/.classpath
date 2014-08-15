@@ -18,5 +18,10 @@
 	<classpathentry kind="lib" path="lib/processing/gluegen-rt.jar"/>
 	<classpathentry kind="lib" path="lib/processing/jogl-all-natives-macosx-universal.jar"/>
 	<classpathentry kind="lib" path="lib/processing/jogl-all.jar"/>
+	<classpathentry kind="lib" path="lib/processing/minim/library/minim.jar"/>
+	<classpathentry kind="lib" path="lib/processing/minim/library/jsminim.jar"/>
+	<classpathentry kind="lib" path="lib/processing/minim/library/tritonus_share.jar"/>
+	<classpathentry kind="lib" path="lib/processing/minim/library/mp3spi1.9.4.jar"/>
+	<classpathentry kind="lib" path="lib/processing/minim/library/jl1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
