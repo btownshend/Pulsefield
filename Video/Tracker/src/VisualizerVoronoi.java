@@ -277,6 +277,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 
 //			PVector cc=pntToWorld(triangle.getCircumcenter());
+			laser.shapeBegin(triangle.toString());
 			for (Pnt site: triangle) {
 				if (done.contains(site)) continue;
 				done.add(site);
@@ -323,6 +324,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 					laser.line(scoord1.x+rx, scoord1.y+ry, scoord2.x+rx, scoord2.y+ry);
 				}
 			}
+			laser.shapeEnd(triangle.toString());
 		}
 		
 		laser.bgEnd();
