@@ -56,8 +56,9 @@ class Notes  {
 					measure++;
 					noteNum=0;
 				} else {
-					notes.add(new NoteData(measure,noteNum,nsplit.length,n));
-					//System.out.println("Added <"+n+"> -> "+notes.get(notes.size()-1));
+					String n2=oneMove(n);
+					notes.add(new NoteData(measure,noteNum,nsplit.length,n2));
+					System.out.println("Added <"+n+"/"+n2+"> -> "+notes.get(notes.size()-1));
 					noteNum++;
 				}
 			}
@@ -65,6 +66,16 @@ class Notes  {
 		}
 	}
 
+	// Reduce a moves string to only one move at a time (no splits/steps)
+	public String oneMove(String n) {
+		for (int i=0;i<n.length();i++) {
+			if (n.charAt(i) != '0') {
+				return n.substring(0,i+1)+n.substring(i+1).replaceAll(".", "0");
+			}
+		}
+		return n;
+	}
+	
 	public int measures() {
 		return notes.get(notes.size()-1).measure;
 	}
