@@ -12,7 +12,7 @@ public class Tracker extends PApplet {
 	 */
 	private static boolean present = false;
 	private static boolean autocycle = false;
-	
+	private final float HOTSPOTRADIUS=0.3f;   // Radius of hot spot in meters
 	private static boolean starting = true;   // Disable bad OSC messages before setup
 	private static final long serialVersionUID = 1L;
 	int tick=0;
@@ -238,7 +238,7 @@ public class Tracker extends PApplet {
 		PVector menuHotSpot = new PVector(2, 1);
 		for(Person p : people.pmap.values()) {
 			PVector location = p.getOriginInMeters();
-			if(PVector.sub(location, menuHotSpot).mag() < 0.5) {
+			if(PVector.sub(location, menuHotSpot).mag() < HOTSPOTRADIUS) {
 				setapp(13);
 			}
 		}
