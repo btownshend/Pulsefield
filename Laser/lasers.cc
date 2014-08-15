@@ -142,7 +142,9 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
     // Split drawing among lasers
     static const float RASTERIZESPACING=0.01;	// Initial rasterization spacing
     drawing.rasterize(RASTERIZESPACING);    // Rasterize
+    //drawing.getPoints(RASTERIZESPACING).matlabDump("before clip");
     drawing.clip(bounds);	// Clip to active area
+    //drawing.getPoints(RASTERIZESPACING).matlabDump("after clip");
     std::vector<Drawing> dtmp=allocate(drawing,ranges);
 
     // Global drawing - applies to all lasers 
@@ -254,6 +256,8 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 	} else {
 	    dtmp[i].append(globalDrawing);
 	    lasers[i]->render(dtmp[i]);
+	    //	    globalDrawing.getPoints(0.01).matlabDump("global_orig");
+	    //	    lasers[i]->render(globalDrawing);
 	}
     }
     dbg("Lasers.render",1) << "Render done" << std::endl;

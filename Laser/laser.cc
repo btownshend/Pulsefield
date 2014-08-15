@@ -138,14 +138,18 @@ void Laser::render(const Drawing &drawing) {
 	float drawLength=drawing.getLength();
 	spacing=std::max(drawLength/npoints,targetSegmentLen);
 	pts = transform.mapToDevice(drawing.getPoints(spacing).getPoints());
+	//CPoints(pts).matlabDump("before prune");
 	prune();
+	//CPoints(pts).matlabDump("after prune");
 	int nblanks=blanking();
+	//CPoints(pts).matlabDump("after blanking");
 	float effDrawLength=(pts.size()-nblanks)*spacing;
 	dbg("Laser.render",2) << "Initial point count = " << pts.size() << " with " << nblanks << " blanks at a spacing of " << spacing << " for " << drawing.getNumElements() << " elements." << std::endl;
 	dbg("Laser.render",2) << "Total drawing length =" << drawLength << ", drawable length=" << effDrawLength << std::endl;
 
 	if (pts.size()>npoints &&  pts.size() > nblanks+2) {
 	    spacing=std::max(effDrawLength/(npoints-nblanks),targetSegmentLen);
+	    //drawing.getPoints(spacing).matlabDump("render");
 	    pts = transform.mapToDevice(drawing.getPoints(spacing).getPoints());
 	    prune();
 	    nblanks=blanking();
