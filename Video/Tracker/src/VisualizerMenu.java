@@ -13,7 +13,7 @@ import processing.core.PVector;
 public class VisualizerMenu extends VisualizerDot {
 	
 	/** How many menu items to display at once (includes "next page" item). */
-	static final int ITEMS_PER_SCREENFUL = 5;
+	static final int ITEMS_PER_SCREENFUL = 20;
 	
 	/** Minimum distance from item to person/other item when initializing (in meters). */
 	static final float MIN_DISTANCE = 1.0f;
@@ -128,14 +128,16 @@ public class VisualizerMenu extends VisualizerDot {
 			return;
 		
 		parent.ellipseMode(PConstants.CENTER);
-		parent.fill(0xffffffff,255);
-		parent.stroke(0xffffffff,255);
+
+		parent.stroke(0xffffffff);
 		parent.textAlign(PConstants.CENTER, PConstants.CENTER);
-		parent.textSize(50);
+		parent.textSize(25);
 		for(MenuItem item : menuItems) {
 			PVector pos = Tracker.floorToNormalized(item.position);
 			PVector sz = Tracker.mapVelocity(new PVector(SELECTION_DISTANCE, SELECTION_DISTANCE));
+			parent.fill(0xff000000);
 			parent.ellipse((pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2, sz.x*wsize.x/2, sz.y*wsize.y/2);
+			parent.fill(0xffffffff);
 			parent.text(item.name, (pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2);
 		}
 	}
