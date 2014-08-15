@@ -175,7 +175,9 @@ public class VisualizerVoronoi extends VisualizerPS {
 	@Override
 	public void draw(PApplet parent, People allpos, PVector wsize) {
 		super.draw(parent, allpos, wsize);
-
+		if (allpos.pmap.isEmpty())
+			return;
+		
 		// Draw Voronoi diagram
 		// Keep track of sites done; no drawing for initial triangles sites
 		HashSet<Pnt> done = new HashSet<Pnt>(initialTriangle);

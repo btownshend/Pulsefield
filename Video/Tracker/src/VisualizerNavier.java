@@ -101,6 +101,8 @@ class VisualizerNavier extends Visualizer {
 //		super.draw(parent,p,wsize);
 		
 		if (p.pmap.isEmpty()) {
+			parent.background(0, 0, 0);  
+			parent.colorMode(PConstants.RGB, 255);
 			drawWelcome(parent,wsize);
 			return;
 		}

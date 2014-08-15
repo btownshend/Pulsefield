@@ -104,7 +104,8 @@ public class VisualizerGrid extends VisualizerPS {
 
 	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent,p, wsize);
-
+		if (p.pmap.isEmpty())
+			return;
 		parent.textSize(16);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {

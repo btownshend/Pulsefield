@@ -124,6 +124,9 @@ public class VisualizerMenu extends VisualizerDot {
 	@Override
 	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
+		if (p.pmap.isEmpty())
+			return;
+		
 		parent.ellipseMode(PConstants.CENTER);
 		parent.fill(0xffffffff,255);
 		parent.stroke(0xffffffff,255);

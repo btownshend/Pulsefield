@@ -104,6 +104,8 @@ public class VisualizerGuitar extends VisualizerPS {
 
 	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent,p,wsize);
+		if (p.pmap.isEmpty())
+			return;
 		parent.tint(127);
 		parent.imageMode(PConstants.CENTER);
 		parent.image(guitar, wsize.x/2, wsize.y/2, wsize.x, wsize.y);

@@ -126,6 +126,8 @@ public class VisualizerSoccer extends VisualizerDot {
 	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
 		ball.draw(parent,wsize);
+		if (p.pmap.isEmpty())
+			return;
 	}
 	
 	@Override
