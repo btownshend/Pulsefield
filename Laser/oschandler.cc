@@ -269,8 +269,9 @@ void OSCHandler::processIncoming() {
     struct timeval laserRenderTime;
     gettimeofday(&laserRenderTime,0);
     static const float RENDERPERIOD=0.05;  // Laser update rate -- should be around the same time as a etherdream frame duration
-    static const bool FAKEENABLE=false;
+    static const bool FAKEENABLE=true;
     static const float FRAMETIMEOUT= 1.0f;	// Timeout to inject a fake frame to keep the UI running
+    static const float FAKERATE=25;			// Rate of fake frames
     while (true) {
 	struct timeval now;
 	gettimeofday(&now,0);
@@ -293,9 +294,12 @@ void OSCHandler::processIncoming() {
 		video->setDirty();
 	    secsToNextRender=0;	// Only do a zero-timeout wait for incoming messages before checking again
 	}
-	if (FAKEENABLE && (now.tv_sec-lastFrameTime.tv_sec)+(now.tv_usec-lastFrameTime.tv_usec)/1e6 > FRAMETIMEOUT) {
-	    dbg("OSCHandler.processIncoming",1) << "Faking a frame message" << std::endl;
-	    pfframe(lastUpdateFrame?0:1);	// Simulate a frame message
+	if (FAKEENABLE) {
+	    float timeSinceLast= (now.tv_sec-lastFrameTime.tv_sec)+(now.tv_usec-lastFrameTime.tv_usec)/1e6;
+	    if ((lastUpdateFrame<=1 && timeSinceLast>1.0f/FAKERATE) || timeSinceLast> FRAMETIMEOUT) {
+		dbg("OSCHandler.processIncoming",1) << "Faking a frame message" << std::endl;
+		pfframe(lastUpdateFrame?0:1);	// Simulate a frame message
+	    }
 	}
 	int nbytes=lo_server_recv_noblock(s,(int)(secsToNextRender*1000+1));
 	dbg("OSCHandler.processIncoming",5) << "Received " << nbytes << " of OSC data" << std::endl;
