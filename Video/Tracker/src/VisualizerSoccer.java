@@ -35,7 +35,7 @@ class Ball {
 	
 	public void drawLaser(Laser laser,PApplet parent) {
 //		laser.circle(position.x,position.y, radius);
-		laser.svgfile("Soccerball.svg", position.x, position.y, radius*2, 0f);
+		laser.svgfile("Soccerball-outline.svg", position.x, position.y, radius*2, 0f);
 	}
 	
 	public void update(PApplet parent) {
@@ -103,7 +103,7 @@ public class VisualizerSoccer extends VisualizerDot {
 		Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",1.0f);
 		// Other initialization when this app becomes active
-		ball=new Ball(Tracker.normalizedToFloor(new PVector(0f,0f)),Tracker.normalizedToFloor(new PVector(0.1f,0.2f)));
+		ball=null;
 	}
 	
 	@Override
@@ -115,6 +115,8 @@ public class VisualizerSoccer extends VisualizerDot {
 
 	@Override
 	public void update(PApplet parent, People p) {
+		if (ball==null)
+			ball=new Ball(Tracker.normalizedToFloor(new PVector(0f,0f)),Tracker.normalizedToFloor(new PVector(0.1f,0.2f)));
 		// Update internal state
 		ball.update(parent);
 		for (Person ps: p.pmap.values()) {  
@@ -125,9 +127,10 @@ public class VisualizerSoccer extends VisualizerDot {
 	@Override
 	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
-		ball.draw(parent,wsize);
 		if (p.pmap.isEmpty())
 			return;
+		if (ball!=null)
+			ball.draw(parent,wsize);
 	}
 	
 	@Override
