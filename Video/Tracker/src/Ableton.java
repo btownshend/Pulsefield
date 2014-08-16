@@ -194,6 +194,7 @@ public class Ableton {
 		tracks = new HashMap<Integer,Track>();
 		tempo=120;
 		tracksets=new HashMap<String,TrackSet>();
+		// Note that the track and clip numbers here are 1 lower than they show in AL (since the OSC interface is 0-based)
 		addSong("QU","Quetzal",1,6,120,60);
 		addSong("PR","Pring",8,8,108,60);
 		addSong("OL","Oluminum",17,7,93,60);
@@ -211,8 +212,9 @@ public class Ableton {
 		addSong("Guitar", "Guitar",93,1,120,0);
 		addSong("Pads", "Pads",95,4,120,0);
 		addSong("Tron", "Tron",99,1,120,0);
-		addSong("Poly","Poly",100,1,120,0);
-		addSong("Navier", "Navier",101,4,120,0);
+		addSong("Poly","Poly",101,3,120,0);
+		addSong("Navier", "Navier",105,4,120,0);
+		addSong("SteelPan","Steel Pan",109,1,120,0);
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
 		// Clear track info
