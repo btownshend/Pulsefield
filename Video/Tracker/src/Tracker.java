@@ -397,6 +397,20 @@ public class Tracker extends PApplet {
 		for (int id: mousePeople.pmap.keySet()) {
 			Person p=mousePeople.get(id);
 			PApplet.println("Sending data for mouse person "+p.id);
+			// Do some rudimentary grouping
+			p.groupid=p.id;
+			p.groupsize=1;
+			for (int id2: mousePeople.pmap.keySet()) {
+				if (id2!=id) {
+					Person p2=mousePeople.get(id2);
+					float dist=PVector.dist(p.getOriginInMeters(),p2.getOriginInMeters());
+					if (dist<0.5f) {
+						p.groupid=Math.min(id,id2);
+						p.groupsize++;
+						PApplet.println("Mouse "+id+" and "+id2+" grouped with distance "+dist);
+					}
+				}
+			}
 			OscMessage msg=new OscMessage("/pf/frame");
 			msg.add(frame);
 			Laser.getInstance().sendMessage(msg);
