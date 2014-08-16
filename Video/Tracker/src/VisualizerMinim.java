@@ -13,7 +13,7 @@ public class VisualizerMinim extends Visualizer {
 	AudioRenderer radar, vortex, iso;
 	AudioRenderer[] visuals; 
 	int select;
-	final int numRenderers=2;
+	final int numRenderers=3;
 	
 	VisualizerMinim(PApplet parent) {
 		super();
