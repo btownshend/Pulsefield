@@ -39,10 +39,10 @@ public class RadarRenderer extends AudioRenderer {
       if(parent.frameCount % delay == 0 ) parent.image(parent.get(),-1.5f,-1.5f,(float)( parent.width + 3), (float)(parent.height + 3)); 
       
       // draw polar curve 
-      float r1=0, a1=0, x1=0, y1=0, r2=0, a2=0, x2=0, y2=0; 
+      float a1=0, x1=0, y1=0, r2=0, a2=0, x2=0, y2=0; 
       for(int i=0; i <= n; i++)
       {
-        r1 = r2; a1 = a2; x1 = x2; y1 = y2;
+        a1 = a2; x1 = x2; y1 = y2;
         r2 = left[i % n] ;
         a2 = PApplet.map((float)i,0f, (float)n, 0f, (float)(Math.PI * 2 * rotations));
         x2 = (float) (w + Math.cos(a2) * r2 * w2);
