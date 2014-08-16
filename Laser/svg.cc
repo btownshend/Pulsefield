@@ -41,7 +41,7 @@ void SVG::addToDrawing(Drawing &d,Point origin, float scale, float rotateDeg, Co
 	    for (int i=0;i<path->npts*2;i+=2) {
 		Point p(path->pts[i],path->pts[i+1]);
 		p=p-Point(width()/2,height()/2);	// Shift to put origin in center of bounding box
-		p=p.flipY(); // Flip y-axis since SVG has origin at top left
+		p=p.flipX(); // Flip x-axis
 		p=p.rotateDegrees(rotateDeg);  // Rotate around center
 		pts.push_back(p*scale+origin); // Scale and translate to desired location
 	    }

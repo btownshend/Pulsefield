@@ -38,6 +38,9 @@ class Point {
     Point flipY() const {
 	return Point(x,-y);
     }
+    Point flipX() const {
+	return Point(-x,y);
+    }
     Point rotate(float radians) const { 
 	return Point(x*cos(radians)-y*sin(radians),x*sin(radians)+y*cos(radians));
     }
