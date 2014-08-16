@@ -237,12 +237,12 @@ public class Tracker extends PApplet {
 			}
 			p.move(mousePos, mouseVel, mouseID, 1, tick/avgFrameRate);
 			Leg legs[]=p.legs;
-			legs[0].move(PVector.add(mousePos,new PVector(0.0f,-0.3f)),mouseVel);
-			legs[1].move(PVector.add(mousePos,new PVector(0.0f,0.3f)), mouseVel);
+			legs[0].move(PVector.add(mousePos,new PVector(0.0f,-0.15f)),mouseVel);
+			legs[1].move(PVector.add(mousePos,new PVector(0.0f,0.15f)), mouseVel);
 			prevMousePos=mousePos;
 			// Additional settings for sending OSC messages
-			p.diam=0.3f;
-			p.sep=0.6f;
+			p.diam=0.15f;
+			p.sep=0.3f;
 			p.groupid=p.id;
 			p.groupsize=1;
 //			PApplet.println("Moved mouse ID "+mouseID+" to "+mousePos+" with velocity "+p.getVelocityInMeters());
