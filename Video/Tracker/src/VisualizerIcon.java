@@ -39,15 +39,16 @@ public class VisualizerIcon extends Visualizer {
 		super.draw(parent, p, wsize);
 		if (p.pmap.isEmpty())
 			return;
+		parent.background(127);
 		parent.shapeMode(PApplet.CENTER);
-		final float sz=20;  // Size to make the icon's largest dimension, in pixels
+		final float sz=60;  // Size to make the icon's largest dimension, in pixels
 		for (Person ps: p.pmap.values()) {  
 			int c=ps.getcolor(parent);
 			parent.fill(c,255);
 			parent.stroke(c,255);
 			PShape icon=iconShapes[ps.id%iconShapes.length];
 			//icon.translate(-icon.width/2, -icon.height/2);
-			//PApplet.println("Display shape "+icon+" at "+ps.origin);
+//			PApplet.println("Display shape "+icon+" with native size "+icon.width+","+icon.height);
 			float scale=Math.min(sz/icon.width,sz/icon.height);
 			parent.shape(icon,(ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2,icon.width*scale,icon.height*scale);
 			//icon.resetMatrix();
