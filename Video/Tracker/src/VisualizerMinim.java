@@ -3,6 +3,7 @@ import processing.core.PVector;
 import MusicVisualizer.AudioRenderer;
 import MusicVisualizer.IsometricRenderer;
 import MusicVisualizer.RadarRenderer;
+import MusicVisualizer.VortexRenderer;
 import ddf.minim.Minim;
 
 
@@ -51,11 +52,11 @@ public class VisualizerMinim extends Visualizer {
 			// setup player
 			minim = new Minim(parent);
 			// setup renderers
-			//		vortex = new VortexRenderer(groove);
+			vortex = new VortexRenderer(parent,minim.getLineIn());
 			radar = new RadarRenderer(parent,minim.getLineIn());
 			iso = new IsometricRenderer(parent,minim.getLineIn());
 
-			visuals = new AudioRenderer[] {radar, /*vortex, */ iso};
+			visuals = new AudioRenderer[] {radar, vortex, iso};
 			visuals[select].setup(parent);
 			minim.getLineIn().addListener(visuals[select]);
 		}
