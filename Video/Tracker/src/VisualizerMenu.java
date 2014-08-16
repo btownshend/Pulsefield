@@ -11,7 +11,7 @@ import processing.core.PVector;
  * @author raphtown
  *
  */
-public class VisualizerMenu extends VisualizerDot {
+public class VisualizerMenu extends Visualizer {
 	int selectingPerson;
 	
 	/** How many menu items to display at once (includes "next page" item). */
@@ -21,7 +21,7 @@ public class VisualizerMenu extends VisualizerDot {
 	static final float MIN_DISTANCE = 1.0f;
 	
 	/** How far a person needs to be to be able to select the menu item (in meters). */
-	static final float SELECTION_DISTANCE = 0.5f;
+	static final float SELECTION_DISTANCE = 0.3f;
 	
 	static final float HOTSPOTRADIUS=0.3f;   // Radius of hot spot in meters
 
@@ -31,7 +31,7 @@ public class VisualizerMenu extends VisualizerDot {
 	static final String CURSOR="handCursor.svg";
 	
 	VisualizerMenu(PApplet parent) {
-		super(parent);
+		super();
 		selectingPerson=-1;
 		cursor=parent.loadShape(Tracker.SVGDIRECTORY+CURSOR);
 	}
@@ -63,7 +63,6 @@ public class VisualizerMenu extends VisualizerDot {
 			// If we reached the end of the list, we stop adding.
 			if (nextVisualizerIndex >= Tracker.visnames.length) {
 				nextVisualizerIndex = 0;
-				results.add(-1);
 				break;
 			}
 			// Want to leave one slot for more options
@@ -132,11 +131,15 @@ public class VisualizerMenu extends VisualizerDot {
 			((Tracker)parent).setapp(0);
 		}
 		Person ps=p.pmap.get(selectingPerson);
+		if (ps==null) {
+			PApplet.println("Selecting person "+selectingPerson+" not found");
+			return;
+		}
 		for(Leg leg : ps.legs) {
 			PVector legPosition = leg.getOriginInMeters();
 			for(MenuItem item : menuItems) {
 				float currDistance = PVector.dist(legPosition, item.position);
-				if(currDistance < SELECTION_DISTANCE + leg.getDiameterInMeters() / 2) {
+				if(currDistance < SELECTION_DISTANCE) {
 					if(item.visualizer != -1) {
 						((Tracker)parent).setapp(item.visualizer);
 					} else {
@@ -160,7 +163,7 @@ public class VisualizerMenu extends VisualizerDot {
 		parent.textSize(25);
 		for(MenuItem item : menuItems) {
 			PVector pos = Tracker.floorToNormalized(item.position);
-			PVector sz = Tracker.mapVelocity(new PVector(SELECTION_DISTANCE, SELECTION_DISTANCE));
+			PVector sz = Tracker.mapVelocity(new PVector(2*SELECTION_DISTANCE, 2*SELECTION_DISTANCE));
 			parent.fill(0xff000000);
 			parent.ellipse((pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2, sz.x*wsize.x/2, sz.y*wsize.y/2);
 			parent.fill(0xffffffff);
@@ -200,7 +203,7 @@ public class VisualizerMenu extends VisualizerDot {
 	public void start() {
 		super.start();
 		menuItems.clear();
-		Laser.getInstance().setFlag("body",1.0f);
+		Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
 	}
 }
