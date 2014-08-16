@@ -27,6 +27,7 @@ public abstract class Visualizer {
 	public void draw(PApplet parent, People p, PVector wsize) {
 		parent.background(0, 0, 0);  
 		parent.colorMode(PConstants.RGB, 255);
+		parent.rectMode(PApplet.CORNER);
 
 		if (p.pmap.isEmpty())
 			drawWelcome(parent,wsize);
