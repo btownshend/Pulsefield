@@ -397,7 +397,7 @@ public class Tracker extends PApplet {
 		float elapsed=0.0f;
 		for (int id: mousePeople.pmap.keySet()) {
 			Person p=mousePeople.get(id);
-			PApplet.println("Sending data for mouse person "+p.id);
+//			PApplet.println("Sending data for mouse person "+p.id);
 			// Do some rudimentary grouping
 			p.groupid=p.id;
 			p.groupsize=1;
