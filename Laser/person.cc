@@ -146,7 +146,8 @@ void Person::draw(Drawing &d) const  {
 	dbg("Person.draw",1) << "Drawing visual with " << visual->getNumElements() << " elements on drawing with " << d.getNumElements() << " elements at " << position << " after translating it by " << position-visPosition << std::endl;
 	visual->translate(position-visPosition);
 	((Person *)this)->visPosition=position;  // Need to override CONST
-	d.append(*visual);
+	for (int i=0;i<visual->getNumElements();i++)
+	    d.append(visual->getElement(i));  // Appends to current composite
 	dbg("Person.draw",1) << "Drawing now has " << d.getNumElements() << " elements" << std::endl;
     }
     d.shapeEnd("cell:"+std::to_string(id));
