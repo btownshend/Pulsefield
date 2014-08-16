@@ -44,6 +44,10 @@ std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
     for (int el=0;el<d.getNumElements();el++) {
 	std::shared_ptr<Composite> &c=d.getElement(el);
 
+	if (c->getNumElements()==0) {
+	    dbg("Lasers.allocate",1) << "Skipping " << c->getShapeID()->getID() << " since it is empty" << std::endl;
+	    continue;
+	}
 	// Get stats for drawing this composite from each of the lasers
 	// stats[i].fracOnScreen will be -1 for disabled lasers
 	std::vector<LaserStat> stats=computeStats(*c,ranges);
