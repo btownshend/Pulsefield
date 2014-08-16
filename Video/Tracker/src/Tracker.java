@@ -440,7 +440,7 @@ public class Tracker extends PApplet {
 			msg.add(0.0f);  // ey
 			msg.add(p.getVelocityInMeters().mag());  // speed
 			msg.add(0.0f);  // espeed
-			msg.add(p.getVelocityInMeters().heading());  // heading		
+			msg.add((float)(p.getVelocityInMeters().heading()*180/Math.PI-90));  // heading		
 			msg.add(0.0f);  // eheading
 			msg.add(0.0f);  // Facing
 			msg.add(0.0f);  // Efacing
@@ -465,7 +465,7 @@ public class Tracker extends PApplet {
 				msg.add(0.0f);  // error in y
 				msg.add(leg.getVelocityInMeters().mag()); // speed
 				msg.add(0.0f);  // espd
-				msg.add(leg.getVelocityInMeters().heading()); // heading
+				msg.add((float)(leg.getVelocityInMeters().heading()*180/Math.PI-90)); // heading
 				msg.add(0.0f);   // eheading
 				msg.add(1);      // visibility
 				sendOSC("Laser",msg); sendOSC("VD",msg);
