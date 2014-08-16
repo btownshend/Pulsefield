@@ -121,6 +121,26 @@ class PolyState {
 			}
 		}
 	}
+	void drawLaser(PVector center, float maxRadius, int totalBeats, int row) {
+		Laser laser=Laser.getInstance();
+		if (playing) {
+			laser.shapeBegin("circle"+mybeat);
+			laser.circle(center.x, center.y, mybeat*maxRadius/totalBeats);
+			laser.shapeEnd("circle"+mybeat);
+		}
+		if (pos.groupsize > 1) {
+			final int NBOLTS=20;
+			float BOLTLENGTH=(Tracker.rawmaxy-Tracker.rawminy)/20*pos.groupsize;
+			for (int k=0;k<NBOLTS;k++)
+				if (Math.random() < 0.2) {
+					PVector delta=new PVector((float)Math.cos(Math.PI*2*k/NBOLTS)*BOLTLENGTH,(float)Math.sin(Math.PI*2*k/NBOLTS)*BOLTLENGTH);
+					PVector origin=pos.getOriginInMeters();
+					laser.shapeBegin("bolt"+pos.id);
+					laser.line(origin.x,origin.y,origin.x+delta.x,origin.y+delta.y);
+					laser.shapeEnd("bolt"+pos.id);
+				}
+		}
+	}
 }
 
 public class VisualizerPoly extends Visualizer {
@@ -214,10 +234,10 @@ public class VisualizerPoly extends Visualizer {
 		laser.bgBegin();
 
 		// Draw each position and fired rings
+		int pos=0;
 		for (PolyState ps: poly.values()) {
-			//ps.drawLaser(totalBeats,pos,synth);
-			if (ps.playing)
-				laser.circle(center.x, center.y, ps.mybeat*maxRadius/totalBeats);
+			ps.drawLaser(center,maxRadius,totalBeats,pos);
+			pos++;	
 		}
 		laser.bgEnd();
 	}
