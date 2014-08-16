@@ -16,7 +16,7 @@ public class VisualizerIcon extends Visualizer {
 		this.icons=ic;
 		iconShapes=new PShape[icons.length];
 		for (int i=0;i<iconShapes.length;i++) {
-			iconShapes[i]=parent.loadShape(icons[i]);
+			iconShapes[i]=parent.loadShape(Tracker.SVGDIRECTORY+icons[i]);
 			assert(iconShapes[i]!=null);
 			PApplet.println("Loaded "+icons[i]+" with "+iconShapes[i].getChildCount()+" children, size "+iconShapes[i].width+"x"+iconShapes[i].height);
 		}

@@ -97,7 +97,7 @@ public class VisualizerDDR extends Visualizer {
 		super();
 		dancers = new HashMap<Integer, Dancer>();
 		arrow = parent.loadImage("arrow3.png");
-		dancer=parent.loadShape("dancer4.svg");
+		dancer=parent.loadShape(Tracker.SVGDIRECTORY+"dancer4.svg");
 		assert(dancer!=null);
 		songs=null;  // Initialize in start()
 	}

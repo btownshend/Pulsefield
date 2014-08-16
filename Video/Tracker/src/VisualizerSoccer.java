@@ -20,7 +20,7 @@ class Ball {
 	
 	public void draw(PApplet parent, PVector wsize) {
 		if (ballShape==null)
-			ballShape=parent.loadShape("Soccerball.svg");
+			ballShape=parent.loadShape(Tracker.SVGDIRECTORY+"Soccerball.svg");
 		final int color=0xffffffff;
 		parent.ellipseMode(PConstants.CENTER);
 		parent.fill(color,0);
