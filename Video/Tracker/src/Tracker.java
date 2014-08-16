@@ -344,6 +344,24 @@ public class Tracker extends PApplet {
 		return result;
 	}
 	
+	/* Not currently used... TODO
+	// Convert from floor coordinate (in meters) to window position in given window size
+	// Keep scaling same in x and y direction, so may result in less than full utilization of window
+	public static PVector floorToScreen(PVector floor, PVector wsize) {
+		float scaling=Math.min(wsize.x/(rawmaxx-rawminx),wsize.y/(rawmaxy-rawminy));
+		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
+		PVector result=new PVector(-(floor.x-mid.x)*scaling+wsize.x/2,-(floor.y-mid.y)*scaling+wsize.y/2);
+		return result;
+	}
+	
+	public static PVector screenToFloor(PVector screen, PVector wsize) {
+		float scaling=Math.min(wsize.x/(rawmaxx-rawminx),wsize.y/(rawmaxy-rawminy));
+		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
+		PVector result=new PVector((wsize.x/2-screen.x)/scaling+mid.x,(wsize.y/2-screen.y)/scaling+mid.y);
+		return result;
+	}
+	*/
+	
 	public static PVector normalizedToFloor(PVector mapped) {
 		PVector result=new PVector(mapped.x,mapped.y);
 		result.x=mapped.x*(Tracker.maxx-Tracker.minx)/2.0f;
