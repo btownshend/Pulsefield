@@ -29,7 +29,7 @@ public class Tracker extends PApplet {
 	VisualizerDot visDot;
 	VisualizerChuck visChuck;
 	VisualizerMenu visMenu;
-	public static final String visnames[]={"Pads","Navier","Tron","Grid","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Icon","Soccer","Menu","Visualizer"};
+	public static final String visnames[]={"Pads","Navier","Tron","Grid","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Cows","Soccer","Menu","Visualizer"};
 	public static boolean selectable[]={true,true,true,true,true,true,true,true,true,true,true,true,true,false,true};
 	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3","3/4","3/5"};
 	int currentvis=-1;
@@ -104,7 +104,7 @@ public class Tracker extends PApplet {
 		vis[8]=new VisualizerDot(this);
 		vis[9]=new VisualizerChuck(this);
 		vis[10]=new VisualizerProximity(this);
-		vis[11]=new VisualizerIcon(this);
+		vis[11]=new VisualizerCows(this);
 		vis[12]=new VisualizerSoccer(this);
 		visMenu=new VisualizerMenu(this);vis[13]=visMenu;
 		vis[14]=new VisualizerMinim(this);

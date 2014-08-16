@@ -5,11 +5,15 @@ import processing.core.PVector;
 // Visualizer that just displays a dot for each person
 
 public class VisualizerIcon extends Visualizer {
-	String icons[]={"P1.svg","P2.svg"};
+	String icons[];
 	PShape iconShapes[];
 	
 	VisualizerIcon(PApplet parent) {
 		super();
+	}
+	
+	public void setIcons(PApplet parent, String ic[]) {
+		this.icons=ic;
 		iconShapes=new PShape[icons.length];
 		for (int i=0;i<iconShapes.length;i++) {
 			iconShapes[i]=parent.loadShape(icons[i]);
@@ -17,17 +21,16 @@ public class VisualizerIcon extends Visualizer {
 			PApplet.println("Loaded "+icons[i]+" with "+iconShapes[i].getChildCount()+" children, size "+iconShapes[i].width+"x"+iconShapes[i].height);
 		}
 	}
-	
 	public void start() {
 		super.start();
 		Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
 	}
+	
 	public void stop() {
 		super.stop();
 	}
 
-	
 	public void update(PApplet parent, People p) {
 		;
 	}
