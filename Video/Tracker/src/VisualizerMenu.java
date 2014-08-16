@@ -174,7 +174,8 @@ public class VisualizerMenu extends VisualizerDot {
 		parent.fill(c,255);
 		parent.stroke(c,255);
 		PApplet.println("Drawing cursor with scaling="+scale);
-		parent.shape(cursor,(ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2,cursor.width*scale,cursor.height*scale);
+		// cursor seems shifted
+		parent.shape(cursor,(ps.getNormalizedPosition().x+1)*wsize.x/2-cursor.width*scale*0.4f, (ps.getNormalizedPosition().y+1)*wsize.y/2-cursor.height*scale*0.2f,cursor.width*scale,cursor.height*scale);
 	}
 	
 	@Override
@@ -191,7 +192,7 @@ public class VisualizerMenu extends VisualizerDot {
 		}
 		laser.bgEnd();
 		laser.cellBegin(selectingPerson);
-		laser.svgfile(CURSOR,0.35f,0.35f,0.7f,180.0f);
+		laser.svgfile(CURSOR,-0.3f,0.4f,1.0f,0.0f);
 		laser.cellEnd(selectingPerson);
 	}
 	
