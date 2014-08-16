@@ -289,17 +289,17 @@ public class VisualizerTron extends Visualizer {
 						float w = (c2.x-c1.x)*(explosionFrames-g.exploding)/explosionFrames;
 						float h = (c2.y-c1.y)*(explosionFrames-g.exploding)/explosionFrames;
 						float disp=(Tracker.rawmaxx-Tracker.rawminx)*g.exploding/explosionFrames;
-						PApplet.println("exploding="+g.exploding+", w="+w+", h="+h+", disp="+disp);
+//						PApplet.println("exploding="+g.exploding+", w="+w+", h="+h+", disp="+disp);
 						laser.rect(c1.x,c1.y+disp,w,h);
 						laser.rect(c1.x,c1.y-disp,w,h);
 						laser.rect(c1.x+disp,c1.y,w,h);
 						laser.rect(c1.x-disp,c1.y,w,h);
 					} else {
 						float inset=0.1f;
-						if (currentgrid.containsKey(gid) /*&& currentgrid.get(gid)==i*gridHeight+j*/) {
+//						if (currentgrid.containsKey(gid) /*&& currentgrid.get(gid)==i*gridHeight+j*/) {
 //							PApplet.println("c1="+c1+", c2="+c2);
 							laser.rect(c1.x,c1.y,c2.x-c1.x,c2.y-c1.y);
-						}
+//						}
 						if (playgrid.get(g.id).grid == i*gridHeight+j) {
 							laser.rect(c1.x+inset*(c2.x-c1.x),c1.y+inset*(c2.y-c1.y),c2.x-c1.x-2*inset*(c2.x-c1.x),c2.y-c1.y-2*inset*(c2.y-c1.y));
 						}
