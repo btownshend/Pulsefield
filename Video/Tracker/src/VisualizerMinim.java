@@ -3,7 +3,6 @@ import processing.core.PVector;
 import MusicVisualizer.AudioRenderer;
 import MusicVisualizer.IsometricRenderer;
 import MusicVisualizer.RadarRenderer;
-import ddf.minim.AudioPlayer;
 import ddf.minim.Minim;
 
 
@@ -13,46 +12,52 @@ public class VisualizerMinim extends Visualizer {
 	AudioRenderer radar, vortex, iso;
 	AudioRenderer[] visuals; 
 	int select;
-
+	final int numRenderers=2;
+	
 	VisualizerMinim(PApplet parent) {
 		super();
-
-		// setup renderers
-		//		vortex = new VortexRenderer(groove);
-		radar = new RadarRenderer(parent,minim.getLineIn());
-		iso = new IsometricRenderer(parent,minim.getLineIn());
-
-		visuals = new AudioRenderer[] {radar, /*vortex, */ iso};
-		
 		select=0;			// activate first renderer in list
+		minim=null; 	// Will be initialized in update() when someone enters
 	}
 
 	@Override
 	public void start() {
+//		PApplet.println("Minim.start");
 		super.start();
 		// Other initialization when this app becomes active
-		select=(select+1)%visuals.length;
+		select=(select+1)%numRenderers;
 	}
 
 	@Override
 	public void stop() {
+//		PApplet.println("Minim.stop");
 		super.stop();
 		// When this app is deactivated
 //		groove.close();
-		if (minim != null)
+		if (minim!=null) {
+			minim.getLineIn().removeListener(visuals[select]);
 			minim.stop();	
+			minim=null;
+		}
 	}
 
 	@Override
 	public void update(PApplet parent, People p) {
-		if (p.pmap.isEmpty()) {
+//		PApplet.println("Minim.update: minim="+minim+", num people="+p.pmap.size());
+		if (p.pmap.isEmpty() && minim!=null) {
 			minim.stop();
 			minim=null;
-		} else if (minim==null) {
+		} else if (!p.pmap.isEmpty() && minim==null) {
 			// setup player
 			minim = new Minim(parent);
-			minim.getLineIn().addListener(visuals[select]);
+			// setup renderers
+			//		vortex = new VortexRenderer(groove);
+			radar = new RadarRenderer(parent,minim.getLineIn());
+			iso = new IsometricRenderer(parent,minim.getLineIn());
+
+			visuals = new AudioRenderer[] {radar, /*vortex, */ iso};
 			visuals[select].setup(parent);
+			minim.getLineIn().addListener(visuals[select]);
 		}
 	}
 
