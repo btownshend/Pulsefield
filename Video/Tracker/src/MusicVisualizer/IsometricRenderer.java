@@ -88,9 +88,9 @@ public class IsometricRenderer extends FourierRenderer {
           // pg.hint(ENABLE_DEPTH_TEST);
         }
       }
+      pg.endDraw();
+      parent.image(pg, 0, 0);
     }
-    pg.endDraw();
-    parent.image(pg, 0, 0);
   }
 }
 
