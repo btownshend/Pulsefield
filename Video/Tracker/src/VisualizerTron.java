@@ -279,37 +279,33 @@ public class VisualizerTron extends Visualizer {
 						grid[i*gridHeight+j].id=-1;
 						continue;
 					}
+					PVector c1=Tracker.normalizedToFloor(new PVector(i*2.0f/gridWidth-1,(j+1)*2.0f/gridHeight-1));
+					PVector c2=Tracker.normalizedToFloor(new PVector((i+1)*2.0f/gridWidth-1,j*2.0f/gridHeight-1));	
+					laser.shapeBegin("Grid"+(i*gridHeight+j));
+					
 					if (g.exploding>0) {
-//						final int explosionFrames = 400;
-//						assert(p.get(gid)!=null);
-//						parent.fill(p.get(gid).getcolor(parent));
-//						float w = wsize.x*(explosionFrames-g.exploding)/explosionFrames/gridWidth;
-//						float h = wsize.y*(explosionFrames-g.exploding)/explosionFrames/gridHeight;
-//						float disp=wsize.x*g.exploding/explosionFrames;
-//						parent.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight+disp,w,h);
-//						parent.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight-disp, w,h);
-//						parent.rect(wsize.x*i/gridWidth+disp, wsize.y*j/gridHeight, w,h);
-//						parent.rect(wsize.x*i/gridWidth-disp, wsize.y*j/gridHeight, w,h);
-//						if (g.exploding<explosionFrames)
-//							grid[i*gridHeight+j].exploding+=10;
-//						else {
-//							grid[i*gridHeight+j].exploding=-1;
-//							grid[i*gridHeight+j].id=-1;
-//						}
+						final int explosionFrames = 400;
+						assert(p.get(gid)!=null);
+						float w = (c2.x-c1.x)*(explosionFrames-g.exploding)/explosionFrames;
+						float h = (c2.y-c1.y)*(explosionFrames-g.exploding)/explosionFrames;
+						float disp=(Tracker.rawmaxx-Tracker.rawminx)*g.exploding/explosionFrames;
+						PApplet.println("exploding="+g.exploding+", w="+w+", h="+h+", disp="+disp);
+						laser.rect(c1.x,c1.y+disp,w,h);
+						laser.rect(c1.x,c1.y-disp,w,h);
+						laser.rect(c1.x+disp,c1.y,w,h);
+						laser.rect(c1.x-disp,c1.y,w,h);
 					} else {
 						float inset=0.1f;
-						PVector c1=Tracker.normalizedToFloor(new PVector(i*2.0f/gridWidth-1,(j+1)*2.0f/gridHeight-1));
-						PVector c2=Tracker.normalizedToFloor(new PVector((i+1)*2.0f/gridWidth-1,j*2.0f/gridHeight-1));	
-						laser.shapeBegin("Grid"+(i*gridHeight+j));
-						if (currentgrid.containsKey(gid) && currentgrid.get(gid)==i*gridHeight+j) {
+						if (currentgrid.containsKey(gid) /*&& currentgrid.get(gid)==i*gridHeight+j*/) {
 //							PApplet.println("c1="+c1+", c2="+c2);
 							laser.rect(c1.x,c1.y,c2.x-c1.x,c2.y-c1.y);
 						}
-						//if (playgrid.get(g.id).grid == i*gridHeight+j) {
+						if (playgrid.get(g.id).grid == i*gridHeight+j) {
 							laser.rect(c1.x+inset*(c2.x-c1.x),c1.y+inset*(c2.y-c1.y),c2.x-c1.x-2*inset*(c2.x-c1.x),c2.y-c1.y-2*inset*(c2.y-c1.y));
-						//}
-						laser.shapeEnd("Grid"+(i*gridHeight+j));
+						}
+
 					}
+					laser.shapeEnd("Grid"+(i*gridHeight+j));
 				}
 			}	
 		laser.bgEnd();
