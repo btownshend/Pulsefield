@@ -64,7 +64,7 @@ public class VisualizerMinim extends Visualizer {
 
 	@Override
 	public void draw(PApplet parent, People p, PVector wsize) {
-		if (minim==null) {
+		if (minim==null || p.pmap.isEmpty()) {
 			super.draw(parent, p, wsize);
 			return;
 		}
