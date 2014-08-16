@@ -2,6 +2,7 @@ import java.util.HashSet;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PShape;
 import processing.core.PVector;
 
 /**
@@ -26,11 +27,13 @@ public class VisualizerMenu extends VisualizerDot {
 
 	/** Set of items currently being displayed. */
 	HashSet<MenuItem> menuItems = new HashSet<MenuItem>();
-	
+	PShape cursor;
+	static final String CURSOR="handCursor.svg";
 	
 	VisualizerMenu(PApplet parent) {
 		super(parent);
 		selectingPerson=-1;
+		cursor=parent.loadShape(Tracker.SVGDIRECTORY+CURSOR);
 	}
 	
 	boolean hotSpotCheck(PApplet parent, People people) {
@@ -163,6 +166,15 @@ public class VisualizerMenu extends VisualizerDot {
 			parent.fill(0xffffffff);
 			parent.text(item.name, (pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2);
 		}
+		// Draw cursor for selecting person
+		Person ps=p.get(selectingPerson);
+		float sz=60;
+		float scale=Math.min(sz/cursor.width,sz/cursor.height);
+		int c=ps.getcolor(parent);
+		parent.fill(c,255);
+		parent.stroke(c,255);
+		PApplet.println("Drawing cursor with scaling="+scale);
+		parent.shape(cursor,(ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2,cursor.width*scale,cursor.height*scale);
 	}
 	
 	@Override
@@ -171,11 +183,16 @@ public class VisualizerMenu extends VisualizerDot {
 		Laser laser = Laser.getInstance();
 		laser.bgBegin();
 		for(MenuItem item : menuItems) {
+			laser.shapeBegin(item.name);
 			laser.svgfile("appAbleton.svg",item.position.x, item.position.y, SELECTION_DISTANCE*2,0.0f);
 			laser.circle(item.position.x, item.position.y, SELECTION_DISTANCE);
 //			PApplet.println("Circle at "+item.position)
+			laser.shapeEnd(item.name);
 		}
 		laser.bgEnd();
+		laser.cellBegin(selectingPerson);
+		laser.svgfile(CURSOR,0.35f,0.35f,0.7f,180.0f);
+		laser.cellEnd(selectingPerson);
 	}
 	
 	@Override
