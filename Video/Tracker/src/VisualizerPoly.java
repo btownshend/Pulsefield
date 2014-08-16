@@ -18,19 +18,17 @@ class PolyState {
 	float lastbeat;
 	int curnote;
 	float lastGrouping;
-	boolean isDrummer;
+
 	
 	PolyState(Person pos, float noteDuration, int color) {
 		this.noteDuration=noteDuration;
 		this.color=color;
 		this.pos=pos;
 		playing=false;
-		curnote=0;
 		lastGrouping=0;
-		isDrummer=(Math.random() <DRUMMERPROB);
 	}
 
-	void Update(float beat, int totalBeats, Scale scale, Synth synth) {
+	void update(float beat, int totalBeats, Scale scale, Synth synth, int channel) {
 		if (playing && startBeat+noteDuration <= beat) {
 			//PApplet.println("Stopped channel "+pos.channel+" at beat "+beat);
 			playing=false;
@@ -39,22 +37,18 @@ class PolyState {
 		mybeat=(int)(radius*totalBeats+0.5);
 		if (mybeat==0)
 			mybeat=1;
-
+		boolean isDrummer=(channel==2);
 		if (!playing && (((int)(beat*4)-(int)(startBeat*4))>=mybeat || pos.groupsize>1 ) && (int)(beat*4) != (int)(startBeat*4)) {
 			if (isDrummer) {
-				int pitch=(int)((pos.getNormalizedPosition().heading()+Math.PI)/(2*Math.PI)*46+35);
-				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), 10);
+				int pitch=(int)((pos.getNormalizedPosition().heading()+Math.PI)/(2*Math.PI)*16+35);
+				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), channel);
 			} else {	
 				// Play note
-				curnote=0;   // Override multiple pitches/person
-				int pitch=scale.map2note(pos.getNormalizedPosition().heading(), (float) -Math.PI, (float)Math.PI,curnote,3);
-				curnote=curnote+2;
-				if (curnote>=6)
-					curnote=0;
+				int pitch=(int)((pos.getNormalizedPosition().heading()+Math.PI)/(2*Math.PI)*46+35);
 
-				//PApplet.println("Play note "+pitch+" on channel "+pos.channel+" from beat "+beat+" to "+(startBeat+noteDuration));
+				PApplet.println("Play note "+pitch+" on channel "+channel+" from beat "+beat+" to "+(startBeat+noteDuration));
 				// Send MIDI
-				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), pos.channel);
+				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), channel);
 			}
 			playing=true;
 			startBeat=beat;
@@ -111,9 +105,6 @@ class PolyState {
 			parent.textAlign(PConstants.LEFT,PConstants.CENTER);
 			parent.textSize(0.8f*rowheight);
 			if (false) {
-			if (isDrummer)
-				parent.text("DRUMMER",2+dotsize,rowpos);
-			else {
 				MidiProgram mp=synth.getMidiProgam(pos.channel);
 				if (mp!=null)
 					parent.text(mp.name,2+dotsize,rowpos);
@@ -151,12 +142,14 @@ public class VisualizerPoly extends Visualizer {
 	float noteDuration=0.25f ;   // in beats
 	Scale scale;
 	Synth synth;
+	int channel;   // This is actually a song selector -- set once at start and all playing done with this channel
 	
 	VisualizerPoly(PApplet parent, Scale scale, Synth synth) {
 		super();
 		poly=new HashMap<Integer,PolyState>();
 		this.scale=scale;
 		this.synth=synth;
+		this.channel=-1;
 	}
 	
 	@Override
@@ -165,6 +158,8 @@ public class VisualizerPoly extends Visualizer {
 		Ableton.getInstance().setTrackSet("Poly");
 		Laser.getInstance().setFlag("body",1.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
+		this.channel=(this.channel+1)%Ableton.getInstance().trackSet.numTracks;
+		PApplet.println("Poly playing on channel "+channel);
 	}
 
 	@Override
@@ -186,7 +181,7 @@ public class VisualizerPoly extends Visualizer {
 				ps=new PolyState(p,noteDuration,p.getcolor(parent));
 				poly.put(id, ps);
 			}
-			ps.Update(beat,totalBeats,scale,synth);
+			ps.update(beat,totalBeats,scale,synth,channel);
 		}
 		// Remove polys for which we no longer have a position (exitted)
 		for (Iterator<Integer> iter = poly.keySet().iterator();iter.hasNext();) {
