@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.io.IOException;
+
 import processing.core.PApplet;
 import oscP5.*;
 import netP5.*;
@@ -33,8 +34,8 @@ public class Tracker extends PApplet {
 	public static boolean selectable[]={true,true,true,true,true,true,true,true,true,true,true,true,true,false,true};
 	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3","3/4","3/5"};
 	int currentvis=-1;
-	static NetAddress TO, MPO, AL, MAX, CK;
-	People people;
+	static NetAddress TO, MPO, AL, MAX, CK, VD;
+	People people, mousePeople;
 	Ableton ableton;
 	boolean useMAX;
 	Synth synth;
@@ -64,7 +65,8 @@ public class Tracker extends PApplet {
 		
 		frame.setBackground(new Color(0,0,0));
 		people=new People();
-
+		mousePeople=new People();
+		
 		// OSC Setup (but do plugs later so everything is setup for them)
 		OscProperties oscProps = new OscProperties();
 		oscProps.setDatagramSize(10000);  // Increase datagram size to handle incoming blobs
@@ -75,6 +77,8 @@ public class Tracker extends PApplet {
 		MPO = new NetAddress(config.getHost("MPO"), config.getPort("MPO"));
 		AL = new NetAddress(config.getHost("AL"), config.getPort("AL"));
 		CK = new NetAddress(config.getHost("CK"), config.getPort("CK"));
+		VD = new NetAddress(config.getHost("VD"), config.getPort("VD"));
+		PApplet.println("Sending to mayself at "+VD.address()+":"+VD.port());
 		PApplet.println("Sending chuck commands to "+config.getHost("CK")+":"+config.getPort("CK"));
 		PApplet.println("AL at "+config.getHost("AL")+":"+config.getPort("AL"));
 		MAX = new NetAddress(config.getHost("MAX"), config.getPort("MAX"));
@@ -169,9 +173,12 @@ public class Tracker extends PApplet {
 			oscP5.send(msg,TO);
 		else if (dest.equals("MPO"))
 			oscP5.send(msg,MPO);
-		else if (dest.equals("CK")) {
+		else if (dest.equals("CK"))
 			oscP5.send(msg,CK);
-		}
+		else if (dest.equals("Laser"))
+			Laser.getInstance().sendMessage(msg);
+		else if (dest.equals("VD"))
+			oscP5.send(msg,VD);
 		else
 			System.err.println("sendOSC: Bad destination: "+dest);
 	}
@@ -221,17 +228,22 @@ public class Tracker extends PApplet {
 		}
 
 		if (mousePressed) {
-			Person p=people.getOrCreate(mouseID,mouseID%16);
+			Person p=mousePeople.getOrCreate(mouseID,mouseID%16);
 			PVector mousePos=normalizedToFloor(new PVector(mouseX*2f/width-1, mouseY*2f/height-1));
 			if (prevMousePressed) {
 				mouseVel.mult(0.9f);
 				mouseVel.add(PVector.mult(PVector.sub(mousePos, prevMousePos),0.1f*frameRate));
 			}
 			p.move(mousePos, mouseVel, mouseID, 1, tick/avgFrameRate);
-			Leg legs[]=people.get(mouseID).legs;
+			Leg legs[]=p.legs;
 			legs[0].move(PVector.add(mousePos,new PVector(0.0f,-0.3f)),mouseVel);
 			legs[1].move(PVector.add(mousePos,new PVector(0.0f,0.3f)), mouseVel);
 			prevMousePos=mousePos;
+			// Additional settings for sending OSC messages
+			p.diam=0.3f;
+			p.sep=0.6f;
+			p.groupid=p.id;
+			p.groupsize=1;
 //			PApplet.println("Moved mouse ID "+mouseID+" to "+mousePos+" with velocity "+p.getVelocityInMeters());
 		} else {
 			mouseVel.set(0f,0f);
@@ -240,6 +252,7 @@ public class Tracker extends PApplet {
 		if (visMenu.hotSpotCheck(this,people))
 			setapp(13);
 
+		sendMouseOSC();
 
 		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);
@@ -258,14 +271,15 @@ public class Tracker extends PApplet {
 		PApplet.println("Mouse key: "+key);
 		if (key=='C' || key=='c') {
 			mouseID=90;
+			mousePeople.pmap.clear();
 			pfsetnpeople(0);
 		} else if (key>='1' && key<='9')
 			mouseID=90+key-'1';
 		else if (key=='x'||key=='X') {
 			// Current ID exits
 			PApplet.println("Mouse ID "+mouseID+" exitting.");
-			pfexit(0,0,mouseID);
-			PApplet.println("Finished mouse exit");
+			mousePeople.pmap.remove(mouseID);
+			pfsetnpeople(0);
 		} else if (key=='a' || key=='A') {
 			// Advance to next app
 			cycle();
@@ -374,6 +388,74 @@ public class Tracker extends PApplet {
 
 	synchronized void add(int id, int channel) {
 		people.add(id, channel);
+	}
+
+	// Send fake /pf/* messages for mouse movement
+	void sendMouseOSC() {
+		int frame=3;
+		float elapsed=0.0f;
+		for (int id: mousePeople.pmap.keySet()) {
+			Person p=mousePeople.get(id);
+			PApplet.println("Sending data for mouse person "+p.id);
+			OscMessage msg=new OscMessage("/pf/frame");
+			msg.add(frame);
+			Laser.getInstance().sendMessage(msg);
+
+			msg=new OscMessage("/pf/update");
+			msg.add(frame);
+			msg.add(elapsed); // Elapsed time
+			msg.add(p.id);
+			msg.add(p.getOriginInMeters().x);
+			msg.add(p.getOriginInMeters().y);
+			msg.add(p.getVelocityInMeters().x);
+			msg.add(p.getVelocityInMeters().y);
+			msg.add(0.0f);  // Major axis
+			msg.add(0.0f);  // Minor axis
+			msg.add(p.groupid); // Groupd ID
+			msg.add(p.groupsize);   // Group size
+			msg.add(p.channel);   // channel
+			sendOSC("Laser",msg); sendOSC("VD",msg);
+
+			msg=new OscMessage("/pf/body");
+			msg.add(frame);
+			msg.add(p.id);
+			msg.add(p.getOriginInMeters().x);
+			msg.add(p.getOriginInMeters().y);
+			msg.add(0.0f);  // ex
+			msg.add(0.0f);  // ey
+			msg.add(p.getVelocityInMeters().mag());  // speed
+			msg.add(0.0f);  // espeed
+			msg.add(p.getVelocityInMeters().heading());  // heading		
+			msg.add(0.0f);  // eheading
+			msg.add(0.0f);  // Facing
+			msg.add(0.0f);  // Efacing
+			msg.add(p.diam); // Diameter
+			msg.add(0.0f);   // Sigma(diameter)
+			msg.add(p.sep);   // Leg sep
+			msg.add(0.0f);    // Leg sep sigma
+			msg.add(0.0f);    // Leftness
+			msg.add(1);  	// Visibility
+			sendOSC("Laser",msg); sendOSC("VD",msg);
+
+			for (int i=0;i<p.legs.length;i++) {
+				Leg leg=p.legs[i];
+				msg=new OscMessage("/pf/leg");
+				msg.add(frame);
+				msg.add(p.id);
+				msg.add(i);
+				msg.add(p.legs.length);
+				msg.add(leg.getOriginInMeters().x);
+				msg.add(leg.getOriginInMeters().y);
+				msg.add(0.0f);  // error in x
+				msg.add(0.0f);  // error in y
+				msg.add(leg.getVelocityInMeters().mag()); // speed
+				msg.add(0.0f);  // espd
+				msg.add(leg.getVelocityInMeters().heading()); // heading
+				msg.add(0.0f);   // eheading
+				msg.add(1);      // visibility
+				sendOSC("Laser",msg); sendOSC("VD",msg);
+			}
+		}
 	}
 
 	synchronized public void pfupdate(int sampnum, float elapsed, int id, float xpos, float ypos, float xvelocity, float yvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
