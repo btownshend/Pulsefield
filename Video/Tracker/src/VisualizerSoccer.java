@@ -137,7 +137,8 @@ public class VisualizerSoccer extends VisualizerDot {
 	public void drawLaser(PApplet parent, People p) {
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();   // Start a background drawing
-		ball.drawLaser(laser,parent);
+		if (ball!=null)
+			ball.drawLaser(laser,parent);
 		laser.bgEnd();
 	}
 }
