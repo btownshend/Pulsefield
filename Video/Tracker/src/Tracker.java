@@ -273,14 +273,14 @@ public class Tracker extends PApplet {
 		if (key=='C' || key=='c') {
 			mouseID=90;
 			mousePeople.pmap.clear();
-			pfsetnpeople(0);
+			clearMice();
 		} else if (key>='1' && key<='9')
 			mouseID=90+key-'1';
 		else if (key=='x'||key=='X') {
 			// Current ID exits
 			PApplet.println("Mouse ID "+mouseID+" exitting.");
 			mousePeople.pmap.remove(mouseID);
-			pfsetnpeople(0);
+			clearMice();
 		} else if (key=='a' || key=='A') {
 			// Advance to next app
 			cycle();
@@ -426,7 +426,7 @@ public class Tracker extends PApplet {
 					if (dist<0.5f) {
 						p.groupid=Math.min(id,id2);
 						p.groupsize++;
-						PApplet.println("Mouse "+id+" and "+id2+" grouped with distance "+dist);
+//						PApplet.println("Mouse "+id+" and "+id2+" grouped with distance "+dist);
 					}
 				}
 			}
@@ -491,6 +491,12 @@ public class Tracker extends PApplet {
 		}
 	}
 
+	void clearMice() {
+		OscMessage msg=new OscMessage("/pf/set/npeople");
+		msg.add(0);
+		sendOSC("Laser",msg); sendOSC("VD",msg);
+	}
+	
 	synchronized public void pfupdate(int sampnum, float elapsed, int id, float xpos, float ypos, float xvelocity, float yvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
 		/*	if (channel!=99) {
 			PApplet.print("update: ");
