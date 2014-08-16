@@ -15,6 +15,7 @@ public class Tracker extends PApplet {
 	private static boolean present = false;
 	private static boolean autocycle = false;
 	private static boolean starting = true;   // Disable bad OSC messages before setup
+	private static boolean genFrameMsgs = false;
 	private static final long serialVersionUID = 1L;
 	int tick=0;
 	private float avgFrameRate=0;
@@ -48,6 +49,7 @@ public class Tracker extends PApplet {
 	PVector prevMousePos;
 	Boolean prevMousePressed;
 	PVector mouseVel;  // Average mouse velocity
+	int lastFrameReceived=3;
 	
 	public void setup() {
 		configFile="/Users/bst/DropBox/Pulsefield/config/urlconfig.txt";
@@ -403,6 +405,7 @@ public class Tracker extends PApplet {
 			msg.add((frame%100==0)?1.0:0.0);
 			sendOSC("TO",msg);
 		}
+		lastFrameReceived=frame;
 	}
 
 	synchronized void add(int id, int channel) {
@@ -411,7 +414,7 @@ public class Tracker extends PApplet {
 
 	// Send fake /pf/* messages for mouse movement
 	void sendMouseOSC() {
-		int frame=3;
+		int frame=lastFrameReceived;
 		float elapsed=0.0f;
 		for (int id: mousePeople.pmap.keySet()) {
 			Person p=mousePeople.get(id);
@@ -430,10 +433,12 @@ public class Tracker extends PApplet {
 					}
 				}
 			}
-			OscMessage msg=new OscMessage("/pf/frame");
-			msg.add(frame);
-			Laser.getInstance().sendMessage(msg);
-
+			OscMessage msg;
+			if (genFrameMsgs) {
+				msg=new OscMessage("/pf/frame");
+				msg.add(frame);
+				Laser.getInstance().sendMessage(msg); sendOSC("VD",msg);
+			}
 			msg=new OscMessage("/pf/update");
 			msg.add(frame);
 			msg.add(elapsed); // Elapsed time
