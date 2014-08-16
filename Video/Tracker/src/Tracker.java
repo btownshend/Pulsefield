@@ -12,7 +12,6 @@ public class Tracker extends PApplet {
 	 */
 	private static boolean present = false;
 	private static boolean autocycle = false;
-	private final float HOTSPOTRADIUS=0.3f;   // Radius of hot spot in meters
 	private static boolean starting = true;   // Disable bad OSC messages before setup
 	private static final long serialVersionUID = 1L;
 	int tick=0;
@@ -29,6 +28,7 @@ public class Tracker extends PApplet {
 	VisualizerDDR visDDR;
 	VisualizerDot visDot;
 	VisualizerChuck visChuck;
+	VisualizerMenu visMenu;
 	public static final String visnames[]={"Pads","Navier","Tron","Grid","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Icon","Soccer","Menu","Visualizer"};
 	public static boolean selectable[]={true,true,true,true,true,true,true,true,true,true,true,true,true,false,true};
 	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3","3/4","3/5"};
@@ -106,7 +106,7 @@ public class Tracker extends PApplet {
 		vis[10]=new VisualizerProximity(this);
 		vis[11]=new VisualizerIcon(this);
 		vis[12]=new VisualizerSoccer(this);
-		vis[13]=new VisualizerMenu(this);
+		visMenu=new VisualizerMenu(this);vis[13]=visMenu;
 		vis[14]=new VisualizerMinim(this);
 		setapp(14);
 		
@@ -237,13 +237,9 @@ public class Tracker extends PApplet {
 			mouseVel.set(0f,0f);
 		}
 		prevMousePressed=mousePressed;
-		PVector menuHotSpot = new PVector(2, 1);
-		for(Person p : people.pmap.values()) {
-			PVector location = p.getOriginInMeters();
-			if(PVector.sub(location, menuHotSpot).mag() < HOTSPOTRADIUS) {
-				setapp(13);
-			}
-		}
+		if (visMenu.hotSpotCheck(this,people))
+			setapp(13);
+
 
 		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);

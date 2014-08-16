@@ -11,6 +11,7 @@ import processing.core.PVector;
  *
  */
 public class VisualizerMenu extends VisualizerDot {
+	int selectingPerson;
 	
 	/** How many menu items to display at once (includes "next page" item). */
 	static final int ITEMS_PER_SCREENFUL = 20;
@@ -21,14 +22,30 @@ public class VisualizerMenu extends VisualizerDot {
 	/** How far a person needs to be to be able to select the menu item (in meters). */
 	static final float SELECTION_DISTANCE = 0.5f;
 	
+	static final float HOTSPOTRADIUS=0.3f;   // Radius of hot spot in meters
+
 	/** Set of items currently being displayed. */
 	HashSet<MenuItem> menuItems = new HashSet<MenuItem>();
 	
 	
 	VisualizerMenu(PApplet parent) {
 		super(parent);
+		selectingPerson=-1;
 	}
 	
+	boolean hotSpotCheck(PApplet parent, People people) {
+		PVector menuHotSpot = new PVector(2, 1);
+		for(Person p : people.pmap.values()) {
+			PVector location = p.getOriginInMeters();
+			if(PVector.sub(location, menuHotSpot).mag() < HOTSPOTRADIUS) {
+				selectingPerson=p.id;
+				PApplet.println("Person hit hot spot: "+selectingPerson);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/** Next visualizer to serve up.  Call getNextVisualizerIndexSet */
 	private int nextVisualizerIndex = 0;
 	
@@ -106,19 +123,21 @@ public class VisualizerMenu extends VisualizerDot {
 			initializeItems(p);
 		}
 		
-		person:
-		for(Person ps: p.pmap.values()) { 
-			for(Leg leg : ps.legs) {
-				PVector legPosition = leg.getOriginInMeters();
-				for(MenuItem item : menuItems) {
-					float currDistance = PVector.dist(legPosition, item.position);
-					if(currDistance < SELECTION_DISTANCE + leg.getDiameterInMeters() / 2) {
-						if(item.visualizer != -1) {
-							((Tracker)parent).setapp(item.visualizer);
-						} else {
-							initializeItems(p);
-						}
-						break person;
+		if (!p.pmap.containsKey(selectingPerson)) {
+			// Person has left
+			PApplet.println("Selecting person "+selectingPerson+" has left (pmap contains "+p.pmap.size()+" people)");
+			((Tracker)parent).setapp(0);
+		}
+		Person ps=p.pmap.get(selectingPerson);
+		for(Leg leg : ps.legs) {
+			PVector legPosition = leg.getOriginInMeters();
+			for(MenuItem item : menuItems) {
+				float currDistance = PVector.dist(legPosition, item.position);
+				if(currDistance < SELECTION_DISTANCE + leg.getDiameterInMeters() / 2) {
+					if(item.visualizer != -1) {
+						((Tracker)parent).setapp(item.visualizer);
+					} else {
+						initializeItems(p);
 					}
 				}
 			}
@@ -152,6 +171,7 @@ public class VisualizerMenu extends VisualizerDot {
 		Laser laser = Laser.getInstance();
 		laser.bgBegin();
 		for(MenuItem item : menuItems) {
+			laser.svgfile("appAbleton.svg",item.position.x, item.position.y, SELECTION_DISTANCE*2,0.0f);
 			laser.circle(item.position.x, item.position.y, SELECTION_DISTANCE);
 //			PApplet.println("Circle at "+item.position)
 		}
