@@ -384,7 +384,7 @@ public class VisualizerDDR extends Visualizer {
 			int quad=d.getAim();
 			//PApplet.println("Laser: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
 			if (quad>=0)
-				laser.svgfile("arrow4.svg", 0.0f, 0.0f, 0.5f, quad*90+180);
+				laser.svgfile("arrow4.svg", 0.0f, 0.0f, 0.5f, -quad*90+180);
 			else
 				laser.svgfile("dancer4.svg", 0.0f, 0.0f, 0.5f,0f);				
 			laser.cellEnd(id);
@@ -405,11 +405,11 @@ public class VisualizerDDR extends Visualizer {
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();
 		// Draw the zero-line arrows
-		final float angles[]={0f,(float)(Math.PI/2),(float)(3*Math.PI/2),(float)Math.PI};
+		final float angles[]={(float)0f,(float)(Math.PI/2),(float)(Math.PI*3/2),(float)Math.PI};
 
 		float yposzero=Tracker.rawminy+HISTORY/DURATION*(Tracker.rawmaxy-Tracker.rawminy);
 		for (int i=0;i<angles.length;i++) {
-			float xpos=((((float)i)/(angles.length-1))-0.5f)*TICKERWIDTH;
+			float xpos=(Tracker.rawminx+Tracker.rawmaxx)/2.0f - ((((float)i)/(angles.length-1))-0.5f)*TICKERWIDTH;
 			laser.svgfile("arrow4.svg",xpos,yposzero,ARROWSIZE*1.5f,(float)(angles[i]*180/Math.PI));
 		}
 		for (NoteData n: notes) {
@@ -418,7 +418,7 @@ public class VisualizerDDR extends Visualizer {
 			for (int i=0;i<n.notes.length()&&i<4;i++) {
 				if (n.notes.charAt(i) != '0') {
 					float xpos=(Tracker.rawminx+Tracker.rawmaxx)/2.0f - ((((float)i)/(n.notes.length()-1))-0.5f)*TICKERWIDTH;
-					laser.svgfile("arrow4.svg",xpos,ypos,ARROWSIZE,(float)(180+angles[i]*180/Math.PI));
+					laser.svgfile("arrow4.svg",xpos,ypos,ARROWSIZE,(float)(angles[i]*180/Math.PI));
 				}
 			}
 		}
