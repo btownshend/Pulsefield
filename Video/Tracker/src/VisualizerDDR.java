@@ -182,7 +182,7 @@ public class VisualizerDDR extends Visualizer {
 				if (n.notes.charAt(i) != '0') {
 					for (int id: dancers.keySet()) {
 						Dancer d=dancers.get(id);
-						PApplet.println("Dancer "+id+" has aim "+d.getAim());
+//						PApplet.println("Dancer "+id+" has aim "+d.getAim());
 						if (d.getAim() == AIMS[i])
 							d.incrementScore();
 						//d.setScore(d.getAim());
@@ -410,9 +410,12 @@ public class VisualizerDDR extends Visualizer {
 		float yposzero=Tracker.rawminy+HISTORY/DURATION*(Tracker.rawmaxy-Tracker.rawminy);
 		for (int i=0;i<angles.length;i++) {
 			float xpos=(Tracker.rawminx+Tracker.rawmaxx)/2.0f - ((((float)i)/(angles.length-1))-0.5f)*TICKERWIDTH;
+			laser.shapeBegin("RefDir"+i);
 			laser.svgfile("arrow4.svg",xpos,yposzero,ARROWSIZE*1.5f,(float)(angles[i]*180/Math.PI));
+			laser.shapeEnd("RefDir"+i);
 		}
 		for (NoteData n: notes) {
+			laser.shapeBegin("Note"+n.measure);
 			float ypos=Tracker.rawminy+(n.timestamp-(now-HISTORY))/DURATION*(Tracker.rawmaxy-Tracker.rawminy);
 			//PApplet.println("At "+n.timestamp+", notes="+n.notes+", y="+ypos);
 			for (int i=0;i<n.notes.length()&&i<4;i++) {
@@ -421,6 +424,7 @@ public class VisualizerDDR extends Visualizer {
 					laser.svgfile("arrow4.svg",xpos,ypos,ARROWSIZE,(float)(angles[i]*180/Math.PI));
 				}
 			}
+			laser.shapeEnd("Note"+n.measure);
 		}
 		laser.bgEnd();
 	}
