@@ -4,7 +4,7 @@
 #include "groups.h"
 #include "video.h"
 
-static const float LASERSEP=0.5f;
+static const float LASERSEP=1.0f;
 static const float TARGETSEP=0.6f;
 
 std::shared_ptr<Lasers> Lasers::theInstance;   // Singleton
@@ -39,10 +39,19 @@ Lasers::~Lasers() {
 // Allocate a drawing to the lasers
 std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
     static const float MINFRACTOKEEP=0.5;
-    static const float FRACFUZZ=0.1;	// Fuzz in fractions -- fractions within this amount are considered equal
-    static const float DISTFUZZ=3.0;   // Fuzz in distance of laser -- distances within this amount are considered equal
+    static const float ONSCREENFUZZ=0.01; // Fuzz in on screen fraction -- fractions within this amount are considered equal
+    static const float FRACFUZZ=0.1;	// Fuzz in total visible fraction -- fractions within this amount are considered equal
+    static const float DISTFUZZ=4.0;   // Fuzz in distance of laser -- distances within this amount are considered equal
+    static const float MAXLASERLOAD=20;			// Maximum load (in meters of line) on one laser before rebalancing (if this is also >MAXLASERLOADFRAC of total)
+    static const float MAXLASERLOADFRAC=0.3f;	// Maximum fraction allocated to one laser before rebalancing
 
     std::vector<Drawing> result(lasers.size());
+    float totalAllocation=0;
+    for (int j=0;j<lasers.size();j++)
+	totalAllocation+=lasers[j]->getLastAllocationLength();
+
+    float maxLoad=std::max(MAXLASERLOAD,MAXLASERLOADFRAC*totalAllocation);
+
     for (int el=0;el<d.getNumElements();el++) {
 	std::shared_ptr<Composite> &c=d.getElement(el);
 
@@ -61,30 +70,52 @@ std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
 	    if (current >=0) {
 		if ((1-stats[current].fracShadowed)*stats[current].fracOnScreen < MINFRACTOKEEP) {
 		    dbg("Lasers.allocate",1) << "Ignoring assignment to " << current << " since visible frac  = " << (1-stats[current].fracShadowed)*stats[current].fracOnScreen << ", which is < " << MINFRACTOKEEP << std::endl;
-		    current=-1;
+		} else if (lasers[current]->getLastAllocationLength() >maxLoad) {
+		    dbg("Lasers.allocate",1) << "Ignoring assignment to " << current << " since laser had load of  " << lasers[current]->getLastAllocationLength() << " (> " << maxLoad << ")" << std::endl;
 		} else {
 		    // Keep existing assignment
 		    assignment=current;
 		    break;
 		}
 	    }
-	    float maxFrac=stats[0].fracOnScreen*(1-stats[0].fracShadowed);
-	    for (int j=1;j<stats.size();j++)
-		maxFrac=std::max(maxFrac,stats[j].fracOnScreen*(1-stats[j].fracShadowed));
-	    if (maxFrac==0)
+	    std::vector<bool> possible(stats.size(),true);
+	    float maxOnScreen=0;
+	    for (int j=0;j<stats.size();j++)
+		maxOnScreen=std::max(maxOnScreen,stats[j].fracOnScreen);
+	    for (int j=0;j<stats.size();j++)
+		possible[j]=possible[j] && (stats[j].fracOnScreen >= maxOnScreen-ONSCREENFUZZ);
+	    
+	    float maxFrac=0;
+	    for (int j=0;j<stats.size();j++)
+		if (possible[j]) maxFrac=std::max(maxFrac,stats[j].fracOnScreen*(1-stats[j].fracShadowed));
+	    for (int j=0;j<stats.size();j++)
+		possible[j]=possible[j] && (stats[j].fracOnScreen*(1-stats[j].fracShadowed) >= maxFrac-FRACFUZZ);
+
+	    float closest=1e10;
+	    for (int j=0;j<stats.size();j++)
+		if (possible[j]) closest=std::min(closest,stats[j].meanDistance);
+	    for (int j=0;j<stats.size();j++)
+		possible[j]=possible[j] && (stats[j].meanDistance <= closest+DISTFUZZ);
+
+	    int npossible=0;
+	    for (int j=0;j<possible.size();j++)
+		if (possible[j]) npossible++;
+
+	    if (npossible==0)
 		// No assignment that works
 		break;
 
-	    // Assign to least loaded  laser within FRACFUZZ of maxFrac, within DISTFUZZ of closest laser, 
-	    float bestDist=1e10;
+	    dbg("Lasers.allocate",2) << "Have " << npossible << " possible assignments" << std::endl;
+
+	    // Assign to least loaded laser still possible
 	    float  bestLength=1000;
 	    for (int j=0;j<stats.size();j++) {
-		if (stats[j].fracOnScreen*(1-stats[j].fracShadowed) >= maxFrac-FRACFUZZ && stats[j].meanDistance < bestDist+DISTFUZZ) {
-		    if (stats[j].meanDistance < bestDist-DISTFUZZ || result[j].getLength()<bestLength) {
-			assignment=j;
-			bestDist=stats[j].meanDistance;
-			bestLength=result[j].getLength();
-		    }
+		float lastLength=lasers[j]->getLastAllocationLength();
+		if (j==current)
+		    lastLength-=c->getLength();		// Otherwise, we'd count it twice
+		if (possible[j] && lastLength<bestLength) {
+		    assignment=j;
+		    bestLength=lastLength;
 		}
 	    }
 	} while (false);
@@ -93,15 +124,29 @@ std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
 	} else {
 	    // Make assignment
 	    float len=result[assignment].getLength();
-	    dbg("Lasers.allocate",1) << "Assigned " << c->getShapeID()->getID() << " to laser " << assignment << "(frac=" << stats[assignment].fracOnScreen << ", shadow=" << stats[assignment].fracShadowed << ", dist=" << stats[assignment].meanDistance << ", total length for laser so far=" << len << ")" << std::endl;
+	    dbg("Lasers.allocate",1) << "Assigned " << c->getShapeID()->getID() << " to laser " << assignment << "(frac=" << stats[assignment].fracOnScreen << ", shadow=" << stats[assignment].fracShadowed << ", dist=" << stats[assignment].meanDistance << ", last allocated length=" << lasers[assignment]->getLastAllocationLength() << ", total length for laser so far=" << len << ")" << std::endl;
 	    // Remove shadowed points
-	    c->setPoints(lasers[assignment]->removeShadowed(c->getPoints(),ranges,LASERSEP,TARGETSEP));
+	    //	    c->setPoints(lasers[assignment]->removeShadowed(c->getPoints(),ranges,LASERSEP,TARGETSEP));
 	    // Make the assignment
 	    result[assignment].append(c );
+	    if (current  != assignment) {
+		// Update last allocation length
+		dbg("Lasers.allocate",1) << "Moving " << c->getLength() << " length from " << current << " to " << assignment << " last allocation length " << std::endl;
+		if (current != -1)
+		    lasers[current]->setLastAllocationLength(lasers[current]->getLastAllocationLength()-c->getLength());   
+		lasers[assignment]->setLastAllocationLength(lasers[assignment]->getLastAllocationLength()+c->getLength());   
+	    }
+		
 	    // Mark it in the shapeID
 	    c->getShapeID()->setLaser(assignment);
 	}
     }
+    for (int j=0;j<lasers.size();j++) {
+	float len=result[j].getLength();
+	dbg("Lasers.allocate",1) << "Set last allocation length for laser " << j << " to " << len << " (was " << lasers[j]->getLastAllocationLength() << ")" << std::endl;
+	lasers[j]->setLastAllocationLength(len);
+    }
+
     return result;
 }
 
@@ -325,9 +370,9 @@ void Lasers::setBackground(int scanpt, int totalpts, float angleDeg, float range
 std::vector<LaserStat> Lasers::computeStats(const Composite &c, const Ranges &ranges) const {
     const CPoints &points = c.getPoints();
     if (points.size() > 0) {
-	dbg("Composite.computeStats",1) << "Stats for composite " << c.getShapeID()->getID() << " with " << points.size() << " points near " << points.front() << ", prior laser=" << c.getShapeID()->getLaser()  << std::endl;
+	dbg("Lasers.computeStats",1) << "Stats for composite " << c.getShapeID()->getID() << " with " << points.size() << " points near " << points.front() << ", prior laser=" << c.getShapeID()->getLaser()  << std::endl;
     } else {
-	dbg("Composite.computeStats",1) << "Stats for composite " << c.getShapeID()->getID() << " with " << points.size() << " points, prior laser=" << c.getShapeID()->getLaser()  << std::endl;
+	dbg("Laser.computeStats",1) << "Stats for composite " << c.getShapeID()->getID() << " with " << points.size() << " points, prior laser=" << c.getShapeID()->getLaser()  << std::endl;
     }
     std::vector<LaserStat> stats;
     for (int i=0;i<lasers.size();i++) {
@@ -340,7 +385,7 @@ std::vector<LaserStat> Lasers::computeStats(const Composite &c, const Ranges &ra
 	    stat.fracShadowed=lasers[i]->fracShadowed(points,ranges,LASERSEP, TARGETSEP);
 	}
 	stat.meanDistance=lasers[i]->meanDistance(points);
-	dbg("Composite.computeStats",1) << "Laser " << i << " onScreen=" << (int)(stat.fracOnScreen*100) << "%, shadowed=" << (int)(stat.fracShadowed*100) << "%, dist=" << stat.meanDistance << " m." << std::endl;
+	dbg("Lasers.computeStats",1) << "Laser " << i << " onScreen=" << (int)(stat.fracOnScreen*100) << "%, shadowed=" << (int)(stat.fracShadowed*100) << "%, dist=" << stat.meanDistance << " m, lastlenallocated=" << lasers[i]->getLastAllocationLength() << std::endl;
 	stats.push_back(stat);
     }
     return stats;

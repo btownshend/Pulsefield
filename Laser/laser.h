@@ -36,6 +36,8 @@ class Laser: public DisplayDevice  {
     void prune();
     // Insert blanking as needed, return number of blanks used
     int blanking();
+
+    float lastAllocationLength;	// Length last allocated to this laser
  public:
     Laser(int unit);
     int open();
@@ -84,4 +86,7 @@ class Laser: public DisplayDevice  {
     // Compute mean distance of object from given point (typcial from laser origin or center of project)
     float meanDistance(const CPoints &cpts) const;
 
+    // Get length assigned to this laser in last allocation (used for load balancing)
+    float getLastAllocationLength() const { return lastAllocationLength; }
+    void setLastAllocationLength(float len) { lastAllocationLength=len; }
 };
