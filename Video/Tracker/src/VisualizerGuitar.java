@@ -144,20 +144,14 @@ public class VisualizerGuitar extends VisualizerPS {
 		//PApplet.println("Guitar drawLaser");
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();
-		laser.shapeBegin("frets");
-		for (int i=0;i<GString.nfrets;i++) {
-			float xpos=GString.frets[i]*laserScaling;
-			PVector p1=Tracker.normalizedToFloor(new PVector(xpos,laserScaling*(GString.minstring-.05f)));
-			PVector p2=Tracker.normalizedToFloor(new PVector(xpos,laserScaling*(GString.maxstring+.05f)));		
-			laser.line(p1.x,p1.y,p2.x,p2.y);
-		}
-		laser.shapeEnd("frets");
-		laser.shapeBegin("strings");
+
+		// Draw the (longer) strings first so that the laser allocation can be rebalanced with the shorter frets
 		for (int i=0;i<strings.length;i++) {
 			GString s=strings[i];
 			float ypos=laserScaling*s.position;
 			PVector p1=Tracker.normalizedToFloor(new PVector(laserScaling*GString.nut,ypos));
 			PVector p2=Tracker.normalizedToFloor(new PVector(laserScaling*GString.bridge,ypos));	
+			laser.shapeBegin("strings"+i);
 			if (s.isVibrating()) {
 				PVector pf=Tracker.normalizedToFloor(new PVector(GString.frets[s.fret],ypos));	
 				float amp=(1-s.fracOfVibrate())*s.velocity/127.0f ;
@@ -167,8 +161,18 @@ public class VisualizerGuitar extends VisualizerPS {
 			} else {
 				laser.line(p1.x,p1.y,p2.x,p2.y);
 			}
+			laser.shapeEnd("strings"+i);
 		}
-		laser.shapeEnd("strings");
+		
+		for (int i=0;i<GString.nfrets;i++) {
+			float xpos=GString.frets[i]*laserScaling;
+			PVector p1=Tracker.normalizedToFloor(new PVector(xpos,laserScaling*(GString.minstring-.05f)));
+			PVector p2=Tracker.normalizedToFloor(new PVector(xpos,laserScaling*(GString.maxstring+.05f)));	
+			laser.shapeBegin("frets"+i);
+			laser.line(p1.x,p1.y,p2.x,p2.y);
+			laser.shapeEnd("frets"+i);
+		}
+		
 		laser.bgEnd();
 	}
 
