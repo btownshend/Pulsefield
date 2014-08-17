@@ -77,4 +77,5 @@ class CPoints {
     CPoint &operator[](int i) { return pts[i]; }
     const CPoint &operator[](int i) const { return pts[i]; }
     void matlabDump(std::string desc);
+    void clear() { pts.clear(); }
 };

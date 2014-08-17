@@ -144,6 +144,10 @@ Drawing Drawing::select(std::set<int> sel) const {
 // Convert to points using given floorspace spacing
 void Composite::rasterize(float spacing)  {
     dbg("Composite.rasterize",3) << "rasterize(" << spacing << ") with " << attrs.size() << " attributes"  << std::endl;
+    if (points.size() > 0) {
+	dbg("Composite.rasterize",1) << "Already have " << points.size() << " points rasterized with spacing " << rasterSpacing << " -- clearing" << std::endl;
+	points.clear();	// Clear prior rasterization
+    }
     if (elements.size()==0) {
 	dbg("Composite.rasterize",3) << "No subelements" << std::endl;
 	return;
