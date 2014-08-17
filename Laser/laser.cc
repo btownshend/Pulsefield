@@ -302,6 +302,26 @@ void Laser::showTest() {
     update();
 }
 
+void Laser::showIntensity() {
+    pts.clear();
+    static const int gsize=50;
+    dbg("Laser.showIntensity",1) << "Showing laser intensity pattern with rect size of " << gsize << std::endl;
+    // Start and finish each scan at full range, but scan based on visible range stored in transform
+    etherdream_point pt;
+    pt.g=65535;pt.r=65535;pt.b=65535;
+    pt.y=-gsize;
+    for (pt.x=-gsize;pt.x<=gsize;pt.x++)
+	pts.push_back(pt);
+    for (;pt.y<=gsize;pt.y++)
+	pts.push_back(pt);
+    for (;pt.x>=-gsize;pt.x--)
+	pts.push_back(pt);
+    for (;pt.y>=-gsize;pt.y--)
+	pts.push_back(pt);
+
+    update();
+}
+
 
 void Laser::showOutline(const Bounds &b) {
     Transform &t=getTransform();

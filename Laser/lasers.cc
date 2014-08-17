@@ -28,6 +28,8 @@ Lasers::Lasers(int nlasers): lasers(nlasers) {
     setFlag("alignment",false);
     setFlag("body",true);
     setFlag("legs",true);
+    setFlag("intensity",false);
+    setFlag("test",false);
 }
 
 Lasers::~Lasers() {
@@ -257,6 +259,8 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 	}
 	else if (getFlag("test") && lasers[i]->isEnabled()) {
 	    lasers[i]->showTest();
+	} else if (getFlag("intensity") && lasers[i]->isEnabled()) {
+	    lasers[i]->showIntensity();
 	} else {
 	    dtmp[i].append(globalDrawing);
 	    lasers[i]->render(dtmp[i]);

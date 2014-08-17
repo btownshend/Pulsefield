@@ -8,7 +8,7 @@
 #include "lasers.h"
 
 TouchOSC *TouchOSC::theInstance=NULL;
-static const std::string flags[]={"body","legs","grid","background","alignment","test","outline","allocationTest"};
+static const std::string flags[]={"body","legs","grid","background","alignment","test","outline","allocationTest","intensity"};
 static const int nflags=sizeof(flags)/sizeof(flags[0]);
 
 TouchOSC::TouchOSC()  {
