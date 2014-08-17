@@ -61,7 +61,7 @@ public class Tracker extends PApplet {
 			System.exit(1);
 		}
 
-		size(1280,720, OPENGL);
+		size(1280,800, OPENGL);
 		frameRate(30);
 		mouseID=90;
 		cycler=new AutoCycler();
@@ -291,7 +291,7 @@ public class Tracker extends PApplet {
 
 	public static void main(String args[]) {
 		if (present)
-			PApplet.main(new String[] { "--present","--display=0","Tracker"});
+			PApplet.main(new String[] { "--present","--display=1","Tracker"});
 		else
 			PApplet.main(new String[] { "Tracker" });
 	}
