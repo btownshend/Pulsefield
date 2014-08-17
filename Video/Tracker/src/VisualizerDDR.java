@@ -364,6 +364,8 @@ public class VisualizerDDR extends Visualizer {
 			return;
 
 		drawLaserPF(parent,p);
+		if (cursong==null)
+			return;
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 		if (clip!=null) {
 //			PApplet.println("Clip at "+clip.position);
