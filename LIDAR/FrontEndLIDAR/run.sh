@@ -1,7 +1,7 @@
 #!/bin/sh
 # Run frontend
-export DYLD_LIBRARY_PATH=/Applications/MATLAB_R2014a.app/bin/maci64
-LOGDIR=~/Desktop/CRSLogs
+export DYLD_LIBRARY_PATH=/Applications/MATLAB_R20*.app/bin/maci64
+LOGDIR=~/Desktop/PFLogs
 [ -d $LOGDIR ] || mkdir -p $LOGDIR
 while true
 do
