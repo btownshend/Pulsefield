@@ -29,6 +29,10 @@ public class Person {
 		return Tracker.floorToNormalized(position);
 	}
 
+	PVector getNormalizedPosition(boolean preserveAspect) {
+		return Tracker.floorToNormalized(position, preserveAspect);
+	}
+	
 	void setNormalizedPosition(PVector position) {
 		this.position = Tracker.normalizedToFloor(position);
 	}

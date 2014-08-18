@@ -328,22 +328,33 @@ public class Tracker extends PApplet {
 		return new PVector(-velInMetersPerSecond.x*2f/(Tracker.maxx-Tracker.minx),velInMetersPerSecond.y*2f/(Tracker.maxy-Tracker.miny));
 	}
 	
+	public static PVector floorToNormalized(float x, float y, boolean preserveAspect) {
+		return floorToNormalized(new PVector(x,y),preserveAspect);
+	}
+
 	public static PVector floorToNormalized(float x, float y) {
-		return floorToNormalized(new PVector(x,y));
+		return floorToNormalized(new PVector(x,y),false);
 	}
 
 	// Map position in meters to normalized position where (minx,miny) maps to (-1,1) and (max,maxy) maps to (1,-1)
 	// (flipped y-coord for screen use)
-	public static PVector floorToNormalized(PVector raw) {
+	public static PVector floorToNormalized(PVector raw, boolean preserveAspect) {
 		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
 		PVector result=PVector.sub(raw,mid);
 		result.rotate((float)Math.toRadians(Tracker.screenrotation));
 		// Flip y-axis since screen has origin in top left
 	//	result.y=-result.y;
 		result.x=-result.x;
-		result.set(result.x*2f/(Tracker.maxx-Tracker.minx),result.y*2f/(Tracker.maxy-Tracker.miny));
+		if (preserveAspect)
+			result=PVector.mult(result,2f/Math.min(maxx-minx,maxy-miny));
+		else
+			result.set(result.x*2f/(Tracker.maxx-Tracker.minx),result.y*2f/(Tracker.maxy-Tracker.miny));
+	
 //		PApplet.println("Mapped ("+raw+") to ("+result);
 		return result;
+	}
+	public static PVector floorToNormalized(PVector raw) {
+		return floorToNormalized(raw,false);
 	}
 	
 	/* Not currently used... TODO

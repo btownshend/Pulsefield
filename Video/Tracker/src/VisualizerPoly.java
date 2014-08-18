@@ -33,18 +33,18 @@ class PolyState {
 			//PApplet.println("Stopped channel "+pos.channel+" at beat "+beat);
 			playing=false;
 		}
-		float radius=pos.getNormalizedPosition().mag();
-		mybeat=(int)(radius*totalBeats+0.5);
+		// Compute radius in aspect-preserved normalized coords (scaled by longest dimension to maintain aspect ratio)
+		mybeat=(int)(pos.getNormalizedPosition(true).mag()*totalBeats+0.5);
 		if (mybeat==0)
 			mybeat=1;
 		boolean isDrummer=(channel==2);
 		if (!playing && (((int)(beat*4)-(int)(startBeat*4))>=mybeat || pos.groupsize>1 ) && (int)(beat*4) != (int)(startBeat*4)) {
 			if (isDrummer) {
-				int pitch=(int)((pos.getNormalizedPosition().heading()+Math.PI)/(2*Math.PI)*16+35);
+				int pitch=(int)((pos.getNormalizedPosition(true).heading()+Math.PI)/(2*Math.PI)*16+35);
 				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), channel);
 			} else {	
 				// Play note
-				int pitch=(int)((pos.getNormalizedPosition().heading()+Math.PI)/(2*Math.PI)*46+35);
+				int pitch=(int)((pos.getNormalizedPosition(true).heading()+Math.PI)/(2*Math.PI)*46+35);
 
 				PApplet.println("Play note "+pitch+" on channel "+channel+" from beat "+beat+" to "+(startBeat+noteDuration));
 				// Send MIDI
@@ -65,7 +65,6 @@ class PolyState {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	void draw(PApplet parent,PVector wsize, int totalBeats, int row, Synth synth) {
 		final int NUMROWS=20;
 		float rowheight=wsize.y/2/NUMROWS;
@@ -76,7 +75,7 @@ class PolyState {
 		else
 			parent.fill(color,127);
 		float sz=Math.min(wsize.x,wsize.y);
-		parent.ellipse((pos.getNormalizedPosition().x)*sz/2+wsize.x/2, (pos.getNormalizedPosition().y)*sz/2+wsize.y/2, 30, 30);
+		parent.ellipse((pos.getNormalizedPosition(true).x)*sz/2+wsize.x/2, (pos.getNormalizedPosition(true).y)*sz/2+wsize.y/2, 30, 30);
 		if (playing) {
 			parent.fill(0);
 			parent.stroke(color);
@@ -84,11 +83,11 @@ class PolyState {
 		}
 		if (pos.groupsize > 1) {
 			final int NBOLTS=20;
-			float BOLTLENGTH=wsize.y/20*pos.groupsize;
 			for (int k=0;k<NBOLTS;k++)
 				if (Math.random() < 0.2) {
+					float BOLTLENGTH=(float) (wsize.y/10*pos.groupsize*Math.random());
 					PVector delta=new PVector((float)Math.cos(Math.PI*2*k/NBOLTS)*BOLTLENGTH,(float)Math.sin(Math.PI*2*k/NBOLTS)*BOLTLENGTH);
-					PVector center=new PVector((pos.getNormalizedPosition().x)*sz/2+wsize.x/2,(pos.getNormalizedPosition().y)*sz/2+wsize.y/2);
+					PVector center=new PVector((pos.getNormalizedPosition(true).x)*sz/2+wsize.x/2,(pos.getNormalizedPosition(true).y)*sz/2+wsize.y/2);
 					parent.fill(color,127);
 					parent.line(center.x,center.y,center.x+delta.x,center.y+delta.y);
 				}
@@ -104,11 +103,10 @@ class PolyState {
 			parent.fill(255);
 			parent.textAlign(PConstants.LEFT,PConstants.CENTER);
 			parent.textSize(0.8f*rowheight);
-			if (false) {
+			if (true) {
 				MidiProgram mp=synth.getMidiProgam(pos.channel);
 				if (mp!=null)
 					parent.text(mp.name,2+dotsize,rowpos);
-			}
 			}
 		}
 	}
