@@ -84,7 +84,12 @@ void Laser::update() {
 	dbg("Laser.update",1) << "Laser not open" << std::endl;
 	return;
     }
-    dbg("Laser.update",1) << "Wait for ready." << std::endl;
+    if (d->state == ST_SHUTDOWN) {
+      dbg("Laser.update",0) << "Etherdream has shut down ... exitting" << std::endl;
+      exit(-1);
+    }
+
+    dbg("Laser.update",1) << "Wait for ready; status=" << d->state << std::endl;
     etherdream_wait_for_ready(d);
     dbg("Laser.update",1) << "Sending " << pts.size() << " points at " << PPS << " pps"  << std::endl;
     int res = etherdream_write(d,pts.data(), pts.size(), PPS, -1);
