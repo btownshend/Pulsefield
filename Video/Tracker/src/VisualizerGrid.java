@@ -13,7 +13,7 @@ public class VisualizerGrid extends VisualizerPS {
 	float gposx[], gposy[];
 	float gridwidth, gridheight;
 	int ncell;
-	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR"};
+	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","AN"};
 	int song=0;
 	
 	VisualizerGrid(PApplet parent) {
