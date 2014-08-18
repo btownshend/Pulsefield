@@ -137,7 +137,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "tempo", "/tempo");
 		oscP5.plug(this, "volume", "/volume");
 		oscP5.plug(this, "ping", "/ping");
-		
+		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		PApplet.println("Setup complete");
 		starting = false;
 	}

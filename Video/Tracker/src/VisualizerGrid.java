@@ -56,6 +56,15 @@ public class VisualizerGrid extends VisualizerPS {
 		super.stop();
 		assignments.clear();
 	}
+	
+	public void songIncr(float set) {
+		if (set>0)
+			song=(song+1)%songs.length;
+		PApplet.println("Song="+song);
+		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);
+		PApplet.println("Starting grid with song "+song+": "+ts.name);
+	}
+
 
 	public void update(PApplet parent, People allpos) {
 		super.update(parent,allpos);
