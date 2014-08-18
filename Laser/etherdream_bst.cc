@@ -128,7 +128,8 @@ static int send_all(struct etherdream *d, const char *data, int len) {
 
 	if (res < 0) {
 	    dbg("Etherdream.send_all",1) << "Socket error in send: " << errno << ": " << strerror(errno) << std::endl;
-	    return -1;
+	    if (errno!=35)
+	      return -1;
 	}
 
 	len -= res;
