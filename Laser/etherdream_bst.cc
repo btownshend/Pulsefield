@@ -167,7 +167,12 @@ static int read_resp(struct etherdream *d) {
 	dbgn("Etherdream.read_resp",4) << "Unknown code: " << (int)d->conn.resp.response;
     }
     dbgn("Etherdream.read_resp",4) << " to command " << (int)d->conn.resp.command << std::endl;
-    
+    struct dac_status *s=&d->conn.resp.dac_status;
+    if (d->conn.resp.response!='a') {
+      dbg("Etherdream.read_resp",0) << "Got response " << d->conn.resp.response << " while waiting for ACK; command=" << d->conn.resp.command << ", dac_status: protocol=" << (int)s->protocol << ", light_engine state=" << (int)s->light_engine_state << ", playback_state=" << (int)s->playback_state << ", source=" << (int)s->source << ", light_engine_flags=" << s->light_engine_flags << ", source_flags=" << s->source_flags << ", fullness=" << s->buffer_fullness << ", rate=" << s->point_rate << ", count=" << s->point_count << std::endl;
+    } else {
+      dbg("Etherdream.read_resp",3) << "Got response " << d->conn.resp.response << " while waiting for ACK; command=" << d->conn.resp.command << ", dac_status: protocol=" << (int)s->protocol << ", light_engine state=" << (int)s->light_engine_state << ", playback_state=" << (int)s->playback_state << ", source=" << (int)s->source << ", light_engine_flags=" << s->light_engine_flags << ", source_flags=" << s->source_flags << ", fullness=" << s->buffer_fullness << ", rate=" << s->point_rate << ", count=" << s->point_count << std::endl;
+    }
     d->conn.dc_last_ack_time = microseconds();
     return 0;
 }
