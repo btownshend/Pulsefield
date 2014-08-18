@@ -439,6 +439,7 @@ public class Ableton {
 		msg.add(track);
 		msg.add(clip);
 		sendMessage(msg);
+		sendMessage(new OscMessage("/live/clip/info").add(track).add(clip));  // Ask for clip info
 	}
 
 	public void stopClip(int track, int clip) {
@@ -490,8 +491,10 @@ public class Ableton {
 			} 
 		}
 		trackSet=ts;
-		if (ts!=null)
+		if (ts!=null) {
 			setALTempo(trackSet.tempo);  // Set AL tempo
+			TouchOSC.getInstance().sendMessage(new OscMessage("/grid/song").add(ts.name));
+		}
 		return ts;
 	}
 	
