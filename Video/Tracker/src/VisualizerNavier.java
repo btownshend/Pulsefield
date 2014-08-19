@@ -19,8 +19,9 @@ class VisualizerNavier extends Visualizer {
 	long statsStep = 0;
 	long statsUpdate = 0;
 	Synth synth;
+	MusicVisLaser mvl;
 
-	VisualizerNavier(PApplet parent, Synth synth) {
+	VisualizerNavier(Tracker parent, Synth synth) {
 		super();
 		fluidSolver = new NavierStokesSolver();
 		buffer = new PImage(parent.width/2, parent.height/2);
@@ -37,6 +38,7 @@ class VisualizerNavier extends Visualizer {
 		stats();
 		
 		this.synth=synth;
+		mvl=new MusicVisLaser(parent.fourier, MusicVisLaser.Modes.POLYGON);
 	}
 
 	@Override
@@ -138,6 +140,7 @@ class VisualizerNavier extends Visualizer {
 		}
 	}
 
+	@Override
 	public void update(PApplet parent, People p) {
 		Ableton.getInstance().updateMacros(p);
 		for (Person pos: p.pmap.values()) {
@@ -246,6 +249,12 @@ class VisualizerNavier extends Visualizer {
 		float b2 = parent.blue(c2)+0.5f;
 
 		return parent.color( PApplet.lerp(r1, r2, l), PApplet.lerp(g1, g2, l), PApplet.lerp(b1, b2, l) );
+	}
+	
+	@Override
+	public  void drawLaser(PApplet parent, People p) {
+		// Delegate to the mvl
+		mvl.drawLaser(parent, p);
 	}
 }
 
