@@ -384,9 +384,9 @@ public class VisualizerDDR extends Visualizer {
 			int quad=d.getAim();
 			//PApplet.println("Laser: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
 			if (quad>=0)
-				laser.svgfile("arrow4.svg", 0.0f, 0.0f, 0.5f, -quad*90+180);
+				laser.svgfile("arrow4.svg", 0.0f, -0.5f, 0.5f, -quad*90+180);
 			else
-				laser.svgfile("dancer4.svg", 0.0f, 0.0f, 0.5f,0f);				
+				laser.svgfile("dancer4.svg", 0.0f, -0.5f, 0.5f,0f);				
 			laser.cellEnd(id);
 		}
 	}
