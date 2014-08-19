@@ -1,19 +1,26 @@
 import processing.core.PApplet;
 //  class for FFT visualization
 import ddf.minim.AudioSource;
+import ddf.minim.Minim;
 import ddf.minim.analysis.FFT;
 import ddf.minim.AudioListener;
 
 /// abstract class for audio visualization
 
  abstract class AudioRenderer implements AudioListener {
+		Minim minim;
+
   float[] left;
   float[] right;
   public synchronized void samples(float[] samp) { left = samp; }
   public synchronized void samples(float[] sampL, float[] sampR) { left = sampL; right = sampR; }
+  
+  	AudioRenderer(PApplet parent) {
+		// setup player
+		minim = new Minim(parent);
+		minim.getLineIn().addListener(this);
+  	}
 }
-
-
 
 public class Fourier extends AudioRenderer {
 	FFT fft; 
@@ -21,7 +28,10 @@ public class Fourier extends AudioRenderer {
 	float[] leftFFT;
 	float[] rightFFT;
 	float[] monoFFT;
-	Fourier(AudioSource source) {
+	
+	Fourier(PApplet parent) {
+		super(parent);
+		AudioSource source=minim.getLineIn();
 		float gain = (float) .125;
 		fft = new FFT(source.bufferSize(), source.sampleRate());
 		PApplet.println("FFT buffer size="+source.bufferSize()+", SR="+source.sampleRate());

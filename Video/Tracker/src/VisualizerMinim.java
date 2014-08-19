@@ -1,24 +1,20 @@
 import processing.core.PApplet;
 import processing.core.PVector;
-import ddf.minim.Minim;
+
 
 
 public class VisualizerMinim extends VisualizerGrid {
-	Minim minim;
-
 	Renderer radar, vortex, iso;
 	Renderer[] visuals; 
 	Fourier fourier;
 	int select;
 	
-	VisualizerMinim(PApplet parent) {
+	VisualizerMinim(PApplet parent, Fourier fourier) {
 		super(parent);
+
+		this.fourier=fourier;
 		select=-1;			// activate first renderer in list
-		// setup player
-		minim = new Minim(parent);
 		// setup renderers
-		fourier=new Fourier(minim.getLineIn());
-		minim.getLineIn().addListener(fourier);
 		vortex = new VortexRenderer(fourier);
 		radar = new RadarRenderer(fourier);
 		iso = new IsometricRenderer(parent,fourier);
@@ -57,7 +53,6 @@ public class VisualizerMinim extends VisualizerGrid {
 			super.draw(parent, p, wsize);
 			return;
 		}
-		assert(minim!=null);
 
 		// Add drawing code here
 		initializeContext(parent);

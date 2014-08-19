@@ -50,6 +50,7 @@ public class Tracker extends PApplet {
 	Boolean prevMousePressed;
 	PVector mouseVel;  // Average mouse velocity
 	int lastFrameReceived=3;
+	Fourier fourier;
 	
 	public void setup() {
 		configFile="/Users/bst/DropBox/Pulsefield/config/urlconfig.txt";
@@ -98,6 +99,9 @@ public class Tracker extends PApplet {
 		prevMousePressed=false;
 		mouseVel=new PVector(0f,0f);
 		
+		// Facility for real-time FFT of default input
+		fourier=new Fourier(this);
+		
 		// Visualizers
 		vis=new Visualizer[visnames.length];
 		vis[0]=new VisualizerPads(this, synth);
@@ -114,8 +118,9 @@ public class Tracker extends PApplet {
 		vis[11]=new VisualizerCows(this);
 		vis[12]=new VisualizerSoccer(this);
 		visMenu=new VisualizerMenu(this);vis[13]=visMenu;
-		vis[14]=new VisualizerMinim(this);
-		setapp(14);
+
+		vis[14]=new VisualizerMinim(this,fourier);
+		setapp(12);
 		
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
