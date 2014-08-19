@@ -1,4 +1,4 @@
-package MusicVisualizer;
+
 
 import ddf.minim.AudioSource;
 import processing.core.PApplet;

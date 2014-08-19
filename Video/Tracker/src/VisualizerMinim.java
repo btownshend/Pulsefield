@@ -1,9 +1,5 @@
 import processing.core.PApplet;
 import processing.core.PVector;
-import MusicVisualizer.AudioRenderer;
-import MusicVisualizer.IsometricRenderer;
-import MusicVisualizer.RadarRenderer;
-import MusicVisualizer.VortexRenderer;
 import ddf.minim.Minim;
 
 

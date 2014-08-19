@@ -1,4 +1,4 @@
-package MusicVisualizer;
+
 
 import ddf.minim.AudioSource;
 import processing.core.PApplet;
@@ -96,6 +96,8 @@ public class IsometricRenderer extends FourierRenderer {
   
   @Override
   public void drawLaserPerson(PApplet parent, int id) {
+	  Laser laser=Laser.getInstance();
+	  laser.
   }
 }
 
