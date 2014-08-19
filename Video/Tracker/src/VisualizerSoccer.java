@@ -6,7 +6,8 @@ import processing.core.PVector;
 class Ball {
 	PVector position;  // Position, velocity in absolute (meters) coordinate space (maps to entire active area)
 	PVector velocity;
-	final float deceleration=0.07f*9.81f;  // Decleration while rolling in m/s^2 (mu_r=0.07 from http://www.stmarys-ca.edu/sites/default/files/attachments/files/JGrider.pdf )
+	final float deceleration=0.02f*9.81f;  // Decleration while rolling in m/s^2 (mu_r=0.07 from http://www.stmarys-ca.edu/sites/default/files/attachments/files/JGrider.pdf )
+	final float midaccel=0.05f*9.81f;       // Acceleration towards middle in m/s^2
 	final float restitution=0.7f;   // Coeff of restitution (see http://www.mathematicshed.com/uploads/1/2/5/7/12572836/physicsofkickingsoccerball.pdf )
 	final float mass=0.430f;			// Mass of ball in kg (FIFA says 410-450g )
 	final float radius=(float)(0.69/2/Math.PI);			// Radius of ball in meters (FIFA say 68-70cm in circumference )
@@ -67,6 +68,9 @@ class Ball {
 			impactSound(0);
 		}
 		velocity.mult(1-deceleration*elapsed);
+		PVector toMiddle=PVector.sub(new PVector((Tracker.maxx+Tracker.minx)/2,(Tracker.miny+Tracker.maxy)/2),position);
+		if (toMiddle.mag() > 0)
+			velocity.add(PVector.mult(toMiddle, midaccel*elapsed/position.mag()));
 //		PApplet.println("New ball position="+position+", velocity="+velocity+", inCollision="+inCollision);
 	}
 	
