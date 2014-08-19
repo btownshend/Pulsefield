@@ -93,5 +93,9 @@ public class IsometricRenderer extends FourierRenderer {
       parent.image(pg, 0, 0);
     }
   }
+  
+  @Override
+  public void drawLaserPerson(PApplet parent, int id) {
+  }
 }
 

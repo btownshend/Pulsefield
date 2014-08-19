@@ -14,6 +14,7 @@ public abstract class AudioRenderer implements AudioListener {
   public void start(PApplet parent) {}
   public void stop(PApplet parent) {}
   public abstract void draw(PApplet parent); 
+  public abstract void drawLaserPerson(PApplet parent, int id);
 }
 
 
