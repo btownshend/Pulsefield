@@ -47,7 +47,7 @@ class GString {
 		vibrating=true;
 		this.color=color;
 		strikeTime=System.currentTimeMillis();
-		int velocity=(int)(p.getVelocityInMeters().mag()*64);
+		int velocity=(int)(p.getVelocityInMeters().mag()*40+40);
 		if (velocity>127)
 			velocity=127;
 		this.velocity=velocity;
