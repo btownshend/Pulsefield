@@ -76,7 +76,7 @@ public class VisualizerGuitar extends VisualizerPS {
 	HashMap<Integer, PVector> lastpos;
 	PImage guitar;
 	TrackSet trackSet;
-	final static float laserScaling=0.5f;    // Scale laser drawing this much
+	final static float laserScaling=0.75f;    // Scale laser drawing this much
 
 	public VisualizerGuitar(PApplet parent, Synth synth) {
 		super(parent);
