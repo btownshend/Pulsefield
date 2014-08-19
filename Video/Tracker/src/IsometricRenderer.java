@@ -23,22 +23,22 @@ public class IsometricRenderer extends Renderer {
     n = (int)Math.ceil(Math.sqrt(2) * r);
     d = Math.min(parent.width, parent.height) / r / 5;
     val = new float[n];
-    pg=null;
-  }
-
-  @Override
-  public void start(PApplet parent) { 
     // Offscreen P2D renderer (fastest)
 	PApplet.println("Creating render with size "+parent.width+"x"+parent.height);
     pg = parent.createGraphics(parent.width, parent.height,PConstants.P2D);
-    
+    pg.noSmooth();
+//    
     // Alternatively use Java2D (sharper)
     // pg = createGraphics(width, height, JAVA2D);
+ }
+
+  @Override
+  public void start() { 
+
   }
 
   @Override
-  public void stop(PApplet parent) {
-	  pg=null;
+  public void stop() {
   }
   
   @Override

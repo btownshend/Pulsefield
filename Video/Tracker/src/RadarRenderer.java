@@ -8,7 +8,7 @@ public class RadarRenderer extends Renderer {
   float aura = .25f;
   float orbit = .25f;
   int delay = 2;
-  
+  boolean needsClear=true;
   int rotations;
 
   public RadarRenderer(Fourier f) {
@@ -17,14 +17,18 @@ public class RadarRenderer extends Renderer {
   }
   
   @Override
-  public void start(PApplet parent) {
-	  parent.background(0);
+  public void start() {
+	 needsClear=true;
   }
   
   @Override
   public synchronized void draw(PApplet parent)
   {
     parent.colorMode(PApplet.RGB, (float)(Math.PI * 2* rotations), 1, 1);
+    if (needsClear) {
+    	parent.background(0);
+    	needsClear=false;
+    }
     if(fourier.left != null) {
    
       float t = PApplet.map((float)parent.millis(),0f, delay * 1000f, 0f, (float)Math.PI);   

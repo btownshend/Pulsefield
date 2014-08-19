@@ -48,8 +48,9 @@ public abstract class Visualizer {
 	}
 	
 	abstract public void update(PApplet parent, People p);
-	public void start(PApplet parent) { start(); }
-	public void stop(PApplet parent) { stop(); }
+	
+	// NOTE: start and stop don't have PApplet args since that would make it easy to issue drawing commands, which is bad because
+	// start/stop may be called from threads other than the draw() thread and OpenGL doesn't like that (causes segmentation fault)
 	public void start() {;}
 	public void stop() {
 		Ableton.getInstance().setTrackSet(null);

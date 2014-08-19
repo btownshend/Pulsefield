@@ -7,7 +7,6 @@ public class VortexRenderer extends Renderer {
 
 	int n = 48;
 	float squeeze = .5f;
-
 	float val[];
 
 	public VortexRenderer(Fourier f) {
@@ -16,11 +15,7 @@ public class VortexRenderer extends Renderer {
 	}
 
 	@Override
-	public void start(PApplet parent) {
-		parent.colorMode(PApplet.HSB, n, n, n);
-		parent.rectMode(PApplet.CORNERS);
-		parent.noStroke();
-		parent.noSmooth();    
+	public void start() {
 	}
 
 	@Override
@@ -32,6 +27,10 @@ public class VortexRenderer extends Renderer {
 			float dy = (float)(parent.height / n * .5);
 			fourier.calc(n);
 
+			parent.colorMode(PApplet.HSB, n, n, n);
+			parent.rectMode(PApplet.CORNERS);
+			parent.noStroke();
+			
 			// rotate slowly
 			parent.background(0); parent.lights();
 			parent.translate(parent.width/2, parent.height, -parent.width/2);

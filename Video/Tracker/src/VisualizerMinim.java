@@ -27,19 +27,19 @@ public class VisualizerMinim extends VisualizerGrid {
 	}
 
 	@Override
-	public void start(PApplet parent) {
+	public void start() {
 		PApplet.println("Minim.start");
 		super.start();
 		// Other initialization when this app becomes active
 		select=(select+1)%visuals.length;
-		visuals[select].start(parent);
+		visuals[select].start();
 	}
 
 	@Override
-	public void stop(PApplet parent) {
+	public void stop() {
 		PApplet.println("Minim.stop");
 		super.stop();
-		visuals[select].stop(parent);
+		visuals[select].stop();
 	}
 
 	@Override
