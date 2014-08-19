@@ -2,19 +2,20 @@ import processing.core.PApplet;
 import processing.core.PVector;
 
 
-public abstract class Renderer {
-	Fourier fourier;
+public class MusicVisLaser {
+	public enum Modes { LINES, POLYGON };
+	Modes mode;
 	float lval[];
 	float ltavg[];
+	Fourier fourier;
 	
-	Renderer(Fourier f) {
+	MusicVisLaser(Fourier f, Modes mode) {
 		fourier=f;
 		lval=new float[20];
 		ltavg=new float[20];
+		this.mode=mode;
 	}
-	public void start() {}
-	public void stop() {}
-	public abstract void draw(PApplet parent); 
+	
 	public void update(PApplet parent) {
 		int n=lval.length;
 		fourier.calc(n);
@@ -23,10 +24,28 @@ public abstract class Renderer {
 			ltavg[i] = PApplet.lerp(ltavg[i], (float)Math.pow(fourier.monoFFT[i], 1.0f), .01f);	
 		}
 	}
-	public abstract void drawLaserPerson(PApplet parent, int id);
-	
 
-	public void drawLaserPerson1(PApplet parent, int id) {
+	public void drawLaser(PApplet parent, People p) {
+		update(parent);
+		Laser laser=Laser.getInstance();
+		for (Person ps: p.pmap.values()) {  
+			laser.cellBegin(ps.id); // Start a cell-specific drawing
+			switch (mode) {
+			case LINES:
+				drawLines(parent,ps.id);
+				break;
+			case POLYGON:
+				drawPolygon(parent,ps.id);
+				break;
+			default:
+				assert(false);
+				break;
+			}
+			laser.cellEnd(ps.id);
+		}
+	}
+	
+	private void drawLines(PApplet parent, int id) {
 		Laser laser=Laser.getInstance();
 		int n=lval.length;
 		fourier.calc(n);
@@ -43,7 +62,7 @@ public abstract class Renderer {
 		}
 //		PApplet.println("Max line="+maxmag);
 	}
-	public void drawLaserPerson2(PApplet parent, int id) {
+	private void drawPolygon(PApplet parent, int id) {
 		Laser laser=Laser.getInstance();
 		int n=lval.length;
 		float scale=2f;
@@ -59,5 +78,4 @@ public abstract class Renderer {
 				laser.line(pt.x,pt.y,nextPt.x,nextPt.y);
 		}
 	}
-
 }

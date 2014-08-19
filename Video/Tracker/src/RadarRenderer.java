@@ -12,7 +12,7 @@ public class RadarRenderer extends Renderer {
   int rotations;
 
   public RadarRenderer(Fourier f) {
-	  super(f);
+	  super(f,MusicVisLaser.Modes.LINES);
     rotations =  (int) f.fft.getBandWidth();
   }
   
@@ -60,11 +60,6 @@ public class RadarRenderer extends Renderer {
         if(i>0) parent.line(x1, y1, x2, y2);
       }
     }
-  }
-  
-  @Override
-  public void drawLaserPerson(PApplet parent, int id) {
-	  drawLaserPerson2(parent,id);
   }
 }
 

@@ -61,11 +61,6 @@ public class VisualizerMinim extends VisualizerGrid {
 
 	@Override
 	public void drawLaser(PApplet parent, People p) {
-		Laser laser=Laser.getInstance();
-		for (Person ps: p.pmap.values()) {  
-			laser.cellBegin(ps.id); // Start a cell-specific drawing
-			visuals[select].drawLaserPerson(parent, ps.id);
-			laser.cellEnd(ps.id);
-		}
+		visuals[select].drawLaser(parent, p);
 	}
 }

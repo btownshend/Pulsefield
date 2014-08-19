@@ -10,7 +10,7 @@ public class VortexRenderer extends Renderer {
 	float val[];
 
 	public VortexRenderer(Fourier f) {
-		super(f); 
+		super(f,MusicVisLaser.Modes.LINES); 
 		val = new float[n];
 	}
 
@@ -55,11 +55,6 @@ public class VortexRenderer extends Renderer {
 			}
 		}
 	}
-
-	  @Override
-	  public void drawLaserPerson(PApplet parent, int id) {
-		  drawLaserPerson1(parent,id);
-	  }
 }
 
 

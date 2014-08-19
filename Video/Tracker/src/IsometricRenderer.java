@@ -19,7 +19,7 @@ public class IsometricRenderer extends Renderer {
   PGraphics pg;
   
   public IsometricRenderer(PApplet parent, Fourier f) {
-    super(f);
+    super(f,MusicVisLaser.Modes.POLYGON);
     n = (int)Math.ceil(Math.sqrt(2) * r);
     d = Math.min(parent.width, parent.height) / r / 5;
     val = new float[n];
@@ -96,10 +96,6 @@ public class IsometricRenderer extends Renderer {
       parent.image(pg, 0, 0);
     }
   }
-  
-  @Override
-  public void drawLaserPerson(PApplet parent, int id) {
-	  drawLaserPerson2(parent,id);
-  }
+
 }
 
