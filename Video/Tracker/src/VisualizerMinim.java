@@ -6,8 +6,9 @@ import ddf.minim.Minim;
 public class VisualizerMinim extends VisualizerGrid {
 	Minim minim;
 
-	AudioRenderer radar, vortex, iso;
-	AudioRenderer[] visuals; 
+	Renderer radar, vortex, iso;
+	Renderer[] visuals; 
+	Fourier fourier;
 	int select;
 	
 	VisualizerMinim(PApplet parent) {
@@ -16,11 +17,13 @@ public class VisualizerMinim extends VisualizerGrid {
 		// setup player
 		minim = new Minim(parent);
 		// setup renderers
-		vortex = new VortexRenderer(parent,minim.getLineIn());
-		radar = new RadarRenderer(parent,minim.getLineIn());
-		iso = new IsometricRenderer(parent,minim.getLineIn());
+		fourier=new Fourier(minim.getLineIn());
+		minim.getLineIn().addListener(fourier);
+		vortex = new VortexRenderer(fourier);
+		radar = new RadarRenderer(fourier);
+		iso = new IsometricRenderer(parent,fourier);
 
-		visuals = new AudioRenderer[] {radar, vortex, iso};
+		visuals = new Renderer[] {radar, vortex, iso};
 	}
 
 	@Override
@@ -30,14 +33,12 @@ public class VisualizerMinim extends VisualizerGrid {
 		// Other initialization when this app becomes active
 		select=(select+1)%visuals.length;
 		visuals[select].start(parent);
-		minim.getLineIn().addListener(visuals[select]);
 	}
 
 	@Override
 	public void stop(PApplet parent) {
 		PApplet.println("Minim.stop");
 		super.stop();
-		minim.getLineIn().removeListener(visuals[select]);
 		visuals[select].stop(parent);
 	}
 

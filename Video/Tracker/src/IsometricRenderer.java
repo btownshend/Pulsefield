@@ -1,6 +1,5 @@
 
 
-import ddf.minim.AudioSource;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -9,7 +8,7 @@ import processing.core.PGraphics;
 // the code for the isometric renderer was deliberately taken from Jared C.'s wavy sketch 
 // ( http://www.openprocessing.org/visuals/?visualID=5671 )
 
-public class IsometricRenderer extends FourierRenderer {
+public class IsometricRenderer extends Renderer {
 
   int r = 7;
   float squeeze = .5f;
@@ -18,9 +17,9 @@ public class IsometricRenderer extends FourierRenderer {
   float val[];
   int n;
   PGraphics pg;
-
-  public IsometricRenderer(PApplet parent, AudioSource source) {
-    super(source);
+  
+  public IsometricRenderer(PApplet parent, Fourier f) {
+    super(f);
     n = (int)Math.ceil(Math.sqrt(2) * r);
     d = Math.min(parent.width, parent.height) / r / 5;
     val = new float[n];
@@ -44,17 +43,16 @@ public class IsometricRenderer extends FourierRenderer {
   
   @Override
   public void draw(PApplet parent) {
+    if (fourier.left != null) {
+  	  fourier.calc(n);;
 
-    if (left != null) {
+  	  // actual values react with a delay
+  	  for (int i=0; i<n; i++) val[i] = PApplet.lerp(val[i], (float)Math.pow(fourier.monoFFT[i], squeeze), .1f);
+  	  
       pg.beginDraw();
       pg.colorMode(PApplet.RGB, 6, 6, 6); 
       pg.stroke(0);
       //pg.noSmooth();
-      super.calc(n);
-
-      // actual values react with a delay
-      for (int i=0; i<n; i++) val[i] = PApplet.lerp(val[i], (float)Math.pow(monoFFT[i], squeeze), .1f);
-
       a -= 0.08; 
       pg.background(6);  
       for (int x = -r; x <= r; x++) { 

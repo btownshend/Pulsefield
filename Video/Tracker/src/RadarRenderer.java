@@ -1,10 +1,9 @@
 
 
-import ddf.minim.AudioSource;
 import processing.core.PApplet;
 
 
-public class RadarRenderer extends AudioRenderer {
+public class RadarRenderer extends Renderer {
   
   float aura = .25f;
   float orbit = .25f;
@@ -12,8 +11,9 @@ public class RadarRenderer extends AudioRenderer {
   
   int rotations;
 
-  public RadarRenderer(PApplet parent, AudioSource source) {
-    rotations =  (int) source.sampleRate() / source.bufferSize();
+  public RadarRenderer(Fourier f) {
+	  super(f);
+    rotations =  (int) f.fft.getBandWidth();
   }
   
   @Override
@@ -25,10 +25,10 @@ public class RadarRenderer extends AudioRenderer {
   public synchronized void draw(PApplet parent)
   {
     parent.colorMode(PApplet.RGB, (float)(Math.PI * 2* rotations), 1, 1);
-    if(left != null) {
+    if(fourier.left != null) {
    
       float t = PApplet.map((float)parent.millis(),0f, delay * 1000f, 0f, (float)Math.PI);   
-      int n = left.length;
+      int n = fourier.left.length;
       
       // center 
       float w = (float) (parent.width/2 + Math.cos(t) * parent.width * orbit);
@@ -45,9 +45,9 @@ public class RadarRenderer extends AudioRenderer {
       for(int i=0; i <= n; i++)
       {
         a1 = a2; x1 = x2; y1 = y2;
-        r2 = left[i % n] ;
-        if (right!=null)
-        	r2+=right[i%n];
+        r2 = fourier.left[i % n] ;
+        if (fourier.right!=null)
+        	r2+=fourier.right[i%n];
         a2 = PApplet.map((float)i,0f, (float)n, 0f, (float)(Math.PI * 2 * rotations));
         x2 = (float) (w + Math.cos(a2) * r2 * w2);
         y2 = (float) (h + Math.sin(a2) * r2 * h2);

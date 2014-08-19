@@ -1,18 +1,17 @@
 
 
-import ddf.minim.AudioSource;
 import processing.core.PApplet;
 
 
-public class VortexRenderer extends FourierRenderer {
+public class VortexRenderer extends Renderer {
 
 	int n = 48;
 	float squeeze = .5f;
 
 	float val[];
 
-	public VortexRenderer(PApplet parent, AudioSource source) {
-		super(source); 
+	public VortexRenderer(Fourier f) {
+		super(f); 
 		val = new float[n];
 	}
 
@@ -26,13 +25,12 @@ public class VortexRenderer extends FourierRenderer {
 
 	@Override
 	public synchronized void draw(PApplet parent	) {
-
-		if(left != null) {  
+		if(fourier.left != null) {  
 
 			float t = PApplet.map((float)parent.millis(),0f, 3000f, 0f, (float)(2*Math.PI));
 			float dx = parent.width / n;
 			float dy = (float)(parent.height / n * .5);
-			super.calc(n);
+			fourier.calc(n);
 
 			// rotate slowly
 			parent.background(0); parent.lights();
@@ -46,9 +44,9 @@ public class VortexRenderer extends FourierRenderer {
 			// draw coloured slices
 			for(int i=0; i < n; i++)
 			{
-				val[i] = PApplet.lerp(val[i], (float)Math.pow(monoFFT[i] * (i+1), squeeze), .1f);
+				val[i] = PApplet.lerp(val[i], (float)Math.pow(fourier.monoFFT[i] * (i+1), squeeze), .1f);
 				float x = PApplet.map(i, 0, n, parent.height, 0);
-				float y = PApplet.map(val[i], 0, maxFFT, 0, parent.width/2);
+				float y = PApplet.map(val[i], 0, fourier.maxFFT, 0, parent.width/2);
 				parent.pushMatrix();
 				parent.translate(x, 0, 0);
 				parent.rotateX((float)(Math.PI/16 * i));
