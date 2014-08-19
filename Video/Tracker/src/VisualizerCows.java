@@ -7,7 +7,7 @@ class Apple {
 	PVector position;
 	PShape appleShape;
 	
-	static final float speed=0.02f;  // Meters/frame
+	static final float speed=0.04f;  // Meters/frame
 	static final float maxHitDist=0.2f; // Meters
 	static final float appleRadius=0.3f;  // Meters
 	static final float applePixels=30;
@@ -55,7 +55,7 @@ class Apple {
 		}
 //		PApplet.println("apple position="+position+", hit="+hit);
 		if (hit) {
-			position.y=0;
+			position.y=-1.0f;  // Give it some blanking time
 			position.x=(float) (Math.random()*(Tracker.rawmaxx-Tracker.rawminx)+Tracker.rawminx);
 		}
 	}
