@@ -69,6 +69,7 @@ public class VisualizerMinim extends Visualizer {
 			return;
 		}
 		// Add drawing code here
+		initializeContext(parent);
 		visuals[select].draw(parent);
 	}
 

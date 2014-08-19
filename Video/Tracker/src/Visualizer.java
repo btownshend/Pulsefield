@@ -24,11 +24,19 @@ public abstract class Visualizer {
 		parent.text("Please enter...", wsize.x/2,wsize.y/2+2.5f*lineSize);
 	}
 	
-	public void draw(PApplet parent, People p, PVector wsize) {
-		parent.background(0, 0, 0);  
+	// Clean up graphics context to "default" state
+	public void initializeContext(PApplet parent) { 
 		parent.colorMode(PConstants.RGB, 255);
 		parent.rectMode(PApplet.CORNER);
-
+		parent.smooth();
+		parent.stroke(255);
+		parent.imageMode(PConstants.CORNER);
+		parent.tint(255);
+	}
+	
+	public void draw(PApplet parent, People p, PVector wsize) {
+		initializeContext(parent);
+		parent.background(0, 0, 0); 
 		if (p.pmap.isEmpty())
 			drawWelcome(parent,wsize);
 		drawBorders(parent, false, wsize);
