@@ -220,6 +220,7 @@ public class Ableton {
 		addSong("Poly","Poly",101,3,120,0);
 		addSong("Navier", "Navier",105,4,120,0);
 		addSong("SteelPan","Steel Pan",109,1,120,0);
+		addSong("Cows","Cows",111,1,120,0);
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
 		// Clear track info

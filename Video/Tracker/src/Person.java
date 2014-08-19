@@ -10,6 +10,7 @@ public class Person {
 	int groupsize;
 	float sep;   		// Leg separation in meters
 	float diam;			// Leg diameter in meters
+	float userData;		// extra data for apps
 	Leg[] legs;
 	
 	public Person(PVector origin, int channel, int id) {
@@ -22,6 +23,7 @@ public class Person {
 		this.legs=new Leg[2];
 		for (int i=0;i<legs.length;i++)
 			this.legs[i]=new Leg(origin);
+		this.userData=0;
 	}
 	
 	// Convert to normalized position - in range [-1,1] for extent of pulsefield
