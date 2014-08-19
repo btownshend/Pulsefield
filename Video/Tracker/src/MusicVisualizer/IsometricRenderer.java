@@ -24,27 +24,28 @@ public class IsometricRenderer extends FourierRenderer {
     n = (int)Math.ceil(Math.sqrt(2) * r);
     d = Math.min(parent.width, parent.height) / r / 5;
     val = new float[n];
-    reset(parent);
+    pg=null;
   }
 
-  public void setup(PApplet parent) { 
-    reset(parent);
-  } 
-
-  void reset(PApplet parent) {
-    
+  @Override
+  public void start(PApplet parent) { 
     // Offscreen P2D renderer (fastest)
+	PApplet.println("Creating render with size "+parent.width+"x"+parent.height);
     pg = parent.createGraphics(parent.width, parent.height,PConstants.P2D);
     
     // Alternatively use Java2D (sharper)
     // pg = createGraphics(width, height, JAVA2D);
-    
   }
 
+  @Override
+  public void stop(PApplet parent) {
+	  pg=null;
+  }
+  
+  @Override
   public void draw(PApplet parent) {
 
     if (left != null) {
-
       pg.beginDraw();
       pg.colorMode(PApplet.RGB, 6, 6, 6); 
       pg.stroke(0);

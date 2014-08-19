@@ -16,13 +16,15 @@ public class RadarRenderer extends AudioRenderer {
     rotations =  (int) source.sampleRate() / source.bufferSize();
   }
   
-  public void setup(PApplet parent) {
-    parent.colorMode(PApplet.RGB, (float)(Math.PI * 2* rotations), 1, 1);
-    parent.background(0);
+  @Override
+  public void start(PApplet parent) {
+	  parent.background(0);
   }
   
+  @Override
   public synchronized void draw(PApplet parent)
   {
+    parent.colorMode(PApplet.RGB, (float)(Math.PI * 2* rotations), 1, 1);
     if(left != null) {
    
       float t = PApplet.map((float)parent.millis(),0f, delay * 1000f, 0f, (float)Math.PI);   

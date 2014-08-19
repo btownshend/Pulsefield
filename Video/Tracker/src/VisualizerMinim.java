@@ -27,6 +27,7 @@ public class VisualizerMinim extends VisualizerGrid {
 		super.start();
 		// Other initialization when this app becomes active
 		select=(select+1)%numRenderers;
+		visuals[select].start(parent);
 	}
 
 	@Override
@@ -40,6 +41,7 @@ public class VisualizerMinim extends VisualizerGrid {
 			minim.stop();	
 			minim=null;
 		}
+		visuals[select].stop(parent);
 	}
 
 	@Override

@@ -16,13 +16,15 @@ public class VortexRenderer extends FourierRenderer {
 		val = new float[n];
 	}
 
-	public void setup(PApplet parent) {
+	@Override
+	public void start(PApplet parent) {
 		parent.colorMode(PApplet.HSB, n, n, n);
 		parent.rectMode(PApplet.CORNERS);
 		parent.noStroke();
 		parent.noSmooth();    
 	}
 
+	@Override
 	public synchronized void draw(PApplet parent	) {
 
 		if(left != null) {  

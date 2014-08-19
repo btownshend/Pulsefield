@@ -11,7 +11,8 @@ public abstract class AudioRenderer implements AudioListener {
   float[] right;
   public synchronized void samples(float[] samp) { left = samp; }
   public synchronized void samples(float[] sampL, float[] sampR) { left = sampL; right = sampR; }
-  public abstract void setup(PApplet parent);
+  public void start(PApplet parent) {}
+  public void stop(PApplet parent) {}
   public abstract void draw(PApplet parent); 
 }
 
