@@ -61,6 +61,8 @@ public class VisualizerPS extends Visualizer {
 
 	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent,p,wsize);
+		if (p.pmap.isEmpty())
+			return;
 		parent.resetShader();
 		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
 		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA); 
