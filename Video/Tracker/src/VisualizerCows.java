@@ -6,6 +6,7 @@ import processing.core.PVector;
 class Apple {
 	PVector position;
 	PShape appleShape;
+	int nextClip=0;
 	
 	static final float speed=0.04f;  // Meters/frame
 	static final float maxHitDist=0.2f; // Meters
@@ -46,8 +47,10 @@ class Apple {
 				int track=ps.id%(ts.numTracks)+ts.firstTrack;
 				int nclips=Ableton.getInstance().getTrack(track).numClips();
 				PApplet.println("Track="+track+", nclips="+nclips);
-				if (nclips!=-1)
-					Ableton.getInstance().playClip(track,ps.id%nclips);
+				if (nclips!=-1) {
+					Ableton.getInstance().playClip(track,nextClip);
+					nextClip=(nextClip+1)%nclips;
+				}
 			} else {
 				ps.userData-=0.001f;
 			}
