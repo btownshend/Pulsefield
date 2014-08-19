@@ -10,7 +10,7 @@ import processing.core.PGraphics;
 
 public class IsometricRenderer extends Renderer {
 
-  int r = 7;
+  int r = 9;
   float squeeze = .5f;
 
   float a, d;
@@ -35,6 +35,7 @@ public class IsometricRenderer extends Renderer {
   @Override
   public void start() { 
 
+
   }
 
   @Override
@@ -50,11 +51,12 @@ public class IsometricRenderer extends Renderer {
   	  for (int i=0; i<n; i++) val[i] = PApplet.lerp(val[i], (float)Math.pow(fourier.monoFFT[i], squeeze), .1f);
   	  
       pg.beginDraw();
-      pg.colorMode(PApplet.RGB, 6, 6, 6); 
+      pg.colorMode(PApplet.HSB, 100,100,100); 
       pg.stroke(0);
-      //pg.noSmooth();
+      pg.lights();
+ 
       a -= 0.08; 
-      pg.background(6);  
+      pg.background(0);  
       for (int x = -r; x <= r; x++) { 
         for (int z = -r; z <= r; z++) { 
           int y = (int) ( parent.height/3 * val[(int) PApplet.dist(x, z, 0, 0)]); 
@@ -77,12 +79,15 @@ public class IsometricRenderer extends Renderer {
           int isoy4 = (int)((xt + zm) * 0.5 + h0); 
 
           // pg.hint(DISABLE_DEPTH_TEST);
-          pg.fill (2); 
+          int color=(int)(y*10.0/d);
+//          PApplet.println("color="+color);
+          if (color>100)
+        	  color=100;
+          pg.fill (color,25,100); 
           pg.quad(isox2, isoy2-y, isox3, isoy3-y, isox3, isoy3+d, isox2, isoy2+d); 
-          pg.fill (4); 
+          pg.fill (color,50,100); 
           pg.quad(isox3, isoy3-y, isox4, isoy4-y, isox4, isoy4+d, isox3, isoy3+d); 
-
-          pg.fill((int)(4 + y / 2.0 / d)); 
+          pg.fill(color,100,100);
           pg.quad(isox1, isoy1-y, isox2, isoy2-y, isox3, isoy3-y, isox4, isoy4-y); 
           // pg.hint(ENABLE_DEPTH_TEST);
         }
