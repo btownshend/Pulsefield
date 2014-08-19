@@ -4,6 +4,7 @@ import java.util.Iterator;
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PShape;
 import processing.core.PVector;
 
 // Visualizer based on iPad app "Poly" by James Milton
@@ -141,6 +142,8 @@ public class VisualizerPoly extends Visualizer {
 	Scale scale;
 	Synth synth;
 	int channel;   // This is actually a song selector -- set once at start and all playing done with this channel
+	PShape icon;
+	static final String iconName="Sixteenth.svg";
 	
 	VisualizerPoly(PApplet parent, Scale scale, Synth synth) {
 		super();
@@ -148,13 +151,14 @@ public class VisualizerPoly extends Visualizer {
 		this.scale=scale;
 		this.synth=synth;
 		this.channel=-1;
+		icon=parent.loadShape(Tracker.SVGDIRECTORY+iconName);
 	}
 	
 	@Override
 	public void start() {
 		super.start();
 		Ableton.getInstance().setTrackSet("Poly");
-		Laser.getInstance().setFlag("body",1.0f);
+		Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
 		this.channel=(this.channel+1)%Ableton.getInstance().trackSet.numTracks;
 		PApplet.println("Poly playing on channel "+channel);
@@ -233,6 +237,11 @@ public class VisualizerPoly extends Visualizer {
 			pos++;	
 		}
 		laser.bgEnd();
+		for (Person ps: p.pmap.values()) {  
+			laser.cellBegin(ps.id);
+			laser.svgfile(iconName,0.0f,0.0f,0.7f,0.0f);
+			laser.cellEnd(ps.id);
+		}
 	}
 
 }
