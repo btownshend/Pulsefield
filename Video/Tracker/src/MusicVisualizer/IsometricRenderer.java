@@ -52,7 +52,7 @@ public class IsometricRenderer extends FourierRenderer {
       super.calc(n);
 
       // actual values react with a delay
-      for (int i=0; i<n; i++) val[i] = PApplet.lerp(val[i], (float)Math.pow(leftFFT[i], squeeze), .1f);
+      for (int i=0; i<n; i++) val[i] = PApplet.lerp(val[i], (float)Math.pow(monoFFT[i], squeeze), .1f);
 
       a -= 0.08; 
       pg.background(6);  

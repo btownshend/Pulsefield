@@ -44,7 +44,7 @@ public class VortexRenderer extends FourierRenderer {
 			// draw coloured slices
 			for(int i=0; i < n; i++)
 			{
-				val[i] = PApplet.lerp(val[i], (float)Math.pow(leftFFT[i] * (i+1), squeeze), .1f);
+				val[i] = PApplet.lerp(val[i], (float)Math.pow(monoFFT[i] * (i+1), squeeze), .1f);
 				float x = PApplet.map(i, 0, n, parent.height, 0);
 				float y = PApplet.map(val[i], 0, maxFFT, 0, parent.width/2);
 				parent.pushMatrix();

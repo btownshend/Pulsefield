@@ -44,6 +44,8 @@ public class RadarRenderer extends AudioRenderer {
       {
         a1 = a2; x1 = x2; y1 = y2;
         r2 = left[i % n] ;
+        if (right!=null)
+        	r2+=right[i%n];
         a2 = PApplet.map((float)i,0f, (float)n, 0f, (float)(Math.PI * 2 * rotations));
         x2 = (float) (w + Math.cos(a2) * r2 * w2);
         y2 = (float) (h + Math.sin(a2) * r2 * h2);

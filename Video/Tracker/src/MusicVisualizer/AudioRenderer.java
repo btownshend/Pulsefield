@@ -23,6 +23,7 @@ abstract class FourierRenderer extends AudioRenderer {
   float maxFFT;
   float[] leftFFT;
   float[] rightFFT;
+  float[] monoFFT;
   FourierRenderer(AudioSource source) {
     float gain = (float) .125;
     fft = new FFT(source.bufferSize(), source.sampleRate());
@@ -32,10 +33,17 @@ abstract class FourierRenderer extends AudioRenderer {
   
   void calc(int bands) {
     if(left != null) {
+      monoFFT = new float[bands];
       leftFFT = new float[bands];
       fft.linAverages(bands);
       fft.forward(left);
-      for(int i = 0; i < bands; i++) leftFFT[i] = fft.getAvg(i);   
+      for(int i = 0; i < bands; i++) { leftFFT[i] = fft.getAvg(i);   monoFFT[i]=leftFFT[i]; }
+      if(right != null) {
+    	  rightFFT = new float[bands];
+    	  fft.linAverages(bands);
+    	  fft.forward(right);
+    	  for(int i = 0; i < bands; i++) { rightFFT[i] = fft.getAvg(i);  monoFFT[i]+=rightFFT[i]; }
+      }
     }
   }
 }
