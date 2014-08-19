@@ -40,6 +40,8 @@ public abstract class Visualizer {
 	}
 	
 	abstract public void update(PApplet parent, People p);
+	public void start(PApplet parent) { start(); }
+	public void stop(PApplet parent) { stop(); }
 	public void start() {;}
 	public void stop() {
 		Ableton.getInstance().setTrackSet(null);

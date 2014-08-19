@@ -22,16 +22,16 @@ public class VisualizerMinim extends Visualizer {
 	}
 
 	@Override
-	public void start() {
-//		PApplet.println("Minim.start");
+	public void start(PApplet parent) {
+		PApplet.println("Minim.start");
 		super.start();
 		// Other initialization when this app becomes active
 		select=(select+1)%numRenderers;
 	}
 
 	@Override
-	public void stop() {
-//		PApplet.println("Minim.stop");
+	public void stop(PApplet parent) {
+		PApplet.println("Minim.stop");
 		super.stop();
 		// When this app is deactivated
 //		groove.close();
