@@ -176,7 +176,7 @@ public class VisualizerMenu extends Visualizer {
 		int c=ps.getcolor(parent);
 		parent.fill(c,255);
 		parent.stroke(c,255);
-		PApplet.println("Drawing cursor with scaling="+scale);
+//		PApplet.println("Drawing cursor with scaling="+scale);
 		// cursor seems shifted
 		parent.shape(cursor,(ps.getNormalizedPosition().x+1)*wsize.x/2-cursor.width*scale*0.4f, (ps.getNormalizedPosition().y+1)*wsize.y/2-cursor.height*scale*0.2f,cursor.width*scale,cursor.height*scale);
 	}
@@ -188,7 +188,7 @@ public class VisualizerMenu extends Visualizer {
 		laser.bgBegin();
 		for(MenuItem item : menuItems) {
 			laser.shapeBegin(item.name);
-			laser.svgfile("appAbleton.svg",item.position.x, item.position.y, SELECTION_DISTANCE*2,0.0f);
+			laser.svgfile("app"+item.name+".svg",item.position.x, item.position.y, SELECTION_DISTANCE*1.6f,0.0f);
 			laser.circle(item.position.x, item.position.y, SELECTION_DISTANCE);
 //			PApplet.println("Circle at "+item.position)
 			laser.shapeEnd(item.name);
