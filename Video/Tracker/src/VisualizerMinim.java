@@ -48,6 +48,7 @@ public class VisualizerMinim extends VisualizerGrid {
 	public void update(PApplet parent, People p) {
 		super.update(parent,p);
 //		PApplet.println("Minim.update: minim="+minim+", num people="+p.pmap.size());
+		visuals[select].update(parent);
 	}
 
 	@Override
