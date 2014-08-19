@@ -33,6 +33,8 @@ public class VisualizerMinim extends VisualizerGrid {
 		// Other initialization when this app becomes active
 		select=(select+1)%visuals.length;
 		visuals[select].start();
+		Laser.getInstance().setFlag("body",0.0f);
+		Laser.getInstance().setFlag("legs",0.0f);
 	}
 
 	@Override
