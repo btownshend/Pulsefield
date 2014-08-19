@@ -45,25 +45,38 @@ class Ball {
 			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
 			velocity.x*=-restitution;
 			position.x=2*(Tracker.rawmaxx-radius)-position.x;
+			impactSound(0);
 		}
 		if (position.x-radius<Tracker.rawminx && velocity.x<0) {
 			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.rawminx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
 			velocity.x*=-restitution;
 			position.x=2*(Tracker.rawminx+radius)-position.x;
+			impactSound(0);
 		}
 		if (position.y+radius>Tracker.rawmaxy && velocity.y>0 ) {
 			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.rawminx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
 			PApplet.println("Position.y="+position.y+", radius="+radius+", maxy="+Tracker.rawmaxy);
 			velocity.y*=-restitution;
 			position.y=2*(Tracker.rawmaxy-radius)-position.y;
+			impactSound(0);
 		}
 		if (position.y-radius<Tracker.rawminy && velocity.y<0) {
 			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.rawminx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
 			velocity.y*=-restitution;
 			position.y=2*(Tracker.rawminy+radius)-position.y;
+			impactSound(0);
 		}
 		velocity.mult(1-deceleration*elapsed);
 //		PApplet.println("New ball position="+position+", velocity="+velocity+", inCollision="+inCollision);
+	}
+	
+	public void impactSound(int k) {
+		TrackSet ts=Ableton.getInstance().trackSet;
+		int track=ts.firstTrack;
+		int nclips=Ableton.getInstance().getTrack(track).numClips();
+		PApplet.println("Track="+track+", nclips="+nclips);
+		if (nclips!=-1)
+			Ableton.getInstance().playClip(track,k%nclips);
 	}
 	
 	// Check for collision with person at position p
@@ -85,6 +98,7 @@ class Ball {
 				PVector shiftDir=new PVector(velocity.x,velocity.y);
 				shiftDir.setMag(minSep-sep);
 				position.add(shiftDir);
+				impactSound(1);
 			}
 		}
 	}
@@ -103,6 +117,7 @@ public class VisualizerSoccer extends VisualizerDot {
 		Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",1.0f);
 		// Other initialization when this app becomes active
+		Ableton.getInstance().setTrackSet("Soccer");
 		ball=null;
 	}
 	
