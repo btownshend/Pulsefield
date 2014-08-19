@@ -92,7 +92,7 @@ public class VisualizerGuitar extends VisualizerPS {
 	public void start() {
 		super.start();
 		trackSet=Ableton.getInstance().setTrackSet("Guitar");
-		Laser.getInstance().setFlag("body",1.0f);
+		Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
 	}
 
@@ -180,6 +180,13 @@ public class VisualizerGuitar extends VisualizerPS {
 		}
 		
 		laser.bgEnd();
+		
+		for (Person ps: p.pmap.values()) {  
+			laser.cellBegin(ps.id);
+			laser.circle(0,0, 0.05f);
+			laser.circle(0,0, 0.1f);
+			laser.cellEnd(ps.id);
+		}
 	}
 
 	public void update(PApplet parent, People allpos) {
