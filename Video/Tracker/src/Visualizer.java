@@ -97,4 +97,35 @@ public abstract class Visualizer {
 	public PVector convertToScreen(PVector p, PVector wsize) {
 		return new PVector((p.x+1)*wsize.x/2,(p.y+1)*wsize.y/2);
 	}
+	
+	// Create a bezier path from p1 to p2 that vibrates over time
+	public PVector[] vibratingPath(PVector p1, PVector p2, int mode, float freq, float amplitude, float time) {
+		int ncurves=mode*2;
+		int npoints=3*ncurves+1;
+		PVector result[]=new PVector[npoints];
+		result[0]=new PVector(0f,0f);
+		int last=1;
+		for (int i=0;i<mode;i++) {
+			float amp=(float) (((i%2==0)?1:-1)*amplitude*Math.sin(2*Math.PI*freq*time));
+			float offset=(float) (Math.PI*i);
+			result[last++]=new PVector(offset+0.5251f,.5251f*amp);
+			result[last++]=new PVector(offset+1.005f,1f*amp);
+			result[last++]=new PVector((float) (offset+Math.PI/2),1f*amp);
+			result[last++]=new PVector((float) (offset+Math.PI-1.005f),1f*amp);
+			result[last++]=new PVector((float) (offset+Math.PI-.5251f),.5251f*amp);
+			result[last++]=new PVector((float) (offset+Math.PI),0f*amp);
+		}
+		// Transform points to fall on p1-p2 line
+//		PApplet.println("vibratingPath("+p1+","+p2+","+mode+","+freq+","+amplitude+","+time+"):");
+		PVector dir=PVector.sub(p2,p1); dir=PVector.div(dir, dir.mag());
+		for (int i=0;i<npoints;i++) {
+//			PApplet.print(result[i].x+","+result[i].y+",   ");
+			float d=(float) (result[i].x/(Math.PI*mode))*PVector.dist(p1,p2);
+			float y=result[i].y;
+			result[i].x=d*dir.x+y*dir.y+p1.x;
+			result[i].y=d*dir.y+y*dir.x+p1.y;
+//			PApplet.println(result[i].x+","+result[i].y);
+		}
+		return result;
+	}
 }

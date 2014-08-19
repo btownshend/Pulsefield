@@ -26,10 +26,10 @@ class Voice {
 		PVector diff=new PVector(mainline[0].x,mainline[0].y);
 		diff.sub(mainline[1]);
 		float mag=diff.mag();
-		PApplet.println("Mag="+mag); // Mag can be from 0 to 2*sqrt(2)
+//		PApplet.println("Mag="+mag); // Mag can be from 0 to 2*sqrt(2)
 		mag=(mag>1.0)?1.0f:mag;
 		int pitch=scale.map2note(1.0f-mag, 0f, 1.0f, 0, 3);
-		PApplet.println("Pitch="+pitch);
+//		PApplet.println("Pitch="+pitch);
 		int velocity=127;
 		synth.play(id, pitch, velocity, duration, channel);
 	}
@@ -243,11 +243,11 @@ public class VisualizerVoronoi extends VisualizerPS {
 				if (hasLine && v.playing) {
 					parent.stroke(allpos.get(idsite.id).getcolor(parent));
 					parent.strokeWeight(5);
-					float rx=parent.randomGaussian()*3;
-					float ry=parent.randomGaussian()*3;
 					PVector scoord1=convertToScreen(v.mainline[0],wsize);
 					PVector scoord2=convertToScreen(v.mainline[1],wsize);
-					parent.line(scoord1.x+rx, scoord1.y+ry, scoord2.x+rx, scoord2.y+ry);
+					PVector path[]=vibratingPath(scoord1,scoord2,3,2.0f,30f,parent.frameCount/parent.frameRate);
+					for (int i=0;i+3<path.length;i+=3)
+						parent.bezier(path[i].x,path[i].y,path[i+1].x,path[i+1].y,path[i+2].x,path[i+2].y,path[i+3].x,path[i+3].y);
 				}
 			}
 		}
@@ -317,11 +317,11 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 				// Draw the major line
 				if (hasLine && v.playing) {
-					float rx=parent.randomGaussian()*0.1f;
-					float ry=parent.randomGaussian()*0.1f;
 					PVector scoord1=Tracker.normalizedToFloor(v.mainline[0]);
 					PVector scoord2=Tracker.normalizedToFloor(v.mainline[1]);
-					laser.line(scoord1.x+rx, scoord1.y+ry, scoord2.x+rx, scoord2.y+ry);
+					PVector path[]=vibratingPath(scoord1,scoord2,3,1.0f,0.2f,parent.frameCount/parent.frameRate);
+					for (int i=0;i+3<path.length;i+=3)
+						laser.cubic(path[i].x,path[i].y,path[i+1].x,path[i+1].y,path[i+2].x,path[i+2].y,path[i+3].x,path[i+3].y);
 				}
 			}
 			laser.shapeEnd(triangle.toString());

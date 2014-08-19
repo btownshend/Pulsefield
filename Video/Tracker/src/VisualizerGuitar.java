@@ -154,10 +154,16 @@ public class VisualizerGuitar extends VisualizerPS {
 			laser.shapeBegin("strings"+i);
 			if (s.isVibrating()) {
 				PVector pf=Tracker.normalizedToFloor(new PVector(GString.frets[s.fret],ypos));	
-				float amp=(1-s.fracOfVibrate())*s.velocity/127.0f ;
-				PVector mid=PVector.mult(PVector.add(pf,p2),0.5f);
-				mid.y+=Math.sin(2*Math.PI*s.elapsedTime()*5)*laserScaling*(strings[1].position-strings[0].position)*3*amp;  
-				laser.cubic(p1.x,p1.y,pf.x,pf.y,mid.x,mid.y,p2.x,p2.y);
+				PVector path[]=vibratingPath(pf,p2,3,1.0f,0.1f,parent.frameCount/parent.frameRate);
+				laser.line(p1.x, p1.y, pf.x, pf.y);
+				for (int j=0;j+3<path.length;j+=3)
+					laser.cubic(path[j].x,path[j].y,path[j+1].x,path[j+1].y,path[j+2].x,path[j+2].y,path[j+3].x,path[j+3].y);
+
+//
+//				float amp=(1-s.fracOfVibrate())*s.velocity/127.0f ;
+//				PVector mid=PVector.mult(PVector.add(pf,p2),0.5f);
+//				mid.y+=Math.sin(2*Math.PI*s.elapsedTime()*5)*laserScaling*(strings[1].position-strings[0].position)*3*amp;  
+//				laser.cubic(p1.x,p1.y,pf.x,pf.y,mid.x,mid.y,p2.x,p2.y);
 			} else {
 				laser.line(p1.x,p1.y,p2.x,p2.y);
 			}
