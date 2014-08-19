@@ -7,7 +7,7 @@ import MusicVisualizer.VortexRenderer;
 import ddf.minim.Minim;
 
 
-public class VisualizerMinim extends Visualizer {
+public class VisualizerMinim extends VisualizerGrid {
 	Minim minim;
 
 	AudioRenderer radar, vortex, iso;
@@ -16,9 +16,9 @@ public class VisualizerMinim extends Visualizer {
 	final int numRenderers=3;
 	
 	VisualizerMinim(PApplet parent) {
-		super();
 		select=0;			// activate first renderer in list
 		minim=null; 	// Will be initialized in update() when someone enters
+		super(parent);
 	}
 
 	@Override
@@ -44,6 +44,7 @@ public class VisualizerMinim extends Visualizer {
 
 	@Override
 	public void update(PApplet parent, People p) {
+		super.update(parent,p);
 //		PApplet.println("Minim.update: minim="+minim+", num people="+p.pmap.size());
 		if (p.pmap.isEmpty() && minim!=null) {
 			minim.stop();
@@ -83,5 +84,6 @@ public class VisualizerMinim extends Visualizer {
 		//			laser.cellEnd(ps.id);
 		//		}
 		//		laser.bgEnd();
+		super.drawLaser(parent,p);
 	}
 }
