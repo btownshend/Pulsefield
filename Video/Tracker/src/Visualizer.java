@@ -31,7 +31,7 @@ public abstract class Visualizer {
 		parent.smooth();
 		parent.stroke(255);
 		parent.imageMode(PConstants.CORNER);
-		parent.tint(255);
+		parent.noTint();
 	}
 	
 	public void draw(PApplet parent, People p, PVector wsize) {
