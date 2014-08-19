@@ -55,6 +55,11 @@ public class VortexRenderer extends Renderer {
 			}
 		}
 	}
+
+	  @Override
+	  public void drawLaserPerson(PApplet parent, int id) {
+		  drawLaserPerson1(parent,id);
+	  }
 }
 
 

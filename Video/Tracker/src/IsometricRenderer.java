@@ -94,8 +94,7 @@ public class IsometricRenderer extends Renderer {
   
   @Override
   public void drawLaserPerson(PApplet parent, int id) {
-	  Laser laser=Laser.getInstance();
-	  laser.
+	  drawLaserPerson2(parent,id);
   }
 }
 

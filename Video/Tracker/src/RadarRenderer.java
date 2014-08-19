@@ -61,5 +61,10 @@ public class RadarRenderer extends Renderer {
       }
     }
   }
+  
+  @Override
+  public void drawLaserPerson(PApplet parent, int id) {
+	  drawLaserPerson2(parent,id);
+  }
 }
 
