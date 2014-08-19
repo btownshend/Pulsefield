@@ -77,7 +77,8 @@ public class VisualizerProximity extends VisualizerPS {
 				assignments.put(id1,closest);
 				if (closest!=-1) {
 					int nclips=Ableton.getInstance().getTrack(track).numClips();
-					Ableton.getInstance().playClip(track,clipNumber(nclips,id1,closest));
+					if (nclips!=-1)
+						Ableton.getInstance().playClip(track,clipNumber(nclips,id1,closest));
 				}
 			}
 		}

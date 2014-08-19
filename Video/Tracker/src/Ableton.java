@@ -97,7 +97,7 @@ class Track {
 	void setEmptyClip(int clip) {
 		infoRequestsPending=0;
 		if (clip<lowestSeenEmptyClip) {
-			PApplet.println("Decreasing lowest empty clip number from "+lowestSeenEmptyClip+" to "+clip);
+//			PApplet.println("Decreasing lowest empty clip number from "+lowestSeenEmptyClip+" to "+clip);
 			lowestSeenEmptyClip=clip;
 		}
 		clipInfoRequest();
@@ -105,7 +105,7 @@ class Track {
 	void setOccupiedClip(int clip) {
 		infoRequestsPending=0;
 		if (clip>highestSeenUsedClip) {
-			PApplet.println("Increasing highest seen clip number from "+highestSeenUsedClip+" to "+clip);
+//			PApplet.println("Increasing highest seen clip number from "+highestSeenUsedClip+" to "+clip);
 			highestSeenUsedClip=clip;
 		}
 		clipInfoRequest();
@@ -122,7 +122,12 @@ class Track {
 		}
 	}
 	int numClips() {
-		clipInfoRequest();
+		if (highestSeenUsedClip+1<lowestSeenEmptyClip) {
+			// Don't yet know how many clips there are
+			PApplet.println("Ableton:numClips() - haven't determined number of clips yet");
+			clipInfoRequest();
+			return -1;
+		}
 		return lowestSeenEmptyClip;
 	}
 }
@@ -222,7 +227,7 @@ public class Ableton {
 			String fields[]={"scene","clip","track","pos"};
 			for (String field: fields) {
 				String path="/grid/table/"+(songtrack+1)+"/"+field;
-				PApplet.println("Clearing "+path);
+//				PApplet.println("Clearing "+path);
 				OscMessage msg = new OscMessage(path);
 				msg.add("-");
 				TouchOSC.getInstance().sendMessage(msg);
@@ -315,7 +320,7 @@ public class Ableton {
 	void setClipInfo(int track, int clip, int state) {
 		Track t=getTrack(track);
 		if (state==0) {
-			PApplet.println("Track "+track+" clip "+clip+" is empty.");
+//			PApplet.println("Track "+track+" clip "+clip+" is empty.");
 			t.setEmptyClip(clip);
 			return;
 		}

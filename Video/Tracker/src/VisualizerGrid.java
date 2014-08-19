@@ -97,7 +97,8 @@ public class VisualizerGrid extends VisualizerPS {
 //					Ableton.getInstance().stopClip(track, current);
 				assignments.put(pos.id,closest);
 				int nclips=Ableton.getInstance().getTrack(track).numClips();
-				Ableton.getInstance().playClip(track,closest%nclips);
+				if (nclips!=-1)
+					Ableton.getInstance().playClip(track,closest%nclips);
 			}
 		}
 
@@ -128,9 +129,10 @@ public class VisualizerGrid extends VisualizerPS {
 			parent.fill(255);
 			TrackSet ts=Ableton.getInstance().trackSet;
 			Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
-			Clip clip=track.getClip(cell%track.numClips());
-			
-			parent.text(track.getName()+"-"+clip.getName()+" P"+id,wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
+			if (track.numClips()!=-1) {
+				Clip clip=track.getClip(cell%track.numClips());
+				parent.text(track.getName()+"-"+clip.getName()+" P"+id,wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
+			}
 		}
 		parent.fill(127);
 		parent.textAlign(PConstants.LEFT, PConstants.TOP);
