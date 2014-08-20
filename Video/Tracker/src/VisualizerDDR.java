@@ -90,6 +90,8 @@ public class VisualizerDDR extends Visualizer {
 	Song cursong=null;
 	final float DOTSIZE=50f;
 	float lastClipPosition;
+	final int targetDifficulty=4;
+	
 	
 	HashMap<Integer, Dancer> dancers;
 
@@ -127,7 +129,9 @@ public class VisualizerDDR extends Visualizer {
 		if (cursong!=null)
 			Ableton.getInstance().stopClip(cursong.track,cursong.clipNumber);
 		cursong=songs.get(songIndex);
-		PApplet.println("Chose song "+songIndex+": "+cursong.getSimfile().toString());
+		pattern=cursong.getSimfile().findClosestDifficulty(targetDifficulty);
+		PApplet.println("Chose song "+songIndex+" with pattern "+pattern+", difficulty="+cursong.getSimfile().notes.get(pattern).difficultyMeter);
+		PApplet.println(cursong.getSimfile().toString());
 		OscMessage msg=new OscMessage("/video/ddr/song");
 		msg.add(cursong.sf.getTag("TITLE"));
 		TouchOSC.getInstance().sendMessage(msg);
@@ -173,7 +177,6 @@ public class VisualizerDDR extends Visualizer {
 		// Ordering based on angle goes CCW starting from right, so it right(0),down(1),left(2),up(3)
 		// Check current positions to see who is doing the right stuff
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
-		int pattern=cursong.getSimfile().findClosestDifficulty(0);
 		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, lastClipPosition, clip.position);
 		lastClipPosition=clip.position;
 		for (NoteData n: notes) {
@@ -222,7 +225,7 @@ public class VisualizerDDR extends Visualizer {
 		super.draw(parent,p,wsize);
 		if (p.pmap.isEmpty() || cursong==null)
 			return;
-		
+
 		final float leftwidth=150;
 		final float rightwidth=250;
 		final float rightmargin=50;
@@ -313,7 +316,6 @@ public class VisualizerDDR extends Visualizer {
 	public void drawTicker(PApplet parent, PVector wsize, float now) {
 		final float DURATION=12.0f;  // Duration of display top to bottom
 		final float HISTORY=3.0f;    // Amount of past showing
-		int pattern=cursong.getSimfile().findClosestDifficulty(0);
 		float songdur=cursong.getSimfile().getduration(pattern);
 		if (now>songdur) {
 			PApplet.println("Song duration "+songdur+" ended");
@@ -397,8 +399,6 @@ public class VisualizerDDR extends Visualizer {
 		final float ARROWSIZE=TICKERWIDTH/6;
 		final float DURATION=5.0f;  // Duration of display top to bottom (seconds)
 		final float HISTORY=1.0f;    // Amount of past showing
-		int pattern=cursong.getSimfile().findClosestDifficulty(0);
-
 
 		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, now-HISTORY, now-HISTORY+DURATION);
 

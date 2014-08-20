@@ -255,9 +255,12 @@ public class Simfile {
 		int best=0;
 		for (int i=1;i<notes.size();i++) {
 			Notes n=notes.get(i);
-			if (Math.abs(n.difficultyMeter-difficulty)< Math.abs(notes.get(best).difficultyMeter-difficulty))
+			if (Math.abs(n.difficultyMeter-difficulty)< Math.abs(notes.get(best).difficultyMeter-difficulty)) {
 				best=i;
+			}
+
 		}
+		PApplet.println("Best match to difficulty "+difficulty+" is pattern "+best+" with difficulty "+notes.get(best).difficultyMeter);
 		return best;
 	}
 	
