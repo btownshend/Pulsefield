@@ -16,6 +16,8 @@ class Dancer {
 	PVector current;
 	int score;
 	final float MINMOVEDIST=.01f;
+	int hit;   // Non-zero while they match the expected move
+	int hitIconNumber; 
 	
 	Dancer(PVector pos) {
 		neutral=new PVector();
@@ -45,6 +47,10 @@ class Dancer {
 		score++;
 	}
 	public void setScore(int s) { score=s; }
+	public void setHit(boolean isHit) { if (isHit) hit=1; else hit=Math.max(0,hit-1); }
+	public boolean isHit() { return hit>0; }
+	public void setHitIconNumber(int i) { hitIconNumber=i; }
+	public int getHitIconNumber() { return hitIconNumber; }
 }
 
 enum Direction {
@@ -86,6 +92,7 @@ public class VisualizerDDR extends Visualizer {
 	Simfile sf;
 	long startTime;
 	PImage arrow;   // Left pointing arrow
+	PShape hitIcons[];
 	PShape dancer;
 	Song cursong=null;
 	int pattern=0;  // Current pattern
@@ -101,6 +108,9 @@ public class VisualizerDDR extends Visualizer {
 		dancers = new HashMap<Integer, Dancer>();
 		arrow = parent.loadImage("arrow3.png");
 		dancer=parent.loadShape(Tracker.SVGDIRECTORY+"dancer4.svg");
+		hitIcons = new PShape[4];
+		for (int i=0;i<hitIcons.length;i++)
+			hitIcons[i]=parent.loadShape(Tracker.SVGDIRECTORY+"ddrhit"+(i+1)+".svg");
 		assert(dancer!=null);
 		songs=null;  // Initialize in start()
 	}
@@ -187,8 +197,13 @@ public class VisualizerDDR extends Visualizer {
 					for (int id: dancers.keySet()) {
 						Dancer d=dancers.get(id);
 //						PApplet.println("Dancer "+id+" has aim "+d.getAim());
-						if (d.getAim() == AIMS[i])
+						if (d.getAim() == AIMS[i]) {
+							d.setHit(true);
+							d.setHitIconNumber((int)(Math.random()*hitIcons.length));
 							d.incrementScore();
+						} else {
+							d.setHit(false);
+						}
 						//d.setScore(d.getAim());
 					}
 				}
@@ -304,7 +319,10 @@ public class VisualizerDDR extends Visualizer {
 			if (quad>=0) {
 				parent.rotate((float)(quad*Math.PI/2+Math.PI));
 				parent.translate(-ARROWDIST, 0);
-				parent.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
+//				if (d.isHit())
+//					parent.shape(hitIcons[d.getHitIconNumber()],0,0,ARROWSIZE,ARROWSIZE);
+//				else
+					parent.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
 			} else {
 				//parent.shape(dancer, 0, 0, ARROWSIZE, ARROWSIZE);
 			}
@@ -417,7 +435,9 @@ public class VisualizerDDR extends Visualizer {
 
 			int quad=d.getAim();
 			//PApplet.println("Laser: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
-			if (quad>=0)
+			if (d.isHit())
+				laser.svgfile("ddrhit"+(d.getHitIconNumber()+1)+".svg",0,-0.5f,0.5f,0f);
+			else if (quad>=0)
 				laser.svgfile("arrow4.svg", 0.0f, -0.5f, 0.5f, -quad*90+180);
 			else
 				laser.svgfile("dancer4.svg", 0.0f, -0.5f, 0.5f,0f);				
