@@ -44,6 +44,8 @@ class VisualizerNavier extends Visualizer {
 	@Override
 	public void start() {
 		super.start();
+		Laser.getInstance().setFlag("body",0.0f);
+		Laser.getInstance().setFlag("legs",0.0f);
 		Ableton.getInstance().setTrackSet("Navier");
 	}
 
