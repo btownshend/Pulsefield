@@ -88,6 +88,7 @@ public class VisualizerDDR extends Visualizer {
 	PImage arrow;   // Left pointing arrow
 	PShape dancer;
 	Song cursong=null;
+	int pattern=0;  // Current pattern
 	final float DOTSIZE=50f;
 	float lastClipPosition;
 	final int targetDifficulty=4;
@@ -202,9 +203,38 @@ public class VisualizerDDR extends Visualizer {
 		Ableton.getInstance().setTrackSet("DD");
 		if (songs==null) {
 			songs=new ArrayList<Song>();
-			songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/StepMix 1.0/Impossible Fidelity/","impossible.sm",0));
-			songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/Plaguemix Series/Super Trouper","supertrouper.sm",1));
-			songs.add(new Song("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/Plaguemix Series/Krupa","krupa.sm",2));
+			final String rootDir="/Users/bst/Dropbox/Pulsefield/StepMania/Songs/";
+			int clipCntr=0;
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/AXEL F","AXEL F.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Beat It","Beat It.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/CRAZY IN LOVE - Beyonce feat Jay Z","CRAZY IN LOVE - Beyonce feat Jay Z.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/DO SOMETHING - BRITNEY SPEARS","DO SOMETHING - BRITNEY SPEARS.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Fergalicious","Fergalicious.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Girls Just Wanna Have Fun","Girls Just Wanna Have Fun.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/I Gotta Feeling","I Gotta Feeling.sm",clipCntr++));
+			songs.add(new Song(rootDir+"StepMix 1.0/Impossible Fidelity/","impossible.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Just Dance","Just Dance.sm",clipCntr++));
+			songs.add(new Song(rootDir+"Plaguemix Series/Krupa","krupa.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/KUNG FU FIGHTING","KUNG FU FIGHTING.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/La Bamba","La Bamba.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/MORNING TRAIN - Sheena Easton","MORNING TRAIN - Sheena Easton.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/My heart will go on","heart.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/NEVER ENDING STORY","NEVER ENDING STORY.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/ONLY YOU","ONLY YOU.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/S.O.S","S.O.S..sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/SHUT IT DOWN","SHUT IT DOWN.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/SORRY - MADONNA","SORRY - MADONNA.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Shes a Maniac-ITGREADY","steps.sm",clipCntr++));
+			songs.add(new Song(rootDir+"Plaguemix Series/Super Trouper","supertrouper.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/THAT'S THE WAY (I LIKE IT)","THAT'S THE WAY (I LIKE IT).sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/TWILIGHT ZONE (R-C Extended Club MIX)","TWILIGHT ZONE (R-C Extended Club MIX).sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Telephone","Lady Gaga feat. Beyoce - Telephone.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Toxic","Toxic.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/WE WILL ROCK YOU","WE WILL ROCK YOU.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/WHERE IS THE LOVE","where.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Wherever You Are","Wherever You Are.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Y.M.C.A","Y.M.C.A..sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/You Sexy Thing","You Sexy Thing.sm",clipCntr++));			
 		}
 		cursong=null;
 		Laser.getInstance().setFlag("body",0.0f);
