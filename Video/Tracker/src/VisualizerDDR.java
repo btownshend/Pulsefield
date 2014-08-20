@@ -261,7 +261,9 @@ public class VisualizerDDR extends Visualizer {
 		final float rightmargin=50;
 
 		parent.imageMode(PConstants.CORNER);
-		parent.image(cursong.getSimfile().getBanner(parent), wsize.x/4, 0, wsize.x/2, wsize.y/4);
+		PImage banner=cursong.getSimfile().getBanner(parent);
+		if (banner!=null)
+			parent.image(banner, wsize.x/4, 0, wsize.x/2, wsize.y/4);
 		
 
 		drawScores(parent,p,new PVector(leftwidth,wsize.y));
