@@ -68,7 +68,7 @@ class Ball {
 			impactSound(0);
 		}
 		velocity.mult(1-deceleration*elapsed);
-		PVector toMiddle=PVector.sub(new PVector((Tracker.maxx+Tracker.minx)/2,(Tracker.miny+Tracker.maxy)/2),position);
+		PVector toMiddle=PVector.sub(new PVector((Tracker.rawmaxx+Tracker.rawminx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2),position);
 		if (toMiddle.mag() > 0)
 			velocity.add(PVector.mult(toMiddle, midaccel*elapsed/position.mag()));
 //		PApplet.println("New ball position="+position+", velocity="+velocity+", inCollision="+inCollision);
