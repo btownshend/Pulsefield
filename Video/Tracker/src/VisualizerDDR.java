@@ -237,14 +237,15 @@ public class VisualizerDDR extends Visualizer {
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/NEVER ENDING STORY","NEVER ENDING STORY.sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/ONLY YOU","ONLY YOU.sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/S.O.S","S.O.S..sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Shes a Maniac-ITGREADY","steps.sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/SHUT IT DOWN","SHUT IT DOWN.sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/SORRY - MADONNA","SORRY - MADONNA.sm",clipCntr++));
-			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Shes a Maniac-ITGREADY","steps.sm",clipCntr++));
 			songs.add(new Song(rootDir+"Plaguemix Series/Super Trouper","supertrouper.sm",clipCntr++));
-			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/THAT'S THE WAY (I LIKE IT)","THAT'S THE WAY (I LIKE IT).sm",clipCntr++));
-			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/TWILIGHT ZONE (R-C Extended Club MIX)","TWILIGHT ZONE (R-C Extended Club MIX).sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Telephone","Lady Gaga feat. Beyoce - Telephone.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/THAT'S THE WAY (I LIKE IT)","THAT'S THE WAY (I LIKE IT).sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Toxic","Toxic.sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/TWILIGHT ZONE (R-C Extended Club MIX)","TWILIGHT ZONE (R-C Extended Club MIX).sm",clipCntr++));
+			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Video Killed The Radio Star","Video Killed The Radio Star.sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/WE WILL ROCK YOU","WE WILL ROCK YOU.sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/WHERE IS THE LOVE","where.sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Wherever You Are","Wherever You Are.sm",clipCntr++));
