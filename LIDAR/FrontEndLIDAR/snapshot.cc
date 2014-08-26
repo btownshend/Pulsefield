@@ -1,8 +1,8 @@
-#include <mat.h>
 #include "sickio.h"
 #include "world.h"
 #include "snapshot.h"
 #include "vis.h"
+#include <mat.h>
 
 Snapshot::Snapshot(const std::vector<std::string> &arglist) {
     this->arglist=arglist;
