@@ -37,7 +37,7 @@ public class VisualizerMenu extends Visualizer {
 	}
 	
 	boolean hotSpotCheck(PApplet parent, People people) {
-		PVector menuHotSpot = new PVector(2, 1);
+		PVector menuHotSpot = new PVector(4, (float)(12/39.37));
 		for(Person p : people.pmap.values()) {
 			PVector location = p.getOriginInMeters();
 			if(PVector.sub(location, menuHotSpot).mag() < HOTSPOTRADIUS) {
