@@ -322,13 +322,19 @@ void XRef::movePoint(Point offset) {
 	oldPoint = t.getDevPoint(anchorNumber);
 	newPoint = oldPoint+offset*10;
 	t.setDevPoint(anchorNumber,newPoint);
+	t.recompute();
     } else {
 	oldPoint = t.getFloorPoint(anchorNumber);
 	newPoint=oldPoint+offset*0.01;
 	t.setFloorPoint(anchorNumber,newPoint);
+	std::shared_ptr<Lasers> lasers=Lasers::instance();
+	for (int i=0;i<lasers->size();i++) {
+	  lasers->getLaser(i)->getTransform().setFloorPoint(anchorNumber,newPoint);
+	  lasers->getLaser(i)->getTransform().recompute();
+	  dbg("XRef.movePoint",1) << "Moved laser " << i << ", floor anchor " << anchorNumber << " to " << newPoint << std::endl;
+	}
     }
     dbg("XRef.movePoint",1) << "Moving point " << anchorNumber << " at " << oldPoint << " to " << newPoint << std::endl;
-    t.recompute();
 }
 	     
 // Update table with given xref and modify underlying Laser struct if reset is set
@@ -346,7 +352,14 @@ void XRefs::refresh(cairo_t *cr, std::shared_ptr<Laser>laser,  Video &video, int
 	    entry->laser->getTransform().setDevPoint(anchorNumber,Point(std::min(Laser::MAXDEVICEVALUE,std::max(Laser::MINDEVICEVALUE,(int)wx)),std::min(Laser::MAXDEVICEVALUE,std::max(Laser::MINDEVICEVALUE,(int)wy))));
 	} else {
 	    video.newMessage() << "Moving laser " << entry->laser->getUnit() << " world anchor " << anchorNumber << " to "<< std::setprecision(3)  << Point(wx,wy) << std::endl;
-	    entry->laser->getTransform().setFloorPoint(anchorNumber,video.getBounds().constrainPoint(Point(wx,wy)));
+
+	    Point p=video.getBounds().constrainPoint(Point(wx,wy));
+	    std::shared_ptr<Lasers> lasers=Lasers::instance();
+	    for (int i=0;i<lasers->size();i++) {
+	      lasers->getLaser(i)->getTransform().setFloorPoint(anchorNumber,p);
+	      lasers->getLaser(i)->getTransform().recompute();
+	      dbg("XRef.movePoint",1) << "Moved laser " << i << ", floor anchor " << anchorNumber << " to " << p << std::endl;
+	    }
 	}
 	entry->laser->getTransform().recompute();
 	entry->reset=false;
