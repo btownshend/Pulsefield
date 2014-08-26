@@ -205,7 +205,7 @@ public class Ableton {
 		addSong("OL","Oluminum",17,7,93,60);
 		addSong("EP","Episarch",25,5,93,60);
 		addSong("NG","New Gamelan",31,9,120,60);
-		addSong("MB","Music Box",41,8,111,60);
+		addSong("MB","Music Box",41,6,111,60);
 		addSong("GA","Garage Revisited",50,6,120,60);
 		addSong("FO","Forski",57,8,72,60);
 		addSong("FI","Firebell",66,7,108,60);
