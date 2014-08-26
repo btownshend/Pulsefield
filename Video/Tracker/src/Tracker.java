@@ -33,7 +33,7 @@ public class Tracker extends PApplet {
 	VisualizerChuck visChuck;
 	VisualizerMenu visMenu;
 	public static final String visnames[]={"Pads","Navier","Tron","Grid","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Cows","Soccer","Menu","Visualizer"};
-	public static boolean selectable[]={true,true,true,true,true,true,true,true,true,true,true,true,true,false,true};
+	public static boolean selectable[]={false,true,true,true,true,true,false,true,false,false,true,true,true,false,true};
 	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3","3/4","3/5"};
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK, VD;
