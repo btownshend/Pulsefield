@@ -219,6 +219,14 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 	}
 	globalDrawing.shapeEnd("backgroundTest");
     }
+    if (getFlag("fiducials")) {
+      dbg("Laser.render",1) << "Showing fiducial lines" << std::endl;
+      Transform t=lasers[0]->getTransform();
+      globalDrawing.shapeBegin("fiducials",Attributes());
+      for (int i=0;i<4;i++)
+	globalDrawing.drawLine(t.getFloorPoint(i),t.getFloorPoint((i+1)%4),gridColor);
+      globalDrawing.shapeEnd("fiducials");
+    }
     if (getFlag("alignment") && background.size()>0)  {
 	// TODO: Draw alignment pattern
 	static const float MINTARGETDISTFROMBG=0.5;   // Minimum distance of target from background
