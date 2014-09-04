@@ -367,16 +367,17 @@ public class VisualizerDDR extends Visualizer {
 	public void drawTicker(PApplet parent, PVector wsize, float now) {
 		final float DURATION=12.0f;  // Duration of display top to bottom
 		final float HISTORY=3.0f;    // Amount of past showing
+		if (cursong==null) {
+			PApplet.println("cursong=null");
+			return;
+		}
 		float songdur=cursong.getSimfile().getduration(pattern);
 		if (now>songdur) {
 			PApplet.println("Song duration "+songdur+" ended");
 			((Tracker)parent).cycle();
 		}
 	
-		if (cursong==null) {
-			PApplet.println("cursong=null");
-			return;
-		}
+
 		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, now-HISTORY, now-HISTORY+DURATION);
 //		PApplet.println("Have "+notes.size()+" notes.");
 		//parent.ellipse(wsize.x/2,wsize.y/2,100,100);
