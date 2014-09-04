@@ -292,6 +292,11 @@ public class VisualizerDDR extends Visualizer {
 			drawTicker(parent,new PVector(rightwidth-rightmargin,wsize.y),clip.position);
 		} else 
 			PApplet.println("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
+		float songdur=cursong.getSimfile().getduration(pattern);
+		if (clip.position>songdur) {
+			PApplet.println("Song duration "+songdur+" ended; clip Position="+clip.position+", songdur="+songdur);
+			((Tracker)parent).setapp(4);
+		}
 	}
 
 
@@ -374,7 +379,7 @@ public class VisualizerDDR extends Visualizer {
 		float songdur=cursong.getSimfile().getduration(pattern);
 		if (now>songdur) {
 			PApplet.println("Song duration "+songdur+" ended");
-			((Tracker)parent).cycle();
+//			((Tracker)parent).setapp(4);
 		}
 	
 
