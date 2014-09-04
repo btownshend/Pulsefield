@@ -128,7 +128,7 @@ public class VisualizerMenu extends Visualizer {
 		if (!p.pmap.containsKey(selectingPerson)) {
 			// Person has left
 			PApplet.println("Selecting person "+selectingPerson+" has left (pmap contains "+p.pmap.size()+" people)");
-			((Tracker)parent).setapp(0);
+			((Tracker)parent).setapp(3);
 		}
 		Person ps=p.pmap.get(selectingPerson);
 		if (ps==null) {
