@@ -535,26 +535,35 @@ void World::sendMessages(Destinations &dests, double elapsed) {
 
     // Geo
     Point center;  // Center of all participants
+    int ccnt=0;
     for (int pi=0;pi<people.size();pi++)
-	center=center+people[pi].getPosition();
-    center=center/people.size();
-    for (int pi=0;pi<people.size();pi++) {
-	float centerDist=(people[pi].getPosition()-center).norm();
-	float otherDist=-1;
-	for (int  pi2=0;pi2<people.size();pi2++) {
-	    float dist = (people[pi2].getPosition()-people[pi].getPosition()).norm();
-	    if (dist>0.001 && (dist<otherDist || otherDist==-1))
-		otherDist=dist;
+	if (people[pi].getAge() >= AGETHRESHOLD) {
+	    center=center+people[pi].getPosition();
+	    ccnt++;
 	}
-	float exitDist=distanceToBoundary(people[pi].getPosition());
+    if (ccnt>0) {
+	center=center/ccnt;
+	for (int pi=0;pi<people.size();pi++) {
+	    if (people[pi].getAge() < AGETHRESHOLD)
+		continue;
 
-	if (otherDist>0)
-	    otherDist/=UNITSPERM;
-	for (unsigned int i=0;i<addr.size();i++)
-	    if (lo_send(addr[i], "/pf/geo","iifff",lastframe,people[pi].getID(),centerDist/UNITSPERM,otherDist,exitDist/UNITSPERM) < 0) {
-		std::cerr << "Failed send of /pf/geo to " << lo_address_get_url(addr[i]) << std::endl;
-		return;
+	    float centerDist=(people[pi].getPosition()-center).norm();
+	    float otherDist=-1;
+	    for (int  pi2=0;pi2<people.size();pi2++) {
+		float dist = (people[pi2].getPosition()-people[pi].getPosition()).norm();
+		if (dist>0.001 && (dist<otherDist || otherDist==-1))
+		    otherDist=dist;
 	    }
+	    float exitDist=distanceToBoundary(people[pi].getPosition());
+
+	    if (otherDist>0)
+		otherDist/=UNITSPERM;
+	    for (unsigned int i=0;i<addr.size();i++)
+		if (lo_send(addr[i], "/pf/geo","iifff",lastframe,people[pi].getID(),centerDist/UNITSPERM,otherDist,exitDist/UNITSPERM) < 0) {
+		    std::cerr << "Failed send of /pf/geo to " << lo_address_get_url(addr[i]) << std::endl;
+		    return;
+		}
+	}
     }
 
     // Background
