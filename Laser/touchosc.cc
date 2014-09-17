@@ -502,6 +502,7 @@ void TouchOSC::updateLaserUI() const {
 
 void TouchOSC::save(std::string filename) const {
     try {
+	dbg("TouchOSC.save",1) << "Saving settings in " << filename << std::endl;
 	std::ofstream ofs(filename);
 	if (!ofs.good()) {
 	    std::cerr << "Failed open of " << filename << " for saving" << std::endl;
