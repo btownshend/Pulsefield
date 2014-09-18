@@ -203,7 +203,7 @@ class TouchOSC {
     int trackUID1,trackUID2;  // UIDs tracked in TouchOSC
     bool frozen,layeringEnabled,onePerEnabled,fusionEnabled,attrsEnabled;
     int maxConnections;
-    float visualThreshold,conductorGlobal;
+    float visualThreshold,conductorGlobal,cellGlobal;
  public:
     static TouchOSC *instance() {
 	if (theInstance == NULL) {
@@ -246,6 +246,7 @@ class TouchOSC {
     int getMaxConnections() const { return maxConnections; }
     float getVisualThreshold() const { return visualThreshold; }
     float getConductorGlobal() const { return conductorGlobal; }
+    float getCellGlobal() const { return cellGlobal; }
     int send(std::string path, float value) const;
     int send(std::string path, std::string value) const;
 };

@@ -40,6 +40,7 @@ TouchOSC::TouchOSC()  {
     maxConnections=10;
     visualThreshold=0.0;
     conductorGlobal=1.0;
+    cellGlobal=1.0;
     pressTime.tv_sec=0;
     trackUID1=-1;
     trackUID2=-1;
@@ -135,7 +136,7 @@ void Settings::sendOSC(int selectedGroup) const {
 	if (TouchOSC::instance()->send((path+"/label"),label) <0 ) 
 	    return;
     }
-
+    
     // Send settings for current select
     const Setting *s= getSetting(selectedGroup);
     if (s==NULL) {
@@ -425,6 +426,11 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	    Conductor::instance()->send("/ui/condglobal",argv[0]->f);
 	    conductorGlobal=argv[0]->f;
 	    handled=true;
+	} else if (strcmp(tok,"cellglobal")==0) {
+	    // Pass on to conductor TODO
+	    Conductor::instance()->send("/ui/cellglobal",argv[0]->f);
+	    cellGlobal=argv[0]->f;
+	    handled=true;
 	}	    
     }
     if (handled) {
@@ -449,8 +455,9 @@ void TouchOSC::updateLaserUI() const {
     if (send("/ui/oneper",onePerEnabled?1.0:0.0) < 0) return;
     if (send("/ui/fusion",fusionEnabled?1.0:0.0) < 0) return;
     if (send("/ui/maxconn/label","Max Connections: "+std::to_string(maxConnections))<0) return;
-    if (send("/ui/visthresh/label","Visual Threshold: "+std::to_string(round(visualThreshold*100)/100))<0) return;
-    if (send("/ui/condglobal/label","Conductor Global: "+std::to_string(round(conductorGlobal*100/100)))<0) return;
+    if (send("/ui/visthresh/label","Visual Threshold: "+std::to_string(int(visualThreshold*100)))<0) return;
+    if (send("/ui/condglobal/label","Conductor Global: "+std::to_string(int(conductorGlobal*100)))<0) return;
+    if (send("/ui/cellglobal/label","Cell Global: "+std::to_string(int(cellGlobal*100)))<0) return;
 
     if (selectedLaser==-1) {
 	// Blank everything
