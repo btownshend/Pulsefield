@@ -607,6 +607,23 @@ void TouchOSC::updateConnectionMap() const {
 	return;
     if (send("/ui/connattr/uid2",uid2label) <0 )
 	return;
+    // Set all the conductor activity LEDs
+    static const char* conxattrs[]={"grouped","friends","contact","coord","irlbuds","nearby","strangers","facing","fusion","touch"};
+    for (int i=0;i<sizeof(conxattrs)/sizeof(conxattrs[0]);i++) {
+	bool isset=Connections::instance()->attrCount(conxattrs[i]);
+	if (isset)
+	    dbg("TouchOSC.updateConnectionMap",1) << "Turning on " << conxattrs[i] << " led" << std::endl;
+	if (send((std::string("/ui/cond/active/")+conxattrs[i]).c_str(),isset?1.0:0.0) <0)
+	    return;
+    }
+    static const char* cellattrs[]={"interactive","static","kinetic","fast","timein"};
+    for (int i=0;i<sizeof(cellattrs)/sizeof(cellattrs[0]);i++) {
+	bool isset=People::instance()->attrCount(cellattrs[i]);
+	if (isset)
+	    dbg("TouchOSC.updateConnectionMap",1) << "Turning on " << cellattrs[i] << " led" << std::endl;
+	if (send((std::string("/ui/cond/active/")+cellattrs[i]).c_str(),isset?1.0:0.0) <0)
+	    return;
+    }
 }
 
 int TouchOSC::send(std::string path, float value) const {

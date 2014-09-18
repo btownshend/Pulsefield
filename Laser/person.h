@@ -129,5 +129,13 @@ public:
 	return p.at(uid).getAttributes();
     }
 
+    int attrCount(std::string attr) const {
+	int cnt=0;
+	for (std::map<int,Person>::iterator a=instance()->p.begin(); a!=instance()->p.end();a++)
+	    if (a->second.getAttributes().isSet(attr))
+		cnt++;
+	return cnt;
+    }
+
     Person *getPerson(int id);
 };

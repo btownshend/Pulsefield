@@ -97,6 +97,14 @@ class Connections {
 	return conns.count(cid)>0;
     }
 
+    int attrCount(std::string attr) const {
+	int cnt=0;
+	for (std::map<CIDType,Connection>::iterator a=instance()->conns.begin(); a!=instance()->conns.end();a++)
+	    if (a->second.getAttributes().isSet(attr))
+		cnt++;
+	return cnt;
+    }
+
     bool isConnected(int uid1, int uid2) const {
 	return conns.count(std::to_string(uid1)+"-"+std::to_string(uid2))>0 || conns.count(std::to_string(uid2)+"-"+std::to_string(uid1))>0;
     }
