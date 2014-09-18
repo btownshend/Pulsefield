@@ -298,11 +298,10 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		} else {
 		    float delta=(now.tv_sec-pressTime.tv_sec)+(now.tv_usec-pressTime.tv_usec)/1e6;
 		    dbg("TouchOSC.preset",1) << "Got preset " << tok << " held for " << delta << " seconds" << std::endl;
-		    if (strcmp(tok,"10")) 
+		    if (strcmp(tok,"10")==0) 
 			// Defaults
 			load(std::string("settings_default.txt"));
-
-		    if (delta>1) 
+		    else if (delta>1) 
 			save(std::string("settings_")+tok+".txt");
 		    else
 			load(std::string("settings_")+tok+".txt");
