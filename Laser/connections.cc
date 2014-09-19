@@ -36,7 +36,7 @@ int Connections::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	tok=strtok(NULL,"/");
 	if (strcmp(tok,"conx")==0) {
 	    if (strcmp(types,"sssiiff")!=0) {
-		dbg("Connections.conx",1) << "/conductor/conx has unexpected types: " << types << std::endl;
+		dbg("Connections.conx",0) << "/conductor/conx has unexpected types: " << types << ", type=" << &argv[0]->s << ", subtype=" << &argv[1]->s << std::endl;
 	    } else {
 		std::string type=&argv[0]->s;
 		std::string subtype=&argv[1]->s;
