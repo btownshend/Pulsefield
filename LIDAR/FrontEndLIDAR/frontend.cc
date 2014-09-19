@@ -74,7 +74,7 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]) {
 
 	/* Start sending data to hardwired OSC destinations */
 	//	const char *targets[]={"VD","LASER"};
-	const char *targets[]={ "VIS","COND","LAN","REC","COND2","VIS2","LASER"};
+	const char *targets[]={ "VIS","VD","COND","LAN","REC","COND2","VIS2","LASER"};
 	for (unsigned int i=0;i<sizeof(targets)/sizeof(targets[0]);i++) {
 	    int clientPort=urls.getPort(targets[i]);
 	    const char *clientHost=urls.getHost(targets[i]);
@@ -230,7 +230,7 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 		char cbuf[10];
 		dbg("FrontEnd.sendVisMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 		sprintf(cbuf,"%d",dests.getPort(i));
-		if (dests.getPort(i)==7010)
+		if (dests.getPort(i)!=7780)
 		  continue;
 		lo_address addr = lo_address_new(dests.getHost(i), cbuf);
 		lo_send(addr,"/vis/beginframe","i",frame);
