@@ -230,6 +230,8 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 		char cbuf[10];
 		dbg("FrontEnd.sendVisMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 		sprintf(cbuf,"%d",dests.getPort(i));
+		if (dests.getPort(i)==7010)
+		  continue;
 		lo_address addr = lo_address_new(dests.getHost(i), cbuf);
 		lo_send(addr,"/vis/beginframe","i",frame);
 		if (sendOnce & RANGE) {
