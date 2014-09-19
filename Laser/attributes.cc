@@ -2,10 +2,73 @@
 
 #include "attributes.h"
 #include "music.h"
+#include "svg.h"
+#include "drawing.h"
 
 std::ostream &operator<<(std::ostream &s, const Attribute &c) {
     s << c.getValue() << "@" << c.getTime();
     return s;
+}
+
+void Attributes::drawLabels(Drawing &d, Point p1, Point p2) const {
+    static const float DISPLAYTIME=10.0f;    // Time to display an attribute
+    static const float CYCLETIME=1.0f; 	     // Time to cycle between display of multiple attributes
+    float cycleTime=0;
+    int nattrs=0;
+    for (std::map<std::string ,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++) {
+	if (a->first.find("all")==0)
+	    // Skip all* attributes
+	    continue;
+	if (a->second.getTime() < DISPLAYTIME) {
+	    nattrs++;
+	    if (nattrs==1)
+		cycleTime=a->second.getTime();   // Use for cycling through multiple labels
+	}
+    }
+    if (nattrs==0)
+	return;
+    if (nattrs>1) {
+	struct timeval now;
+	gettimeofday(&now,0);
+	cycleTime=(now.tv_sec%1000)+now.tv_usec/1e6;
+    }
+    
+    dbg("Attributes.drawLabel",1) << "Have " << nattrs << " labels to draw at " << p1 << "-" << p2 << ", cycleTime=" << cycleTime <<  std::endl;
+    int attrCntr=0;
+    for (std::map<std::string ,Attribute>::const_iterator a=attrs.begin(); a!=attrs.end();a++) {
+	if (a->first.find("all")==0)
+	    // Skip all* attributes
+	    continue;
+	dbg("Attributes.drawLabel",3) << "Have label for " << a->first << " with time "  << a->second.getTime() << " at " << p1 << "-" << p2 << std::endl;
+	if (a->second.getTime() < DISPLAYTIME) {
+	    if (nattrs == 1 || ((int)(cycleTime/CYCLETIME))%nattrs == attrCntr) {  // Cycle through multiple labels every CYCLETIME seconds
+		static const std::string SVGDIRECTORY("../SVGFiles");
+		Point origin = (p1+p2)/2;
+		float scaling=(p2-p1).norm();
+		float rotateDeg=(p2-p1).getTheta()*180/M_PI+90;
+		if (rotateDeg>180)
+		    rotateDeg-=360;
+		if (rotateDeg<-180)
+		    rotateDeg+=360;
+		// Make it approximately oriented correclty
+		if (rotateDeg<-90)
+		    rotateDeg+=180;
+		// Make it approximately oriented correclty
+		if (rotateDeg>90)
+		    rotateDeg-=180;
+		std::string filename=a->first+".svg";
+		dbg("Attributes.drawLabel",2) << "svgfile(" << filename << ", " << origin << ", " << scaling << ", " << rotateDeg << ")" << std::endl;
+		std::shared_ptr<SVG> s=SVGs::get(SVGDIRECTORY+"/"+filename);
+		if (s!=nullptr) {
+		    s->addToDrawing(d,origin,scaling,rotateDeg,Color(1.0,1.0,1.0));
+		    break;   // Done once we've drawn a label
+		} else {
+		    dbg("Attributes.drawLabel",0) << "Missing SVG file: " << filename << std::endl;
+		}
+	    }
+	    attrCntr++;
+	}
+    }
 }
 
 std::ostream &operator<<(std::ostream &s, const Attributes &attributes) {
@@ -284,4 +347,6 @@ Attributes Attributes::keepStrongest() const {
     }
     return result;
 }
+
+
 

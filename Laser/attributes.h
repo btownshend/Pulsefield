@@ -5,6 +5,8 @@
 #include "Simplex.hpp"
 #include "touchosc.h"
 
+class Drawing;
+
 // An attribute of a connection or person
 class Attribute {
     float value;
@@ -48,6 +50,8 @@ public:
 	return result;
     }
     bool isSet(std::string attr) const { return attrs.count(attr) > 0; }
+    // Draw a label with the baseline going from p1 to p2
+    void drawLabels(Drawing &d, Point p1, Point p2) const;
 };
 
 

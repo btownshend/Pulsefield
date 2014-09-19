@@ -141,7 +141,7 @@ void Connection::draw(Drawing &d,float visThresh) const {
 	    dbg("Connection.draw",2) << "Skipping connection " << cid << " since none of its attributes are above " << visThresh << std:: endl;
 	    return;
 	}
-	dbg("Connection.draw",2) << "Drawing connection " << cid << " with " << aboveThresh.size() << "/" << attributes.size() << " attributes above " << visThresh << std:: endl;
+	dbg("Connection.draw",2) << "Drawing connection " << cid << " with " << aboveThresh.size() << "/" << attributes.size() << " attributes above " << visThresh << " with age " << age << std:: endl;
 	if (!TouchOSC::instance()->isLayeringEnabled() && aboveThresh.size()>1) {
 	    // No layering, just keep strongest attribute
 	    dbg("Connection.draw",2) << "No layering: " << cid << " had " << aboveThresh.size() << " attributes, keeping only 1" << std::endl;
@@ -166,6 +166,23 @@ void Connection::draw(Drawing &d,float visThresh) const {
 	}
 	d.drawCubic(pt1,pt3,pt4,pt2,Color(0.0,1.0,0.0));
 	d.shapeEnd(cid);
+	Point l1=pt1;
+	Point l2=pt2;
+	static const float MAXLABELLENGTH=0.8;
+	static const float MINLABELLENGTH=0.4;
+	if ((l2-l1).norm() > MAXLABELLENGTH) {
+	    Point vec=(l2-l1); vec=vec/vec.norm();
+	    l2=mid+vec*MAXLABELLENGTH/2;
+	    l1=mid-vec*MAXLABELLENGTH/2;
+	}
+	if ((l2-l1).norm() < MINLABELLENGTH) {
+	    Point vec=(l2-l1); vec=vec/vec.norm();
+	    l2=mid+vec*MINLABELLENGTH/2;
+	    l1=mid-vec*MINLABELLENGTH/2;
+	}
+	d.shapeBegin(cid+"-attr",Attributes());
+	aboveThresh.drawLabels(d,l1,l2);
+	d.shapeEnd(cid+"-attr");
     }
 }
 
