@@ -194,7 +194,10 @@ CPoints Attributes::applyStraighten(std::string attrname, float attrValue,const 
     float totalLen=getTotalLen(pts);
     float blockSize=std::max(totalLen/nTurns/8,minDist/nTurns);
     dbg("Attributes.applyStraighten",2) << "nTurns=" << nTurns << ", delta=" << delta << ",blockSize=" << blockSize << std::endl;
-    assert(blockSize>0);
+    if (blockSize<=0) {
+	dbg("Attributes.applyStraighten",0) << "BAD blocksize: nTurns=" << nTurns << ", delta=" << delta << ",blockSize=" << blockSize << std::endl;
+	return pts;
+    }
     CPoints results;
     results.push_back(pts.front());
     // Draw manhattan path with blockSize blocks (in meters)
@@ -202,25 +205,41 @@ CPoints Attributes::applyStraighten(std::string attrname, float attrValue,const 
     for (int i=1;i<pts.size();) {
 	Point delta=pts[i]-results.back();
 	if (fabs(delta.X())>=blockSize-.001)  {
-	    results.push_back(results.back()+Point(copysign(blockSize,delta.X()),0));
+	    CPoint tmp=results.back()+Point(copysign(blockSize,delta.X()),0);
+	    tmp.setColor(pts[i].getColor());
+	    results.push_back(tmp);
+	    dbgn("Attributes.applyStraighten",3) << "x";
 	    len=0;
 	} else if (fabs(delta.Y())>=blockSize-.001) {
-	    results.push_back(results.back()+Point(0,copysign(blockSize,delta.Y())));
+	    CPoint tmp=results.back()+Point(0,copysign(blockSize,delta.Y()));
+	    tmp.setColor(pts[i].getColor());
+	    results.push_back(tmp);
+	    dbgn("Attributes.applyStraighten",3) << "y";
 	    len = 0;
 	} else if (len>blockSize*1.41) {
 	    // In case we're going in circles, emit every now and then
 	    results.push_back(pts[i]);
 	    len=0;
+	    dbgn("Attributes.applyStraighten",3) << "d";
 	} else {
 	    i++;
-	    len+=delta.norm();
+	    len+=(pts[i]-pts[i-1]).norm();
+	    dbgn("Attributes.applyStraighten",3) << "-";
 	}
     }
+    dbgn("Attributes.applyStraighten",3) << std::endl;
     CPoint priorpt=pts.back();
     priorpt.setX(results.back().X());
     results.push_back(priorpt);
     results.push_back(pts.back());
+    if (results.size() >= 3 && pts.size()>=3) {
+	dbg("Attributes.applyStraighten",10) << "     orig[0,1,2,..." << pts.size()-1 << "]=" << pts[0] << "," << pts[1] << "," << pts[2] << std::endl;
+	dbg("Attributes.applyStraighten",10) << "results[0,1,2,..." << results.size()-1 << "]=" << results[0] << "," << results[1] << "," << results[2] << std::endl;
+    }
     results=results.resample(pts.getLength()/pts.size());  // Resample uniformly at same spacing as original
+    if (results.size() >= 3) {
+	dbg("Attributes.applyStraighten",10) << "resamps[0,1,2,..." << results.size()-1 << "]=" << results[0] << "," << results[1] << "," << results[2] << std::endl;
+    }
     return results;
 }
 
