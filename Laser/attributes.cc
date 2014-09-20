@@ -50,12 +50,12 @@ void Attributes::drawLabels(Drawing &d, Point p1, Point p2) const {
 		    rotateDeg-=360;
 		if (rotateDeg<-180)
 		    rotateDeg+=360;
-		// Make it approximately oriented correclty
-		if (rotateDeg<-90)
-		    rotateDeg+=180;
-		// Make it approximately oriented correclty
-		if (rotateDeg>90)
-		    rotateDeg-=180;
+		// // Make it approximately oriented correclty
+		// if (rotateDeg<-90)
+		//     rotateDeg+=180;
+		// // Make it approximately oriented correclty
+		// if (rotateDeg>90)
+		//     rotateDeg-=180;
 		std::string filename=a->first+".svg";
 		dbg("Attributes.drawLabel",2) << "svgfile(" << filename << ", " << origin << ", " << scaling << ", " << rotateDeg << ")" << std::endl;
 		std::shared_ptr<SVG> s=SVGs::get(SVGDIRECTORY+"/"+filename);

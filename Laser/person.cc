@@ -154,7 +154,12 @@ void Person::draw(Drawing &d) const  {
     d.shapeEnd("cell:"+std::to_string(id));
     if (TouchOSC::instance()->isLabelsEnabled()) {
 	d.shapeBegin("cell:"+std::to_string(id)+"-attr",Attributes());
-	attributes.drawLabels(d,position+Point(-0.25,-0.35),position+Point(0.25,-0.35));
+	Point facingVector;
+	facingVector.setThetaRange(facing*M_PI/180,1.0);
+	Point orthVector=facingVector.rotate(M_PI/2);
+	Point p1=position+(facingVector*0.35)-orthVector*0.25;
+	Point p2=position+(facingVector*0.35)+orthVector*0.25;
+	attributes.drawLabels(d,p1,p2);
 	d.shapeEnd("cell:"+std::to_string(id)+"-attr");
     }
 }
