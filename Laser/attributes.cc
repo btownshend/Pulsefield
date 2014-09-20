@@ -11,7 +11,7 @@ std::ostream &operator<<(std::ostream &s, const Attribute &c) {
 }
 
 void Attributes::drawLabels(Drawing &d, Point p1, Point p2) const {
-    static const float DISPLAYTIME=10.0f;    // Time to display an attribute
+    static const float DISPLAYTIME=1000.0f;    // Time to display an attribute
     static const float CYCLETIME=1.0f; 	     // Time to cycle between display of multiple attributes
     float cycleTime=0;
     int nattrs=0;
