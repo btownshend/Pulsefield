@@ -151,9 +151,11 @@ void Person::draw(Drawing &d) const  {
 	dbg("Person.draw",1) << "Drawing now has " << d.getNumElements() << " elements" << std::endl;
     }
     d.shapeEnd("cell:"+std::to_string(id));
-    d.shapeBegin("cell:"+std::to_string(id)+"-attr",Attributes());
-    attributes.drawLabels(d,position+Point(-0.25,-0.35),position+Point(0.25,-0.35));
-    d.shapeEnd("cell:"+std::to_string(id)+"-attr");
+    if (TouchOSC::instance()->isLabelsEnabled()) {
+	d.shapeBegin("cell:"+std::to_string(id)+"-attr",Attributes());
+	attributes.drawLabels(d,position+Point(-0.25,-0.35),position+Point(0.25,-0.35));
+	d.shapeEnd("cell:"+std::to_string(id)+"-attr");
+    }
 }
 
 void Person::drawBody(Drawing &d) const {

@@ -37,6 +37,7 @@ TouchOSC::TouchOSC()  {
     onePerEnabled=true;
     attrsEnabled=true;
     fusionEnabled=true;
+    labelsEnabled=true;
     maxConnections=10;
     visualThreshold=0.0;
     conductorGlobal=1.0;
@@ -414,6 +415,9 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 	} else if (strcmp(tok,"fusion")==0) {
 	    fusionEnabled=argv[0]->f>0.5;
 	    handled=true;
+	} else if (strcmp(tok,"labels")==0) {
+	    labelsEnabled=argv[0]->f>0.5;
+	    handled=true;
 	} else if (strcmp(tok,"maxconn")==0) {
 	    maxConnections=argv[0]->f;
 	    handled=true;
@@ -453,6 +457,7 @@ void TouchOSC::updateLaserUI() const {
     if (send("/ui/layer",layeringEnabled?1.0:0.0) < 0) return;
     if (send("/ui/oneper",onePerEnabled?1.0:0.0) < 0) return;
     if (send("/ui/fusion",fusionEnabled?1.0:0.0) < 0) return;
+    if (send("/ui/labels",labelsEnabled?1.0:0.0) < 0) return;
     if (send("/ui/maxconn/label","Max Connections: "+std::to_string(maxConnections))<0) return;
     if (send("/ui/visthresh/label","Visual Threshold: "+std::to_string(int(visualThreshold*100)))<0) return;
     if (send("/ui/condglobal/label","Conductor Global: "+std::to_string(int(conductorGlobal*100)))<0) return;

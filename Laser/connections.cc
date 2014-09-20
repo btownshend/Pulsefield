@@ -180,9 +180,11 @@ void Connection::draw(Drawing &d,float visThresh) const {
 	    l2=mid+vec*MINLABELLENGTH/2;
 	    l1=mid-vec*MINLABELLENGTH/2;
 	}
-	d.shapeBegin(cid+"-attr",Attributes());
-	aboveThresh.drawLabels(d,l1,l2);
-	d.shapeEnd(cid+"-attr");
+	if (TouchOSC::instance()->isLabelsEnabled()) {
+	    d.shapeBegin(cid+"-attr",Attributes());
+	    aboveThresh.drawLabels(d,l1,l2);
+	    d.shapeEnd(cid+"-attr");
+	}
     }
 }
 
