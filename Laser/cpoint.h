@@ -12,6 +12,7 @@ class CPoint: public Point {
     Color c;   // Color used to move to this point
  public:
     CPoint(): Point(), c(0,0,0) {;}
+    CPoint(const CPoint &cp): Point(cp), c(cp.c) {;}
     CPoint(float _x, float _y,Color _c): Point(_x,_y), c(_c) {;}
     CPoint(const Point &p, Color _c): Point(p), c(_c) {;}
     CPoint(const etherdream_point &ep);
