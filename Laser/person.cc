@@ -42,6 +42,7 @@ int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **
 		Person *person=getOrCreatePerson(id);
 		person->set(position);
 		person->setStats(argv[12]->f,argv[14]->f);
+		person->setFacing(argv[10]->f);
 		handled=true;
 	    }
 	}

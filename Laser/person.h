@@ -21,6 +21,7 @@ class Person {
     Point position;
     Leg legs[2];
     float legDiam, legSep;
+    float facing;
     int gid, gsize;
     int age; 	// Age counter -- reset whenever something is set, increment when aged
     Attributes attributes;
@@ -56,6 +57,10 @@ class Person {
     int getGroupID() const { return gid; }
     int getGroupSize() const { return gsize; }
 
+    // Get direction they are facing, in degrees;  0 is in the (0,1) direction, 90 is in the (-1,0) direction
+    float getFacing() const { return facing; }
+    void setFacing(float f) { facing=f; }
+    
     void drawBody(Drawing &d) const ;
     void drawLegs(Drawing &d) const ;
     void draw(Drawing &d) const ;
