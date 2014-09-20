@@ -38,7 +38,7 @@ void LegStats::update(const Person &p) {
 
     // Update facing
     float curfacing=legdiff.getTheta()+M_PI/2;
-    if (leftness<0)
+    if (leftness>0)
 	curfacing-=M_PI;
     float diff=curfacing-facing;
     while (diff>M_PI)
