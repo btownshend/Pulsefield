@@ -11,7 +11,6 @@ Arduino/libraries/LPD8806
 *.class
 *.applet
 Video/Tracker/bin/arrow.png
-Video/Tracker/lib/oscP5
 Video/Tracker/lib/promidi
 Video/Tracker/lib/themidibus
 Video/Tracker/src/themidibus
