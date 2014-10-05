@@ -23,5 +23,10 @@
 	<classpathentry kind="lib" path="lib/processing/minim/library/tritonus_share.jar"/>
 	<classpathentry kind="lib" path="lib/processing/minim/library/mp3spi1.9.4.jar"/>
 	<classpathentry kind="lib" path="lib/processing/minim/library/jl1.0.jar"/>
+	<classpathentry kind="lib" path="lib/arduino/RXTXcomm.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="lib/arduino"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
