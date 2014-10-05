@@ -16,9 +16,9 @@ public abstract class Visualizer {
 		parent.textSize(45);
 		parent.stroke(255);
 		final float lineSize=wsize.y/8;
-		parent.text("Welcome to the", wsize.x/2,wsize.y/2-lineSize);
+		parent.text("Welcome to ", wsize.x/2,wsize.y/2-lineSize);
 		parent.textSize(60);
-		parent.text("PULSEFIELD", wsize.x/2,wsize.y/2);
+		parent.text("DINOSAURS & LASERS", wsize.x/2,wsize.y/2);
 		parent.textSize(45);
 		parent.text(name, wsize.x/2,wsize.y/2+lineSize);
 		parent.text("Please enter...", wsize.x/2,wsize.y/2+2.5f*lineSize);

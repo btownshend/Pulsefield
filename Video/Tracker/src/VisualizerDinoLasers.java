@@ -31,6 +31,11 @@ public class VisualizerDinoLasers extends Visualizer {
 	final float EXTREMEDECAY=1f;	// Time constant for decay of extreme positions
 	final float MINCROSSINGINTERVAL=0.2f;    // Minimum time between subsequent center crossings
 	final float BPMDECAY=0.25f;		// Time constant for decay of BPM estimate (per estimate)
+	final int DINO_ROTATE=0;
+	final int DINO_FRONT=1;
+	final int DINO_BACK=2;
+	final int DINO_HEAD=3;
+	boolean havePeople=false;
 	DinoManager dm;
 	float meanBPM;
 	float meanPhase;
@@ -114,8 +119,22 @@ public class VisualizerDinoLasers extends Visualizer {
 			meanPhase/=pcnt;
 			meanAmplitude/=pcnt;
 			meanBPM/=pcnt;
-			dm.setServo(0, 0, (float)(Math.sin(meanPhase*Math.PI/180)*45), 1.0f/parent.frameRate);
+			float relAngle=(float)Math.min(1.0, meanAmplitude/0.6)*45;
+			dm.setServo(0, DINO_ROTATE, (float)(Math.sin(meanPhase*Math.PI/180)*45*relAngle)+90, 1.0f/parent.frameRate);
+			if (pcnt>2)
+				dm.setServo(0, DINO_HEAD, (float)(Math.sin(meanPhase/2*Math.PI/180)*45*relAngle)+90, 1.0f/parent.frameRate);
+			dm.setServo(0, DINO_FRONT, (float)(Math.sin(meanPhase*Math.PI/180)*45*relAngle)+90, 1.0f/parent.frameRate);
+			dm.setServo(0, DINO_BACK, (float)(Math.sin((meanPhase+90)*Math.PI/180)*45*relAngle)+90, 1.0f/parent.frameRate);
+			float ledLevel=Math.min(pcnt/3f, 1)*99;
+			dm.setLED(0,(int)((Math.sin(meanPhase*Math.PI/180)+1)/2*ledLevel));
+			dm.setLED(0,(int)((Math.sin((meanPhase+120)*Math.PI/180)+1)/2*ledLevel));
+			dm.setLED(0,(int)((Math.sin((meanPhase+240)*Math.PI/180)+1)/2*ledLevel));
+		} else if (havePeople) {
+			dm.setLED(0, 0);
+			dm.setLED(1, 0);
+			dm.setLED(2, 0);
 		}
+		havePeople=(pcnt>0);
 	}
 
 	@Override
