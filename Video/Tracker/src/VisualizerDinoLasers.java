@@ -39,6 +39,7 @@ public class VisualizerDinoLasers extends Visualizer {
 	VisualizerDinoLasers(PApplet parent) {
 		super();
 		dm=new DinoManager();
+		dm.initialize();
 	}
 
 	@Override

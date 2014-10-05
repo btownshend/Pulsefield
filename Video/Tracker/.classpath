@@ -25,7 +25,7 @@
 	<classpathentry kind="lib" path="lib/processing/minim/library/jl1.0.jar"/>
 	<classpathentry kind="lib" path="lib/arduino/RXTXcomm.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="lib/arduino"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/arduino"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>

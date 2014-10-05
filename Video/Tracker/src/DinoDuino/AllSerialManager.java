@@ -7,6 +7,7 @@ import gnu.io.CommPortIdentifier;
 
 public class AllSerialManager {
 	private static final String PORT_NAMES[] = { 
+		"/dev/tty.usbmodemfd121",
 		"/dev/tty.usbserial-A9007UX1", // Mac OS X
                     "/dev/ttyACM0", // Raspberry Pi
 		"/dev/ttyUSB0", // Linux
