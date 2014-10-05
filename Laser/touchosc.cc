@@ -647,6 +647,48 @@ int TouchOSC::send(std::string path, float value) const {
     return 0;
 }
 
+#if 0
+int TouchOSC::send(std::string path, float v1, float v2, float v3, float v4) const {
+    dbg("TouchOSC.send",4) << "send " << path << "," << v1 << ", " << v2 << ", " << v3 << ", " << v4 << std::endl;
+    if (lo_send(remote,path.c_str(),"ffff",v1,v2,v3,v4) <0 ) {
+	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return -1;
+    }
+    usleep(10);
+    return 0;
+}
+
+int TouchOSC::send(std::string path, float v1, float v2, float v3, float v4, float v5, float v6, float v7) const {
+    dbg("TouchOSC.send",4) << "send " << path << "," << v1 << ", " << v2 << ", " << v3 << ", " << v4 << "..." << std::endl;
+    if (lo_send(remote,path.c_str(),"fffffff",v1,v2,v3,v4,v5,v6,v7) <0 ) {
+	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return -1;
+    }
+    usleep(10);
+    return 0;
+}
+
+int TouchOSC::send(std::string path, float v1, float v2, float v3, float v4, float v5, float v6, float v7,float v8, float v9, float v10) const {
+    dbg("TouchOSC.send",4) << "send " << path << "," << v1 << ", " << v2 << ", " << v3 << ", " << v4 << "..." << std::endl;
+    if (lo_send(remote,path.c_str(),"ffffffffff",v1,v2,v3,v4,v5,v6,v7,v8,v9,v10) <0 ) {
+	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return -1;
+    }
+    usleep(10);
+    return 0;
+}
+
+int TouchOSC::send(std::string path, float v1, float v2, float v3, float v4, float v5, float v6, float v7,float v8, float v9, float v10,float v11, float v12, float v13, float v14, float v15, float v16) const {
+    dbg("TouchOSC.send",4) << "send " << path << "," << v1 << ", " << v2 << ", " << v3 << ", " << v4 << "..." << std::endl;
+    if (lo_send(remote,path.c_str(),"ffffffffff",v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v16) <0 ) {
+	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return -1;
+    }
+    usleep(10);
+    return 0;
+}
+#endif
+
 int TouchOSC::send(std::string path, std::string value) const {
     dbg("TouchOSC.send",4) << "send " << path << "," << value << std::endl;
     if (lo_send(remote,path.c_str(),"s",value.c_str()) <0 ) {
