@@ -5,7 +5,7 @@ public class DinoManager {
 	// For now, we just use one manager, and we send dinosaur * SERVOS_PER_DINO + servo to the Arduino.
 	private static final int DINOS = 2;
 	private static final int SERVOS_PER_DINO = 8;
-
+	static boolean loggedError=false;
 	private final AllSerialManager allSerialManager = new AllSerialManager();
 
 	public void initialize() {
@@ -42,7 +42,9 @@ public class DinoManager {
 		int remoteServo = dinosaur * SERVOS_PER_DINO + servo;
 
 		if (managerNum >= allSerialManager.getPortCount()) {
-			System.err.printf("Cannot send command -- serial port %d not open\n", managerNum);
+			if (!loggedError)
+				System.err.printf("Cannot send command -- serial port %d not open\n", managerNum);
+			loggedError=true;
 			return;
 		}
 
