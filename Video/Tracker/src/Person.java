@@ -11,6 +11,7 @@ public class Person {
 	float sep;   		// Leg separation in meters
 	float diam;			// Leg diameter in meters
 	float userData;		// extra data for apps
+	OtherPersonData pd;
 	Leg[] legs;
 	
 	public Person(PVector origin, int channel, int id) {
@@ -24,7 +25,13 @@ public class Person {
 		for (int i=0;i<legs.length;i++)
 			this.legs[i]=new Leg(origin);
 		this.userData=0;
+		this.pd=null;
 	}
+	
+	void setOther(OtherPersonData x) {
+		pd=x;
+	}
+	OtherPersonData getOther() { return pd; }
 	
 	// Convert to normalized position - in range [-1,1] for extent of pulsefield
 	PVector getNormalizedPosition() {
