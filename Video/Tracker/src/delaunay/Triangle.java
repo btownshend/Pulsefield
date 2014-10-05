@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import processing.core.PApplet;
+
 /**
  * A Triangle is an immutable Set of exactly three Pnts.
  *
@@ -58,11 +60,12 @@ public class Triangle extends ArraySet<Pnt> {
 
     /**
      * @param collection a Collection holding the Simplex vertices
-     * @throws IllegalArgumentException if there are not three distinct vertices
+     * @throws IllegalArgumentException if there are notaa three distinct vertices
      */
     public Triangle (Collection<? extends Pnt> collection) {
         super(collection);
         idNumber = idGenerator++;
+        PApplet.println("New triangle with id "+idNumber);
         if (this.size() != 3)
             throw new IllegalArgumentException("Triangle must have 3 vertices");
     }
@@ -141,7 +144,9 @@ public class Triangle extends ArraySet<Pnt> {
 
     @Override
     public int hashCode () {
-        return (int)(idNumber^(idNumber>>>32));
+//    	int hash=(int)(idNumber^(idNumber>>>32));
+//    	PApplet.println("ID="+idNumber+", hash="+hash);
+        return idNumber;
     }
 
     @Override

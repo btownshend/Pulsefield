@@ -1,6 +1,8 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -268,29 +270,44 @@ public class VisualizerVoronoi extends VisualizerPS {
 		// Draw Voronoi diagram
 		// Keep track of sites done; no drawing for initial triangles sites
 		HashSet<Pnt> done = new HashSet<Pnt>(initialTriangle);
+		Map<Integer,Map<Integer,Boolean> > donePairs=new HashMap<Integer,Map<Integer,Boolean> >();
+		int vcntr=0;
+		// Loop over all the triangles
 		for (Triangle triangle : dt) {
-//			for (int i=0;i<3;i++) {
-//				PVector c1=pntToWorld(triangle.get(i));
-//				PVector c2=pntToWorld(triangle.get((i+1)%3));
-//				laser.line(c1.x, c1.y, c2.x, c2.y);
-//			}
-
-
-//			PVector cc=pntToWorld(triangle.getCircumcenter());
-			laser.shapeBegin(triangle.toString());
+			PApplet.println("Triangle "+triangle.hashCode());
+			// And all the points of each triangle
 			for (Pnt site: triangle) {
+				// Check,set whether we've already done this point as a center
 				if (done.contains(site)) continue;
 				done.add(site);
 				PntWithID idsite=((PntWithID)site);
 
 
+				// Get all the triangles surrounding site, starting with 'triangle'
 				List<Triangle> list = dt.surroundingTriangles(site, triangle);
 				// Draw all the surrounding triangles
+				Triangle lastTri=list.get(list.size()-1);
 				PVector prev=pntToWorld(list.get(list.size()-1).getCircumcenter());
 				for (Triangle tri: list) {
+					if (tri==lastTri)
+						continue;
 					PVector c=pntToWorld(tri.getCircumcenter());
-					laser.line(prev.x,prev.y,c.x,c.y);
+					if (!donePairs.containsKey(lastTri.hashCode()))
+						donePairs.put(lastTri.hashCode(),new HashMap<Integer,Boolean>());
+					if (!donePairs.containsKey(tri.hashCode()))
+						donePairs.put(tri.hashCode(),new HashMap<Integer,Boolean>());						
+					if (donePairs.get(lastTri.hashCode()).containsKey(tri.hashCode())) {
+						PApplet.println("Already drew between triangles "+lastTri.hashCode()+" and "+tri.hashCode());
+					} else {
+						donePairs.get(tri.hashCode()).put(lastTri.hashCode(),true);
+						donePairs.get(lastTri.hashCode()).put(tri.hashCode(),true);
+						PApplet.println("Marked done between triangles "+lastTri.hashCode()+" and "+tri.hashCode());
+						laser.shapeBegin("v"+vcntr);
+						laser.line(prev.x,prev.y,c.x,c.y);
+						laser.shapeEnd("v"+vcntr++);
+					}
 					prev=c;
+					lastTri=tri; 
 				}
 
 				// Save one voronoi line as the note marker
@@ -320,13 +337,15 @@ public class VisualizerVoronoi extends VisualizerPS {
 					PVector scoord1=Tracker.normalizedToFloor(v.mainline[0]);
 					PVector scoord2=Tracker.normalizedToFloor(v.mainline[1]);
 					PVector path[]=vibratingPath(scoord1,scoord2,3,1.0f,0.2f,parent.frameCount/parent.frameRate);
+					laser.shapeBegin("vmain");
 					for (int i=0;i+3<path.length;i+=3)
 						laser.cubic(path[i].x,path[i].y,path[i+1].x,path[i+1].y,path[i+2].x,path[i+2].y,path[i+3].x,path[i+3].y);
+					laser.shapeEnd("vmain");
 				}
 			}
-			laser.shapeEnd(triangle.toString());
 		}
-		
+		PApplet.println("Drew a total of "+vcntr+" lines");
+	
 		laser.bgEnd();
 	}
 }
