@@ -1,6 +1,7 @@
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PVector;
+import DinoDuino.DinoManager;
 
 class DinoData extends OtherPersonData {
 	PVector center;  // Average position of midpoint of hands
@@ -30,8 +31,11 @@ public class VisualizerDinoLasers extends VisualizerDot {
 	final float EXTREMEDECAY=1f;	// Time constant for decay of extreme positions
 	final float MINCROSSINGINTERVAL=0.2f;    // Minimum time between subsequent center crossings
 	final float BPMDECAY=0.25f;		// Time constant for decay of BPM estimate (per estimate)
+	DinoManager dm;
+	
 	VisualizerDinoLasers(PApplet parent) {
 		super(parent);
+		dm=new DinoManager();
 	}
 
 	@Override
@@ -89,6 +93,7 @@ public class VisualizerDinoLasers extends VisualizerDot {
 				dd.phase+=180;
 			if (dd.phase>360)
 				dd.phase-=360;
+			dm.setServo(0, 0, (float)(Math.sin(dd.phase*Math.PI/180)*45), 1.0f/parent.frameRate);
 		}
 		
 	}
