@@ -25,16 +25,19 @@ class DinoData extends OtherPersonData {
 	}
 };
 
-public class VisualizerDinoLasers extends VisualizerDot {
+public class VisualizerDinoLasers extends Visualizer {
 	final float TC=2f;     // Time constant for average center position (in seconds)
 	final float EXTREMEHOLDTIME=2.0f;  
 	final float EXTREMEDECAY=1f;	// Time constant for decay of extreme positions
 	final float MINCROSSINGINTERVAL=0.2f;    // Minimum time between subsequent center crossings
 	final float BPMDECAY=0.25f;		// Time constant for decay of BPM estimate (per estimate)
 	DinoManager dm;
+	float meanBPM;
+	float meanPhase;
+	float meanAmplitude;
 	
 	VisualizerDinoLasers(PApplet parent) {
-		super(parent);
+		super();
 		dm=new DinoManager();
 	}
 
@@ -55,7 +58,11 @@ public class VisualizerDinoLasers extends VisualizerDot {
 	@Override
 	public void update(PApplet parent, People p) {
 		// Update internal state
-
+		int pcnt=0;
+		meanPhase=0;
+		meanAmplitude=0;
+		meanBPM=0;
+		
 		for (Person ps: p.pmap.values()) { 
 			DinoData dd=(DinoData)ps.getOther();
 			if (dd==null) {
@@ -95,25 +102,45 @@ public class VisualizerDinoLasers extends VisualizerDot {
 				dd.phase+=180;
 			if (dd.phase>360)
 				dd.phase-=360;
-			dm.setServo(0, 0, (float)(Math.sin(dd.phase*Math.PI/180)*45), 1.0f/parent.frameRate);
+			dm.setServo(pcnt+1, 0, (float)(Math.sin(dd.phase*Math.PI/180)*45), 1.0f/parent.frameRate);
+			
+			meanPhase+=dd.phase;
+			meanAmplitude+=dd.movement.mag();
+			meanBPM+=dd.bpm;
+			pcnt++;
 		}
-		
+		if (pcnt>0) {
+			meanPhase/=pcnt;
+			meanAmplitude/=pcnt;
+			meanBPM/=pcnt;
+			dm.setServo(0, 0, (float)(Math.sin(meanPhase*Math.PI/180)*45), 1.0f/parent.frameRate);
+		}
 	}
 
 	@Override
 	public void draw(PApplet parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
-		parent.fill(255);
 		parent.textAlign(PConstants.LEFT, PConstants.TOP);
 		parent.textSize(24);
 		int pcnt=0;
 		for (Person ps: p.pmap.values()) { 
+			int c=ps.getcolor(parent);
+			parent.fill(c,255);
+			parent.stroke(c,255);
+			
 			DinoData dd=(DinoData)ps.getOther();
 			if (dd==null)
 				continue;
+			float armsep=PVector.sub(ps.legs[0].getOriginInMeters(),ps.legs[1].getOriginInMeters()).mag();
+			PVector sz=Tracker.mapVelocity(new PVector(armsep,armsep));
+			PVector pos=Tracker.floorToNormalized(ps.getOriginInMeters());
+			parent.ellipse((pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2, sz.x*wsize.x/2, sz.y*wsize.y/2);
+			
 			parent.text(String.format("%d %s",ps.id,dd.status()),5,5+20*pcnt);
 			pcnt++;
-		}		
+		}	
+		parent.fill(255);
+		parent.text(String.format("Mean BPM=%.0f Phase=%.0f",meanBPM, meanPhase),5,5+20*pcnt);
 	}
 	
 	@Override
@@ -122,7 +149,8 @@ public class VisualizerDinoLasers extends VisualizerDot {
 		laser.bgBegin();   // Start a background drawing
 		for (Person ps: p.pmap.values()) {  
 			laser.cellBegin(ps.id); // Start a cell-specific drawing
-			laser.svgfile("pterodactyl.svg", 0, 3, 1.0f, 0f);
+			float armsep=PVector.sub(ps.legs[0].getOriginInMeters(),ps.legs[1].getOriginInMeters()).mag();
+			laser.svgfile("pterodactyl.svg", 0, 0, armsep*2+0.5f, 180f);
 			laser.cellEnd(ps.id);
 		}
 		laser.bgEnd();
