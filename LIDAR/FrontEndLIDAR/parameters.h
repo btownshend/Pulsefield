@@ -49,11 +49,11 @@ static const float MINLIKEFORUPDATES=-60;	  // Minimum likelihood of a target to
 static const float STATIONARYVELOCITY=20;	// If speed is less than this (in mm/s), then stabilize position
 
 // ******** Leg statistics 
-static const float INITLEGDIAM=200;	// Initial diameter of legs
-static const float MAXLEGDIAM=300;	// Maximum diameter of legs
+static const float INITLEGDIAM=100;	// Initial diameter of legs
+static const float MAXLEGDIAM=200;	// Maximum diameter of legs
 static const float LEGDIAMSIGMA=50;		// Sigma for leg diameter
 static const float MEANLEGSEP=350; 	// Mean leg separation
-static const float MINLEGSEP=100;
+static const float MINLEGSEP=50;
 static const float MAXLEGSEP=600; 
 static const float LEGSEPSIGMA=80;		// Sigma for leg separation (actually RMSE of difference in leg sep from predicted)
 static const float FACINGSEM=20.0*M_PI/180; 	// SEM for facing direction 
