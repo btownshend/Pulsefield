@@ -48,10 +48,32 @@ public class DinoManager {
 			return;
 		}
 
-		SerialManager manager = allSerialManager.getManager(managerNum);
 		// Message format:
 		// S <servo num, 2 digits> <angle in degrees, 3 digits> <time in msec, 4 digits>
 		String msg = String.format("S%2d%3d%4d", remoteServo, (int)angle, (int)(timeToMove * 1000));
+		sendMessage(managerNum, msg);
+	}
+
+
+	public void setLED(int ledId, int brightness) {
+		System.out.printf("Asked to set LED %2d brightness to %d\n", ledId, brightness);
+
+		// Message format:
+		// L <LED ID, 2 digits> <brightness 0-99, 2 digits>
+		String msg = String.format("L%2d%2d", ledId, brightness);
+		sendMessage(0, msg);
+	}
+
+
+	void sendMessage(int managerNum, String msg) {
+		if (managerNum >= allSerialManager.getPortCount()) {
+			if (!loggedError)
+				System.err.printf("Cannot send command -- serial port %d not open\n", managerNum);
+			loggedError=true;
+			return;
+		}
+
+		SerialManager manager = allSerialManager.getManager(managerNum);
 		System.out.printf("Sending message %s to manager %d\n", msg, managerNum);
 		manager.pushMessage(msg);
 	}
