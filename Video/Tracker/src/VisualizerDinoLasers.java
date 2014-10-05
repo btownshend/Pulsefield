@@ -42,6 +42,8 @@ public class VisualizerDinoLasers extends VisualizerDot {
 	public void start() {
 		super.start();
 		// Other initialization when this app becomes active
+		Laser.getInstance().setFlag("body",0.0f);
+		Laser.getInstance().setFlag("legs",0.0f);
 	}
 	
 	@Override
@@ -116,13 +118,13 @@ public class VisualizerDinoLasers extends VisualizerDot {
 	
 	@Override
 	public void drawLaser(PApplet parent, People p) {
-//		Laser laser=Laser.getInstance();
-//		laser.bgBegin();   // Start a background drawing
-//		for (Position ps: p.positions.values()) {  
-//			laser.cellBegin(ps.id); // Start a cell-specific drawing
-//			Laser drawing code
-//			laser.cellEnd(ps.id);
-//		}
-//		laser.bgEnd();
+		Laser laser=Laser.getInstance();
+		laser.bgBegin();   // Start a background drawing
+		for (Person ps: p.pmap.values()) {  
+			laser.cellBegin(ps.id); // Start a cell-specific drawing
+			laser.svgfile("pterodactyl.svg", 0, 3, 1.0f, 0f);
+			laser.cellEnd(ps.id);
+		}
+		laser.bgEnd();
 	}
 }
