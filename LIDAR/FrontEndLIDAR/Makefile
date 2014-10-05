@@ -5,8 +5,8 @@ VPATH=.:$(UTIL)
 
 LIBLOLIBDIR=/opt/local/lib
 
-#MATLAB=/Applications/MATLAB_R2012b.app
-MATLAB=/Applications/MATLAB_R2014a.app
+MATLAB=/Applications/MATLAB
+#MATLAB=/Applications/MATLAB_R2014a.app
 MATLABINC=$(MATLAB)/extern/include
 MATLABLIBDIR=$(MATLAB)/bin/maci64
 MATLABLIBES=-lmx -lmat
@@ -68,11 +68,10 @@ frontend.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxB
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-frontend.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-frontend.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-frontend.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-frontend.o: ../Util/point.h ../Util/dbg.h world.h
-frontend.o: /opt/local/include/cairo/cairo-xlib.h
+frontend.o: /Applications/MATLAB/extern/include/mat.h
+frontend.o: /Applications/MATLAB/extern/include/matrix.h
+frontend.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
+frontend.o: ../Util/dbg.h world.h /opt/local/include/cairo/cairo-xlib.h
 frontend.o: /opt/local/include/cairo/cairo.h
 frontend.o: /opt/local/include/cairo/cairo-version.h
 frontend.o: /opt/local/include/cairo/cairo-features.h
@@ -95,10 +94,10 @@ handlers.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxB
 handlers.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 handlers.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 handlers.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-handlers.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-handlers.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-handlers.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-handlers.o: ../Util/point.h ../Util/dbg.h parameters.h world.h
+handlers.o: /Applications/MATLAB/extern/include/mat.h
+handlers.o: /Applications/MATLAB/extern/include/matrix.h
+handlers.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
+handlers.o: ../Util/dbg.h parameters.h world.h
 handlers.o: /opt/local/include/cairo/cairo-xlib.h
 handlers.o: /opt/local/include/cairo/cairo.h
 handlers.o: /opt/local/include/cairo/cairo-version.h
@@ -122,10 +121,10 @@ sickio.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuf
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-sickio.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-sickio.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-sickio.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-sickio.o: ../Util/point.h ../Util/dbg.h
+sickio.o: /Applications/MATLAB/extern/include/mat.h
+sickio.o: /Applications/MATLAB/extern/include/matrix.h
+sickio.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
+sickio.o: ../Util/dbg.h
 background.o: background.h /opt/local/include/lo/lo.h
 background.o: /opt/local/include/lo/lo_endian.h
 background.o: /opt/local/include/lo/lo_types.h
@@ -140,11 +139,11 @@ background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5x
 background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-background.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-background.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-background.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-background.o: ../Util/point.h ../Util/dbg.h parameters.h normal.h vis.h
-background.o: world.h /opt/local/include/cairo/cairo-xlib.h
+background.o: /Applications/MATLAB/extern/include/mat.h
+background.o: /Applications/MATLAB/extern/include/matrix.h
+background.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
+background.o: ../Util/dbg.h parameters.h normal.h vis.h world.h
+background.o: /opt/local/include/cairo/cairo-xlib.h
 background.o: /opt/local/include/cairo/cairo.h
 background.o: /opt/local/include/cairo/cairo-version.h
 background.o: /opt/local/include/cairo/cairo-features.h
@@ -166,11 +165,10 @@ world.o: /opt/local/include/cairo/cairo-features.h
 world.o: /opt/local/include/cairo/cairo-deprecated.h
 world.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
 world.o: /opt/local/include/X11/Xfuncproto.h /opt/local/include/X11/Xosdefs.h
-world.o: person.h /Applications/MATLAB_R2014a.app/extern/include/mat.h
-world.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-world.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-world.o: ../Util/point.h legstats.h leg.h ../Util/dest.h background.h
-world.o: sickio.h
+world.o: person.h /Applications/MATLAB/extern/include/mat.h
+world.o: /Applications/MATLAB/extern/include/matrix.h
+world.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
+world.o: legstats.h leg.h ../Util/dest.h background.h sickio.h
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -187,11 +185,10 @@ snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxB
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-snapshot.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-snapshot.o: ../Util/point.h ../Util/dbg.h world.h
-snapshot.o: /opt/local/include/cairo/cairo-xlib.h
+snapshot.o: /Applications/MATLAB/extern/include/mat.h
+snapshot.o: /Applications/MATLAB/extern/include/matrix.h
+snapshot.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
+snapshot.o: ../Util/dbg.h world.h /opt/local/include/cairo/cairo-xlib.h
 snapshot.o: /opt/local/include/cairo/cairo.h
 snapshot.o: /opt/local/include/cairo/cairo-version.h
 snapshot.o: /opt/local/include/cairo/cairo-features.h
@@ -214,13 +211,13 @@ vis.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuffer
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-vis.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-vis.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-vis.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-vis.o: ../Util/point.h ../Util/dbg.h parameters.h
-person.o: person.h /Applications/MATLAB_R2014a.app/extern/include/mat.h
-person.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-person.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
+vis.o: /Applications/MATLAB/extern/include/mat.h
+vis.o: /Applications/MATLAB/extern/include/matrix.h
+vis.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
+vis.o: ../Util/dbg.h parameters.h
+person.o: person.h /Applications/MATLAB/extern/include/mat.h
+person.o: /Applications/MATLAB/extern/include/matrix.h
+person.o: /Applications/MATLAB/extern/include/tmwtypes.h
 person.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 person.o: /opt/local/include/lo/lo_types.h
 person.o: /opt/local/include/lo/lo_osc_types.h
@@ -244,9 +241,9 @@ worlddraw.o: /opt/local/include/cairo/cairo-xlib.h
 worlddraw.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
 worlddraw.o: /opt/local/include/X11/Xfuncproto.h
 worlddraw.o: /opt/local/include/X11/Xosdefs.h world.h person.h
-worlddraw.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-worlddraw.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-worlddraw.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
+worlddraw.o: /Applications/MATLAB/extern/include/mat.h
+worlddraw.o: /Applications/MATLAB/extern/include/matrix.h
+worlddraw.o: /Applications/MATLAB/extern/include/tmwtypes.h
 worlddraw.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 worlddraw.o: /opt/local/include/lo/lo_types.h
 worlddraw.o: /opt/local/include/lo/lo_osc_types.h
@@ -275,13 +272,12 @@ leg.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuffer
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-leg.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-leg.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-leg.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-leg.o: lookuptable.h
-legstats.o: person.h /Applications/MATLAB_R2014a.app/extern/include/mat.h
-legstats.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-legstats.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
+leg.o: /Applications/MATLAB/extern/include/mat.h
+leg.o: /Applications/MATLAB/extern/include/matrix.h
+leg.o: /Applications/MATLAB/extern/include/tmwtypes.h lookuptable.h
+legstats.o: person.h /Applications/MATLAB/extern/include/mat.h
+legstats.o: /Applications/MATLAB/extern/include/matrix.h
+legstats.o: /Applications/MATLAB/extern/include/tmwtypes.h
 legstats.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 legstats.o: /opt/local/include/lo/lo_types.h
 legstats.o: /opt/local/include/lo/lo_osc_types.h
@@ -295,10 +291,10 @@ groups.o: /opt/local/include/lo/lo_osc_types.h
 groups.o: /opt/local/include/lo/lo_errors.h
 groups.o: /opt/local/include/lo/lo_lowlevel.h
 groups.o: /opt/local/include/lo/lo_macros.h ../Util/point.h person.h
-groups.o: /Applications/MATLAB_R2014a.app/extern/include/mat.h
-groups.o: /Applications/MATLAB_R2014a.app/extern/include/matrix.h
-groups.o: /Applications/MATLAB_R2014a.app/extern/include/tmwtypes.h
-groups.o: legstats.h leg.h ../Util/dbg.h parameters.h
+groups.o: /Applications/MATLAB/extern/include/mat.h
+groups.o: /Applications/MATLAB/extern/include/matrix.h
+groups.o: /Applications/MATLAB/extern/include/tmwtypes.h legstats.h leg.h
+groups.o: ../Util/dbg.h parameters.h
 kalmanfilter.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
 kalmanfilter.o: /opt/local/include/opencv2/core/core.hpp
 kalmanfilter.o: /opt/local/include/opencv2/core/types_c.h
