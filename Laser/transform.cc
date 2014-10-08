@@ -378,8 +378,11 @@ void Transform::save(std::ostream &s) const {
 
 void Transform::load(std::istream &s) {
     dbg("Transform.load",1) << "Loading transform" << std::endl;
-    for (unsigned int i=0;i<floorpts.size();i++) 
+    for (unsigned int i=0;i<floorpts.size();i++) {
 	s >> floorpts[i] >> devpts[i];
+	dbg("Transform.load",2) << i << ": " << floorpts[i] << " -> " << devpts[i] << std::endl;
+    }
+	
     recompute();
 }
 
