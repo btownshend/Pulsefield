@@ -9,6 +9,7 @@ public class DinoManager {
 	private final AllSerialManager allSerialManager = new AllSerialManager();
 
 	public void initialize() {
+		System.err.println("DinoManager.initialize");
 		Thread t = new Thread() {
 			public void run() {
 				allSerialManager.initialize();
@@ -74,7 +75,7 @@ public class DinoManager {
 		}
 
 		SerialManager manager = allSerialManager.getManager(managerNum);
-		System.out.printf("Sending message %s to manager %d\n", msg, managerNum);
+		//System.out.printf("Sending message %s to manager %d\n", msg, managerNum);
 		manager.pushMessage(msg);
 	}
 

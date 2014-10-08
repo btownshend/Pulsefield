@@ -48,6 +48,7 @@ public class SerialManager implements SerialPortEventListener {
 	}
 	
 	private void initializeSerial(CommPortIdentifier portId) {
+		System.out.printf("PortID %s", portId.getName());
 		try {
 			// open serial port, and use class name for the appName.
 			serialPort = (SerialPort) portId.open(this.getClass().getName(),
@@ -72,6 +73,7 @@ public class SerialManager implements SerialPortEventListener {
 			Thread.sleep(1500);
 			while (true) {
 				String msg = messageQueue.take();
+				System.err.printf("Writing %s\n", msg);
 				byte[] bytes = msg.getBytes(charset);
 				output.write(bytes, 0, bytes.length);
 			}
@@ -85,6 +87,7 @@ public class SerialManager implements SerialPortEventListener {
 	 * This will prevent port locking on platforms like Linux.
 	 */
 	public void close() {
+		System.out.println("Closing SerialManager");
 		if (serialPort != null) {
 			serialPort.removeEventListener();
 			serialPort.close();
