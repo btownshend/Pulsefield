@@ -39,6 +39,8 @@ public class SerialManager implements SerialPortEventListener {
 				initializeSerial(portId);
 			}
 		};
+		serialThread.setName("Serial");
+		serialThread.setDaemon(true);
 		serialThread.start();
 	}
 	

@@ -24,6 +24,8 @@ public class SpheroManager {
 				loop();
 			}
 		};
+		t.setName("SpheroManager");
+		t.setDaemon(true);
 		t.start();
 	}
 	

@@ -15,6 +15,8 @@ public class DinoManager {
 				allSerialManager.initialize();
 			}
 		};
+		t.setName("AllSerialManager");
+		t.setDaemon(true);
 		t.start();
 	}
 
