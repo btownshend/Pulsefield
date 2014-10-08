@@ -44,6 +44,10 @@ public class SerialManager implements SerialPortEventListener {
 		serialThread.start();
 	}
 	
+	protected void finalize() throws Throwable {
+		close();
+	}
+	
 	public void pushMessage(String msg) {
 		System.out.printf("Queuing message %s\n", msg);
 		messageQueue.add(msg);
@@ -78,8 +82,10 @@ public class SerialManager implements SerialPortEventListener {
 				System.err.printf("Writing %s\n", msg);
 				byte[] bytes = msg.getBytes(charset);
 				output.write(bytes, 0, bytes.length);
+				output.flush();
 			}
 		} catch (Exception e) {
+			close();
 			System.err.println(e.toString());
 		}
 	}
@@ -107,6 +113,7 @@ public class SerialManager implements SerialPortEventListener {
 				System.out.println(inputLine);
 			} catch (Exception e) {
 				System.err.println(e.toString());
+				close();
 			}
 		}
 		// Ignore all the other eventTypes, but you should consider the other ones.
