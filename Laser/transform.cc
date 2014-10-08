@@ -370,6 +370,15 @@ bool Transform::onScreen(Point devPt) const {
     return result;
 }
 
+void Transform::setFloorPoint(int i, Point floorpt) {
+    assert(i>=0&&i<(int)floorpts.size());
+    dbg("Transform.setFloorPoint",1) << "Moved floor point " << i << " from " << floorpts[i] << " to " << floorpt << std::endl;
+    Point newDevPoint=mapToDevice(floorpt);
+    dbg("Transform.setFloorPoint",1) << "Need to move device point " << i << " from " << devpts[i] << " to " << newDevPoint << std::endl;
+    floorpts[i]=floorpt;
+    devpts[i]=newDevPoint;
+}
+
 void Transform::save(std::ostream &s) const {
     dbg("Transform.save",1) << "Saving transform" << std::endl;
     for (unsigned int i=0;i<floorpts.size();i++) 

@@ -80,7 +80,7 @@ class Transform {
     // Point indices are order based on laser positions: BL, BR, TR, TL
     Point getFloorPoint(int i) const { assert(i>=0&&i<(int)floorpts.size()); return floorpts[i]; }
     Point getDevPoint(int i) const { assert(i>=0&&i<(int)floorpts.size()); return devpts[i]; }
-    void setFloorPoint(int i, Point floorpt) { assert(i>=0&&i<(int)floorpts.size()); floorpts[i]=floorpt; }
+    void setFloorPoint(int i, Point floorpt);
     void setDevPoint(int i, Point devpt) { assert(i>=0&&i<(int)floorpts.size()); devpts[i]=devpt; }
 
     // Load/save 
