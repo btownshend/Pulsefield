@@ -41,7 +41,8 @@ std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
     static const float MINFRACTOKEEP=0.5;
     static const float ONSCREENFUZZ=0.01; // Fuzz in on screen fraction -- fractions within this amount are considered equal
     static const float FRACFUZZ=0.1;	// Fuzz in total visible fraction -- fractions within this amount are considered equal
-    static const float DISTFUZZ=4.0;   // Fuzz in distance of laser -- distances within this amount are considered equal
+    static const float DISTFUZZ=2.5;	   // Fuzz in distance of laser -- distances within this amount are considered equal
+    static const float SWITCHDISTANCE=3.0;		// Switch to another laser if it is this much closer to target
     static const float MAXLASERLOAD=20;			// Maximum load (in meters of line) on one laser before rebalancing (if this is also >MAXLASERLOADFRAC of total)
     static const float MAXLASERLOADFRAC=0.3f;	// Maximum fraction allocated to one laser before rebalancing
 
@@ -73,9 +74,17 @@ std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
 		} else if (lasers[current]->getLastAllocationLength() >maxLoad) {
 		    dbg("Lasers.allocate",1) << "Ignoring assignment to " << current << " since laser had load of  " << lasers[current]->getLastAllocationLength() << " (> " << maxLoad << ")" << std::endl;
 		} else {
-		    // Keep existing assignment
-		    assignment=current;
-		    break;
+		    // Check distance -- reassign if there is a much close laser
+		    float closest=stats[0].meanDistance;
+		    for (int j=1;j<stats.size();j++)
+			closest=std::min(closest,stats[j].meanDistance);
+		    if (stats[current].meanDistance <= closest + SWITCHDISTANCE) {
+			// Keep existing assignment
+			assignment=current;
+			break;
+		    } else {
+			dbg("Lasers.allocate",1) << "Ignoring assignment to " << current << " since distance = " << stats[current].meanDistance << ", but closest laser is " << closest << std::endl;
+		    }
 		}
 	    }
 	    std::vector<bool> possible(stats.size(),true);
