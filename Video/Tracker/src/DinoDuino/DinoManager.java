@@ -90,7 +90,13 @@ public class DinoManager {
 
 		try {
 			Thread.sleep(3000);
-			dino.setServo(1, 1, 90.f, 1.0f);
+			dino.setServo(0, 0, 90.f, 1.0f);
+			int i = 0;
+			while (i < 50) {
+				Thread.sleep(1000);
+				dino.setLED(0, (i * 10) % 100);
+				i++;
+			}
 
 			//the following line will keep this app alive for 1000 seconds,
 			//waiting for events to occur and responding to them (printing incoming messages to console).
