@@ -326,7 +326,6 @@ void XRef::movePoint(Point offset) {
     } else {
 	oldPoint = t.getFloorPoint(anchorNumber);
 	newPoint=oldPoint+offset*0.01;
-	t.setFloorPoint(anchorNumber,newPoint);
 	std::shared_ptr<Lasers> lasers=Lasers::instance();
 	for (int i=0;i<lasers->size();i++) {
 	  lasers->getLaser(i)->getTransform().setFloorPoint(anchorNumber,newPoint);
@@ -669,12 +668,12 @@ void Video::load(std::istream &s) {
     lasers->lock();
     lasers->loadTransforms(s);
     // Constrain to be in bounds
-    for (unsigned int laser=0;laser<lasers->size();laser++) {
-	Transform &t=lasers->getLaser(laser)->getTransform();
-	for (int i=0;i<4;i++) 
-	    t.setFloorPoint(i,bounds.constrainPoint(t.getFloorPoint(i)));
-	t.recompute();
-    }
+    // for (unsigned int laser=0;laser<lasers->size();laser++) {
+    // 	Transform &t=lasers->getLaser(laser)->getTransform();
+    // 	for (int i=0;i<4;i++) 
+    // 	    t.setFloorPoint(i,bounds.constrainPoint(t.getFloorPoint(i)));
+    // 	t.recompute();
+    // }
     lasers->unlock();
 }
 
