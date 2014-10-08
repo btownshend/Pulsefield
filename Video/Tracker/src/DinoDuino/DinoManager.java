@@ -50,7 +50,7 @@ public class DinoManager {
 
 		// Message format:
 		// S <servo num, 2 digits> <angle in degrees, 3 digits> <time in msec, 4 digits>
-		String msg = String.format("S%2d%3d%4d", remoteServo, (int)angle, (int)(timeToMove * 1000));
+		String msg = String.format("S%02d%03d%04d\n", remoteServo, (int)angle, (int)(timeToMove * 1000));
 		sendMessage(managerNum, msg);
 	}
 
@@ -60,7 +60,7 @@ public class DinoManager {
 
 		// Message format:
 		// L <LED ID, 2 digits> <brightness 0-99, 2 digits>
-		String msg = String.format("L%2d%2d", ledId, brightness);
+		String msg = String.format("L%02d%02d\n", ledId, brightness);
 		sendMessage(0, msg);
 	}
 
