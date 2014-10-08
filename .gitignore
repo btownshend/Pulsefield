@@ -72,15 +72,11 @@ Laser/test
 Laser/Debug.out
 
 Laser/osclaser
-
-Laser/transforms.save
-
 Laser/wesstuff.osc
 
 Laser/*.dSYM
 Laser/vectest
 
-*.save
 *conflicted*
 
 Laser/Debug.out.recent
@@ -149,3 +145,13 @@ Video/Tracker/bin/
 Laser/Debug.out.NAK
 
 Laser/transforms.save.20140826
+
+Laser/transforms.pav.save
+
+Laser/transforms-zero1.save
+
+Laser/transforms-zero1-B.save
+
+Laser/transforms-201405241323.save
+
+Laser/transforms-20140415.save
