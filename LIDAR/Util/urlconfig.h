@@ -3,7 +3,7 @@
 #define MAXURLS 100
 
 class URLConfig {
-    char *filename;
+    std::string filename;
     int nurl;
     char *idents[MAXURLS];
     char *hosts[MAXURLS];
@@ -18,5 +18,5 @@ class URLConfig {
     // Get port for ident or -1 if not found
     int getPort(const char *ident) const;
     // Get filename
-    const char *getFilename() const { return filename; }
+    std::string getFilename() const { return filename; }
 };

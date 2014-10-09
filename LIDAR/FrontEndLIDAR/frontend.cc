@@ -53,12 +53,12 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]) {
 	recording=false;
 	recordFD=NULL;
 
-	URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
+	URLConfig urls("urlconfig.txt");
 
 	serverPort=urls.getPort("FE");
 	if (serverPort<0) {
-		fprintf(stderr,"Invalid server port retrieved from %s when looking for FE: %d\n", urls.getFilename(),serverPort);
-		exit(1);
+	    fprintf(stderr,"Invalid server port retrieved from %s when looking for FE: %d\n", urls.getFilename().c_str(),serverPort);
+	    exit(1);
 	}
 
 
@@ -105,7 +105,7 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]) {
 		sprintf(ident,"SK%d",i+1);
 		int port=urls.getPort(ident);
 		if (port<0) {
-			fprintf(stderr,"Unable to locate %s in config file %s\n", ident, urls.getFilename());
+		    fprintf(stderr,"Unable to locate %s in config file %s\n", ident, urls.getFilename().c_str());
 			exit(1);
 		}
 		const char *host=urls.getHost(ident);

@@ -4,15 +4,20 @@
 #include "dbg.h"
 #include "urlconfig.h"
 
-URLConfig::URLConfig(const char *configFile) {
-    printf("Loading config from %s\n", configFile);
-    filename=new char[strlen(configFile)+1];
-    strcpy(filename,configFile);
-    FILE *fd=fopen(configFile,"r");
+URLConfig::URLConfig(const char *configFile): filename(configFile) {
+    FILE *fd=NULL;
+    for (int i=0;i<10;i++) {
+	fd=fopen(filename.c_str(),"r");
+	if (fd!=NULL || configFile[0]=='/')
+	    break;
+	// Search in parent directories
+	filename="../"+filename;
+    }
     if (fd==NULL) {
 	fprintf(stderr,"Unable to open url config file: %s\n", configFile);
 	exit(1);
     }
+    printf("Loading config from %s\n", filename.c_str());
     for (int i=0;i<MAXURLS;i++) {
 	const unsigned int MAXLEN=2000;
 	char tmp_ident[MAXLEN+1];
@@ -20,7 +25,7 @@ URLConfig::URLConfig(const char *configFile) {
 	while (true) {
 	    int nread=fscanf(fd,"%50[^,],%50[^,],%d\n",tmp_ident,tmp_host,&ports[i]);
 	    if (strlen(tmp_ident)>=MAXLEN || strlen(tmp_host)>=MAXLEN) {
-		fprintf(stderr,"Data field too long in %s near line %d\n", configFile, i+1);
+		fprintf(stderr,"Data field too long in %s near line %d\n", filename.c_str(), i+1);
 		exit(1);
 	    }
 
@@ -31,7 +36,7 @@ URLConfig::URLConfig(const char *configFile) {
 	    if (nread==3)
 		break;
 
-	    fprintf(stderr,"Format error near line %d while reading from %s, nread=%d\n", i+1,configFile,nread);
+	    fprintf(stderr,"Format error near line %d while reading from %s, nread=%d\n", i+1,filename.c_str(),nread);
 	}
 	idents[i]=new char[strlen(tmp_ident)+1];
 	strcpy(idents[i],tmp_ident);
@@ -45,7 +50,6 @@ URLConfig::URLConfig(const char *configFile) {
 
 URLConfig::~URLConfig() {
     // printf("Deleting URLConfig (nurl=%d)\n",nurl); fflush(stdout);
-    delete [] filename;
     for (int i=0;i<nurl;i++) {
 	delete [] idents[i];
 	delete [] hosts[i];
