@@ -427,7 +427,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	nallProcTime++;
 
 	if (frame%200==0) {
-	    dbg("frontend",1) << "Frame " << frame << ": mean frame proessing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
+	    dbg("frontend",1) << "Frame " << frame << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
 	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",frame,totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
 	    nProcTime=0;
 	    maxProcTime=0;
