@@ -20,7 +20,7 @@ class Group;
 class Person {
     // Overall 
     int id;
-    int channel;
+    int channel;		// Channel number 1..NCHANNELS 
     Point position;
     float posvar;
     Point velocity;
@@ -52,7 +52,7 @@ class Person {
     void setupGrid(const Vis &vis, const std::vector<int> fs[2]);
     void analyzeLikelihoods();
 public:
-    Person(int _id, const Point &leg1, const Point &leg2);
+    Person(int _id, int _channel, const Point &leg1, const Point &leg2);
     ~Person();
     void predict(int nstep, float fps);
     void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs[2], int nstep,float fps);
@@ -81,16 +81,14 @@ public:
 
 class People {
     int nextid;
+    int nextchannel;
     std::vector <std::shared_ptr<Person> > p;
  public:
-    People() { nextid=1; }
+    People() { nextid=1; nextchannel=1; }
     unsigned int size() const { return p.size(); }
     const Person &operator[](int i) const { return *p[i]; }
     Person &operator[](int i)  { return *p[i]; }
-    void add(const Point &l1, const Point &l2) {
-	p.push_back(std::shared_ptr<Person>(new Person(nextid,l1,l2)));
-	nextid++;
-    }
+    void add(const Point &l1, const Point &l2);
     void erase(int i) { p.erase(p.begin()+i); }
     std::vector <std::shared_ptr<Person> >::iterator begin() { return p.begin(); }
     std::vector <std::shared_ptr<Person> >::iterator end() { return p.end(); }

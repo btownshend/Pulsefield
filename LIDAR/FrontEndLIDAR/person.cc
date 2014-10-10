@@ -12,16 +12,35 @@
 static const bool USEPERSONLIKE=false;
 static const bool USELIKEGRIDFORALL=false;
 
-Person::Person(int _id, const Point &leg1, const Point &leg2) {
+void People::add(const Point &l1, const Point &l2) {
+    // Find a free channel, or advance to next one if none free
+    int channel=nextchannel;
+    while (size() < NCHANNELS) {
+	// Should be able to find a channel
+	bool ok=true;
+	for (int i=0;i<size();i++) {
+	    if (p[i]->getChannel()==channel) {
+		// Occupied, advance to next channel
+		channel=channel%NCHANNELS+1;
+		ok=false;
+		break;
+	    }
+	}
+	if (ok)
+	    break;
+    }
+    nextchannel=(channel%NCHANNELS)+1;
+    p.push_back(std::shared_ptr<Person>(new Person(nextid,channel,l1,l2)));
+    nextid++;
+}
+
+Person::Person(int _id, int _channel, const Point &leg1, const Point &leg2) {
     id=_id;
     // Assign legs
     legs[0]=Leg(leg1);
     legs[1]=Leg(leg2);
 
-    // Find a free channel, or advance to next one if none free
-    static int lastchannel=0;
-    channel=lastchannel+1;
-    lastchannel = (lastchannel+1)%NCHANNELS;
+    channel=_channel;
 
     position=(leg1+leg2)/2;
     posvar=(legs[0].posvar+legs[1].posvar)/4;
@@ -35,6 +54,7 @@ Person::~Person() {
     dbg("Person",2) << "Deleting person " << *this << std::endl;
     if (group!=nullptr)
 	group->remove(id);
+    // NOTE: If we get an assertion error when removing the group, its probably because somewhere in the code a copy of the person is being made;  when that's deleted the dtor is called and it removes the group prematurely
 }
 
 bool Person::isDead() const {
@@ -48,6 +68,7 @@ bool Person::isDead() const {
 
 std::ostream &operator<<(std::ostream &s, const Person &p) {
     s << "ID " << p.id ;
+    s << ",ch: " << p.channel;
     if (p.group != nullptr)
 	s << ", GID:" << p.group->getID();
     s << std::fixed << std::setprecision(0) 
