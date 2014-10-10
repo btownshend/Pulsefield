@@ -261,7 +261,8 @@ etherdream_point Transform::mapToDevice(CPoint floorPt) const {
 Point Transform::mapToDevice(Point floorPt) const {
     if (floorPt.isNan())
 	return floorPt;
-    int fpRounded = (int)(floorPt.X()*1000+0.5)*20000+(int)(floorPt.Y()*1000+0.5);
+    // TODO: Could make this coarser and then do a quad-interpolation
+    int fpRounded = (int)(floorPt.X()*200+0.5)*20000+(int)(floorPt.Y()*200+0.5);
     if (floorToDeviceCache.count(fpRounded)>0)
 	return floorToDeviceCache.at(fpRounded);
     Point p;
@@ -273,17 +274,20 @@ Point Transform::mapToDevice(Point floorPt) const {
     cv::perspectiveTransform(src,dst,transform);
     cv::Vec3f src2(floorPt.X(),floorPt.Y(),1.0);
     cv::Vec3f dst2=((cv::Matx33f)transform)*src2;
+    Point devPt;
     if (dst2[2]<=0) {
 	dbg("Transform.mapToDevice",5) << floorPt << " out of bound: dst=" << "[" << dst2[0] << "," << dst2[1] << "," << dst2[2] << "]" << std::endl;
-	((Transform *)this)->floorToDeviceCache[fpRounded]=Point(nan(""),nan(""));
-	return Point(nan(""),nan(""));
+	devPt=Point(nan(""),nan(""));
+    } else {
+	Point devPt2=flatToDevice(Point(dst2[0]/dst2[2], dst2[1]/dst2[2]));
+	// dst is now in 'flat' space
+	devPt=flatToDevice(Point(dst[0].x, dst[0].y));
+	dbg("Transform.mapToDevice",10) << floorPt << " -> " << "[" << dst[0].x << "," << dst[0].y << "] -> " << devPt << " (or " << devPt2 << ")" << std::endl;
     }
-
-    Point devPt2=flatToDevice(Point(dst2[0]/dst2[2], dst2[1]/dst2[2]));
-    // dst is now in 'flat' space
-    Point devPt=flatToDevice(Point(dst[0].x, dst[0].y));
-    dbg("Transform.mapToDevice",10) << floorPt << " -> " << "[" << dst[0].x << "," << dst[0].y << "] -> " << devPt << " (or " << devPt2 << ")" << std::endl;
     ((Transform *)this)->floorToDeviceCache[fpRounded]=devPt;
+    int csize=floorToDeviceCache.size();
+    if (csize%10000 == 0)
+	dbg("Transform.mapToDevice",1) << "Map to device cache now has " << csize << " entries; req=" << floorPt << " [" << fpRounded << "]"<< std::endl;
     return devPt;
 }
 
