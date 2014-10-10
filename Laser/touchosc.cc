@@ -13,7 +13,7 @@ static const int nflags=sizeof(flags)/sizeof(flags[0]);
 
 TouchOSC::TouchOSC()  {
     theInstance=this;
-    URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
+    URLConfig urls("urlconfig.txt");
 
     /* Setup touchOSC sending */
     int touchOSCPort=urls.getPort("TO");
