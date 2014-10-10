@@ -261,7 +261,7 @@ static void dump_resp(struct etherdream *d) {
 	break;
     }
     if (st->source_flags!=0)
-	s << " (Flags: " << std::hex << st->source_flags << std::dec << s << ")";
+	s << " (Flags: " << std::hex << st->source_flags << std::dec << ")";
     s << "; Buffer fullness:" << st->buffer_fullness << "  (points currently buffered), " <<  st->point_rate << " pps , " <<  st->point_count << " total points played. ";
     dbg("Etherdream.dump_resp",4) << s.str() << std::endl;
 }
