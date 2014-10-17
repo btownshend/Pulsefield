@@ -376,6 +376,10 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 			selectedLaser=col;
 		    else
 			selectedLaser=-1;
+		} else if (strcmp(tok,"save") == 0 && argv[0]->f>0) {
+		    Lasers::instance()->save();
+		} else if (strcmp(tok,"load") == 0 && argv[0]->f>0) {
+		    Lasers::instance()->load();
 		} else if (strcmp(tok,"enable")==0) {
 		    int row=atoi(strtok(NULL,"/"))-1;
 		    int col=atoi(strtok(NULL,"/"))-1;
