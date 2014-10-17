@@ -383,19 +383,58 @@ void Transform::setFloorPoint(int i, Point floorpt) {
     devpts[i]=newDevPoint;
 }
 
-void Transform::save(std::ostream &s) const {
-    dbg("Transform.save",1) << "Saving transform" << std::endl;
-    for (unsigned int i=0;i<floorpts.size();i++) 
-	s << std::fixed <<  std::setprecision(3) << floorpts[i] << " " << std::setprecision(0) << devpts[i] << " " <<  std::endl << std::setprecision(3);
+void Transform::save(ptree &p) const {
+    dbg("Transform.save",1) << "Saving transform to ptree" << std::endl;
+    ptree tf;
+    for (unsigned int i=0;i<floorpts.size();i++)  {
+	ptree mapping, floor, device;
+	floor.put("x",floorpts[i].X());
+	floor.put("y",floorpts[i].Y());
+	device.put("x",devpts[i].X());
+	device.put("y",devpts[i].Y());
+	mapping.put_child("floor",floor);
+	mapping.put_child("device",device);
+	tf.push_back(std::make_pair("",mapping));
+    }
+    p.put_child("transform",tf);
+    ptree bounds;
+    bounds.put("minx",minx);
+    bounds.put("maxx",maxx);
+    bounds.put("miny",miny);
+    bounds.put("maxy",maxy);
+    p.put_child("bounds",bounds);
+    dbg("Transform.save",1) << "Saved bounds of " << minx << ", " << maxx << ", " << miny << ", " << maxy << std::endl;
 }
 
-void Transform::load(std::istream &s) {
-    dbg("Transform.load",1) << "Loading transform" << std::endl;
-    for (unsigned int i=0;i<floorpts.size();i++) {
-	s >> floorpts[i] >> devpts[i];
-	dbg("Transform.load",2) << i << ": " << floorpts[i] << " -> " << devpts[i] << std::endl;
+void Transform::load(ptree &p) {
+    dbg("Transform.load",1) << "Loading transform from ptree" << std::endl;
+    ptree bounds;
+    try {
+	bounds = p.get_child("bounds");
+	minx=bounds.get<double>("minx",minx);
+	maxx=bounds.get<double>("maxx",maxx);
+	miny=bounds.get<double>("miny",miny);
+	maxy=bounds.get<double>("maxy",maxy);
+	dbg("Transform.load",1) << "Set bounds to " << minx << ", " << maxx << ", " << miny << ", " << maxy << std::endl;
+    } catch (boost::property_tree::ptree_bad_path ex) {
+	std::cerr << "Unable to find 'bounds' in laser settings" << std::endl;
     }
-	
+    ptree tf;
+    try {
+	tf=p.get_child("transform");
+	int i=0;
+	for (ptree::iterator v = tf.begin(); v != tf.end();++v) {
+	    if (i>=floorpts.size())
+		break;
+	    ptree floor=v->second.get_child("floor");
+	    ptree device=v->second.get_child("device");
+	    floorpts[i]=Point(floor.get<double>("x",floorpts[i].X()),floor.get<double>("y",floorpts[i].Y()));
+	    devpts[i]=Point(device.get<double>("x",devpts[i].X()),device.get<double>("y",devpts[i].Y()));
+	    i++;
+	}
+    } catch (boost::property_tree::ptree_bad_path ex) {
+	std::cerr << "Uable to find 'transform' in laser settings" << std::endl;
+    }
     recompute();
 }
 

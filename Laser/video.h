@@ -59,8 +59,10 @@ class Video: public DisplayDevice {
     int msglife; 	// Number of frames left before clearing
     bool dirty;
     void update();
-    void save(std::ostream &s) const { lasers->saveTransforms(s); }
-    void load(std::istream &s);
+    void save() const {
+	lasers->save();
+    }
+    void load();
     void clearTransforms();
  public:
     // Local window routines

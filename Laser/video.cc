@@ -21,12 +21,6 @@ Video::Video(std::shared_ptr<Lasers> _lasers): lasers(_lasers), bounds(-6,0,6,6)
     msglife=100;
     dirty=true;
     dpy=NULL;
-    // Load transforms
-    std::ifstream ifs("transforms.save");
-    if (ifs.good()) 
-	load(ifs);
-    else
-	dbg("Video",1) << "Unable to open transforms.save for reading" << std::endl;
     lasers->setFlag("fiducials",false);
 }
 
@@ -90,22 +84,19 @@ void *Video::runDisplay(void *arg) {
 	    switch (e.type) {
 	    case KeyPress:
 		{
-		    const char *filename="transforms.save";
 		    KeySym key;
 		    const int bufsize=20;
 		    char buffer[bufsize];
 		    int charcount = XLookupString(&e.xkey,buffer,bufsize,&key,NULL);
 		    dbg("Video.runDisplay",5)  << "Key Pressed:  code=" << e.xkey.keycode << ", sym=" << key << ", keycount=" << charcount << std::endl;
 		    if (key==XK_s) {
-			dbg("Video.runDisplay",1) << "Saving transforms in " << filename << std::endl;
-			world->newMessage() << "Saved transforms in " << filename;
-			std::ofstream ofs(filename);
-			world->save(ofs);
+			dbg("Video.runDisplay",1) << "Saving laser settings" << std::endl;
+			world->newMessage() << "Saved laser settings";
+			world->save();
 		    } else if (key==XK_l) {
-			dbg("Video.runDisplay",1) << "Loading transforms from " << filename << std::endl;
-			world->newMessage() << "Loaded transforms from " << filename;
-			std::ifstream ifs(filename);
-			world->load(ifs);
+			dbg("Video.runDisplay",1) << "Loading laser settings " <<  std::endl;
+			world->newMessage() << "Loaded laser settings";
+			world->load();
 		    } else if (key==XK_b) {
 			// background toggle
 			Lasers::instance()->toggleFlag("background");
@@ -664,16 +655,9 @@ void Video::clearTransforms() {
     lasers->unlock();
 }
 
-void Video::load(std::istream &s) {
+void Video::load() {
     lasers->lock();
-    lasers->loadTransforms(s);
-    // Constrain to be in bounds
-    // for (unsigned int laser=0;laser<lasers->size();laser++) {
-    // 	Transform &t=lasers->getLaser(laser)->getTransform();
-    // 	for (int i=0;i<4;i++) 
-    // 	    t.setFloorPoint(i,bounds.constrainPoint(t.getFloorPoint(i)));
-    // 	t.recompute();
-    // }
+    lasers->load();
     lasers->unlock();
 }
 

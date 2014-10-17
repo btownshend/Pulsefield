@@ -5,6 +5,7 @@
 #include "point.h"
 #include "cpoint.h"
 #include "etherdream_bst.h"
+#include "configuration.h"
 
 class Color;
 class Bounds;
@@ -84,8 +85,8 @@ class Transform {
     void setDevPoint(int i, Point devpt) { assert(i>=0&&i<(int)floorpts.size()); devpts[i]=devpt; }
 
     // Load/save 
-    void save(std::ostream &s) const;
-    void load(std::istream &s);
+    void save(ptree &p) const;
+    void load(ptree &p);
 
     // Origin
     Point getOrigin() const { return origin; }

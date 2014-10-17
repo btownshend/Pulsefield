@@ -9,7 +9,7 @@ static const float TARGETSEP=0.6f;
 
 std::shared_ptr<Lasers> Lasers::theInstance;   // Singleton
 
-Lasers::Lasers(int nlasers): lasers(nlasers) {
+Lasers::Lasers(int nlasers): lasers(nlasers), config("settings_laser.json")  {
     etherdream_lib_start();
 
     dbg("Lasers.Lasers",1) << "Constructing " << nlasers << " lasers." << std::endl;
@@ -30,6 +30,7 @@ Lasers::Lasers(int nlasers): lasers(nlasers) {
     setFlag("legs",true);
     setFlag("intensity",false);
     setFlag("test",false);
+    load();
 }
 
 Lasers::~Lasers() {
@@ -335,14 +336,35 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
     return 1;
 }
 
-void Lasers::saveTransforms(std::ostream &s)  const {
-    for (unsigned int i=0;i<lasers.size();i++)
-	lasers[i]->getTransform().save(s);
+void Lasers::save()  const {
+    ptree transforms;
+    for (unsigned int i=0;i<lasers.size();i++) {
+	ptree tr;
+	lasers[i]->getTransform().save(tr);
+	transforms.push_back(std::make_pair("",tr));
+    }
+    ((Lasers *)this)->config.pt().put_child("lasers",transforms);
+    config.save();
 }
 
-void Lasers::loadTransforms(std::istream &s) {
-    for (unsigned int i=0;i<lasers.size();i++)
-	lasers[i]->getTransform().load(s);
+void Lasers::load() {
+    config.load();
+    ptree &p=config.pt();
+    ptree plasers;
+    try {
+	plasers=p.get_child("lasers");
+    } catch (boost::property_tree::ptree_bad_path ex) {
+	std::cerr << "Unable to find 'lasers' in settings file" << std::endl;
+	return;
+    }
+    int i=0;
+    for (ptree::iterator v = plasers.begin(); v != plasers.end();++v) {
+	if (i>=lasers.size())
+	    break;
+	dbg("Lasers.loadTransforms",1) << "Loading laser " << i << " settings." << std::endl;
+	lasers[i]->getTransform().load(v->second);
+	i++;
+    }
     needsRender=true;
 }
 

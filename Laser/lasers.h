@@ -34,6 +34,9 @@ class Lasers {
     // Flags
     std::map<std::string, bool> flags;
     Lasers(int nunits);   // Only ever  called by initialize
+
+    // Configuration file
+    Configuration config;
 public:
     static void initialize(int nunits) { assert(!theInstance); theInstance=std::shared_ptr<Lasers>(new Lasers(nunits)); }
     static std::shared_ptr<Lasers> instance() {
@@ -70,8 +73,9 @@ public:
     void unlock();
 
     // Save/load all transforms of all lasers
-    void saveTransforms(std::ostream &s) const;
-    void loadTransforms(std::istream &s);
+    void save() const;
+    void load();
+
     // Clear transforms so that given real world bounds are at laser extents
     void clearTransforms(const Bounds &floorBounds);
 
