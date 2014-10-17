@@ -403,11 +403,15 @@ void Transform::save(ptree &p) const {
     bounds.put("miny",miny);
     bounds.put("maxy",maxy);
     p.put_child("bounds",bounds);
+    p.put("hfov",hfov);
+    p.put("vfov",vfov);
     dbg("Transform.save",1) << "Saved bounds of " << minx << ", " << maxx << ", " << miny << ", " << maxy << std::endl;
 }
 
 void Transform::load(ptree &p) {
     dbg("Transform.load",1) << "Loading transform from ptree" << std::endl;
+    hfov=p.get("hfov",hfov);
+    vfov=p.get("vfov",vfov);
     ptree bounds;
     try {
 	bounds = p.get_child("bounds");
