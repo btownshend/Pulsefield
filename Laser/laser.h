@@ -19,6 +19,7 @@ class Laser: public DisplayDevice  {
     int npoints;
     float targetSegmentLen;   // Target segment length -- if we can achieve this with < npoints, then use that, otherwise limit by npoints
     int blankingSkew;   // Blanks should be moved this many samples later in stream
+    int intensityPts;		// Number of points to use to draw intensity image
     int preBlanks;	// Blanks before a move begins
     int postBlanks;  // Blanks after a move ends
     struct etherdream *d;
@@ -47,6 +48,7 @@ class Laser: public DisplayDevice  {
     float getSpacing() const { return spacing; }
     void setNPoints(int _npoints) { npoints=_npoints;  }
     void setSkew(int _skew) { blankingSkew=_skew; }
+    void setIntensityPts(int _intensityPts) { intensityPts=_intensityPts; }
     void setPreBlanks(int n) { preBlanks=n; }
     void setPostBlanks(int n) { postBlanks=n; }
     void setPPS(int _pps) { PPS=_pps; }
@@ -55,6 +57,7 @@ class Laser: public DisplayDevice  {
 
     int getNPoints() const { return npoints;  }
     int getSkew() const  { return blankingSkew; }
+    int getIntensityPts() const  { return intensityPts; }
     int getPreBlanks() const  { return preBlanks; }
     int getPostBlanks() const { return postBlanks; }
     int getPPS() const { return PPS; }

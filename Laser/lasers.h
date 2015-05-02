@@ -50,6 +50,9 @@ public:
     void setSkew(int skew) {
 	for (int i=0;i<lasers.size();i++) lasers[i]->setSkew(skew);
     }
+    void setIntensityPts(int intensityPts) {
+	for (int i=0;i<lasers.size();i++) lasers[i]->setIntensityPts(intensityPts);
+    }
     void setPreBlanks(int n) { 
 	for (int i=0;i<lasers.size();i++) lasers[i]->setPreBlanks(n);
 }

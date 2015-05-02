@@ -55,7 +55,8 @@ class OSCHandler {
     void setPreBlanking(int n);
     void setPostBlanking(int n);
     void setSkew( int s);
-
+    void setIntensityPts(int n);
+    
     // Attributes
     void setColor(Color c);
     void setDensity(float d);

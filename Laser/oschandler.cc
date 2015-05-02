@@ -79,6 +79,7 @@ static int setPreBlanking_handler(const char *path, const char *types, lo_arg **
 static int setPostBlanking_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPostBlanking((int)argv[0]->f); return 0; }
 static int setPoints_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setPoints((int)argv[0]->f); return 0; }
 static int setSkew_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setSkew((int)argv[0]->f); return 0; }
+static int setIntensityPts_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setIntensityPts((int)argv[0]->f); return 0; }
 
 // Attributes
 static int setColor_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setColor(Color(argv[0]->f,argv[1]->f,argv[2]->f)); return 0; }
@@ -181,6 +182,7 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/ui/laser/postblank","f",setPostBlanking_handler,this);
 	lo_server_add_method(s,"/ui/laser/preblank","f",setPreBlanking_handler,this);
 	lo_server_add_method(s,"/ui/laser/skew","f",setSkew_handler,this);
+	lo_server_add_method(s,"/ui/laser/intensitypts","f",setIntensityPts_handler,this);
 
 	/* Primitives */
 	lo_server_add_method(s,"/laser/conx/begin","s",conx_begin_handler,this);
@@ -340,6 +342,13 @@ void OSCHandler::setPostBlanking(int nblank) {
 void OSCHandler::setSkew(int skew) {
     dbg("OSCHandler.setSkew",1) << "Setting skew to " << skew  << std::endl;
     lasers->setSkew(skew);
+    TouchOSC::instance()->updateLaserUI();
+}
+
+
+void OSCHandler::setIntensityPts(int intensityPts) {
+    dbg("OSCHandler.setIntensityPts",1) << "Setting intensityPts to " << intensityPts  << std::endl;
+    lasers->setIntensityPts(intensityPts);
     TouchOSC::instance()->updateLaserUI();
 }
 

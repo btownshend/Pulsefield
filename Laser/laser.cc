@@ -29,6 +29,7 @@ Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     PPS=40000;
     npoints=4000;
     blankingSkew=0; //3;
+    intensityPts=800;
     targetSegmentLen=0.01f;
     preBlanks=3;
     postBlanks=16;
@@ -310,19 +311,24 @@ void Laser::showTest() {
 
 void Laser::showIntensity() {
     pts.clear();
-    static const int gsize=100;
+    int gsize=getIntensityPts()/8;
+    if (gsize<100)
+	gsize=100;	// Don't allow it to be too focused
     dbg("Laser.showIntensity",1) << "Showing laser intensity pattern with rect size of " << gsize << std::endl;
     // Start and finish each scan at full range, but scan based on visible range stored in transform
     etherdream_point pt;
+    int incr=(gsize+50)/100;
+    if (incr<1)
+	incr=1;
     pt.g=65535;pt.r=65535;pt.b=65535;
     pt.y=-gsize;
-    for (pt.x=-gsize;pt.x<=gsize;pt.x++)
+    for (pt.x=-gsize;pt.x<=gsize;pt.x+=incr)
 	pts.push_back(pt);
-    for (;pt.y<=gsize;pt.y++)
+    for (;pt.y<=gsize;pt.y+=incr)
 	pts.push_back(pt);
-    for (;pt.x>=-gsize;pt.x--)
+    for (;pt.x>=-gsize;pt.x-=incr)
 	pts.push_back(pt);
-    for (;pt.y>=-gsize;pt.y--)
+    for (;pt.y>=-gsize;pt.y-=incr)
 	pts.push_back(pt);
 
     update();

@@ -475,6 +475,7 @@ void TouchOSC::updateLaserUI() const {
 	send("/ui/laser/ymax/label","");
 	send("/ui/laser/points/label","points");
 	send("/ui/laser/skew/label","skew");
+	send("/ui/laser/intensityPts/label","intensityPts");
 	send("/ui/laser/preblank/label","pre-blank");
 	send("/ui/laser/postblank/label","post-blank");
 	send("/ui/laser/pps/label","PPS");
@@ -493,6 +494,7 @@ void TouchOSC::updateLaserUI() const {
 
 	send("/ui/laser/points/label",std::to_string(laser->getNPoints())+" points");
 	send("/ui/laser/skew/label",std::to_string(laser->getSkew())+" skew");
+	send("/ui/laser/intensitypts/label",std::to_string(laser->getIntensityPts())+" pts");
 	send("/ui/laser/preblank/label",std::to_string(laser->getPreBlanks())+" pre-blank");
 	send("/ui/laser/postblank/label",std::to_string(laser->getPostBlanks())+" post-blank");
 	send("/ui/laser/pps/label",std::to_string(laser->getPPS())+" PPS");
@@ -501,6 +503,7 @@ void TouchOSC::updateLaserUI() const {
 
 	send("/ui/laser/points",(float)laser->getNPoints());
 	send("/ui/laser/skew",(float)laser->getSkew());
+	send("/ui/laser/intensityPts",(float)laser->getIntensityPts());
 	send("/ui/laser/preblank",(float)laser->getPreBlanks());
 	send("/ui/laser/postblank",(float)laser->getPostBlanks());
 	send("/ui/laser/pps",(float)laser->getPPS());
