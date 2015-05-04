@@ -43,6 +43,10 @@ int Connections::handleOSCMessage_impl(const char *path, const char *types, lo_a
 		CIDType cid=&argv[2]->s;
 		int uid1=argv[3]->i;
 		int uid2=argv[4]->i;
+		cid="";
+		cid+=uid1;
+		cid+="-";
+		cid+=uid2;	// Backward compatibility -- cid's that refer to a particular pair of people, not the specific relationship
 		float value=argv[5]->f;
 		float time=argv[6]->f;
 		float freshness=argv[7]->f;
