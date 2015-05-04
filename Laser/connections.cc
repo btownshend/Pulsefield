@@ -35,7 +35,7 @@ int Connections::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	Conductor::instance()->setHostname(lo_address_get_hostname(lo_message_get_source(msg)));
 	tok=strtok(NULL,"/");
 	if (strcmp(tok,"conx")==0) {
-	    if (strcmp(types,"sssiiff")!=0) {
+	    if (strcmp(types,"sssiifff")!=0) {
 		dbg("Connections.conx",0) << "/conductor/conx has unexpected types: " << types << ", type=" << &argv[0]->s << ", subtype=" << &argv[1]->s << std::endl;
 	    } else {
 		std::string type=&argv[0]->s;
@@ -45,7 +45,8 @@ int Connections::handleOSCMessage_impl(const char *path, const char *types, lo_a
 		int uid2=argv[4]->i;
 		float value=argv[5]->f;
 		float time=argv[6]->f;
-		dbg("Connections.conx",1) << "type=" << type << ", subtype=" << subtype << ", cid=" << cid << ",uids=" << uid1 << "," << uid2 << ", value=" << value << ", time=" << time << std::endl;
+		float freshness=argv[7]->f;
+		dbg("Connections.conx",1) << "type=" << type << ", subtype=" << subtype << ", cid=" << cid << ",uids=" << uid1 << "," << uid2 << ", value=" << value << ", time=" << time << ", freshness=" << freshness << std::endl;
 		if (People::personExists(uid1) && People::personExists(uid2)) {
 		    if (conns.count(cid)==0)
 			conns[cid]=Connection(cid,uid1,uid2);

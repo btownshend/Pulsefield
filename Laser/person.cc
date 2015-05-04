@@ -95,7 +95,8 @@ int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **
 	    int uid=argv[1]->i;
 	    float value=argv[2]->f;
 	    float time=argv[3]->f;
-	    dbg("People.handleOSCMessage",1) << "Set attribute " << type << " for id " << uid << ": value=" << value << ", time=" << time << std::endl;
+	    float freshness=argv[4]->f;
+	    dbg("People.handleOSCMessage",1) << "Set attribute " << type << " for id " << uid << ": value=" << value << ", time=" << time << ", freshness=" << freshness << std::endl;
 	    Person *person = getPerson(uid);
 	    if (person==NULL) {
 		dbg("People.handleOSCMessage",1) << "Person " << uid << " not found -- ignoring conductor message" << std::endl;

@@ -223,7 +223,7 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/pf/body","iifffffffffffffffi",person_handler,this);
 	lo_server_add_method(s,"/pf/leg","iiiiffffffffi",person_handler,this);
 	lo_server_add_method(s,"/pf/group","iiiffff",group_handler,this);
-	lo_server_add_method(s,"/conductor/attr","siff",person_handler,this);
+	lo_server_add_method(s,"/conductor/attr","sifff",person_handler,this);
 	lo_server_add_method(s,"/conductor/gattr","siff",group_handler,this);
 
 	lo_server_add_method(s,"/pf/set/minx","f",pfsetminx_handler,this);
