@@ -249,5 +249,6 @@ class TouchOSC {
     float getConductorGlobal() const { return conductorGlobal; }
     float getCellGlobal() const { return cellGlobal; }
     int send(std::string path, float value) const;
+    int send(std::string path, float v1, float v2) const;
     int send(std::string path, std::string value) const;
 };

@@ -654,6 +654,16 @@ int TouchOSC::send(std::string path, float value) const {
     return 0;
 }
 
+int TouchOSC::send(std::string path, float v1, float v2) const {
+dbg("TouchOSC.send",4) << "send " << path << "," << v1 << ", " << v2 << std::endl;
+    if (lo_send(remote,path.c_str(),"ff",v1,v2) <0 ) {
+	dbg("TouchOSC.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return -1;
+    }
+    usleep(10);
+    return 0;
+}
+
 #if 0
 int TouchOSC::send(std::string path, float v1, float v2, float v3, float v4) const {
     dbg("TouchOSC.send",4) << "send " << path << "," << v1 << ", " << v2 << ", " << v3 << ", " << v4 << std::endl;
