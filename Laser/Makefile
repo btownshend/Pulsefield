@@ -28,7 +28,7 @@ LDFLAGS=-L$(CAIROLIBDIR) -L$(OPENCVLIBDIR) -L$(LIBLOLIBDIR)
 LIBES=-llo $(OPENCV) $(CAIROLIBES) $(BOOSTLIBES)
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES) -std=c++11
 CFLAGS=$(DEBUG) $(OPTIMIZE)
-CXXSRCS=configuration.cc shapeid.cc ranges.cc svg.cc oschandler.cc main.cc  laser.cc lasers.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc Simplex.cpp touchosc.cc connections.cc person.cc attributes.cc groups.cc cpoint.cc music.cc conductor.cc urlconfig.cc
+CXXSRCS=configuration.cc shapeid.cc ranges.cc svg.cc oschandler.cc main.cc  laser.cc lasers.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc Simplex.cpp touchosc.cc connections.cc person.cc attributes.cc groups.cc cpoint.cc music.cc conductor.cc urlconfig.cc calibration.cc
 FESRCS=dbg.cc point.cc dest.cc
 #CSRCS=$(EDL)/etherdream.c
 SRCS=$(CXXSRCS) $(CSRCS) $(FESRCS)

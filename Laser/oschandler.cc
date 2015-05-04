@@ -21,6 +21,7 @@
 #include "groups.h"
 #include "music.h"
 #include "svg.h"
+#include "calibration.h"
 
 static void error(int num, const char *msg, const char *path)
 {
@@ -34,6 +35,9 @@ static int generic_handler(const char *path, const char *types, lo_arg **argv,in
     int nothandled=1;
     if (strncmp(path,"/ui/",4)==0) {
 	nothandled=TouchOSC::handleOSCMessage(path,types,argv,argc,msg);
+    } else if (strncmp(path,"/cal/",5)==0) {
+	// TouchOSC calibration messages
+	nothandled=Calibration::handleOSCMessage(path,types,argv,argc,msg);
     } else if (strncmp(path,"/conductor/",11)==0) {
 	nothandled= Connections::handleOSCMessage(path,types,argv,argc,msg);
     } else if (strncmp(path,"/soundui/",9)==0) {

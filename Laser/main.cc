@@ -1,6 +1,7 @@
 #include "lasers.h"
 #include "video.h"
 #include "oschandler.h"
+#include "calibration.h"
 #include "dbg.h"
 
 void usage(int argc,char *argv[]) {
@@ -45,7 +46,8 @@ int main(int argc, char *argv[]) {
     
     dbg("main",1) << "Creating lasers" << std::endl;
     Lasers::initialize(nlaser);
-
+    Calibration::initialize(nlaser);
+    
     dbg("main",1) << "Creating video" << std::endl;
     std::shared_ptr<Video> video(new Video(Lasers::instance()));
     dbg("main",1) << "Opening video" << std::endl;
