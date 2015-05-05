@@ -204,13 +204,13 @@ CPoints Attributes::applyStraighten(std::string attrname, float attrValue,const 
     float len=0;
     for (int i=1;i<pts.size();) {
 	Point delta=pts[i]-results.back();
-	if (fabs(delta.X())>=blockSize-.001)  {
+	if (fabs(delta.X())>blockSize/2)  {
 	    CPoint tmp=results.back()+Point(copysign(blockSize,delta.X()),0);
 	    tmp.setColor(pts[i].getColor());
 	    results.push_back(tmp);
 	    dbgn("Attributes.applyStraighten",3) << "x";
 	    len=0;
-	} else if (fabs(delta.Y())>=blockSize-.001) {
+	} else if (fabs(delta.Y())>blockSize/2) {
 	    CPoint tmp=results.back()+Point(0,copysign(blockSize,delta.Y()));
 	    tmp.setColor(pts[i].getColor());
 	    results.push_back(tmp);
@@ -225,6 +225,10 @@ CPoints Attributes::applyStraighten(std::string attrname, float attrValue,const 
 	    i++;
 	    len+=(pts[i]-pts[i-1]).norm();
 	    dbgn("Attributes.applyStraighten",3) << "-";
+	}
+	if (results.size()>5000) {
+	    dbg("Attributes.applyStraighten",0) << "Infinite loop in applyStraighten: delta=" << delta << ", blockSize=" << blockSize << std::endl;
+	    break;
 	}
     }
     dbgn("Attributes.applyStraighten",3) << std::endl;
