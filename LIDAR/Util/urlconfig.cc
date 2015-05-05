@@ -26,11 +26,13 @@ URLConfig::URLConfig(const char *configFile): filename(configFile) {
 	    int nread=fscanf(fd,"%50[^,],%50[^,],%d\n",tmp_ident,tmp_host,&ports[i]);
 	    if (strlen(tmp_ident)>=MAXLEN || strlen(tmp_host)>=MAXLEN) {
 		fprintf(stderr,"Data field too long in %s near line %d\n", filename.c_str(), i+1);
+		fclose(fd);
 		exit(1);
 	    }
 
 	    if  (nread<0) {
 		nurl=i;
+		fclose(fd);
 		return;
 	    }
 	    if (nread==3)
@@ -46,6 +48,7 @@ URLConfig::URLConfig(const char *configFile): filename(configFile) {
 	dbg("URLConfig",3) << "Set " << idents[i] << " to " <<  hosts[i] << ":" <<  ports[i]<< std::endl;
     }
     nurl=MAXURLS;
+    fclose(fd);
 }
 
 URLConfig::~URLConfig() {
