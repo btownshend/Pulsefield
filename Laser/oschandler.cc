@@ -152,7 +152,8 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
     currentDensity=1.0;
     minx=-5; maxx=5;
     miny=0; maxy=0;
-
+    lastUpdateFrame=0;
+    
     gettimeofday(&lastFrameTime,0);
 	serverPort=port;
 
