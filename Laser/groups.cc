@@ -19,7 +19,7 @@ Group *Groups::getOrCreateGroup(int id) {
 }
 
 int Groups::handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
-    dbg("Groups.handleOSCMessage",3)  << "Got message: " << path << "(" << types << ") from " << lo_address_get_url(lo_message_get_source(msg)) << std::endl;
+    dbg("Groups.handleOSCMessage",3)  << "Got message: " << path << "(" << types << ") from " << loutil_address_get_url(lo_message_get_source(msg)) << std::endl;
     char *pathCopy=new char[strlen(path)+1];
     strcpy(pathCopy,path);
     const char *tok=strtok(pathCopy,"/");

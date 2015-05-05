@@ -1,5 +1,5 @@
 #include "music.h"
-#include "lo/lo.h"
+#include "lo_util.h"
 Music *Music::theInstance = NULL;
 
 
@@ -10,7 +10,7 @@ Music::Music() {
 }
 
 int Music::handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
-    dbg("Music.handleOSCMessage",1)  << "Got message: " << path << "(" << types << ") from " << lo_address_get_url(lo_message_get_source(msg)) << std::endl;
+    dbg("Music.handleOSCMessage",1)  << "Got message: " << path << "(" << types << ") from " << loutil_address_get_url(lo_message_get_source(msg)) << std::endl;
     if (strcmp(types,"f")==0)
 	send(path,argv[0]->f);
     else {
@@ -22,7 +22,7 @@ int Music::handleOSCMessage(const char *path, const char *types, lo_arg **argv,i
 
 int Music::send(std::string path, float value) const {
     if (lo_send(remote,path.c_str(),"f",value) <0 ) {
-	dbg("Music.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	dbg("Music.send",1) << "Failed send of " << path << " to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return -1;
     }
     usleep(100);
@@ -31,7 +31,7 @@ int Music::send(std::string path, float value) const {
 
 int Music::send(std::string path, std::string value) const {
     if (lo_send(remote,path.c_str(),"s",value.c_str()) <0 ) {
-	dbg("Music.send",1) << "Failed send of " << path << " to " << lo_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	dbg("Music.send",1) << "Failed send of " << path << " to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return -1;
     }
     usleep(100);

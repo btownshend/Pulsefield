@@ -19,7 +19,7 @@ std::ostream &operator<<(std::ostream &s, const Connections &c) {
 }
 
 int Connections::handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
-    dbg("Connections.handleOSCMessage",3)  << "Got message: " << path << "(" << types << ") from " << lo_address_get_url(lo_message_get_source(msg)) << std::endl;
+    dbg("Connections.handleOSCMessage",3)  << "Got message: " << path << "(" << types << ") from " << loutil_address_get_url(lo_message_get_source(msg)) << std::endl;
 
     if (TouchOSC::instance()->isFrozen()) {
 	dbg("Connections.handlOSCMessage",2) << "Frozen" << std::endl;

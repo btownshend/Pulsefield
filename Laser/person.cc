@@ -20,7 +20,7 @@ Person *People::getOrCreatePerson(int id) {
 }
 
 int People::handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
-    dbg("People.handleOSCMessage",3)  << "Got message: " << path << "(" << types << ") from " << lo_address_get_url(lo_message_get_source(msg)) << std::endl;
+    dbg("People.handleOSCMessage",3)  << "Got message: " << path << "(" << types << ") from " << loutil_address_get_url(lo_message_get_source(msg)) << std::endl;
     if (TouchOSC::instance()->isFrozen()) {
 	dbg("People.handlOSCMessage",2) << "Frozen" << std::endl;
 	return 0;

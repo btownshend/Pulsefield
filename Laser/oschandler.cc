@@ -358,9 +358,9 @@ void OSCHandler::setIntensityPts(int intensityPts) {
 
 
 void OSCHandler::ping(lo_message msg, int seqnum) {
-    char *url=lo_address_get_url(lo_message_get_source(msg));
-    printf("Got ping from %s\n",url);
-    lo_address addr = lo_address_new_from_url(url);
+    std::string url=loutil_address_get_url(lo_message_get_source(msg));
+    printf("Got ping from %s\n",url.c_str());
+    lo_address addr = lo_address_new_from_url(url.c_str());
     lo_send(addr,"/ack","i",seqnum);
     lo_address_free(addr);
 }

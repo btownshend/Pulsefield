@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <pthread.h>
-#include "lo/lo.h"
+#include "lo_util.h"
 #include "drawing.h"
 #include "lasers.h"
 #include "ranges.h"
