@@ -7,6 +7,8 @@
 #include "point.h"
 #include "touchosc.h"
 #include "configuration.h"
+#undef Status
+#include "opencv2/stitching/stitcher.hpp"
 
 // Class to store each individual relative mapping and associated GUI elements
 // These are mappings between 2 or more lasers device space coords that hit the same spot on ground
@@ -26,6 +28,7 @@ class RelMapping {
     bool handleOSCMessage(char *tok, lo_arg **argv,int speed);
     void save(ptree &p) const;
     void load(ptree &p);
+    int addMatches(std::vector<cv::detail::ImageFeatures> &features,    std::vector<cv::detail::MatchesInfo> &pairwiseMatches) const;
 };
 
 // Mapping from laser device coords to ground level positions
@@ -55,6 +58,7 @@ class Calibration {
     void showStatus(std::string line1,std::string line2="", std::string line3="") const;	// Display status in touchOSC
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
     Calibration(int nunits);   // Only ever called by initialize()
+    int recompute();		// Use acquired data to estimate transformations
  public:
     static void initialize(int nunits) { assert(!theInstance); theInstance=std::shared_ptr<Calibration>(new Calibration(nunits)); }
     static std::shared_ptr<Calibration> instance() {

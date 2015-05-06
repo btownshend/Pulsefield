@@ -143,6 +143,14 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	}  else if (strcmp(tok,"flipy")==0) {
 	    flipY=argv[0]->f>0;
 	    handled=true;
+	} else if (strcmp(tok,"recompute")==0) {
+	    if (argv[0]->f > 0) {
+		if (recompute() == 0)
+		    showStatus("Updated mappings");
+		else
+		    showStatus("recompute() failed");
+	    }
+	    handled=true;
 	} else if (strcmp(tok,"save")==0) {
 	    Lasers::instance()->save();
 	    handled=true;
@@ -315,3 +323,157 @@ void Calibration::load(ptree &p) {
     showStatus("Loaded configuration");
 }
 
+// Add these mapping(s) to the lists of features and pairwiseMatches
+// features vector has one entry for each laser (N)
+// matches has one entry for every permutation (i.e. N^2)
+int RelMapping::addMatches(std::vector<cv::detail::ImageFeatures> &features,    std::vector<cv::detail::MatchesInfo> &pairwiseMatches) const {
+    int numAdded=0;
+    int nunits=locked.size();
+    for (int i=0;i<nunits;i++) {
+	if (!locked[i]) continue;
+	Point flat1=Lasers::instance()->getLaser(i)->getTransform().deviceToFlat(devpt[i]);
+	for (int j=i+1;j<nunits;j++) {
+	    if (!locked[j]) continue;
+	    Point flat2=Lasers::instance()->getLaser(j)->getTransform().deviceToFlat(devpt[j]);
+	    dbg("RelMapping.addMatches",1) << "Adding pair from relMapping " << id << ": laser " << i << "@" << flat1 << " <->  laser " << j << "@" << flat2 << std::endl;
+	    cv::KeyPoint kp1,kp2;
+	    kp1.pt.x=flat1.X()+1;
+	    kp1.pt.y=flat1.Y()+1;
+	    features[i].keypoints.push_back(kp1);
+
+	    kp2.pt.x=flat2.X()+1;
+	    kp2.pt.y=flat2.Y()+1;
+	    features[j].keypoints.push_back(kp2);
+
+	    cv::DMatch m;   // Declared in features2d/features2d.hpp
+	    m.queryIdx=features[i].keypoints.size()-1;
+	    m.trainIdx=features[j].keypoints.size()-1;
+	    m.distance=0;	// Probably usually set later as a function of how the match works
+	    m.imgIdx=j; // Unsure... appears to not be used, but in any case it seems that it is the train image index
+	    pairwiseMatches[i*nunits+j].inliers_mask.push_back(1);	// This match is an "inlier"
+	    pairwiseMatches[i*nunits+j].matches.push_back(m);
+	    pairwiseMatches[i*nunits+j].num_inliers++;
+	    numAdded++;
+	}
+    }
+    return numAdded;
+}
+
+std::ostream &flatMat(std::ostream &s, const cv::Mat &m) {
+    s << "[";
+    cv::Size sz=m.size();
+    for (int i=0;i<sz.width;i++) {
+	for (int j=0;j<sz.height;j++)
+	    s << m.at<double>(i,j) << " ";
+	if (i==sz.width-1)
+	    s << "]";
+    }
+    return s;
+}
+
+std::ostream &operator<<(std::ostream &s, const cv::detail::CameraParams &c) {
+    // For some reason, outputting the R matrix causes output to hang
+    s << "f=" << c.focal << ", aspect=" << c.aspect << ", pp=[" << c.ppx << "," << c.ppy << "] , R=";
+    flatMat(s,c.R);
+    s << ", t=";
+    flatMat(s,c.t) ;
+    return s;
+}
+
+// Compute all the homographies using openCV
+// see OpenCV motion_estimators.cpp for use (documentation doesn't cut it)
+int Calibration::recompute() {
+    std::vector<cv::detail::ImageFeatures> features(nunits);
+    // One feature entry for each image
+    for (int i=0;i<nunits;i++) {
+	features[i].img_idx=i;
+	features[i].img_size.width=2;
+	features[i].img_size.height=2;
+    }
+    std::vector<cv::detail::MatchesInfo> pairwiseMatches(nunits*nunits);
+    // One pairwiseMatches entry for each combination
+    for (int i=0;i<nunits;i++) {
+	for (int j=0;j<nunits;j++) {
+	    pairwiseMatches[i*nunits+j].src_img_idx=i;
+	    pairwiseMatches[i*nunits+j].dst_img_idx=j;
+	    pairwiseMatches[i*nunits+j].confidence=1.0;
+	}
+    }
+    std::vector<cv::detail::CameraParams>  cameras(nunits);
+    
+    for (int i=0;i<nunits;i++) {
+	dbg("Calibration.recompute",1) << "Camera " << i << ": " << cameras[i] << std::endl;
+    }
+    
+    // Build features, matches vectors
+    int numMatches = 0;
+    for (int i=0;i<relMappings.size();i++)
+	numMatches+=relMappings[i]->addMatches(features, pairwiseMatches);
+    dbg("Calibration.recompute",1) << "Have " << features.size() << " features with " << numMatches << " pairwise matches." << std::endl;
+    
+    // Estimate camera parameters roughly
+    cv::detail::HomographyBasedEstimator estimator(true);
+    try {
+	estimator(features, pairwiseMatches, cameras);
+    } catch (cv::Exception &e) {
+	dbg("Calibration.recompute",1) << "OpenCV.estimator failed: " << e.what() << std::endl;
+	return -1;
+    }
+    for (size_t i = 0; i < cameras.size(); ++i) {
+	dbg("Calibration.recompute",1) << "After homography estimation, camera " << i << ": " << cameras[i] << std::endl;
+    }
+
+    // Homography estimator returns R as CV_64F, but bundle adjuster expects CV_32F
+    for (size_t i = 0; i < cameras.size(); ++i) {
+	cv::Mat R;
+        cameras[i].R.convertTo(R, CV_32F);
+        cameras[i].R = R;
+    }
+
+    // 5- Refine camera parameters globally
+    cv::detail::BundleAdjusterReproj adjuster;
+    adjuster.setConfThresh(0.0);
+    try {
+	adjuster(features, pairwiseMatches, cameras);
+    } catch (cv::Exception &e) {
+	dbg("Calibration.recompute",1) << "OpenCV.estimator failed: " << e.what() << std::endl;
+	return -1;
+    }
+
+    for (size_t i = 0; i < cameras.size(); ++i)     {
+	dbg("Calibration.recompute",1) << "After bundle adjustment, camera " << i << ": " << cameras[i] << std::endl;
+    }
+
+    for (int i=0;i<pairwiseMatches.size();i++) {
+	cv::detail::MatchesInfo p = pairwiseMatches[i];
+	cv::detail::CameraParams c1=cameras[p.src_img_idx];
+	cv::detail::CameraParams c2=cameras[p.dst_img_idx];
+	
+	cv::Mat_<float> K1 = cv::Mat::eye(3, 3, CV_32F);
+	K1(0,0) = c1.focal; K1(0,2) = c1.ppx;
+	K1(1,1) = c1.focal*c1.aspect; K1(1,2) = c1.ppy;
+	
+	cv::Mat_<float> K2 = cv::Mat::eye(3, 3, CV_32F);
+	K2(0,0) = c2.focal; K2(0,2) = c2.ppx;
+	K2(1,1) = c2.focal*c2.aspect; K2(1,2) = c2.ppy;
+
+	cv::Mat_<float> H = K2;
+	H=H* c2.R.inv();
+	H=H* c1.R;
+	H=H* K1.inv();
+
+
+	for (int j=0;j<p.matches.size();j++) {
+	    cv::DMatch m=p.matches[j];
+	    cv::Point2f p1 = features[p.src_img_idx].keypoints[m.queryIdx].pt;
+	    cv::Point2f p2 = features[p.dst_img_idx].keypoints[m.trainIdx].pt;
+            double x = H(0,0)*p1.x + H(0,1)*p1.y + H(0,2);
+            double y = H(1,0)*p1.x + H(1,1)*p1.y + H(1,2);
+            double z = H(2,0)*p1.x + H(2,1)*p1.y + H(2,2);
+	    double ex=p2.x-x/z;
+	    double ey=p2.y-y/z;
+	    dbg("Calibration.recompute",1) << p.src_img_idx << "-" << p.dst_img_idx  << " e=[" << ex << "," << ey  << "]" << std::endl;
+	}
+    }
+    return 0;
+}
