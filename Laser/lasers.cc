@@ -31,7 +31,6 @@ Lasers::Lasers(int nlasers): lasers(nlasers), config("settings_laser.json")  {
     setFlag("legs",true);
     setFlag("intensity",false);
     setFlag("test",false);
-    load();
 }
 
 Lasers::~Lasers() {
