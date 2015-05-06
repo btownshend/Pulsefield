@@ -3,6 +3,7 @@
 #include "person.h"
 #include "groups.h"
 #include "video.h"
+#include "calibration.h"
 
 static const float LASERSEP=1.0f;
 static const float TARGETSEP=0.6f;
@@ -344,6 +345,9 @@ void Lasers::save()  const {
 	transforms.push_back(std::make_pair("",tr));
     }
     ((Lasers *)this)->config.pt().put_child("lasers",transforms);
+    ptree calib;
+    Calibration::instance()->save(calib);
+    ((Lasers *)this)->config.pt().put_child("calibration",calib);
     config.save();
 }
 
@@ -364,6 +368,14 @@ void Lasers::load() {
 	dbg("Lasers.loadTransforms",1) << "Loading laser " << i << " settings." << std::endl;
 	lasers[i]->getTransform().load(v->second);
 	i++;
+    }
+    ptree calib;
+    try {
+	calib=p.get_child("calibration");
+	Calibration::instance()->load(calib);
+    } catch (boost::property_tree::ptree_bad_path ex) {
+	std::cerr << "Unable to find 'calib' in settings file" << std::endl;
+	return;
     }
     needsRender=true;
 }

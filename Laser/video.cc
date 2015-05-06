@@ -8,6 +8,7 @@
 #include "video.h"
 #include "point.h"
 #include "transform.h"
+#include "calibration.h"
 #include "dbg.h"
 
 const float titleHeight=15;   // in pixels
@@ -353,6 +354,7 @@ void XRefs::refresh(cairo_t *cr, std::shared_ptr<Laser>laser,  Video &video, int
 	}
 	entry->laser->getTransform().recompute();
 	entry->reset=false;
+	Calibration::instance()->updateUI();
     } else  {
 	double wx=pos.X(), wy=pos.Y();
 	cairo_user_to_device(cr,&wx,&wy);
