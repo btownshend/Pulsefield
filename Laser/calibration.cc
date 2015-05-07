@@ -2,89 +2,110 @@
 #include "lasers.h"
 #include "dbg.h"
 #include "opencv2/calib3d/calib3d.hpp"
-static const int NUMRELATIVE=10;
-static const int NUMABSOLUTE=4;
+
+static const float WORLDSIZE=30;   // Maximum extents of world (in meters)
 
 std::shared_ptr<Calibration> Calibration::theInstance;   // Singleton
 
 static void send(std::string path, float value)  {
     TouchOSC::instance()->send(path,value);
+    dbg("Calibration.send",2) << "send(" << path << "," << value << ")" << std::endl;
 }
 static void send(std::string path, std::string value)  {
     TouchOSC::instance()->send(path,value);
+    dbg("Calibration.send",2) << "send(" << path << ",\"" << value << "\")" << std::endl;
 }
 static void send(std::string path, float val1, float val2)  {
     TouchOSC::instance()->send(path,val1,val2);
+    dbg("Calibration.send",2) << "send(" << path << "," << val1 << "," << val2 << ")" << std::endl;
 }
 
-bool RelMapping::handleOSCMessage(char *tok, lo_arg **argv,int speed) {
-    dbg("RelMapping",1) << "tok=" << tok << ", speed=" << speed << ", adjust=" << adjust << ", id=" << id << ", nunits=" << locked.size() <<  std::endl;
+// Convert from logarithmic speed (~1/32767 - 0.1) to [0,1] rotary setting
+static float speedToRotary(float speed) {
+    return log10(speed*32767)/log10(1000);
+}
+
+// And back
+static float rotaryToSpeed(float rotary) {
+    return pow(10,rotary*log10(1000))/32767;
+}
+
+bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed) {
+    dbg("RelMapping",1) << "tok=" << tok << ", speed=" << speed << std::endl;
     bool handled=false;
-    if (strcmp(tok,"adjust")==0) {
-	int col=atoi(strtok(NULL,"/"))-1;
-	//int row=atoi(strtok(NULL,"/"))-1;
-	if (argv[0]->f>0)
-	    adjust=col;
-	else if (adjust==col)
-	    adjust=-1;
-	if (adjust>=devpt.size())
-	    adjust=-1;
-	handled=true;
-    } else if (strcmp(tok,"dev")==0) {
-	tok=strtok(NULL,"/");
-	if (strcmp(tok,"xy")==0) {
-	    // xy pad
-	    if (adjust>=0 && ~locked[adjust]) {
-		devpt[adjust].setX(argv[0]->f);
-		devpt[adjust].setY(argv[1]->f);
-	    }
-	    handled=true;
+    
+    Point *pt=&pt1[selected];
+    char *nexttok=strtok(NULL,"/");
+    if (nexttok){
+	dbg("RelMapping",1) << "tok=" << tok << ", nexttok=" << nexttok << ", speed=" << speed << std::endl;
+    } else
+	dbg("RelMapping",1) << "tok=" << tok << ", speed=" << speed << std::endl;
+    if (nexttok && strcmp(nexttok,"2")==0) {
+	dbg("RelMapping",2) << "Using pt2" << std::endl;
+	pt=&pt2[selected];
+    }
+
+    if (tok=="xy") {
+	// xy pad
+	if (~locked[selected]) {
+	    pt->setX(argv[0]->f);
+	    pt->setY(argv[1]->f);
 	}
-    } else if (strcmp(tok,"lock")==0) {
-	int col=atoi(strtok(NULL,"/"))-1;
-	//	int row=atoi(strtok(NULL,"/"))-1;
-	dbg("RelMapping",1) << "lock: col=" << col << ", size(locked)=" << locked.size() << std::endl;
-	if (col<locked.size())
-	    locked[col]=argv[0]->f > 0;
 	handled=true;
-    } else if (strcmp(tok,"left")==0) {
-	if (adjust>=0 && ~locked[adjust] && argv[0]->f > 0)
-	    devpt[adjust].setX(std::max(-32767.0f,devpt[adjust].X()-speed));
+    } else if (tok=="lock") {
+	locked[selected]=argv[0]->f > 0;
 	handled=true;
-    } else if (strcmp(tok,"right")==0) {
-	if (adjust>=0 && ~locked[adjust] && argv[0]->f > 0)
-	    devpt[adjust].setX(std::min(32767.0f,devpt[adjust].X()+speed));
+    } else if (tok=="selpair") {
+	if (argv[0]->f > 0)
+	    selected=atoi(nexttok)-1;
 	handled=true;
-    } else if (strcmp(tok,"up")==0) {
-	if (adjust>=0 && ~locked[adjust] && argv[0]->f > 0)
-	    devpt[adjust].setY(std::min(32767.0f,devpt[adjust].Y()+speed));
+    } else if (tok=="left") {
+	if (~locked[selected] && argv[0]->f > 0)
+	    pt->setX(std::max(-1.0f,pt->X()-speed));
 	handled=true;
-    } else if (strcmp(tok,"down")==0) {
-	if (adjust>=0 && ~locked[adjust] && argv[0]->f > 0)
-	    devpt[adjust].setY(std::max(-32767.0f,devpt[adjust].Y()-speed));
+    } else if (tok=="right") {
+	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
+	    pt->setX(std::min(1.0f,pt->X()+speed));
 	handled=true;
-    } else if (strcmp(tok,"center")==0) {
-	if (adjust>=0 && ~locked[adjust] && argv[0]->f > 0)
-	    devpt[adjust]=Point(0,0);
+    } else if (tok=="up") {
+	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
+	    pt->setY(std::min(1.0f,pt->Y()+speed));
+	handled=true;
+    } else if (tok=="down") {
+	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
+	    pt->setY(std::max(-1.0f,pt->Y()-speed));
 	handled=true;
     }
     
     return handled;
 }
 
-
-Calibration::Calibration(int _nunits): relMappings(NUMRELATIVE), absMappings(NUMABSOLUTE)  {
+// Get coordinate of pt[i] in device [-32767,32767] or world ([-WORLDSIZE,WORLDSIZE],[0,WORLDSIZE])
+Point RelMapping::getDevicePt(int i,int which) const {
+    if (which==-1)
+	which=selected;
+    if (i==0)
+	return pt1[which]*32767;
+    else if (isWorld)
+	return Point(pt2[which].X()*WORLDSIZE,(pt2[which].Y()+1)*WORLDSIZE/2);
+    else
+	return pt2[which]*32767;
+}
+       
+Calibration::Calibration(int _nunits) {
     nunits = _nunits;
     dbg("Calibration.Calibration",1) << "Constructing calibration with " << nunits << " units." << std::endl;
-    for (int i=0;i<relMappings.size();i++)
-	relMappings[i]=std::shared_ptr<RelMapping>(new RelMapping(i,nunits));
-    for (int i=0;i<absMappings.size();i++)
-	absMappings[i]=std::shared_ptr<AbsMapping>(new AbsMapping(i,nunits));
-    flipX=false;
-    flipY=false;
-    speed=100;
-    absSelected=-1;
-    relSelected=0;
+    assert(nunits>0);
+    for (int i=0;i<nunits;i++)
+	for (int j=i+1;j<nunits+1;j++) {
+	    relMappings.push_back(std::shared_ptr<RelMapping>(new RelMapping(i,j,j==nunits)));
+	}
+    for (int i=0;i<nunits;i++) {
+	flipX.push_back(false);
+	flipY.push_back(false);
+    }
+    curMap=relMappings[0];
+    speed=0.05;
     updateUI();
     showStatus("Initalized");
 }
@@ -99,56 +120,53 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
     bool handled=false;
     if (strcmp(tok,"cal")==0) {
 	tok=strtok(NULL,"/");
-	if (strcmp(tok,"rel")==0) {
-	    tok=strtok(NULL,"/");
-	    if (strcmp(tok,"sel")==0) {
-		int col=atoi(strtok(NULL,"/"))-1;
-		assert(col==0);
-		int row=atoi(strtok(NULL,"/"))-1;
-		dbg("Calibration",1) << "Selected relative position " << row << " with value " << argv[0]->f <<  std::endl;
-		if (argv[0]->f > 0) {
-		    relSelected=row;
-		    if (absSelected>=0) {
-			send("/cal/abs/sel/1/"+std::to_string(absSelected+1),0.0);
-			absSelected=-1;
-		    }
-		    showStatus("Adjusting relative anchor point "+std::to_string(row));
+	if (strcmp(tok,"sel")==0) {
+	    if (argv[0]->f > 0) {
+		std::string dir=strtok(NULL,"/");
+		int which=atoi(strtok(NULL,"/"))-1;
+		int cur[2];
+		cur[0]=curMap->getUnit(0);
+		cur[1]=curMap->getUnit(1);
+		if (dir=="left") {
+		    if (cur[which]>0)
+			cur[which]--;
+		} else {
+		    if (cur[which]<nunits-1 || (which == 1 && cur[which]==nunits-1))
+			cur[which]++;
 		}
-		handled=true;
-	    }
-	} else if (strcmp(tok,"abs")==0) {
-	    tok=strtok(NULL,"/");
-	    if (strcmp(tok,"sel")==0) {
-		int col=atoi(strtok(NULL,"/"))-1;
-		assert(col==0);
-		int row=atoi(strtok(NULL,"/"))-1;
-		dbg("Calibration",1) << "Selected absolute position " << row << " with value " << argv[0]->f <<  std::endl;
-		if (argv[0]->f > 0) {
-		    absSelected=row;
-		    if (relSelected>=0) {
-			send("/cal/rel/sel/1/"+std::to_string(relSelected+1),0.0);
-			relSelected=-1;
+		dbg("Calibration",1) << "Selected " << cur[0] << ", " << cur[1] << std::endl;
+		for (int i=0;i<relMappings.size();i++) {
+		    std::shared_ptr<RelMapping> rm=relMappings[i];
+		    if (rm->getUnit(0)==cur[0] && rm->getUnit(1)==cur[1]) {
+			curMap=rm;
+			dbg("Calibration",1) << "Change curMap to " << curMap->getUnit(0) << "-" << curMap->getUnit(1) << std::endl;
+			break;
 		    }
-		    showStatus("Adjusting absolute anchor point "+std::to_string(row));
 		}
-		handled=true;
 	    }
+	    handled=true;
 	} else if (strcmp(tok,"speed")==0) {
-	    speed=argv[0]->f;
-	    showStatus("Set speed to " + std::to_string(std::round(speed)));
+	    speed=rotaryToSpeed(argv[0]->f);
+	    showStatus("Set speed to " + std::to_string(std::round(speed*32767)));
 	    handled=true;
 	}  else if (strcmp(tok,"flipx")==0) {
-	    flipX=argv[0]->f>0;
+	    int which=atoi(strtok(NULL,"/"))-1;
+	    if (which==0)
+		flipX[curMap->getUnit(0)]=argv[0]->f>0;
+	    else
+		flipX[curMap->getUnit(1)]=argv[0]->f>0;
 	    handled=true;
 	}  else if (strcmp(tok,"flipy")==0) {
-	    flipY=argv[0]->f>0;
+	    int which=atoi(strtok(NULL,"/"))-1;
+	    if (which==0)
+		flipY[curMap->getUnit(0)]=argv[0]->f>0;
+	    else
+		flipY[curMap->getUnit(1)]=argv[0]->f>0;
 	    handled=true;
 	} else if (strcmp(tok,"recompute")==0) {
 	    if (argv[0]->f > 0) {
 		if (recompute() == 0)
 		    showStatus("Updated mappings");
-		else
-		    showStatus("recompute() failed");
 	    }
 	    handled=true;
 	} else if (strcmp(tok,"save")==0) {
@@ -157,10 +175,10 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	} else if (strcmp(tok,"load")==0) {
 	    Lasers::instance()->load();
 	    handled=true;
-	}  else if (relSelected>=0) {
-	    handled=relMappings[relSelected]->handleOSCMessage(tok,argv,speed);
-	} else if (absSelected>=0) {
-	    handled=absMappings[absSelected]->handleOSCMessage(tok,argv,speed);
+	}  else {
+	    // Pass down to currently selected relMapping
+	    dbg("Calibration.handleOSCMessage",1) << "Handing off message to curMap" << std::endl;
+	    handled=curMap->handleOSCMessage(tok,argv,speed);
 	}
     }
     updateUI();
@@ -169,45 +187,54 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 }
 
 void Calibration::updateUI() const {
+    curMap->updateUI();
+    
+    send("/cal/flipx/1",flipX[curMap->getUnit(0)]?1.0:0.0);
+    send("/cal/flipy/1",flipY[curMap->getUnit(0)]?1.0:0.0);
+    send("/cal/flipx/2",flipX[curMap->getUnit(1)]?1.0:0.0);
+    send("/cal/flipy/2",flipY[curMap->getUnit(1)]?1.0:0.0);
+    send("/cal/speed",speedToRotary(speed));
     for (int i=0;i<relMappings.size();i++)
-	relMappings[i]->updateUI(i==relSelected);
-    for (int i=0;i<absMappings.size();i++)
-	absMappings[i]->updateUI(i==absSelected);
-
-    send("/cal/flipx",flipX?1.0:0.0);
-    send("/cal/flipy",flipY?1.0:0.0);
-    send("/cal/speed",speed);
+	relMappings[i]->sendCnt();
 }
 
-void RelMapping::updateUI(bool selected) const {
-    if (selected) {
-	if (id>=0)
-	    send("/cal/rel/sel/1/"+std::to_string(id+1),1.0);
-	for (int i=0;i<locked.size();i++) {
-	    send("/cal/lock/"+std::to_string(i+1)+"/1",locked[i]?1.0:0.0);
-	    send("/cal/status/"+std::to_string(i+1)+"/"+std::to_string(id+1),locked[i]?1.0:0.0);
-	    send("/cal/adjust/"+std::to_string(i+1)+"/1",(i==adjust)?1.0:0.0);
-	    if (adjust<0) {
-		send("/cal/dev/x","");
-		send("/cal/dev/y","");
-	    } else {
-		send("/cal/dev/x",std::to_string((int)std::round(devpt[adjust].X())));
-		send("/cal/dev/y",std::to_string((int)std::round(devpt[adjust].Y()+0.5)));
-		send("/cal/dev/xy",devpt[adjust].X(),devpt[adjust].Y());
-	    }
-	}
-    }
+void RelMapping::sendCnt() const {
+    int cnt=0;
+    for (int i=0;i<locked.size();i++)
+	if (locked[i]) cnt++;
+    
+    std::string cstr=std::to_string(cnt);
+    if (cnt==0)
+	cstr="";
+    if (isWorld)
+	send("/cal/cnt/"+std::to_string(unit1+1)+"/W",cstr);
+    else
+	send("/cal/cnt/"+std::to_string(unit1+1)+"/"+std::to_string(unit2+1),cstr);
 }
 
-void AbsMapping::updateUI(bool selected) const {
-    // Retrieive fiducial location
-    ((AbsMapping *)this)->floor=Lasers::instance()->getLaser(0)->getTransform().getFloorPoint(id);
-    RelMapping::updateUI(selected);
-    if (selected)
-	send("/cal/abs/sel/1/"+std::to_string(id+1),1.0);
-    send("/cal/abs/lock/"+std::to_string(id+1)+"/1",glocked?1.0:0.0);
-    send("/cal/abs/"+std::to_string(id+1)+"/x",std::round(floor.X()*100)/100);
-    send("/cal/abs/"+std::to_string(id+1)+"/y",std::round(floor.Y()*100)/100);
+void RelMapping::updateUI() const {
+    dbg("RelMapping",1) << "updateUI for " << unit1 << "-" << unit2 << std::endl;
+    send("/cal/sel/val/1",std::to_string(unit1+1));
+    if (isWorld)
+	send("/cal/sel/val/2","W");
+    else
+	send("/cal/sel/val/2",std::to_string(unit2+1));
+    
+    send("/cal/lock",locked[selected]?1.0:0.0);
+    for (int i=0;i<locked.size();i++)
+	send("/cal/led/"+std::to_string(i+1),locked[i]?1.0:0.0);
+    send("/cal/selpair/"+std::to_string(selected+1)+"/1",1.0);
+    send("/cal/xy/1",pt1[selected].X(),pt1[selected].Y());
+    send("/cal/x/1",getDevicePt(0).X());
+    send("/cal/y/1",getDevicePt(0).Y());
+    send("/cal/xy/2",pt2[selected].X(),pt2[selected].Y());
+    send("/cal/x/2",getDevicePt(1).X());
+    send("/cal/y/2",getDevicePt(1).Y());
+    for (int i=0;i<error.size();i++)
+	if (isnan(error[i]))
+	    send("/cal/error/"+std::to_string(i+1),"");
+	else
+	    send("/cal/error/"+std::to_string(i+1),error[i]);
 }
 
 // Display status in touchOSC
@@ -218,86 +245,93 @@ void Calibration::showStatus(std::string line1,std::string line2, std::string li
     dbg("Calibration.showStatus",1) << line1 << "; " << line2 << "; " << line3 << std::endl;
 }
 
-void AbsMapping::save(ptree &p) const {
-    p.put("id",id);
-    p.put("floor.x",floor.X());
-    p.put("floor.y",floor.Y());
-    RelMapping::save(p);
-}
-
-void AbsMapping::load(ptree &p)  {
-    id=p.get("id",id);
-    floor=Point(p.get("floor.x",floor.X()),p.get("floor.y",floor.Y()));
-    RelMapping::load(p);
-}
-
 void RelMapping::save(ptree &p) const {
-    dbg("RelMapping.save",1) << "Saving relMapping " << id << " to ptree" << std::endl;
-    if (id>=0)
-	p.put("id",id);
-    p.put("adjust",adjust);
-    ptree dpts;
-    for (int i=0;i<devpt.size();i++) {
+    dbg("RelMapping.save",1) << "Saving relMapping " << unit1 << "-" << unit2 << " to ptree" << std::endl;
+    p.put("unit1",unit1);
+    p.put("unit2",unit2);
+    p.put("isWorld",isWorld);
+    p.put("selected",selected);
+    ptree pairs;
+    for (int i=0;i<pt1.size();i++) {
 	ptree dp;
-	dp.put("x",devpt[i].X());
-	dp.put("y",devpt[i].Y());
+	dp.put("pt1.x",pt1[i].X());
+	dp.put("pt1.y",pt1[i].Y());
+	dp.put("pt2.x",pt2[i].X());
+	dp.put("pt2.y",pt2[i].Y());
 	dp.put("locked",locked[i]);
-	dpts.push_back(std::make_pair("",dp));
+	dp.put("error",error[i]);
+	pairs.push_back(std::make_pair("",dp));
     }
-    p.put_child("devpts",dpts);
+    p.put_child("pairs",pairs);
 }
 
 void RelMapping::load(ptree &p) {
     dbg("RelMapping.save",1) << "Loading relMapping from ptree" << std::endl;
-    id=p.get("id",-1);
-    adjust=p.get("adjust",adjust);
+    unit1=p.get("unit1",0);
+    unit2=p.get("unit2",1);
+    selected=p.get("selected",selected);
 
     try {
-	ptree dp=p.get_child("devpts");
+	ptree dp=p.get_child("pairs");
 	int i=0;
 	for (ptree::iterator v = dp.begin(); v != dp.end();++v) {
-	    if (i>=devpt.size())
+	    if (i>=pt1.size())
 		break;
 	    ptree val=v->second;
-	    devpt[i]=Point(val.get<double>("x",devpt[i].X()),val.get<double>("y",devpt[i].Y()));
+	    pt1[i]=Point(val.get<double>("pt1.x",pt1[i].X()),val.get<double>("pt1.y",pt1[i].Y()));
+	    pt2[i]=Point(val.get<double>("pt2.x",pt2[i].X()),val.get<double>("pt2.y",pt2[i].Y()));
 	    locked[i]=val.get<bool>("locked",locked[i]);
 	    i++;
 	}
     } catch (boost::property_tree::ptree_bad_path ex) {
-	std::cerr << "Uable to find 'devpts' in laser settings" << std::endl;
+	std::cerr << "Uable to find 'pairs' in laser settings" << std::endl;
     }
 }
 
 void Calibration::save(ptree &p) const {
     dbg("Calibration.save",1) << "Saving calibration to ptree" << std::endl;
+    p.put("nunits",nunits);
     ptree rm;
     for (unsigned int i=0;i<relMappings.size();i++)  {
 	ptree mapping;
 	relMappings[i]->save(mapping);
 	rm.push_back(std::make_pair("",mapping));
     }
-    p.put_child("rel",rm);
-    ptree am;
-    for (unsigned int i=0;i<absMappings.size();i++)  {
-	ptree mapping;
-	absMappings[i]->save(mapping);
-	am.push_back(std::make_pair("",mapping));
-    }
-    p.put_child("abs",am);
+    p.put_child("mappings",rm);
     p.put("speed",speed);
-    p.put("flipX",flipX);
-    p.put("flipY",flipY);
+    ptree flips;
+    for (int i=0;i<flipX.size();i++) {
+	ptree f;
+	f.put("flipX",flipX[i]);
+	f.put("flipY",flipY[i]);
+	flips.push_back(std::make_pair("",f));
+    }
+    p.put_child("flips",flips);
     showStatus("Saved configuration");
 }
 
 void Calibration::load(ptree &p) {
     dbg("Calibration.load",1) << "Loading transform from ptree" << std::endl;
+    int ldunits=p.get("nunits",nunits);
+    if (ldunits!=nunits) {
+	dbg("Calibration.load",1) << "Loading file with " << ldunits << " into program setup with " << nunits << " units." << std::endl;
+    }
     speed=p.get("speed",speed);
-    flipX=p.get("flipX",flipX);
-    flipY=p.get("flipY",flipY);
+    ptree f;
+    f=p.get_child("flips");
+    int i=0;
+    for (ptree::iterator v = f.begin(); v != f.end();++v) {
+	if (i>=flipX.size())
+	    break;
+	ptree val=v->second;
+	flipX[i]=val.get<bool>("flipX",flipX[i]);
+	flipY[i]=val.get<bool>("flipY",flipY[i]);
+	i++;
+    }
+    
     ptree rm;
     try {
-	rm=p.get_child("rel");
+	rm=p.get_child("mappings");
 	int i=0;
 	for (ptree::iterator v = rm.begin(); v != rm.end();++v) {
 	    if (i>=relMappings.size())
@@ -306,20 +340,7 @@ void Calibration::load(ptree &p) {
 	    i++;
 	}
     } catch (boost::property_tree::ptree_bad_path ex) {
-	std::cerr << "Uable to find 'rel' in laser settings" << std::endl;
-    }
-    ptree am;
-    try {
-	am=p.get_child("abs");
-	int i=0;
-	for (ptree::iterator v = am.begin(); v != am.end();++v) {
-	    if (i>=absMappings.size())
-		break;
-	    absMappings[i]->load(v->second);
-	    i++;
-	}
-    } catch (boost::property_tree::ptree_bad_path ex) {
-	std::cerr << "Uable to find 'abs' in laser settings" << std::endl;
+	std::cerr << "Uable to find 'mappings' in laser settings" << std::endl;
     }
     showStatus("Loaded configuration");
 }
@@ -327,37 +348,42 @@ void Calibration::load(ptree &p) {
 // Add these mapping(s) to the lists of features and pairwiseMatches
 // features vector has one entry for each laser (N)
 // matches has one entry for every permutation (i.e. N^2)
-// matches are entered in both directions (ie. paiwiseMatches will be symmetric)
+// matches are entered with lowest number unit as src
 // note: queryIdx refers to srcImg,  trainIdx refers to dstImg
 int RelMapping::addMatches(std::vector<cv::detail::ImageFeatures> &features,    std::vector<cv::detail::MatchesInfo> &pairwiseMatches) const {
     int numAdded=0;
     for (int i=0;i<pairwiseMatches.size();i++) {
 	cv::detail::MatchesInfo &pm = pairwiseMatches[i];
-	if (locked[pm.src_img_idx] && locked[pm.dst_img_idx]) {
-	    Point flat1=Lasers::instance()->getLaser(pm.src_img_idx)->getTransform().deviceToFlat(devpt[pm.src_img_idx]);
-	    Point flat2=Lasers::instance()->getLaser(pm.dst_img_idx)->getTransform().deviceToFlat(devpt[pm.dst_img_idx]);
-	    dbg("RelMapping.addMatches",1) << "Adding pair from relMapping " << id << ": laser " <<pm.src_img_idx << "@" << flat1 << " <->  laser " <<pm.dst_img_idx << "@" << flat2 << std::endl;
-	    cv::KeyPoint kp1,kp2;
-	    kp1.pt.x=flat1.X();
-	    kp1.pt.y=flat1.Y();
-	    features[pm.src_img_idx].keypoints.push_back(kp1);
+	if (pm.src_img_idx==unit1 && pm.dst_img_idx==unit2) {
+	    for (int j=0;j<pt1.size();j++) {
+		if (!locked[j])
+		    continue;
+		Point flat1=Lasers::instance()->getLaser(pm.src_img_idx)->getTransform().deviceToFlat(getDevicePt(0,j));
+		Point flat2=Lasers::instance()->getLaser(pm.dst_img_idx)->getTransform().deviceToFlat(getDevicePt(1,j));
+		dbg("RelMapping.addMatches",1) << "Adding pair from relMapping of laser " <<pm.src_img_idx << "@" << flat1 << " <->  laser " <<pm.dst_img_idx << "@" << flat2 << std::endl;
+		cv::KeyPoint kp1,kp2;
+		kp1.pt.x=flat1.X();
+		kp1.pt.y=flat1.Y();
+		features[pm.src_img_idx].keypoints.push_back(kp1);
 
-	    kp2.pt.x=flat2.X()+1;
-	    kp2.pt.y=flat2.Y()+1;
-	    features[pm.dst_img_idx].keypoints.push_back(kp2);
+		kp2.pt.x=flat2.X();
+		kp2.pt.y=flat2.Y();
+		features[pm.dst_img_idx].keypoints.push_back(kp2);
 
-	    cv::DMatch m;   // Declared in features2d/features2d.hpp
-	    m.queryIdx=features[pm.src_img_idx].keypoints.size()-1;
-	    m.trainIdx=features[pm.dst_img_idx].keypoints.size()-1;
-	    m.distance=0;	// Probably usually set later as a function of how the match works
-	    m.imgIdx=pm.dst_img_idx; // Unsure... appears to not be used, but in any case it seems that it is the train image index
-	    pm.inliers_mask.push_back(1);	// This match is an "inlier"
-	    pm.matches.push_back(m);
-	    pm.num_inliers++;
-	    numAdded++;
+		cv::DMatch m;   // Declared in features2d/features2d.hpp
+		m.queryIdx=features[pm.src_img_idx].keypoints.size()-1;
+		m.trainIdx=features[pm.dst_img_idx].keypoints.size()-1;
+		dbg("RelMapping.addMatches",2) << pm.dst_img_idx << "." << m.trainIdx << std::endl;
+		m.distance=0;	// Probably usually set later as a function of how the match works
+		m.imgIdx=pm.dst_img_idx; // Unsure... appears to not be used, but in any case it seems that it is the train image index
+		pm.inliers_mask.push_back(1);	// This match is an "inlier"
+		pm.matches.push_back(m);
+		pm.num_inliers++;
+		numAdded++;
+	    }
 	}
     }
-    return numAdded/2;
+    return numAdded;
 }
 
 std::ostream &flatMat(std::ostream &s, const cv::Mat &m) {
@@ -411,6 +437,7 @@ int Calibration::recompute() {
 	if (pm.src_img_idx != pm.dst_img_idx) {
 	    int n=pm.matches.size();
 	    linkages[pm.src_img_idx][pm.dst_img_idx]+=n;
+	    linkages[pm.dst_img_idx][pm.src_img_idx]+=n;
 	    total[pm.src_img_idx]+=n;
 	}
     }
@@ -438,7 +465,7 @@ int Calibration::recompute() {
 	// Match next unit with found ones
 
 	// Count number of matches from each unit to set of found ones and select mostly highly connected one (lowest unit in case of ties)
-	int bestcnt=0;
+	int bestcnt=-1;
 	int curUnit=-1;
 	for (int i=0;i<nunits;i++) {
 	    if (!found[i]) {
@@ -453,36 +480,51 @@ int Calibration::recompute() {
 	    }
 	}
 	dbg("Calibration.recompute",1) << "Computing linkage to laser " << curUnit <<  " with " << bestcnt << " matches." << std::endl;
-	if (bestcnt < 5) {
-	    showStatus("Not enough calibration points to compute homography to laser "+std::to_string(curUnit)+"; only have "+std::to_string(bestcnt)+"/5 points.");
+	if (bestcnt < 4) {
+	    showStatus("Not enough calibration points to compute homography to laser "+std::to_string(curUnit)+"; only have "+std::to_string(bestcnt)+"/4 points.");
 	    return -1;
 	}
 	std::vector<cv::Point2f> src,dst;
 
 	for (int j=0;j<pairwiseMatches.size();j++) {
 	    cv::detail::MatchesInfo pm = pairwiseMatches[j];
-	    for (int i=0;i<pm.matches.size();i++) {
-		if (found[pm.src_img_idx] && pm.dst_img_idx==curUnit) {
+	    if (found[pm.src_img_idx] && pm.dst_img_idx==curUnit) {
+		for (int i=0;i<pm.matches.size();i++) {
 		    // Project the point
 		    std::vector<cv::Point2f> tmp(1),mapped(1);
 		    tmp[0]=features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt;
 		    cv::perspectiveTransform(tmp,mapped,homographies[pm.src_img_idx]);
 		    src.push_back(mapped[0]);
 		    dst.push_back(features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt);
+		    dbg("Calibration.recompute",2) << pm.dst_img_idx << "." << pm.matches[i].trainIdx << std::endl;
+		}
+	    }
+	    else if (found[pm.dst_img_idx] && pm.src_img_idx==curUnit) {
+		for (int i=0;i<pm.matches.size();i++) {
+		    // Project the point
+		    std::vector<cv::Point2f> tmp(1),mapped(1);
+		    tmp[0]=features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt;
+		    cv::perspectiveTransform(tmp,mapped,homographies[pm.dst_img_idx]);
+		    src.push_back(mapped[0]);
+		    dst.push_back(features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt);
 		}
 	    }
 	}
 	assert(src.size()==bestcnt);
+	dbg("Calibration.recompute",2) << "Computing homography: " << std::endl;
+	for (int k=0;k<src.size();k++) {
+	    dbg("Calibration.recompute",2) << "   " << src[k] << "    " << dst[k]  << std::endl;
+	}
 	homographies[curUnit]=cv::findHomography(dst,src);
-	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Homography for laser " << curUnit << " = ",homographies[curUnit]) << std::endl;
+	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Homography for laser " << curUnit << " = \n",homographies[curUnit]) << std::endl;
 	found[curUnit]=true;
     }
     
     // Evaluate matches
     for (int i=0;i<pairwiseMatches.size();i++) {
 	cv::detail::MatchesInfo p = pairwiseMatches[i];
-	if (p.src_img_idx>p.dst_img_idx)
-	    continue;   // Only show once
+	if (p.matches.size()==0)
+	    continue; 
 	cv::Mat_<float> H1 = homographies[p.src_img_idx];
 	cv::Mat_<float> H2 = homographies[p.dst_img_idx];
 
@@ -502,5 +544,34 @@ int Calibration::recompute() {
 	    dbg("Calibration.recompute",1) << "L" << p.src_img_idx << "@" << dev1 << " - L" << p.dst_img_idx  << "@" << dev2 << " e=" << error << ", rms=" << error.norm() << std::endl;
 	}
     }
+    // Evaluate matches
+    for (int i=0;i<relMappings.size();i++) {
+	if (relMappings[i]->getUnit(0) < homographies.size() &&relMappings[i]->getUnit(1) < homographies.size()) {
+	    cv::Mat_<float> H1 = homographies.at(relMappings[i]->getUnit(0));
+	    cv::Mat_<float> H2 = homographies.at(relMappings[i]->getUnit(1));
+	    relMappings[i]->updateErrors(H1,H2);
+	}
+    }
+    
     return 0;
+}
+
+void RelMapping::updateErrors(const cv::Mat &H1, const cv::Mat &H2) {
+    std::vector<cv::Point2f> p1, p2;
+    for (int j=0;j<pt1.size();j++) {
+	Point flat1=Lasers::instance()->getLaser(unit1)->getTransform().deviceToFlat(getDevicePt(0,j));
+	Point flat2=Lasers::instance()->getLaser(unit2)->getTransform().deviceToFlat(getDevicePt(1,j));
+	p1.push_back(cv::Point2f(flat1.X(),flat1.Y()));
+	p2.push_back(cv::Point2f(flat2.X(), flat2.Y()));
+    }
+    std::vector<cv::Point2f> mapped1,mapped2;
+    cv::perspectiveTransform(p1,mapped1,H1);
+    cv::perspectiveTransform(p2,mapped2,H2);
+    for (int j=0;j<mapped1.size();j++) {
+	Point dev1=Lasers::instance()->getLaser(unit1)->getTransform().flatToDevice(Point(mapped1[j].x,mapped1[j].y));
+	Point dev2=Lasers::instance()->getLaser(unit2)->getTransform().flatToDevice(Point(mapped2[j].x,mapped2[j].y));
+	Point err=dev2-dev1;
+	dbg("relMappings.updateErrors",1) << "L" << unit1 << "@" << dev1 << " - L" << unit2  << "@" << dev2 << " e=" << err << ", rms=" << err.norm() << std::endl;
+	error[j]=err.norm();
+    }
 }
