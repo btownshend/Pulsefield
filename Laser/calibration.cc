@@ -427,8 +427,6 @@ int Calibration::recompute() {
     // One feature entry for each image
     for (int i=0;i<nunits+1;i++) {
 	features[i].img_idx=i;
-	features[i].img_size.width=2;
-	features[i].img_size.height=2;
     }
     std::vector<cv::detail::MatchesInfo> pairwiseMatches;
     // One pairwiseMatches entry for each combination
@@ -438,7 +436,6 @@ int Calibration::recompute() {
 		cv::detail::MatchesInfo pm;
 		pm.src_img_idx=i;
 		pm.dst_img_idx=j;
-		pm.confidence=1.0;
 		pairwiseMatches.push_back(pm);
 	    }
 	}
