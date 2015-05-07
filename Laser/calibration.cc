@@ -423,17 +423,17 @@ std::ostream &flatMat(std::ostream &s, const cv::Mat &m) {
 // Compute all the homographies using openCV
 // see OpenCV motion_estimators.cpp for use (documentation doesn't cut it)
 int Calibration::recompute() {
-    std::vector<cv::detail::ImageFeatures> features(nunits);
+    std::vector<cv::detail::ImageFeatures> features(nunits+1);
     // One feature entry for each image
-    for (int i=0;i<nunits;i++) {
+    for (int i=0;i<nunits+1;i++) {
 	features[i].img_idx=i;
 	features[i].img_size.width=2;
 	features[i].img_size.height=2;
     }
     std::vector<cv::detail::MatchesInfo> pairwiseMatches;
     // One pairwiseMatches entry for each combination
-    for (int i=0;i<nunits;i++) {
-	for (int j=0;j<nunits;j++) {
+    for (int i=0;i<nunits+1;i++) {
+	for (int j=0;j<nunits+1;j++) {
 	    if (i!=j) {
 		cv::detail::MatchesInfo pm;
 		pm.src_img_idx=i;
@@ -451,8 +451,8 @@ int Calibration::recompute() {
     dbg("Calibration.recompute",1) << "Have " << features.size() << " features with " << numMatches << " pairwise matches." << std::endl;
 
     // Build matrix of linkage counts
-    cv::Mat_<int> linkages = cv::Mat::zeros(nunits,nunits,CV_32S);
-    std::vector<int> total(nunits);
+    cv::Mat_<int> linkages = cv::Mat::zeros(nunits+1,nunits+1,CV_32S);
+    std::vector<int> total(nunits+1);
     for (int i=0;i<pairwiseMatches.size();i++) {
 	cv::detail::MatchesInfo pm = pairwiseMatches[i];
 	if (pm.src_img_idx != pm.dst_img_idx) {
@@ -477,20 +477,20 @@ int Calibration::recompute() {
     dbg("Calibration.recompute",1) << "Using laser " << refLaser << " as reference with " << bestcnt << " connections to another image and " << total[refLaser] << " total connections." << std::endl;
     homographies[refLaser]=cv::Mat::eye(3, 3, CV_32F);	// Use first laser as a reference for now
 
-    std::vector<bool> found(nunits);	// Flag for whether a laser has been calibrated
+    std::vector<bool> found(nunits+1);	// Flag for whether a laser has been calibrated
     found[refLaser]=true;
 
-    // Find homographies nunits-1 times
-    for (int rep=0;rep<nunits-1;rep++) {
+    // Find homographies (nunits+1)-1 times
+    for (int rep=0;rep<nunits;rep++) {
 	// Match next unit with found ones
 
 	// Count number of matches from each unit to set of found ones and select mostly highly connected one (lowest unit in case of ties)
 	int bestcnt=-1;
 	int curUnit=-1;
-	for (int i=0;i<nunits;i++) {
+	for (int i=0;i<nunits+1;i++) {
 	    if (!found[i]) {
 		int nmatches=0;
-		for (int j=0;j<nunits;j++)
+		for (int j=0;j<nunits+1;j++)
 		    if (found[j])
 			nmatches+=linkages[i][j];
 		if (nmatches>bestcnt) {
