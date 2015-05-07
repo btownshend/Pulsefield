@@ -478,6 +478,7 @@ int Calibration::recompute() {
     found[refLaser]=true;
 
     // Find homographies (nunits+1)-1 times
+    int resultCode=0;
     for (int rep=0;rep<nunits;rep++) {
 	// Match next unit with found ones
 
@@ -499,7 +500,8 @@ int Calibration::recompute() {
 	dbg("Calibration.recompute",1) << "Computing linkage to laser " << curUnit <<  " with " << bestcnt << " matches." << std::endl;
 	if (bestcnt < 4) {
 	    showStatus("Not enough calibration points to compute homography to laser "+std::to_string(curUnit)+"; only have "+std::to_string(bestcnt)+"/4 points.");
-	    return -1;
+	    resultCode = -1;
+	    break;
 	}
 	std::vector<cv::Point2f> src,dst;
 
@@ -573,7 +575,7 @@ int Calibration::recompute() {
 	}
     }
     
-    return 0;
+    return resultCode;
 }
 
 void RelMapping::updateErrors(const cv::Mat &H1, const cv::Mat &H2) {
