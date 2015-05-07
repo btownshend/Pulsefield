@@ -64,6 +64,7 @@ class Calibration {
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
     Calibration(int nunits);   // Only ever called by initialize()
     int recompute();		// Use acquired data to estimate transformations
+    std::vector<cv::Mat> homographies;		// Each maps from laser flat space [-1,1] to world coordinates (which initially are arbitrary) use w=H*f
  public:
     static void initialize(int nunits) { assert(!theInstance); theInstance=std::shared_ptr<Calibration>(new Calibration(nunits)); }
     static std::shared_ptr<Calibration> instance() {

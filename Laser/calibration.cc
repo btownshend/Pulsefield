@@ -99,10 +99,13 @@ Point RelMapping::getDevicePt(int i,int which,bool doRound) const {
     return res;
 }
        
-Calibration::Calibration(int _nunits) {
+Calibration::Calibration(int _nunits): homographies(_nunits+1) {
     nunits = _nunits;
     dbg("Calibration.Calibration",1) << "Constructing calibration with " << nunits << " units." << std::endl;
     assert(nunits>0);
+    for (int i=0;i<homographies.size();i++)
+	homographies[i]=cv::Mat::eye(3, 3, CV_32F);	// Initialize to identity matrix
+
     for (int i=0;i<nunits;i++)
 	for (int j=i+1;j<nunits+1;j++) {
 	    relMappings.push_back(std::shared_ptr<RelMapping>(new RelMapping(i,j,j==nunits)));
@@ -472,7 +475,6 @@ int Calibration::recompute() {
 	}
     }
     dbg("Calibration.recompute",1) << "Using laser " << refLaser << " as reference with " << bestcnt << " connections to another image and " << total[refLaser] << " total connections." << std::endl;
-    std::vector<cv::Mat> homographies(nunits);		// Each maps from laser flat space [-1,1] to world coordinates (which initially are arbitrary) use w=H*f
     homographies[refLaser]=cv::Mat::eye(3, 3, CV_32F);	// Use first laser as a reference for now
 
     std::vector<bool> found(nunits);	// Flag for whether a laser has been calibrated
