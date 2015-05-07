@@ -556,10 +556,13 @@ int Calibration::recompute() {
 	cv::perspectiveTransform(p1,flat1,H1);
 	cv::perspectiveTransform(p2,flat2,H2);
 	for (int j=0;j<p.matches.size();j++) {
-	    Point dev1=Lasers::instance()->getLaser(p.src_img_idx)->getTransform().flatToDevice(Point(flat1[j].x,flat1[j].y));
-	    Point dev2=Lasers::instance()->getLaser(p.dst_img_idx)->getTransform().flatToDevice(Point(flat2[j].x,flat2[j].y));
+	    Point f1=Point(flat1[j].x,flat1[j].y);
+	    Point f2=Point(flat2[j].x,flat2[j].y);
+	    Point dev1=Lasers::instance()->getLaser(p.src_img_idx)->getTransform().flatToDevice(f1);
+	    Point dev2=Lasers::instance()->getLaser(p.dst_img_idx)->getTransform().flatToDevice(f2);
+	    Point ferror=f2-f1;
 	    Point error=dev2-dev1;
-	    dbg("Calibration.recompute",1) << "L" << p.src_img_idx << "@" << dev1 << " - L" << p.dst_img_idx  << "@" << dev2 << " e=" << error << ", rms=" << error.norm() << std::endl;
+	    dbg("Calibration.recompute",1) << "L" << p.src_img_idx << "@" << f1 << "; " << dev1 << " - L" << p.dst_img_idx  << "@" << f2 << "; " << dev2 << " e=" << error << ", rms=" << ferror.norm() << "; " << error.norm() << std::endl;
 	}
     }
     // Evaluate matches
