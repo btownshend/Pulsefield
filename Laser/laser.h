@@ -77,6 +77,7 @@ class Laser: public DisplayDevice  {
     void dumpPoints() const;
     void showTest();
     void showIntensity();	// Pattern for measuring laser intensity
+    void showCalibration(); 	// Show calibration points
     void showOutline(const Bounds &bounds);
 
     // Determine fraction of the object (in floor coordinates) is in the field of view of the given laser

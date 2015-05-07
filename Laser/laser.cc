@@ -9,6 +9,7 @@
 #include "point.h"
 #include "drawing.h"
 #include "ranges.h"
+#include "calibration.h"
 
 const int Laser::MAXDEVICEVALUE=32767;
 const int Laser::MINDEVICEVALUE=-32768;
@@ -332,6 +333,67 @@ void Laser::showIntensity() {
     for (;pt.y>=-gsize;pt.y-=incr)
 	pts.push_back(pt);
 
+    update();
+}
+
+void Laser::showCalibration() {
+    pts.clear();
+    // Retrieve points that should be indicated by this laser
+    std::vector<Point> calPoints = Calibration::instance()->getCalPoints(unit);
+    int gsize=getIntensityPts()/8;
+    if (gsize<100)
+	gsize=100;	// Don't allow it to be too focused
+
+    dbg("Laser.showCalibration",2) << "Showing " << calPoints.size() << " calibration points on laser " << unit << " with gsize=" << gsize << std::endl;
+    etherdream_point pt;
+    pt.g=65535;pt.r=65535;pt.b=65535;
+    const int NPOINTS=400;
+    const int CENTERPOINTS=20;
+    const int SLEWPOINTS=(calPoints.size()>0)?20:0;	// Slew points if there is more than one calibration point
+    for (int i=0;i<calPoints.size();i++) {
+	pt.g=0;pt.r=0;pt.b=0;
+	for (int j=0;j<SLEWPOINTS;j++)
+	    pts.push_back(pt);		// Time to slew
+	pt.g=65535;pt.r=65535;pt.b=65535;
+
+	int incr=int(4.0*gsize/(NPOINTS-CENTERPOINTS-SLEWPOINTS)+0.5);
+	if (incr<1)
+	    incr=1;
+	pt.x=calPoints[i].X();
+	pt.y=calPoints[i].Y();
+	etherdream_point ptmp=pt;
+	int rx=0,ry=0;
+	for (;rx<gsize/2;rx+=incr) {
+	    ptmp.x=pt.x+rx;
+	    pts.push_back(ptmp);
+	}
+	for (;rx>-gsize/2;rx-=incr) {
+	    ptmp.x=pt.x+rx;
+	    pts.push_back(ptmp);
+	}
+	for (;rx<0;rx+=incr) {
+	    ptmp.x=pt.x+rx;
+	    pts.push_back(ptmp);
+	}
+	ptmp.x=pt.x;
+	for (int j=0;j<CENTERPOINTS/2;j++)
+	    pts.push_back(pt);		// Stop at middle for a bit
+	for (;ry<gsize/2;ry+=incr) {
+	    ptmp.y=pt.y+ry;
+	    pts.push_back(ptmp);
+	}
+	for (;ry>-gsize/2;ry-=incr) {
+	    ptmp.y=pt.y+ry;
+	    pts.push_back(ptmp);
+	}
+	for (;ry<0;ry+=incr) {
+	    ptmp.y=pt.y+ry;
+	    pts.push_back(ptmp);
+	}
+	for (int j=0;j<CENTERPOINTS/2;j++)
+	    pts.push_back(pt);		// Stop at middle for a bit
+    }
+    dbg("Laser.showCalibration",2) << "Showing using " << pts.size() << " etherdream points." << std::endl;
     update();
 }
 

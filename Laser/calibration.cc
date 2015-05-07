@@ -106,6 +106,7 @@ Calibration::Calibration(int _nunits) {
     }
     curMap=relMappings[0];
     speed=0.05;
+    laserMode=CM_NORMAL;
     updateUI();
     showStatus("Initalized");
 }
@@ -118,6 +119,7 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
     char *tok=strtok(pathCopy,"/");
 
     bool handled=false;
+
     if (strcmp(tok,"cal")==0) {
 	tok=strtok(NULL,"/");
 	if (strcmp(tok,"sel")==0) {
@@ -175,6 +177,10 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	} else if (strcmp(tok,"load")==0) {
 	    Lasers::instance()->load();
 	    handled=true;
+	} else if (strcmp(tok,"lasermode")==0) {
+		int col=atoi(strtok(NULL,"/"))-1;
+		laserMode=(LaserMode)(col);
+		Lasers::instance()->setFlag("calibration",laserMode!=0);
 	}  else {
 	    // Pass down to currently selected relMapping
 	    dbg("Calibration.handleOSCMessage",1) << "Handing off message to curMap" << std::endl;
@@ -194,6 +200,7 @@ void Calibration::updateUI() const {
     send("/cal/flipx/2",flipX[curMap->getUnit(1)]?1.0:0.0);
     send("/cal/flipy/2",flipY[curMap->getUnit(1)]?1.0:0.0);
     send("/cal/speed",speedToRotary(speed));
+    send("/cal/lasermode/"+std::to_string((int)laserMode+1)+"/1",1.0);
     for (int i=0;i<relMappings.size();i++)
 	relMappings[i]->sendCnt();
 }
@@ -575,3 +582,48 @@ void RelMapping::updateErrors(const cv::Mat &H1, const cv::Mat &H2) {
 	error[j]=err.norm();
     }
 }
+
+// Get the set of calibration points that should be drawn for the given laser
+std::vector<Point> Calibration::getCalPoints(int unit) const {
+    std::vector<Point> result;
+    switch (laserMode) {
+    case CM_NORMAL:
+	// Nothing to do
+	break;
+    case CM_CURPT:
+	result = curMap->getCalPoints(unit,true);
+	break;
+    case CM_CURPAIR:
+	result = curMap->getCalPoints(unit,false);
+	break;
+    case CM_ALL:
+	for (int i=0;i<relMappings.size();i++) {
+	    std::vector<Point> p=relMappings[i]->getCalPoints(unit,false);
+	    result.insert(result.end(),p.begin(),p.end());
+	}
+	break;
+    }
+    return result;
+}
+
+// Get the set of calibration points that should be drawn for the given laser
+std::vector<Point> RelMapping::getCalPoints(int unit, bool selectedOnly) const {
+    std::vector<Point> result;
+    const std::vector<Point> *p = 0;	// Point to point list for given unit
+    if (unit1==unit)
+	p=&pt1;
+    else if (unit2==unit)
+	p=&pt2;
+    else
+	// No match
+	return result;
+    if (selectedOnly)
+	result.push_back((*p)[selected]);	// Only selected point
+    else
+	result = *p;		// All points
+
+    return result;
+}
+
+
+

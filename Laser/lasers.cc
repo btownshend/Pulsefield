@@ -31,6 +31,7 @@ Lasers::Lasers(int nlasers): lasers(nlasers), config("settings_laser.json")  {
     setFlag("legs",true);
     setFlag("intensity",false);
     setFlag("test",false);
+    setFlag("calibration",false);
 }
 
 Lasers::~Lasers() {
@@ -322,6 +323,8 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 	}
 	else if (getFlag("test") && lasers[i]->isEnabled()) {
 	    lasers[i]->showTest();
+	} else if (getFlag("calibration")) {
+	    lasers[i]->showCalibration();
 	} else if (getFlag("intensity") && lasers[i]->isEnabled()) {
 	    lasers[i]->showIntensity();
 	} else {

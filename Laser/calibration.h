@@ -46,11 +46,13 @@ public:
     void sendCnt() const;  // Send OSC with cnt of locked points to TouchOSC
     Point getDevicePt(int i,int which=-1) const;    // Get coordinate of pt[i] in device [-32767,32767] or world ([-WORLDSIZE,WORLDSIZE],[0,WORLDSIZE])
     void updateErrors(const cv::Mat &H1, const cv::Mat &H2);
+    std::vector<Point> getCalPoints(int unit,bool selectedOnly) const;
 };
 
 // Class for handling calibration of laser mappings
 // Handles interface to touchOSC calibration GUI
 class Calibration {
+    enum LaserMode {CM_NORMAL=0,CM_CURPT=1,CM_CURPAIR=2,CM_ALL=3} laserMode;
     static std::shared_ptr<Calibration> theInstance;   // Singleton
     int nunits;
     std::vector<std::shared_ptr<RelMapping> > relMappings;		// Relative mappings between lasers
@@ -74,4 +76,6 @@ class Calibration {
     void updateUI() const;
     void save(ptree &p) const;
     void load(ptree &p);
+    LaserMode getLaserMode() const { return laserMode; }		// Get the current mode for laser display
+    std::vector<Point> getCalPoints(int unit) const;				// Get the set of calibration points that should be drawn for the given laser
 };
