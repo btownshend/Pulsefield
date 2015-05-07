@@ -81,15 +81,22 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed) {
 }
 
 // Get coordinate of pt[i] in device [-32767,32767] or world ([-WORLDSIZE,WORLDSIZE],[0,WORLDSIZE])
-Point RelMapping::getDevicePt(int i,int which) const {
+Point RelMapping::getDevicePt(int i,int which,bool doRound) const {
+    Point res;
     if (which==-1)
 	which=selected;
     if (i==0)
-	return pt1[which]*32767;
-    else if (isWorld)
-	return Point(pt2[which].X()*WORLDSIZE,(pt2[which].Y()+1)*WORLDSIZE/2);
-    else
-	return pt2[which]*32767;
+	res=pt1[which]*32767;
+    else if (isWorld) {
+	res=Point(pt2[which].X()*WORLDSIZE,(pt2[which].Y()+1)*WORLDSIZE/2);
+	if (doRound)
+	    res=Point(std::round(res.X()*100)/100,std::round(res.Y()*100)/100);
+	return res;
+    } else
+	res=pt2[which]*32767;
+    if (doRound)
+	res=Point(std::round(res.X()),std::round(res.Y()));
+    return res;
 }
        
 Calibration::Calibration(int _nunits) {
@@ -232,16 +239,20 @@ void RelMapping::updateUI() const {
 	send("/cal/led/"+std::to_string(i+1),locked[i]?1.0:0.0);
     send("/cal/selpair/"+std::to_string(selected+1)+"/1",1.0);
     send("/cal/xy/1",pt1[selected].X(),pt1[selected].Y());
-    send("/cal/x/1",getDevicePt(0).X());
-    send("/cal/y/1",getDevicePt(0).Y());
+    send("/cal/x/1",getDevicePt(0,-1,true).X());
+    send("/cal/y/1",getDevicePt(0,-1,true).Y());
     send("/cal/xy/2",pt2[selected].X(),pt2[selected].Y());
-    send("/cal/x/2",getDevicePt(1).X());
-    send("/cal/y/2",getDevicePt(1).Y());
+    send("/cal/x/2",getDevicePt(1,-1,true).X());
+    send("/cal/y/2",getDevicePt(1,-1,true).Y());
     for (int i=0;i<error.size();i++)
 	if (isnan(error[i]))
 	    send("/cal/error/"+std::to_string(i+1),"");
+	else if (error[i] >= 100)
+	    send("/cal/error/"+std::to_string(i+1),std::round(error[i]));
+	else if (error[i] >= 10)
+	    send("/cal/error/"+std::to_string(i+1),std::round(error[i]*10)/10);
 	else
-	    send("/cal/error/"+std::to_string(i+1),error[i]);
+	    send("/cal/error/"+std::to_string(i+1),std::round(error[i]*100)/100);
 }
 
 // Display status in touchOSC
