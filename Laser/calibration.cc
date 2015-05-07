@@ -305,7 +305,7 @@ void RelMapping::load(ptree &p) {
 	    i++;
 	}
     } catch (boost::property_tree::ptree_bad_path ex) {
-	std::cerr << "Uable to find 'pairs' in laser settings" << std::endl;
+	std::cerr << "Unable to find 'pairs' in laser settings" << std::endl;
     }
 }
 
@@ -361,7 +361,7 @@ void Calibration::load(ptree &p) {
 	    i++;
 	}
     } catch (boost::property_tree::ptree_bad_path ex) {
-	std::cerr << "Uable to find 'mappings' in laser settings" << std::endl;
+	std::cerr << "Unable to find 'mappings' in laser settings" << std::endl;
     }
     showStatus("Loaded configuration");
 }
