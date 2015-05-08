@@ -569,7 +569,7 @@ int Calibration::recompute() {
 	for (int k=0;k<src.size();k++) {
 	    dbg("Calibration.recompute",2) << "   " << src[k] << "    " << dst[k]  << std::endl;
 	}
-	homographies[curUnit]=cv::findHomography(dst,src);
+	homographies[curUnit]=cv::findHomography(dst,src); // ,CV_RANSAC,.001);
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Homography for laser " << curUnit << " = \n",homographies[curUnit]) << std::endl;
 	found[curUnit]=true;
     }
