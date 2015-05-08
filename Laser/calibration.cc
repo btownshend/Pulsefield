@@ -611,6 +611,15 @@ int Calibration::recompute() {
 	    dbg("Calibration.recompute",1) << "L" << p.src_img_idx << "@" << f1 << "; " << dev1 << " - L" << p.dst_img_idx  << "@" << f2 << "; " << dev2 << " e=" << error << ", rms=" << ferror.norm() << "; " << error.norm() << std::endl;
 	}
     }
+    // Make all mappings refer to world coords
+    for (int i=0;i<nunits+1;i++) {
+	cv::Mat h=homographies[i];
+	cv::Mat inv=homographies[nunits].inv();
+	homographies[i]=inv*h;  // Need to map to common coords, then to world
+	homographies[i]=homographies[i]/homographies[i].at<double>(2,2);      
+	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Final homography for laser " << i << " = \n",homographies[i]) << std::endl;
+    }
+    
     return resultCode;
 }
 
