@@ -315,7 +315,7 @@ void Laser::showIntensity() {
     pts.clear();
     int gsize=getIntensityPts()/8;
     if (gsize<100)
-	gsize=100;	// Don't allow it to be too focused
+	gsize=100;	// Don't allow it to be too focuysed
     dbg("Laser.showIntensity",1) << "Showing laser intensity pattern with rect size of " << gsize << std::endl;
     // Start and finish each scan at full range, but scan based on visible range stored in transform
     etherdream_point pt;
@@ -340,58 +340,69 @@ void Laser::showCalibration() {
     pts.clear();
     // Retrieve points that should be indicated by this laser
     std::vector<Point> calPoints = Calibration::instance()->getCalPoints(unit);
-    int gsize=getIntensityPts()/8;
-    if (gsize<100)
-	gsize=100;	// Don't allow it to be too focused
-
-    dbg("Laser.showCalibration",2) << "Showing " << calPoints.size() << " calibration points on laser " << unit << " with gsize=" << gsize << std::endl;
+    const int LINELENGTHS=100;
     etherdream_point pt;
     pt.g=65535;pt.r=65535;pt.b=65535;
-    const int NPOINTS=400;
+    const int NPOINTS=PPS/15;		// Minimum 15Hz update rate
     const int CENTERPOINTS=20;
-    const int SLEWPOINTS=(calPoints.size()>0)?20:0;	// Slew points if there is more than one calibration point
-    for (int i=0;i<calPoints.size();i++) {
-	pt.g=0;pt.r=0;pt.b=0;
-	for (int j=0;j<SLEWPOINTS;j++)
-	    pts.push_back(pt);		// Time to slew
-	pt.g=65535;pt.r=65535;pt.b=65535;
+    const int SLEWPOINTS=(calPoints.size()>0)?(preBlanks+postBlanks):0;	// Slew points if there is more than one calibration point
+    int incr=int(4.0*LINELENGTHS/(NPOINTS-CENTERPOINTS-SLEWPOINTS)*calPoints.size()+0.5);
+    if (incr<1)
+	incr=1;
+    if (incr>LINELENGTHS/5)
+	incr=LINELENGTHS/5;
+    dbg("Laser.showCalibration",2) << "Showing " << calPoints.size() << " calibration points on laser " << unit << " with line lengths =" << LINELENGTHS << ", incr=" << incr << std::endl;
 
-	int incr=int(4.0*gsize/(NPOINTS-CENTERPOINTS-SLEWPOINTS)+0.5);
-	if (incr<1)
-	    incr=1;
+    for (int i=0;i<calPoints.size();i++) {
+	dbg("Laser.showCalibration",3) << "Pt: " << calPoints[i] << std::endl;
 	pt.x=calPoints[i].X();
 	pt.y=calPoints[i].Y();
+
+	if (calPoints.size() > 0) {
+	    pt.g=0;pt.r=0;pt.b=0;
+	    for (int j=0;j<postBlanks;j++)
+		pts.push_back(pt);		// Time to slew
+	}
+	pt.g=65535;pt.r=65535;pt.b=65535;
+
 	etherdream_point ptmp=pt;
 	int rx=0,ry=0;
-	for (;rx<gsize/2;rx+=incr) {
+	for (;rx<LINELENGTHS/2 && pt.x+rx<32767;rx+=incr) {
 	    ptmp.x=pt.x+rx;
 	    pts.push_back(ptmp);
 	}
-	for (;rx>-gsize/2;rx-=incr) {
+	for (;rx>-LINELENGTHS/2 && pt.x+rx>=-32767;rx-=incr) {
 	    ptmp.x=pt.x+rx;
 	    pts.push_back(ptmp);
 	}
-	for (;rx<0;rx+=incr) {
+	for (;rx<0 && pt.x+rx<32767;rx+=incr) {
 	    ptmp.x=pt.x+rx;
 	    pts.push_back(ptmp);
 	}
 	ptmp.x=pt.x;
 	for (int j=0;j<CENTERPOINTS/2;j++)
 	    pts.push_back(pt);		// Stop at middle for a bit
-	for (;ry<gsize/2;ry+=incr) {
+
+	for (;ry<LINELENGTHS/2 && pt.y+ry<32767;ry+=incr) {
 	    ptmp.y=pt.y+ry;
 	    pts.push_back(ptmp);
 	}
-	for (;ry>-gsize/2;ry-=incr) {
+	for (;ry>-LINELENGTHS/2 && pt.y+ry>=-32767;ry-=incr) {
 	    ptmp.y=pt.y+ry;
 	    pts.push_back(ptmp);
 	}
-	for (;ry<0;ry+=incr) {
+	for (;ry<0&& pt.y+ry<32767;ry+=incr) {
 	    ptmp.y=pt.y+ry;
 	    pts.push_back(ptmp);
 	}
 	for (int j=0;j<CENTERPOINTS/2;j++)
 	    pts.push_back(pt);		// Stop at middle for a bit
+
+	if (calPoints.size() > 0) {
+	    pt.g=0;pt.r=0;pt.b=0;
+	    for (int j=0;j<preBlanks;j++)
+		pts.push_back(pt);		// Time to slew
+	}
     }
     dbg("Laser.showCalibration",2) << "Showing using " << pts.size() << " etherdream points." << std::endl;
     update();

@@ -683,9 +683,11 @@ std::vector<Point> RelMapping::getCalPoints(int unit, bool selectedOnly) const {
 	// No match
 	return result;
     if (selectedOnly)
-	result.push_back((*p)[selected]);	// Only selected point
+	result.push_back(getDevicePt(unit==unit1?0:1));	// Only selected point
     else
-	result = *p;		// All points
+	for (int i=0;i<pt1.size();i++)
+	    if (i==selected || locked[i])
+		result.push_back(getDevicePt(unit==unit1?0:1,i));	// All locked or selected points
 
     return result;
 }
