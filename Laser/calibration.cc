@@ -232,11 +232,16 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 
 void Calibration::updateUI() const {
     curMap->updateUI(flipX[curMap->getUnit(0)],flipY[curMap->getUnit(0)],flipX[curMap->getUnit(1)],flipY[curMap->getUnit(1)]);
-    
     send("/cal/speed",speedToRotary(speed));
     send("/cal/lasermode/"+std::to_string((int)laserMode+1)+"/1",1.0);
-    for (int i=0;i<relMappings.size();i++)
+    float e2sum=0;
+    int e2cnt=0;
+    for (int i=0;i<relMappings.size();i++) {
 	relMappings[i]->sendCnt();
+	e2sum+=relMappings[i]->getE2Sum();
+	e2cnt+=relMappings[i]->getE2Cnt();
+    }
+    send("/cal/error/total",std::round(sqrt(e2sum/e2cnt)*1000)/1000);
 }
 
 void RelMapping::sendCnt() const {
@@ -276,16 +281,20 @@ void RelMapping::updateUI(bool flipX1,bool flipY1, bool flipX2, bool flipY2) con
     send("/cal/xy/2",pt2[selected].X()*(flipX2?-1:1),pt2[selected].Y()*(flipY2?-1:1));
     send("/cal/x/2",getDevicePt(1,-1,true).X());
     send("/cal/y/2",getDevicePt(1,-1,true).Y());
-    std::vector<float> error=updateErrors();
+    std::vector<float> error=((RelMapping *)this)->updateErrors();
     for (int i=0;i<error.size();i++)
 	if (isnan(error[i]))
 	    send("/cal/error/"+std::to_string(i+1),"");
-	else if (error[i] >= 100)
-	    send("/cal/error/"+std::to_string(i+1),std::round(error[i]));
-	else if (error[i] >= 10)
-	    send("/cal/error/"+std::to_string(i+1),std::round(error[i]*10)/10);
-	else
-	    send("/cal/error/"+std::to_string(i+1),std::round(error[i]*100)/100);
+	else {
+	    if (error[i] >= 100)
+		send("/cal/error/"+std::to_string(i+1),std::round(error[i]));
+	    else if (error[i] >= 10)
+		send("/cal/error/"+std::to_string(i+1),std::round(error[i]*10)/10);
+	    else if (error[i] >= 10)
+		send("/cal/error/"+std::to_string(i+1),std::round(error[i]*100)/100);
+	    else
+		send("/cal/error/"+std::to_string(i+1),std::round(error[i]*1000)/1000);
+	}
 }
 
 // Display status in touchOSC
@@ -575,42 +584,6 @@ int Calibration::recompute() {
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Homography for laser " << curUnit << " = \n",homographies[curUnit]) << std::endl;
     }
     
-    // Evaluate matches
-    for (int i=0;i<pairwiseMatches.size();i++) {
-	cv::detail::MatchesInfo p = pairwiseMatches[i];
-	if (p.matches.size()==0)
-	    continue; 
-	cv::Mat_<float> H1 = homographies[p.src_img_idx];
-	cv::Mat_<float> H2 = homographies[p.dst_img_idx];
-
-	std::vector<cv::Point2f> p1, p2;
-	for (int j=0;j<p.matches.size();j++) {
-	    cv::DMatch m=p.matches[j];
-	    p1.push_back(features[p.src_img_idx].keypoints[m.queryIdx].pt);
-	    p2.push_back(features[p.dst_img_idx].keypoints[m.trainIdx].pt);
-	}
-	std::vector<cv::Point2f> flat1,flat2;
-	cv::perspectiveTransform(p1,flat1,H1);
-	cv::perspectiveTransform(p2,flat2,H2);
-	for (int j=0;j<p.matches.size();j++) {
-	    Point f1=Point(flat1[j].x,flat1[j].y);
-	    Point f2=Point(flat2[j].x,flat2[j].y);
-	    Point dev1;
-	    if (p.src_img_idx < nunits)
-		dev1=Lasers::instance()->getLaser(p.src_img_idx)->getTransform().flatToDevice(f1);
-	    else
-		dev1=f1;  // World
-	    Point dev2;
-	    if (p.dst_img_idx < nunits)
-		dev2=Lasers::instance()->getLaser(p.dst_img_idx)->getTransform().flatToDevice(f2);
-	    else
-		dev2=f2;
-	    
-	    Point ferror=f2-f1;
-	    Point error=dev2-dev1;
-	    dbg("Calibration.recompute",1) << "L" << p.src_img_idx << "@" << f1 << "; " << dev1 << " - L" << p.dst_img_idx  << "@" << f2 << "; " << dev2 << " e=" << error << ", rms=" << ferror.norm() << "; " << error.norm() << std::endl;
-	}
-    }
     // Make all mappings refer to world coords
     for (int i=0;i<nunits+1;i++) {
 	cv::Mat h=homographies[i];
@@ -627,6 +600,12 @@ int Calibration::recompute() {
 	Lasers::instance()->getLaser(i)->getTransform().setTransform(inv,homographies[i]);
     }
     testMappings();
+
+    // Evaluate matches
+    for (int i=0;i<relMappings.size();i++) {
+	relMappings[i]->updateErrors();
+    }
+
     return resultCode;
 }
 
@@ -676,14 +655,20 @@ Point Calibration::map(Point p, int fromUnit, int toUnit) const {
     return dev2;
 }
 
-std::vector<float> RelMapping::updateErrors() const {
+std::vector<float> RelMapping::updateErrors() {
     std::vector<float> error(pt1.size());
+    e2sum=0;
+    e2cnt=0;
     for (int j=0;j<pt1.size();j++) {
 	Point w1=Calibration::instance()->map(getDevicePt(0,j),unit1);
 	Point w2=Calibration::instance()->map(getDevicePt(1,j),unit2);
 	Point err=w2-w1;
 	dbg("relMappings.updateErrors",1) << "L" << unit1 << "@" << pt1[j] << " -> " << w1 << " - L" << unit2  << "@" << pt2[j] << " -> " << w2  << ", e=" << err << ", rms=" << err.norm() << std::endl;
 	error[j]=err.norm();
+	if (locked[j]) {
+	    e2sum+=error[j]*error[j];
+	    e2cnt++;
+	}
     }
     return error;
 }

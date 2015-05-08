@@ -21,6 +21,8 @@ class RelMapping {
     std::vector<Point> pt1,pt2;	// Vector of point correspondences
     std::vector<bool> locked;
     int selected; 		// Which point is selected
+    float e2sum;		// Sum of sqd error
+    int e2cnt;
 public:
     RelMapping(int u1, int u2, bool _isWorld): pt1(PTSPERPAIR), pt2(PTSPERPAIR), locked(PTSPERPAIR) {
 	isWorld=_isWorld;
@@ -44,8 +46,10 @@ public:
     void sendCnt() const;  // Send OSC with cnt of locked points to TouchOSC
     Point getDevicePt(int i,int which=-1,bool doRound=false) const;    // Get coordinate of pt[i] in device [-32767,32767] or world ([-WORLDSIZE,WORLDSIZE],[0,WORLDSIZE])
     void setDevicePt(Point p, int i,int which=-1);
-    std::vector<float> updateErrors() const;
+    std::vector<float> updateErrors();
     std::vector<Point> getCalPoints(int unit,bool selectedOnly) const;
+    float getE2Sum() const { return e2sum; }
+    int getE2Cnt() const { return e2cnt; }
 };
 
 // Class for handling calibration of laser mappings
