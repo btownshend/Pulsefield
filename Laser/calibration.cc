@@ -130,7 +130,7 @@ Calibration::Calibration(int _nunits): homographies(_nunits+1) {
     dbg("Calibration.Calibration",1) << "Constructing calibration with " << nunits << " units." << std::endl;
     assert(nunits>0);
     for (int i=0;i<homographies.size();i++)
-	homographies[i]=cv::Mat::eye(3, 3, CV_32F);	// Initialize to identity matrix
+	homographies[i]=cv::Mat::eye(3, 3, CV_64F);	// Initialize to identity matrix
 
     for (int i=0;i<nunits;i++)
 	for (int j=i+1;j<nunits+1;j++) {
@@ -506,7 +506,7 @@ int Calibration::recompute() {
 	}
     }
     dbg("Calibration.recompute",1) << "Using laser " << refLaser << " as reference with " << bestcnt << " connections to another image and " << total[refLaser] << " total connections." << std::endl;
-    homographies[refLaser]=cv::Mat::eye(3, 3, CV_32F);	// Use first laser as a reference for now
+    homographies[refLaser]=cv::Mat::eye(3, 3, CV_64F);	// Use first laser as a reference for now
 
     std::vector<bool> found(nunits+1);	// Flag for whether a laser has been calibrated
     found[refLaser]=true;
@@ -535,7 +535,6 @@ int Calibration::recompute() {
 	if (bestcnt < 4) {
 	    showStatus("Not enough calibration points to compute homography to "+(curUnit<nunits?"laser "+std::to_string(curUnit+1):"world")+"; only have "+std::to_string(bestcnt)+"/4 points.");
 	    resultCode = -1;
-	    homographies[curUnit]=cv::Mat::eye(3, 3, CV_32F);	// Make it a default transform
 	    continue;
 	}
 	std::vector<cv::Point2f> src,dst;
@@ -551,6 +550,7 @@ int Calibration::recompute() {
 		    src.push_back(mapped[0]);
 		    dst.push_back(features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt);
 		    dbg("Calibration.recompute",2) << pm.dst_img_idx << "." << pm.matches[i].trainIdx << std::endl;
+	    homographies[curUnit]=cv::Mat::eye(3, 3, CV_64F);	// Make it a default transform
 		}
 	    }
 	    else if (found[pm.dst_img_idx] && pm.src_img_idx==curUnit) {
