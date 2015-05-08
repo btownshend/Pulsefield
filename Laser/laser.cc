@@ -78,9 +78,18 @@ int Laser::open() {
 }
 
 void Laser::update() {
-    if (pts.size() < 2)  {
-	dbg("Laser.update",1) << "Laser::update: not enough points (" << pts.size() << ") -- not updating" << std::endl;
-	return;
+    if (pts.size() < MINPOINTS) {
+	// Add some blanking on the end to fill it to desired number of points
+	int nblanks=MINPOINTS-pts.size();
+	dbg("Laser.update",2) << "Inserting " << nblanks << " blanks to pad out frame" << std::endl;
+	etherdream_point pos;
+	if (pts.size()>0)
+	    pos=pts.back();
+	else {
+	    pos.x=0;pos.y=0;
+	}
+	std::vector<etherdream_point> blanks = getBlanks(nblanks,pos);
+	pts.insert(pts.end(), blanks.begin(), blanks.end());
     }
 
     if (d==0) {
@@ -169,19 +178,6 @@ void Laser::render(const Drawing &drawing) {
 	dbg("Laser.render",2) << "Laser is not being shown" << std::endl;
     }
 
-    if (pts.size() < MINPOINTS) {
-	// Add some blanking on the end to fill it to desired number of points
-	int nblanks=MINPOINTS-pts.size();
-	dbg("Laser.render",2) << "Inserting " << nblanks << " blanks to pad out frame" << std::endl;
-	etherdream_point pos;
-	if (pts.size()>0)
-	    pos=pts.back();
-	else {
-	    pos.x=0;pos.y=0;
-	}
-	std::vector<etherdream_point> blanks = getBlanks(nblanks,pos);
-	pts.insert(pts.end(), blanks.begin(), blanks.end());
-    }
     update();
 }
 
@@ -337,10 +333,10 @@ void Laser::showIntensity() {
 }
 
 void Laser::showCalibration() {
-    pts.clear();
+    pts.resize(0);
     // Retrieve points that should be indicated by this laser
     std::vector<Point> calPoints = Calibration::instance()->getCalPoints(unit);
-    const int LINELENGTHS=100;
+    const int LINELENGTHS=200;
     etherdream_point pt;
     pt.g=65535;pt.r=65535;pt.b=65535;
     const int NPOINTS=PPS/15;		// Minimum 15Hz update rate
