@@ -35,8 +35,8 @@ public:
 		pt2[i]=Point(0,0);
 	}
     }
-    void updateUI() const;
-    bool handleOSCMessage(std::string tok, lo_arg **argv,float speed);
+    void updateUI(bool flipX1,bool flipY1, bool flipX2, bool flipY2) const;
+    bool handleOSCMessage(std::string tok, lo_arg **argv,float speed,bool flipX1, bool flipY1, bool flipX2, bool flipY2);
     void save(ptree &p) const;
     void load(ptree &p);
     int addMatches(std::vector<cv::detail::ImageFeatures> &features,    std::vector<cv::detail::MatchesInfo> &pairwiseMatches) const;

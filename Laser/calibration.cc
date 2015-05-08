@@ -30,7 +30,7 @@ static float rotaryToSpeed(float rotary) {
     return pow(10,rotary*log10(1000))/32767;
 }
 
-bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed) {
+bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,bool flipX1, bool flipY1, bool flipX2, bool flipY2) {
     dbg("RelMapping",1) << "tok=" << tok << ", speed=" << speed << std::endl;
     bool handled=false;
     
@@ -40,16 +40,20 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed) {
 	dbg("RelMapping",1) << "tok=" << tok << ", nexttok=" << nexttok << ", speed=" << speed << std::endl;
     } else
 	dbg("RelMapping",1) << "tok=" << tok << ", speed=" << speed << std::endl;
+    float speedX=speed*(flipX1?-1:1);
+    float speedY=speed*(flipY1?-1:1);;
     if (nexttok && strcmp(nexttok,"2")==0) {
 	dbg("RelMapping",2) << "Using pt2" << std::endl;
 	pt=&pt2[selected];
+	speedX=speed*(flipX2?-1:1);
+	speedY=speed*(flipY2?-1:1);;
     }
 
     if (tok=="xy") {
 	// xy pad
 	if (~locked[selected]) {
-	    pt->setX(argv[0]->f);
-	    pt->setY(argv[1]->f);
+	    pt->setX(argv[0]->f*(speedX>0?1:-1));
+	    pt->setY(argv[1]->f*(speedY>0?1:-1));
 	}
 	handled=true;
     } else if (tok=="lock") {
@@ -61,19 +65,19 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed) {
 	handled=true;
     } else if (tok=="left") {
 	if (~locked[selected] && argv[0]->f > 0)
-	    pt->setX(std::max(-1.0f,pt->X()-speed));
+	    pt->setX(std::max(-1.0f,pt->X()-speedX));
 	handled=true;
     } else if (tok=="right") {
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
-	    pt->setX(std::min(1.0f,pt->X()+speed));
+	    pt->setX(std::min(1.0f,pt->X()+speedX));
 	handled=true;
     } else if (tok=="up") {
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
-	    pt->setY(std::min(1.0f,pt->Y()+speed));
+	    pt->setY(std::min(1.0f,pt->Y()+speedY));
 	handled=true;
     } else if (tok=="down") {
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
-	    pt->setY(std::max(-1.0f,pt->Y()-speed));
+	    pt->setY(std::max(-1.0f,pt->Y()-speedY));
 	handled=true;
     }
     
@@ -194,7 +198,7 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	}  else {
 	    // Pass down to currently selected relMapping
 	    dbg("Calibration.handleOSCMessage",1) << "Handing off message to curMap" << std::endl;
-	    handled=curMap->handleOSCMessage(tok,argv,speed);
+	    handled=curMap->handleOSCMessage(tok,argv,speed,flipX[curMap->getUnit(0)],flipY[curMap->getUnit(0)],flipX[curMap->getUnit(1)],flipY[curMap->getUnit(1)]);
 	}
     }
     updateUI();
@@ -203,12 +207,8 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 }
 
 void Calibration::updateUI() const {
-    curMap->updateUI();
+    curMap->updateUI(flipX[curMap->getUnit(0)],flipY[curMap->getUnit(0)],flipX[curMap->getUnit(1)],flipY[curMap->getUnit(1)]);
     
-    send("/cal/flipx/1",flipX[curMap->getUnit(0)]?1.0:0.0);
-    send("/cal/flipy/1",flipY[curMap->getUnit(0)]?1.0:0.0);
-    send("/cal/flipx/2",flipX[curMap->getUnit(1)]?1.0:0.0);
-    send("/cal/flipy/2",flipY[curMap->getUnit(1)]?1.0:0.0);
     send("/cal/speed",speedToRotary(speed));
     send("/cal/lasermode/"+std::to_string((int)laserMode+1)+"/1",1.0);
     for (int i=0;i<relMappings.size();i++)
@@ -229,7 +229,7 @@ void RelMapping::sendCnt() const {
 	send("/cal/cnt/"+std::to_string(unit1+1)+"/"+std::to_string(unit2+1),cstr);
 }
 
-void RelMapping::updateUI() const {
+void RelMapping::updateUI(bool flipX1,bool flipY1, bool flipX2, bool flipY2) const {
     dbg("RelMapping",1) << "updateUI for " << unit1 << "-" << unit2 << std::endl;
     send("/cal/sel/val/1",std::to_string(unit1+1));
     if (isWorld)
@@ -242,9 +242,14 @@ void RelMapping::updateUI() const {
 	send("/cal/led/"+std::to_string(i+1),locked[i]?1.0:0.0);
     send("/cal/selpair/"+std::to_string(selected+1)+"/1",1.0);
     send("/cal/xy/1",pt1[selected].X(),pt1[selected].Y());
+    send("/cal/flipx/1",flipX1?1.0:0.0);
+    send("/cal/flipy/1",flipY1?1.0:0.0);
+    send("/cal/flipx/2",flipX2?1.0:0.0);
+    send("/cal/flipy/2",flipY2?1.0:0.0);
+
     send("/cal/x/1",getDevicePt(0,-1,true).X());
     send("/cal/y/1",getDevicePt(0,-1,true).Y());
-    send("/cal/xy/2",pt2[selected].X(),pt2[selected].Y());
+    send("/cal/xy/2",pt2[selected].X()*(flipX2?-1:1),pt2[selected].Y()*(flipY2?-1:1));
     send("/cal/x/2",getDevicePt(1,-1,true).X());
     send("/cal/y/2",getDevicePt(1,-1,true).Y());
     std::vector<float> error=updateErrors();
