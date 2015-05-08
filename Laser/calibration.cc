@@ -535,9 +535,8 @@ int Calibration::recompute() {
 	if (bestcnt < 4) {
 	    showStatus("Not enough calibration points to compute homography to "+(curUnit<nunits?"laser "+std::to_string(curUnit+1):"world")+"; only have "+std::to_string(bestcnt)+"/4 points.");
 	    resultCode = -1;
-	    continue;
-	}
 	    homographies[curUnit]=cv::Mat::eye(3, 3, CV_64F);	// Make it a default transform
+	} else {
 	    std::vector<cv::Point2f> src,dst;
 
 	    for (int j=0;j<pairwiseMatches.size();j++) {
@@ -551,8 +550,8 @@ int Calibration::recompute() {
 			src.push_back(mapped[0]);
 			dst.push_back(features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt);
 			dbg("Calibration.recompute",2) << pm.dst_img_idx << "." << pm.matches[i].trainIdx << std::endl;
+		    }
 		}
-	    }
 		else if (found[pm.dst_img_idx] && pm.src_img_idx==curUnit) {
 		    for (int i=0;i<pm.matches.size();i++) {
 			// Project the point
@@ -561,6 +560,7 @@ int Calibration::recompute() {
 			cv::perspectiveTransform(tmp,mapped,homographies[pm.dst_img_idx]);
 			src.push_back(mapped[0]);
 			dst.push_back(features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt);
+		    }
 		}
 	    }
 	    assert(src.size()==bestcnt);
