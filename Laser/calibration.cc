@@ -596,15 +596,6 @@ int Calibration::recompute() {
 	    dbg("Calibration.recompute",1) << "L" << p.src_img_idx << "@" << f1 << "; " << dev1 << " - L" << p.dst_img_idx  << "@" << f2 << "; " << dev2 << " e=" << error << ", rms=" << ferror.norm() << "; " << error.norm() << std::endl;
 	}
     }
-    // Evaluate matches
-    for (int i=0;i<relMappings.size();i++) {
-	if (relMappings[i]->getUnit(0) < homographies.size() &&relMappings[i]->getUnit(1) < homographies.size()) {
-	    cv::Mat_<float> H1 = homographies.at(relMappings[i]->getUnit(0));
-	    cv::Mat_<float> H2 = homographies.at(relMappings[i]->getUnit(1));
-	    relMappings[i]->updateErrors(H1,H2);
-	}
-    }
-    
     return resultCode;
 }
 
