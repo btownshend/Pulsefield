@@ -59,6 +59,11 @@ depend: $(SRCS)
 
 # DO NOT DELETE
 
+calibration.o: calibration.h ../LIDAR/Util/point.h touchosc.h lo_util.h
+calibration.o: ../LIDAR/Util/dbg.h ../LIDAR/Util/urlconfig.h configuration.h
+calibration.o: lasers.h laser.h etherdream_bst.h displaydevice.h transform.h
+calibration.o: cpoint.h color.h drawing.h bezier.h attributes.h Simplex.hpp
+calibration.o: ranges.h bounds.h shapeid.h
 configuration.o: configuration.h ../LIDAR/Util/dbg.h
 shapeid.o: shapeid.h ../LIDAR/Util/dbg.h
 ranges.o: ranges.h ../LIDAR/Util/point.h ../LIDAR/Util/dbg.h
@@ -80,6 +85,7 @@ laser.o: etherdream_bst.h laser.h displaydevice.h transform.h
 laser.o: ../LIDAR/Util/point.h cpoint.h color.h configuration.h touchosc.h
 laser.o: lo_util.h ../LIDAR/Util/dbg.h ../LIDAR/Util/urlconfig.h drawing.h
 laser.o: bezier.h attributes.h Simplex.hpp ranges.h bounds.h shapeid.h
+laser.o: calibration.h
 lasers.o: lasers.h laser.h etherdream_bst.h displaydevice.h transform.h
 lasers.o: ../LIDAR/Util/point.h cpoint.h color.h configuration.h touchosc.h
 lasers.o: lo_util.h ../LIDAR/Util/dbg.h ../LIDAR/Util/urlconfig.h drawing.h
@@ -131,11 +137,6 @@ music.o: music.h touchosc.h lo_util.h ../LIDAR/Util/dbg.h
 music.o: ../LIDAR/Util/urlconfig.h
 conductor.o: conductor.h lo_util.h ../LIDAR/Util/dbg.h
 ../LIDAR/Util/urlconfig.o: ../LIDAR/Util/dbg.h ../LIDAR/Util/urlconfig.h
-calibration.o: calibration.h ../LIDAR/Util/point.h touchosc.h lo_util.h
-calibration.o: ../LIDAR/Util/dbg.h ../LIDAR/Util/urlconfig.h configuration.h
-calibration.o: lasers.h laser.h etherdream_bst.h displaydevice.h transform.h
-calibration.o: cpoint.h color.h drawing.h bezier.h attributes.h Simplex.hpp
-calibration.o: ranges.h bounds.h shapeid.h
 ../LIDAR/Util/dbg.o: ../LIDAR/Util/dbg.h
 ../LIDAR/Util/point.o: ../LIDAR/Util/point.h
 ../LIDAR/Util/dest.o: ../LIDAR/Util/dest.h ../LIDAR/Util/dbg.h
