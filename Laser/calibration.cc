@@ -620,6 +620,13 @@ int Calibration::recompute() {
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Final homography for laser " << i << " = \n",homographies[i]) << std::endl;
     }
     
+    // Push mappings to transforms.cc
+    for (int i=0;i<nunits;i++) {
+	cv::Mat inv=homographies[i].inv();
+	inv=inv/inv.at<double>(2,2);
+	Lasers::instance()->getLaser(i)->getTransform().setTransform(inv,homographies[i]);
+    }
+    testMappings();
     return resultCode;
 }
 
