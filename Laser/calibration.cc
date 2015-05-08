@@ -205,9 +205,12 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	    Lasers::instance()->load();
 	    handled=true;
 	} else if (strcmp(tok,"lasermode")==0) {
+	    if (argv[0]->f > 0) {
 		int col=atoi(strtok(NULL,"/"))-1;
 		laserMode=(LaserMode)(col);
-		Lasers::instance()->setFlag("calibration",laserMode!=0);
+		Lasers::instance()->setFlag("calibration",laserMode!=CM_NORMAL);
+	    }
+	    handled=true;
 	}  else {
 	    // Pass down to currently selected relMapping
 	    dbg("Calibration.handleOSCMessage",1) << "Handing off message to curMap" << std::endl;
