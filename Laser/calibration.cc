@@ -409,7 +409,12 @@ int RelMapping::addMatches(std::vector<cv::detail::ImageFeatures> &features,    
 		if (!locked[j])
 		    continue;
 		Point flat1=Lasers::instance()->getLaser(pm.src_img_idx)->getTransform().deviceToFlat(getDevicePt(0,j));
-		Point flat2=Lasers::instance()->getLaser(pm.dst_img_idx)->getTransform().deviceToFlat(getDevicePt(1,j));
+		Point flat2;
+		if (isWorld)
+		    flat2=getDevicePt(1,j);
+		else
+		    // Note: world is only on unit2, never on unit1
+		    flat2=Lasers::instance()->getLaser(pm.dst_img_idx)->getTransform().deviceToFlat(getDevicePt(1,j));
 		dbg("RelMapping.addMatches",1) << "Adding pair from relMapping of laser " <<pm.src_img_idx << "@" << flat1 << " <->  laser " <<pm.dst_img_idx << "@" << flat2 << std::endl;
 		cv::KeyPoint kp1,kp2;
 		kp1.pt.x=flat1.X();
@@ -589,8 +594,17 @@ int Calibration::recompute() {
 	for (int j=0;j<p.matches.size();j++) {
 	    Point f1=Point(flat1[j].x,flat1[j].y);
 	    Point f2=Point(flat2[j].x,flat2[j].y);
-	    Point dev1=Lasers::instance()->getLaser(p.src_img_idx)->getTransform().flatToDevice(f1);
-	    Point dev2=Lasers::instance()->getLaser(p.dst_img_idx)->getTransform().flatToDevice(f2);
+	    Point dev1;
+	    if (p.src_img_idx < nunits)
+		dev1=Lasers::instance()->getLaser(p.src_img_idx)->getTransform().flatToDevice(f1);
+	    else
+		dev1=f1;  // World
+	    Point dev2;
+	    if (p.dst_img_idx < nunits)
+		dev2=Lasers::instance()->getLaser(p.dst_img_idx)->getTransform().flatToDevice(f2);
+	    else
+		dev2=f2;
+	    
 	    Point ferror=f2-f1;
 	    Point error=dev2-dev1;
 	    dbg("Calibration.recompute",1) << "L" << p.src_img_idx << "@" << f1 << "; " << dev1 << " - L" << p.dst_img_idx  << "@" << f2 << "; " << dev2 << " e=" << error << ", rms=" << ferror.norm() << "; " << error.norm() << std::endl;
