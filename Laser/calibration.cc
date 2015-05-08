@@ -254,12 +254,12 @@ void RelMapping::updateUI(bool flipX1,bool flipY1, bool flipX2, bool flipY2) con
     for (int i=0;i<locked.size();i++)
 	send("/cal/led/"+std::to_string(i+1),locked[i]?1.0:0.0);
     send("/cal/selpair/"+std::to_string(selected+1)+"/1",1.0);
-    send("/cal/xy/1",pt1[selected].X(),pt1[selected].Y());
     send("/cal/flipx/1",flipX1?1.0:0.0);
     send("/cal/flipy/1",flipY1?1.0:0.0);
     send("/cal/flipx/2",flipX2?1.0:0.0);
     send("/cal/flipy/2",flipY2?1.0:0.0);
 
+    send("/cal/xy/1",pt1[selected].X()*(flipX1?-1:1),pt1[selected].Y()*(flipY1?-1:1));
     send("/cal/x/1",getDevicePt(0,-1,true).X());
     send("/cal/y/1",getDevicePt(0,-1,true).Y());
     send("/cal/xy/2",pt2[selected].X()*(flipX2?-1:1),pt2[selected].Y()*(flipY2?-1:1));
