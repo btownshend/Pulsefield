@@ -79,6 +79,14 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
 	    pt->setY(std::max(-1.0f,pt->Y()-speedY));
 	handled=true;
+    } else if (tok=="est") {
+	if (atoi(nexttok)==2 && ~isWorld && ~locked[selected] && argv[0]->f > 0) {
+	    setDevicePt(Calibration::instance()->map(getDevicePt(0),unit1,unit2),1);
+	    dbg("RelMapping.handleOSCMessage",1) << "Estimated position for unit " << unit2 << ": " << pt2[selected] << std::endl;
+	} else if (atoi(nexttok)==1 && ~locked[selected] && argv[0]->f > 0) {
+	    setDevicePt(Calibration::instance()->map(getDevicePt(1),unit2,unit1),0);
+	    dbg("RelMapping.handleOSCMessage",1) << "Estimated position for unit " << unit1 << ": " << pt1[selected] << std::endl;
+	}
     }
     
     return handled;
