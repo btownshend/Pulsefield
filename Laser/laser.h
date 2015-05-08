@@ -22,6 +22,7 @@ class Laser: public DisplayDevice  {
     int intensityPts;		// Number of points to use to draw intensity image
     int preBlanks;	// Blanks before a move begins
     int postBlanks;  // Blanks after a move ends
+    float power;	// Laser power (0-100)
     struct etherdream *d;
     std::vector<etherdream_point> pts;  // Points to send/sent to etherdream buffer
     float spacing;  // Separation in world coordinates of point spacing
@@ -48,6 +49,7 @@ class Laser: public DisplayDevice  {
     float getSpacing() const { return spacing; }
     void setNPoints(int _npoints) { npoints=_npoints;  }
     void setSkew(int _skew) { blankingSkew=_skew; }
+    void setPower(float _power) { power=_power; }
     void setIntensityPts(int _intensityPts) { intensityPts=_intensityPts; }
     void setPreBlanks(int n) { preBlanks=n; }
     void setPostBlanks(int n) { postBlanks=n; }
@@ -57,6 +59,7 @@ class Laser: public DisplayDevice  {
 
     int getNPoints() const { return npoints;  }
     int getSkew() const  { return blankingSkew; }
+    float getPower() const  { return power; }
     int getIntensityPts() const  { return intensityPts; }
     int getPreBlanks() const  { return preBlanks; }
     int getPostBlanks() const { return postBlanks; }

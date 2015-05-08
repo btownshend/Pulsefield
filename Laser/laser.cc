@@ -30,6 +30,7 @@ Laser::Laser(int _unit): labelColor(0,0,0),maxColor(0,1,0) {
     PPS=40000;
     npoints=4000;
     blankingSkew=0; //3;
+    power=100;
     intensityPts=800;
     targetSegmentLen=0.01f;
     preBlanks=3;
@@ -92,6 +93,16 @@ void Laser::update() {
 	pts.insert(pts.end(), blanks.begin(), blanks.end());
     }
 
+    if (power<100) {
+	// Adjust power levels
+	dbg("Laser.update",2) << "Adjust laser power to " << power << "% " << std::endl;
+	for (int i=0;i<pts.size();i++) {
+	    pts[i].r*=power/100;
+	    pts[i].g*=power/100;
+	    pts[i].b*=power/100;
+	}
+    }
+    
     if (d==0) {
 	dbg("Laser.update",1) << "Laser not open" << std::endl;
 	return;
