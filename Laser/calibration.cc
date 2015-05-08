@@ -121,7 +121,6 @@ Calibration::Calibration(int _nunits): homographies(_nunits+1) {
     curMap=relMappings[0];
     speed=0.05;
     laserMode=CM_NORMAL;
-    updateUI();
     showStatus("Initalized");
 }
 

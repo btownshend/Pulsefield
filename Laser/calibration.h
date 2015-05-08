@@ -64,7 +64,10 @@ class Calibration {
     int recompute();		// Use acquired data to estimate transformations
     std::vector<cv::Mat> homographies;		// Each maps from laser flat space [-1,1] to world coordinates (which initially are arbitrary) use w=H*f
  public:
-    static void initialize(int nunits) { assert(!theInstance); theInstance=std::shared_ptr<Calibration>(new Calibration(nunits)); }
+    static void initialize(int nunits) { 
+	theInstance=std::shared_ptr<Calibration>(new Calibration(nunits)); 
+	theInstance->updateUI(); 	// After initialization is done
+    }
     static std::shared_ptr<Calibration> instance() {
 	assert(theInstance);
 	return theInstance;
