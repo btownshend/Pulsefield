@@ -613,6 +613,24 @@ int Calibration::recompute() {
     return resultCode;
 }
 
+void Calibration::testMappings() const {
+    std::vector<Point> worldPts = { Point(0,0), Point(0,1), Point(5,0), Point(0,5) };
+    std::vector<Point> flatPts = { Point(0,0), Point(0.5,0), Point(0.7,0.7) };
+    int laser=0;
+    Transform &t = Lasers::instance()->getLaser(laser)->getTransform();
+    for (int i=0;i<worldPts.size();i++) {
+	Point devPt=t.mapToDevice(worldPts[i]);
+	Point flatPt=t.deviceToFlat(devPt);
+	Point finalPt=t.flatToWorld(flatPt);
+	std::cout << "world: " << worldPts[i] << " -> device: " << devPt << " -> flat: " << flatPt << " -> world: " << finalPt << std::endl;
+    }
+    for (int i=0;i<flatPts.size();i++) {
+	Point devPt=t.flatToDevice(flatPts[i]);
+	Point worldPt=t.mapToWorld(devPt);
+	std::cout << "flat: " << flatPts[i] << " -> device: " << devPt << " -> world: " << worldPt << " -> dev: " << t.mapToDevice(worldPt) << std::endl;
+    }
+}
+
 // Map to/from device coordinates (-32767:32767 for lasers, 
 Point Calibration::map(Point p, int fromUnit, int toUnit) const {
     if (toUnit<0)
