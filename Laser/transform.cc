@@ -127,6 +127,11 @@ void Transform::recompute() {
 	    dbgn("Transform.recompute",1) << std::endl;
 	}
     }
+    floorToDeviceCache.clear();
+    calcOrigin();
+}
+
+void Transform::calcOrigin() {
     // Calculate down tilt of laser
     // Point aimed=deviceToWorld(Point(0,0));
     // Point closer=deviceToWorld(Point(0,-1000));
@@ -145,7 +150,6 @@ void Transform::recompute() {
     }
     
     dbg("Transform.recompute",1) << "origin=" << origin << std::endl;
-    floorToDeviceCache.clear();
 }
 
 // Convert  device coord to flat space (i.e. laser projection grid)
