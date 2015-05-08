@@ -5,7 +5,7 @@
 
 static const float WORLDSIZE=30;   // Maximum extents of world (in meters)
 
-std::shared_ptr<Calibration> Calibration::theInstance;   // Singleton
+std::shared_ptr<Calibration> Calibration::theInstance=NULL;   // Singleton
 
 static void send(std::string path, float value)  {
     TouchOSC::instance()->send(path,value);
