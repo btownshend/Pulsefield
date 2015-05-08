@@ -131,6 +131,27 @@ void Transform::recompute() {
     calcOrigin();
 }
 
+void Transform::setTransform(const cv::Mat& flatToWorld, const cv::Mat& worldToFlat) {
+    transform = flatToWorld;
+    dbg("Transform.setTransform",1) << "Transform=" << std::endl;
+    for (int i=0;i<transform.rows;i++) {
+	for (int j=0;j<transform.cols;j++)
+	    dbgn("Transform.setTransform",1) << transform.at<double>(i,j) << " ";
+	dbgn("Transform.setTransform",1) << std::endl;
+    }
+		
+    invTransform=worldToFlat;
+    dbg("Transform.setTransform",1) << "invTransform=" << std::endl;
+    for (int i=0;i<transform.rows;i++) {
+	for (int j=0;j<transform.cols;j++)
+	    dbgn("Transform.setTransform",1) << invTransform.at<double>(i,j) << " ";
+	dbgn("Transform.setTransform",1) << std::endl;
+    }
+    floorToDeviceCache.clear();
+    calcOrigin();
+}
+
+
 void Transform::calcOrigin() {
     // Calculate down tilt of laser
     // Point aimed=deviceToWorld(Point(0,0));

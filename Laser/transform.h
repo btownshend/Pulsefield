@@ -76,6 +76,7 @@ class Transform {
 
     // Compute transform matrix from set of points already provided
     void recompute();
+    void setTransform(const cv::Mat& flatToWorld, const cv::Mat& worldToFlat);	// Set transforms explicity
     void calcOrigin();	// Update estimate of origin
 
     // Setup mapping
