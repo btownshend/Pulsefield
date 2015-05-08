@@ -530,7 +530,8 @@ int Calibration::recompute() {
 	if (bestcnt < 4) {
 	    showStatus("Not enough calibration points to compute homography to "+(curUnit<nunits?"laser "+std::to_string(curUnit+1):"world")+"; only have "+std::to_string(bestcnt)+"/4 points.");
 	    resultCode = -1;
-	    break;
+	    homographies[curUnit]=cv::Mat::eye(3, 3, CV_32F);	// Make it a default transform
+	    continue;
 	}
 	std::vector<cv::Point2f> src,dst;
 
