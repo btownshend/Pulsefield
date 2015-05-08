@@ -481,7 +481,7 @@ void Laser::showOutline(const Bounds &b) {
 	Point constrainWorld=b.constrainPoint(world);
 	Point devPoint=t.mapToDevice(constrainWorld);
 	pts.push_back(t.cPointToEtherdream(CPoint(devPoint,outlineColor)));
-	dbgn("Lasers.showOutline",3) << flatPts[j].X() << ", " << flatPts[j].Y() << ", " << world.X() << "," << world.Y() << "," << constrainWorld.X() << "," << constrainWorld.Y() << "," << devPoint.X() << "," << devPoint.Y() << "," << pts[j].x << "," << pts[j].y << std::endl;
+	dbgn("Lasers.showOutline",10) << flatPts[j].X() << ", " << flatPts[j].Y() << ", " << world.X() << "," << world.Y() << "," << constrainWorld.X() << "," << constrainWorld.Y() << "," << devPoint.X() << "," << devPoint.Y() << "," << pts[j].x << "," << pts[j].y << std::endl;
     }
     prune();
     dbg("Lasers.showOutline",1) << "pts after prune=" << std::endl;
