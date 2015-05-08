@@ -9,11 +9,11 @@ std::shared_ptr<Calibration> Calibration::theInstance;   // Singleton
 
 static void send(std::string path, float value)  {
     TouchOSC::instance()->send(path,value);
-    dbg("Calibration.send",2) << "send(" << path << "," << value << ")" << std::endl;
+    dbg("Calibration.send",3) << "send(" << path << "," << value << ")" << std::endl;
 }
 static void send(std::string path, std::string value)  {
     TouchOSC::instance()->send(path,value);
-    dbg("Calibration.send",2) << "send(" << path << ",\"" << value << "\")" << std::endl;
+    dbg("Calibration.send",3) << "send(" << path << ",\"" << value << "\")" << std::endl;
 }
 static void send(std::string path, float val1, float val2)  {
     TouchOSC::instance()->send(path,val1,val2);
@@ -517,7 +517,7 @@ int Calibration::recompute() {
 	}
 	dbg("Calibration.recompute",1) << "Computing linkage to laser " << curUnit <<  " with " << bestcnt << " matches." << std::endl;
 	if (bestcnt < 4) {
-	    showStatus("Not enough calibration points to compute homography to laser "+std::to_string(curUnit)+"; only have "+std::to_string(bestcnt)+"/4 points.");
+	    showStatus("Not enough calibration points to compute homography to "+(curUnit<nunits?"laser "+std::to_string(curUnit+1):"world")+"; only have "+std::to_string(bestcnt)+"/4 points.");
 	    resultCode = -1;
 	    break;
 	}
