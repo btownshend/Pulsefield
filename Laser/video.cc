@@ -536,6 +536,8 @@ void Video::drawWorld(cairo_t *cr, float left, float top, float width, float hei
 
      // Flip y direction so LIDAR is at top center
      cairo_scale(cr,-1.0,1.0);
+     // Put LIDAR is at bottom center
+     cairo_scale(cr,-1.0,-1.0);
      float scale=std::min((float)width/bounds.width(),(float)height/bounds.height());
      cairo_scale(cr,scale,scale);
      float pixel=1.0/scale;
