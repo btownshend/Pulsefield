@@ -247,6 +247,7 @@ void RelMapping::updateUI() const {
     send("/cal/xy/2",pt2[selected].X(),pt2[selected].Y());
     send("/cal/x/2",getDevicePt(1,-1,true).X());
     send("/cal/y/2",getDevicePt(1,-1,true).Y());
+    std::vector<float> error=updateErrors();
     for (int i=0;i<error.size();i++)
 	if (isnan(error[i]))
 	    send("/cal/error/"+std::to_string(i+1),"");
@@ -280,7 +281,6 @@ void RelMapping::save(ptree &p) const {
 	dp.put("pt2.x",pt2[i].X());
 	dp.put("pt2.y",pt2[i].Y());
 	dp.put("locked",locked[i]);
-	dp.put("error",error[i]);
 	pairs.push_back(std::make_pair("",dp));
     }
     p.put_child("pairs",pairs);
@@ -578,24 +578,44 @@ int Calibration::recompute() {
     return resultCode;
 }
 
-void RelMapping::updateErrors(const cv::Mat &H1, const cv::Mat &H2) {
-    std::vector<cv::Point2f> p1, p2;
+// Map to/from device coordinates (-32767:32767 for lasers, 
+Point Calibration::map(Point p, int fromUnit, int toUnit) const {
+    if (toUnit<0)
+	toUnit=nunits;	// Map to world 
+    std::vector<cv::Point2f> p1, p2, world;
+    Point flat1;
+    if (fromUnit<nunits)
+	flat1=Lasers::instance()->getLaser(fromUnit)->getTransform().deviceToFlat(p);
+    else
+	flat1=p;
+	
+    p1.push_back(cv::Point2f(flat1.X(),flat1.Y()));
+
+    cv::perspectiveTransform(p1,world,homographies[fromUnit]);
+    cv::perspectiveTransform(world,p2,homographies[toUnit].inv());
+
+    Point flat2=Point(p2[0].x,p2[0].y);
+    Point dev2;
+
+    if (toUnit<nunits)
+	dev2=Lasers::instance()->getLaser(toUnit)->getTransform().flatToDevice(flat2);
+    else
+	dev2=flat2;
+    
+    dbg("Calibration.map",2) << "Mapped " << p << " on unit " << fromUnit << " to " << dev2 << " on  unit " << toUnit << std::endl;
+    return dev2;
+}
+
+std::vector<float> RelMapping::updateErrors() const {
+    std::vector<float> error(pt1.size());
     for (int j=0;j<pt1.size();j++) {
-	Point flat1=Lasers::instance()->getLaser(unit1)->getTransform().deviceToFlat(getDevicePt(0,j));
-	Point flat2=Lasers::instance()->getLaser(unit2)->getTransform().deviceToFlat(getDevicePt(1,j));
-	p1.push_back(cv::Point2f(flat1.X(),flat1.Y()));
-	p2.push_back(cv::Point2f(flat2.X(), flat2.Y()));
-    }
-    std::vector<cv::Point2f> mapped1,mapped2;
-    cv::perspectiveTransform(p1,mapped1,H1);
-    cv::perspectiveTransform(p2,mapped2,H2);
-    for (int j=0;j<mapped1.size();j++) {
-	Point dev1=Lasers::instance()->getLaser(unit1)->getTransform().flatToDevice(Point(mapped1[j].x,mapped1[j].y));
-	Point dev2=Lasers::instance()->getLaser(unit2)->getTransform().flatToDevice(Point(mapped2[j].x,mapped2[j].y));
-	Point err=dev2-dev1;
-	dbg("relMappings.updateErrors",1) << "L" << unit1 << "@" << dev1 << " - L" << unit2  << "@" << dev2 << " e=" << err << ", rms=" << err.norm() << std::endl;
+	Point w1=Calibration::instance()->map(getDevicePt(0,j),unit1);
+	Point w2=Calibration::instance()->map(getDevicePt(1,j),unit2);
+	Point err=w2-w1;
+	dbg("relMappings.updateErrors",1) << "L" << unit1 << "@" << pt1[j] << " -> " << w1 << " - L" << unit2  << "@" << pt2[j] << " -> " << w2  << ", e=" << err << ", rms=" << err.norm() << std::endl;
 	error[j]=err.norm();
     }
+    return error;
 }
 
 // Get the set of calibration points that should be drawn for the given laser
@@ -639,6 +659,3 @@ std::vector<Point> RelMapping::getCalPoints(int unit, bool selectedOnly) const {
 
     return result;
 }
-
-
-
