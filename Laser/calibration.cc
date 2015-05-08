@@ -537,41 +537,41 @@ int Calibration::recompute() {
 	    resultCode = -1;
 	    continue;
 	}
-	std::vector<cv::Point2f> src,dst;
-
-	for (int j=0;j<pairwiseMatches.size();j++) {
-	    cv::detail::MatchesInfo pm = pairwiseMatches[j];
-	    if (found[pm.src_img_idx] && pm.dst_img_idx==curUnit) {
-		for (int i=0;i<pm.matches.size();i++) {
-		    // Project the point
-		    std::vector<cv::Point2f> tmp(1),mapped(1);
-		    tmp[0]=features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt;
-		    cv::perspectiveTransform(tmp,mapped,homographies[pm.src_img_idx]);
-		    src.push_back(mapped[0]);
-		    dst.push_back(features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt);
-		    dbg("Calibration.recompute",2) << pm.dst_img_idx << "." << pm.matches[i].trainIdx << std::endl;
 	    homographies[curUnit]=cv::Mat::eye(3, 3, CV_64F);	// Make it a default transform
+	    std::vector<cv::Point2f> src,dst;
+
+	    for (int j=0;j<pairwiseMatches.size();j++) {
+		cv::detail::MatchesInfo pm = pairwiseMatches[j];
+		if (found[pm.src_img_idx] && pm.dst_img_idx==curUnit) {
+		    for (int i=0;i<pm.matches.size();i++) {
+			// Project the point
+			std::vector<cv::Point2f> tmp(1),mapped(1);
+			tmp[0]=features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt;
+			cv::perspectiveTransform(tmp,mapped,homographies[pm.src_img_idx]);
+			src.push_back(mapped[0]);
+			dst.push_back(features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt);
+			dbg("Calibration.recompute",2) << pm.dst_img_idx << "." << pm.matches[i].trainIdx << std::endl;
 		}
 	    }
-	    else if (found[pm.dst_img_idx] && pm.src_img_idx==curUnit) {
-		for (int i=0;i<pm.matches.size();i++) {
-		    // Project the point
-		    std::vector<cv::Point2f> tmp(1),mapped(1);
-		    tmp[0]=features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt;
-		    cv::perspectiveTransform(tmp,mapped,homographies[pm.dst_img_idx]);
-		    src.push_back(mapped[0]);
-		    dst.push_back(features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt);
+		else if (found[pm.dst_img_idx] && pm.src_img_idx==curUnit) {
+		    for (int i=0;i<pm.matches.size();i++) {
+			// Project the point
+			std::vector<cv::Point2f> tmp(1),mapped(1);
+			tmp[0]=features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt;
+			cv::perspectiveTransform(tmp,mapped,homographies[pm.dst_img_idx]);
+			src.push_back(mapped[0]);
+			dst.push_back(features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt);
 		}
 	    }
+	    assert(src.size()==bestcnt);
+	    dbg("Calibration.recompute",2) << "Computing homography: " << std::endl;
+	    for (int k=0;k<src.size();k++) {
+		dbg("Calibration.recompute",2) << "   " << src[k] << "    " << dst[k]  << std::endl;
+	    }
+	    homographies[curUnit]=cv::findHomography(dst,src); // ,CV_RANSAC,.001);
+	    found[curUnit]=true;
 	}
-	assert(src.size()==bestcnt);
-	dbg("Calibration.recompute",2) << "Computing homography: " << std::endl;
-	for (int k=0;k<src.size();k++) {
-	    dbg("Calibration.recompute",2) << "   " << src[k] << "    " << dst[k]  << std::endl;
-	}
-	homographies[curUnit]=cv::findHomography(dst,src); // ,CV_RANSAC,.001);
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Homography for laser " << curUnit << " = \n",homographies[curUnit]) << std::endl;
-	found[curUnit]=true;
     }
     
     // Evaluate matches
