@@ -103,6 +103,20 @@ Point RelMapping::getDevicePt(int i,int which,bool doRound) const {
     return res;
 }
        
+// Set coordinate of pt[i] in device [-32767,32767] or world ([-WORLDSIZE,WORLDSIZE],[0,WORLDSIZE])
+void  RelMapping::setDevicePt(Point p, int i,int which)  {
+    dbg("RelMapping.setDevicePt",2) <<"setDevicePt(" << p << "," << i << "," << which << ")" << std::endl;
+    Point res;
+    if (which==-1)
+	which=selected;
+    if (i==0)
+	pt1[which]=p/32767;
+    else if (isWorld) {
+	pt2[which]=Point(p.X()/WORLDSIZE,p.Y()*2/WORLDSIZE-1);
+    } else
+	pt2[which]=p/32767;
+}
+       
 Calibration::Calibration(int _nunits): homographies(_nunits+1) {
     nunits = _nunits;
     dbg("Calibration.Calibration",1) << "Constructing calibration with " << nunits << " units." << std::endl;

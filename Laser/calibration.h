@@ -43,6 +43,7 @@ public:
     int getUnit(int i) { if (i==0) return unit1; else return unit2; }
     void sendCnt() const;  // Send OSC with cnt of locked points to TouchOSC
     Point getDevicePt(int i,int which=-1,bool doRound=false) const;    // Get coordinate of pt[i] in device [-32767,32767] or world ([-WORLDSIZE,WORLDSIZE],[0,WORLDSIZE])
+    void setDevicePt(Point p, int i,int which=-1);
     std::vector<float> updateErrors() const;
     std::vector<Point> getCalPoints(int unit,bool selectedOnly) const;
 };
