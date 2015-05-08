@@ -103,6 +103,9 @@ std::vector<cv::Point2f> Transform::convertPoints(const std::vector<Point> &pts)
 
 // Find the perspective transform that best matches the 3 points loaded
 void Transform::recompute() {
+    dbg("Transform.recompute",1) << "Ignoring call to Transform::recompute() -- using Calibration instead." << std::endl;
+    return;
+    
     dbg("Transform.recompute",1) << "Set transform using mapping: " << std::endl;
     for (unsigned int i=0;i<floorpts.size();i++) {
 	dbg("Transform.recompute",1) << "W@" << floorpts[i] << "->D@" << devpts[i] << std::endl;
