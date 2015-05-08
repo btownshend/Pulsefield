@@ -392,6 +392,7 @@ void Calibration::load(ptree &p) {
     } catch (boost::property_tree::ptree_bad_path ex) {
 	std::cerr << "Unable to find 'mappings' in laser settings" << std::endl;
     }
+    recompute();
     showStatus("Loaded configuration");
 }
 
