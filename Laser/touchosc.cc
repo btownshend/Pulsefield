@@ -385,6 +385,9 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		    int col=atoi(strtok(NULL,"/"))-1;
 		    dbg("TouchOSC",1) << "Got /ui/laser/enable, row=" << row << ", col=" << col << ", value=" << argv[0]->f << std::endl;
 		    Lasers::instance()->enable(col,argv[0]->f>0.5);
+		} else if (strcmp(tok,"power")==0) {
+		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
+		    laser->setPower(argv[0]->f);
 		} else if (strcmp(tok,"xmin")==0 ||strcmp(tok,"ymin")==0 ||strcmp(tok,"xmax")==0 ||strcmp(tok,"ymax")==0||strcmp(tok,"hfov")||strcmp(tok,"vfov")) {
 		    dbg("TouchOSC",1) << "Normalize range[ " << tok << "] set to " << argv[0]->f << std::endl;
 		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
