@@ -171,6 +171,8 @@ Calibration::Calibration(int _nunits): homographies(_nunits+1), statusLines(3), 
     curMap=relMappings[0];
     speed=0.05;
     laserMode=CM_NORMAL;
+    for (int i=0;i<statusLines.size();i++)
+	statusLines[i]="";
     showStatus("Initalized");
 }
 
@@ -270,6 +272,8 @@ void Calibration::updateUI() const {
 	e2cnt+=relMappings[i]->getE2Cnt();
     }
     send("/cal/error/total",std::round(sqrt(e2sum/e2cnt)*1000)/1000);
+    for (int i=0;i<statusLines.size();i++)
+	send("/cal/status/"+std::to_string(i+1),statusLines[i]);
 }
 
 void RelMapping::sendCnt() const {
@@ -326,11 +330,11 @@ void RelMapping::updateUI(bool flipX1,bool flipY1, bool flipX2, bool flipY2) con
 }
 
 // Display status in touchOSC
-void Calibration::showStatus(std::string line1,std::string line2, std::string line3) const {
-    send("/cal/status/1",line1);
-    send("/cal/status/2",line2);
-    send("/cal/status/3",line3);
-    dbg("Calibration.showStatus",1) << line1 << "; " << line2 << "; " << line3 << std::endl;
+void Calibration::showStatus(std::string line)  {
+    dbg("Calibration.showStatus",1) << line << std::endl;
+    for (int i=0;i<statusLines.size()-1;i++)
+	statusLines[i]=statusLines[i+1];
+    statusLines[statusLines.size()-1]=line;
 }
 
 void RelMapping::save(ptree &p) const {
@@ -394,7 +398,7 @@ void Calibration::save(ptree &p) const {
 	flips.push_back(std::make_pair("",f));
     }
     p.put_child("flips",flips);
-    showStatus("Saved configuration");
+    ((Calibration *)this)->showStatus("Saved configuration");
 }
 
 void Calibration::load(ptree &p) {

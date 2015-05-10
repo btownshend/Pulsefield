@@ -63,12 +63,13 @@ class Calibration {
     std::vector<bool> flipX, flipY;	// to flip display and arrow directions -- one for each unit+world at end
 
     float speed;		// speed of arrow movements in device coords/click
-    void showStatus(std::string line1,std::string line2="", std::string line3="") const;	// Display status in touchOSC
+    void showStatus(std::string line);	// Display status in touchOSC
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
     Calibration(int nunits);   // Only ever called by initialize()
     int recompute();		// Use acquired data to estimate transformations
     std::vector<cv::Mat> homographies;		// Each maps from laser flat space [-1,1] to world coordinates (which initially are arbitrary) use w=H*f
     void testMappings() const;
+    std::vector<std::string> statusLines;		// Status lines to display
     std::vector<cv::Mat> poses;
  public:
     static void initialize(int nunits) { 
