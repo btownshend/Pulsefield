@@ -55,7 +55,7 @@ public:
 // Class for handling calibration of laser mappings
 // Handles interface to touchOSC calibration GUI
 class Calibration {
-    enum LaserMode {CM_NORMAL=0,CM_CURPT=1,CM_CURPAIR=2,CM_ALL=3} laserMode;
+    enum LaserMode {CM_NORMAL=0,CM_HOME=1,CM_CURPT=2,CM_CURPAIR=3,CM_ALL=4} laserMode;
     static std::shared_ptr<Calibration> theInstance;   // Singleton
     int nunits;
     std::vector<std::shared_ptr<RelMapping> > relMappings;		// Relative mappings between lasers

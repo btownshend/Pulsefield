@@ -718,6 +718,9 @@ std::vector<Point> Calibration::getCalPoints(int unit) const {
     case CM_NORMAL:
 	// Nothing to do
 	break;
+    case CM_HOME:
+	result.push_back(Point(0,0));
+	break;
     case CM_CURPT:
 	result = curMap->getCalPoints(unit,true);
 	break;
