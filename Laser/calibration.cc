@@ -30,6 +30,34 @@ static float rotaryToSpeed(float rotary) {
     return pow(10,rotary*log10(1000))/32767;
 }
 
+// From  http://dsp.stackexchange.com/questions/1484/how-to-compute-camera-pose-from-homography-matrix
+static void cameraPoseFromHomography(const cv::Mat& H, cv::Mat& pose)
+{
+    pose = cv::Mat::eye(3, 4, CV_64FC1); //3x4 matrix
+    float norm1 = (float)norm(H.col(0)); 
+    float norm2 = (float)norm(H.col(1));
+    float tnorm = (norm1 + norm2) / 2.0f;
+
+    cv::Mat v1 = H.col(0);
+    cv::Mat v2 = pose.col(0);
+
+    cv::normalize(v1, v2); // Normalize the rotation
+
+    v1 = H.col(1);
+    v2 = pose.col(1);
+
+    cv::normalize(v1, v2);
+
+    v1 = pose.col(0);
+    v2 = pose.col(1);
+
+    cv::Mat v3 = v1.cross(v2);  //Computes the cross-product of v1 and v2
+    cv::Mat c2 = pose.col(2);
+    v3.copyTo(c2);      
+
+    pose.col(3) = H.col(2) / tnorm; //vector t [R|t]
+}
+
 bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,bool flipX1, bool flipY1, bool flipX2, bool flipY2) {
     dbg("RelMapping",1) << "tok=" << tok << ", speed=" << speed << std::endl;
     bool handled=false;
@@ -125,7 +153,7 @@ void  RelMapping::setDevicePt(Point p, int i,int which)  {
 	pt2[which]=p/32767;
 }
        
-Calibration::Calibration(int _nunits): homographies(_nunits+1) {
+Calibration::Calibration(int _nunits): homographies(_nunits+1), statusLines(3), poses(_nunits) {
     nunits = _nunits;
     dbg("Calibration.Calibration",1) << "Constructing calibration with " << nunits << " units." << std::endl;
     assert(nunits>0);
@@ -593,11 +621,21 @@ int Calibration::recompute() {
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Final homography for laser " << i << " = \n",homographies[i]) << std::endl;
     }
     
+    // Compute origins
+    for (int i=0;i<nunits;i++) {
+	cameraPoseFromHomography(homographies[i].inv(),poses[i]);
+
+	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Pose for laser " << i << " = \n",poses[i]) << std::endl;
+	dbg("Calibration.recompute",1) << "Laser " << i << " at [" << poses[i].at<double>(0,3) << "," << poses[i].at<double>(1,3) << "," << poses[i].at<double>(2,3) << "]" << std::endl;
+    }
+    
     // Push mappings to transforms.cc
     for (int i=0;i<nunits;i++) {
 	cv::Mat inv=homographies[i].inv();
 	inv=inv/inv.at<double>(2,2);
 	Lasers::instance()->getLaser(i)->getTransform().setTransform(inv,homographies[i]);
+	// Last column of poses is translation -- origin is negative of the translation
+	Lasers::instance()->getLaser(i)->getTransform().setOrigin(-Point(poses[i].at<double>(0,3),poses[i].at<double>(1,3)));
     }
     testMappings();
 

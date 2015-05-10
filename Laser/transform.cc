@@ -156,6 +156,7 @@ void Transform::setTransform(const cv::Mat& flatToWorld, const cv::Mat& worldToF
 
 
 void Transform::calcOrigin() {
+    return;	// Obsolete -- origin set by calibration
     // Calculate down tilt of laser
     // Point aimed=deviceToWorld(Point(0,0));
     // Point closer=deviceToWorld(Point(0,-1000));
