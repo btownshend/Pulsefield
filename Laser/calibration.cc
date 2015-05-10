@@ -484,13 +484,13 @@ int RelMapping::addMatches(std::vector<cv::detail::ImageFeatures> &features,    
 }
 
 std::ostream &flatMat(std::ostream &s, const cv::Mat &m) {
+    assert(m.type()==CV_64F);
     s << "[";
-    cv::Size sz=m.size();
-    for (int i=0;i<sz.width;i++) {
-	for (int j=0;j<sz.height;j++)
+    for (int i=0;i<m.rows;i++) {
+	for (int j=0;j<m.cols;j++)
 	    s << m.at<double>(i,j) << " ";
 	s << std::endl;
-	if (i==sz.width-1)
+	if (i==m.cols-1)
 	    s << "]";
     }
     return s;
@@ -761,3 +761,4 @@ std::vector<Point> RelMapping::getCalPoints(int unit, bool selectedOnly) const {
 
     return result;
 }
+
