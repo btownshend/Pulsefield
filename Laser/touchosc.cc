@@ -153,8 +153,10 @@ void Settings::sendOSC(int selectedGroup) const {
 void TouchOSC::frameTick_impl(int frame) {
     dbg("TouchOSC.frameTick",3) << "Frame " << frame << std::endl;
     if (frame % 50 == 0) {
-	if (send("/health/LS",(frame%100 ==0)?1.0f:0.0f) <0 ) 
+	static bool toggle;
+	if (send("/health/LS",toggle?1.0f:0.0f) <0 ) 
 	    return;
+	toggle=!toggle;
     }
     if (frame % 50 == 4) {
 	updateConnectionMap();
