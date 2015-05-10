@@ -158,7 +158,7 @@ void TouchOSC::frameTick_impl(int frame) {
 	    return;
 	toggle=!toggle;
     }
-    if (frame % 50 == 4) {
+    if (frame % 100 == 4) {
 	updateConnectionMap();
     }
     if (frame % 100 == 2) {
