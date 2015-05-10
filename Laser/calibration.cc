@@ -255,7 +255,8 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	    handled=curMap->handleOSCMessage(tok,argv,speed,flipX[curMap->getUnit(0)],flipY[curMap->getUnit(0)],flipX[curMap->getUnit(1)],flipY[curMap->getUnit(1)]);
 	}
     }
-    updateUI();
+    if (handled)
+	updateUI();
     delete pathCopy;
     return handled?0:1;
 }
