@@ -303,9 +303,9 @@ void OSCHandler::processIncoming() {
 	}
 	if (FAKEENABLE) {
 	    float timeSinceLast= (now.tv_sec-lastFrameTime.tv_sec)+(now.tv_usec-lastFrameTime.tv_usec)/1e6;
-	    if ((lastUpdateFrame<=1 && timeSinceLast>1.0f/FAKERATE) || timeSinceLast> FRAMETIMEOUT) {
+	    if (timeSinceLast>faking?1.0f/FAKERATE:FRAMETIMEOUT) {
 		dbg("OSCHandler.processIncoming",1) << "Faking a frame message" << std::endl;
-		pfframe(lastUpdateFrame?0:1);	// Simulate a frame message
+		pfframe(lastUpdateFrame+1,true);	// Simulate a frame message
 	    }
 	}
 	int nbytes=lo_server_recv_noblock(s,(int)(secsToNextRender*1000+1));
@@ -553,8 +553,16 @@ void OSCHandler::update(int frame) {
     // Not needed -- using frame for updates
 }
 
-void OSCHandler::pfframe(int frame) {
+void OSCHandler::pfframe(int frame, bool fake) {
     dbg("OSCHandler.pfframe",1) << "pfframe(" << frame << "), lastUpdateFrame=" << lastUpdateFrame << std::endl;
+    if (!fake && faking) {
+	dbg("OSCHanlder",0) << "Received real frame -- turning off faking" << std::endl;
+	faking=false;
+    }
+    if (fake && !faking) {
+	dbg("OSCHanlder",0) << "No frames received -- turning on faking" << std::endl;
+	faking=true;
+    }
     gettimeofday(&lastFrameTime,0);
     lastUpdateFrame=frame;
     lasers->setFrame(frame);

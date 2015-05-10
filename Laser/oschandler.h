@@ -36,6 +36,7 @@ class OSCHandler {
     int lastUpdateFrame;   // Frame of last /laser/update message received
     struct timeval lastFrameTime;	// Time of receipt of last frame message
     Drawing *currentDrawing();   // Get currently targetted drawing or NULL if none.
+    bool faking;				// True if we are currently faking frames 
  public:
     OSCHandler(int port, std::shared_ptr<Lasers> lasers, std::shared_ptr<Video> video);
     ~OSCHandler();
@@ -83,7 +84,7 @@ class OSCHandler {
     void map(int unit, int pt, Point world, Point local);
     //    void setTransform(int unit);
 
-    void pfframe(int frame);
+    void pfframe(int frame, bool fake=false);
     void pfbody(Point pos);
     void pfleg(Point pos);
     void pfbackground(int scanpt, int totalpts, float angleDeg, float range) { 
