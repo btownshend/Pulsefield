@@ -42,7 +42,8 @@ void Music::frameTick(int frame) {
     if (frame % 10 == 0) {
 	predict();
 	TouchOSC::instance()->send("/ui/beat",std::to_string(getLastBar())+":"+std::to_string((int)getLastBeat()));
-	TouchOSC::instance()->send("/ui/tempo",std::to_string((int)getTempo()));
     }
+    if (frame % 50 == 0)
+	TouchOSC::instance()->send("/ui/tempo",std::to_string((int)getTempo()));
 }
 
