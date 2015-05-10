@@ -91,6 +91,7 @@ class Transform {
     void load(ptree &p);
 
     // Origin
+    void setOrigin(const Point &p) { origin=p; }
     Point getOrigin() const { return origin; }
 };
 
