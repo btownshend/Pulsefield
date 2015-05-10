@@ -340,6 +340,7 @@ void Laser::showIntensity() {
     for (;pt.y>=-gsize;pt.y-=incr)
 	pts.push_back(pt);
 
+    assert(pts.size() >= MINPOINTS);	// Make sure we don't add blanking during update()
     update();
 }
 
