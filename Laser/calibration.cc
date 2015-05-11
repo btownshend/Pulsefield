@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "calibration.h"
 #include "lasers.h"
 #include "dbg.h"
@@ -633,6 +634,9 @@ int Calibration::recompute() {
     
     // Compute origins
     for (int i=0;i<nunits;i++) {
+	cameraPoseFromHomography(homographies[i],poses[i]);
+	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Inverse pose for laser " << i << " = \n",poses[i]) << std::endl;
+
 	cameraPoseFromHomography(homographies[i].inv(),poses[i]);
 
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Pose for laser " << i << " = \n",poses[i]) << std::endl;
@@ -645,7 +649,7 @@ int Calibration::recompute() {
 	inv=inv/inv.at<double>(2,2);
 	Lasers::instance()->getLaser(i)->getTransform().setTransform(inv,homographies[i]);
 	// Last column of poses is translation -- origin is negative of the translation
-	Lasers::instance()->getLaser(i)->getTransform().setOrigin(-Point(poses[i].at<double>(0,3),poses[i].at<double>(1,3)));
+	Lasers::instance()->getLaser(i)->getTransform().setOrigin(Point(poses[i].at<double>(0,3),-poses[i].at<double>(1,3)));
     }
     testMappings();
 
