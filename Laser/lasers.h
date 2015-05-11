@@ -33,12 +33,12 @@ class Lasers {
 
     // Flags
     std::map<std::string, bool> flags;
-    Lasers(int nunits);   // Only ever  called by initialize
+    Lasers(int nunits,bool simulate);   // Only ever  called by initialize
 
     // Configuration file
     Configuration config;
 public:
-    static void initialize(int nunits) { assert(!theInstance); theInstance=std::shared_ptr<Lasers>(new Lasers(nunits)); }
+    static void initialize(int nunits, bool simulate) { assert(!theInstance); theInstance=std::shared_ptr<Lasers>(new Lasers(nunits,simulate)); }
     static std::shared_ptr<Lasers> instance() {
 	assert(theInstance);
 	return theInstance;

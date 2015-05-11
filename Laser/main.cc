@@ -7,6 +7,7 @@
 void usage(int argc,char *argv[]) {
     fprintf(stderr, "Usage: %s [-P port] [-n nlaser] [[-D filename] -d debug]\n",argv[0]);
     fprintf(stderr,"\t-P port\t\t\tset port to listen on (default: 7780)\n");
+    fprintf(stderr,"\t-s\t\tsimulate lasers\n");
     fprintf(stderr,"\t-n nlaser\t\tnumber of laser devices\n");
     fprintf(stderr,"\t-d debug\t\tset debug option (e.g -d4, -dLaser:4)\n");
     fprintf(stderr,"\t-D file\t\tset debug filename (default Debug.out)\n");
@@ -17,9 +18,10 @@ int main(int argc, char *argv[]) {
     int ch;
     int nlaser=1;
     int port=7780;
+    bool simulate=false;
     SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 
-    while ((ch=getopt(argc,argv,"d:n:P:D:"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:n:P:D:s"))!=-1) {
 	switch (ch) {
 	case 'p':
 	    port=atoi(optarg);
@@ -33,6 +35,9 @@ int main(int argc, char *argv[]) {
 	case 'D':
 	    SetDebug("xxx:1",optarg);
 	    break;
+	case 's':
+	    simulate=true;
+	    break;
 	default:
 	    usage(argc,argv);
 	}
@@ -45,7 +50,7 @@ int main(int argc, char *argv[]) {
 
     
     dbg("main",1) << "Creating lasers" << std::endl;
-    Lasers::initialize(nlaser);
+    Lasers::initialize(nlaser,simulate);
     Calibration::initialize(nlaser);
     Lasers::instance()->load();
     

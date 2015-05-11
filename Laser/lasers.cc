@@ -10,13 +10,15 @@ static const float TARGETSEP=0.6f;
 
 std::shared_ptr<Lasers> Lasers::theInstance;   // Singleton
 
-Lasers::Lasers(int nlasers): lasers(nlasers), config("settings_laser.json")  {
-    etherdream_lib_start();
+Lasers::Lasers(int nlasers,bool simulate): lasers(nlasers), config("settings_laser.json")  {
+    if (!simulate)
+	etherdream_lib_start();
 
     dbg("Lasers.Lasers",1) << "Constructing " << nlasers << " lasers." << std::endl;
     for (unsigned int i=0;i<lasers.size();i++) {
 	lasers[i]=std::shared_ptr<Laser>(new Laser(i));
-	lasers[i]->open();
+	if (!simulate)
+	    lasers[i]->open();
     }
     needsRender=true;
     if (pthread_mutex_init(&mutex,NULL)) {
