@@ -375,15 +375,15 @@ void Laser::showCalibration() {
 
 	etherdream_point ptmp=pt;
 	int rx=0,ry=0;
-	for (;rx<LINELENGTHS/2 && pt.x+rx<32767;rx+=incr) {
+	for (;rx<LINELENGTHS/2 && pt.x+rx<32767-incr;rx+=incr) {
 	    ptmp.x=pt.x+rx;
 	    pts.push_back(ptmp);
 	}
-	for (;rx>-LINELENGTHS/2 && pt.x+rx>=-32767;rx-=incr) {
+	for (;rx>-LINELENGTHS/2 && pt.x+rx>=-32767+incr;rx-=incr) {
 	    ptmp.x=pt.x+rx;
 	    pts.push_back(ptmp);
 	}
-	for (;rx<0 && pt.x+rx<32767;rx+=incr) {
+	for (;rx<0 && pt.x+2*rx<32767-incr;rx+=incr) {
 	    ptmp.x=pt.x+rx;
 	    pts.push_back(ptmp);
 	}
@@ -391,15 +391,15 @@ void Laser::showCalibration() {
 	for (int j=0;j<CENTERPOINTS/2;j++)
 	    pts.push_back(pt);		// Stop at middle for a bit
 
-	for (;ry<LINELENGTHS/2 && pt.y+ry<32767;ry+=incr) {
+	for (;ry<LINELENGTHS/2 && pt.y+ry<32767-incr;ry+=incr) {
 	    ptmp.y=pt.y+ry;
 	    pts.push_back(ptmp);
 	}
-	for (;ry>-LINELENGTHS/2 && pt.y+ry>=-32767;ry-=incr) {
+	for (;ry>-LINELENGTHS/2 && pt.y+ry>=-32767+incr;ry-=incr) {
 	    ptmp.y=pt.y+ry;
 	    pts.push_back(ptmp);
 	}
-	for (;ry<0&& pt.y+ry<32767;ry+=incr) {
+	for (;ry<0&& pt.y+ry<32767-incr;ry+=incr) {
 	    ptmp.y=pt.y+ry;
 	    pts.push_back(ptmp);
 	}
