@@ -303,7 +303,7 @@ void OSCHandler::processIncoming() {
 	}
 	if (FAKEENABLE) {
 	    float timeSinceLast= (now.tv_sec-lastFrameTime.tv_sec)+(now.tv_usec-lastFrameTime.tv_usec)/1e6;
-	    if (timeSinceLast>faking?1.0f/FAKERATE:FRAMETIMEOUT) {
+	    if (timeSinceLast>(faking?1.0f/FAKERATE:FRAMETIMEOUT)) {
 		dbg("OSCHandler.processIncoming",1) << "Faking a frame message" << std::endl;
 		pfframe(lastUpdateFrame+1,true);	// Simulate a frame message
 	    }
