@@ -556,11 +556,11 @@ void OSCHandler::update(int frame) {
 void OSCHandler::pfframe(int frame, bool fake) {
     dbg("OSCHandler.pfframe",1) << "pfframe(" << frame << "), lastUpdateFrame=" << lastUpdateFrame << std::endl;
     if (!fake && faking) {
-	dbg("OSCHanlder",0) << "Received real frame -- turning off faking" << std::endl;
+	dbg("OSCHandler",0) << "Received real frame -- turning off faking" << std::endl;
 	faking=false;
     }
     if (fake && !faking) {
-	dbg("OSCHanlder",0) << "No frames received -- turning on faking" << std::endl;
+	dbg("OSCHandler",0) << "No frames received -- turning on faking" << std::endl;
 	faking=true;
     }
     gettimeofday(&lastFrameTime,0);
