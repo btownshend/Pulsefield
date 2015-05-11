@@ -13,7 +13,8 @@ Transform::Transform(): floorpts(4), devpts(4) {
     miny=-.76f;  // Needs to be less than extreme values in etherdream (short) values 
     maxy=.96f;
     clear(Bounds(-6,0,6,6));
-
+    origin=Point(0,0);
+    
     if (false) {
 	// Test conversions
 	Point devPt=Point(0,0);
