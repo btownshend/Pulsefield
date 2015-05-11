@@ -420,10 +420,26 @@ void Laser::showCalibration() {
 void Laser::showOutline(const Bounds &b) {
     Transform &t=getTransform();
 
-    if (!b.contains(t.flatToWorld(Point(0,0)))) {
-	dbg("Lasers.showOutline",1) << "Laser not aiming at active area (aimed at " << t.flatToWorld(Point(0,0)) << "), not drawing bounds" << std::endl;
-	return;
+    Point inside;	// A point that is in bounds
+    std::vector<Point> insideTest={Point(0,0),Point(0,-1),Point(1,0),Point(0,-1),Point(0,1)};
+    bool found=false;
+    for (float mult=1;mult>0.01;mult/=2) {
+      for (int i=0;i<insideTest.size();i++) {
+	inside=insideTest[i]*mult;
+	dbg("Laser.showOutline",3) << "Try " << inside << " -> " << t.flatToWorld(inside) << std::endl;
+	if (b.contains(t.flatToWorld(inside))) {
+	  found=true;
+	  break;
+	}
+      }
+      if (found)
+	break;
     }
+    if (!found) {
+      dbg("Laser.showOutline",1) << "Laser not aiming at active area and unable to find inside point (aimed at " << t.flatToWorld(Point(0,0)) << "), not drawing bounds" << std::endl;
+      return;
+    }
+    dbg("Laser.showOutline",3) << "Inside point=" << inside << std::endl;
 
     const Color outlineColor=Color(0.0,1.0,0.0);
     const bool drawDiagonals=false;
@@ -475,11 +491,11 @@ void Laser::showOutline(const Bounds &b) {
 	    flatPts.push_back(p);
 	}
     }
-    dbg("Lasers.showOutline",3) << "outline (flat,dev)=" << std::endl;
+    dbg("Laser.showOutline",3) << "outline (flat,dev)=" << std::endl;
     for (int j=0;j<flatPts.size();j++) {
 	Point world=t.flatToWorld(flatPts[j]*0.99f);	// Inset slightly
 	if (!b.contains(world)) {
-	    Point good=Point(0,0);  // Had checked above that 0,0 is good!
+	    Point good=inside;
 	    Point bad=flatPts[j];
 	    while ((bad-good).norm() > .001) {
 	       flatPts[j]=(good+bad)/2;
@@ -493,12 +509,12 @@ void Laser::showOutline(const Bounds &b) {
 	Point constrainWorld=b.constrainPoint(world);
 	Point devPoint=t.mapToDevice(constrainWorld);
 	pts.push_back(t.cPointToEtherdream(CPoint(devPoint,outlineColor)));
-	dbgn("Lasers.showOutline",10) << flatPts[j].X() << ", " << flatPts[j].Y() << ", " << world.X() << "," << world.Y() << "," << constrainWorld.X() << "," << constrainWorld.Y() << "," << devPoint.X() << "," << devPoint.Y() << "," << pts[j].x << "," << pts[j].y << std::endl;
+	dbgn("Laser.showOutline",10) << flatPts[j].X() << ", " << flatPts[j].Y() << ", " << world.X() << "," << world.Y() << "," << constrainWorld.X() << "," << constrainWorld.Y() << "," << devPoint.X() << "," << devPoint.Y() << "," << pts[j].x << "," << pts[j].y << std::endl;
     }
     prune();
-    dbg("Lasers.showOutline",1) << "pts after prune=" << std::endl;
+    dbg("Laser.showOutline",1) << pts.size() << " pts after prune=" << std::endl;
     for (int i=0;i<pts.size();i++)
-	dbgn("Lasers.showOutline",1) << pts[i].x << "," <<pts[i].y << "," <<pts[i].r << "," <<pts[i].g << "," <<pts[i].b << std::endl;
+	dbgn("Laser.showOutline",1) << pts[i].x << "," <<pts[i].y << "," <<pts[i].r << "," <<pts[i].g << "," <<pts[i].b << std::endl;
     update();
 }
 
