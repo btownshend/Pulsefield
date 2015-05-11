@@ -134,6 +134,11 @@ Point RelMapping::getDevicePt(int i,int which,bool doRound) const {
 	return res;
     } else
 	res=pt2[which]*32767;
+    if (res.X() <-32768 || res.Y() < -32768 || res.X() > 32767 || res.Y() > 32767) {
+	dbg("RelMapping.getDevicePt",1) << "Point out of bounds: " << res << std::endl;
+	res.setX(std::min(32767.0f,std::max(-32768.0f,res.X())));
+	res.setY(std::min(32767.0f,std::max(-32768.0f,res.Y())));
+    }
     if (doRound)
 	res=Point(std::round(res.X()),std::round(res.Y()));
     return res;
