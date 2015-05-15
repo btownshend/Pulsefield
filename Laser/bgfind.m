@@ -7,7 +7,8 @@ dtheta=(bg(2,3)-bg(1,3))*pi/180;
 pt=[-y,x];
 obj=0;
 maxobj=0
-orienterror=30;		% Up to 20% off of having corner pointing at LIDAR
+cornerError=20;		% Error in angle of corner in degrees
+orienterror=30;		% Error in which way corner is aiming in degrees
 maxsep=dist*dtheta*tand(45+orienterror);
 for i=2:size(pt,1)
   dpt=pt(i)-pt(i-1);
@@ -43,9 +44,9 @@ for i=1:max(obj)
     fprintf('reject\n');
     obj(obj==i)=0;
   else
-    [corners{i},minerr,angle]=cornerfit(pts);
-    fprintf('RMS err=%.1fcm angle=%.0f ',minerr*100, angle);
-    if minerr>0.005 || abs(angle-90)>20
+    [corners{i},minerr,angle, orient]=cornerfit(pts);
+    fprintf('RMS err=%.1fcm angle=%.0f orient=%.0f ',minerr*100, angle, orient);
+    if minerr>0.005 || abs(angle-90)>cornerError || abs(orient)>orienterror
       fprintf('reject\n');
       obj(obj==i)=0;
     else
@@ -57,14 +58,15 @@ end
 setfig('bg');clf;
 plot(0,0,'o');
 hold on;
+plot(pt(:,1)*100,pt(:,2)*100,'.k','MarkerSize',2);
 for i=unique(obj)
   if i==0 || isnan(i)
     continue;
   end
   ptmp=pt;
   ptmp(obj~=i,:)=nan;
-  h=plot(ptmp(:,1)*100,ptmp(:,2)*100,'.');
+  h=plot(ptmp(:,1)*100,ptmp(:,2)*100,'o');
   c=corners{i};
-  plot(c(:,1)*100,c(:,2)*100,'-','Color',get(h,'Color'));
+  plot(c(:,1)*100,c(:,2)*100,'-','LineWidth',3,'Color',get(h,'Color'));
 end
 axis equal

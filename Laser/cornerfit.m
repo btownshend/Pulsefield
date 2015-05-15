@@ -1,4 +1,4 @@
-function [corners,minerr,angle]=cornerfit(pts)
+function [corners,minerr,cornerAngle,orient]=cornerfit(pts)
 % Find best split
 minerr=1e10;
 corners=[];
@@ -17,10 +17,16 @@ for i=3:size(pts,1)-2
              inter
              pts(end,1),fit2(1)*pts(end,1)+fit2(2)];
     %    fprintf('slopes=[%.2f,%.2f] prod=%f, angle=%.0f deg\n',fit1(1),fit2(1),fit2(1)*fit1(1),atand(fit2(1)*fit1(1))*2);
-    dc(1,:)=corners(1,:)-corners(2,:);
-    dc(2,:)=corners(3,:)-corners(2,:);
-    angle=acosd(dot(dc(1,:),dc(2,:))/(norm(dc(1,:))*norm(dc(2,:))));
-    %    fprintf('angle=%.0f deg\n', angle);
+    v1=corners(1,:)-corners(2,:);
+    a1=mod(cart2pol(v1(1),v1(2))*180/pi+360,360);
+    v2=corners(3,:)-corners(2,:);
+    a2=mod(cart2pol(v2(1),v2(2))*180/pi+360,360);
+    a3=mod(cart2pol(corners(2,1),corners(2,2))*180/pi+360,360);
+    cornerAngle=mod(a1-a2+360,360);
+    cornerAngle=min(cornerAngle,360-cornerAngle);
+    orient=mod((a1+a2)/2-a3+360,360);
+    orient=min(orient,360-orient);
+    %    fprintf('a1=%.0f, a2=%.0f, a3=%.0f, angle=%.0f deg\n', a1, a2, a3, cornerAngle);
   end
 end
 minerr=sqrt(minerr/size(pts,1));
