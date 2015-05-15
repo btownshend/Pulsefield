@@ -115,6 +115,27 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
 	} else if (atoi(nexttok)==1 && ~locked[selected] && argv[0]->f > 0) {
 	    setDevicePt(Calibration::instance()->map(getDevicePt(1),unit2,unit1),0);
 	    dbg("RelMapping.handleOSCMessage",1) << "Estimated position for unit " << unit1 << ": " << pt1[selected] << std::endl;
+    } else if (tok=="align") {
+	if (selected>=0 && ~locked[selected] && argv[0]->f > 0 && isWorld) {
+	    // Find nearest alignment target to current world cooords and move to it
+	    std::vector<Point> a=Calibration::instance()->getAlignment();
+	    float mindist=1e10;
+	    int closest=-1;
+	    Point dpoint=getDevicePt(1);
+	    for (int i=0;i<a.size();i++) {
+		float d=(a[i]-dpoint).norm();
+		dbg("RelMapping.handleOSCMessage",1) << "Distance from " << a[i] << " to " << dpoint << " = " << d << std::endl;
+		if (d<mindist) {
+		    mindist=d;
+		    closest=i;
+		}
+	    }
+	    if (closest>=0) {
+		dbg("RelMapping.handleOSCMessage",1) << "Closest of " << a.size() << " alignment points to " << pt2[selected] << " is at " << a[closest] << std::endl; 
+		setDevicePt(a[closest],1);
+	    } else {
+		dbg("RelMapping.handleOSCMessage",1) << "No alignment point" << std::endl;
+	    }
 	}
     }
     
@@ -159,7 +180,7 @@ void  RelMapping::setDevicePt(Point p, int i,int which)  {
 	pt2[which]=p/32767;
 }
        
-Calibration::Calibration(int _nunits): homographies(_nunits+1), statusLines(3), poses(_nunits) {
+Calibration::Calibration(int _nunits): homographies(_nunits+1), statusLines(3), poses(_nunits), alignCorners(0) {
     nunits = _nunits;
     dbg("Calibration.Calibration",1) << "Constructing calibration with " << nunits << " units." << std::endl;
     assert(nunits>0);
@@ -771,4 +792,3 @@ std::vector<Point> RelMapping::getCalPoints(int unit, bool selectedOnly) const {
 
     return result;
 }
-

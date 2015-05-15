@@ -71,6 +71,7 @@ class Calibration {
     void testMappings() const;
     std::vector<std::string> statusLines;		// Status lines to display
     std::vector<cv::Mat> poses;
+    std::vector<Point> alignCorners;			// Alignment target positions in real world
  public:
     static void initialize(int nunits) { 
 	theInstance=std::shared_ptr<Calibration>(new Calibration(nunits)); 
@@ -89,4 +90,6 @@ class Calibration {
     LaserMode getLaserMode() const { return laserMode; }		// Get the current mode for laser display
     std::vector<Point> getCalPoints(int unit) const;				// Get the set of calibration points that should be drawn for the given laser
     Point map(Point p, int fromUnit, int toUnit=-1) const;		// Map a point in one unit to another (or to the world)
+    void setAlignment(const std::vector<Point> &c) { alignCorners=c; }
+    std::vector<Point> getAlignment() const { return alignCorners; }
 };
