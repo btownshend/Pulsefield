@@ -125,7 +125,7 @@ static int pfsetminx_handler(const char *path, const char *types, lo_arg **argv,
 static int pfsetminy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMinY(argv[0]->f); return 0; }
 static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxX(argv[0]->f); return 0; }
 static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxY(argv[0]->f); return 0; }
-static int pfbackground_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfbackground(argv[0]->i,argv[1]->i,argv[2]->f,argv[3]->f); return 0; }
+static int pfbackground_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfbackground(argv[0]->i,argv[1]->i,argv[2]->f,argv[3]->f,argv[4]->f); return 0; }
 
 static int person_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   return People::handleOSCMessage(path,types,argv,argc,msg);  }
 static int group_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {   return Groups::handleOSCMessage(path,types,argv,argc,msg);  }
@@ -235,7 +235,7 @@ OSCHandler::OSCHandler(int port, std::shared_ptr<Lasers> _lasers, std::shared_pt
 	lo_server_add_method(s,"/pf/set/maxx","f",pfsetmaxx_handler,this);
 	lo_server_add_method(s,"/pf/set/miny","f",pfsetminy_handler,this);
 	lo_server_add_method(s,"/pf/set/maxy","f",pfsetmaxy_handler,this);
-	lo_server_add_method(s,"/pf/background","iiff",pfbackground_handler,this);
+	lo_server_add_method(s,"/pf/background","iifff",pfbackground_handler,this);
 
 	lo_server_add_method(s,"/vis/range","iiiiiib",range_handler,this);
 

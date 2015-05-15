@@ -15,6 +15,7 @@ class World;
 
 class Background {
     static const int NRANGES=5;
+    std::vector<float> currentRange;		// Last range received
 
     // Background constists of multiple ranges, as follows:
     // 0 - most distant background

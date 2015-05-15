@@ -14,6 +14,7 @@ Background::Background() {
 void Background::setup(const SickIO &sick) {
     if (range[0].size() ==sick.getNumMeasurements())
 	return;
+    currentRange.resize(sick.getNumMeasurements());
     dbg("Background.setup",1) << "Setting up background vectors with " << sick.getNumMeasurements() << " entries." << std::endl;
     for (int i=0;i<NRANGES;i++) {
 	range[i].resize(sick.getNumMeasurements());
@@ -101,6 +102,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
     // range[2] is the last value seen, not matching 0 or 1;   promoted to range[1] if its frequency passes range[1]
     float tc=UPDATETC;
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
+	currentRange[i]=srange[i];
 	if (srange[i]<MINRANGE)
 	    continue;  // Ignore short points, not even including them in update.   That way all the bg probs are conditional on the LIDAR being able to scan the active area
 	// Out of range, distant points are still handled as background since they do not prevent a target from being hit and thus the bg probs are not conditional on these
@@ -274,7 +276,7 @@ mxArray *Background::convertToMX() const {
     return bg;
 }
 
-// Send /pf/background OSC message
+// Send /pf/background OSC message (includes current range for point too)
 void Background::sendMessages(lo_address &addr, int scanpt) const {
     assert(scanpt>=0 && scanpt<=range[0].size());
     // Send one sample of background as scanpoint#, theta (in degress), range (in meters)

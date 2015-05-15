@@ -87,8 +87,8 @@ class OSCHandler {
     void pfframe(int frame, bool fake=false);
     void pfbody(Point pos);
     void pfleg(Point pos);
-    void pfbackground(int scanpt, int totalpts, float angleDeg, float range) { 
-	lasers->setBackground(scanpt,totalpts,angleDeg,range);
+    void pfbackground(int scanpt, int totalpts, float angleDeg, float range,float fgRange) { 
+	lasers->setBackground(scanpt,totalpts,angleDeg,fgRange);	// Actually use 'foreground' range, not background
     }
 
     void range(int id, int frame, int sec, int usec, int echo, int nmeasure, lo_blob data);
