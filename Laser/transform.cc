@@ -305,7 +305,7 @@ Point Transform::mapToDevice(Point floorPt) const {
     cv::Vec3f src2(floorPt.X(),floorPt.Y(),1.0);
     cv::Vec3f dst2=((cv::Matx33f)transform)*src2;
     Point devPt;
-    if (dst2[2]<=0) {
+    if (false && dst2[2]<=0) {
 	dbg("Transform.mapToDevice",5) << floorPt << " out of bound: dst=" << "[" << dst2[0] << "," << dst2[1] << "," << dst2[2] << "]" << std::endl;
 	devPt=Point(nan(""),nan(""));
     } else {
@@ -350,7 +350,7 @@ Point Transform::flatToWorld(Point flatPt) const {
     cv::perspectiveTransform(src,dst,invTransform);
     cv::Vec3f src2(flatPt.X(),flatPt.Y(),1.0);
     cv::Vec3f dst2=((cv::Matx33f)invTransform)*src2;
-    if (dst2[2]<=0) {
+    if (false && dst2[2]<=0) {
 	dbg("Transform.flatToWorld",5)  <<  flatPt << " out of bound: dst=" << "[" << dst2[0] << "," << dst2[1] << "," << dst2[2] << "]" << std::endl;
 	return Point(nan(""),nan(""));
     }
