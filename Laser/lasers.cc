@@ -349,9 +349,9 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 			    && dist<=MAXTARGETDIST && dist >= MINTARGETDIST) {
 			    dbgn("Lasers.showAlignment",3) << "accept" << std::endl;
 			    // Draw the hits on the target as a polygon
-			    globalDrawing.drawPolygon(tgt,bgColor);
+			    globalDrawing.drawPolygon(corners,bgColor);
 			    // Draw a circle around target
-			    globalDrawing.drawCircle(corners[1],0.02,bgColor);
+			    //			    globalDrawing.drawCircle(corners[1],0.02,bgColor);
 			    calCorners.push_back(corners[1]);
 			} else {
 			    dbgn("Lasers.showAlignment",3) << "reject" << std::endl;
