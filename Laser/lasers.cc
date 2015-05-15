@@ -156,7 +156,7 @@ std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
     }
     for (int j=0;j<lasers.size();j++) {
 	float len=result[j].getLength();
-	dbg("Lasers.allocate",1) << "Set last allocation length for laser " << j << " to " << len << " (was " << lasers[j]->getLastAllocationLength() << ")" << std::endl;
+	dbg("Lasers.allocate",3) << "Set last allocation length for laser " << j << " to " << len << " (was " << lasers[j]->getLastAllocationLength() << ")" << std::endl;
 	lasers[j]->setLastAllocationLength(len);
     }
 
@@ -252,7 +252,7 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 	globalDrawing.shapeBegin("alignmentTest",Attributes());
 	for (int i=0;i<background.size();i++) {
 	    float range=background[i].norm();
-	    dbg("Laser.showAlignment",10) <<  "i=" << i << ", range=" << range << ", inTargetCnt=" << inTargetCnt << std::endl;
+	    dbg("Lasers.showAlignment",10) <<  "i=" << i << ", range=" << range << ", inTargetCnt=" << inTargetCnt << std::endl;
 	    if (inTargetCnt>0 && fabs(range-tgtRange)>MAXTARGETRANGEDIFF)  {
 	      if (inTargetCnt>=MINTARGETHITS) {
 		// Just finished a target
@@ -425,9 +425,9 @@ void Lasers::setBackground(int scanpt, int totalpts, float angleDeg, float range
 std::vector<LaserStat> Lasers::computeStats(const Composite &c, const Ranges &ranges) const {
     const CPoints &points = c.getPoints();
     if (points.size() > 0) {
-	dbg("Lasers.computeStats",1) << "Stats for composite " << c.getShapeID()->getID() << " with " << points.size() << " points near " << points.front() << ", prior laser=" << c.getShapeID()->getLaser()  << std::endl;
+	dbg("Lasers.computeStats",2) << "Stats for composite " << c.getShapeID()->getID() << " with " << points.size() << " points near " << points.front() << ", prior laser=" << c.getShapeID()->getLaser()  << std::endl;
     } else {
-	dbg("Laser.computeStats",1) << "Stats for composite " << c.getShapeID()->getID() << " with " << points.size() << " points, prior laser=" << c.getShapeID()->getLaser()  << std::endl;
+	dbg("Laser.computeStats",2) << "Stats for composite " << c.getShapeID()->getID() << " with " << points.size() << " points, prior laser=" << c.getShapeID()->getLaser()  << std::endl;
     }
     std::vector<LaserStat> stats;
     for (int i=0;i<lasers.size();i++) {
@@ -440,7 +440,7 @@ std::vector<LaserStat> Lasers::computeStats(const Composite &c, const Ranges &ra
 	    stat.fracShadowed=lasers[i]->fracShadowed(points,ranges,LASERSEP, TARGETSEP);
 	}
 	stat.meanDistance=lasers[i]->meanDistance(points);
-	dbg("Lasers.computeStats",1) << "Laser " << i << " onScreen=" << (int)(stat.fracOnScreen*100) << "%, shadowed=" << (int)(stat.fracShadowed*100) << "%, dist=" << stat.meanDistance << " m, lastlenallocated=" << lasers[i]->getLastAllocationLength() << std::endl;
+	dbg("Lasers.computeStats",2) << "Laser " << i << " onScreen=" << (int)(stat.fracOnScreen*100) << "%, shadowed=" << (int)(stat.fracShadowed*100) << "%, dist=" << stat.meanDistance << " m, lastlenallocated=" << lasers[i]->getLastAllocationLength() << std::endl;
 	stats.push_back(stat);
     }
     return stats;
