@@ -282,6 +282,6 @@ void Background::sendMessages(lo_address &addr, int scanpt) const {
     // Send one sample of background as scanpoint#, theta (in degress), range (in meters)
     float angleDeg=scanRes*(scanpt-(range[0].size()-1)/2.0);
 
-    lo_send(addr,"/pf/background","iiff",scanpt,range[0].size(),angleDeg,range[0][scanpt]/UNITSPERM);
+    lo_send(addr,"/pf/background","iifff",scanpt,range[0].size(),angleDeg,range[0][scanpt]/UNITSPERM,currentRange[scanpt]/UNITSPERM);
 }
 
