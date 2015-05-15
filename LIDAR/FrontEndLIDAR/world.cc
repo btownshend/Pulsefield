@@ -361,7 +361,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 	    int bestsplit=0;
 	    for (unsigned int j=0;j<ldiff.size()+1;j++)  {
 		float ltotal=std::accumulate(ldiff.begin(),ldiff.begin()+j,0)-std::accumulate(ldiff.begin()+j,ldiff.end(),0);
-		if (abs(ltotal)>abs(maxldiff)) {
+		if (fabs(ltotal)>fabs(maxldiff)) {
 		    maxldiff=ltotal;
 		    bestsplit=j;
 		}
