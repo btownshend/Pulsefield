@@ -512,9 +512,9 @@ void Laser::showOutline(const Bounds &b) {
 	dbgn("Laser.showOutline",10) << flatPts[j].X() << ", " << flatPts[j].Y() << ", " << world.X() << "," << world.Y() << "," << constrainWorld.X() << "," << constrainWorld.Y() << "," << devPoint.X() << "," << devPoint.Y() << "," << pts[j].x << "," << pts[j].y << std::endl;
     }
     prune();
-    dbg("Laser.showOutline",1) << pts.size() << " pts after prune=" << std::endl;
+    dbg("Laser.showOutline",10) << pts.size() << " pts after prune=" << std::endl;
     for (int i=0;i<pts.size();i++)
-	dbgn("Laser.showOutline",1) << pts[i].x << "," <<pts[i].y << "," <<pts[i].r << "," <<pts[i].g << "," <<pts[i].b << std::endl;
+	dbgn("Laser.showOutline",10) << pts[i].x << "," <<pts[i].y << "," <<pts[i].r << "," <<pts[i].g << "," <<pts[i].b << std::endl;
     update();
 }
 

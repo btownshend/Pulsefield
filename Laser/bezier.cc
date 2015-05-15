@@ -37,7 +37,7 @@ std::vector<Point> Bezier::interpolate(float spacing) const {
     if (spacing>getLength()*0.5) {
 	result.push_back(controlPoints.front());
 	result.push_back(controlPoints.back());
-	dbg("Bezier.interpolate",1) << "Curve with length " << getLength() << " has <2 points for interpolation at spacing=" << spacing << std::endl;
+	dbg("Bezier.interpolate",3) << "Curve with length " << getLength() << " has <2 points for interpolation at spacing=" << spacing << std::endl;
 	return result;
     }
     int npoints=std::max(2,(int)ceil(getLength()/spacing)+1);

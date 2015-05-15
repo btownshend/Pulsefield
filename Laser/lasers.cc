@@ -61,7 +61,7 @@ std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
 	std::shared_ptr<Composite> &c=d.getElement(el);
 
 	if (c->getNumElements()==0) {
-	    dbg("Lasers.allocate",1) << "Skipping " << c->getShapeID()->getID() << " since it is empty" << std::endl;
+	    dbg("Lasers.allocate",3) << "Skipping " << c->getShapeID()->getID() << " since it is empty" << std::endl;
 	    continue;
 	}
 	// Get stats for drawing this composite from each of the lasers
@@ -357,10 +357,10 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 			    dbgn("Lasers.showAlignment",3) << "reject" << std::endl;
 			}
 		    } else {
-			dbg("Lasers.showAlignment",3) << "ignoring target with size " << sz << " at scans " <<  i-inTargetCnt << "-" << i-1 << std::endl;
+			dbg("Lasers.showAlignment",4) << "ignoring target with size " << sz << " at scans " <<  i-inTargetCnt << "-" << i-1 << std::endl;
 		    }
 		}  else if (inTargetCnt>2) {
-		    dbg("Lasers.showAlignment",3) << "ignoring target with too few hits at scans " << i-inTargetCnt << "-" << i-1 << std::endl;
+		    dbg("Lasers.showAlignment",5) << "ignoring target with too few hits at scans " << i-inTargetCnt << "-" << i-1 << std::endl;
 		}
 		inTargetCnt=1;  // Reset, since this is a different range
 	    } else {
