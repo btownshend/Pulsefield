@@ -109,12 +109,16 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
 	    pt->setY(std::max(-1.0f,pt->Y()-speedY));
 	handled=true;
     } else if (tok=="est") {
-	if (atoi(nexttok)==2 && ~isWorld && ~locked[selected] && argv[0]->f > 0) {
+	if (atoi(nexttok)==2 && ~locked[selected] && argv[0]->f > 0) {
 	    setDevicePt(Calibration::instance()->map(getDevicePt(0),unit1,unit2),1);
 	    dbg("RelMapping.handleOSCMessage",1) << "Estimated position for unit " << unit2 << ": " << pt2[selected] << std::endl;
 	} else if (atoi(nexttok)==1 && ~locked[selected] && argv[0]->f > 0) {
 	    setDevicePt(Calibration::instance()->map(getDevicePt(1),unit2,unit1),0);
 	    dbg("RelMapping.handleOSCMessage",1) << "Estimated position for unit " << unit1 << ": " << pt1[selected] << std::endl;
+	} else {
+	    dbg("RelMapping.handleOSCMessage",1) << "Est click ignored" << std::endl;
+	}
+	handled=true;
     } else if (tok=="align") {
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0 && isWorld) {
 	    // Find nearest alignment target to current world cooords and move to it
@@ -137,6 +141,7 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
 		dbg("RelMapping.handleOSCMessage",1) << "No alignment point" << std::endl;
 	    }
 	}
+	handled=true;
     }
     
     return handled;
