@@ -163,6 +163,71 @@ std::vector<Drawing> Lasers::allocate(Drawing &d, const Ranges &ranges)  const {
     return result;
 }
 
+static float orthoval(const std::vector<float> fit, float x) {
+    return x*fit[0]+fit[1];
+}
+
+static std::vector<float> orthofit(const std::vector<Point> &pts,float &err) {
+    assert(pts.size()>=2);
+    Point sum(0,0);
+    for (int i=0;i<pts.size();i++)
+	sum=sum+pts[i];
+    sum=sum/pts.size();
+    double sxx=0,sxy=0,syy=0;
+    for (int i=0;i<pts.size();i++) {
+	sxx+=pow(pts[i].X()-sum.X(),2.0);
+	sxy+=(pts[i].X()-sum.X())*(pts[i].Y()-sum.Y());
+	syy+=pow(pts[i].Y()-sum.Y(),2.0);
+    }
+    sxx/=(pts.size()-1);
+    sxy/=(pts.size()-1);
+    syy/=(pts.size()-1);
+    std::vector<float> fit(2);
+    fit[0]=(syy-sxx+sqrt(pow(syy-sxx,2.0)+4*pow(sxy,2.0)))/(2*sxy);
+    fit[1]=sum.Y()-fit[0]*sum.X();
+    err=0;
+    for (int i=0;i<pts.size();i++) {
+	float y=orthoval(fit,pts[i].X());
+	err+=pow(y-pts[i].Y(),2.0);
+	dbg("orthofit",3) << "pt[" << i << "] = " << pts[i] << std::endl;
+    }
+    dbg("orthofit",3) << "sxx=" << sxx << ", sxy=" << sxy << ", syy=" << syy << std::endl;
+    dbg("orthofit",3) << "fit=" << fit[0] << "*x + " << fit[1] << "; err^2=" << err << std::endl;
+    return fit;
+}
+
+// Fit a set of points to a right angle corner
+static std::vector<Point> findCorner(const std::vector<Point> &pts)  {
+    assert (pts.size() >= 4);
+    std::vector<Point> soln(3);
+    // Try each possible divistion into two edges with at least 2 pts/edbge
+    float minerr=1e10;
+    for (int i=1;i<pts.size()-2;i++) {
+	// Edges are [0,i] and [i+1,end]
+	float e1,e2;
+	std::vector<float> fit1=orthofit(std::vector<Point>(&pts[0],&pts[i+1]),e1);
+	std::vector<float> fit2=orthofit(std::vector<Point>(&pts[i+1],&pts[pts.size()]),e2);
+	dbg("findCorner",3) << "Using " << (i+1) << "/" << (pts.size()-i-1) << " pts -> err=" << (e1+e2) << std::endl;
+	if (e1+e2 < minerr) {
+	    minerr=e1+e2;
+	    float x=pts[0].X();
+	    float y=orthoval(fit1,pts[0].X());
+	    soln[0]=Point(x,y);
+	    float cx=-(fit1[1]-fit2[1])/(fit1[0]-fit2[0]);
+	    float cy=orthoval(fit1,cx);
+	    float cy2=orthoval(fit2,cx);
+	    if (std::abs(cy-cy2)>0.001) {
+		dbg("findCorner",0) << "Inconsistent corner point: " << Point(cx,cy) << " vs. " << Point(cx,cy2) << " with error " << std::abs(cy-cy2) << std::endl;
+	    }
+	    soln[1]=Point(cx,cy);
+	    x=pts[pts.size()-1].X();
+	    y=orthoval(fit2,x);
+	    soln[2]=Point(x,y);
+	}
+    }
+    return soln;
+}
+
 int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
     if (!needsRender) {
 	dbg("Lasers.render",5) << "Not dirty" << std::endl;
@@ -244,28 +309,31 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 	// TODO: Draw alignment pattern
 	static const float MINTARGETDISTFROMBG=0.5;   // Minimum distance of target from background
 	static const float MAXTARGETRANGEDIFF=0.3;
-	static const int MINTARGETHITS=2;	// Minimum number of hits for it to be a target
-	static const int MAXTARGETHITS=10;	// Maximum number of hits for it to be a target
+	static const int MINTARGETHITS=4;	// Minimum number of hits for it to be a target
+	static const float MAXTARGETWIDTH=0.5;	// Maximum width of target in meters
 	float lastBgRange=background[0].norm();
 	int inTargetCnt=0;
 	float tgtRange=0;
 	globalDrawing.shapeBegin("alignmentTest",Attributes());
+	std::vector<Point> calCorners;		// Corners of possible alignment targets
 	for (int i=0;i<background.size();i++) {
 	    float range=background[i].norm();
 	    dbg("Lasers.showAlignment",10) <<  "i=" << i << ", range=" << range << ", inTargetCnt=" << inTargetCnt << std::endl;
 	    if (inTargetCnt>0 && fabs(range-tgtRange)>MAXTARGETRANGEDIFF)  {
 	      if (inTargetCnt>=MINTARGETHITS) {
-		// Just finished a target
-		float diameter=(background[i-1]-background[i-inTargetCnt]).norm()*(inTargetCnt+1)/inTargetCnt;
-		Point center=(background[i-inTargetCnt/2-1]+background[i-(inTargetCnt+1)/2])/2;
-		center=center * (tgtRange+diameter/2)/center.norm();	// Move to correct range
-		dbg("Laser.showAlignment",3) << "alignment pattern detected at scans " << i-inTargetCnt << "-" << i-1 << " at " << center << " with diameter " << diameter << " at range " << tgtRange <<  " with background at range " << lastBgRange << ", new range=" << range <<  std::endl;
-		// Draw the hits on the target as a polygon
-		std::vector<Point> tgt(background.begin()+i-inTargetCnt,background.begin()+i);
-		globalDrawing.drawPolygon(tgt,bgColor);
-		// Draw a circle around target at a larger radius
-		globalDrawing.drawCircle(center,diameter*0.6,bgColor);
-	      } 
+		  // Just finished a target
+		  std::vector<Point> tgt(background.begin()+i-inTargetCnt,background.begin()+i);
+		  // Decompose into a pair of lines at right angles
+		  std::vector<Point> corners=findCorner(tgt);
+		  dbg("Lasers.showAlignment",3) << "alignment pattern detected at scans " << i-inTargetCnt << "-" << i-1 << " at " << corners[1] << " with edge lengths  " << (corners[1]-corners[0]).norm() << ", " << (corners[2]-corners[1]).norm() << std::endl;
+		  // Draw the hits on the target as a polygon
+		  globalDrawing.drawPolygon(tgt,bgColor);
+		  // Draw a circle around target
+		  globalDrawing.drawCircle(corners[1],0.02,bgColor);
+		  calCorners.push_back(corners[1]);
+	      }  else {
+		  dbg("Lasers.showAlignment",3) << "ignoring small target at scans " << i-inTargetCnt << "-" << i-1 << std::endl;
+	      }
 	      inTargetCnt=0;  // Reset, since this is a different range
 	    }
 	    if (range<lastBgRange-MINTARGETDISTFROMBG) {
@@ -278,12 +346,14 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
 		lastBgRange=range;
 		inTargetCnt=0;
 	    }
-	    if (inTargetCnt> MAXTARGETHITS) {
+	    if (inTargetCnt>0 && (background[i]-background[i-inTargetCnt]).norm() > MAXTARGETWIDTH) {
 	      // Too big -- reset
+		dbg("Lasers.showAlignment",3) << "Target too big at scan " << i-inTargetCnt << "@" << background[i-inTargetCnt] << " - " << i << "@" << background[i] << std::endl;
 	      inTargetCnt=0;
 	      lastBgRange=range;
 	    }
 	}
+	Calibration::instance()->setAlignment(calCorners);
 	globalDrawing.shapeEnd("alignmentTest");
     }
     if (getFlag("grid")) {
