@@ -314,12 +314,12 @@ int Lasers::render(const Ranges &ranges, const Bounds  &bounds) {
     if (getFlag("alignment") && background.size()>0)  {
 	static const float SEPFACTOR=3.7;		// Points separated by more this times the scan point separation are distinct objects
 	static const int MINTARGETHITS=6;	// Minimum number of hits for it to be a target
-	static const float MINTARGETWIDTH=0.1;	// Minimum width of target in meters
-	static const float MAXTARGETWIDTH=0.4;	// Maximum width of target in meters
+	static const float MINTARGETWIDTH=0.15;	// Minimum width of target in meters
+	static const float MAXTARGETWIDTH=0.35;	// Maximum width of target in meters
 	static const float MAXFITERROR=0.05;	// RMS error between fitted corner and points
 	static const float MAXCORNERERROR=20; // Error in angle of corner in degrees
 	static const float MAXORIENTERROR=30;	// Error in which way corner is aiming in degrees
-	static const float MAXTARGETDIST=7;		// Maximum distance
+	static const float MAXTARGETDIST=8;		// Maximum distance
 	static const float MINTARGETDIST=1;		// Minimum distance
 	float dTheta=background[1].getTheta()-background[0].getTheta();
 	float lastRange=background[0].norm();
