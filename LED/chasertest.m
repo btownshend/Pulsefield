@@ -11,14 +11,16 @@ nrpt=1;
 for rpt=1:nrpt
 fprintf('Repeat %d/%d Num Sent=%d\n',rpt,nrpt,nsent);
 counter=-1;
+vgroup=1;
+fprintf('Using vgroup %d\n',vgroup);
 for k=uint32(0):nled
   c=[];
   pos=1;
   for i=max(uint32(0),k-1):min(k,nled-1)
     if i==k 
-      cmd=setled(s1,i,level*[1,0,0],0);
+      cmd=setled(s1,i,level*[1,0,0],0,vgroup);
     elseif i==k-1
-      cmd=setled(s1,i,0*[1,0,0],0);
+      cmd=setled(s1,i,0*[1,0,0],0,vgroup);
     else
       continue;
     end
