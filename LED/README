@@ -1,0 +1,9 @@
+Strip ID's
+
+Strip 1 is red (first=pinkish,last=blue).  Clk=pin 48, Data=pin 49
+Strip 2 is green (first=white,last=magenta).  Clk=pin 46, Data=pin 47
+Strip 3 is blue (first=red,last=cyan).  Clk=pin 44, Data=pin 45
+Strip 4 is magenta (first=green,last=yellow).  Clk=pin 42, Data=pin 43
+Strip 5 is cyan (first=blue,last=pinkish).  Clk=pin 36, Data=pin 37
+Strip 6 is yellow (first=magenta,last=white).  Clk=pin 34, Data=pin 35
+
