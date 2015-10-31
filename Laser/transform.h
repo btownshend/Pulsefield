@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <map>
 #include "opencv2/core/core.hpp"
 #include "point.h"
 #include "cpoint.h"
