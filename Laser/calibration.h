@@ -9,7 +9,7 @@
 #include "touchosc.h"
 #include "configuration.h"
 #undef Status
-#include "opencv2/stitching/stitcher.hpp"
+#include "opencv2/stitching.hpp"
 
 // Class to store each individual relative mapping and associated GUI elements
 // These are mappings between 2 or more lasers device space coords that hit the same spot on ground
