@@ -54,7 +54,7 @@ public class Tracker extends PApplet {
 	Fourier fourier;
 	
 	public void setup() {
-		configFile="/Users/bst/DropBox/Pulsefield/config/urlconfig.txt";
+		configFile="/Users/bst/DropBox/Pulsefield/src/urlconfig.txt";
 
 		try {
 			config=new URLConfig(configFile);
