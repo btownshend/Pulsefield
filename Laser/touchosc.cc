@@ -389,7 +389,30 @@ int TouchOSC::handleOSCMessage_impl(const char *path, const char *types, lo_arg 
 		    Lasers::instance()->enable(col,argv[0]->f>0.5);
 		} else if (strcmp(tok,"power")==0) {
 		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
-		    laser->setPower(argv[0]->f);
+		    if (laser!=nullptr) {
+			laser->setPower(argv[0]->f);
+		    }
+		} else if (strcmp(tok,"red")==0) {
+		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
+		    if (laser!=nullptr) {
+			Color c=laser->getMaxColor();
+			c=Color(argv[0]->f/100.0,c.green(),c.blue());
+			laser->setMaxColor(c);
+		    }
+		} else if (strcmp(tok,"green")==0) {
+		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
+		    if (laser!=nullptr) {
+			Color c=laser->getMaxColor();
+			c=Color(c.red(),argv[0]->f/100.0,c.blue());
+			laser->setMaxColor(c);
+		    }
+		} else if (strcmp(tok,"blue")==0) {
+		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
+		    if (laser!=nullptr) {
+			Color c=laser->getMaxColor();
+			c=Color(c.red(),c.green(),argv[0]->f/100.0);
+			laser->setMaxColor(c);
+		    }
 		} else if (strcmp(tok,"xmin")==0 ||strcmp(tok,"ymin")==0 ||strcmp(tok,"xmax")==0 ||strcmp(tok,"ymax")==0||strcmp(tok,"hfov")||strcmp(tok,"vfov")) {
 		    dbg("TouchOSC",1) << "Normalize range[ " << tok << "] set to " << argv[0]->f << std::endl;
 		    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
@@ -472,7 +495,9 @@ void TouchOSC::updateLaserUI() const {
     if (send("/ui/condglobal/label","Conductor Global: "+std::to_string(int(conductorGlobal*100)))<0) return;
     if (send("/ui/cellglobal/label","Cell Global: "+std::to_string(int(cellGlobal*100)))<0) return;
 
-    if (selectedLaser==-1) {
+    std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
+
+    if (laser==nullptr) {
 	// Blank everything
 	send("/ui/laser/xmin/label","");
 	send("/ui/laser/ymin/label","");
@@ -481,6 +506,9 @@ void TouchOSC::updateLaserUI() const {
 	send("/ui/laser/points/label","points");
 	send("/ui/laser/skew/label","skew");
 	send("/ui/laser/power/label","power");
+	send("/ui/laser/red/label","red");
+	send("/ui/laser/green/label","green");
+	send("/ui/laser/blue/label","blue");
 	send("/ui/laser/intensityPts/label","intensityPts");
 	send("/ui/laser/preblank/label","pre-blank");
 	send("/ui/laser/postblank/label","post-blank");
@@ -488,7 +516,6 @@ void TouchOSC::updateLaserUI() const {
 	send("/ui/laser/vfov/label","");
 	send("/ui/laser/hfov/label","");
     } else {
-	std::shared_ptr<Laser> laser=Lasers::instance()->getLaser(selectedLaser);
 	send("/ui/laser/xmin/label",laser->getTransform().getMinX());
 	send("/ui/laser/ymin/label",laser->getTransform().getMinY());
 	send("/ui/laser/xmax/label",laser->getTransform().getMaxX());
@@ -501,6 +528,10 @@ void TouchOSC::updateLaserUI() const {
 	send("/ui/laser/points/label",std::to_string(laser->getNPoints())+" points");
 	send("/ui/laser/skew/label",std::to_string(laser->getSkew())+" skew");
 	send("/ui/laser/power/label","Power: "+std::to_string((int)laser->getPower())+"%");
+	Color c=laser->getMaxColor();
+	send("/ui/laser/red/label","Red: "+std::to_string((int)(c.red()*100))+"%");
+	send("/ui/laser/green/label","Green: "+std::to_string((int)(c.green()*100))+"%");
+	send("/ui/laser/blue/label","Blue: "+std::to_string((int)(c.blue()*100))+"%");
 	send("/ui/laser/intensitypts/label",std::to_string(laser->getIntensityPts())+" pts");
 	send("/ui/laser/preblank/label",std::to_string(laser->getPreBlanks())+" pre-blank");
 	send("/ui/laser/postblank/label",std::to_string(laser->getPostBlanks())+" post-blank");
@@ -511,6 +542,9 @@ void TouchOSC::updateLaserUI() const {
 	send("/ui/laser/points",(float)laser->getNPoints());
 	send("/ui/laser/skew",(float)laser->getSkew());
 	send("/ui/laser/power",(float)laser->getPower());
+	send("/ui/laser/red",(float)(c.red()*100));
+	send("/ui/laser/green",(float)(c.green()*100));
+	send("/ui/laser/blue",(float)(c.blue()*100));
 	send("/ui/laser/intensityPts",(float)laser->getIntensityPts());
 	send("/ui/laser/preblank",(float)laser->getPreBlanks());
 	send("/ui/laser/postblank",(float)laser->getPostBlanks());

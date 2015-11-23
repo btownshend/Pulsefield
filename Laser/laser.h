@@ -72,6 +72,7 @@ class Laser: public DisplayDevice  {
     void render(const Drawing &drawing);
     Color getLabelColor() const { return labelColor; }
     Color getMaxColor() const { return maxColor; }
+    void setMaxColor(Color c)  { maxColor=c; }
     int getUnit() const { return unit; }
     void enable(bool enable) { showLaser=enable;
     }

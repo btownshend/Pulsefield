@@ -196,6 +196,7 @@ void Laser::dumpPoints() const {
     std::string fname="ptdump-"+std::to_string(unit)+".txt";
     std::ofstream fd(fname);
     dbg("Laser.dumpPoints",1) << "Dumping " << pts.size() << " points to " << fname << std::endl;
+    dbg("Laser.dumpPoints",0) << "Note: not handling color properly" << std::endl;
     for (int i=0;i<pts.size();i++) {
 	fd << pts[i].x << " " << pts[i].y << " " << (pts[i].g>0.5?1:0) << std::endl;
     }
@@ -284,7 +285,9 @@ void Laser::showTest() {
     static const int step=(MAXDEVICEVALUE-MINDEVICEVALUE)*ngrid*2/npoints;
     dbg("Laser.showTest",1) << "Showing laser test pattern with step size of " << step << std::endl;
     // Start and finish each scan at full range, but scan based on visible range stored in transform
-    pt.g=65535;
+    pt.r=(int)(maxColor.red()*65535);
+    pt.g=(int)(maxColor.green()*65535);
+    pt.b=(int)(maxColor.blue()*65535);
     pt.x=MINDEVICEVALUE; pt.y=MINDEVICEVALUE;
     for (int i=0;i<ngrid;i++) {
       pt.y=(MAXDEVICEVALUE-MINDEVICEVALUE)*i/(ngrid-1)+MINDEVICEVALUE;
@@ -329,7 +332,7 @@ void Laser::showIntensity() {
     int incr=(gsize+50)/100;
     if (incr<1)
 	incr=1;
-    pt.g=65535;pt.r=65535;pt.b=65535;
+    pt.g=(int)(65535*maxColor.green());pt.r=(int)(65535*maxColor.red());pt.b=(int)(65535*maxColor.blue());
     pt.y=-gsize;
     for (pt.x=-gsize;pt.x<=gsize;pt.x+=incr)
 	pts.push_back(pt);
@@ -350,7 +353,8 @@ void Laser::showCalibration() {
     std::vector<Point> calPoints = Calibration::instance()->getCalPoints(unit);
     const int LINELENGTHS=200;
     etherdream_point pt;
-    pt.g=65535;pt.r=65535;pt.b=65535;
+    pt.g=(int)(65535*maxColor.green());pt.r=(int)(65535*maxColor.red());pt.b=(int)(65535*maxColor.blue());
+
     const int NPOINTS=PPS/15;		// Minimum 15Hz update rate
     const int CENTERPOINTS=20;
     const int SLEWPOINTS=(calPoints.size()>0)?(preBlanks+postBlanks):0;	// Slew points if there is more than one calibration point
@@ -371,7 +375,7 @@ void Laser::showCalibration() {
 	    for (int j=0;j<postBlanks;j++)
 		pts.push_back(pt);		// Time to slew
 	}
-	pt.g=65535;pt.r=65535;pt.b=65535;
+	pt.g=(int)(65535*maxColor.green());pt.r=(int)(65535*maxColor.red());pt.b=(int)(65535*maxColor.blue());
 
 	etherdream_point ptmp=pt;
 	int rx=0,ry=0;
@@ -441,7 +445,7 @@ void Laser::showOutline(const Bounds &b) {
     }
     dbg("Laser.showOutline",3) << "Inside point=" << inside << std::endl;
 
-    const Color outlineColor=Color(0.0,1.0,0.0);
+    const Color outlineColor=maxColor;
     const bool drawDiagonals=false;
 
     pts.clear();
