@@ -23,5 +23,11 @@
 	<classpathentry kind="lib" path="lib/processing/minim/library/tritonus_share.jar"/>
 	<classpathentry kind="lib" path="lib/processing/minim/library/mp3spi1.9.4.jar"/>
 	<classpathentry kind="lib" path="lib/processing/minim/library/jl1.0.jar"/>
+	<classpathentry kind="lib" path="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/library/jsyphon.jar" sourcepath="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/src">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/library"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/library/Syphon.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
