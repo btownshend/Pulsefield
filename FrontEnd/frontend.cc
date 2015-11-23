@@ -80,7 +80,7 @@ FrontEnd::FrontEnd(int _ncamera, int _nled) {
     vis = new Visible*[ncamera];
 
 
-    URLConfig urls("/Users/bst/DropBox/Pulsefield/config/urlconfig.txt");
+    URLConfig urls("/Users/bst/DropBox/Pulsefield/src/urlconfig.txt");
 
     serverPort=urls.getPort("FE");
     if (serverPort<0) {
