@@ -234,7 +234,7 @@ int Laser::blanking() {
     // Always put enough blanking at beginning and end to jump to (0,0)
     // This will allow a clean move when switching to an etherdream frame that has a different start/end from current frame
     etherdream_point homepos;
-    homepos.x=0;homepos.y=0;homepos.g=65535;
+    homepos.x=0;homepos.y=0;homepos.g=65535;	// Only used for blanking computation
     etherdream_point prevpos=homepos;
     int nblanks=0;
     for (unsigned int i=0;i<pts.size();i++) {
@@ -425,9 +425,9 @@ void Laser::showOutline(const Bounds &b) {
     Transform &t=getTransform();
 
     Point inside;	// A point that is in bounds
-    std::vector<Point> insideTest={Point(0,0),Point(0,-1),Point(1,0),Point(0,-1),Point(0,1)};
+    std::vector<Point> insideTest={Point(-1,-1),Point(0,-1),Point(1,-1),Point(1,0),Point(1,1),Point(0,1),Point(-1,1),Point(-1,0)};
     bool found=false;
-    for (float mult=1;mult>0.01;mult/=2) {
+    for (float mult=1;mult>0;mult=mult-0.1) {
       for (int i=0;i<insideTest.size();i++) {
 	inside=insideTest[i]*mult;
 	dbg("Laser.showOutline",3) << "Try " << inside << " -> " << t.flatToWorld(inside) << std::endl;
@@ -440,7 +440,7 @@ void Laser::showOutline(const Bounds &b) {
 	break;
     }
     if (!found) {
-      dbg("Laser.showOutline",1) << "Laser not aiming at active area and unable to find inside point (aimed at " << t.flatToWorld(Point(0,0)) << "), not drawing bounds" << std::endl;
+	dbg("Laser.showOutline",1) << "Laser not aiming at active area and unable to find inside point (aimed at " << t.flatToWorld(Point(0,0)) << "), not drawing bounds: " << b << std::endl;
       return;
     }
     dbg("Laser.showOutline",3) << "Inside point=" << inside << std::endl;
