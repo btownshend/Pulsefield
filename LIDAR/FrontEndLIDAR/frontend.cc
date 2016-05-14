@@ -230,7 +230,7 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 		char cbuf[10];
 		dbg("FrontEnd.sendVisMessages",6) << "Sending messages to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 		sprintf(cbuf,"%d",dests.getPort(i));
-		if (dests.getPort(i)!=7780)	// TODO: this is a hack to send to laser but nobody else; should be configured more generally!
+		if (dests.getPort(i)!=7012)	// TODO: this is a hack to send to laser but nobody else; should be configured more generally!
 		  continue;
 		lo_address addr = lo_address_new(dests.getHost(i), cbuf);
 		lo_send(addr,"/vis/beginframe","i",frame);
