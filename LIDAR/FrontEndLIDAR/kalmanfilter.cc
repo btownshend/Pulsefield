@@ -7,7 +7,7 @@ void KalmanFilter::init(Point init) {
     kf.init(dynamParams,measureParams,0,CV_32F);
 
     // Transition matrix - constant velocity model
-    kf.transitionMatrix = *(cv::Mat_<float>(4, 4) << 1,0,1,0,   0,1,0,1,  0,0,1,0,  0,0,0,1);
+    kf.transitionMatrix = (cv::Mat_<float>(4, 4) << 1,0,1,0,   0,1,0,1,  0,0,1,0,  0,0,0,1);
     cv::Mat_<float> measurement(2,1);
     measurement.setTo(cv::Scalar(0));
  
