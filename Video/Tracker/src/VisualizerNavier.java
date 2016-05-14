@@ -3,7 +3,7 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PVector;
-
+import codeanticode.syphon.*;
 
 class VisualizerNavier extends Visualizer {
 	NavierStokesSolver fluidSolver;
@@ -20,7 +20,8 @@ class VisualizerNavier extends Visualizer {
 	long statsUpdate = 0;
 	Synth synth;
 	MusicVisLaser mvl;
-
+	SyphonServer server;
+	
 	VisualizerNavier(Tracker parent, Synth synth) {
 		super();
 		fluidSolver = new NavierStokesSolver();
@@ -39,6 +40,7 @@ class VisualizerNavier extends Visualizer {
 		
 		this.synth=synth;
 		mvl=new MusicVisLaser(parent.fourier, MusicVisLaser.Modes.POLYGON);
+		server = new SyphonServer(parent, "Navier");
 	}
 
 	@Override
@@ -140,6 +142,7 @@ class VisualizerNavier extends Visualizer {
 				sz=20*ps.groupsize;
 			parent.ellipse((ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2, sz, sz);
 		}
+		server.sendImage(buffer);
 	}
 
 	@Override
