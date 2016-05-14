@@ -12,7 +12,7 @@ public class Tracker extends PApplet {
 	 * 
 	 */
 	public static final String SVGDIRECTORY="../../../SVGFiles/";
-	private static boolean present = true;
+	private static boolean present = false;
 	private static boolean autocycle = true;
 	private static boolean starting = true;   // Disable bad OSC messages before setup
 	private static boolean genFrameMsgs = false;
@@ -63,7 +63,7 @@ public class Tracker extends PApplet {
 			System.exit(1);
 		}
 
-		size(1280,800, OPENGL);
+		size(1280,720, OPENGL);
 		frameRate(30);
 		mouseID=90;
 		cycler=new AutoCycler();

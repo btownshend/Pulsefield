@@ -12,7 +12,7 @@ void setup() {
     fluidSolver = new NavierStokesSolver();
  
     frameRate(60);
-    size(320, 320);
+    size(1280, 720);
  
     buffer = new PImage(width, height);
  
