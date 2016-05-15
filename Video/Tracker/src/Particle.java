@@ -1,8 +1,11 @@
-import processing.core.*;
-
 import java.util.Random;
 
+import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PImage;
+import processing.core.PVector;
+
 // A simple Particle class
 
 class Particle {

@@ -2,9 +2,11 @@ import java.awt.Color;
 import java.io.IOException;
 
 import codeanticode.syphon.SyphonServer;
+import netP5.NetAddress;
+import oscP5.OscMessage;
+import oscP5.OscP5;
+import oscP5.OscProperties;
 import processing.core.PApplet;
-import oscP5.*;
-import netP5.*;
 import processing.core.PVector;
 
 
