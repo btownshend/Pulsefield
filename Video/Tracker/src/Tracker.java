@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.io.IOException;
 
+import codeanticode.syphon.SyphonServer;
 import processing.core.PApplet;
 import oscP5.*;
 import netP5.*;
@@ -52,6 +53,8 @@ public class Tracker extends PApplet {
 	PVector mouseVel;  // Average mouse velocity
 	int lastFrameReceived=3;
 	Fourier fourier;
+	SyphonServer server=null;
+	
 	public void settings() {
 		  size(1280, 720, P2D);
 		  pixelDensity(2);
@@ -149,6 +152,10 @@ public class Tracker extends PApplet {
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		PApplet.println("Setup complete");
 		starting = false;
+		
+		// Syphon setup
+		// Currently seems to break display
+		// server = new SyphonServer(this, "Tracker");
 	}
 
 	public void tempo(float t) {
@@ -271,6 +278,8 @@ public class Tracker extends PApplet {
 
 		vis[currentvis].draw(this,people,new PVector(width,height));
 		vis[currentvis].drawLaser(this,people);
+		if (server != null)
+			server.sendScreen();
 	}
 
 	public void mouseReleased() {
