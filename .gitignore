@@ -13,6 +13,7 @@ Arduino/libraries/LPD8806
 Video/Tracker/bin/arrow.png
 Video/Tracker/lib/themidibus
 Video/Tracker/src/themidibus
+Video/Tracker/lib/Syphon
 Video/Tracker/bin/runTracker.jar
 .svn
 Experimental/data.mat

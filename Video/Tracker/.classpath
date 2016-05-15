@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="data"/>
+	<classpathentry kind="src" path="lib/Syphon/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/promidi/library/promidi.jar" sourcepath="lib/promidi"/>
 	<classpathentry kind="lib" path="lib/oscP5/library/oscP5.jar" sourcepath="lib/oscP5/src">
@@ -9,25 +10,20 @@
 			<attribute name="javadoc_location" value="file:/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/oscP5/reference/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/processing/core.jar" sourcepath="/Users/bst/Dropbox/Processing/src/processing/core/src">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/Users/bst/Dropbox/Processing/src/processing/build/javadoc/core/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/processing/gluegen-rt-natives-macosx-universal.jar"/>
-	<classpathentry kind="lib" path="lib/processing/gluegen-rt.jar"/>
-	<classpathentry kind="lib" path="lib/processing/jogl-all-natives-macosx-universal.jar"/>
-	<classpathentry kind="lib" path="lib/processing/jogl-all.jar"/>
+	<classpathentry kind="lib" path="lib/processing3/gluegen-rt-natives-macosx-universal.jar"/>
+	<classpathentry kind="lib" path="lib/processing3/gluegen-rt.jar"/>
+	<classpathentry kind="lib" path="lib/processing3/jogl-all-natives-macosx-universal.jar"/>
+	<classpathentry kind="lib" path="lib/processing3/jogl-all.jar"/>
 	<classpathentry kind="lib" path="lib/processing/minim/library/minim.jar"/>
 	<classpathentry kind="lib" path="lib/processing/minim/library/jsminim.jar"/>
 	<classpathentry kind="lib" path="lib/processing/minim/library/tritonus_share.jar"/>
 	<classpathentry kind="lib" path="lib/processing/minim/library/mp3spi1.9.4.jar"/>
 	<classpathentry kind="lib" path="lib/processing/minim/library/jl1.0.jar"/>
-	<classpathentry kind="lib" path="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/library/jsyphon.jar" sourcepath="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/src">
+	<classpathentry kind="lib" path="lib/processing3/core.jar" sourcepath="/Users/bst/Dropbox/Processing/processing3 source/core"/>
+	<classpathentry kind="lib" path="lib/Syphon/java/JSyphon/jar/jsyphon.jar" sourcepath="lib/Syphon/java/JSyphon/src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/library"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/java/JSyphon/native_libs"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/library/Syphon.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
