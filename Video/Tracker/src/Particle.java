@@ -22,7 +22,7 @@ class Particle {
 		this.color=color;
 		acceleration = new PVector(0f, -0.03f/300);
 		velocity = new PVector((float)rng.nextGaussian()*0.3f/300+v.x, (float)rng.nextGaussian()*0.3f/300 + v.y);
-		location = l.get();
+		location = l.copy();
 		maxlifespan = 500.0f;
 		lifespan = maxlifespan;
 	}
@@ -41,7 +41,7 @@ class Particle {
 		// Push particles with pushvel velocity
 		// Scales with distance
 		float dist=PVector.sub(c, location).mag();
-		PVector dir=pushvel.get(); 
+		PVector dir=pushvel.copy(); 
 		float releffect = PApplet.max(0.0f,1.0f-dist*3f);
 		dir.mult(releffect);
 		location.add(dir);

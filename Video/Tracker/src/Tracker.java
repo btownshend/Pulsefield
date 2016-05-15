@@ -52,6 +52,10 @@ public class Tracker extends PApplet {
 	PVector mouseVel;  // Average mouse velocity
 	int lastFrameReceived=3;
 	Fourier fourier;
+	public void settings() {
+		  size(1280, 720, P2D);
+		  pixelDensity(2);
+		}
 	
 	public void setup() {
 		configFile="/Users/bst/DropBox/Pulsefield/src/urlconfig.txt";
@@ -63,7 +67,6 @@ public class Tracker extends PApplet {
 			System.exit(1);
 		}
 
-		size(1280,720, OPENGL);
 		frameRate(30);
 		mouseID=90;
 		cycler=new AutoCycler();
