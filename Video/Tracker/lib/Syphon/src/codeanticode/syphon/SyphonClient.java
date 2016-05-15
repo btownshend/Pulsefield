@@ -4,7 +4,7 @@
  * applications. It only works on MacOSX and requires the P3D
  * renderer.
  *
- * (c) 2011-14
+ * ##copyright##
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,8 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA  02111-1307  USA
  * 
- * @author    Andres Colubri http://interfaze.info/
- * @modified  06/10/2014
+ * @author    ##author##
+ * @modified  ##date##
  * @version   ##version##
  */
 
@@ -215,16 +215,28 @@ public class SyphonClient {
     
     return res;  
   }
+  
+  
+  /**
+   * Returns true if the server this client is listening to does exist.
+   * 
+   * @return boolean 
+   */   
+  public boolean active() {
+    return client.isValid();
+  }
 
+  
   /**
    * Returns true if a new frame is available.
    * 
    * @return boolean 
    */   
-  public boolean available() {
-    return client.hasNewFrame();
+  public boolean newFrame() {
+    return client.isValid() && client.hasNewFrame();
   }
 
+  
   /**
    * Copies the new frame to a PGraphics object.
    * It initializes dest if it is null or has the 
@@ -268,7 +280,9 @@ public class SyphonClient {
    * 
    * @param dest
    */    
-  public PImage getImage(PImage dest, boolean loadPixels) {    
+  public PImage getImage(PImage dest, boolean loadPixels) {
+    if (!client.isValid()) return null;
+    
     JSyphonImage img = client.newFrameImageForContext();
     
     int texId = img.textureName();

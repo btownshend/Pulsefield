@@ -4,7 +4,7 @@
  * applications. It only works on MacOSX and requires the P3D
  * renderer.
  *
- * (c) 2011-14
+ * ##copyright##
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,8 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA  02111-1307  USA
  * 
- * @author    Andres Colubri http://interfaze.info/
- * @modified  06/10/2014
+ * @author    ##author##
+ * @modified  ##date##
  * @version   ##version##
  */
 
@@ -66,7 +66,7 @@ package codeanticode.syphon;
  * 
  */ 
 public class Syphon {  
-  public final static String VERSION = "1.0-RC3";
+  public final static String VERSION = "##library.prettyVersion##";
   
    protected static int count;
 
@@ -76,7 +76,7 @@ public class Syphon {
     */   
    protected static void init() {
      if (count == 0) {       
-       System.out.println("Syphon 1.0-RC3 by Andres Colubri http://interfaze.info/");       
+       System.out.println("##library.name## ##library.prettyVersion## by ##author##");       
      }
      count++;
    }
