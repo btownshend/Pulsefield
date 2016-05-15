@@ -55,6 +55,7 @@ public class Tracker extends PApplet {
 	Fourier fourier;
 	SyphonServer server=null;
 	String renderer=P2D;
+	Boolean useSyphon = false;
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -155,9 +156,7 @@ public class Tracker extends PApplet {
 		PApplet.println("Setup complete");
 		starting = false;
 		
-		// Syphon setup
-		// Currently seems to break display
-		// server = new SyphonServer(this, "Tracker");
+
 	}
 
 	public void tempo(float t) {
@@ -280,8 +279,17 @@ public class Tracker extends PApplet {
 
 		vis[currentvis].draw(this,people,new PVector(width,height));
 		vis[currentvis].drawLaser(this,people);
-		if (server != null)
+		
+		// Syphon setup, requires OpenGL renderer (not FX2D?)
+		// Currently seems to break display
+		if (renderer != FX2D && useSyphon && server==null)
+			server = new SyphonServer(this, "Tracker");
+		
+		if (server != null) {
+			beginPGL();
 			server.sendScreen();
+			endPGL();
+		}
 	}
 
 	public void mouseReleased() {
@@ -313,7 +321,7 @@ public class Tracker extends PApplet {
 		if (present)
 			PApplet.main(new String[] { "--present","--display=1","Tracker"});
 		else
-			PApplet.main(new String[] { "Tracker" });
+			PApplet.main(new String[] {"--display=2","Tracker" });
 	}
 
 	/* incoming osc message are forwarded to the oscEvent method. */
