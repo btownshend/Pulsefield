@@ -9,17 +9,22 @@ public class VisualizerMinim extends VisualizerGrid {
 	Fourier fourier;
 	int select;
 	
-	VisualizerMinim(PApplet parent, Fourier fourier) {
+	VisualizerMinim(PApplet parent, Fourier fourier, Boolean is3D) {
 		super(parent);
 
 		this.fourier=fourier;
 		select=-1;			// activate first renderer in list
 		// setup renderers
-		vortex = new VortexRenderer(fourier);
 		radar = new RadarRenderer(fourier);
 		iso = new IsometricRenderer(parent,fourier);
 
-		visuals = new Renderer[] {radar, vortex, iso};
+		if (is3D) {
+			// Can only do vortex if the main renderer supports 3D
+			vortex = new VortexRenderer(fourier);
+			visuals = new Renderer[] {radar, vortex, iso};
+		} else {
+			visuals = new Renderer[] {radar, iso};
+		}
 	}
 
 	@Override

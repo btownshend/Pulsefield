@@ -4,6 +4,7 @@ import java.util.Map;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
+import processing.core.PConstants;
 import processing.opengl.PGL;
 import processing.opengl.PGraphicsOpenGL;
 
@@ -63,10 +64,16 @@ public class VisualizerPS extends Visualizer {
 		super.draw(parent,p,wsize);
 		if (p.pmap.isEmpty())
 			return;
-		parent.resetShader();
-		PGL pgl=((PGraphicsOpenGL)parent.g).pgl;
-		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA); 
-		pgl.blendEquation(PGL.FUNC_ADD);
+		if (true) {
+			// The coercion to PGraphicsOpenGL doesn't work when using FX2D
+			// In any case, even with P2D, I don't see that this makes any difference
+			// But running parent.blendMode(PConstants.ADD) looks worse...
+			parent.resetShader();
+			PGL pgl=parent.beginPGL();
+			pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA); 
+			pgl.blendEquation(PGL.FUNC_ADD);
+			parent.endPGL();
+		}
 
 		
 		for (Map.Entry<Integer,ParticleSystem> me: systems.entrySet()) {

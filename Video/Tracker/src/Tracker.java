@@ -54,12 +54,14 @@ public class Tracker extends PApplet {
 	int lastFrameReceived=3;
 	Fourier fourier;
 	SyphonServer server=null;
+	String renderer=P2D;
 	
 	public void settings() {
-		  size(1280, 720, P2D);
-		  pixelDensity(2);
-		}
-	
+		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
+		size(1280, 720, renderer);
+		//pixelDensity(2);  // This breaks the Navier visualizer
+	}
+
 	public void setup() {
 		configFile="/Users/bst/DropBox/Pulsefield/src/urlconfig.txt";
 
@@ -126,7 +128,7 @@ public class Tracker extends PApplet {
 		vis[12]=new VisualizerSoccer(this);
 		visMenu=new VisualizerMenu(this);vis[13]=visMenu;
 
-		vis[14]=new VisualizerMinim(this,fourier);
+		vis[14]=new VisualizerMinim(this,fourier,renderer!=FX2D);
 		setapp(12);
 		
 		// Setup OSC handlers
