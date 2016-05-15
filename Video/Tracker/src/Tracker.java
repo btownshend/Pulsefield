@@ -336,6 +336,8 @@ public class Tracker extends PApplet {
 			synth.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/pf/set")) {
 			// PApplet.println("Unhandled set message: "+theOscMessage.addrPattern());
+		} else if (theOscMessage.addrPattern().startsWith("/pf/background")) {
+			// PApplet.println("Unhandled set message: "+theOscMessage.addrPattern());
 		} else if (theOscMessage.addrPattern().startsWith("/vis/")) {
 			// PApplet.println("Unhandled vis message: "+theOscMessage.addrPattern());
 		} else {
