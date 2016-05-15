@@ -1,7 +1,6 @@
 
 
 import processing.core.PApplet;
-import processing.core.PConstants;
 import processing.core.PGraphics;
 
 
@@ -44,7 +43,7 @@ public class IsometricRenderer extends Renderer {
   }
   
   @Override
-  public void draw(PApplet parent) {
+  public void draw(PGraphics parent) {
     if (fourier.left != null) {
   	  fourier.calc(n);;
 

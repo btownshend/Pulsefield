@@ -4,6 +4,7 @@ import java.util.Iterator;
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PShape;
 import processing.core.PVector;
 
@@ -66,7 +67,7 @@ class PolyState {
 		}
 	}
 
-	void draw(PApplet parent,PVector wsize, int totalBeats, int row, Synth synth) {
+	void draw(PGraphics parent,PVector wsize, int totalBeats, int row, Synth synth) {
 		final int NUMROWS=20;
 		float rowheight=wsize.y/2/NUMROWS;
 
@@ -196,7 +197,7 @@ public class VisualizerPoly extends Visualizer {
 	}
 
 	@Override
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
 		if (p.pmap.isEmpty())
 			return;

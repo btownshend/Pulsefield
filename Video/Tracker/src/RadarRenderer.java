@@ -1,6 +1,7 @@
 
 
 import processing.core.PApplet;
+import processing.core.PGraphics;
 
 
 public class RadarRenderer extends Renderer {
@@ -22,7 +23,7 @@ public class RadarRenderer extends Renderer {
   }
   
   @Override
-  public synchronized void draw(PApplet parent)
+  public synchronized void draw(PGraphics parent)
   {
     parent.colorMode(PApplet.RGB, (float)(Math.PI * 2* rotations), 1, 1);
     if (needsClear) {

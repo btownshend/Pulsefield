@@ -2,6 +2,7 @@ import processing.core.*;
 
 import java.util.Random;
 
+import processing.core.PGraphics;
 // A simple Particle class
 
 class Particle {
@@ -58,7 +59,7 @@ class Particle {
 	}
 
 	// Method to display
-	void draw(PApplet parent, PVector wsize) {
+	void draw(PGraphics parent, PVector wsize) {
 		//println("display(): location="+location);
 		parent.imageMode(PConstants.CENTER);
 		//float kscale= 0.05f;//lifespan/maxlifespan/10;

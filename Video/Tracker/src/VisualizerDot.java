@@ -1,5 +1,6 @@
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PVector;
 
 // Visualizer that just displays a dot for each person
@@ -15,7 +16,7 @@ public class VisualizerDot extends Visualizer {
 		;
 	}
 
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
 
 		parent.ellipseMode(PConstants.CENTER);

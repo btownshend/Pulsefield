@@ -4,6 +4,7 @@ import java.util.Map;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PVector;
 
 public class VisualizerProximity extends VisualizerPS {
@@ -93,7 +94,7 @@ public class VisualizerProximity extends VisualizerPS {
 		}
 	}
 
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 		super.draw(parent,p, wsize);
 
 		parent.textSize(16);

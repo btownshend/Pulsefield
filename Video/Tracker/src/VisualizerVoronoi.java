@@ -8,6 +8,7 @@ import processing.core.PVector;
 import delaunay.Pnt;
 import delaunay.Triangle;
 import delaunay.Triangulation;
+import processing.core.PGraphics;
 
 class Voice {
 	int id;
@@ -173,7 +174,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 	}
 
 	@Override
-	public void draw(PApplet parent, People allpos, PVector wsize) {
+	public void draw(PGraphics parent, People allpos, PVector wsize) {
 		super.draw(parent, allpos, wsize);
 		if (allpos.pmap.isEmpty())
 			return;

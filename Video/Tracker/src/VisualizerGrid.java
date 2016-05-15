@@ -5,6 +5,7 @@ import java.util.Map;
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PVector;
 
 public class VisualizerGrid extends VisualizerPS {
@@ -112,7 +113,7 @@ public class VisualizerGrid extends VisualizerPS {
 		}
 	}
 
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 		super.draw(parent,p, wsize);
 		if (p.pmap.isEmpty())
 			return;

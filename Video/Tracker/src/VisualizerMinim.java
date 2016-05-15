@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PVector;
 
 
@@ -53,7 +54,7 @@ public class VisualizerMinim extends VisualizerGrid {
 	}
 
 	@Override
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 		if (p.pmap.isEmpty()) {
 			super.draw(parent, p, wsize);
 			return;

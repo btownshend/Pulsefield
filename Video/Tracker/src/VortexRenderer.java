@@ -1,6 +1,7 @@
 
 
 import processing.core.PApplet;
+import processing.core.PGraphics;
 
 
 public class VortexRenderer extends Renderer {
@@ -19,7 +20,7 @@ public class VortexRenderer extends Renderer {
 	}
 
 	@Override
-	public synchronized void draw(PApplet parent	) {
+	public synchronized void draw(PGraphics parent) {
 		if(fourier.left != null) {  
 
 			float t = PApplet.map((float)parent.millis(),0f, 3000f, 0f, (float)(2*Math.PI));

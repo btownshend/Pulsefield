@@ -1,5 +1,6 @@
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PShape;
 import processing.core.PVector;
 
@@ -19,7 +20,7 @@ class Ball {
 		ballShape=null;
 	}
 	
-	public void draw(PApplet parent, PVector wsize) {
+	public void draw(PGraphics parent, PVector wsize) {
 		if (ballShape==null)
 			ballShape=parent.loadShape(Tracker.SVGDIRECTORY+"Soccerball.svg");
 		final int color=0xffffffff;
@@ -144,7 +145,7 @@ public class VisualizerSoccer extends VisualizerDot {
 	}
 
 	@Override
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 		super.draw(parent, p, wsize);
 		if (p.pmap.isEmpty())
 			return;

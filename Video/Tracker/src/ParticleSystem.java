@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
 
@@ -43,7 +43,7 @@ class ParticleSystem {
 		}
 	}
 
-	void draw(PApplet parent, PVector wsize) {
+	void draw(PGraphics parent, PVector wsize) {
 		for (Particle p: particles) {
 			p.draw(parent, wsize);
 		}

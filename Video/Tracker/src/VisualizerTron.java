@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PVector;
 
 class GridData {
@@ -216,7 +217,7 @@ public class VisualizerTron extends Visualizer {
 		}
 	}
 
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 		super.draw(parent,p,wsize);
 
 		for (int i=0;i<gridWidth;i++)
@@ -255,9 +256,9 @@ public class VisualizerTron extends Visualizer {
 							inset=2;
 						}
 						if (playgrid.get(g.id).grid == i*gridHeight+j)
-							parent.fill(p.get(g.id).getcolor(parent),200);
+							parent.fill(p.get(g.id).getcolor(),200);
 						else
-							parent.fill(p.get(g.id).getcolor(parent));
+							parent.fill(p.get(g.id).getcolor());
 						parent.rect(wsize.x*i/gridWidth+inset, wsize.y*j/gridHeight+inset, wsize.x/gridWidth-2*inset, wsize.y/gridHeight-2*inset);
 					}
 				}

@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PShape;
 import processing.core.PVector;
 
@@ -18,7 +19,7 @@ class Apple {
 		Laser laser=Laser.getInstance();
 		laser.svgfile("apple.svg",position.x,position.y,0.5f,0f);
 	}
-	void draw(PApplet parent, PVector wsize) {
+	void draw(PGraphics parent, PVector wsize) {
 		if (appleShape==null)
 			appleShape=parent.loadShape(Tracker.SVGDIRECTORY+"apple.svg");
 		PVector p=Tracker.floorToNormalized(position);
@@ -86,7 +87,7 @@ public class VisualizerCows extends VisualizerIcon {
 	}
 	
 	@Override
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 		if (p.pmap.isEmpty()) {
 			super.draw(parent,p, wsize);
 			return;

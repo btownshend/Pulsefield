@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
 import processing.core.PConstants;
@@ -40,7 +41,7 @@ public class VisualizerPS extends Visualizer {
 				}
 
 			for (int k=0;k<birthrate;k++)
-				ps.addParticle(pos.getNormalizedPosition(),pos.getcolor(parent));
+				ps.addParticle(pos.getNormalizedPosition(),pos.getcolor());
 		}
 		int toRemove=-1;
 
@@ -60,7 +61,7 @@ public class VisualizerPS extends Visualizer {
 		}
 	}
 
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 		super.draw(parent,p,wsize);
 		if (p.pmap.isEmpty())
 			return;

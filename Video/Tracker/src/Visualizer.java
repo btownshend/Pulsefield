@@ -1,6 +1,7 @@
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PVector;
 
 public abstract class Visualizer {
@@ -10,7 +11,7 @@ public abstract class Visualizer {
 		name="??";
 	}
 
-	public void drawWelcome(PApplet parent, PVector wsize) {
+	public void drawWelcome(PGraphics parent, PVector wsize) {
 		parent.fill(50, 255, 255);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
 		parent.textSize(45);
@@ -25,7 +26,7 @@ public abstract class Visualizer {
 	}
 	
 	// Clean up graphics context to "default" state
-	public void initializeContext(PApplet parent) { 
+	public void initializeContext(PGraphics parent) { 
 		parent.colorMode(PConstants.RGB, 255);
 		parent.rectMode(PApplet.CORNER);
 		parent.smooth();
@@ -34,7 +35,7 @@ public abstract class Visualizer {
 		parent.noTint();
 	}
 	
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 		initializeContext(parent);
 		parent.background(0, 0, 0); 
 		if (p.pmap.isEmpty())
@@ -62,11 +63,11 @@ public abstract class Visualizer {
 
 	public void setName(String name) { this.name=name; }
 	
-	public void drawBorders(PApplet parent, boolean octagon, PVector wsize) {
+	public void drawBorders(PGraphics parent, boolean octagon, PVector wsize) {
 		this.drawBorders(parent, octagon, wsize, 2.0f,127,255);
 	}
 	
-	public void drawBorders(PApplet parent, boolean octagon, PVector wsize, float strokeWeight, int color,int alpha) {
+	public void drawBorders(PGraphics parent, boolean octagon, PVector wsize, float strokeWeight, int color,int alpha) {
 		octagon=false;
 		parent.stroke(color,alpha);
 		parent.fill(0);

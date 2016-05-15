@@ -2,6 +2,7 @@ import java.util.HashMap;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
 
@@ -102,7 +103,7 @@ public class VisualizerGuitar extends VisualizerPS {
 	}
 
 
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 		super.draw(parent,p,wsize);
 		if (p.pmap.isEmpty())
 			return;

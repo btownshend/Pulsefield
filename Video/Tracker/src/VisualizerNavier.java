@@ -1,6 +1,7 @@
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
 
@@ -99,7 +100,7 @@ class VisualizerNavier extends Visualizer {
 	}
 
 	@Override
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(PGraphics parent, People p, PVector wsize) {
 //		Don't call parent.draw since it draws the defaults border and fills the background
 //		super.draw(parent,p,wsize);
 		
@@ -169,7 +170,7 @@ class VisualizerNavier extends Visualizer {
 		
 	}
 
-	private void fluidCanvasStep(PApplet parent) {
+	private void fluidCanvasStep(PGraphics parent) {
 		double widthInverse = 1.0 / parent.width;
 		double heightInverse = 1.0 / parent.height;
 
@@ -198,7 +199,7 @@ class VisualizerNavier extends Visualizer {
 		parent.image(buffer,0,0,parent.width,parent.height);
 	}
 
-	public int getSubPixel(PApplet parent, double warpX, double warpY) {
+	public int getSubPixel(PGraphics parent, double warpX, double warpY) {
 		if (warpX < 0 || warpY < 0 || warpX > parent.width - 1 || warpY > parent.height - 1) {
 			return bordercolor;
 		}
