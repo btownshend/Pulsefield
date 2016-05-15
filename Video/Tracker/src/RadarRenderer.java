@@ -32,7 +32,7 @@ public class RadarRenderer extends Renderer {
     }
     if(fourier.left != null) {
    
-      float t = PApplet.map((float)PApplet.millis(),0f, delay * 1000f, 0f, (float)Math.PI);   
+      float t = PApplet.map((float)parent.millis(),0f, delay * 1000f, 0f, (float)Math.PI);   
       int n = fourier.left.length;
       
       // center 
