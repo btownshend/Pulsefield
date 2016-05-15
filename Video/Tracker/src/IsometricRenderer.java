@@ -25,7 +25,8 @@ public class IsometricRenderer extends Renderer {
     val = new float[n];
     // Offscreen P2D renderer (fastest)
 	PApplet.println("Creating render with size "+parent.width+"x"+parent.height);
-    pg = parent.createGraphics(parent.width, parent.height,PConstants.P2D);
+	// There are black lines on the render when P3D is used for tracker??
+    pg = parent.createGraphics(parent.width, parent.height);
     pg.noSmooth();
 //    
     // Alternatively use Java2D (sharper)
