@@ -654,7 +654,7 @@ public class Tracker extends PApplet {
 
 	synchronized public void pfentry(int sampnum, float elapsed, int id, int channel) {
 		add(id,channel);
-		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel+", color="+people.get(id).getcolor(this));
+		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel+", color="+people.get(id).getcolor());
 	}
 
 	public void noteOn(int channel, int pitch, int velocity) {

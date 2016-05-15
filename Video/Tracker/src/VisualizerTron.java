@@ -234,7 +234,7 @@ public class VisualizerTron extends Visualizer {
 					if (g.exploding>0) {
 						final int explosionFrames = 400;
 						assert(p.get(gid)!=null);
-						parent.fill(p.get(gid).getcolor(parent));
+						parent.fill(p.get(gid).getcolor());
 						float w = wsize.x*(explosionFrames-g.exploding)/explosionFrames/gridWidth;
 						float h = wsize.y*(explosionFrames-g.exploding)/explosionFrames/gridHeight;
 						float disp=wsize.x*g.exploding/explosionFrames;

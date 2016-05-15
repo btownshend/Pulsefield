@@ -202,7 +202,7 @@ public class VisualizerGuitar extends VisualizerPS {
 						GString s=strings[i];
 						if ( (p.getNormalizedPosition().y > s.position) != (lastp.y >s.position) ) {
 							// Crossed a string
-							s.strike(synth, p, p.getcolor(parent));
+							s.strike(synth, p, p.getcolor());
 						}
 					}
 				}

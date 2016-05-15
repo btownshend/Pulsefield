@@ -174,7 +174,7 @@ public class VisualizerMenu extends Visualizer {
 		Person ps=p.get(selectingPerson);
 		float sz=60;
 		float scale=Math.min(sz/cursor.width,sz/cursor.height);
-		int c=ps.getcolor(parent);
+		int c=ps.getcolor();
 		parent.fill(c,255);
 		parent.stroke(c,255);
 //		PApplet.println("Drawing cursor with scaling="+scale);

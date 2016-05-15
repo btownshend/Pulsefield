@@ -371,7 +371,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 		// Draw all the controllers first so generators will be on top of connecting lines
 		for (Fiducial f: values()) {
 			if (f instanceof Controller) {
-				int c=f.getcolor(parent);
+				int c=f.getcolor();
 				parent.fill(c,255);
 				parent.stroke(c,255);
 				parent.strokeWeight(5);
@@ -380,7 +380,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 		}
 		for (Fiducial f: values()) {
 			if (f instanceof Generator) {
-				int c=f.getcolor(parent);
+				int c=f.getcolor();
 				parent.fill(c,255);
 				parent.stroke(c,255);
 				parent.strokeWeight(5);

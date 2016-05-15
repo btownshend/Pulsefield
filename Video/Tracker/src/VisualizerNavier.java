@@ -130,7 +130,7 @@ class VisualizerNavier extends Visualizer {
 
 		parent.ellipseMode(PConstants.CENTER);
 		for (Person ps: p.pmap.values()) {  
-			int c=ps.getcolor(parent);
+			int c=ps.getcolor();
 			parent.fill(c,255);
 			parent.stroke(c,255);
 			//PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());

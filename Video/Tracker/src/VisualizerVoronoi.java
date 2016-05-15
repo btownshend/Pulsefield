@@ -242,7 +242,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 				// Draw the major line
 				if (hasLine && v.playing) {
-					parent.stroke(allpos.get(idsite.id).getcolor(parent));
+					parent.stroke(allpos.get(idsite.id).getcolor());
 					parent.strokeWeight(5);
 					PVector scoord1=convertToScreen(v.mainline[0],wsize);
 					PVector scoord2=convertToScreen(v.mainline[1],wsize);

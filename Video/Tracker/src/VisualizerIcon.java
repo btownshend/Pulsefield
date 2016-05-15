@@ -44,7 +44,7 @@ public class VisualizerIcon extends Visualizer {
 		parent.shapeMode(PApplet.CENTER);
 		final float sz=60;  // Size to make the icon's largest dimension, in pixels
 		for (Person ps: p.pmap.values()) {  
-			int c=ps.getcolor(parent);
+			int c=ps.getcolor();
 			parent.fill(c,255);
 			parent.stroke(c,255);
 			PShape icon=iconShapes[ps.id%iconShapes.length];

@@ -320,7 +320,7 @@ public class VisualizerDDR extends Visualizer {
 			int quad=d.getAim();
 			parent.pushMatrix();
 			parent.translate((d.neutral.x+1)*wsize.x/2,(d.neutral.y+1)*wsize.y/2);
-			parent.fill(p.getcolor(parent));
+			parent.fill(p.getcolor());
 			parent.ellipse(0,0,DOTSIZE,DOTSIZE);
 //			PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
 			if (quad>=0) {
@@ -360,7 +360,7 @@ public class VisualizerDDR extends Visualizer {
 			if (p==null)
 				continue;
 			
-			parent.fill(p.getcolor(parent));
+			parent.fill(p.getcolor());
 			parent.ellipse(DOTSIZE/2,0,DOTSIZE/2, DOTSIZE/2);
 			parent.fill(255);
 			parent.text(""+d.score,DOTSIZE*1.5f,0);

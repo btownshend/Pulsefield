@@ -181,7 +181,7 @@ public class VisualizerPoly extends Visualizer {
 			PolyState ps=poly.get(id);
 			if (ps==null) {
 				Person p=allpos.get(id);
-				ps=new PolyState(p,noteDuration,p.getcolor(parent));
+				ps=new PolyState(p,noteDuration,p.getcolor());
 				poly.put(id, ps);
 			}
 			ps.update(beat,totalBeats,scale,synth,channel);

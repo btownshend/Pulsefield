@@ -98,7 +98,7 @@ public class VisualizerCows extends VisualizerIcon {
 		apple.draw(parent,wsize);
 
 		for (Person ps: p.pmap.values()) {  
-			int c=ps.getcolor(parent);
+			int c=ps.getcolor();
 			parent.fill(c,255);
 			parent.stroke(c,255);
 			PShape icon=iconShapes[ps.id%iconShapes.length];
