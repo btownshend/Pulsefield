@@ -12,10 +12,11 @@ public abstract class Renderer {
 	}
 	public void start() {}
 	public void stop() {}
-	public abstract void draw(PGraphics parent); 
+	public abstract void draw(Tracker tracker, PGraphics g); 
 	public void update(PApplet parent) { }
 	public  void drawLaser(PApplet parent, People p) {
 		// Delegate to the mvl
 		mvl.drawLaser(parent, p);
 	}
+
 }

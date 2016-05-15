@@ -145,12 +145,12 @@ public class VisualizerSoccer extends VisualizerDot {
 	}
 
 	@Override
-	public void draw(PGraphics parent, People p, PVector wsize) {
-		super.draw(parent, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t, g, p, wsize);
 		if (p.pmap.isEmpty())
 			return;
 		if (ball!=null)
-			ball.draw(parent,wsize);
+			ball.draw(g,wsize);
 	}
 	
 	@Override

@@ -26,8 +26,8 @@ public class VisualizerTemplate extends Visualizer {
 	}
 
 	@Override
-	public void draw(PGraphics parent, People p, PVector wsize) {
-		super.draw(parent, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t, g, p, wsize);
 
 		// Add drawing code here
 	}

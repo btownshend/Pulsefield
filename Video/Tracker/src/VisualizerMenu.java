@@ -152,34 +152,34 @@ public class VisualizerMenu extends Visualizer {
 	}
 	
 	@Override
-	public void draw(PGraphics parent, People p, PVector wsize) {
-		super.draw(parent, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t, g, p, wsize);
 		if (p.pmap.isEmpty())
 			return;
 		
-		parent.ellipseMode(PConstants.CENTER);
+		g.ellipseMode(PConstants.CENTER);
 
-		parent.stroke(0xffffffff);
-		parent.textAlign(PConstants.CENTER, PConstants.CENTER);
-		parent.textSize(25);
+		g.stroke(0xffffffff);
+		g.textAlign(PConstants.CENTER, PConstants.CENTER);
+		g.textSize(25);
 		for(MenuItem item : menuItems) {
 			PVector pos = Tracker.floorToNormalized(item.position);
 			PVector sz = Tracker.mapVelocity(new PVector(2*SELECTION_DISTANCE, 2*SELECTION_DISTANCE));
-			parent.fill(0xff000000);
-			parent.ellipse((pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2, sz.x*wsize.x/2, sz.y*wsize.y/2);
-			parent.fill(0xffffffff);
-			parent.text(item.name, (pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2);
+			g.fill(0xff000000);
+			g.ellipse((pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2, sz.x*wsize.x/2, sz.y*wsize.y/2);
+			g.fill(0xffffffff);
+			g.text(item.name, (pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2);
 		}
 		// Draw cursor for selecting person
 		Person ps=p.get(selectingPerson);
 		float sz=60;
 		float scale=Math.min(sz/cursor.width,sz/cursor.height);
 		int c=ps.getcolor();
-		parent.fill(c,255);
-		parent.stroke(c,255);
+		g.fill(c,255);
+		g.stroke(c,255);
 //		PApplet.println("Drawing cursor with scaling="+scale);
 		// cursor seems shifted
-		parent.shape(cursor,(ps.getNormalizedPosition().x+1)*wsize.x/2-cursor.width*scale*0.4f, (ps.getNormalizedPosition().y+1)*wsize.y/2-cursor.height*scale*0.2f,cursor.width*scale,cursor.height*scale);
+		g.shape(cursor,(ps.getNormalizedPosition().x+1)*wsize.x/2-cursor.width*scale*0.4f, (ps.getNormalizedPosition().y+1)*wsize.y/2-cursor.height*scale*0.2f,cursor.width*scale,cursor.height*scale);
 	}
 	
 	@Override

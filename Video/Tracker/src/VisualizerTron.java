@@ -217,13 +217,13 @@ public class VisualizerTron extends Visualizer {
 		}
 	}
 
-	public void draw(PGraphics parent, People p, PVector wsize) {
-		super.draw(parent,p,wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t,g,p,wsize);
 
 		for (int i=0;i<gridWidth;i++)
 			for (int j=0;j<gridHeight;j++) {
-				GridData g=grid[i*gridHeight+j];
-				int gid=g.id;
+				GridData gd=grid[i*gridHeight+j];
+				int gid=gd.id;
 				if (gid!=-1) {
 					if (p.get(gid)== null) {
 						// Person deleted
@@ -231,18 +231,18 @@ public class VisualizerTron extends Visualizer {
 						grid[i*gridHeight+j].id=-1;
 						continue;
 					}
-					if (g.exploding>0) {
+					if (gd.exploding>0) {
 						final int explosionFrames = 400;
 						assert(p.get(gid)!=null);
-						parent.fill(p.get(gid).getcolor());
-						float w = wsize.x*(explosionFrames-g.exploding)/explosionFrames/gridWidth;
-						float h = wsize.y*(explosionFrames-g.exploding)/explosionFrames/gridHeight;
-						float disp=wsize.x*g.exploding/explosionFrames;
-						parent.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight+disp,w,h);
-						parent.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight-disp, w,h);
-						parent.rect(wsize.x*i/gridWidth+disp, wsize.y*j/gridHeight, w,h);
-						parent.rect(wsize.x*i/gridWidth-disp, wsize.y*j/gridHeight, w,h);
-						if (g.exploding<explosionFrames)
+						g.fill(p.get(gid).getcolor());
+						float w = wsize.x*(explosionFrames-gd.exploding)/explosionFrames/gridWidth;
+						float h = wsize.y*(explosionFrames-gd.exploding)/explosionFrames/gridHeight;
+						float disp=wsize.x*gd.exploding/explosionFrames;
+						g.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight+disp,w,h);
+						g.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight-disp, w,h);
+						g.rect(wsize.x*i/gridWidth+disp, wsize.y*j/gridHeight, w,h);
+						g.rect(wsize.x*i/gridWidth-disp, wsize.y*j/gridHeight, w,h);
+						if (gd.exploding<explosionFrames)
 							grid[i*gridHeight+j].exploding+=10;
 						else {
 							grid[i*gridHeight+j].exploding=-1;
@@ -251,15 +251,15 @@ public class VisualizerTron extends Visualizer {
 					} else {
 						float inset=1;
 						if (currentgrid.containsKey(gid) && currentgrid.get(gid)==i*gridHeight+j) {
-							parent.fill(parent.color(255,255,255));
-							parent.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight, wsize.x/gridWidth, wsize.y/gridHeight);
+							g.fill(g.color(255,255,255));
+							g.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight, wsize.x/gridWidth, wsize.y/gridHeight);
 							inset=2;
 						}
-						if (playgrid.get(g.id).grid == i*gridHeight+j)
-							parent.fill(p.get(g.id).getcolor(),200);
+						if (playgrid.get(gd.id).grid == i*gridHeight+j)
+							g.fill(p.get(gd.id).getcolor(),200);
 						else
-							parent.fill(p.get(g.id).getcolor());
-						parent.rect(wsize.x*i/gridWidth+inset, wsize.y*j/gridHeight+inset, wsize.x/gridWidth-2*inset, wsize.y/gridHeight-2*inset);
+							g.fill(p.get(gd.id).getcolor());
+						g.rect(wsize.x*i/gridWidth+inset, wsize.y*j/gridHeight+inset, wsize.x/gridWidth-2*inset, wsize.y/gridHeight-2*inset);
 					}
 				}
 			}	

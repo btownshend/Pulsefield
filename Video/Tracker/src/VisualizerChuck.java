@@ -441,9 +441,9 @@ public class VisualizerChuck extends Visualizer {
 	}
 
 	@Override
-	public void draw(PGraphics parent, People p, PVector wsize) {
-		super.draw(parent, p, wsize);
-		fiducials.draw(parent,wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t, g, p, wsize);
+		fiducials.draw(g,wsize);
 	}
 }
 

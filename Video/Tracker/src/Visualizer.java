@@ -11,36 +11,36 @@ public abstract class Visualizer {
 		name="??";
 	}
 
-	public void drawWelcome(PGraphics parent, PVector wsize) {
-		parent.fill(50, 255, 255);
-		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
-		parent.textSize(45);
-		parent.stroke(255);
+	public void drawWelcome(PGraphics g, PVector wsize) {
+		g.fill(50, 255, 255);
+		g.textAlign(PConstants.CENTER,PConstants.CENTER);
+		g.textSize(45);
+		g.stroke(255);
 		final float lineSize=wsize.y/8;
-		parent.text("Welcome to the", wsize.x/2,wsize.y/2-lineSize);
-		parent.textSize(60);
-		parent.text("PULSEFIELD", wsize.x/2,wsize.y/2);
-		parent.textSize(45);
-		parent.text(name, wsize.x/2,wsize.y/2+lineSize);
-		parent.text("Please enter...", wsize.x/2,wsize.y/2+2.5f*lineSize);
+		g.text("Welcome to the", wsize.x/2,wsize.y/2-lineSize);
+		g.textSize(60);
+		g.text("PULSEFIELD", wsize.x/2,wsize.y/2);
+		g.textSize(45);
+		g.text(name, wsize.x/2,wsize.y/2+lineSize);
+		g.text("Please enter...", wsize.x/2,wsize.y/2+2.5f*lineSize);
 	}
 	
 	// Clean up graphics context to "default" state
-	public void initializeContext(PGraphics parent) { 
-		parent.colorMode(PConstants.RGB, 255);
-		parent.rectMode(PApplet.CORNER);
-		parent.smooth();
-		parent.stroke(255);
-		parent.imageMode(PConstants.CORNER);
-		parent.noTint();
+	public void initializeContext(PGraphics g) { 
+		g.colorMode(PConstants.RGB, 255);
+		g.rectMode(PApplet.CORNER);
+		g.smooth();
+		g.stroke(255);
+		g.imageMode(PConstants.CORNER);
+		g.noTint();
 	}
 	
-	public void draw(PGraphics parent, People p, PVector wsize) {
-		initializeContext(parent);
-		parent.background(0, 0, 0); 
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		initializeContext(g);
+		g.background(0, 0, 0); 
 		if (p.pmap.isEmpty())
-			drawWelcome(parent,wsize);
-		drawBorders(parent, false, wsize);
+			drawWelcome(g,wsize);
+		drawBorders(g, false, wsize);
 	}
 
 	// Draw to laser

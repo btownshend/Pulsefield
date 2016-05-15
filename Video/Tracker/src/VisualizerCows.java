@@ -87,27 +87,27 @@ public class VisualizerCows extends VisualizerIcon {
 	}
 	
 	@Override
-	public void draw(PGraphics parent, People p, PVector wsize) {
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
 		if (p.pmap.isEmpty()) {
-			super.draw(parent,p, wsize);
+			super.draw(t, g, p, wsize);
 			return;
 		}
 
-		parent.background(127);
-		parent.shapeMode(PApplet.CENTER);
-		apple.draw(parent,wsize);
+		g.background(127);
+		g.shapeMode(PApplet.CENTER);
+		apple.draw(g,wsize);
 
 		for (Person ps: p.pmap.values()) {  
 			int c=ps.getcolor();
-			parent.fill(c,255);
-			parent.stroke(c,255);
+			g.fill(c,255);
+			g.stroke(c,255);
 			PShape icon=iconShapes[ps.id%iconShapes.length];
 			//icon.translate(-icon.width/2, -icon.height/2);
 //			PApplet.println("Display shape "+icon+" with native size "+icon.width+","+icon.height);
 			final float sz=30+60*2*ps.userData;  // Size to make the icon's largest dimension, in pixels
 			
 			float scale=Math.min(sz/icon.width,sz/icon.height);
-			parent.shape(icon,(ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2,icon.width*scale,icon.height*scale);
+			g.shape(icon,(ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2,icon.width*scale,icon.height*scale);
 			//icon.resetMatrix();
 		}	
 	}

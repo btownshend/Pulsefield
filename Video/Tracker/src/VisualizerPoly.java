@@ -197,27 +197,27 @@ public class VisualizerPoly extends Visualizer {
 	}
 
 	@Override
-	public void draw(PGraphics parent, People p, PVector wsize) {
-		super.draw(parent, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t, g, p, wsize);
 		if (p.pmap.isEmpty())
 			return;
 		
 		// Draw rings in gray
-		parent.fill(0);
-		parent.stroke(20);
+		g.fill(0);
+		g.stroke(20);
 		float sz=Math.min(wsize.x,wsize.y);
 		for (int i=1;i<=totalBeats;i++) {
 			if (i%4 == 0)
-				parent.strokeWeight(2);
+				g.strokeWeight(2);
 			else
-				parent.strokeWeight(1);
-			parent.ellipse(wsize.x/2,wsize.y/2,i*sz/totalBeats,i*sz/totalBeats);
+				g.strokeWeight(1);
+			g.ellipse(wsize.x/2,wsize.y/2,i*sz/totalBeats,i*sz/totalBeats);
 		}
 
 		// Draw each position and fired rings
 		int pos=0;
 		for (PolyState ps: poly.values()) {
-			ps.draw(parent,wsize,totalBeats,pos,synth);
+			ps.draw(g,wsize,totalBeats,pos,synth);
 			pos++;
 		}
 	}

@@ -54,15 +54,15 @@ public class VisualizerMinim extends VisualizerGrid {
 	}
 
 	@Override
-	public void draw(PGraphics parent, People p, PVector wsize) {
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
 		if (p.pmap.isEmpty()) {
-			super.draw(parent, p, wsize);
+			super.draw(t, g, p, wsize);
 			return;
 		}
 
 		// Add drawing code here
-		initializeContext(parent);
-		visuals[select].draw(parent);
+		initializeContext(g);
+		visuals[select].draw(t,g);
 	}
 
 	@Override

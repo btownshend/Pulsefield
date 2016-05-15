@@ -174,8 +174,8 @@ public class VisualizerVoronoi extends VisualizerPS {
 	}
 
 	@Override
-	public void draw(PGraphics parent, People allpos, PVector wsize) {
-		super.draw(parent, allpos, wsize);
+	public void draw(Tracker t, PGraphics g, People allpos, PVector wsize) {
+		super.draw(t, g, allpos, wsize);
 		if (allpos.pmap.isEmpty())
 			return;
 		
@@ -184,21 +184,21 @@ public class VisualizerVoronoi extends VisualizerPS {
 		HashSet<Pnt> done = new HashSet<Pnt>(initialTriangle);
 		int tnum=0;
 		for (Triangle triangle : dt) {
-			parent.noFill();
-			parent.stroke(0,0,255);
-			parent.strokeWeight(1);
-			parent.beginShape();
+			g.noFill();
+			g.stroke(0,0,255);
+			g.strokeWeight(1);
+			g.beginShape();
 			for (int i=0;i<3;i++) {
 				Pnt c=triangle.get(i);
-				parent.vertex((float)((c.coord(0)+1)*wsize.x/2),(float)((c.coord(1)+1)*wsize.y/2));
+				g.vertex((float)((c.coord(0)+1)*wsize.x/2),(float)((c.coord(1)+1)*wsize.y/2));
 			}
-			parent.endShape(PConstants.CLOSE);
+			g.endShape(PConstants.CLOSE);
 
 			Pnt cc=triangle.getCircumcenter();
-			parent.fill(255);
-			parent.textAlign(PConstants.CENTER,PConstants.CENTER);
-			parent.textSize(20);
-			parent.text("T"+tnum,(float)(cc.coord(0)+1)*wsize.x/2f,(float)(cc.coord(1)+1)*wsize.y/2f);
+			g.fill(255);
+			g.textAlign(PConstants.CENTER,PConstants.CENTER);
+			g.textSize(20);
+			g.text("T"+tnum,(float)(cc.coord(0)+1)*wsize.x/2f,(float)(cc.coord(1)+1)*wsize.y/2f);
 			tnum++;
 			for (Pnt site: triangle) {
 				if (done.contains(site)) continue;
@@ -208,15 +208,15 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 				List<Triangle> list = dt.surroundingTriangles(site, triangle);
 				// Draw all the surrounding triangles
-				parent.noFill();
-				parent.stroke(0,255,0);
-				parent.strokeWeight(1);
-				parent.beginShape();
+				g.noFill();
+				g.stroke(0,255,0);
+				g.strokeWeight(1);
+				g.beginShape();
 				for (Triangle tri: list) {
 					Pnt c=tri.getCircumcenter();
-					parent.vertex((float)((c.coord(0)+1)*wsize.x/2),(float)((c.coord(1)+1)*wsize.y/2));
+					g.vertex((float)((c.coord(0)+1)*wsize.x/2),(float)((c.coord(1)+1)*wsize.y/2));
 				}
-				parent.endShape(PConstants.CLOSE);
+				g.endShape(PConstants.CLOSE);
 
 				// Save one voronoi line as the note marker
 				Voice v=null;
@@ -242,13 +242,13 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 				// Draw the major line
 				if (hasLine && v.playing) {
-					parent.stroke(allpos.get(idsite.id).getcolor());
-					parent.strokeWeight(5);
+					g.stroke(allpos.get(idsite.id).getcolor());
+					g.strokeWeight(5);
 					PVector scoord1=convertToScreen(v.mainline[0],wsize);
 					PVector scoord2=convertToScreen(v.mainline[1],wsize);
-					PVector path[]=vibratingPath(scoord1,scoord2,3,2.0f,30f,parent.frameCount/parent.frameRate);
+					PVector path[]=vibratingPath(scoord1,scoord2,3,2.0f,30f,t.frameCount/t.frameRate);
 					for (int i=0;i+3<path.length;i+=3)
-						parent.bezier(path[i].x,path[i].y,path[i+1].x,path[i+1].y,path[i+2].x,path[i+2].y,path[i+3].x,path[i+3].y);
+						g.bezier(path[i].x,path[i].y,path[i+1].x,path[i+1].y,path[i+2].x,path[i+2].y,path[i+3].x,path[i+3].y);
 				}
 			}
 		}

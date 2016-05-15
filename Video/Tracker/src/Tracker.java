@@ -279,7 +279,7 @@ public class Tracker extends PApplet {
 		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);
 
-		vis[currentvis].draw(this.g,people,new PVector(width,height));
+		vis[currentvis].draw(this, this.g,people,new PVector(width,height));
 		vis[currentvis].drawLaser(this,people);
 		
 		// Syphon setup, requires OpenGL renderer (not FX2D?)

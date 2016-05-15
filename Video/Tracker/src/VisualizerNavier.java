@@ -100,45 +100,45 @@ class VisualizerNavier extends Visualizer {
 	}
 
 	@Override
-	public void draw(PGraphics parent, People p, PVector wsize) {
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
 //		Don't call parent.draw since it draws the defaults border and fills the background
 //		super.draw(parent,p,wsize);
 		
 		if (p.pmap.isEmpty()) {
-			parent.background(0, 0, 0);  
-			parent.colorMode(PConstants.RGB, 255);
-			drawWelcome(parent,wsize);
+			g.background(0, 0, 0);  
+			g.colorMode(PConstants.RGB, 255);
+			drawWelcome(g,wsize);
 			return;
 		}
 
-		double dt = 1 / parent.frameRate;
+		double dt = 1 / t.frameRate;
 		long t1 = System.nanoTime();
 		fluidSolver.tick(dt, visc, diff);
 		long t2 = System.nanoTime();
-		fluidCanvasStep(parent);
+		fluidCanvasStep(g);
 		long t3 = System.nanoTime();
 		statsTick += t2-t1;
 		statsStep += t3-t2;
 
-		parent.strokeWeight(7);
-		parent.colorMode(PConstants.HSB, 255);
-		bordercolor = parent.color(rainbow, 255, 255);
+		g.strokeWeight(7);
+		g.colorMode(PConstants.HSB, 255);
+		bordercolor = g.color(rainbow, 255, 255);
 		rainbow++;
 		rainbow = (rainbow > 255) ? 0 : rainbow;
 
-		drawBorders(parent, true, wsize, 7, bordercolor, 127);
+		drawBorders(g, true, wsize, 7, bordercolor, 127);
 
-		parent.ellipseMode(PConstants.CENTER);
+		g.ellipseMode(PConstants.CENTER);
 		for (Person ps: p.pmap.values()) {  
 			int c=ps.getcolor();
-			parent.fill(c,255);
-			parent.stroke(c,255);
+			g.fill(c,255);
+			g.stroke(c,255);
 			//PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
 			
 			float sz=5;
 			if (ps.groupsize > 1)
 				sz=20*ps.groupsize;
-			parent.ellipse((ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2, sz, sz);
+			g.ellipse((ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2, sz, sz);
 		}
 	}
 

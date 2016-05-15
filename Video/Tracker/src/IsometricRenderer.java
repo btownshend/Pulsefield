@@ -43,7 +43,7 @@ public class IsometricRenderer extends Renderer {
   }
   
   @Override
-  public void draw(PGraphics parent) {
+  public void draw(Tracker t, PGraphics g) {
     if (fourier.left != null) {
   	  fourier.calc(n);;
 
@@ -59,15 +59,15 @@ public class IsometricRenderer extends Renderer {
       pg.background(0);  
       for (int x = -r; x <= r; x++) { 
         for (int z = -r; z <= r; z++) { 
-          int y = (int) ( parent.height/3 * val[(int) PApplet.dist(x, z, 0, 0)]); 
+          int y = (int) ( g.height/3 * val[(int) PApplet.dist(x, z, 0, 0)]); 
 
           float xm = x*d - d/2; 
           float xt = x*d + d/2; 
           float zm = z*d - d/2; 
           float zt = z*d + d/2; 
 
-          int w0 = (int) parent.width/2; 
-          int h0 = (int) parent.height * 2/3; 
+          int w0 = (int) g.width/2; 
+          int h0 = (int) g.height * 2/3; 
 
           int isox1 = (int)(xm - zm + w0); 
           int isoy1 = (int)((xm + zm) * 0.5 + h0); 
@@ -93,7 +93,7 @@ public class IsometricRenderer extends Renderer {
         }
       }
       pg.endDraw();
-      parent.image(pg, 0, 0);
+      g.image(pg, 0, 0);
     }
   }
 

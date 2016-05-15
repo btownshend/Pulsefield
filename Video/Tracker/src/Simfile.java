@@ -227,9 +227,9 @@ public class Simfile {
 		}
 	}
 
-	public PImage getBanner(PGraphics parent) {
+	public PImage getBanner(Tracker tracker, PGraphics g) {
 		String fname=getTag("BANNER");
-		PImage result = parent.loadImage(new File(dir,fname).getAbsolutePath());
+		PImage result = tracker.loadImage(new File(dir,fname).getAbsolutePath());
 		return result;
 	}
 	

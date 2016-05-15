@@ -268,8 +268,8 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 	@Override
-	public void draw(PGraphics g, People p, PVector wsize) {
-		super.draw(g,p,wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t, g,p,wsize);
 		if (p.pmap.isEmpty() || cursong==null)
 			return;
 
@@ -278,7 +278,7 @@ public class VisualizerDDR extends Visualizer {
 		final float rightmargin=50;
 
 		g.imageMode(PConstants.CORNER);
-		PImage banner=cursong.getSimfile().getBanner(g);
+		PImage banner=cursong.getSimfile().getBanner(t,g);
 		if (banner!=null)
 			g.image(banner, wsize.x/4, 0, wsize.x/2, wsize.y/4);
 		
@@ -296,7 +296,7 @@ public class VisualizerDDR extends Visualizer {
 		float songdur=cursong.getSimfile().getduration(pattern);
 		if (clip.position>songdur) {
 			PApplet.println("Song duration "+songdur+" ended; clip Position="+clip.position+", songdur="+songdur);
-			((Tracker)g).setapp(4);
+			t.setapp(4);
 		}
 	}
 
