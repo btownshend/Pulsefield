@@ -18,6 +18,10 @@ class VisualizerNavier extends Visualizer {
 	long statsTick = 0;
 	long statsStep = 0;
 	long statsUpdate = 0;
+	long statsU1=0;
+	long statsU2=0;
+	long statsU3=0;
+	long statsU4=0;
 	Synth synth;
 	MusicVisLaser mvl;
 	final int downSample=1;   // amount to downsample fluid image
@@ -93,10 +97,15 @@ class VisualizerNavier extends Visualizer {
 	public void stats() {
 		long elapsed=System.nanoTime()-statsLast;
 		PApplet.println("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
+		PApplet.println("U=",statsU1*100f/elapsed,", ",statsU2*100f/elapsed,", ",statsU3*100f/elapsed,", ",statsU4*100f/elapsed);
 		statsLast = System.nanoTime();
 		statsTick=0;
 		statsStep=0;
 		statsUpdate=0;
+		statsU1=0;
+		statsU2=0;
+		statsU3=0;
+		statsU4=0;
 	}
 
 	@Override
@@ -198,9 +207,16 @@ class VisualizerNavier extends Visualizer {
 				buffer.set(x/downSample, y/downSample, collor);
 			}
 		}
+		long t3=System.nanoTime();
 		g.imageMode(PConstants.CORNER);
 		g.tint(255);
+		long t4=System.nanoTime();
 		g.image(buffer,0,0,g.width,g.height);
+		long t5=System.nanoTime();
+		statsU1+=(t2-t1);
+		statsU2+=(t3-t2);
+		statsU3+=(t4-t3);
+		statsU4+=(t5-t4);
 	}
 
 	public int getSubPixel(PGraphics parent, double warpX, double warpY) {
