@@ -67,21 +67,21 @@ class PolyState {
 		}
 	}
 
-	void draw(PGraphics parent,PVector wsize, int totalBeats, int row, Synth synth) {
+	void draw(PGraphics g,PVector wsize, int totalBeats, int row, Synth synth) {
 		final int NUMROWS=20;
 		float rowheight=wsize.y/2/NUMROWS;
 
-		parent.stroke(color);
+		g.stroke(color);
 		if (playing)
-			parent.fill(color);
+			g.fill(color);
 		else
-			parent.fill(color,127);
+			g.fill(color,127);
 		float sz=Math.min(wsize.x,wsize.y);
-		parent.ellipse((pos.getNormalizedPosition(true).x)*sz/2+wsize.x/2, (pos.getNormalizedPosition(true).y)*sz/2+wsize.y/2, 30, 30);
+		g.ellipse((pos.getNormalizedPosition(true).x)*sz/2+wsize.x/2, (pos.getNormalizedPosition(true).y)*sz/2+wsize.y/2, 30, 30);
 		if (playing) {
-			parent.fill(0);
-			parent.stroke(color);
-			parent.ellipse(wsize.x/2,wsize.y/2,mybeat*sz/totalBeats,mybeat*sz/totalBeats);
+			g.fill(0);
+			g.stroke(color);
+			g.ellipse(wsize.x/2,wsize.y/2,mybeat*sz/totalBeats,mybeat*sz/totalBeats);
 		}
 		if (pos.groupsize > 1) {
 			final int NBOLTS=20;
@@ -90,8 +90,8 @@ class PolyState {
 					float BOLTLENGTH=(float) (wsize.y/10*pos.groupsize*Math.random());
 					PVector delta=new PVector((float)Math.cos(Math.PI*2*k/NBOLTS)*BOLTLENGTH,(float)Math.sin(Math.PI*2*k/NBOLTS)*BOLTLENGTH);
 					PVector center=new PVector((pos.getNormalizedPosition(true).x)*sz/2+wsize.x/2,(pos.getNormalizedPosition(true).y)*sz/2+wsize.y/2);
-					parent.fill(color,127);
-					parent.line(center.x,center.y,center.x+delta.x,center.y+delta.y);
+					g.fill(color,127);
+					g.line(center.x,center.y,center.x+delta.x,center.y+delta.y);
 				}
 		}
 
@@ -100,15 +100,15 @@ class PolyState {
 			if (row>=NUMROWS/2)
 				rowpos+=wsize.y/2;
 			float dotsize=0.8f*rowheight;
-			parent.fill(color);
-			parent.ellipse(1+dotsize/2,rowpos, dotsize, dotsize);
-			parent.fill(255);
-			parent.textAlign(PConstants.LEFT,PConstants.CENTER);
-			parent.textSize(0.8f*rowheight);
+			g.fill(color);
+			g.ellipse(1+dotsize/2,rowpos, dotsize, dotsize);
+			g.fill(255);
+			g.textAlign(PConstants.LEFT,PConstants.CENTER);
+			g.textSize(0.8f*rowheight);
 			if (true) {
 				MidiProgram mp=synth.getMidiProgam(pos.channel);
 				if (mp!=null)
-					parent.text(mp.name,2+dotsize,rowpos);
+					g.text(mp.name,2+dotsize,rowpos);
 			}
 		}
 	}
