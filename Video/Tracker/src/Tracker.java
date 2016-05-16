@@ -296,8 +296,6 @@ public class Tracker extends PApplet {
 			server = new SyphonServer(this, "Tracker");
 		
 		if (server != null) {
-			beginPGL();
-			endPGL();
 			server.sendImage(canvas);
 		}
 		SyphonTest.draw(this);
