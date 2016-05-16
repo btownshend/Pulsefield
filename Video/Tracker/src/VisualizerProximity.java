@@ -4,6 +4,7 @@ import java.util.Map;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PVector;
 
 public class VisualizerProximity extends VisualizerPS {
@@ -93,26 +94,26 @@ public class VisualizerProximity extends VisualizerPS {
 		}
 	}
 
-	public void draw(PApplet parent, People p, PVector wsize) {
-		super.draw(parent,p, wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t, g, p, wsize);
 
-		parent.textSize(16);
-		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
+		g.textSize(16);
+		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
 			int id1=entry.getKey();
 			int id2=entry.getValue();
 			if (id2!=-1) {
 			//PApplet.println("grid "+cell+", id="+id+" "+gridColors.get(cell));
-			parent.fill(127,0,0,127);
-			parent.strokeWeight(5);
-			parent.stroke(127,0,0);
-			parent.line((p.get(id1).getNormalizedPosition().x+1)*wsize.x/2, (p.get(id1).getNormalizedPosition().y+1)*wsize.y/2, (p.get(id2).getNormalizedPosition().x+1)*wsize.x/2, (p.get(id2).getNormalizedPosition().y+1)*wsize.y/2);
+			g.fill(127,0,0,127);
+			g.strokeWeight(5);
+			g.stroke(127,0,0);
+			g.line((p.get(id1).getNormalizedPosition().x+1)*wsize.x/2, (p.get(id1).getNormalizedPosition().y+1)*wsize.y/2, (p.get(id2).getNormalizedPosition().x+1)*wsize.x/2, (p.get(id2).getNormalizedPosition().y+1)*wsize.y/2);
 			}
 		}
-		parent.fill(127);
-		parent.textAlign(PConstants.LEFT, PConstants.TOP);
-		parent.textSize(24);
-		parent.text(ts.name,5,5);
+		g.fill(127);
+		g.textAlign(PConstants.LEFT, PConstants.TOP);
+		g.textSize(24);
+		g.text(ts.name,5,5);
 	}
 
 	public void drawLaser(PApplet parent, People p) {

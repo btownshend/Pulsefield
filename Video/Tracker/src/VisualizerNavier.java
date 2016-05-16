@@ -1,6 +1,7 @@
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
 
@@ -10,20 +11,24 @@ class VisualizerNavier extends Visualizer {
 	int oldMouseX = 1, oldMouseY = 1;
 	private int bordercolor;
 	private double scale;
-	PImage buffer;
+	PImage buffer=null;
 	PImage iao;
 	int rainbow = 0;
 	long statsLast = 0;
 	long statsTick = 0;
 	long statsStep = 0;
 	long statsUpdate = 0;
+	long statsU1=0;
+	long statsU2=0;
+	long statsU3=0;
+	long statsU4=0;
 	Synth synth;
 	MusicVisLaser mvl;
+	final int downSample=1;   // amount to downsample fluid image
 	
 	VisualizerNavier(Tracker parent, Synth synth) {
 		super();
 		fluidSolver = new NavierStokesSolver();
-		buffer = new PImage(parent.width/2, parent.height/2);
 
 		visc = 0.001;
 		diff = 3.0e-4;
@@ -92,52 +97,58 @@ class VisualizerNavier extends Visualizer {
 	public void stats() {
 		long elapsed=System.nanoTime()-statsLast;
 		PApplet.println("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
+		PApplet.println("U=",statsU1*100f/elapsed,", ",statsU2*100f/elapsed,", ",statsU3*100f/elapsed,", ",statsU4*100f/elapsed);
 		statsLast = System.nanoTime();
 		statsTick=0;
 		statsStep=0;
 		statsUpdate=0;
+		statsU1=0;
+		statsU2=0;
+		statsU3=0;
+		statsU4=0;
 	}
 
 	@Override
-	public void draw(PApplet parent, People p, PVector wsize) {
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
 //		Don't call parent.draw since it draws the defaults border and fills the background
-//		super.draw(parent,p,wsize);
-		
+		if (buffer==null) {
+			buffer = new PImage(g.width/downSample, g.height/downSample);
+		}
 		if (p.pmap.isEmpty()) {
-			parent.background(0, 0, 0);  
-			parent.colorMode(PConstants.RGB, 255);
-			drawWelcome(parent,wsize);
+			g.background(0, 0, 0);  
+			g.colorMode(PConstants.RGB, 255);
+			drawWelcome(g,wsize);
 			return;
 		}
 
-		double dt = 1 / parent.frameRate;
+		double dt = 1 / t.frameRate;
 		long t1 = System.nanoTime();
 		fluidSolver.tick(dt, visc, diff);
 		long t2 = System.nanoTime();
-		fluidCanvasStep(parent);
+		fluidCanvasStep(g);
 		long t3 = System.nanoTime();
 		statsTick += t2-t1;
 		statsStep += t3-t2;
 
-		parent.strokeWeight(7);
-		parent.colorMode(PConstants.HSB, 255);
-		bordercolor = parent.color(rainbow, 255, 255);
+		g.strokeWeight(7);
+		g.colorMode(PConstants.HSB, 255);
+		bordercolor = g.color(rainbow, 255, 255);
 		rainbow++;
 		rainbow = (rainbow > 255) ? 0 : rainbow;
 
-		drawBorders(parent, true, wsize, 7, bordercolor, 127);
+		drawBorders(g, true, wsize, 7, bordercolor, 127);
 
-		parent.ellipseMode(PConstants.CENTER);
+		g.ellipseMode(PConstants.CENTER);
 		for (Person ps: p.pmap.values()) {  
-			int c=ps.getcolor(parent);
-			parent.fill(c,255);
-			parent.stroke(c,255);
+			int c=ps.getcolor();
+			g.fill(c,255);
+			g.stroke(c,255);
 			//PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
 			
 			float sz=5;
 			if (ps.groupsize > 1)
 				sz=20*ps.groupsize;
-			parent.ellipse((ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2, sz, sz);
+			g.ellipse((ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2, sz, sz);
 		}
 	}
 
@@ -169,13 +180,15 @@ class VisualizerNavier extends Visualizer {
 		
 	}
 
-	private void fluidCanvasStep(PApplet parent) {
-		double widthInverse = 1.0 / parent.width;
-		double heightInverse = 1.0 / parent.height;
+	private void fluidCanvasStep(PGraphics g) {
+		double widthInverse = 1.0 / g.width;
+		double heightInverse = 1.0 / g.height;
 
-		parent.loadPixels();
-		for (int y = 0; y < parent.height; y+=2) {
-			for (int x = 0; x < parent.width; x+=2) {
+		long t1=System.nanoTime();
+		g.loadPixels();
+		long t2=System.nanoTime();
+		for (int y = 0; y < g.height; y+=downSample) {
+			for (int x = 0; x < g.width; x+=downSample) {
 				double u = (x+0.5) * widthInverse;
 				double v = (y+0.5) * heightInverse;
 
@@ -185,20 +198,28 @@ class VisualizerNavier extends Visualizer {
 				double warpX = warpedPosition[0];
 				double warpY = warpedPosition[1];
 
-				warpX *= parent.width;
-				warpY *= parent.height;
-
-				int collor = getSubPixel(parent,warpX, warpY);
+				warpX *= g.width;
+				warpY *= g.height;
+				warpX-=0.5;
+				warpY-=0.5;
+				int collor = getSubPixel(g,warpX, warpY);
 				//int collor=parent.pixels[((int)warpX)+((int)warpY)*parent.width];
-				buffer.set(x/2, y/2, collor);
+				buffer.set(x/downSample, y/downSample, collor);
 			}
 		}
-		parent.imageMode(PConstants.CORNERS);
-		parent.tint(255);
-		parent.image(buffer,0,0,parent.width,parent.height);
+		long t3=System.nanoTime();
+		g.imageMode(PConstants.CORNER);
+		g.tint(255);
+		long t4=System.nanoTime();
+		g.image(buffer,0,0,g.width,g.height);
+		long t5=System.nanoTime();
+		statsU1+=(t2-t1);
+		statsU2+=(t3-t2);
+		statsU3+=(t4-t3);
+		statsU4+=(t5-t4);
 	}
 
-	public int getSubPixel(PApplet parent, double warpX, double warpY) {
+	public int getSubPixel(PGraphics parent, double warpX, double warpY) {
 		if (warpX < 0 || warpY < 0 || warpX > parent.width - 1 || warpY > parent.height - 1) {
 			return bordercolor;
 		}

@@ -5,6 +5,7 @@ import java.util.Map;
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PVector;
 
 public class VisualizerGrid extends VisualizerPS {
@@ -112,32 +113,32 @@ public class VisualizerGrid extends VisualizerPS {
 		}
 	}
 
-	public void draw(PApplet parent, People p, PVector wsize) {
-		super.draw(parent,p, wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t, g, p, wsize);
 		if (p.pmap.isEmpty())
 			return;
-		parent.textSize(16);
-		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
+		g.textSize(16);
+		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
 			int id=entry.getKey();
 			int cell=entry.getValue();
 			//PApplet.println("grid "+cell+", id="+id+" "+gridColors.get(cell));
-			parent.fill(127,0,0,127);
-			parent.strokeWeight(5);
-			parent.stroke(127,0,0);
-			parent.rect(wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
-			parent.fill(255);
+			g.fill(127,0,0,127);
+			g.strokeWeight(5);
+			g.stroke(127,0,0);
+			g.rect(wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
+			g.fill(255);
 			TrackSet ts=Ableton.getInstance().trackSet;
 			Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
 			if (track.numClips()!=-1) {
 				Clip clip=track.getClip(cell%track.numClips());
-				parent.text(track.getName()+"-"+clip.getName()+" P"+id,wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
+				g.text(track.getName()+"-"+clip.getName()+" P"+id,wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
 			}
 		}
-		parent.fill(127);
-		parent.textAlign(PConstants.LEFT, PConstants.TOP);
-		parent.textSize(24);
-		parent.text(Ableton.getInstance().trackSet.name,5,5);
+		g.fill(127);
+		g.textAlign(PConstants.LEFT, PConstants.TOP);
+		g.textSize(24);
+		g.text(Ableton.getInstance().trackSet.name,5,5);
 	}
 
 	public void drawLaser(PApplet parent, People p) {

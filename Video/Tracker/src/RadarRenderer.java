@@ -1,6 +1,7 @@
 
 
 import processing.core.PApplet;
+import processing.core.PGraphics;
 
 
 public class RadarRenderer extends Renderer {
@@ -22,27 +23,27 @@ public class RadarRenderer extends Renderer {
   }
   
   @Override
-  public synchronized void draw(PApplet parent)
+  public synchronized void draw(Tracker tracker, PGraphics g)
   {
-    parent.colorMode(PApplet.RGB, (float)(Math.PI * 2* rotations), 1, 1);
+    g.colorMode(PApplet.RGB, (float)(Math.PI * 2* rotations), 1, 1);
     if (needsClear) {
-    	parent.background(0);
+    	g.background(0);
     	needsClear=false;
     }
     if(fourier.left != null) {
    
-      float t = PApplet.map((float)parent.millis(),0f, delay * 1000f, 0f, (float)Math.PI);   
+      float t = PApplet.map((float)tracker.millis(),0f, delay * 1000f, 0f, (float)Math.PI);   
       int n = fourier.left.length;
       
       // center 
-      float w = (float) (parent.width/2 + Math.cos(t) * parent.width * orbit);
-      float h = (float) (parent.height/2 + Math.sin(t) * parent.height * orbit); 
+      float w = (float) (g.width/2 + Math.cos(t) * g.width * orbit);
+      float h = (float) (g.height/2 + Math.sin(t) * g.height * orbit); 
       
       // size of the aura
-      float w2 = parent.width * aura, h2 = parent.height * aura;
+      float w2 = g.width * aura, h2 = g.height * aura;
       
       // smoke effect
-      if(parent.frameCount % delay == 0 ) parent.image(parent.get(),-1.5f,-1.5f,(float)( parent.width + 3), (float)(parent.height + 3)); 
+      if(tracker.frameCount % delay == 0 ) g.image(g.get(),-1.5f,-1.5f,(float)( g.width + 3), (float)(g.height + 3)); 
       
       // draw polar curve 
       float a1=0, x1=0, y1=0, r2=0, a2=0, x2=0, y2=0; 
@@ -55,9 +56,9 @@ public class RadarRenderer extends Renderer {
         a2 = PApplet.map((float)i,0f, (float)n, 0f, (float)(Math.PI * 2 * rotations));
         x2 = (float) (w + Math.cos(a2) * r2 * w2);
         y2 = (float) (h + Math.sin(a2) * r2 * h2);
-        parent.stroke(a1, 1, 1, 30);
+        g.stroke(a1, 1, 1, 30);
         // strokeWeight(dist(x1,y1,x2,y2) / 4);
-        if(i>0) parent.line(x1, y1, x2, y2);
+        if(i>0) g.line(x1, y1, x2, y2);
       }
     }
   }

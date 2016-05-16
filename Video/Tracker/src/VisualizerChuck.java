@@ -4,6 +4,7 @@ import java.util.HashMap;
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PVector;
 
 // Visualizer that sends messages to chuck
@@ -16,7 +17,7 @@ abstract class Fiducial extends Person {
 		setNormalizedPosition(ps.getNormalizedPosition());
 	}
 
-	abstract void draw(PApplet parent, PVector wsize, float sz);
+	abstract void draw(PGraphics parent, PVector wsize, float sz);
 	void stop() { }
 }
 
@@ -161,7 +162,7 @@ class Generator extends Fiducial {
 	}
 
 	@Override 
-	void draw(PApplet parent, PVector wsize, float sz) {
+	void draw(PGraphics parent, PVector wsize, float sz) {
 		float x=(getNormalizedPosition().x+1)*wsize.x/2;
 		float y=(getNormalizedPosition().y+1)*wsize.y/2;
 		parent.fill(genType.color);
@@ -216,7 +217,7 @@ class Controller extends Fiducial {
 	}
 
 	@Override 
-	void draw(PApplet parent, PVector wsize, float sz) {
+	void draw(PGraphics parent, PVector wsize, float sz) {
 		float x=(getNormalizedPosition().x+1)*wsize.x/2;
 		float y=(getNormalizedPosition().y+1)*wsize.y/2;
 		if (cc!=null) {
@@ -365,12 +366,12 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 		}
 	}
 
-	void draw(PApplet parent, PVector wsize) {
+	void draw(PGraphics parent, PVector wsize) {
 		float sz=30;
 		// Draw all the controllers first so generators will be on top of connecting lines
 		for (Fiducial f: values()) {
 			if (f instanceof Controller) {
-				int c=f.getcolor(parent);
+				int c=f.getcolor();
 				parent.fill(c,255);
 				parent.stroke(c,255);
 				parent.strokeWeight(5);
@@ -379,7 +380,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 		}
 		for (Fiducial f: values()) {
 			if (f instanceof Generator) {
-				int c=f.getcolor(parent);
+				int c=f.getcolor();
 				parent.fill(c,255);
 				parent.stroke(c,255);
 				parent.strokeWeight(5);
@@ -440,9 +441,9 @@ public class VisualizerChuck extends Visualizer {
 	}
 
 	@Override
-	public void draw(PApplet parent, People p, PVector wsize) {
-		super.draw(parent, p, wsize);
-		fiducials.draw(parent,wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t, g, p, wsize);
+		fiducials.draw(g,wsize);
 	}
 }
 

@@ -1,4 +1,3 @@
-import processing.core.PApplet;
 import processing.core.PVector;
 
 public class Person {
@@ -43,7 +42,7 @@ public class Person {
 		return Tracker.mapVelocity(velocity);
 	}
 
-	int getcolor(PApplet parent) {
+	int getcolor() {
 		final int colors[] = {0xffffffff, 0xff00ff00, 0xff0000ff, 0xffFFFF00, 0xffFF00FF, 0xff00ffff};
 		
 		int col=colors[(id-1)%colors.length];

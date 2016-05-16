@@ -4,6 +4,7 @@ import java.util.Iterator;
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PShape;
 import processing.core.PVector;
 
@@ -66,7 +67,7 @@ class PolyState {
 		}
 	}
 
-	void draw(PApplet parent,PVector wsize, int totalBeats, int row, Synth synth) {
+	void draw(PGraphics parent,PVector wsize, int totalBeats, int row, Synth synth) {
 		final int NUMROWS=20;
 		float rowheight=wsize.y/2/NUMROWS;
 
@@ -180,7 +181,7 @@ public class VisualizerPoly extends Visualizer {
 			PolyState ps=poly.get(id);
 			if (ps==null) {
 				Person p=allpos.get(id);
-				ps=new PolyState(p,noteDuration,p.getcolor(parent));
+				ps=new PolyState(p,noteDuration,p.getcolor());
 				poly.put(id, ps);
 			}
 			ps.update(beat,totalBeats,scale,synth,channel);
@@ -196,27 +197,27 @@ public class VisualizerPoly extends Visualizer {
 	}
 
 	@Override
-	public void draw(PApplet parent, People p, PVector wsize) {
-		super.draw(parent, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t, g, p, wsize);
 		if (p.pmap.isEmpty())
 			return;
 		
 		// Draw rings in gray
-		parent.fill(0);
-		parent.stroke(20);
+		g.fill(0);
+		g.stroke(20);
 		float sz=Math.min(wsize.x,wsize.y);
 		for (int i=1;i<=totalBeats;i++) {
 			if (i%4 == 0)
-				parent.strokeWeight(2);
+				g.strokeWeight(2);
 			else
-				parent.strokeWeight(1);
-			parent.ellipse(wsize.x/2,wsize.y/2,i*sz/totalBeats,i*sz/totalBeats);
+				g.strokeWeight(1);
+			g.ellipse(wsize.x/2,wsize.y/2,i*sz/totalBeats,i*sz/totalBeats);
 		}
 
 		// Draw each position and fired rings
 		int pos=0;
 		for (PolyState ps: poly.values()) {
-			ps.draw(parent,wsize,totalBeats,pos,synth);
+			ps.draw(g,wsize,totalBeats,pos,synth);
 			pos++;
 		}
 	}

@@ -2,11 +2,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
-import processing.core.PConstants;
 import processing.opengl.PGL;
-import processing.opengl.PGraphicsOpenGL;
 
 public class VisualizerPS extends Visualizer {
 	PImage img;
@@ -40,7 +39,7 @@ public class VisualizerPS extends Visualizer {
 				}
 
 			for (int k=0;k<birthrate;k++)
-				ps.addParticle(pos.getNormalizedPosition(),pos.getcolor(parent));
+				ps.addParticle(pos.getNormalizedPosition(),pos.getcolor());
 		}
 		int toRemove=-1;
 
@@ -60,25 +59,25 @@ public class VisualizerPS extends Visualizer {
 		}
 	}
 
-	public void draw(PApplet parent, People p, PVector wsize) {
-		super.draw(parent,p,wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t,g,p,wsize);
 		if (p.pmap.isEmpty())
 			return;
 		if (true) {
 			// The coercion to PGraphicsOpenGL doesn't work when using FX2D
 			// In any case, even with P2D, I don't see that this makes any difference
 			// But running parent.blendMode(PConstants.ADD) looks worse...
-			parent.resetShader();
-			PGL pgl=parent.beginPGL();
+			g.resetShader();
+			PGL pgl=g.beginPGL();
 			pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA); 
 			pgl.blendEquation(PGL.FUNC_ADD);
-			parent.endPGL();
+			g.endPGL();
 		}
 
 		
 		for (Map.Entry<Integer,ParticleSystem> me: systems.entrySet()) {
 			ParticleSystem ps=me.getValue();
-			ps.draw(parent, wsize);
+			ps.draw(g, wsize);
 		}
 	}
 

@@ -2,6 +2,7 @@ import java.util.HashMap;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
 
@@ -102,22 +103,22 @@ public class VisualizerGuitar extends VisualizerPS {
 	}
 
 
-	public void draw(PApplet parent, People p, PVector wsize) {
-		super.draw(parent,p,wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t,g,p,wsize);
 		if (p.pmap.isEmpty())
 			return;
-		parent.tint(127);
-		parent.imageMode(PConstants.CENTER);
-		parent.image(guitar, wsize.x/2, wsize.y/2, wsize.x, wsize.y);
-		parent.stroke(100);
-		parent.strokeWeight(2);
+		g.tint(127);
+		g.imageMode(PConstants.CENTER);
+		g.image(guitar, wsize.x/2, wsize.y/2, wsize.x, wsize.y);
+		g.stroke(100);
+		g.strokeWeight(2);
 		for (int i=0;i<GString.nfrets;i++) {
 			float xpos=GString.frets[i];
 			PVector p1=this.convertToScreen(new PVector(xpos,GString.minstring-.05f), wsize);
 			PVector p2=this.convertToScreen(new PVector(xpos,GString.maxstring+.05f), wsize);		
-			parent.line(p1.x,p1.y,p2.x,p2.y);
+			g.line(p1.x,p1.y,p2.x,p2.y);
 		}
-		parent.strokeWeight(5);
+		g.strokeWeight(5);
 		for (int i=0;i<strings.length;i++) {
 			GString s=strings[i];
 			float ypos=s.position;
@@ -128,13 +129,13 @@ public class VisualizerGuitar extends VisualizerPS {
 				float vfrac=s.fracOfVibrate();
 				PVector mid=PVector.add(PVector.mult(pf,1-vfrac),PVector.mult(p2,vfrac));
 				mid.y+=s.velocity/127f*(1-vfrac)*Math.sin(2*Math.PI*s.elapsedTime()*5)*(strings[1].position-strings[0].position)*wsize.y/4;  // Max amplitude is 1/2 the spacing
-				parent.stroke(s.color);
-				parent.line(p1.x,p1.y,pf.x,pf.y);
-				parent.line(pf.x,pf.y,mid.x,mid.y);
-				parent.line(mid.x,mid.y,p2.x,p2.y);
+				g.stroke(s.color);
+				g.line(p1.x,p1.y,pf.x,pf.y);
+				g.line(pf.x,pf.y,mid.x,mid.y);
+				g.line(mid.x,mid.y,p2.x,p2.y);
 			} else {
-				parent.stroke(127);
-				parent.line(p1.x,p1.y,p2.x,p2.y);
+				g.stroke(127);
+				g.line(p1.x,p1.y,p2.x,p2.y);
 			}
 		}
 	}
@@ -201,7 +202,7 @@ public class VisualizerGuitar extends VisualizerPS {
 						GString s=strings[i];
 						if ( (p.getNormalizedPosition().y > s.position) != (lastp.y >s.position) ) {
 							// Crossed a string
-							s.strike(synth, p, p.getcolor(parent));
+							s.strike(synth, p, p.getcolor());
 						}
 					}
 				}

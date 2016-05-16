@@ -1,9 +1,9 @@
-import processing.core.PApplet;
+import ddf.minim.AudioListener;
 //  class for FFT visualization
 import ddf.minim.AudioSource;
 import ddf.minim.Minim;
 import ddf.minim.analysis.FFT;
-import ddf.minim.AudioListener;
+import processing.core.PApplet;
 
 /// abstract class for audio visualization
 

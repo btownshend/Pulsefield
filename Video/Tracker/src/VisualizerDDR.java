@@ -6,6 +6,7 @@ import java.util.Iterator;
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PShape;
 import processing.core.PVector;
@@ -267,8 +268,8 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 	@Override
-	public void draw(PApplet parent, People p, PVector wsize) {
-		super.draw(parent,p,wsize);
+	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+		super.draw(t, g,p,wsize);
 		if (p.pmap.isEmpty() || cursong==null)
 			return;
 
@@ -276,31 +277,31 @@ public class VisualizerDDR extends Visualizer {
 		final float rightwidth=250;
 		final float rightmargin=50;
 
-		parent.imageMode(PConstants.CORNER);
-		PImage banner=cursong.getSimfile().getBanner(parent);
+		g.imageMode(PConstants.CORNER);
+		PImage banner=cursong.getSimfile().getBanner(t,g);
 		if (banner!=null)
-			parent.image(banner, wsize.x/4, 0, wsize.x/2, wsize.y/4);
+			g.image(banner, wsize.x/4, 0, wsize.x/2, wsize.y/4);
 		
 
-		drawScores(parent,p,new PVector(leftwidth,wsize.y));
-		parent.translate(leftwidth,0);
-		drawPF(parent,p,new PVector(wsize.x-leftwidth-rightwidth,wsize.y));
-		parent.translate(wsize.x-leftwidth-rightwidth,0);
+		drawScores(g,p,new PVector(leftwidth,wsize.y));
+		g.translate(leftwidth,0);
+		drawPF(g,p,new PVector(wsize.x-leftwidth-rightwidth,wsize.y));
+		g.translate(wsize.x-leftwidth-rightwidth,0);
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 		if (clip!=null) {
 //			PApplet.println("Clip at "+clip.position);
-			drawTicker(parent,new PVector(rightwidth-rightmargin,wsize.y),clip.position);
+			drawTicker(g,new PVector(rightwidth-rightmargin,wsize.y),clip.position);
 		} else 
 			PApplet.println("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
 		float songdur=cursong.getSimfile().getduration(pattern);
 		if (clip.position>songdur) {
 			PApplet.println("Song duration "+songdur+" ended; clip Position="+clip.position+", songdur="+songdur);
-			((Tracker)parent).setapp(4);
+			t.setapp(4);
 		}
 	}
 
 
-	public void drawPF(PApplet parent, People allpos, PVector wsize) {
+	public void drawPF(PGraphics parent, People allpos, PVector wsize) {
 		final float ARROWSIZE=DOTSIZE;
 		final float ARROWDIST=(ARROWSIZE+DOTSIZE)/2;
 
@@ -319,7 +320,7 @@ public class VisualizerDDR extends Visualizer {
 			int quad=d.getAim();
 			parent.pushMatrix();
 			parent.translate((d.neutral.x+1)*wsize.x/2,(d.neutral.y+1)*wsize.y/2);
-			parent.fill(p.getcolor(parent));
+			parent.fill(p.getcolor());
 			parent.ellipse(0,0,DOTSIZE,DOTSIZE);
 //			PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
 			if (quad>=0) {
@@ -336,7 +337,7 @@ public class VisualizerDDR extends Visualizer {
 		}
 	}
 
-	public void drawScores(PApplet parent, People allpos, PVector wsize) {
+	public void drawScores(PGraphics parent, People allpos, PVector wsize) {
 		float lineHeight=wsize.y/12;
 
 		parent.stroke(255);
@@ -359,7 +360,7 @@ public class VisualizerDDR extends Visualizer {
 			if (p==null)
 				continue;
 			
-			parent.fill(p.getcolor(parent));
+			parent.fill(p.getcolor());
 			parent.ellipse(DOTSIZE/2,0,DOTSIZE/2, DOTSIZE/2);
 			parent.fill(255);
 			parent.text(""+d.score,DOTSIZE*1.5f,0);
@@ -369,7 +370,7 @@ public class VisualizerDDR extends Visualizer {
 
 	}
 
-	public void drawTicker(PApplet parent, PVector wsize, float now) {
+	public void drawTicker(PGraphics parent, PVector wsize, float now) {
 		final float DURATION=12.0f;  // Duration of display top to bottom
 		final float HISTORY=3.0f;    // Amount of past showing
 		if (cursong==null) {

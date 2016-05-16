@@ -2,10 +2,14 @@ import java.awt.Color;
 import java.io.IOException;
 
 import codeanticode.syphon.SyphonServer;
+import netP5.NetAddress;
+import oscP5.OscMessage;
+import oscP5.OscP5;
+import oscP5.OscProperties;
 import processing.core.PApplet;
-import oscP5.*;
-import netP5.*;
+import processing.core.PGraphics;
 import processing.core.PVector;
+import processing.opengl.PJOGL;
 
 
 public class Tracker extends PApplet {
@@ -55,11 +59,13 @@ public class Tracker extends PApplet {
 	Fourier fourier;
 	SyphonServer server=null;
 	String renderer=P2D;
-	Boolean useSyphon = false;
+	Boolean useSyphon = true;
+	PGraphics canvas;
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
 		size(1280, 720, renderer);
+		PJOGL.profile=1;    // Seems that this is needed for Syphon to function
 		//pixelDensity(2);  // This breaks the Navier visualizer
 	}
 
@@ -153,10 +159,10 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "volume", "/volume");
 		oscP5.plug(this, "ping", "/ping");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
+		
+		canvas = this.createGraphics(width/2, height/2);
 		PApplet.println("Setup complete");
 		starting = false;
-		
-
 	}
 
 	public void tempo(float t) {
@@ -277,19 +283,22 @@ public class Tracker extends PApplet {
 		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);
 
-		vis[currentvis].draw(this,people,new PVector(width,height));
+		canvas.beginDraw();
+		vis[currentvis].draw(this, canvas,people,new PVector(canvas.width,canvas.height));
+		canvas.endDraw();
+		this.image(canvas,0,0,width, height);
+
 		vis[currentvis].drawLaser(this,people);
-		
+
 		// Syphon setup, requires OpenGL renderer (not FX2D?)
 		// Currently seems to break display
 		if (renderer != FX2D && useSyphon && server==null)
 			server = new SyphonServer(this, "Tracker");
 		
 		if (server != null) {
-			beginPGL();
-			server.sendScreen();
-			endPGL();
+			server.sendImage(canvas);
 		}
+		SyphonTest.draw(this);
 	}
 
 	public void mouseReleased() {
@@ -652,7 +661,7 @@ public class Tracker extends PApplet {
 
 	synchronized public void pfentry(int sampnum, float elapsed, int id, int channel) {
 		add(id,channel);
-		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel+", color="+people.get(id).getcolor(this));
+		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel+", color="+people.get(id).getcolor());
 	}
 
 	public void noteOn(int channel, int pitch, int velocity) {

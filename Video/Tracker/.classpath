@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="data"/>
-	<classpathentry kind="src" path="lib/Syphon/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/promidi/library/promidi.jar" sourcepath="lib/promidi"/>
 	<classpathentry kind="lib" path="lib/oscP5/library/oscP5.jar" sourcepath="lib/oscP5/src">
@@ -20,10 +19,11 @@
 	<classpathentry kind="lib" path="lib/processing/minim/library/mp3spi1.9.4.jar"/>
 	<classpathentry kind="lib" path="lib/processing/minim/library/jl1.0.jar"/>
 	<classpathentry kind="lib" path="lib/processing3/core.jar" sourcepath="/Users/bst/Dropbox/Processing/processing3 source/core"/>
-	<classpathentry kind="lib" path="lib/Syphon/java/JSyphon/jar/jsyphon.jar" sourcepath="lib/Syphon/java/JSyphon/src">
+	<classpathentry kind="lib" path="lib/Syphon/library/jsyphon.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/java/JSyphon/native_libs"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/Users/bst/Dropbox/Processing/p3sketches/libraries/Syphon/library"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/Syphon/library/Syphon.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

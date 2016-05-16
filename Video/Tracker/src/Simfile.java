@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PImage;
 
 class NoteData {
@@ -226,9 +227,9 @@ public class Simfile {
 		}
 	}
 
-	public PImage getBanner(PApplet parent) {
+	public PImage getBanner(Tracker tracker, PGraphics g) {
 		String fname=getTag("BANNER");
-		PImage result = parent.loadImage(new File(dir,fname).getAbsolutePath());
+		PImage result = tracker.loadImage(new File(dir,fname).getAbsolutePath());
 		return result;
 	}
 	
