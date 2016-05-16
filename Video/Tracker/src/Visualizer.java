@@ -14,13 +14,13 @@ public abstract class Visualizer {
 	public void drawWelcome(PGraphics g, PVector wsize) {
 		g.fill(50, 255, 255);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
-		g.textSize(45);
+		g.textSize(g.height/16.0f);
 		g.stroke(255);
 		final float lineSize=wsize.y/8;
 		g.text("Welcome to the", wsize.x/2,wsize.y/2-lineSize);
-		g.textSize(60);
+		g.textSize(g.height/12.0f);
 		g.text("PULSEFIELD", wsize.x/2,wsize.y/2);
-		g.textSize(45);
+		g.textSize(g.height/16.0f);
 		g.text(name, wsize.x/2,wsize.y/2+lineSize);
 		g.text("Please enter...", wsize.x/2,wsize.y/2+2.5f*lineSize);
 	}
