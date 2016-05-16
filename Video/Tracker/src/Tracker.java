@@ -61,6 +61,7 @@ public class Tracker extends PApplet {
 	String renderer=P2D;
 	Boolean useSyphon = true;
 	PGraphics canvas;
+	Projector p1, p2;
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -161,6 +162,8 @@ public class Tracker extends PApplet {
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		
 		canvas = this.createGraphics(1000, 1000, renderer);
+		p1 = new Projector(this,1,1280,720);
+		p2 = new Projector(this,2,1280,720);
 		PApplet.println("Setup complete");
 		starting = false;
 	}
@@ -297,6 +300,12 @@ public class Tracker extends PApplet {
 		if (server != null) {
 			server.sendImage(canvas);
 		}
+		p1.render(canvas);
+		p2.render(canvas);
+		
+		this.image(canvas, 0, 0, width/2, height/2);
+		this.image(p1.pcanvas, width/2, 0, width/2, height/2);
+		this.image(p2.pcanvas, width/2, height/2, width/2, height/2);
 		//SyphonTest.draw(this);
 	}
 

@@ -24,6 +24,6 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/Users/bst/Dropbox/Processing/p3sketches/libraries/Syphon/library"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/Syphon/library/Syphon.jar"/>
+	<classpathentry kind="lib" path="lib/Syphon/library/Syphon.jar" sourcepath="/Users/bst/Dropbox/Processing/p3sketches/libraries/Syphon/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
