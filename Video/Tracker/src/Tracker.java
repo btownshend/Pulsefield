@@ -9,6 +9,7 @@ import oscP5.OscProperties;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
+import processing.opengl.PJOGL;
 
 
 public class Tracker extends PApplet {
@@ -64,6 +65,7 @@ public class Tracker extends PApplet {
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
 		size(1280, 720, renderer);
+		PJOGL.profile=1;
 		//pixelDensity(2);  // This breaks the Navier visualizer
 	}
 
