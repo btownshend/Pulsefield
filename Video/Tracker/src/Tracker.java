@@ -298,6 +298,7 @@ public class Tracker extends PApplet {
 			server.sendScreen();
 			endPGL();
 		}
+		SyphonTest.draw(this);
 	}
 
 	public void mouseReleased() {
