@@ -65,7 +65,7 @@ public class Tracker extends PApplet {
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
 		size(1280, 720, renderer);
-		PJOGL.profile=1;
+		PJOGL.profile=1;    // Seems that this is needed for Syphon to function
 		//pixelDensity(2);  // This breaks the Navier visualizer
 	}
 
