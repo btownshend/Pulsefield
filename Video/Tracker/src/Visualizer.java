@@ -63,33 +63,33 @@ public abstract class Visualizer {
 
 	public void setName(String name) { this.name=name; }
 	
-	public void drawBorders(PGraphics parent, boolean octagon, PVector wsize) {
-		this.drawBorders(parent, octagon, wsize, 2.0f,127,255);
+	public void drawBorders(PGraphics g, boolean octagon, PVector wsize) {
+		this.drawBorders(g, octagon, wsize, 2.0f,127,255);
 	}
 	
-	public void drawBorders(PGraphics parent, boolean octagon, PVector wsize, float strokeWeight, int color,int alpha) {
+	public void drawBorders(PGraphics g, boolean octagon, PVector wsize, float strokeWeight, int color,int alpha) {
 		octagon=false;
-		parent.stroke(color,alpha);
-		parent.fill(0);
-		parent.strokeWeight(strokeWeight);
+		g.stroke(color,alpha);
+		g.fill(0);
+		g.strokeWeight(strokeWeight);
 		if (octagon) {
-			parent.beginShape();
+			g.beginShape();
 			float gapAngle=(float)(10f*Math.PI /180);
 			for (float angle=gapAngle/2;angle<2*Math.PI;angle+=(2*Math.PI-gapAngle)/8)
-				parent.vertex((float)((Math.sin(angle+Math.PI)+1)*wsize.x/2),(float)((Math.cos(angle+Math.PI)+1)*wsize.y/2));
-			parent.endShape(PConstants.OPEN);
+				g.vertex((float)((Math.sin(angle+Math.PI)+1)*wsize.x/2),(float)((Math.cos(angle+Math.PI)+1)*wsize.y/2));
+			g.endShape(PConstants.OPEN);
 		} else {
-			parent.line(0, 0, wsize.x-1, 0);
-			parent.line(0, 0, 0, wsize.y-1);
-			parent.line(wsize.x-1, 0, wsize.x-1, wsize.y-1);
-			parent.line(0, wsize.y-1, wsize.x-1, wsize.y-1);
+			g.line(0, 0, wsize.x-1, 0);
+			g.line(0, 0, 0, wsize.y-1);
+			g.line(wsize.x-1, 0, wsize.x-1, wsize.y-1);
+			g.line(0, wsize.y-1, wsize.x-1, wsize.y-1);
 		}
 		// Narrow remaining window
-		parent.translate(wsize.x/2, wsize.y/2);
+		g.translate(wsize.x/2, wsize.y/2);
 		PVector scale=new PVector((wsize.x-strokeWeight*2)/wsize.x,(wsize.y-strokeWeight*2)/wsize.y);
 //		PApplet.println("Scale="+scale);
-		parent.scale(scale.x,scale.y);
-		parent.translate(-wsize.x/2, -wsize.y/2);
+		g.scale(scale.x,scale.y);
+		g.translate(-wsize.x/2, -wsize.y/2);
 	}
 
 	public void handleMessage(OscMessage theOscMessage) {
