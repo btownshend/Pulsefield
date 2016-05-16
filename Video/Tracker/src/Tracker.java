@@ -59,7 +59,7 @@ public class Tracker extends PApplet {
 	Fourier fourier;
 	SyphonServer server=null;
 	String renderer=P2D;
-	Boolean useSyphon = false;
+	Boolean useSyphon = true;
 	PGraphics canvas;
 	
 	public void settings() {
@@ -297,8 +297,8 @@ public class Tracker extends PApplet {
 		
 		if (server != null) {
 			beginPGL();
-			server.sendScreen();
 			endPGL();
+			server.sendImage(canvas);
 		}
 		SyphonTest.draw(this);
 	}
