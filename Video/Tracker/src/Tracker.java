@@ -160,7 +160,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "ping", "/ping");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		
-		canvas = this.createGraphics(width/2, height/2);
+		canvas = this.createGraphics(1000, 1000, renderer);
 		PApplet.println("Setup complete");
 		starting = false;
 	}
@@ -291,14 +291,13 @@ public class Tracker extends PApplet {
 		vis[currentvis].drawLaser(this,people);
 
 		// Syphon setup, requires OpenGL renderer (not FX2D?)
-		// Currently seems to break display
-		if (renderer != FX2D && useSyphon && server==null)
+		if (useSyphon && server==null)
 			server = new SyphonServer(this, "Tracker");
 		
 		if (server != null) {
 			server.sendImage(canvas);
 		}
-		SyphonTest.draw(this);
+		//SyphonTest.draw(this);
 	}
 
 	public void mouseReleased() {
