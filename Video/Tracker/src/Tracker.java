@@ -7,6 +7,7 @@ import oscP5.OscMessage;
 import oscP5.OscP5;
 import oscP5.OscProperties;
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PVector;
 
 
@@ -58,6 +59,7 @@ public class Tracker extends PApplet {
 	SyphonServer server=null;
 	String renderer=P2D;
 	Boolean useSyphon = false;
+	PGraphics canvas;
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -155,10 +157,10 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "volume", "/volume");
 		oscP5.plug(this, "ping", "/ping");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
+		
+		canvas = this.createGraphics(width/2, height/2);
 		PApplet.println("Setup complete");
 		starting = false;
-		
-
 	}
 
 	public void tempo(float t) {
@@ -279,9 +281,13 @@ public class Tracker extends PApplet {
 		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);
 
-		vis[currentvis].draw(this, this.g,people,new PVector(width,height));
+		canvas.beginDraw();
+		vis[currentvis].draw(this, canvas,people,new PVector(canvas.width,canvas.height));
+		canvas.endDraw();
+		this.image(canvas,0,0,width, height);
+
 		vis[currentvis].drawLaser(this,people);
-		
+
 		// Syphon setup, requires OpenGL renderer (not FX2D?)
 		// Currently seems to break display
 		if (renderer != FX2D && useSyphon && server==null)
