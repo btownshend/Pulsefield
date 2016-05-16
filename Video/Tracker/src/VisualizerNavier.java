@@ -11,7 +11,7 @@ class VisualizerNavier extends Visualizer {
 	int oldMouseX = 1, oldMouseY = 1;
 	private int bordercolor;
 	private double scale;
-	PImage buffer;
+	PImage buffer=null;
 	PImage iao;
 	int rainbow = 0;
 	long statsLast = 0;
@@ -20,11 +20,11 @@ class VisualizerNavier extends Visualizer {
 	long statsUpdate = 0;
 	Synth synth;
 	MusicVisLaser mvl;
+	final int downSample=1;   // amount to downsample fluid image
 	
 	VisualizerNavier(Tracker parent, Synth synth) {
 		super();
 		fluidSolver = new NavierStokesSolver();
-		buffer = new PImage(parent.width/2, parent.height/2);
 
 		visc = 0.001;
 		diff = 3.0e-4;
@@ -102,8 +102,9 @@ class VisualizerNavier extends Visualizer {
 	@Override
 	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
 //		Don't call parent.draw since it draws the defaults border and fills the background
-//		super.draw(parent,p,wsize);
-		
+		if (buffer==null) {
+			buffer = new PImage(g.width/downSample, g.height/downSample);
+		}
 		if (p.pmap.isEmpty()) {
 			g.background(0, 0, 0);  
 			g.colorMode(PConstants.RGB, 255);
@@ -170,13 +171,15 @@ class VisualizerNavier extends Visualizer {
 		
 	}
 
-	private void fluidCanvasStep(PGraphics parent) {
-		double widthInverse = 1.0 / parent.width;
-		double heightInverse = 1.0 / parent.height;
+	private void fluidCanvasStep(PGraphics g) {
+		double widthInverse = 1.0 / g.width;
+		double heightInverse = 1.0 / g.height;
 
-		parent.loadPixels();
-		for (int y = 0; y < parent.height; y+=2) {
-			for (int x = 0; x < parent.width; x+=2) {
+		long t1=System.nanoTime();
+		g.loadPixels();
+		long t2=System.nanoTime();
+		for (int y = 0; y < g.height; y+=downSample) {
+			for (int x = 0; x < g.width; x+=downSample) {
 				double u = (x+0.5) * widthInverse;
 				double v = (y+0.5) * heightInverse;
 
@@ -186,17 +189,18 @@ class VisualizerNavier extends Visualizer {
 				double warpX = warpedPosition[0];
 				double warpY = warpedPosition[1];
 
-				warpX *= parent.width;
-				warpY *= parent.height;
-
-				int collor = getSubPixel(parent,warpX, warpY);
+				warpX *= g.width;
+				warpY *= g.height;
+				warpX-=0.5;
+				warpY-=0.5;
+				int collor = getSubPixel(g,warpX, warpY);
 				//int collor=parent.pixels[((int)warpX)+((int)warpY)*parent.width];
-				buffer.set(x/2, y/2, collor);
+				buffer.set(x/downSample, y/downSample, collor);
 			}
 		}
-		parent.imageMode(PConstants.CORNERS);
-		parent.tint(255);
-		parent.image(buffer,0,0,parent.width,parent.height);
+		g.imageMode(PConstants.CORNER);
+		g.tint(255);
+		g.image(buffer,0,0,g.width,g.height);
 	}
 
 	public int getSubPixel(PGraphics parent, double warpX, double warpY) {
