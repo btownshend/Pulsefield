@@ -15,6 +15,17 @@ public class Projector {
 		pcanvas = parent.createGraphics(width, height, PConstants.P3D);
 	}
 	
+	public void setPosition(float x, float y, float z, float aimx, float aimy) {
+	// Set position and aiming of projector in floor coordinates
+		// Convert to canvas coordinates
+		
+		pcanvas.camera(x,y,z,aimx,aimy,0.0f,0.0f,0.0f,1.0f);
+	}
+	
+	public void setPerspective(float vfov, float aspect) {
+		pcanvas.perspective(vfov, aspect, 1f, 1e10f);
+	}
+	
 	public void render(PGraphics canvas) {
 		// Send the given canvas to the projector
 		pcanvas.beginDraw();
