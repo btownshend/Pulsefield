@@ -303,7 +303,6 @@ public class Tracker extends PApplet {
 
 		vis[currentvis].draw(this, canvas,people,new PVector(canvas.width,canvas.height));
 		canvas.endDraw();
-		this.image(canvas,0,0,width, height);
 
 		vis[currentvis].drawLaser(this,people);
 
@@ -317,9 +316,10 @@ public class Tracker extends PApplet {
 		p1.render(canvas);
 		p2.render(canvas);
 		
-		this.image(canvas, 0, 0, width/2, height/2);
-		this.image(p1.pcanvas, width/2, 0, width/2, height/2);
-		this.image(p2.pcanvas, width/2, height/2, width/2, height/2);
+		imageMode(CORNER);
+		this.image(canvas, 1, 1, canvas.width*cscale, canvas.height*cscale);
+		//this.image(p1.pcanvas, width/2, 0, width/2, height/2);
+		//this.image(p2.pcanvas, width/2, height/2, width/2, height/2);
 		//SyphonTest.draw(this);
 	}
 
