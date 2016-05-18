@@ -61,7 +61,7 @@ public class VisualizerMinim extends VisualizerGrid {
 		}
 
 		// Add drawing code here
-		initializeContext(g);
+		initializeContext(t,g);
 		visuals[select].draw(t,g);
 	}
 

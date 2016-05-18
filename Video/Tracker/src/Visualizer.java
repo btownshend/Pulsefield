@@ -26,7 +26,7 @@ public abstract class Visualizer {
 	}
 	
 	// Clean up graphics context to "default" state
-	public void initializeContext(PGraphics g) { 
+	public void initializeContext(Tracker t, PGraphics g) { 
 		g.colorMode(PConstants.RGB, 255);
 		g.rectMode(PApplet.CORNER);
 		g.smooth();
@@ -36,7 +36,7 @@ public abstract class Visualizer {
 	}
 	
 	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		initializeContext(g);
+		initializeContext(t,g);
 		g.background(0, 0, 0); 
 		if (p.pmap.isEmpty())
 			drawWelcome(g,wsize);
