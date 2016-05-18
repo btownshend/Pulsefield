@@ -136,7 +136,7 @@ class VisualizerNavier extends Visualizer {
 		rainbow++;
 		rainbow = (rainbow > 255) ? 0 : rainbow;
 
-		drawBorders(g, true, wsize, 7, bordercolor, 127);
+		drawBorders(g, wsize, 0.01f, bordercolor, 127);
 
 		g.ellipseMode(PConstants.CENTER);
 		for (Person ps: p.pmap.values()) {  

@@ -40,7 +40,7 @@ public abstract class Visualizer {
 		g.background(0, 0, 0); 
 		if (p.pmap.isEmpty())
 			drawWelcome(g,wsize);
-		drawBorders(g, false, wsize);
+		drawBorders(g, wsize);
 	}
 
 	// Draw to laser
@@ -63,27 +63,18 @@ public abstract class Visualizer {
 
 	public void setName(String name) { this.name=name; }
 	
-	public void drawBorders(PGraphics g, boolean octagon, PVector wsize) {
-		this.drawBorders(g, octagon, wsize, 2.0f,127,255);
+	public void drawBorders(PGraphics g, PVector wsize) {
+		this.drawBorders(g, wsize, 0.02f,0xff00ff00,255);
 	}
 	
-	public void drawBorders(PGraphics g, boolean octagon, PVector wsize, float strokeWeight, int color,int alpha) {
-		octagon=false;
+	public void drawBorders(PGraphics g, PVector wsize, float strokeWeight, int color,int alpha) {
 		g.stroke(color,alpha);
 		g.fill(0);
 		g.strokeWeight(strokeWeight);
-		if (octagon) {
-			g.beginShape();
-			float gapAngle=(float)(10f*Math.PI /180);
-			for (float angle=gapAngle/2;angle<2*Math.PI;angle+=(2*Math.PI-gapAngle)/8)
-				g.vertex((float)((Math.sin(angle+Math.PI)+1)*wsize.x/2),(float)((Math.cos(angle+Math.PI)+1)*wsize.y/2));
-			g.endShape(PConstants.OPEN);
-		} else {
 			g.line(0, 0, wsize.x-1, 0);
 			g.line(0, 0, 0, wsize.y-1);
 			g.line(wsize.x-1, 0, wsize.x-1, wsize.y-1);
 			g.line(0, wsize.y-1, wsize.x-1, wsize.y-1);
-		}
 		// Narrow remaining window
 		g.translate(wsize.x/2, wsize.y/2);
 		PVector scale=new PVector((wsize.x-strokeWeight*2)/wsize.x,(wsize.y-strokeWeight*2)/wsize.y);

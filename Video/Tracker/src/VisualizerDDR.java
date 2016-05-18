@@ -305,7 +305,7 @@ public class VisualizerDDR extends Visualizer {
 		final float ARROWSIZE=DOTSIZE;
 		final float ARROWDIST=(ARROWSIZE+DOTSIZE)/2;
 
-		drawBorders(parent,true,wsize);
+		drawBorders(parent,wsize);
 		parent.imageMode(PConstants.CENTER);
 		parent.tint(255);
 
