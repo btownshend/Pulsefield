@@ -453,6 +453,21 @@ public class Tracker extends PApplet {
 		//PApplet.println("Min/max scrn: "+Tracker.minx+":"+Tracker.maxx+", "+Tracker.miny+":"+Tracker.maxy);
 	}
 
+	// Get pixels per meter
+	public float getPixelsPerMeter() {
+		return Math.min(canvas.width/getFloorSize().x, canvas.height/getFloorSize().y);
+	}
+	
+	// Get center of active area (in meters)
+	public PVector getFloorCenter() {
+		return new PVector((rawminx+rawmaxx)/2,(rawminy+rawmaxy)/2);
+	}
+	
+	// Get size of active area (in meters)
+	public PVector getFloorSize() {
+		return new PVector(rawmaxx-rawminx,rawmaxy-rawminy);
+	}
+	
 	synchronized public void pfstarted() {
 		PApplet.println("PF started");
 	}
