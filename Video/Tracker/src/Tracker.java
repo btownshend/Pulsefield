@@ -256,6 +256,16 @@ public class Tracker extends PApplet {
 			vis[currentvis].stats();
 		}
 
+		canvas.beginDraw();
+		// Transform so that coords for drawing are in meters
+		canvas.resetMatrix();
+
+		canvas.translate(canvas.width/2, canvas.height/2);   // center coordinate system to middle of canvas
+		canvas.scale(getPixelsPerMeter());
+		canvas.translate(-getFloorCenter().x, -getFloorCenter().y);  // translate to center of new space
+
+		float cscale=Math.min((width-2)*1f/canvas.width,(height-2)*1f/canvas.height); // Scaling of canvas to window
+		//println("cscale="+cscale);
 		if (mousePressed) {
 			Person p=mousePeople.getOrCreate(mouseID,mouseID%16);
 			PVector mousePos=normalizedToFloor(new PVector(mouseX*2f/width-1, mouseY*2f/height-1));
@@ -286,7 +296,6 @@ public class Tracker extends PApplet {
 		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);
 
-		canvas.beginDraw();
 		vis[currentvis].draw(this, canvas,people,new PVector(canvas.width,canvas.height));
 		canvas.endDraw();
 		this.image(canvas,0,0,width, height);
