@@ -161,7 +161,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "ping", "/ping");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		
-		canvas = this.createGraphics(1000, 1000, renderer);
+		canvas = this.createGraphics(1200, 600, renderer);
 		p1 = new Projector(this,1,1280,720);
 		p2 = new Projector(this,2,1280,720);
 		PApplet.println("Setup complete");
