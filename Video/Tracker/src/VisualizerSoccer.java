@@ -20,19 +20,13 @@ class Ball {
 		ballShape=null;
 	}
 	
-	public void draw(PGraphics parent, PVector wsize) {
+	public void draw(PGraphics g, PVector wsize) {
 		if (ballShape==null)
-			ballShape=parent.loadShape(Tracker.SVGDIRECTORY+"Soccerball.svg");
-		final int color=0xffffffff;
-		parent.ellipseMode(PConstants.CENTER);
-		parent.fill(color,0);
-		parent.strokeWeight(2.0f);
-		parent.stroke(color,255);
-//		PApplet.println("Ball at "+((position.x+1)*wsize.x/2)+","+((position.y+1)*wsize.y/2));
-		PVector p=Tracker.floorToNormalized(position);
-		PVector nRadius=Tracker.mapVelocity(new PVector(radius,radius));
-//		parent.ellipse((p.x+1)*wsize.x/2, (p.y+1)*wsize.y/2, nRadius.x*2*wsize.x/2, nRadius.y*2*wsize.y/2);
-		parent.shape(ballShape,(p.x+1-nRadius.x)*wsize.x/2, (p.y+1-nRadius.y)*wsize.y/2,nRadius.x*2*wsize.x/2, nRadius.y*2*wsize.y/2);
+			ballShape=g.loadShape(Tracker.SVGDIRECTORY+"Soccerball.svg");
+
+		//PApplet.println("Ball at "+position.x+","+position.y);
+		g.shapeMode(PConstants.CENTER);
+		g.shape(ballShape,position.x, position.y,radius*2,radius*2);
 	}
 	
 	public void drawLaser(Laser laser,PApplet parent) {
@@ -136,7 +130,7 @@ public class VisualizerSoccer extends VisualizerDot {
 	@Override
 	public void update(PApplet parent, People p) {
 		if (ball==null)
-			ball=new Ball(Tracker.normalizedToFloor(new PVector(0f,0f)),Tracker.normalizedToFloor(new PVector(0.1f,0.2f)));
+			ball=new Ball(new PVector((Tracker.rawmaxx+Tracker.rawminx)/2,(Tracker.rawmaxy+Tracker.rawminy)/2),new PVector(0f,0f));
 		// Update internal state
 		ball.update(parent);
 		for (Person ps: p.pmap.values()) {  
