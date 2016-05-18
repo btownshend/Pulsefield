@@ -11,18 +11,20 @@ public abstract class Visualizer {
 		name="??";
 	}
 
-	public void drawWelcome(PGraphics g, PVector wsize) {
+	public void drawWelcome(Tracker t, PGraphics g) {
+		final PVector center=t.getFloorCenter();
+		final float textHeight=0.2f;   // Height in meters
+		final float lineSize=textHeight*2;
 		g.fill(50, 255, 255);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
-		g.textSize(g.height/16.0f);
+		g.textSize(textHeight);
 		g.stroke(255);
-		final float lineSize=wsize.y/8;
-		g.text("Welcome to the", wsize.x/2,wsize.y/2-lineSize);
-		g.textSize(g.height/12.0f);
-		g.text("PULSEFIELD", wsize.x/2,wsize.y/2);
-		g.textSize(g.height/16.0f);
-		g.text(name, wsize.x/2,wsize.y/2+lineSize);
-		g.text("Please enter...", wsize.x/2,wsize.y/2+2.5f*lineSize);
+		g.text("Welcome to the", center.x,center.y-lineSize*2);
+		g.textSize(textHeight*1.33f);
+		g.text("PULSEFIELD", center.x, center.y-lineSize);
+		g.textSize(textHeight);
+		g.text(name, center.x,center.y+lineSize);
+		g.text("Please enter...", center.x,center.y+2.5f*lineSize);
 	}
 	
 	// Clean up graphics context to "default" state
@@ -33,13 +35,19 @@ public abstract class Visualizer {
 		g.stroke(255);
 		g.imageMode(PConstants.CORNER);
 		g.noTint();
+		// With the scaling from meters to pixels, processing by default will generate a font 
+		// with point-size using the textSize argument UNSCALED.  This is then scaled by the transform
+		// So, if there is 10x scaling and you use textSize(1.0), the font will be generated a 1pixel size
+		// then scaled up.
+		// Hack this by using a font that is larger than needed, which then will get scaled down 
+		g.textFont(t.createFont("Arial",30f),30f);
 	}
 	
 	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
 		initializeContext(t,g);
 		g.background(0, 0, 0); 
 		if (p.pmap.isEmpty())
-			drawWelcome(g,wsize);
+			drawWelcome(t, g);
 		drawBorders(g, wsize);
 	}
 
@@ -69,18 +77,15 @@ public abstract class Visualizer {
 	
 	public void drawBorders(PGraphics g, PVector wsize, float strokeWeight, int color,int alpha) {
 		g.stroke(color,alpha);
-		g.fill(0);
+		g.fill(color);
 		g.strokeWeight(strokeWeight);
-			g.line(0, 0, wsize.x-1, 0);
-			g.line(0, 0, 0, wsize.y-1);
-			g.line(wsize.x-1, 0, wsize.x-1, wsize.y-1);
-			g.line(0, wsize.y-1, wsize.x-1, wsize.y-1);
-		// Narrow remaining window
-		g.translate(wsize.x/2, wsize.y/2);
-		PVector scale=new PVector((wsize.x-strokeWeight*2)/wsize.x,(wsize.y-strokeWeight*2)/wsize.y);
-//		PApplet.println("Scale="+scale);
-		g.scale(scale.x,scale.y);
-		g.translate(-wsize.x/2, -wsize.y/2);
+
+		g.line(Tracker.rawminx, Tracker.rawminy, Tracker.rawminx, Tracker.rawmaxy);
+		g.line(Tracker.rawminx, Tracker.rawminy, Tracker.rawmaxx, Tracker.rawminy);
+		g.line(Tracker.rawmaxx, Tracker.rawmaxy, Tracker.rawminx, Tracker.rawmaxy);
+		g.line(Tracker.rawmaxx, Tracker.rawmaxy, Tracker.rawmaxx, Tracker.rawminy);
+		g.ellipseMode(PConstants.CENTER);
+		g.ellipse(0f,0f,0.1f,0.1f);
 	}
 
 	public void handleMessage(OscMessage theOscMessage) {
