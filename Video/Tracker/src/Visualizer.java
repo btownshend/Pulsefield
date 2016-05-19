@@ -12,7 +12,7 @@ public abstract class Visualizer {
 	}
 
 	public void drawWelcome(Tracker t, PGraphics g) {
-		final PVector center=t.getFloorCenter();
+		final PVector center=Tracker.getFloorCenter();
 		final float textHeight=0.2f;   // Height in meters
 		final float lineSize=textHeight*2;
 		g.fill(50, 255, 255);
@@ -92,9 +92,6 @@ public abstract class Visualizer {
 		PApplet.println("Unhandled OSC Message: "+theOscMessage.toString());
 	}
 
-	public PVector convertToScreen(PVector p, PVector wsize) {
-		return new PVector((p.x+1)*wsize.x/2,(p.y+1)*wsize.y/2);
-	}
 	
 	// Create a bezier path from p1 to p2 that vibrates over time
 	public PVector[] vibratingPath(PVector p1, PVector p2, int mode, float freq, float amplitude, float time) {
