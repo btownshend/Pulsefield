@@ -367,15 +367,15 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 	}
 
 	void draw(PGraphics parent, PVector wsize) {
-		float sz=30;
+		float sz=0.30f;
 		// Draw all the controllers first so generators will be on top of connecting lines
 		for (Fiducial f: values()) {
 			if (f instanceof Controller) {
 				int c=f.getcolor();
 				parent.fill(c,255);
 				parent.stroke(c,255);
-				parent.strokeWeight(5);
 				f.draw(parent,wsize,sz);
+				parent.strokeWeight(0.05f);
 			}
 		}
 		for (Fiducial f: values()) {
@@ -383,8 +383,8 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 				int c=f.getcolor();
 				parent.fill(c,255);
 				parent.stroke(c,255);
-				parent.strokeWeight(5);
 				f.draw(parent,wsize,sz);
+				parent.strokeWeight(0.05f);
 			}
 		}
 	}

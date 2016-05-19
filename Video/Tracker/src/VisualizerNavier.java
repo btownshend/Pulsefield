@@ -130,7 +130,7 @@ class VisualizerNavier extends Visualizer {
 		statsTick += t2-t1;
 		statsStep += t3-t2;
 
-		g.strokeWeight(7);
+		g.strokeWeight(.07f);
 		g.colorMode(PConstants.HSB, 255);
 		bordercolor = g.color(rainbow, 255, 255);
 		rainbow++;

@@ -346,13 +346,13 @@ public class VisualizerDDR extends Visualizer {
 		parent.pushMatrix();
 		
 		
-		parent.textSize(24);
+		parent.textSize(0.24f);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
 		parent.translate(0,lineHeight/2);
 		parent.text("SCORES",wsize.x/2,0);
 		parent.translate(0,lineHeight);
 		parent.textAlign(PConstants.LEFT,PConstants.CENTER);
-		parent.textSize(16);
+		parent.textSize(0.16f);
 
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
@@ -388,7 +388,7 @@ public class VisualizerDDR extends Visualizer {
 //		PApplet.println("Have "+notes.size()+" notes.");
 		//parent.ellipse(wsize.x/2,wsize.y/2,100,100);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
-		parent.textSize(16);
+		parent.textSize(0.16f);
 		parent.tint(255);
 		parent.stroke(255);
 		parent.fill(255);
@@ -411,7 +411,7 @@ public class VisualizerDDR extends Visualizer {
 				}
 			}
 		}
-		parent.strokeWeight(5);
+		parent.strokeWeight(0.05f);
 		parent.line(0,HISTORY*wsize.y/DURATION,0,wsize.x,HISTORY*wsize.y/DURATION,0);
 		parent.text(String.format("%.2f", now), 5, wsize.y-10);
 	}

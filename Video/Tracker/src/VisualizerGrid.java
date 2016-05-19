@@ -117,14 +117,14 @@ public class VisualizerGrid extends VisualizerPS {
 		super.draw(t, g, p, wsize);
 		if (p.pmap.isEmpty())
 			return;
-		g.textSize(16);
+		g.textSize(0.16f);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
 			int id=entry.getKey();
 			int cell=entry.getValue();
 			//PApplet.println("grid "+cell+", id="+id+" "+gridColors.get(cell));
 			g.fill(127,0,0,127);
-			g.strokeWeight(5);
+			g.strokeWeight(.05f);
 			g.stroke(127,0,0);
 			g.rect(wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
 			g.fill(255);
@@ -137,7 +137,7 @@ public class VisualizerGrid extends VisualizerPS {
 		}
 		g.fill(127);
 		g.textAlign(PConstants.LEFT, PConstants.TOP);
-		g.textSize(24);
+		g.textSize(0.24f);
 		g.text(Ableton.getInstance().trackSet.name,5,5);
 	}
 

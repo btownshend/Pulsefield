@@ -111,14 +111,14 @@ public class VisualizerGuitar extends VisualizerPS {
 		g.imageMode(PConstants.CENTER);
 		g.image(guitar, wsize.x/2, wsize.y/2, wsize.x, wsize.y);
 		g.stroke(100);
-		g.strokeWeight(2);
+		g.strokeWeight(.02f);
 		for (int i=0;i<GString.nfrets;i++) {
 			float xpos=GString.frets[i];
 			PVector p1=this.convertToScreen(new PVector(xpos,GString.minstring-.05f), wsize);
 			PVector p2=this.convertToScreen(new PVector(xpos,GString.maxstring+.05f), wsize);		
 			g.line(p1.x,p1.y,p2.x,p2.y);
 		}
-		g.strokeWeight(5);
+		g.strokeWeight(0.05f);
 		for (int i=0;i<strings.length;i++) {
 			GString s=strings[i];
 			float ypos=s.position;

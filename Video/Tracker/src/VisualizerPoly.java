@@ -208,10 +208,10 @@ public class VisualizerPoly extends Visualizer {
 		float sz=Math.min(wsize.x,wsize.y);
 		for (int i=1;i<=totalBeats;i++) {
 			if (i%4 == 0)
-				g.strokeWeight(2);
+				g.strokeWeight(0.02f);
 			else
-				g.strokeWeight(1);
 			g.ellipse(wsize.x/2,wsize.y/2,i*sz/totalBeats,i*sz/totalBeats);
+				g.strokeWeight(0.01f);
 		}
 
 		// Draw each position and fired rings
