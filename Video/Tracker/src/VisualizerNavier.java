@@ -144,10 +144,16 @@ class VisualizerNavier extends Visualizer {
 			g.stroke(c,255);
 			//PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
 			
-			float sz=5;
+			float sz=.05f;
 			if (ps.groupsize > 1)
 				sz=20*ps.groupsize;
-			g.ellipse((ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2, sz, sz);
+			// Connect prior point to have a continuous stream
+			float dx=ps.getVelocityInMeters().x/t.frameRate*10;
+			float dy=ps.getVelocityInMeters().y/t.frameRate*10;
+			g.strokeWeight(sz);
+			g.line(ps.getOriginInMeters().x-dx, ps.getOriginInMeters().y-dy,ps.getOriginInMeters().x, ps.getOriginInMeters().y);
+		
+			//g.ellipse(ps.getOriginInMeters().x, ps.getOriginInMeters().y, sz, sz);
 		}
 	}
 
