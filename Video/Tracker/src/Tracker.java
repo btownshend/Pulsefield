@@ -21,6 +21,7 @@ public class Tracker extends PApplet {
 	private static boolean autocycle = true;
 	private static boolean starting = true;   // Disable bad OSC messages before setup
 	private static boolean genFrameMsgs = false;
+	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
 	int tick=0;
 	private float avgFrameRate=0;
@@ -400,7 +401,6 @@ public class Tracker extends PApplet {
 	}
 
 	// Map position in meters to normalized position where (minx,miny) maps to (-1,1) and (max,maxy) maps to (1,-1)
-	// (flipped y-coord for screen use)
 	public static PVector floorToNormalized(PVector raw, boolean preserveAspect) {
 		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
 		PVector result=PVector.sub(raw,mid);
