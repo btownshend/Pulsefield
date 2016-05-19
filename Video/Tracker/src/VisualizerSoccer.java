@@ -38,7 +38,7 @@ class Ball {
 		float elapsed=1.0f/parent.frameRate;
 		position.add(PVector.mult(velocity,elapsed));
 		if (position.x+radius>Tracker.rawmaxx && velocity.x>0) {
-			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
+			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.rawminx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
 			velocity.x*=-restitution;
 			position.x=2*(Tracker.rawmaxx-radius)-position.x;
 			impactSound(0);
