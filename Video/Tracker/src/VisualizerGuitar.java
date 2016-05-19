@@ -109,30 +109,28 @@ public class VisualizerGuitar extends VisualizerPS {
 			return;
 		g.tint(127);
 		g.imageMode(PConstants.CENTER);
-		g.image(guitar, wsize.x/2, wsize.y/2, wsize.x, wsize.y);
+		g.image(guitar, Tracker.getFloorCenter().x, Tracker.getFloorCenter().y, Tracker.getFloorSize().x, Tracker.getFloorSize().y);
 		g.stroke(100);
 		g.strokeWeight(.02f);
 		for (int i=0;i<GString.nfrets;i++) {
 			float xpos=GString.frets[i];
-			PVector p1=this.convertToScreen(new PVector(xpos,GString.minstring-.05f), wsize);
-			PVector p2=this.convertToScreen(new PVector(xpos,GString.maxstring+.05f), wsize);		
+			PVector p1=Tracker.normalizedToFloor(new PVector(xpos,GString.minstring-.05f));
+			PVector p2=Tracker.normalizedToFloor(new PVector(xpos,GString.maxstring+.05f));		
 			g.line(p1.x,p1.y,p2.x,p2.y);
 		}
 		g.strokeWeight(0.05f);
 		for (int i=0;i<strings.length;i++) {
 			GString s=strings[i];
 			float ypos=s.position;
-			PVector p1=this.convertToScreen(new PVector(GString.nut,ypos), wsize);
-			PVector p2=this.convertToScreen(new PVector(GString.bridge,ypos), wsize);	
+			PVector p1=Tracker.normalizedToFloor(new PVector(GString.nut,ypos));
+			PVector p2=Tracker.normalizedToFloor(new PVector(GString.bridge,ypos));	
 			if (s.isVibrating()) {
-				PVector pf=this.convertToScreen(new PVector(GString.frets[s.fret],ypos), wsize);	
-				float vfrac=s.fracOfVibrate();
-				PVector mid=PVector.add(PVector.mult(pf,1-vfrac),PVector.mult(p2,vfrac));
-				mid.y+=s.velocity/127f*(1-vfrac)*Math.sin(2*Math.PI*s.elapsedTime()*5)*(strings[1].position-strings[0].position)*wsize.y/4;  // Max amplitude is 1/2 the spacing
 				g.stroke(s.color);
-				g.line(p1.x,p1.y,pf.x,pf.y);
-				g.line(pf.x,pf.y,mid.x,mid.y);
-				g.line(mid.x,mid.y,p2.x,p2.y);
+				PVector pf=Tracker.normalizedToFloor(new PVector(GString.frets[s.fret],ypos));	
+				PVector path[]=vibratingPath(pf,p2,3,0.5f,0.1f,t.frameCount/t.frameRate);
+				g.line(p1.x, p1.y, pf.x, pf.y);
+				for (int j=0;j+3<path.length;j+=3)
+					g.bezier(path[j].x,path[j].y,path[j+1].x,path[j+1].y,path[j+2].x,path[j+2].y,path[j+3].x,path[j+3].y);
 			} else {
 				g.stroke(127);
 				g.line(p1.x,p1.y,p2.x,p2.y);
