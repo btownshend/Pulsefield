@@ -60,6 +60,8 @@ public class Tracker extends PApplet {
 	SyphonServer server=null;
 	String renderer=P2D;
 	Boolean useSyphon = true;
+	final static int CANVASWIDTH=1200;
+	final static int CANVASHEIGHT=600;
 	PGraphics canvas;
 	Projector p1, p2;
 	
@@ -161,7 +163,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "ping", "/ping");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		
-		canvas = this.createGraphics(1200, 600, renderer);
+		canvas = this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
 		p1 = new Projector(this,1,1280,720);
 		p2 = new Projector(this,2,1280,720);
 		PApplet.println("Setup complete");
@@ -462,17 +464,17 @@ public class Tracker extends PApplet {
 	}
 
 	// Get pixels per meter
-	public float getPixelsPerMeter() {
-		return Math.min(canvas.width/getFloorSize().x, canvas.height/getFloorSize().y);
+	public static float getPixelsPerMeter() {
+		return Math.min(CANVASWIDTH/getFloorSize().x, CANVASHEIGHT/getFloorSize().y);
 	}
 	
 	// Get center of active area (in meters)
-	public PVector getFloorCenter() {
+	public static PVector getFloorCenter() {
 		return new PVector((rawminx+rawmaxx)/2,(rawminy+rawmaxy)/2);
 	}
 	
 	// Get size of active area (in meters)
-	public PVector getFloorSize() {
+	public static PVector getFloorSize() {
 		return new PVector(rawmaxx-rawminx,rawmaxy-rawminy);
 	}
 	
