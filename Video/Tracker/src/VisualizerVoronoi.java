@@ -186,7 +186,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 		for (Triangle triangle : dt) {
 			g.noFill();
 			g.stroke(0,0,255);
-			g.strokeWeight(1);
+			g.strokeWeight(0.01f);
 			g.beginShape();
 			for (int i=0;i<3;i++) {
 				Pnt c=triangle.get(i);
@@ -197,8 +197,8 @@ public class VisualizerVoronoi extends VisualizerPS {
 			Pnt cc=triangle.getCircumcenter();
 			g.fill(255);
 			g.textAlign(PConstants.CENTER,PConstants.CENTER);
-			g.textSize(20);
 			g.text("T"+tnum,(float)(cc.coord(0)+1)*wsize.x/2f,(float)(cc.coord(1)+1)*wsize.y/2f);
+			g.textSize(0.20f);
 			tnum++;
 			for (Pnt site: triangle) {
 				if (done.contains(site)) continue;
@@ -210,7 +210,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 				// Draw all the surrounding triangles
 				g.noFill();
 				g.stroke(0,255,0);
-				g.strokeWeight(1);
+				g.strokeWeight(0.01f);
 				g.beginShape();
 				for (Triangle tri: list) {
 					Pnt c=tri.getCircumcenter();
