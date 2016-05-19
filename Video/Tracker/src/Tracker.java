@@ -60,7 +60,7 @@ public class Tracker extends PApplet {
 	Fourier fourier;
 	SyphonServer server=null;
 	String renderer=P2D;
-	Boolean useSyphon = true;
+	Boolean useSyphon = false;
 	final static int CANVASWIDTH=1200;
 	final static int CANVASHEIGHT=600;
 	PGraphics canvas;
@@ -316,11 +316,12 @@ public class Tracker extends PApplet {
 		if (server != null) {
 			server.sendImage(canvas);
 		}
-		p1.render(canvas);
-		p2.render(canvas);
+		//p1.render(canvas);
+		//p2.render(canvas);
 		
 		imageMode(CORNER);
 		this.image(canvas, 1, 1, canvas.width*cscale, canvas.height*cscale);
+
 		//this.image(p1.pcanvas, width/2, 0, width/2, height/2);
 		//this.image(p2.pcanvas, width/2, height/2, width/2, height/2);
 		//SyphonTest.draw(this);
