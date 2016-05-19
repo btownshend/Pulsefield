@@ -366,6 +366,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 		}
 	}
 
+	void draw(PGraphics g) {
 		float sz=0.30f;
 		// Draw all the controllers first so generators will be on top of connecting lines
 		for (Fiducial f: values()) {

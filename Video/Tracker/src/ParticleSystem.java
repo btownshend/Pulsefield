@@ -45,7 +45,7 @@ class ParticleSystem {
 
 	void draw(PGraphics g) {
 		for (Particle p: particles) {
-			p.draw(parent, wsize);
+			p.draw(g);
 		}
 	}
 
