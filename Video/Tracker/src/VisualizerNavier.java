@@ -180,37 +180,33 @@ class VisualizerNavier extends Visualizer {
 	}
 
 	private void fluidCanvasStep(PGraphics g) {
-		double widthInverse = 1.0 / g.width;
-		double heightInverse = 1.0 / g.height;
+		double widthInverse = 1.0 / buffer.width;
+		double heightInverse = 1.0 / buffer.height;
 
 		long t1=System.nanoTime();
 		g.loadPixels();
 		long t2=System.nanoTime();
-		for (int y = 0; y < g.height; y+=downSample) {
-			for (int x = 0; x < g.width; x+=downSample) {
+		for (int y = 0; y < buffer.height; y++) {
+			for (int x = 0; x < buffer.width; x++) {
 				double u = (x+0.5) * widthInverse;
 				double v = (y+0.5) * heightInverse;
 
 				double warpedPosition[] = fluidSolver.getInverseWarpPosition(u, v, 
 						scale);
 
-				double warpX = warpedPosition[0];
-				double warpY = warpedPosition[1];
-
-				warpX *= g.width;
-				warpY *= g.height;
-				warpX-=0.5;
-				warpY-=0.5;
+				double warpX = warpedPosition[0]*g.width-0.5;
+				double warpY = warpedPosition[1]*g.height-0.5;
 				int collor = getSubPixel(g,warpX, warpY);
 				//int collor=parent.pixels[((int)warpX)+((int)warpY)*parent.width];
-				buffer.set(x/downSample, y/downSample, collor);
+				buffer.set(x, y, collor);
 			}
 		}
 		long t3=System.nanoTime();
-		g.imageMode(PConstants.CORNER);
+		g.imageMode(PConstants.CENTER);
 		g.tint(255);
 		long t4=System.nanoTime();
-		g.image(buffer,0,0,g.width,g.height);
+		PApplet.println("floor center="+Tracker.getFloorCenter()+", size="+Tracker.getFloorSize());
+		g.image(buffer,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,g.width/Tracker.getPixelsPerMeter(),g.height/Tracker.getPixelsPerMeter());
 		long t5=System.nanoTime();
 		statsU1+=(t2-t1);
 		statsU2+=(t3-t2);
@@ -218,8 +214,8 @@ class VisualizerNavier extends Visualizer {
 		statsU4+=(t5-t4);
 	}
 
-	public int getSubPixel(PGraphics parent, double warpX, double warpY) {
-		if (warpX < 0 || warpY < 0 || warpX > parent.width - 1 || warpY > parent.height - 1) {
+	public int getSubPixel(PGraphics g, double warpX, double warpY) {
+		if (warpX < 0 || warpY < 0 || warpX > g.width - 1 || warpY > g.height - 1) {
 			return bordercolor;
 		}
 		int x = (int) Math.floor(warpX);
@@ -227,18 +223,18 @@ class VisualizerNavier extends Visualizer {
 		double u = warpX - x;
 		double v = warpY - y;
 
-		y = PApplet.constrain(y, 0, parent.height - 2);
-		x = PApplet.constrain(x, 0, parent.width - 2);
+		y = PApplet.constrain(y, 0, g.height - 2);
+		x = PApplet.constrain(x, 0, g.width - 2);
 
 //		int indexTopLeft = x + y * parent.width;
 //		int indexTopRight = x + 1 + y * parent.width;
 //		int indexBottomLeft = x + (y + 1) * parent.width;
 //		int indexBottomRight = x + 1 + (y + 1) * parent.width;
 
-		int cTL = parent.pixels[x + y * parent.width];
-		int cTR = parent.pixels[x + 1 + y * parent.width];
-		int cBL = parent.pixels[x + (y + 1) * parent.width];
-		int cBR = parent.pixels[x + 1 + (y + 1) * parent.width];
+		int cTL = g.pixels[x + y * g.width];
+		int cTR = g.pixels[x + 1 + y * g.width];
+		int cBL = g.pixels[x + (y + 1) * g.width];
+		int cBR = g.pixels[x + 1 + (y + 1) * g.width];
 		int color=0xff000000;
 		for (int bit=0;bit<24;bit+=8)
 			color|=((int)(((cTL>>bit)&0xff)*(1-u)*(1-v)+((cTR>>bit)&0xff)*u*(1-v)+((cBL>>bit)&0xff)*(1-u)*v+((cBR>>bit)&0xff)*u*v+0.5))<<bit;
