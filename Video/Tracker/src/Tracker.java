@@ -385,24 +385,20 @@ public class Tracker extends PApplet {
 		}  /* print the address pattern and the typetag of the received OscMessage */
 	}
 
-	@Deprecated
 	public static PVector mapVelocity(PVector velInMetersPerSecond) {
 		return new PVector(-velInMetersPerSecond.x*2f/(Tracker.maxx-Tracker.minx),velInMetersPerSecond.y*2f/(Tracker.maxy-Tracker.miny));
 	}
 	
-	@Deprecated
 	public static PVector floorToNormalized(float x, float y, boolean preserveAspect) {
 		return floorToNormalized(new PVector(x,y),preserveAspect);
 	}
 
-	@Deprecated
 	public static PVector floorToNormalized(float x, float y) {
 		return floorToNormalized(new PVector(x,y),false);
 	}
 
 	// Map position in meters to normalized position where (minx,miny) maps to (-1,1) and (max,maxy) maps to (1,-1)
 	// (flipped y-coord for screen use)
-	@Deprecated
 	public static PVector floorToNormalized(PVector raw, boolean preserveAspect) {
 		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
 		PVector result=PVector.sub(raw,mid);
@@ -419,7 +415,6 @@ public class Tracker extends PApplet {
 		return result;
 	}
 	
-	@Deprecated
 	public static PVector floorToNormalized(PVector raw) {
 		return floorToNormalized(raw,false);
 	}
@@ -441,7 +436,6 @@ public class Tracker extends PApplet {
 		return result;
 	}
 	*/
-	@Deprecated
 	public static PVector normalizedToFloor(PVector mapped) {
 		PVector result=new PVector(mapped.x,mapped.y);
 		result.x=mapped.x*(Tracker.maxx-Tracker.minx)/2.0f;
