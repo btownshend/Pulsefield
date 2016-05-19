@@ -268,8 +268,8 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 	@Override
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g,p,wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g,p);
 		if (p.pmap.isEmpty() || cursong==null)
 			return;
 
@@ -280,17 +280,17 @@ public class VisualizerDDR extends Visualizer {
 		g.imageMode(PConstants.CORNER);
 		PImage banner=cursong.getSimfile().getBanner(t,g);
 		if (banner!=null)
-			g.image(banner, wsize.x/4, 0, wsize.x/2, wsize.y/4);
+			g.image(banner, g.width/4, 0, g.width/2, g.height/4);
 		
 
-		drawScores(g,p,new PVector(leftwidth,wsize.y));
+		drawScores(g,p,new PVector(leftwidth,g.height));
 		g.translate(leftwidth,0);
-		drawPF(g,p,new PVector(wsize.x-leftwidth-rightwidth,wsize.y));
 		g.translate(wsize.x-leftwidth-rightwidth,0);
+		drawPF(g,p,new PVector(g.width-leftwidth-rightwidth,g.height));
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 		if (clip!=null) {
 //			PApplet.println("Clip at "+clip.position);
-			drawTicker(g,new PVector(rightwidth-rightmargin,wsize.y),clip.position);
+			drawTicker(g,new PVector(rightwidth-rightmargin,g.height),clip.position);
 		} else 
 			PApplet.println("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
 		float songdur=cursong.getSimfile().getduration(pattern);
@@ -301,13 +301,13 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 
-	public void drawPF(PGraphics parent, People allpos, PVector wsize) {
+	public void drawPF(PGraphics g, People allpos, PVector wsize) {
 		final float ARROWSIZE=DOTSIZE;
 		final float ARROWDIST=(ARROWSIZE+DOTSIZE)/2;
 
-		drawBorders(parent,wsize);
-		parent.imageMode(PConstants.CENTER);
-		parent.tint(255);
+		drawBorders(g);
+		g.imageMode(PConstants.CENTER);
+		g.tint(255);
 
 		// Add drawing code here
 		for (int id: dancers.keySet()) {
@@ -318,22 +318,22 @@ public class VisualizerDDR extends Visualizer {
 				continue;
 			}
 			int quad=d.getAim();
-			parent.pushMatrix();
-			parent.translate((d.neutral.x+1)*wsize.x/2,(d.neutral.y+1)*wsize.y/2);
-			parent.fill(p.getcolor());
-			parent.ellipse(0,0,DOTSIZE,DOTSIZE);
+			g.pushMatrix();
+			g.translate((d.neutral.x+1)*wsize.x/2,(d.neutral.y+1)*wsize.y/2);
+			g.fill(p.getcolor());
+			g.ellipse(0,0,DOTSIZE,DOTSIZE);
 //			PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
 			if (quad>=0) {
-				parent.rotate((float)(quad*Math.PI/2+Math.PI));
-				parent.translate(-ARROWDIST, 0);
+				g.rotate((float)(quad*Math.PI/2+Math.PI));
+				g.translate(-ARROWDIST, 0);
 //				if (d.isHit())
 //					parent.shape(hitIcons[d.getHitIconNumber()],0,0,ARROWSIZE,ARROWSIZE);
 //				else
-					parent.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
+					g.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
 			} else {
 				//parent.shape(dancer, 0, 0, ARROWSIZE, ARROWSIZE);
 			}
-			parent.popMatrix();
+			g.popMatrix();
 		}
 	}
 

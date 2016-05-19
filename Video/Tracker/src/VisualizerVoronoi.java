@@ -174,8 +174,8 @@ public class VisualizerVoronoi extends VisualizerPS {
 	}
 
 	@Override
-	public void draw(Tracker t, PGraphics g, People allpos, PVector wsize) {
-		super.draw(t, g, allpos, wsize);
+	public void draw(Tracker t, PGraphics g, People allpos) {
+		super.draw(t, g, allpos);
 		if (allpos.pmap.isEmpty())
 			return;
 		

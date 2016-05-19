@@ -43,12 +43,12 @@ public abstract class Visualizer {
 		g.textFont(t.createFont("Arial",30f),30f);
 	}
 	
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+	public void draw(Tracker t, PGraphics g, People p) {
 		initializeContext(t,g);
 		g.background(0, 0, 0); 
 		if (p.pmap.isEmpty())
 			drawWelcome(t, g);
-		drawBorders(g, wsize);
+		drawBorders(g);
 	}
 
 	// Draw to laser
@@ -71,11 +71,11 @@ public abstract class Visualizer {
 
 	public void setName(String name) { this.name=name; }
 	
-	public void drawBorders(PGraphics g, PVector wsize) {
-		this.drawBorders(g, wsize, 0.02f,0xff00ff00,255);
+	public void drawBorders(PGraphics g) {
+		this.drawBorders(g, 0.02f,0xff00ff00,255);
 	}
 	
-	public void drawBorders(PGraphics g, PVector wsize, float strokeWeight, int color,int alpha) {
+	public void drawBorders(PGraphics g, float strokeWeight, int color,int alpha) {
 		g.stroke(color,alpha);
 		g.fill(color);
 		g.strokeWeight(strokeWeight);

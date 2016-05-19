@@ -20,7 +20,7 @@ class Ball {
 		ballShape=null;
 	}
 	
-	public void draw(PGraphics g, PVector wsize) {
+	public void draw(PGraphics g) {
 		if (ballShape==null)
 			ballShape=g.loadShape(Tracker.SVGDIRECTORY+"Soccerball.svg");
 
@@ -139,12 +139,12 @@ public class VisualizerSoccer extends VisualizerDot {
 	}
 
 	@Override
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g, p);
 		if (p.pmap.isEmpty())
 			return;
 		if (ball!=null)
-			ball.draw(g,wsize);
+			ball.draw(g);
 	}
 	
 	@Override

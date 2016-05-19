@@ -3,7 +3,6 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PImage;
-import processing.core.PVector;
 
 class VisualizerNavier extends Visualizer {
 	NavierStokesSolver fluidSolver;
@@ -109,7 +108,7 @@ class VisualizerNavier extends Visualizer {
 	}
 
 	@Override
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+	public void draw(Tracker t, PGraphics g, People p) {
 //		Don't call parent.draw since it draws the defaults border and fills the background
 		if (buffer==null) {
 			buffer = new PImage(g.width/downSample, g.height/downSample);
@@ -136,7 +135,7 @@ class VisualizerNavier extends Visualizer {
 		rainbow++;
 		rainbow = (rainbow > 255) ? 0 : rainbow;
 
-		drawBorders(g, wsize, 0.01f, bordercolor, 127);
+		drawBorders(g, 0.01f, bordercolor, 127);
 
 		g.ellipseMode(PConstants.CENTER);
 		for (Person ps: p.pmap.values()) {  

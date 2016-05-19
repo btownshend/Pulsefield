@@ -113,8 +113,8 @@ public class VisualizerGrid extends VisualizerPS {
 		}
 	}
 
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g, p);
 		if (p.pmap.isEmpty())
 			return;
 		g.textSize(0.16f);

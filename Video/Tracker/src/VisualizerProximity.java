@@ -94,8 +94,8 @@ public class VisualizerProximity extends VisualizerPS {
 		}
 	}
 
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g, p);
 
 		g.textSize(0.16f);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);

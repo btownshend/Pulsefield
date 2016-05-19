@@ -217,8 +217,8 @@ public class VisualizerTron extends Visualizer {
 		}
 	}
 
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t,g,p,wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t,g,p);
 
 		for (int i=0;i<gridWidth;i++)
 			for (int j=0;j<gridHeight;j++) {

@@ -301,7 +301,7 @@ public class Tracker extends PApplet {
 		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);
 
-		vis[currentvis].draw(this, canvas,people,new PVector(canvas.width,canvas.height));
+		vis[currentvis].draw(this, canvas,people);
 		canvas.endDraw();
 
 		vis[currentvis].drawLaser(this,people);

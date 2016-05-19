@@ -1,7 +1,6 @@
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PShape;
-import processing.core.PVector;
 
 // Visualizer that just displays a dot for each person
 
@@ -36,8 +35,8 @@ public class VisualizerIcon extends Visualizer {
 		;
 	}
 
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g, p);
 		if (p.pmap.isEmpty())
 			return;
 		g.background(127);

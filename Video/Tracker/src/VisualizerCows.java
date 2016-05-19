@@ -19,12 +19,12 @@ class Apple {
 		Laser laser=Laser.getInstance();
 		laser.svgfile("apple.svg",position.x,position.y,0.5f,0f);
 	}
-	void draw(PGraphics parent, PVector wsize) {
+	void draw(PGraphics g) {
 		if (appleShape==null)
-			appleShape=parent.loadShape(Tracker.SVGDIRECTORY+"apple.svg");
+			appleShape=g.loadShape(Tracker.SVGDIRECTORY+"apple.svg");
 //		PApplet.println("Drawing apple shape at "+p);
-		parent.shapeMode(PConstants.CENTER);
-		parent.shape(appleShape,position.x, position.y,appleRadius*2, appleRadius*2);
+		g.shapeMode(PConstants.CENTER);
+		g.shape(appleShape,position.x, position.y,appleRadius*2, appleRadius*2);
 	}
 	
 	void update(People p) {
@@ -87,15 +87,15 @@ public class VisualizerCows extends VisualizerIcon {
 	}
 	
 	@Override
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+	public void draw(Tracker t, PGraphics g, People p) {
 		if (p.pmap.isEmpty()) {
-			super.draw(t, g, p, wsize);
+			super.draw(t, g, p);
 			return;
 		}
 
 		g.background(127);
 		g.shapeMode(PApplet.CENTER);
-		apple.draw(g,wsize);
+		apple.draw(g);
 
 		for (Person ps: p.pmap.values()) {  
 			int c=ps.getcolor();

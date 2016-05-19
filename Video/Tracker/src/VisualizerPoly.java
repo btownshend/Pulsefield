@@ -67,9 +67,9 @@ class PolyState {
 		}
 	}
 
-	void draw(PGraphics g,PVector wsize, int totalBeats, int row, Synth synth) {
+	void draw(PGraphics g,PVector center, float maxRadius, int totalBeats, int row, Synth synth) {
 		final int NUMROWS=20;
-		float rowheight=wsize.y/2/NUMROWS;
+		float rowheight=maxRadius/NUMROWS;
 
 		g.stroke(color);
 		if (playing)
@@ -197,8 +197,8 @@ public class VisualizerPoly extends Visualizer {
 	}
 
 	@Override
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g, p);
 		if (p.pmap.isEmpty())
 			return;
 		
@@ -217,7 +217,7 @@ public class VisualizerPoly extends Visualizer {
 		// Draw each position and fired rings
 		int pos=0;
 		for (PolyState ps: poly.values()) {
-			ps.draw(g,wsize,totalBeats,pos,synth);
+			ps.draw(g,center,sz/2,totalBeats,pos,synth);
 			pos++;
 		}
 	}

@@ -62,7 +62,7 @@ class Particle {
 	}
 
 	// Method to display
-	void draw(PGraphics parent, PVector wsize) {
+	void draw(PGraphics parent) {
 		//println("display(): location="+location);
 		parent.imageMode(PConstants.CENTER);
 		//float kscale= 0.05f;//lifespan/maxlifespan/10;
