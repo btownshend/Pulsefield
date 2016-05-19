@@ -389,11 +389,8 @@ public class Tracker extends PApplet {
 	}
 
 	public static PVector mapVelocity(PVector velInMetersPerSecond) {
-		return new PVector(-velInMetersPerSecond.x*2f/(Tracker.maxx-Tracker.minx),velInMetersPerSecond.y*2f/(Tracker.maxy-Tracker.miny));
-	}
-	
-	public static PVector floorToNormalized(float x, float y, boolean preserveAspect) {
-		return floorToNormalized(new PVector(x,y),preserveAspect);
+		PVector sz=getFloorSize();
+		return new PVector(-velInMetersPerSecond.x*2f/sz.x,velInMetersPerSecond.y*2f/sz.y);
 	}
 
 	public static PVector floorToNormalized(float x, float y) {
@@ -402,16 +399,14 @@ public class Tracker extends PApplet {
 
 	// Map position in meters to normalized position where (minx,miny) maps to (-1,1) and (max,maxy) maps to (1,-1)
 	public static PVector floorToNormalized(PVector raw, boolean preserveAspect) {
-		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
+		PVector mid=getFloorCenter();
+		PVector sz=getFloorSize();
 		PVector result=PVector.sub(raw,mid);
-		result.rotate((float)Math.toRadians(Tracker.screenrotation));
-		// Flip y-axis since screen has origin in top left
-	//	result.y=-result.y;
-		result.x=-result.x;
+		
 		if (preserveAspect)
-			result=PVector.mult(result,2f/Math.min(maxx-minx,maxy-miny));
+			result=PVector.mult(result,2f/Math.min(sz.x,sz.y));
 		else
-			result.set(result.x*2f/(Tracker.maxx-Tracker.minx),result.y*2f/(Tracker.maxy-Tracker.miny));
+			result.set(result.x*2.0f/sz.x,result.y*2.0f/sz.y);
 	
 //		PApplet.println("Mapped ("+raw+") to ("+result);
 		return result;
@@ -439,14 +434,9 @@ public class Tracker extends PApplet {
 	}
 	*/
 	public static PVector normalizedToFloor(PVector mapped) {
-		PVector result=new PVector(mapped.x,mapped.y);
-		result.x=mapped.x*(Tracker.maxx-Tracker.minx)/2.0f;
-		result.y=mapped.y*(Tracker.maxy-Tracker.miny)/2.0f;
-	//	result.y=-result.y;
-		result.x=-result.x;
-		result.rotate((float)Math.toRadians(Tracker.screenrotation));
-		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
-		result=PVector.add(result,mid);
+		PVector mid=getFloorCenter();
+		PVector sz=getFloorSize();
+		PVector result=new PVector(mapped.x*sz.x/2+mid.x,mapped.y*sz.y/2+mid.y);
 		return result;
 	}
 	
