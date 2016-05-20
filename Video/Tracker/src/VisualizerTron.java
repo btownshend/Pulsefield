@@ -231,17 +231,21 @@ public class VisualizerTron extends Visualizer {
 						grid[i*gridHeight+j].id=-1;
 						continue;
 					}
+					PVector c1=Tracker.normalizedToFloor(new PVector(i*2.0f/gridWidth-1,(j+1)*2.0f/gridHeight-1));
+					PVector c2=Tracker.normalizedToFloor(new PVector((i+1)*2.0f/gridWidth-1,j*2.0f/gridHeight-1));	
+
 					if (gd.exploding>0) {
 						final int explosionFrames = 400;
 						assert(p.get(gid)!=null);
 						g.fill(p.get(gid).getcolor());
-						float w = wsize.x*(explosionFrames-gd.exploding)/explosionFrames/gridWidth;
-						float h = wsize.y*(explosionFrames-gd.exploding)/explosionFrames/gridHeight;
-						float disp=wsize.x*gd.exploding/explosionFrames;
-						g.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight+disp,w,h);
-						g.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight-disp, w,h);
-						g.rect(wsize.x*i/gridWidth+disp, wsize.y*j/gridHeight, w,h);
-						g.rect(wsize.x*i/gridWidth-disp, wsize.y*j/gridHeight, w,h);
+						float w = (c2.x-c1.x)*(explosionFrames-gd.exploding)/explosionFrames;
+						float h = (c2.y-c1.y)*(explosionFrames-gd.exploding)/explosionFrames;
+						PVector sz=Tracker.getFloorSize();
+						float disp=sz.x*gd.exploding/explosionFrames;
+						g.rect(c1.x,c1.y+disp,w,h);
+						g.rect(c1.x,c1.y-disp,w,h);
+						g.rect(c1.x+disp,c1.y,w,h);
+						g.rect(c1.x-disp,c1.y,w,h);
 						if (gd.exploding<explosionFrames)
 							grid[i*gridHeight+j].exploding+=10;
 						else {
@@ -249,17 +253,18 @@ public class VisualizerTron extends Visualizer {
 							grid[i*gridHeight+j].id=-1;
 						}
 					} else {
-						float inset=1;
+						float inset=0.05f;
+						g.stroke(0);
 						if (currentgrid.containsKey(gid) && currentgrid.get(gid)==i*gridHeight+j) {
 							g.fill(g.color(255,255,255));
-							g.rect(wsize.x*i/gridWidth, wsize.y*j/gridHeight, wsize.x/gridWidth, wsize.y/gridHeight);
-							inset=2;
+							g.rect(c1.x,c1.y,c2.x-c1.x,c2.y-c1.y);
+							inset=0;
 						}
 						if (playgrid.get(gd.id).grid == i*gridHeight+j)
 							g.fill(p.get(gd.id).getcolor(),200);
 						else
 							g.fill(p.get(gd.id).getcolor());
-						g.rect(wsize.x*i/gridWidth+inset, wsize.y*j/gridHeight+inset, wsize.x/gridWidth-2*inset, wsize.y/gridHeight-2*inset);
+						g.rect(c1.x+inset*(c2.x-c1.x),c1.y+inset*(c2.y-c1.y),c2.x-c1.x-2*inset*(c2.x-c1.x),c2.y-c1.y-2*inset*(c2.y-c1.y));
 					}
 				}
 			}	
