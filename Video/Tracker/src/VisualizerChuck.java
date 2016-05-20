@@ -162,9 +162,9 @@ class Generator extends Fiducial {
 	}
 
 	@Override 
-		float x=(getNormalizedPosition().x+1)*wsize.x/2;
-		float y=(getNormalizedPosition().y+1)*wsize.y/2;
 	void draw(PGraphics g, float sz) {
+		float x=getOriginInMeters().x;
+		float y=getOriginInMeters().y;
 		g.fill(genType.color);
 		g.stroke(genType.color);
 		g.ellipseMode(PConstants.CENTER);
@@ -218,14 +218,14 @@ class Controller extends Fiducial {
 
 	@Override 
 	void draw(PGraphics g, float sz) {
-		float x=(getNormalizedPosition().x+1)*g.width/2;
-		float y=(getNormalizedPosition().y+1)*g.height/2;
+		float x=getOriginInMeters().x;
+		float y=getOriginInMeters().y;
 		if (cc!=null) {
 			g.fill(cc.color);
 			g.stroke(cc.color);
 		}
 		if (this.parent!=null) {
-			parent.line((getNormalizedPosition().x+1)*wsize.x/2, (getNormalizedPosition().y+1)*wsize.y/2, (this.parent.getNormalizedPosition().x+1)*wsize.x/2, (this.parent.getNormalizedPosition().y+1)*wsize.y/2);
+			g.line(getOriginInMeters().x, getOriginInMeters().y, this.parent.getOriginInMeters().x, this.parent.getOriginInMeters().y);
 		}
 		if (cc != null && cc.cc1==200)
 			// Use triangles for patterns
@@ -238,12 +238,12 @@ class Controller extends Fiducial {
 		g.textSize(sz*.5f);
 		if (cc!=null) {
 			if (cc.cc1!=-1) {
-				g.textAlign(PConstants.CENTER,PConstants.BOTTOM);
-				g.text(String.format("%s=%d",cc.nm1,(int)cc1val),x,y-sz/2);
+				g.textAlign(PConstants.CENTER,PConstants.BASELINE);
+				g.text(String.format("%s=%d",cc.nm1,(int)cc1val),x,y-sz*0.7f);
 			}
 			if (cc.cc2!=-1) {
-				g.textAlign(PConstants.CENTER,PConstants.TOP);
-				g.text(String.format("%s=%d",cc.nm2,(int)cc2val),x,y+sz/2);
+				g.textAlign(PConstants.CENTER,PConstants.BASELINE);
+				g.text(String.format("%s=%d",cc.nm2,(int)cc2val),x,y+sz*1.1f);
 			}
 		}
 	}
