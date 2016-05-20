@@ -97,7 +97,6 @@ public class VisualizerDDR extends Visualizer {
 	PShape dancer;
 	Song cursong=null;
 	int pattern=0;  // Current pattern
-	final float DOTSIZE=50f;
 	float lastClipPosition;
 	final int targetDifficulty=4;
 	
@@ -280,13 +279,13 @@ public class VisualizerDDR extends Visualizer {
 		g.imageMode(PConstants.CORNER);
 		PImage banner=cursong.getSimfile().getBanner(t,g);
 		if (banner!=null)
-			g.image(banner, g.width/4, 0, g.width/2, g.height/4);
+			g.image(banner, Tracker.getFloorCenter().x-Tracker.getFloorSize().x/4, Tracker.getFloorCenter().y-Tracker.getFloorSize().y/2, Tracker.getFloorSize().x/2, Tracker.getFloorSize().y/4);
 		
 
 		drawScores(g,p,new PVector(leftwidth,g.height));
 		g.translate(leftwidth,0);
-		g.translate(wsize.x-leftwidth-rightwidth,0);
 		drawPF(g,p,new PVector(g.width-leftwidth-rightwidth,g.height));
+		g.translate(g.width-leftwidth-rightwidth,0);
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 		if (clip!=null) {
 //			PApplet.println("Clip at "+clip.position);
@@ -302,6 +301,7 @@ public class VisualizerDDR extends Visualizer {
 
 
 	public void drawPF(PGraphics g, People allpos, PVector wsize) {
+		final float DOTSIZE=50f/Tracker.getPixelsPerMeter();
 		final float ARROWSIZE=DOTSIZE;
 		final float ARROWDIST=(ARROWSIZE+DOTSIZE)/2;
 
@@ -338,6 +338,7 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 	public void drawScores(PGraphics parent, People allpos, PVector wsize) {
+		final float DOTSIZE=50f/Tracker.getPixelsPerMeter();
 		float lineHeight=wsize.y/12;
 
 		parent.stroke(255);
@@ -393,7 +394,7 @@ public class VisualizerDDR extends Visualizer {
 		parent.stroke(255);
 		parent.fill(255);
 
-		float arrowsize=wsize.x/4f/1.2f;
+		float arrowsize=parent.width/4f/1.2f/Tracker.getPixelsPerMeter();
 		for (NoteData n: notes) {
 			final float angles[]={0f,-(float)(Math.PI/2),-(float)(3*Math.PI/2),-(float)Math.PI};
 			float ypos=(n.timestamp-(now-HISTORY))/DURATION*wsize.y;
