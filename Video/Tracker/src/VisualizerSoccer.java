@@ -20,19 +20,13 @@ class Ball {
 		ballShape=null;
 	}
 	
-	public void draw(PGraphics parent, PVector wsize) {
+	public void draw(PGraphics g) {
 		if (ballShape==null)
-			ballShape=parent.loadShape(Tracker.SVGDIRECTORY+"Soccerball.svg");
-		final int color=0xffffffff;
-		parent.ellipseMode(PConstants.CENTER);
-		parent.fill(color,0);
-		parent.strokeWeight(2.0f);
-		parent.stroke(color,255);
-//		PApplet.println("Ball at "+((position.x+1)*wsize.x/2)+","+((position.y+1)*wsize.y/2));
-		PVector p=Tracker.floorToNormalized(position);
-		PVector nRadius=Tracker.mapVelocity(new PVector(radius,radius));
-//		parent.ellipse((p.x+1)*wsize.x/2, (p.y+1)*wsize.y/2, nRadius.x*2*wsize.x/2, nRadius.y*2*wsize.y/2);
-		parent.shape(ballShape,(p.x+1-nRadius.x)*wsize.x/2, (p.y+1-nRadius.y)*wsize.y/2,nRadius.x*2*wsize.x/2, nRadius.y*2*wsize.y/2);
+			ballShape=g.loadShape(Tracker.SVGDIRECTORY+"Soccerball.svg");
+
+		//PApplet.println("Ball at "+position.x+","+position.y);
+		g.shapeMode(PConstants.CENTER);
+		g.shape(ballShape,position.x, position.y,radius*2,radius*2);
 	}
 	
 	public void drawLaser(Laser laser,PApplet parent) {
@@ -44,7 +38,7 @@ class Ball {
 		float elapsed=1.0f/parent.frameRate;
 		position.add(PVector.mult(velocity,elapsed));
 		if (position.x+radius>Tracker.rawmaxx && velocity.x>0) {
-			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
+			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.rawminx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
 			velocity.x*=-restitution;
 			position.x=2*(Tracker.rawmaxx-radius)-position.x;
 			impactSound(0);
@@ -136,7 +130,7 @@ public class VisualizerSoccer extends VisualizerDot {
 	@Override
 	public void update(PApplet parent, People p) {
 		if (ball==null)
-			ball=new Ball(Tracker.normalizedToFloor(new PVector(0f,0f)),Tracker.normalizedToFloor(new PVector(0.1f,0.2f)));
+			ball=new Ball(new PVector((Tracker.rawmaxx+Tracker.rawminx)/2,(Tracker.rawmaxy+Tracker.rawminy)/2),new PVector(0f,0f));
 		// Update internal state
 		ball.update(parent);
 		for (Person ps: p.pmap.values()) {  
@@ -145,12 +139,12 @@ public class VisualizerSoccer extends VisualizerDot {
 	}
 
 	@Override
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g, p);
 		if (p.pmap.isEmpty())
 			return;
 		if (ball!=null)
-			ball.draw(g,wsize);
+			ball.draw(g);
 	}
 	
 	@Override

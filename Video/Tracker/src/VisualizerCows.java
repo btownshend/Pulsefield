@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PShape;
 import processing.core.PVector;
@@ -11,7 +12,6 @@ class Apple {
 	static final float speed=0.04f;  // Meters/frame
 	static final float maxHitDist=0.2f; // Meters
 	static final float appleRadius=0.3f;  // Meters
-	static final float applePixels=30;
 	
 	Apple(PVector pos) { position=pos; }
 	
@@ -19,12 +19,12 @@ class Apple {
 		Laser laser=Laser.getInstance();
 		laser.svgfile("apple.svg",position.x,position.y,0.5f,0f);
 	}
-	void draw(PGraphics parent, PVector wsize) {
+	void draw(PGraphics g) {
 		if (appleShape==null)
-			appleShape=parent.loadShape(Tracker.SVGDIRECTORY+"apple.svg");
-		PVector p=Tracker.floorToNormalized(position);
+			appleShape=g.loadShape(Tracker.SVGDIRECTORY+"apple.svg");
 //		PApplet.println("Drawing apple shape at "+p);
-		parent.shape(appleShape,((p.x+1)*wsize.x)/2, ((p.y+1)*wsize.y)/2,applePixels, applePixels);
+		g.shapeMode(PConstants.CENTER);
+		g.shape(appleShape,position.x, position.y,appleRadius*2, appleRadius*2);
 	}
 	
 	void update(People p) {
@@ -87,15 +87,15 @@ public class VisualizerCows extends VisualizerIcon {
 	}
 	
 	@Override
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+	public void draw(Tracker t, PGraphics g, People p) {
 		if (p.pmap.isEmpty()) {
-			super.draw(t, g, p, wsize);
+			super.draw(t, g, p);
 			return;
 		}
 
 		g.background(127);
 		g.shapeMode(PApplet.CENTER);
-		apple.draw(g,wsize);
+		apple.draw(g);
 
 		for (Person ps: p.pmap.values()) {  
 			int c=ps.getcolor();
@@ -104,10 +104,10 @@ public class VisualizerCows extends VisualizerIcon {
 			PShape icon=iconShapes[ps.id%iconShapes.length];
 			//icon.translate(-icon.width/2, -icon.height/2);
 //			PApplet.println("Display shape "+icon+" with native size "+icon.width+","+icon.height);
-			final float sz=30+60*2*ps.userData;  // Size to make the icon's largest dimension, in pixels
+			final float sz=0.30f+0.60f*2*ps.userData;  // Size to make the icon's largest dimension, in pixels
 			
 			float scale=Math.min(sz/icon.width,sz/icon.height);
-			g.shape(icon,(ps.getNormalizedPosition().x+1)*wsize.x/2, (ps.getNormalizedPosition().y+1)*wsize.y/2,icon.width*scale,icon.height*scale);
+			g.shape(icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y,icon.width*scale,icon.height*scale);
 			//icon.resetMatrix();
 		}	
 	}

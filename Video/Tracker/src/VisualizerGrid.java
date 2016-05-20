@@ -27,8 +27,9 @@ public class VisualizerGrid extends VisualizerPS {
 	
 	public void setupGrid() {
 		final float gridSpacing=0.5f;   // Grid spacing in meters
-		int nrow=(int)((Tracker.maxy-Tracker.miny)/gridSpacing+0.5);
-		int ncol=(int)((Tracker.maxx-Tracker.minx)/gridSpacing+0.5);
+		PVector sz=Tracker.getFloorSize();
+		int nrow=(int)(sz.y/gridSpacing+0.5);
+		int ncol=(int)(sz.x/gridSpacing+0.5);
 		ncell=nrow*ncol;
 		PApplet.println("Grid has "+nrow+" rows over "+(Tracker.maxy-Tracker.miny)+" meters and "+ncol+" columns over "+(Tracker.maxx-Tracker.minx)+" meters");
 		gposx=new float[ncell];
@@ -113,32 +114,36 @@ public class VisualizerGrid extends VisualizerPS {
 		}
 	}
 
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g, p);
 		if (p.pmap.isEmpty())
 			return;
-		g.textSize(16);
+		g.textSize(0.16f);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
+		PVector gridOffset=new PVector(gridwidth/2, gridheight/2);
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
 			int id=entry.getKey();
 			int cell=entry.getValue();
 			//PApplet.println("grid "+cell+", id="+id+" "+gridColors.get(cell));
 			g.fill(127,0,0,127);
-			g.strokeWeight(5);
+			g.strokeWeight(.05f);
 			g.stroke(127,0,0);
-			g.rect(wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
+			PVector gcenter=new PVector(gposx[cell],gposy[cell]);
+			PVector tl = Tracker.normalizedToFloor(PVector.sub(gcenter, gridOffset));
+			PVector br = Tracker.normalizedToFloor(PVector.add(gcenter, gridOffset));
+			g.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
 			g.fill(255);
 			TrackSet ts=Ableton.getInstance().trackSet;
 			Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
 			if (track.numClips()!=-1) {
 				Clip clip=track.getClip(cell%track.numClips());
-				g.text(track.getName()+"-"+clip.getName()+" P"+id,wsize.x*(gposx[cell]-gridwidth/2+1)/2,wsize.y*(gposy[cell]-gridheight/2+1)/2,wsize.x*gridwidth/2,wsize.y*gridheight/2);
+				g.text(track.getName()+"-"+clip.getName()+" P"+id,gcenter.x,gcenter.y,gridOffset.x,gridOffset.y);
 			}
 		}
 		g.fill(127);
-		g.textAlign(PConstants.LEFT, PConstants.TOP);
-		g.textSize(24);
-		g.text(Ableton.getInstance().trackSet.name,5,5);
+		g.textAlign(PConstants.LEFT, PConstants.BASELINE);
+		g.textSize(0.24f);
+		g.text(Ableton.getInstance().trackSet.name,Tracker.rawminx+0.1f,Tracker.rawminy+0.24f+0.1f);
 	}
 
 	public void drawLaser(PApplet parent, People p) {

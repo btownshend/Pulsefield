@@ -97,7 +97,6 @@ public class VisualizerDDR extends Visualizer {
 	PShape dancer;
 	Song cursong=null;
 	int pattern=0;  // Current pattern
-	final float DOTSIZE=50f;
 	float lastClipPosition;
 	final int targetDifficulty=4;
 	
@@ -268,8 +267,8 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 	@Override
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g,p,wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g,p);
 		if (p.pmap.isEmpty() || cursong==null)
 			return;
 
@@ -280,17 +279,17 @@ public class VisualizerDDR extends Visualizer {
 		g.imageMode(PConstants.CORNER);
 		PImage banner=cursong.getSimfile().getBanner(t,g);
 		if (banner!=null)
-			g.image(banner, wsize.x/4, 0, wsize.x/2, wsize.y/4);
+			g.image(banner, Tracker.getFloorCenter().x-Tracker.getFloorSize().x/4, Tracker.getFloorCenter().y-Tracker.getFloorSize().y/2, Tracker.getFloorSize().x/2, Tracker.getFloorSize().y/4);
 		
 
-		drawScores(g,p,new PVector(leftwidth,wsize.y));
+		drawScores(g,p,new PVector(leftwidth,g.height));
 		g.translate(leftwidth,0);
-		drawPF(g,p,new PVector(wsize.x-leftwidth-rightwidth,wsize.y));
-		g.translate(wsize.x-leftwidth-rightwidth,0);
+		drawPF(g,p,new PVector(g.width-leftwidth-rightwidth,g.height));
+		g.translate(g.width-leftwidth-rightwidth,0);
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 		if (clip!=null) {
 //			PApplet.println("Clip at "+clip.position);
-			drawTicker(g,new PVector(rightwidth-rightmargin,wsize.y),clip.position);
+			drawTicker(g,new PVector(rightwidth-rightmargin,g.height),clip.position);
 		} else 
 			PApplet.println("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
 		float songdur=cursong.getSimfile().getduration(pattern);
@@ -301,13 +300,14 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 
-	public void drawPF(PGraphics parent, People allpos, PVector wsize) {
+	public void drawPF(PGraphics g, People allpos, PVector wsize) {
+		final float DOTSIZE=50f/Tracker.getPixelsPerMeter();
 		final float ARROWSIZE=DOTSIZE;
 		final float ARROWDIST=(ARROWSIZE+DOTSIZE)/2;
 
-		drawBorders(parent,true,wsize);
-		parent.imageMode(PConstants.CENTER);
-		parent.tint(255);
+		drawBorders(g);
+		g.imageMode(PConstants.CENTER);
+		g.tint(255);
 
 		// Add drawing code here
 		for (int id: dancers.keySet()) {
@@ -318,26 +318,27 @@ public class VisualizerDDR extends Visualizer {
 				continue;
 			}
 			int quad=d.getAim();
-			parent.pushMatrix();
-			parent.translate((d.neutral.x+1)*wsize.x/2,(d.neutral.y+1)*wsize.y/2);
-			parent.fill(p.getcolor());
-			parent.ellipse(0,0,DOTSIZE,DOTSIZE);
+			g.pushMatrix();
+			g.translate((d.neutral.x+1)*wsize.x/2,(d.neutral.y+1)*wsize.y/2);
+			g.fill(p.getcolor());
+			g.ellipse(0,0,DOTSIZE,DOTSIZE);
 //			PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
 			if (quad>=0) {
-				parent.rotate((float)(quad*Math.PI/2+Math.PI));
-				parent.translate(-ARROWDIST, 0);
+				g.rotate((float)(quad*Math.PI/2+Math.PI));
+				g.translate(-ARROWDIST, 0);
 //				if (d.isHit())
 //					parent.shape(hitIcons[d.getHitIconNumber()],0,0,ARROWSIZE,ARROWSIZE);
 //				else
-					parent.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
+					g.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
 			} else {
 				//parent.shape(dancer, 0, 0, ARROWSIZE, ARROWSIZE);
 			}
-			parent.popMatrix();
+			g.popMatrix();
 		}
 	}
 
 	public void drawScores(PGraphics parent, People allpos, PVector wsize) {
+		final float DOTSIZE=50f/Tracker.getPixelsPerMeter();
 		float lineHeight=wsize.y/12;
 
 		parent.stroke(255);
@@ -346,13 +347,13 @@ public class VisualizerDDR extends Visualizer {
 		parent.pushMatrix();
 		
 		
-		parent.textSize(24);
+		parent.textSize(0.24f);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
 		parent.translate(0,lineHeight/2);
 		parent.text("SCORES",wsize.x/2,0);
 		parent.translate(0,lineHeight);
 		parent.textAlign(PConstants.LEFT,PConstants.CENTER);
-		parent.textSize(16);
+		parent.textSize(0.16f);
 
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
@@ -388,12 +389,12 @@ public class VisualizerDDR extends Visualizer {
 //		PApplet.println("Have "+notes.size()+" notes.");
 		//parent.ellipse(wsize.x/2,wsize.y/2,100,100);
 		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
-		parent.textSize(16);
+		parent.textSize(0.16f);
 		parent.tint(255);
 		parent.stroke(255);
 		parent.fill(255);
 
-		float arrowsize=wsize.x/4f/1.2f;
+		float arrowsize=parent.width/4f/1.2f/Tracker.getPixelsPerMeter();
 		for (NoteData n: notes) {
 			final float angles[]={0f,-(float)(Math.PI/2),-(float)(3*Math.PI/2),-(float)Math.PI};
 			float ypos=(n.timestamp-(now-HISTORY))/DURATION*wsize.y;
@@ -411,7 +412,7 @@ public class VisualizerDDR extends Visualizer {
 				}
 			}
 		}
-		parent.strokeWeight(5);
+		parent.strokeWeight(0.05f);
 		parent.line(0,HISTORY*wsize.y/DURATION,0,wsize.x,HISTORY*wsize.y/DURATION,0);
 		parent.text(String.format("%.2f", now), 5, wsize.y-10);
 	}

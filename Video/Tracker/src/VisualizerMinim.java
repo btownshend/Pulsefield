@@ -1,6 +1,5 @@
 import processing.core.PApplet;
 import processing.core.PGraphics;
-import processing.core.PVector;
 
 
 
@@ -54,14 +53,14 @@ public class VisualizerMinim extends VisualizerGrid {
 	}
 
 	@Override
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
+	public void draw(Tracker t, PGraphics g, People p) {
 		if (p.pmap.isEmpty()) {
-			super.draw(t, g, p, wsize);
+			super.draw(t, g, p);
 			return;
 		}
 
 		// Add drawing code here
-		initializeContext(g);
+		initializeContext(t,g);
 		visuals[select].draw(t,g);
 	}
 

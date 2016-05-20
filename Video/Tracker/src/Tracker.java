@@ -21,6 +21,7 @@ public class Tracker extends PApplet {
 	private static boolean autocycle = true;
 	private static boolean starting = true;   // Disable bad OSC messages before setup
 	private static boolean genFrameMsgs = false;
+	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
 	int tick=0;
 	private float avgFrameRate=0;
@@ -60,6 +61,8 @@ public class Tracker extends PApplet {
 	SyphonServer server=null;
 	String renderer=P2D;
 	Boolean useSyphon = false;
+	final static int CANVASWIDTH=1200;
+	final static int CANVASHEIGHT=600;
 	PGraphics canvas;
 	Projector p1, p2;
 	
@@ -161,7 +164,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "ping", "/ping");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		
-		canvas = this.createGraphics(1000, 1000, renderer);
+		canvas = this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
 		p1 = new Projector(this,1,1280,720);
 		p2 = new Projector(this,2,1280,720);
 		PApplet.println("Setup complete");
@@ -256,9 +259,24 @@ public class Tracker extends PApplet {
 			vis[currentvis].stats();
 		}
 
+		canvas.beginDraw();
+		// Transform so that coords for drawing are in meters
+		canvas.resetMatrix();
+
+		canvas.translate(canvas.width/2, canvas.height/2);   // center coordinate system to middle of canvas
+		canvas.scale(getPixelsPerMeter());
+		canvas.translate(-getFloorCenter().x, -getFloorCenter().y);  // translate to center of new space
+
+		float cscale=Math.min((width-2)*1f/canvas.width,(height-2)*1f/canvas.height); // Scaling of canvas to window
+		//println("cscale="+cscale);
 		if (mousePressed) {
 			Person p=mousePeople.getOrCreate(mouseID,mouseID%16);
-			PVector mousePos=normalizedToFloor(new PVector(mouseX*2f/width-1, mouseY*2f/height-1));
+			//PVector sMousePos=normalizedToFloor(new PVector(mouseX*2f/width-1, mouseY*2f/height-1));
+			float cmouseX=(mouseX/cscale-canvas.width/2)/getPixelsPerMeter()+(rawminx+rawmaxx)/2;
+			float cmouseY=(mouseY/cscale-canvas.height/2)/getPixelsPerMeter()+(rawminy+rawmaxy)/2;
+			PVector mousePos=new PVector(cmouseX, cmouseY);
+			//println("mouse="+mouseX+", "+mouseY+" -> "+cmouseX+", "+cmouseY);
+			
 			if (prevMousePressed) {
 				mouseVel.mult(0.9f);
 				mouseVel.add(PVector.mult(PVector.sub(mousePos, prevMousePos),0.1f*frameRate));
@@ -286,10 +304,8 @@ public class Tracker extends PApplet {
 		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);
 
-		canvas.beginDraw();
-		vis[currentvis].draw(this, canvas,people,new PVector(canvas.width,canvas.height));
+		vis[currentvis].draw(this, canvas,people);
 		canvas.endDraw();
-		this.image(canvas,0,0,width, height);
 
 		vis[currentvis].drawLaser(this,people);
 
@@ -303,7 +319,9 @@ public class Tracker extends PApplet {
 		//p1.render(canvas);
 		//p2.render(canvas);
 		
-		//this.image(canvas, 0, 0, width/2, height/2);
+		imageMode(CORNER);
+		this.image(canvas, 1, 1, canvas.width*cscale, canvas.height*cscale);
+
 		//this.image(p1.pcanvas, width/2, 0, width/2, height/2);
 		//this.image(p2.pcanvas, width/2, height/2, width/2, height/2);
 		//SyphonTest.draw(this);
@@ -372,11 +390,8 @@ public class Tracker extends PApplet {
 	}
 
 	public static PVector mapVelocity(PVector velInMetersPerSecond) {
-		return new PVector(-velInMetersPerSecond.x*2f/(Tracker.maxx-Tracker.minx),velInMetersPerSecond.y*2f/(Tracker.maxy-Tracker.miny));
-	}
-	
-	public static PVector floorToNormalized(float x, float y, boolean preserveAspect) {
-		return floorToNormalized(new PVector(x,y),preserveAspect);
+		PVector sz=getFloorSize();
+		return new PVector(-velInMetersPerSecond.x*2f/sz.x,velInMetersPerSecond.y*2f/sz.y);
 	}
 
 	public static PVector floorToNormalized(float x, float y) {
@@ -384,22 +399,20 @@ public class Tracker extends PApplet {
 	}
 
 	// Map position in meters to normalized position where (minx,miny) maps to (-1,1) and (max,maxy) maps to (1,-1)
-	// (flipped y-coord for screen use)
 	public static PVector floorToNormalized(PVector raw, boolean preserveAspect) {
-		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
+		PVector mid=getFloorCenter();
+		PVector sz=getFloorSize();
 		PVector result=PVector.sub(raw,mid);
-		result.rotate((float)Math.toRadians(Tracker.screenrotation));
-		// Flip y-axis since screen has origin in top left
-	//	result.y=-result.y;
-		result.x=-result.x;
+		
 		if (preserveAspect)
-			result=PVector.mult(result,2f/Math.min(maxx-minx,maxy-miny));
+			result=PVector.mult(result,2f/Math.min(sz.x,sz.y));
 		else
-			result.set(result.x*2f/(Tracker.maxx-Tracker.minx),result.y*2f/(Tracker.maxy-Tracker.miny));
+			result.set(result.x*2.0f/sz.x,result.y*2.0f/sz.y);
 	
 //		PApplet.println("Mapped ("+raw+") to ("+result);
 		return result;
 	}
+	
 	public static PVector floorToNormalized(PVector raw) {
 		return floorToNormalized(raw,false);
 	}
@@ -421,16 +434,10 @@ public class Tracker extends PApplet {
 		return result;
 	}
 	*/
-	
 	public static PVector normalizedToFloor(PVector mapped) {
-		PVector result=new PVector(mapped.x,mapped.y);
-		result.x=mapped.x*(Tracker.maxx-Tracker.minx)/2.0f;
-		result.y=mapped.y*(Tracker.maxy-Tracker.miny)/2.0f;
-	//	result.y=-result.y;
-		result.x=-result.x;
-		result.rotate((float)Math.toRadians(Tracker.screenrotation));
-		PVector mid=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2);
-		result=PVector.add(result,mid);
+		PVector mid=getFloorCenter();
+		PVector sz=getFloorSize();
+		PVector result=new PVector(mapped.x*sz.x/2+mid.x,mapped.y*sz.y/2+mid.y);
 		return result;
 	}
 	
@@ -447,6 +454,21 @@ public class Tracker extends PApplet {
 		//PApplet.println("Min/max scrn: "+Tracker.minx+":"+Tracker.maxx+", "+Tracker.miny+":"+Tracker.maxy);
 	}
 
+	// Get pixels per meter
+	public static float getPixelsPerMeter() {
+		return Math.min(CANVASWIDTH/getFloorSize().x, CANVASHEIGHT/getFloorSize().y);
+	}
+	
+	// Get center of active area (in meters)
+	public static PVector getFloorCenter() {
+		return new PVector((rawminx+rawmaxx)/2,(rawminy+rawmaxy)/2);
+	}
+	
+	// Get size of active area (in meters)
+	public static PVector getFloorSize() {
+		return new PVector(rawmaxx-rawminx,rawmaxy-rawminy);
+	}
+	
 	synchronized public void pfstarted() {
 		PApplet.println("PF started");
 	}

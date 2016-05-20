@@ -62,14 +62,14 @@ class Particle {
 	}
 
 	// Method to display
-	void draw(PGraphics parent, PVector wsize) {
+	void draw(PGraphics g) {
 		//println("display(): location="+location);
-		parent.imageMode(PConstants.CENTER);
+		g.imageMode(PConstants.CENTER);
 		//float kscale= 0.05f;//lifespan/maxlifespan/10;
 		float kscale=(float)Math.pow(1.0-lifespan/(2*maxlifespan),0.1)/100+0.05f;
 		kscale=0.05f;
-		parent.tint(color,(int)(kscale*255.0));
-		parent.image(img, (location.x+1)*wsize.x/2, (location.y+1)*wsize.y/2);
+		g.tint(color,(int)(kscale*255.0));
+		g.image(img, location.x, location.y, img.width/Tracker.getPixelsPerMeter(),img.height/Tracker.getPixelsPerMeter());
 
 		//stroke(col, lifespan);
 		//fill(col, lifespan);

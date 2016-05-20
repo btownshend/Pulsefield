@@ -11,36 +11,44 @@ public abstract class Visualizer {
 		name="??";
 	}
 
-	public void drawWelcome(PGraphics g, PVector wsize) {
+	public void drawWelcome(Tracker t, PGraphics g) {
+		final PVector center=Tracker.getFloorCenter();
+		final float textHeight=0.2f;   // Height in meters
+		final float lineSize=textHeight*2;
 		g.fill(50, 255, 255);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
-		g.textSize(g.height/16.0f);
+		g.textSize(textHeight);
 		g.stroke(255);
-		final float lineSize=wsize.y/8;
-		g.text("Welcome to the", wsize.x/2,wsize.y/2-lineSize);
-		g.textSize(g.height/12.0f);
-		g.text("PULSEFIELD", wsize.x/2,wsize.y/2);
-		g.textSize(g.height/16.0f);
-		g.text(name, wsize.x/2,wsize.y/2+lineSize);
-		g.text("Please enter...", wsize.x/2,wsize.y/2+2.5f*lineSize);
+		g.text("Welcome to the", center.x,center.y-lineSize*2);
+		g.textSize(textHeight*1.33f);
+		g.text("PULSEFIELD", center.x, center.y-lineSize);
+		g.textSize(textHeight);
+		g.text(name, center.x,center.y+lineSize);
+		g.text("Please enter...", center.x,center.y+2.5f*lineSize);
 	}
 	
 	// Clean up graphics context to "default" state
-	public void initializeContext(PGraphics g) { 
+	public void initializeContext(Tracker t, PGraphics g) { 
 		g.colorMode(PConstants.RGB, 255);
 		g.rectMode(PApplet.CORNER);
 		g.smooth();
 		g.stroke(255);
 		g.imageMode(PConstants.CORNER);
 		g.noTint();
+		// With the scaling from meters to pixels, processing by default will generate a font 
+		// with point-size using the textSize argument UNSCALED.  This is then scaled by the transform
+		// So, if there is 10x scaling and you use textSize(1.0), the font will be generated a 1pixel size
+		// then scaled up.
+		// Hack this by using a font that is larger than needed, which then will get scaled down 
+		g.textFont(t.createFont("Arial",30f),30f);
 	}
 	
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		initializeContext(g);
+	public void draw(Tracker t, PGraphics g, People p) {
+		initializeContext(t,g);
 		g.background(0, 0, 0); 
 		if (p.pmap.isEmpty())
-			drawWelcome(g,wsize);
-		drawBorders(g, false, wsize);
+			drawWelcome(t, g);
+		drawBorders(g);
 	}
 
 	// Draw to laser
@@ -63,42 +71,27 @@ public abstract class Visualizer {
 
 	public void setName(String name) { this.name=name; }
 	
-	public void drawBorders(PGraphics g, boolean octagon, PVector wsize) {
-		this.drawBorders(g, octagon, wsize, 2.0f,127,255);
+	public void drawBorders(PGraphics g) {
+		this.drawBorders(g, 0.02f,0xff00ff00,255);
 	}
 	
-	public void drawBorders(PGraphics g, boolean octagon, PVector wsize, float strokeWeight, int color,int alpha) {
-		octagon=false;
+	public void drawBorders(PGraphics g, float strokeWeight, int color,int alpha) {
 		g.stroke(color,alpha);
-		g.fill(0);
+		g.fill(color);
 		g.strokeWeight(strokeWeight);
-		if (octagon) {
-			g.beginShape();
-			float gapAngle=(float)(10f*Math.PI /180);
-			for (float angle=gapAngle/2;angle<2*Math.PI;angle+=(2*Math.PI-gapAngle)/8)
-				g.vertex((float)((Math.sin(angle+Math.PI)+1)*wsize.x/2),(float)((Math.cos(angle+Math.PI)+1)*wsize.y/2));
-			g.endShape(PConstants.OPEN);
-		} else {
-			g.line(0, 0, wsize.x-1, 0);
-			g.line(0, 0, 0, wsize.y-1);
-			g.line(wsize.x-1, 0, wsize.x-1, wsize.y-1);
-			g.line(0, wsize.y-1, wsize.x-1, wsize.y-1);
-		}
-		// Narrow remaining window
-		g.translate(wsize.x/2, wsize.y/2);
-		PVector scale=new PVector((wsize.x-strokeWeight*2)/wsize.x,(wsize.y-strokeWeight*2)/wsize.y);
-//		PApplet.println("Scale="+scale);
-		g.scale(scale.x,scale.y);
-		g.translate(-wsize.x/2, -wsize.y/2);
+
+		g.line(Tracker.rawminx+strokeWeight/2, Tracker.rawminy+strokeWeight/2, Tracker.rawminx+strokeWeight/2, Tracker.rawmaxy-strokeWeight/2);
+		g.line(Tracker.rawminx+strokeWeight/2, Tracker.rawminy+strokeWeight/2, Tracker.rawmaxx-strokeWeight/2, Tracker.rawminy+strokeWeight/2);
+		g.line(Tracker.rawmaxx-strokeWeight/2, Tracker.rawmaxy-strokeWeight/2, Tracker.rawminx+strokeWeight/2, Tracker.rawmaxy-strokeWeight/2);
+		g.line(Tracker.rawmaxx-strokeWeight/2, Tracker.rawmaxy-strokeWeight/2, Tracker.rawmaxx-strokeWeight/2, Tracker.rawminy+strokeWeight/2);
+		g.ellipseMode(PConstants.CENTER);
+		g.ellipse(0f,0f,0.1f,0.1f);
 	}
 
 	public void handleMessage(OscMessage theOscMessage) {
 		PApplet.println("Unhandled OSC Message: "+theOscMessage.toString());
 	}
 
-	public PVector convertToScreen(PVector p, PVector wsize) {
-		return new PVector((p.x+1)*wsize.x/2,(p.y+1)*wsize.y/2);
-	}
 	
 	// Create a bezier path from p1 to p2 that vibrates over time
 	public PVector[] vibratingPath(PVector p1, PVector p2, int mode, float freq, float amplitude, float time) {

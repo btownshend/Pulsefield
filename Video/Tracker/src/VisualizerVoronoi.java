@@ -73,7 +73,7 @@ class Voice {
 
 public class VisualizerVoronoi extends VisualizerPS {
 	Triangle initialTriangle;
-	final float initialSize=3.5f;  // Big enough to be outside [-1,-1]:[1,1] normalized coordinates
+	final float initialSize=100f;  // Big enough to be outside active region
 	Triangulation dt;
 	List <Voice> voices;
 	float last;
@@ -120,13 +120,13 @@ public class VisualizerVoronoi extends VisualizerPS {
 		super.update(parent, allpos);
 
 		// Create Delaunay triangulation
+		
 		dt=new Triangulation(initialTriangle);
 		// Put points in corners
-		float cornerDist=1.0f;
-		dt.delaunayPlace(new PntWithID(0,-cornerDist,-cornerDist));
-		dt.delaunayPlace(new PntWithID(0,-cornerDist,cornerDist));
-		dt.delaunayPlace(new PntWithID(0,cornerDist,-cornerDist));
-		dt.delaunayPlace(new PntWithID(0,cornerDist,cornerDist));
+		dt.delaunayPlace(new PntWithID(0,Tracker.rawminx,Tracker.rawminy));
+		dt.delaunayPlace(new PntWithID(0,Tracker.rawminx,Tracker.rawmaxy));
+		dt.delaunayPlace(new PntWithID(0,Tracker.rawmaxx,Tracker.rawminy));
+		dt.delaunayPlace(new PntWithID(0,Tracker.rawmaxx,Tracker.rawmaxy));
 		if (false) {
 			float gapAngle=(float)(10f*Math.PI /180);
 			float step=(float)(2*Math.PI-gapAngle)/8;
@@ -139,7 +139,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 		}
 
 		for (Person p: allpos.pmap.values()) {
-			dt.delaunayPlace(new PntWithID(p.id,p.getNormalizedPosition().x,p.getNormalizedPosition().y));
+			dt.delaunayPlace(new PntWithID(p.id,p.getOriginInMeters().x,p.getOriginInMeters().y));
 		}
 		float beat=MasterClock.getBeat();
 		if (beat-last >= noteDuration) {
@@ -174,8 +174,8 @@ public class VisualizerVoronoi extends VisualizerPS {
 	}
 
 	@Override
-	public void draw(Tracker t, PGraphics g, People allpos, PVector wsize) {
-		super.draw(t, g, allpos, wsize);
+	public void draw(Tracker t, PGraphics g, People allpos) {
+		super.draw(t, g, allpos);
 		if (allpos.pmap.isEmpty())
 			return;
 		
@@ -186,19 +186,19 @@ public class VisualizerVoronoi extends VisualizerPS {
 		for (Triangle triangle : dt) {
 			g.noFill();
 			g.stroke(0,0,255);
-			g.strokeWeight(1);
+			g.strokeWeight(0.01f);
 			g.beginShape();
 			for (int i=0;i<3;i++) {
 				Pnt c=triangle.get(i);
-				g.vertex((float)((c.coord(0)+1)*wsize.x/2),(float)((c.coord(1)+1)*wsize.y/2));
+				g.vertex((float)c.coord(0),(float)c.coord(1));
 			}
 			g.endShape(PConstants.CLOSE);
 
 			Pnt cc=triangle.getCircumcenter();
 			g.fill(255);
 			g.textAlign(PConstants.CENTER,PConstants.CENTER);
-			g.textSize(20);
-			g.text("T"+tnum,(float)(cc.coord(0)+1)*wsize.x/2f,(float)(cc.coord(1)+1)*wsize.y/2f);
+			g.textSize(0.20f);
+			g.text("T"+tnum,(float)cc.coord(0),(float)cc.coord(1));
 			tnum++;
 			for (Pnt site: triangle) {
 				if (done.contains(site)) continue;
@@ -210,11 +210,11 @@ public class VisualizerVoronoi extends VisualizerPS {
 				// Draw all the surrounding triangles
 				g.noFill();
 				g.stroke(0,255,0);
-				g.strokeWeight(1);
+				g.strokeWeight(0.01f);
 				g.beginShape();
 				for (Triangle tri: list) {
 					Pnt c=tri.getCircumcenter();
-					g.vertex((float)((c.coord(0)+1)*wsize.x/2),(float)((c.coord(1)+1)*wsize.y/2));
+					g.vertex((float)c.coord(0),(float)c.coord(1));
 				}
 				g.endShape(PConstants.CLOSE);
 
@@ -243,10 +243,10 @@ public class VisualizerVoronoi extends VisualizerPS {
 				// Draw the major line
 				if (hasLine && v.playing) {
 					g.stroke(allpos.get(idsite.id).getcolor());
-					g.strokeWeight(5);
-					PVector scoord1=convertToScreen(v.mainline[0],wsize);
-					PVector scoord2=convertToScreen(v.mainline[1],wsize);
-					PVector path[]=vibratingPath(scoord1,scoord2,3,2.0f,30f,t.frameCount/t.frameRate);
+					g.strokeWeight(0.05f);
+					PVector scoord1=v.mainline[0];
+					PVector scoord2=v.mainline[1];
+					PVector path[]=vibratingPath(scoord1,scoord2,3,2.0f,0.3f,t.frameCount/t.frameRate);
 					for (int i=0;i+3<path.length;i+=3)
 						g.bezier(path[i].x,path[i].y,path[i+1].x,path[i+1].y,path[i+2].x,path[i+2].y,path[i+3].x,path[i+3].y);
 				}
@@ -255,8 +255,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 	}
 	
 	PVector pntToWorld(Pnt p) {
-		PVector normalized=new PVector((float)p.coord(0),(float)p.coord(1));
-		return Tracker.normalizedToFloor(normalized);
+		return new PVector((float)p.coord(0),(float)p.coord(1));
 	}
 	
 	// Draw to laser
@@ -318,8 +317,8 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 				// Draw the major line
 				if (hasLine && v.playing) {
-					PVector scoord1=Tracker.normalizedToFloor(v.mainline[0]);
-					PVector scoord2=Tracker.normalizedToFloor(v.mainline[1]);
+					PVector scoord1=v.mainline[0];
+					PVector scoord2=v.mainline[1];
 					PVector path[]=vibratingPath(scoord1,scoord2,3,1.0f,0.2f,parent.frameCount/parent.frameRate);
 					for (int i=0;i+3<path.length;i+=3)
 						laser.cubic(path[i].x,path[i].y,path[i+1].x,path[i+1].y,path[i+2].x,path[i+2].y,path[i+3].x,path[i+3].y);

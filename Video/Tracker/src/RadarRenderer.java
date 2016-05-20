@@ -1,7 +1,10 @@
 
 
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PImage;
+import processing.core.PVector;
 
 
 public class RadarRenderer extends Renderer {
@@ -36,14 +39,23 @@ public class RadarRenderer extends Renderer {
       int n = fourier.left.length;
       
       // center 
-      float w = (float) (g.width/2 + Math.cos(t) * g.width * orbit);
-      float h = (float) (g.height/2 + Math.sin(t) * g.height * orbit); 
-      
+      PVector center=Tracker.getFloorCenter();
+      PVector sz=Tracker.getFloorSize();
+      float w = (float) (center.x + Math.cos(t) * sz.x * orbit);
+      float h = (float) (center.y + Math.sin(t) * sz.y * orbit); 
       // size of the aura
-      float w2 = g.width * aura, h2 = g.height * aura;
+      float w2 = sz.x * aura, h2 = sz.y * aura;
       
       // smoke effect
-      if(tracker.frameCount % delay == 0 ) g.image(g.get(),-1.5f,-1.5f,(float)( g.width + 3), (float)(g.height + 3)); 
+      if(tracker.frameCount % delay == 0 ) {
+    	  //PVector smokeShift=new PVector(tracker.random(-0.05f,0.15f),tracker.random(-0.05f,0.15f));
+    	  PVector smokeShift=new PVector(0.005f,0.005f);
+    	  g.imageMode(PConstants.CORNER);
+    	  PImage frame=g.get();
+    	  //g.tint(255,200);
+    	  g.image(frame,center.x-sz.x/2+smokeShift.x,center.y-sz.y/2+smokeShift.y,sz.x+smokeShift.x, sz.y+smokeShift.y); 
+    	  //g.tint(255,255);
+      }
       
       // draw polar curve 
       float a1=0, x1=0, y1=0, r2=0, a2=0, x2=0, y2=0; 

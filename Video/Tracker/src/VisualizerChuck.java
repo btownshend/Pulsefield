@@ -17,7 +17,7 @@ abstract class Fiducial extends Person {
 		setNormalizedPosition(ps.getNormalizedPosition());
 	}
 
-	abstract void draw(PGraphics parent, PVector wsize, float sz);
+	abstract void draw(PGraphics parent, float sz);
 	void stop() { }
 }
 
@@ -162,17 +162,17 @@ class Generator extends Fiducial {
 	}
 
 	@Override 
-	void draw(PGraphics parent, PVector wsize, float sz) {
-		float x=(getNormalizedPosition().x+1)*wsize.x/2;
-		float y=(getNormalizedPosition().y+1)*wsize.y/2;
-		parent.fill(genType.color);
-		parent.stroke(genType.color);
-		parent.ellipseMode(PConstants.CENTER);
-		parent.ellipse(x, y, sz, sz);
-		parent.fill(255);
-		parent.textSize(sz*.7f);
-		parent.textAlign(PConstants.CENTER,PConstants.BOTTOM);
-		parent.text(genType.name,x,y-sz/2);
+	void draw(PGraphics g, float sz) {
+		float x=getOriginInMeters().x;
+		float y=getOriginInMeters().y;
+		g.fill(genType.color);
+		g.stroke(genType.color);
+		g.ellipseMode(PConstants.CENTER);
+		g.ellipse(x, y, sz, sz);
+		g.fill(255);
+		g.textSize(sz*.7f);
+		g.textAlign(PConstants.CENTER,PConstants.BOTTOM);
+		g.text(genType.name,x,y-sz/2);
 	}
 }
 
@@ -217,33 +217,33 @@ class Controller extends Fiducial {
 	}
 
 	@Override 
-	void draw(PGraphics parent, PVector wsize, float sz) {
-		float x=(getNormalizedPosition().x+1)*wsize.x/2;
-		float y=(getNormalizedPosition().y+1)*wsize.y/2;
+	void draw(PGraphics g, float sz) {
+		float x=getOriginInMeters().x;
+		float y=getOriginInMeters().y;
 		if (cc!=null) {
-			parent.fill(cc.color);
-			parent.stroke(cc.color);
+			g.fill(cc.color);
+			g.stroke(cc.color);
 		}
 		if (this.parent!=null) {
-			parent.line((getNormalizedPosition().x+1)*wsize.x/2, (getNormalizedPosition().y+1)*wsize.y/2, (this.parent.getNormalizedPosition().x+1)*wsize.x/2, (this.parent.getNormalizedPosition().y+1)*wsize.y/2);
+			g.line(getOriginInMeters().x, getOriginInMeters().y, this.parent.getOriginInMeters().x, this.parent.getOriginInMeters().y);
 		}
 		if (cc != null && cc.cc1==200)
 			// Use triangles for patterns
-			parent.triangle(x-sz/2,y+sz/2,x+sz/2,y+sz/2,x,y-sz/2);
+			g.triangle(x-sz/2,y+sz/2,x+sz/2,y+sz/2,x,y-sz/2);
 		else {
-			parent.rectMode(PConstants.CENTER);
-			parent.rect(x, y, sz, sz);
+			g.rectMode(PConstants.CENTER);
+			g.rect(x, y, sz, sz);
 		}
-		parent.fill(255);
-		parent.textSize(sz*.5f);
+		g.fill(255);
+		g.textSize(sz*.5f);
 		if (cc!=null) {
 			if (cc.cc1!=-1) {
-				parent.textAlign(PConstants.CENTER,PConstants.BOTTOM);
-				parent.text(String.format("%s=%d",cc.nm1,(int)cc1val),x,y-sz/2);
+				g.textAlign(PConstants.CENTER,PConstants.BASELINE);
+				g.text(String.format("%s=%d",cc.nm1,(int)cc1val),x,y-sz*0.7f);
 			}
 			if (cc.cc2!=-1) {
-				parent.textAlign(PConstants.CENTER,PConstants.TOP);
-				parent.text(String.format("%s=%d",cc.nm2,(int)cc2val),x,y+sz/2);
+				g.textAlign(PConstants.CENTER,PConstants.BASELINE);
+				g.text(String.format("%s=%d",cc.nm2,(int)cc2val),x,y+sz*1.1f);
 			}
 		}
 	}
@@ -366,25 +366,25 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 		}
 	}
 
-	void draw(PGraphics parent, PVector wsize) {
-		float sz=30;
+	void draw(PGraphics g) {
+		float sz=0.30f;
 		// Draw all the controllers first so generators will be on top of connecting lines
 		for (Fiducial f: values()) {
 			if (f instanceof Controller) {
 				int c=f.getcolor();
-				parent.fill(c,255);
-				parent.stroke(c,255);
-				parent.strokeWeight(5);
-				f.draw(parent,wsize,sz);
+				g.fill(c,255);
+				g.stroke(c,255);
+				g.strokeWeight(0.05f);
+				f.draw(g,sz);
 			}
 		}
 		for (Fiducial f: values()) {
 			if (f instanceof Generator) {
 				int c=f.getcolor();
-				parent.fill(c,255);
-				parent.stroke(c,255);
-				parent.strokeWeight(5);
-				f.draw(parent,wsize,sz);
+				g.fill(c,255);
+				g.stroke(c,255);
+				g.strokeWeight(0.05f);
+				f.draw(g,sz);
 			}
 		}
 	}
@@ -441,9 +441,9 @@ public class VisualizerChuck extends Visualizer {
 	}
 
 	@Override
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g, p, wsize);
-		fiducials.draw(g,wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g, p);
+		fiducials.draw(g);
 	}
 }
 

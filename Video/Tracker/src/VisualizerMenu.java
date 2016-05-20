@@ -24,7 +24,13 @@ public class VisualizerMenu extends Visualizer {
 	/** How far a person needs to be to be able to select the menu item (in meters). */
 	static final float SELECTION_DISTANCE = 0.3f;
 	
+	/** Text height (in meters) **/
+	static final float TEXT_HEIGHT = 0.25f;
+	
 	static final float HOTSPOTRADIUS=0.3f;   // Radius of hot spot in meters
+
+	/** Cursor radius (in meters) **/
+	static final float CURSOR_RADIUS = 0.3f;
 
 	/** Set of items currently being displayed. */
 	HashSet<MenuItem> menuItems = new HashSet<MenuItem>();
@@ -152,8 +158,8 @@ public class VisualizerMenu extends Visualizer {
 	}
 	
 	@Override
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g, p);
 		if (p.pmap.isEmpty())
 			return;
 		
@@ -161,25 +167,23 @@ public class VisualizerMenu extends Visualizer {
 
 		g.stroke(0xffffffff);
 		g.textAlign(PConstants.CENTER, PConstants.CENTER);
-		g.textSize(25);
+		g.textSize(TEXT_HEIGHT);
 		for(MenuItem item : menuItems) {
-			PVector pos = Tracker.floorToNormalized(item.position);
-			PVector sz = Tracker.mapVelocity(new PVector(2*SELECTION_DISTANCE, 2*SELECTION_DISTANCE));
 			g.fill(0xff000000);
-			g.ellipse((pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2, sz.x*wsize.x/2, sz.y*wsize.y/2);
+			g.ellipse(item.position.x, item.position.y, 2*SELECTION_DISTANCE,2*SELECTION_DISTANCE );
 			g.fill(0xffffffff);
-			g.text(item.name, (pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2);
+			g.text(item.name, item.position.x, item.position.y);
 		}
 		// Draw cursor for selecting person
 		Person ps=p.get(selectingPerson);
-		float sz=60;
-		float scale=Math.min(sz/cursor.width,sz/cursor.height);
+		float scale=Math.min(CURSOR_RADIUS*2/cursor.width,CURSOR_RADIUS*2/cursor.height);
 		int c=ps.getcolor();
 		g.fill(c,255);
 		g.stroke(c,255);
 //		PApplet.println("Drawing cursor with scaling="+scale);
 		// cursor seems shifted
-		g.shape(cursor,(ps.getNormalizedPosition().x+1)*wsize.x/2-cursor.width*scale*0.4f, (ps.getNormalizedPosition().y+1)*wsize.y/2-cursor.height*scale*0.2f,cursor.width*scale,cursor.height*scale);
+		g.shapeMode(PConstants.CENTER);
+		g.shape(cursor,ps.getOriginInMeters().x, ps.getOriginInMeters().y,cursor.width*scale,cursor.height*scale);
 	}
 	
 	@Override

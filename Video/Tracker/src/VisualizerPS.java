@@ -39,7 +39,7 @@ public class VisualizerPS extends Visualizer {
 				}
 
 			for (int k=0;k<birthrate;k++)
-				ps.addParticle(pos.getNormalizedPosition(),pos.getcolor());
+				ps.addParticle(pos.getOriginInMeters(),pos.getcolor());
 		}
 		int toRemove=-1;
 
@@ -59,8 +59,8 @@ public class VisualizerPS extends Visualizer {
 		}
 	}
 
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t,g,p,wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t,g,p);
 		if (p.pmap.isEmpty())
 			return;
 		if (true) {
@@ -77,7 +77,7 @@ public class VisualizerPS extends Visualizer {
 		
 		for (Map.Entry<Integer,ParticleSystem> me: systems.entrySet()) {
 			ParticleSystem ps=me.getValue();
-			ps.draw(g, wsize);
+			ps.draw(g);
 		}
 	}
 

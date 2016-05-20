@@ -94,10 +94,10 @@ public class VisualizerProximity extends VisualizerPS {
 		}
 	}
 
-	public void draw(Tracker t, PGraphics g, People p, PVector wsize) {
-		super.draw(t, g, p, wsize);
+	public void draw(Tracker t, PGraphics g, People p) {
+		super.draw(t, g, p);
 
-		g.textSize(16);
+		g.textSize(0.16f);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
 			int id1=entry.getKey();
@@ -105,14 +105,14 @@ public class VisualizerProximity extends VisualizerPS {
 			if (id2!=-1) {
 			//PApplet.println("grid "+cell+", id="+id+" "+gridColors.get(cell));
 			g.fill(127,0,0,127);
-			g.strokeWeight(5);
+			g.strokeWeight(0.05f);
 			g.stroke(127,0,0);
-			g.line((p.get(id1).getNormalizedPosition().x+1)*wsize.x/2, (p.get(id1).getNormalizedPosition().y+1)*wsize.y/2, (p.get(id2).getNormalizedPosition().x+1)*wsize.x/2, (p.get(id2).getNormalizedPosition().y+1)*wsize.y/2);
+			g.line(p.get(id1).getOriginInMeters().x, p.get(id1).getOriginInMeters().y, p.get(id2).getOriginInMeters().x, p.get(id2).getOriginInMeters().y);
 			}
 		}
 		g.fill(127);
 		g.textAlign(PConstants.LEFT, PConstants.TOP);
-		g.textSize(24);
+		g.textSize(0.24f);
 		g.text(ts.name,5,5);
 	}
 
