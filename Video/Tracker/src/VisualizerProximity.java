@@ -107,7 +107,7 @@ public class VisualizerProximity extends VisualizerPS {
 			g.fill(127,0,0,127);
 			g.strokeWeight(0.05f);
 			g.stroke(127,0,0);
-			g.line((p.get(id1).getNormalizedPosition().x+1)*wsize.x/2, (p.get(id1).getNormalizedPosition().y+1)*wsize.y/2, (p.get(id2).getNormalizedPosition().x+1)*wsize.x/2, (p.get(id2).getNormalizedPosition().y+1)*wsize.y/2);
+			g.line(p.get(id1).getOriginInMeters().x, p.get(id1).getOriginInMeters().y, p.get(id2).getOriginInMeters().x, p.get(id2).getOriginInMeters().y);
 			}
 		}
 		g.fill(127);
