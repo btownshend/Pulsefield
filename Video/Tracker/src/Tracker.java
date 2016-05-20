@@ -166,8 +166,10 @@ public class Tracker extends PApplet {
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		
 		canvas = this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
-		p1 = new Projector(this,1,1280,720);
-		p2 = new Projector(this,2,1280,720);
+		p1 = new Projector(this,1,1920,1080);
+		p1.setPosition(0.0f, 0.0f, 1.5f);
+		p2 = new Projector(this,2,1920,1080);
+		p2.setPosition(2f, 3f, 1.5f);
 		PApplet.println("Setup complete");
 		starting = false;
 	}
@@ -317,14 +319,24 @@ public class Tracker extends PApplet {
 		if (server != null) {
 			server.sendImage(canvas);
 		}
-		//p1.render(canvas);
-		//p2.render(canvas);
+		p1.render(canvas);
+		p2.render(canvas);
 		
 		imageMode(CORNER);
-		this.image(canvas, 1, 1, canvas.width*cscale, canvas.height*cscale);
+		image(canvas, 1, 1, canvas.width*cscale, canvas.height*cscale);
 
-		//this.image(p1.pcanvas, width/2, 0, width/2, height/2);
-		//this.image(p2.pcanvas, width/2, height/2, width/2, height/2);
+		// Use top-left, top-right corners for projector images
+		float pfrac = 0.25f;  // Use this much of the height of the window for projs
+		float pheight=this.height*pfrac;
+		float pwidth=pheight*p1.pcanvas.width/p1.pcanvas.height;  // preserve aspect
+		stroke(255,0,0);
+		strokeWeight(2);
+		rect(0, 0, pwidth, pheight);
+		image(p1.pcanvas, 1, 1, pwidth-2, pheight-2);
+
+		pwidth=pheight*p2.pcanvas.width/p2.pcanvas.height; 
+		rect(width-pwidth, 0, pwidth, pheight);
+		image(p2.pcanvas, width-pwidth+1, 1f, pwidth-2, pheight-2);
 		//SyphonTest.draw(this);
 	}
 
