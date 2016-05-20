@@ -169,12 +169,10 @@ public class VisualizerMenu extends Visualizer {
 		g.textAlign(PConstants.CENTER, PConstants.CENTER);
 		g.textSize(TEXT_HEIGHT);
 		for(MenuItem item : menuItems) {
-			PVector pos = Tracker.floorToNormalized(item.position);
-			PVector sz = Tracker.mapVelocity(new PVector(2*SELECTION_DISTANCE, 2*SELECTION_DISTANCE));
 			g.fill(0xff000000);
-			g.ellipse((pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2, sz.x*wsize.x/2, sz.y*wsize.y/2);
+			g.ellipse(item.position.x, item.position.y, 2*SELECTION_DISTANCE,2*SELECTION_DISTANCE );
 			g.fill(0xffffffff);
-			g.text(item.name, (pos.x+1)*wsize.x/2, (pos.y+1)*wsize.y/2);
+			g.text(item.name, item.position.x, item.position.y);
 		}
 		// Draw cursor for selecting person
 		Person ps=p.get(selectingPerson);
@@ -184,7 +182,8 @@ public class VisualizerMenu extends Visualizer {
 		g.stroke(c,255);
 //		PApplet.println("Drawing cursor with scaling="+scale);
 		// cursor seems shifted
-		g.shape(cursor,(ps.getNormalizedPosition().x+1)*wsize.x/2-cursor.width*scale*0.4f, (ps.getNormalizedPosition().y+1)*wsize.y/2-cursor.height*scale*0.2f,cursor.width*scale,cursor.height*scale);
+		g.shapeMode(PConstants.CENTER);
+		g.shape(cursor,ps.getOriginInMeters().x, ps.getOriginInMeters().y,cursor.width*scale,cursor.height*scale);
 	}
 	
 	@Override
