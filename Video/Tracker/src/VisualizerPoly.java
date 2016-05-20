@@ -36,7 +36,7 @@ class PolyState {
 			playing=false;
 		}
 		// Compute radius in aspect-preserved normalized coords (scaled by longest dimension to maintain aspect ratio)
-		mybeat=(int)(pos.getNormalizedPosition(true).mag()*totalBeats+0.5);
+		mybeat=(int)(pos.getNormalizedPosition(true).mag()*totalBeats/0.95f+0.5);
 		if (mybeat==0)
 			mybeat=1;
 		boolean isDrummer=(channel==2);
@@ -76,39 +76,39 @@ class PolyState {
 			g.fill(color);
 		else
 			g.fill(color,127);
-		float sz=Math.min(wsize.x,wsize.y);
-		g.ellipse((pos.getNormalizedPosition(true).x)*sz/2+wsize.x/2, (pos.getNormalizedPosition(true).y)*sz/2+wsize.y/2, 30, 30);
+
+		PVector origin=pos.getOriginInMeters();
+		g.ellipse(origin.x, origin.y, 0.2f, 0.2f);
 		if (playing) {
-			g.fill(0);
+			g.fill(0,0);
 			g.stroke(color);
-			g.ellipse(wsize.x/2,wsize.y/2,mybeat*sz/totalBeats,mybeat*sz/totalBeats);
+			g.ellipse(center.x,center.y,mybeat*maxRadius*2/totalBeats,mybeat*maxRadius*2/totalBeats);
 		}
 		if (pos.groupsize > 1) {
 			final int NBOLTS=20;
 			for (int k=0;k<NBOLTS;k++)
 				if (Math.random() < 0.2) {
-					float BOLTLENGTH=(float) (wsize.y/10*pos.groupsize*Math.random());
+					float BOLTLENGTH=(float) (maxRadius/10*pos.groupsize*Math.random());
 					PVector delta=new PVector((float)Math.cos(Math.PI*2*k/NBOLTS)*BOLTLENGTH,(float)Math.sin(Math.PI*2*k/NBOLTS)*BOLTLENGTH);
-					PVector center=new PVector((pos.getNormalizedPosition(true).x)*sz/2+wsize.x/2,(pos.getNormalizedPosition(true).y)*sz/2+wsize.y/2);
 					g.fill(color,127);
-					g.line(center.x,center.y,center.x+delta.x,center.y+delta.y);
+					g.line(origin.x,origin.y,origin.x+delta.x,origin.y+delta.y);
 				}
 		}
 
 		if (row<NUMROWS) {
-			float rowpos=(row+0.5f)*rowheight;
+			float rowpos=(row+1f)*rowheight+Tracker.rawminy;
 			if (row>=NUMROWS/2)
-				rowpos+=wsize.y/2;
+				rowpos+=maxRadius;
 			float dotsize=0.8f*rowheight;
 			g.fill(color);
-			g.ellipse(1+dotsize/2,rowpos, dotsize, dotsize);
+			g.ellipse(Tracker.rawminx+dotsize,rowpos, dotsize, dotsize);
 			g.fill(255);
-			g.textAlign(PConstants.LEFT,PConstants.CENTER);
+			g.textAlign(PConstants.LEFT,PConstants.BASELINE);
 			g.textSize(0.8f*rowheight);
 			if (true) {
 				MidiProgram mp=synth.getMidiProgam(pos.channel);
 				if (mp!=null)
-					g.text(mp.name,2+dotsize,rowpos);
+					g.text(mp.name,Tracker.rawminx+3+dotsize,rowpos);
 			}
 		}
 	}
@@ -205,13 +205,15 @@ public class VisualizerPoly extends Visualizer {
 		// Draw rings in gray
 		g.fill(0);
 		g.stroke(20);
-		float sz=Math.min(wsize.x,wsize.y);
+		float sz=Math.min(Tracker.getFloorSize().x,Tracker.getFloorSize().y)*0.95f;
+		PVector center=Tracker.getFloorCenter();
+
 		for (int i=1;i<=totalBeats;i++) {
 			if (i%4 == 0)
 				g.strokeWeight(0.02f);
 			else
-			g.ellipse(wsize.x/2,wsize.y/2,i*sz/totalBeats,i*sz/totalBeats);
 				g.strokeWeight(0.01f);
+			g.ellipse(center.x,center.y,i*sz/totalBeats,i*sz/totalBeats);
 		}
 
 		// Draw each position and fired rings
