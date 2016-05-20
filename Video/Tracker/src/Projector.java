@@ -41,9 +41,7 @@ public class Projector {
 		float aspect=1920f/1080f;
 		float vfov=(float)(2f*Math.atan(1f/(aspect*throwRatio*2)));
 		pcanvas.perspective(vfov, aspect, 1f, 1e10f);
-		// Flip the projector "up" direction so that this lines up
-		// I think this is needed because the lidar coordinate system implies z is down
-		// Also, the image operation 
+		// Projector image needs to be flipped in z direction to align correctly
 		pcanvas.camera(pos.x,pos.y,pos.z,aim.x,aim.y,0.0f,0.0f,0.0f,-1.0f);
 		//PApplet.println("Projector "+id+": pos=["+pos+"], aspect="+aspect+", vfov="+vfov*180f/Math.PI+" degrees.");
 
