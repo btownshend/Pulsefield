@@ -129,7 +129,7 @@ class VisualizerNavier extends Visualizer {
 		statsTick += t2-t1;
 		statsStep += t3-t2;
 
-		g.strokeWeight(.07f);
+		g.strokeWeight(0.07f);
 		g.colorMode(PConstants.HSB, 255);
 		bordercolor = g.color(rainbow, 255, 255);
 		rainbow++;
@@ -144,13 +144,13 @@ class VisualizerNavier extends Visualizer {
 			g.stroke(c,255);
 			//PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
 			
-			float sz=.05f;
+			float sz=.3f;
 			//if (ps.groupsize > 1)
 			//	sz=0.20f*ps.groupsize;
-			g.strokeWeight(sz);
-			g.line(ps.getOriginInMeters().x-dx, ps.getOriginInMeters().y-dy,ps.getOriginInMeters().x, ps.getOriginInMeters().y);
+			//g.strokeWeight(sz);
+			//g.line(ps.getOriginInMeters().x, ps.getOriginInMeters().y,ps.getOriginInMeters().x, ps.getOriginInMeters().y);
 		
-			//g.ellipse(ps.getOriginInMeters().x, ps.getOriginInMeters().y, sz, sz);
+			g.ellipse(ps.getOriginInMeters().x, ps.getOriginInMeters().y, sz, sz);
 		}
 	}
 
