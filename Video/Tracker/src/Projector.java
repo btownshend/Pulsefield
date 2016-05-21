@@ -1,4 +1,5 @@
 import codeanticode.syphon.SyphonServer;
+import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -11,28 +12,79 @@ public class Projector {
 	float throwRatio;
 	PVector pos;
 	PVector aim;
-	
+
 	public Projector(PApplet parent, int id, int width, int height) {
-	// Create a syphon-based projector with given parameters
+		// Create a syphon-based projector with given parameters
 		this.id=id;
 		server=new SyphonServer(parent, "P"+id);
 		pcanvas = parent.createGraphics(width, height, PConstants.P3D);
 		this.throwRatio=0.25f;
 		this.aim=Tracker.getFloorCenter();
 		this.pos=new PVector(0f,-0.5f,1.5f); // Assume it is above/behind lidar
+		setTO();
 	}
-	
+
 	public void setThrowRatio(float t) {
 		throwRatio=t;
+		setTO();
 	}
-	
+
 	public void setPosition(float x, float y, float z) {
-	// Set position and aiming of projector in floor coordinates
+		// Set position and aiming of projector in floor coordinates
 		// Convert to canvas coordinates
 		pos=new PVector(x,y,z);
+		setTO();
 	}
 	public void setAim(float aimx, float aimy) {
 		aim=new PVector(aimx, aimy);
+		setTO();
+	}
+
+	public void handleMessage(OscMessage msg) {
+		PApplet.println("Projector message: "+msg.toString());
+		String pattern=msg.addrPattern();
+		String components[]=pattern.split("/");
+
+		if (components.length==5 && components[3].equals("aim")&&msg.checkTypetag("f")) {
+			if (components[4].equals("x"))
+				aim.x=msg.get(0).floatValue();
+			else if (components[4].equals("y"))
+				aim.y=msg.get(0).floatValue();
+			else
+				PApplet.println("Bad projector aim message: "+msg.toString());
+		} else if (components.length==5 && components[3].equals("pos")&&msg.checkTypetag("f")) {
+			if (components[4].equals("x"))
+				pos.x=msg.get(0).floatValue();
+			else if (components[4].equals("y"))
+				pos.y=msg.get(0).floatValue();
+			else if (components[4].equals("z"))
+				pos.z=msg.get(0).floatValue();
+			else
+				PApplet.println("Bad projector pos message: "+msg.toString());
+		} else if (components.length==4 && components[3].equals("throwratio")&&msg.checkTypetag("f")) {
+			throwRatio=msg.get(0).floatValue();
+		} else 
+			PApplet.println("Unknown projector Message: "+msg.toString());
+		setTO();
+	}
+
+	private void setTOValue(String name, double value, String fmt) {
+		TouchOSC to=TouchOSC.getInstance();
+		OscMessage set = new OscMessage("/proj/"+name+"/"+id);
+		set.add(value);
+		to.sendMessage(set);
+		set=new OscMessage("/proj/"+name+"/value/"+id);
+		set.add(String.format(fmt, value));
+		to.sendMessage(set);
+	}
+
+	public void setTO() {
+		setTOValue("aim/x",aim.x,"%.2f");
+		setTOValue("aim/y",aim.y,"%.2f");
+		setTOValue("pos/x",pos.x,"%.2f");
+		setTOValue("pos/y",pos.y,"%.2f");
+		setTOValue("pos/z",pos.z,"%.2f");
+		setTOValue("throwratio",throwRatio,"%.4f");
 	}
 
 	public void render(PGraphics canvas) {

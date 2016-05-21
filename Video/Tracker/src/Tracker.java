@@ -64,7 +64,7 @@ public class Tracker extends PApplet {
 	final static int CANVASWIDTH=1200;
 	final static int CANVASHEIGHT=600;
 	PGraphics canvas;
-	Projector p1, p2;
+	Projector projectors[];
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -166,10 +166,11 @@ public class Tracker extends PApplet {
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		
 		canvas = this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
-		p1 = new Projector(this,1,1920,1080);
-		p1.setPosition(0.0f, 0.0f, 1.5f);
-		p2 = new Projector(this,2,1920,1080);
-		p2.setPosition(2f, 3f, 1.5f);
+		projectors=new Projector[2];
+		projectors[0] = new Projector(this,1,1920,1080);
+		projectors[0].setPosition(0.0f, 0.0f, 1.5f);
+		projectors[1] = new Projector(this,2,1920,1080);
+		projectors[1].setPosition(2f, 3f, 1.5f);
 		PApplet.println("Setup complete");
 		starting = false;
 	}
@@ -319,8 +320,8 @@ public class Tracker extends PApplet {
 		if (server != null) {
 			server.sendImage(canvas);
 		}
-		p1.render(canvas);
-		p2.render(canvas);
+		projectors[0].render(canvas);
+		projectors[1].render(canvas);
 		
 		imageMode(CORNER);
 		image(canvas, 1, 1, canvas.width*cscale, canvas.height*cscale);
@@ -328,15 +329,15 @@ public class Tracker extends PApplet {
 		// Use top-left, top-right corners for projector images
 		float pfrac = 0.25f;  // Use this much of the height of the window for projs
 		float pheight=this.height*pfrac;
-		float pwidth=pheight*p1.pcanvas.width/p1.pcanvas.height;  // preserve aspect
+		float pwidth=pheight*projectors[0].pcanvas.width/projectors[0].pcanvas.height;  // preserve aspect
 		stroke(255,0,0);
 		strokeWeight(2);
 		rect(0, 0, pwidth, pheight);
-		image(p1.pcanvas, 1, 1, pwidth-2, pheight-2);
+		image(projectors[0].pcanvas, 1, 1, pwidth-2, pheight-2);
 
-		pwidth=pheight*p2.pcanvas.width/p2.pcanvas.height; 
+		pwidth=pheight*projectors[1].pcanvas.width/projectors[1].pcanvas.height; 
 		rect(width-pwidth, 0, pwidth, pheight);
-		image(p2.pcanvas, width-pwidth+1, 1f, pwidth-2, pheight-2);
+		image(projectors[1].pcanvas, width-pwidth+1, 1f, pwidth-2, pheight-2);
 		//SyphonTest.draw(this);
 	}
 
@@ -374,6 +375,7 @@ public class Tracker extends PApplet {
 
 	/* incoming osc message are forwarded to the oscEvent method. */
 	synchronized public void oscEvent(OscMessage theOscMessage) {
+		PApplet.println("Got message:"+theOscMessage.toString());
 		if (starting)
 			return;
 		if (theOscMessage.isPlugged() == true) 
@@ -384,6 +386,17 @@ public class Tracker extends PApplet {
 			visAbleton.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/live") || theOscMessage.addrPattern().startsWith("/remix/error")) {
 			ableton.handleMessage(theOscMessage);
+		} else if (theOscMessage.addrPattern().startsWith("/proj")) {
+			String pattern=theOscMessage.addrPattern();
+			String components[]=pattern.split("/");
+			PApplet.println("num comp="+components.length+", comp2="+components[2]);
+			if (components.length>=3) {
+				int pnum=Integer.parseInt(components[2]);
+				if (pnum>=1 && pnum<=projectors.length)
+					projectors[pnum-1].handleMessage(theOscMessage);
+				else
+					PApplet.println("Bad projector number: "+pnum);
+			}
 		} else if (theOscMessage.addrPattern().startsWith("/video/navier")) {
 			visNavier.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/video/ddr")) {
@@ -673,6 +686,7 @@ public class Tracker extends PApplet {
 	public void pfgroup(int frame, int gid, int gsize, float life, float centroidX, float centroidY, float diameter) {
 		// Not implemented.
 	}
+
 	
 	public void cycle() {
 		int newvis=currentvis;
