@@ -1,7 +1,6 @@
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
-import processing.core.PVector;
 
 public class VisualizerTestPattern extends VisualizerDot {
 
