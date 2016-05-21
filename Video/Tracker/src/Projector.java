@@ -12,15 +12,17 @@ public class Projector {
 	float throwRatio;
 	PVector pos;
 	PVector aim;
-
+	float rotation;  // Rotation of projector in degrees -- normally 0
+	
 	public Projector(PApplet parent, int id, int width, int height) {
 		// Create a syphon-based projector with given parameters
 		this.id=id;
 		server=new SyphonServer(parent, "P"+id);
 		pcanvas = parent.createGraphics(width, height, PConstants.P3D);
-		this.throwRatio=0.25f;
-		this.aim=Tracker.getFloorCenter();
-		this.pos=new PVector(0f,-0.5f,1.5f); // Assume it is above/behind lidar
+		throwRatio=0.25f;
+		aim=Tracker.getFloorCenter();
+		pos=new PVector(0f,-0.5f,1.5f); // Assume it is above/behind lidar
+		rotation=0f;
 		setTO();
 	}
 
@@ -40,6 +42,11 @@ public class Projector {
 		setTO();
 	}
 
+	public void setRotation(float rotation) {
+		this.rotation=rotation;
+		setTO();
+	}
+	
 	public void handleMessage(OscMessage msg) {
 		PApplet.println("Projector message: "+msg.toString());
 		String pattern=msg.addrPattern();
@@ -62,7 +69,12 @@ public class Projector {
 			else
 				PApplet.println("Bad projector pos message: "+msg.toString());
 		} else if (components.length==4 && components[3].equals("throwratio")&&msg.checkTypetag("f")) {
-			throwRatio=msg.get(0).floatValue();
+			if (msg.get(0).floatValue() >= 0.1f && msg.get(0).floatValue()<= 2f)
+				throwRatio=msg.get(0).floatValue();
+			else
+				PApplet.println("Bad projector throwratio: "+msg.get(0).floatValue());
+		} else if (components.length==4 && components[3].equals("rotation")&&msg.checkTypetag("f")) {
+			rotation=msg.get(0).floatValue();
 		} else 
 			PApplet.println("Unknown projector Message: "+msg.toString());
 		setTO();
@@ -85,6 +97,7 @@ public class Projector {
 		setTOValue("pos/y",pos.y,"%.2f");
 		setTOValue("pos/z",pos.z,"%.2f");
 		setTOValue("throwratio",throwRatio,"%.4f");
+		setTOValue("rotation",rotation,"%.4f");
 	}
 
 	public void render(PGraphics canvas) {
@@ -94,7 +107,7 @@ public class Projector {
 		float vfov=(float)(2f*Math.atan(1f/(aspect*throwRatio*2)));
 		pcanvas.perspective(vfov, aspect, 1f, 1e10f);
 		// Projector image needs to be flipped in z direction to align correctly
-		pcanvas.camera(pos.x,pos.y,pos.z,aim.x,aim.y,0.0f,0.0f,0.0f,-1.0f);
+		pcanvas.camera(pos.x,pos.y,pos.z,aim.x,aim.y,0.0f,(float)Math.sin(rotation*PConstants.PI/180),-1.0f*(float)Math.cos(rotation*PConstants.PI/180),0.0f);
 		//PApplet.println("Projector "+id+": pos=["+pos+"], aspect="+aspect+", vfov="+vfov*180f/Math.PI+" degrees.");
 
 		pcanvas.background(0);
