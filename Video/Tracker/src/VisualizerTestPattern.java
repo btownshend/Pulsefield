@@ -38,7 +38,7 @@ public class VisualizerTestPattern extends VisualizerDot {
 		float x=minxpos;
 		while (x<=maxxpos) {
 			if (Math.abs(x)<0.01f)
-				g.stroke(0,255,0);
+				g.stroke(0,0,255);
 			else if (Math.abs(x-Math.round(x)) < 0.01f)
 				g.stroke(255);
 			else
@@ -55,17 +55,19 @@ public class VisualizerTestPattern extends VisualizerDot {
 			g.line(minxpos,y,maxxpos,y);
 			y+=0.1f;
 		}
+		// Draw radial circles
 		g.stroke(255,0,0);
 		g.fill(0,0);
 		g.ellipseMode(PConstants.CENTER);
-		for (float r=0;r<=maxxpos+0.01f;r++) {
+		float maxr=Math.max(Math.max(-Tracker.rawminx,Tracker.rawmaxx),Tracker.rawmaxy);
+		for (float r=0;r<=maxr;r++) {
 			g.ellipse(0f, 0f, 2*r, 2*r);
 		}
 		// Draw axes
 		g.strokeWeight(0.1f);
 		g.stroke(255,0,0);
 		g.line(0, 0.05f, 2, 0.05f);
-		g.stroke(0,255,0);
+		g.stroke(0,0,255);
 		g.line(0,0, 0, 2);
 		
 	}
