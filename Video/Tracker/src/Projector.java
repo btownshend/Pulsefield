@@ -127,8 +127,11 @@ public class Projector {
 	}
 	public void render(PGraphics canvas) {
 		// Send the given canvas to the projector
+		// Assumes the canvas is on the floor (i.e. z=0)
+		// Its center corresponds to Tracker.getFloorCenter() and is scaled by Tracker.getPixelsPerMeter()
+		
 		pcanvas.beginDraw();
-		float aspect=1920f/1080f;
+		float aspect=pcanvas.width*1.0f/pcanvas.height;
 		float vfov=(float)(2f*Math.atan(1f/(aspect*throwRatio*2)));
 		pcanvas.perspective(vfov, aspect, 1f, 1e10f);
 		// Projector image needs to be flipped in z direction to align correctly
@@ -139,8 +142,7 @@ public class Projector {
 
 		pcanvas.imageMode(PConstants.CENTER);
 		PVector center=Tracker.getFloorCenter();
-		PVector sz=Tracker.getFloorSize();
-		pcanvas.image(canvas,center.x,center.y,sz.x,sz.y);
+		pcanvas.image(canvas,center.x,center.y,canvas.width/Tracker.getPixelsPerMeter(),canvas.height/Tracker.getPixelsPerMeter());
 		pcanvas.endDraw();
 		server.sendImage(pcanvas);
 	}
