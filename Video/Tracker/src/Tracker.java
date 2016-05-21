@@ -375,7 +375,7 @@ public class Tracker extends PApplet {
 
 	/* incoming osc message are forwarded to the oscEvent method. */
 	synchronized public void oscEvent(OscMessage theOscMessage) {
-		PApplet.println("Got message:"+theOscMessage.toString());
+		//PApplet.println("Got message:"+theOscMessage.toString());
 		if (starting)
 			return;
 		if (theOscMessage.isPlugged() == true) 
