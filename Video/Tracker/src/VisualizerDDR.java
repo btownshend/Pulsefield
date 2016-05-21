@@ -272,24 +272,27 @@ public class VisualizerDDR extends Visualizer {
 		if (p.pmap.isEmpty() || cursong==null)
 			return;
 
-		final float leftwidth=150;
-		final float rightwidth=250;
-		final float rightmargin=50;
-
+		final float leftwidth=1.5f;
+		final float rightwidth=2.5f;
+		final float rightmargin=0.50f;
+		
+		PVector sz=Tracker.getFloorSize();
+		PVector center=Tracker.getFloorCenter();
+		
 		g.imageMode(PConstants.CORNER);
 		PImage banner=cursong.getSimfile().getBanner(t,g);
 		if (banner!=null)
-			g.image(banner, Tracker.getFloorCenter().x-Tracker.getFloorSize().x/4, Tracker.getFloorCenter().y-Tracker.getFloorSize().y/2, Tracker.getFloorSize().x/2, Tracker.getFloorSize().y/4);
+			g.image(banner, center.x+(rightwidth+rightmargin-leftwidth)/2, center.y-sz.y/2, sz.x-leftwidth-rightwidth-rightmargin, sz.y/4);
 		
 
-		drawScores(g,p,new PVector(leftwidth,g.height));
+		drawScores(g,p,new PVector(leftwidth,sz.y));
 		g.translate(leftwidth,0);
-		drawPF(g,p,new PVector(g.width-leftwidth-rightwidth,g.height));
-		g.translate(g.width-leftwidth-rightwidth,0);
+		drawPF(g,p,new PVector(sz.x-leftwidth-rightwidth,sz.y));
+		g.translate(sz.x-leftwidth-rightwidth,0);
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 		if (clip!=null) {
 //			PApplet.println("Clip at "+clip.position);
-			drawTicker(g,new PVector(rightwidth-rightmargin,g.height),clip.position);
+			drawTicker(g,new PVector(rightwidth-rightmargin,sz.y),clip.position);
 		} else 
 			PApplet.println("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
 		float songdur=cursong.getSimfile().getduration(pattern);
