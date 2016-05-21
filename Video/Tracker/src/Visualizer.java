@@ -123,4 +123,10 @@ public abstract class Visualizer {
 		}
 		return result;
 	}
+	
+	// Render to projectors -- allows some visualizers to modify specific projectors before imaging
+	public void render(PGraphics canvas, Projector projectors[]) {
+		projectors[0].render(canvas);
+		projectors[1].render(canvas);
+	}
 }
