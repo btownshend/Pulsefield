@@ -65,6 +65,7 @@ public class Tracker extends PApplet {
 	final static int CANVASHEIGHT=600;
 	PGraphics canvas;
 	Projector projectors[];
+	Config jconfig;
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -75,7 +76,11 @@ public class Tracker extends PApplet {
 
 	public void setup() {
 		configFile="/Users/bst/DropBox/Pulsefield/src/urlconfig.txt";
-
+		jconfig=new Config("config.json");
+		Config.setFloat("main", "test", 1.0f);
+		Config.save(this);
+		//Config.load(this);
+		
 		try {
 			config=new URLConfig(configFile);
 		} catch (IOException e) {
@@ -320,8 +325,9 @@ public class Tracker extends PApplet {
 		if (server != null) {
 			server.sendImage(canvas);
 		}
-		projectors[0].render(canvas);
-		projectors[1].render(canvas);
+		vis[currentvis].render(canvas, projectors);
+		
+
 		
 		imageMode(CORNER);
 		image(canvas, 1, 1, canvas.width*cscale, canvas.height*cscale);
@@ -339,6 +345,7 @@ public class Tracker extends PApplet {
 		rect(width-pwidth, 0, pwidth, pheight);
 		image(projectors[1].pcanvas, width-pwidth+1, 1f, pwidth-2, pheight-2);
 		//SyphonTest.draw(this);
+		Config.saveIfModified(this);   // Save if modified
 	}
 
 	public void mouseReleased() {

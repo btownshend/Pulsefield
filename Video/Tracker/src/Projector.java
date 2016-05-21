@@ -23,6 +23,7 @@ public class Projector {
 		aim=Tracker.getFloorCenter();
 		pos=new PVector(0f,-0.5f,1.5f); // Assume it is above/behind lidar
 		rotation=0f;
+		loadSettings();
 		setTO();
 	}
 
@@ -75,6 +76,8 @@ public class Projector {
 				PApplet.println("Bad projector throwratio: "+msg.get(0).floatValue());
 		} else if (components.length==4 && components[3].equals("rotation")&&msg.checkTypetag("f")) {
 			rotation=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("save")) {
+			saveSettings();
 		} else 
 			PApplet.println("Unknown projector Message: "+msg.toString());
 		setTO();
@@ -99,7 +102,29 @@ public class Projector {
 		setTOValue("throwratio",throwRatio,"%.4f");
 		setTOValue("rotation",rotation,"%.4f");
 	}
+	
+	public void saveSettings() {
+		PApplet.println("Projector.saveSettings("+id+")");
+		Config.setFloat("proj"+id, "aim.x", aim.x);
+		Config.setFloat("proj"+id, "aim.y", aim.y);
+		Config.setFloat("proj"+id, "pos.x", pos.x);
+		Config.setFloat("proj"+id, "pos.y", pos.y);
+		Config.setFloat("proj"+id, "pos.z", pos.z);
+		Config.setFloat("proj"+id, "rotation", rotation);
+		Config.setFloat("proj"+id, "throwratio", throwRatio);
+	}
 
+	public void loadSettings() {
+		PApplet.println("Projector.loadSettings("+id+")");
+		aim.x=Config.getFloat("proj"+id, "aim.x", aim.x);
+		aim.y=Config.getFloat("proj"+id, "aim.y", aim.y);
+		pos.x=Config.getFloat("proj"+id, "pos.x", pos.x);
+		PApplet.println("pos.x="+pos.x);
+		pos.y=Config.getFloat("proj"+id, "pos.y", pos.y);
+		pos.z=Config.getFloat("proj"+id, "pos.z", pos.z);
+		rotation=Config.getFloat("proj"+id, "rotation", rotation);
+		throwRatio=Config.getFloat("proj"+id, "throwratio", throwRatio);
+	}
 	public void render(PGraphics canvas) {
 		// Send the given canvas to the projector
 		pcanvas.beginDraw();
