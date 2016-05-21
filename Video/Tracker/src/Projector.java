@@ -82,10 +82,10 @@ public class Projector {
 
 	private void setTOValue(String name, double value, String fmt) {
 		TouchOSC to=TouchOSC.getInstance();
-		OscMessage set = new OscMessage("/proj/"+name+"/"+id);
+		OscMessage set = new OscMessage("/proj/"+id+"/"+name);
 		set.add(value);
 		to.sendMessage(set);
-		set=new OscMessage("/proj/"+name+"/value/"+id);
+		set=new OscMessage("/proj/"+id+"/"+name+"/value");
 		set.add(String.format(fmt, value));
 		to.sendMessage(set);
 	}
