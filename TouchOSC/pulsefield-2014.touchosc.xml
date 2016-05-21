@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout version="12" mode="1" orientation="vertical">
+  <tabpage name="c2Vx" scalef="0.0" scalet="1.0" osc_cs="/page/seq">
+    <control name="ZmFkZXIx" x="34" y="840" w="200" h="50" color="red" scalef="70.0" scalet="110.0" osc_cs="/ui/laser/hfov" type="faderh" response="absolute" inverted="false" centered="false"/>
+    <control name="ZmFkZXI4" x="35" y="485" w="200" h="50" color="red" scalef="-1.0" scalet="0.0" osc_cs="/ui/laser/xmin" type="faderh" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwzMw==" x="736" y="69" w="25" h="80" color="green" type="labelv" text="TGFzZXI=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw2Ng==" x="735" y="248" w="25" h="80" color="red" type="labelv" text="UG9zaXRpb25z" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw3MQ==" x="735" y="438" w="25" h="80" color="red" type="labelv" text="Q29udHJvbA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw3Mg==" x="737" y="648" w="25" h="80" color="red" type="labelv" text="QWJsZXRvbi9Hcmlk" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMA==" x="736" y="836" w="25" h="80" color="red" type="labelv" text="VmlkZW8=" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMQ==" x="558" y="145" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/alignment" type="toggle" local_off="true"/>
+    <control name="ZmFkZXIx" x="15" y="52" w="40" h="144" color="red" scalef="10000.0" scalet="40000.0" osc_cs="/ui/laser/pps" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwxNA==" x="21" y="61" w="25" h="126" color="purple" osc_cs="/ui/laser/pps/label" type="labelv" text="UFBT" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIy" x="59" y="52" w="40" h="144" color="red" scalef="100.0" scalet="4000.0" osc_cs="/ui/laser/points" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwxNQ==" x="67" y="61" w="25" h="126" color="purple" osc_cs="/ui/laser/points/label" type="labelv" text="TnVtIFBvaW50cw==" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIz" x="105" y="52" w="40" h="144" color="red" scalef="0.0" scalet="30.0" osc_cs="/ui/laser/preblank" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwxNg==" x="113" y="61" w="25" h="126" color="purple" osc_cs="/ui/laser/preblank/label" type="labelv" text="QmxhbmtpbmcgKHByZSk=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI0" x="151" y="52" w="40" h="144" color="red" scalef="0.0" scalet="30.0" osc_cs="/ui/laser/postblank" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwxNw==" x="159" y="61" w="25" h="126" color="purple" osc_cs="/ui/laser/postblank/label" type="labelv" text="QmxhbmtpbmcgKHBvc3Qp" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI1" x="198" y="52" w="40" h="144" color="red" scalef="-3.0" scalet="6.0" osc_cs="/ui/laser/skew" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwxOA==" x="206" y="63" w="25" h="126" color="purple" osc_cs="/ui/laser/skew/label" type="labelv" text="Qmxhbmtpbmcgc2tldw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxOQ==" x="68" y="22" w="80" h="25" color="red" type="labelh" text="TGFzZXIgU2V0dXA=" size="14" background="true" outline="false"/>
+    <control name="dG9nZ2xlMw==" x="622" y="40" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/freeze" type="toggle" local_off="true"/>
+    <control name="dG9nZ2xlNQ==" x="622" y="93" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/body" type="toggle" local_off="true"/>
+    <control name="dG9nZ2xlNg==" x="622" y="146" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/legs" type="toggle" local_off="true"/>
+    <control name="bGFiZWwy" x="632" y="22" w="25" h="80" color="purple" type="labelv" text="RnJlZXpl" size="12" background="false" outline="false"/>
+    <control name="bGFiZWwz" x="632" y="75" w="25" h="80" color="purple" type="labelv" text="Qm9keQ==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0" x="632" y="128" w="25" h="80" color="purple" type="labelv" text="TGVncw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1" x="568" y="127" w="25" h="80" color="purple" type="labelv" text="QWxpZ24=" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMQ==" x="558" y="38" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/grid" type="toggle" local_off="true"/>
+    <control name="bGFiZWw2" x="568" y="21" w="25" h="80" color="purple" type="labelv" text="R3JpZA==" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMg==" x="558" y="91" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/background" type="toggle" local_off="true"/>
+    <control name="bGFiZWw3" x="568" y="74" w="25" h="80" color="purple" type="labelv" text="Qmc=" size="14" background="false" outline="false"/>
+    <control name="bXVsdGl0b2dnbGUx" x="461" y="38" w="50" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/enable" type="multitoggle" number_x="1" number_y="4" ex_mode="false" local_off="true"/>
+    <control name="bGFiZWw4" x="516" y="38" w="25" h="199" color="red" type="labelv" text="RW5hYmxl" size="16" background="true" outline="false"/>
+    <control name="dG9nZ2xlMw==" x="558" y="197" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/test" type="toggle" local_off="true"/>
+    <control name="bGFiZWw5" x="568" y="179" w="25" h="80" color="purple" type="labelv" text="VGVzdA==" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMQ==" x="558" y="249" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/outline" type="toggle" local_off="true"/>
+    <control name="bGFiZWwx" x="568" y="231" w="25" h="80" color="purple" type="labelv" text="T3V0bGluZQ==" size="12" background="false" outline="false"/>
+    <control name="bGFiZWwxNg==" x="100" y="846" w="80" h="25" color="purple" osc_cs="/ui/laser/hfov/label" type="labelh" text="Pz8=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyMA==" x="95" y="499" w="80" h="25" color="purple" osc_cs="/ui/laser/xmin/label" type="labelh" text="Pz8=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI5" x="35" y="543" w="200" h="50" color="red" scalef="-1.0" scalet="0.0" osc_cs="/ui/laser/ymin" type="faderh" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwyNA==" x="95" y="556" w="80" h="25" color="purple" osc_cs="/ui/laser/ymin/label" type="labelh" text="Pz8=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIxMA==" x="35" y="599" w="200" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/xmax" type="faderh" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwyNQ==" x="95" y="612" w="80" h="25" color="purple" osc_cs="/ui/laser/xmax/label" type="labelh" text="Pz8=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIxMQ==" x="35" y="654" w="200" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/ymax" type="faderh" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwyNg==" x="95" y="667" w="80" h="25" color="purple" osc_cs="/ui/laser/ymax/label" type="labelh" text="Pz8=" size="14" background="false" outline="false"/>
+    <control name="bXVsdGl0b2dnbGUx" x="377" y="585" w="50" h="220" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/select" type="multitoggle" number_x="1" number_y="4" ex_mode="true" local_off="false"/>
+    <control name="bGFiZWwx" x="436" y="597" w="25" h="199" color="red" type="labelv" text="U2VsZWN0" size="16" background="true" outline="false"/>
+    <control name="ZmFkZXIy" x="34" y="840" w="200" h="50" color="red" scalef="70.0" scalet="110.0" osc_cs="/ui/laser/hfov" type="faderh" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwy" x="100" y="846" w="80" h="25" color="purple" osc_cs="/ui/laser/hfov/label" type="labelh" text="Pz8=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIz" x="35" y="751" w="200" h="50" color="red" scalef="70.0" scalet="110.0" osc_cs="/ui/laser/hfov" type="faderh" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwz" x="101" y="757" w="80" h="25" color="purple" osc_cs="/ui/laser/hfov/label" type="labelh" text="Pz8=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI0" x="35" y="751" w="200" h="50" color="red" scalef="70.0" scalet="110.0" osc_cs="/ui/laser/vfov" type="faderh" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0" x="101" y="763" w="80" h="25" color="purple" osc_cs="/ui/laser/vfov/label" type="labelh" text="Pz8=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1" x="235" y="764" w="80" h="25" color="red" type="labelh" text="VkZPVg==" size="16" background="true" outline="false"/>
+    <control name="bGFiZWw2" x="235" y="856" w="80" h="25" color="red" type="labelh" text="SEZPVg==" size="16" background="true" outline="false"/>
+    <control name="bGFiZWw3" x="235" y="498" w="80" h="25" color="red" type="labelh" text="WCBNaW4=" size="16" background="true" outline="false"/>
+    <control name="bGFiZWw4" x="235" y="554" w="80" h="25" color="red" type="labelh" text="WSBNaW4=" size="16" background="true" outline="false"/>
+    <control name="bGFiZWw5" x="235" y="610" w="80" h="25" color="red" type="labelh" text="WCBNYXg=" size="16" background="true" outline="false"/>
+    <control name="bGFiZWwxMA==" x="235" y="667" w="80" h="25" color="red" type="labelh" text="WSBNYXg=" size="16" background="true" outline="false"/>
+    <control name="dG9nZ2xlMQ==" x="437" y="897" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/save" type="toggle" local_off="true"/>
+    <control name="bGFiZWwz" x="447" y="879" w="25" h="80" color="purple" type="labelv" text="U2F2ZQ==" size="12" background="false" outline="false"/>
+    <control name="dG9nZ2xlMg==" x="378" y="898" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/ui/laser/load" type="toggle" local_off="true"/>
+    <control name="bGFiZWw0" x="388" y="880" w="25" h="80" color="purple" type="labelv" text="TG9hZA==" size="12" background="false" outline="false"/>
+  </tabpage>
+  <tabpage name="cG9zaXRpb25z" scalef="0.0" scalet="1.0" osc_cs="/page/positions">
+    <control name="cHVzaDE=" x="470" y="172" w="25" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/touchosc/newtrack/1" type="push" local_off="false"/>
+    <control name="bGFiZWwyNA==" x="471" y="172" w="25" h="50" color="red" osc_cs="/touchosc/id/1" type="labelv" text="" size="14" background="true" outline="true"/>
+    <control name="cHVzaDg=" x="128" y="172" w="25" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/touchosc/newtrack/5" type="push" local_off="false"/>
+    <control name="cHVzaDQ=" x="126" y="399" w="25" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/touchosc/newtrack/6" type="push" local_off="false"/>
+    <control name="cHVzaDM=" x="127" y="624" w="25" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/touchosc/newtrack/7" type="push" local_off="false"/>
+    <control name="cHVzaDI=" x="126" y="850" w="25" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/touchosc/newtrack/8" type="push" local_off="false"/>
+    <control name="cHVzaDU=" x="470" y="850" w="25" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/touchosc/newtrack/4" type="push" local_off="false"/>
+    <control name="cHVzaDY=" x="469" y="626" w="25" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/touchosc/newtrack/3" type="push" local_off="false"/>
+    <control name="cHVzaDc=" x="472" y="401" w="25" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/touchosc/newtrack/2" type="push" local_off="false"/>
+    <control name="bGFiZWwzNA==" x="736" y="249" w="25" h="80" color="green" type="labelv" text="UG9zaXRpb25z" size="14" background="false" outline="false"/>
+    <control name="eHkx" x="503" y="5" w="220" h="220" color="red" scalef="-1.0" scalet="1.0" osc_cs="/touchosc/loc/1" type="xy" inverted_x="false" inverted_y="false"/>
+    <control name="eHky" x="503" y="230" w="220" h="220" color="red" scalef="-1.0" scalet="1.0" osc_cs="/touchosc/loc/2" type="xy" inverted_x="false" inverted_y="false"/>
+    <control name="eHkz" x="503" y="455" w="220" h="220" color="red" scalef="-1.0" scalet="1.0" osc_cs="/touchosc/loc/3" type="xy" inverted_x="false" inverted_y="false"/>
+    <control name="eHk0" x="503" y="680" w="220" h="220" color="red" scalef="-1.0" scalet="1.0" osc_cs="/touchosc/loc/4" type="xy" inverted_x="false" inverted_y="false"/>
+    <control name="eHk1" x="158" y="5" w="220" h="220" color="red" scalef="-1.0" scalet="1.0" osc_cs="/touchosc/loc/5" type="xy" inverted_x="false" inverted_y="false"/>
+    <control name="eHk2" x="158" y="230" w="220" h="220" color="red" scalef="-1.0" scalet="1.0" osc_cs="/touchosc/loc/6" type="xy" inverted_x="false" inverted_y="false"/>
+    <control name="bGFiZWwxMA==" x="688" y="987" w="25" h="31" color="gray" osc_cs="/pf/set/npeople" type="labelv" text="MA==" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwxMQ==" x="689" y="911" w="25" h="80" color="gray" type="labelv" text="T2NjdXBhbnRzOg==" size="14" background="true" outline="false"/>
+    <control name="bXVsdGl0b2dnbGUx" x="64" y="946" w="618" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/midi/preset" type="multitoggle" number_x="15" number_y="1" ex_mode="true" local_off="true"/>
+    <control name="bGFiZWwz" x="337" y="996" w="80" h="25" color="red" osc_cs="/midi/presetname" type="labelh" text="UHJlc2V0" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwyMQ==" x="444" y="62" w="25" h="160" color="purple" osc_cs="/midi/pgm/1/value" type="labelv" text="MQ==" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwyMg==" x="444" y="289" w="25" h="157" color="purple" osc_cs="/midi/pgm/2/value" type="labelv" text="Mg==" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwyMw==" x="444" y="517" w="25" h="157" color="purple" osc_cs="/midi/pgm/3/value" type="labelv" text="Mw==" size="14" background="true" outline="false"/>
+    <control name="ZW5jb2RlcjQ=" x="436" y="2" w="59" h="59" color="red" scalef="-1.0" scalet="1.0" osc_cs="/midi/pgm/1" type="encoder"/>
+    <control name="ZW5jb2RlcjU=" x="436" y="457" w="59" h="59" color="red" scalef="-1.0" scalet="1.0" osc_cs="/midi/pgm/3" type="encoder"/>
+    <control name="ZW5jb2RlcjY=" x="436" y="227" w="59" h="59" color="red" scalef="-1.0" scalet="1.0" osc_cs="/midi/pgm/2" type="encoder"/>
+    <control name="bGFiZWwyNQ==" x="471" y="624" w="25" h="50" color="red" osc_cs="/touchosc/id/3" type="labelv" text="" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwyNg==" x="471" y="400" w="25" h="50" color="red" osc_cs="/touchosc/id/2" type="labelv" text="" size="14" background="true" outline="true"/>
+    <control name="ZW5jb2RlcjE=" x="436" y="682" w="59" h="59" color="red" scalef="-1.0" scalet="1.0" osc_cs="/midi/pgm/4" type="encoder"/>
+    <control name="bGFiZWwyNw==" x="444" y="742" w="25" h="160" color="purple" osc_cs="/midi/pgm/4/value" type="labelv" text="NA==" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwyOA==" x="99" y="62" w="25" h="160" color="purple" osc_cs="/midi/pgm/5/value" type="labelv" text="NQ==" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwyOQ==" x="99" y="289" w="25" h="159" color="purple" osc_cs="/midi/pgm/6/value" type="labelv" text="Ng==" size="14" background="true" outline="false"/>
+    <control name="ZW5jb2RlcjI=" x="89" y="229" w="59" h="59" color="red" scalef="-1.0" scalet="1.0" osc_cs="/midi/pgm/6" type="encoder"/>
+    <control name="ZW5jb2RlcjM=" x="89" y="2" w="59" h="59" color="red" scalef="-1.0" scalet="1.0" osc_cs="/midi/pgm/5" type="encoder"/>
+    <control name="bGFiZWwzMA==" x="128" y="400" w="25" h="50" color="red" osc_cs="/touchosc/id/6" type="labelv" text="" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwzMQ==" x="128" y="172" w="25" h="50" color="red" osc_cs="/touchosc/id/5" type="labelv" text="" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwzMg==" x="471" y="850" w="25" h="50" color="red" osc_cs="/touchosc/id/4" type="labelv" text="" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw2MQ==" x="736" y="69" w="25" h="80" color="red" type="labelv" text="TGFzZXI=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw2NQ==" x="736" y="642" w="25" h="80" color="red" type="labelv" text="QWJsZXRvbi9Hcmlk" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw3MA==" x="736" y="446" w="25" h="80" color="red" type="labelv" text="Q29udHJvbA==" size="14" background="false" outline="false"/>
+    <control name="eHkx" x="158" y="455" w="220" h="220" color="red" scalef="-1.0" scalet="1.0" osc_cs="/touchosc/loc/7" type="xy" inverted_x="false" inverted_y="false"/>
+    <control name="bGFiZWwx" x="99" y="512" w="25" h="159" color="purple" osc_cs="/midi/pgm/7/value" type="labelv" text="Nw==" size="14" background="true" outline="false"/>
+    <control name="ZW5jb2RlcjE=" x="89" y="452" w="59" h="59" color="red" scalef="-1.0" scalet="1.0" osc_cs="/midi/pgm/7" type="encoder"/>
+    <control name="bGFiZWwy" x="128" y="624" w="25" h="50" color="red" osc_cs="/touchosc/id/7" type="labelv" text="" size="14" background="true" outline="true"/>
+    <control name="eHky" x="158" y="680" w="220" h="220" color="red" scalef="-1.0" scalet="1.0" osc_cs="/touchosc/loc/8" type="xy" inverted_x="false" inverted_y="false"/>
+    <control name="bGFiZWwz" x="99" y="739" w="25" h="159" color="purple" osc_cs="/midi/pgm/8/value" type="labelv" text="OA==" size="14" background="true" outline="false"/>
+    <control name="ZW5jb2RlcjI=" x="89" y="679" w="59" h="59" color="red" scalef="-1.0" scalet="1.0" osc_cs="/midi/pgm/8" type="encoder"/>
+    <control name="bGFiZWw0" x="128" y="850" w="25" h="50" color="red" osc_cs="/touchosc/id/8" type="labelv" text="" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw5" x="736" y="836" w="25" h="80" color="red" type="labelv" text="VmlkZW8=" size="14" background="false" outline="false"/>
+  </tabpage>
+  <tabpage name="Mw==" scalef="0.0" scalet="16.0" osc_cs="/page/control">
+    <control name="cHVzaDI=" x="654" y="642" w="17" h="106" color="red" scalef="0.0" scalet="1.0" osc_cs="/snapshot/trigger" type="push" local_off="false"/>
+    <control name="bGFiZWwyMg==" x="649" y="642" w="25" h="110" color="red" osc_cs="/snapshot/label" type="labelv" text="ICAgICAgU25hcHNob3Q=" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwyMQ==" x="684" y="642" w="25" h="110" color="red" type="labelv" text="ICAgICAgICAgICAgIG1zZWMu" size="14" background="true" outline="true"/>
+    <control name="Y2FsaWJyYXRl" x="574" y="799" w="52" h="147" color="red" scalef="0.0" scalet="1.0" osc_cs="/pf/calibrate" type="push" local_off="false"/>
+    <control name="bGFiZWwxMQ==" x="589" y="831" w="25" h="80" color="red" type="labelv" text="Q2FsaWJyYXRl" size="14" background="false" outline="false"/>
+    <control name="cHVzaDI=" x="508" y="624" w="52" h="147" color="red" scalef="9998.0" scalet="9998.0" osc_cs="/pf/dest/add/port/TO" type="push" local_off="false"/>
+    <control name="bGFiZWwxMg==" x="522" y="625" w="24" h="143" color="red" type="labelv" text="T1NDIENvbm5lY3Q=" size="14" background="false" outline="false"/>
+    <control name="bXVsdGl0b2dnbGUx" x="396" y="75" w="200" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="/sound/app/buttons" type="multitoggle" number_x="5" number_y="5" ex_mode="true" local_off="true"/>
+    <control name="ZmFkZXIx" x="236" y="664" w="50" h="200" color="red" scalef="0.0" scalet="127.0" osc_cs="/midi/velocity" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="ZmFkZXIy" x="166" y="663" w="50" h="200" color="red" scalef="10.0" scalet="480.0" osc_cs="/midi/duration" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwx" x="248" y="725" w="25" h="80" color="red" type="labelv" text="VmVsb2NpdHk=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwy" x="179" y="708" w="25" h="121" color="red" osc_cs="/midi/duration/label" type="labelv" text="RHVyYXRpb24gKFRpY2tzKQ==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0" x="604" y="76" w="25" h="80" color="red" osc_cs="/sound/app/title" type="labelv" text="U291bmQgQXBw" size="14" background="true" outline="false"/>
+    <control name="bXVsdGl0b2dnbGUz" x="395" y="310" w="200" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="/sample/app/buttons" type="multitoggle" number_x="5" number_y="5" ex_mode="true" local_off="true"/>
+    <control name="bGFiZWw2" x="604" y="309" w="25" h="80" color="red" osc_cs="/sample/app/title" type="labelv" text="U2FtcGxlIFNldA==" size="14" background="true" outline="false"/>
+    <control name="bGFiZWw3" x="604" y="151" w="25" h="125" color="red" osc_cs="/sound/app/name" type="labelv" text="Tm9uZQ==" size="14" background="true" outline="false"/>
+    <control name="bGFiZWw5" x="604" y="393" w="25" h="116" color="red" osc_cs="/sample/app/name" type="labelv" text="Tm9uZQ==" size="14" background="true" outline="false"/>
+    <control name="YmF0dGVyeTM=" x="688" y="922" w="25" h="80" color="gray" type="batteryv" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwxNA==" x="688" y="842" w="25" h="80" color="gray" type="labelv" text="QmF0dGVyeTo=" size="14" background="true" outline="false"/>
+    <control name="ZmFkZXIz" x="304" y="664" w="50" h="200" color="red" scalef="60.0" scalet="480.0" osc_cs="/tempo" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwxNQ==" x="316" y="709" w="23" h="123" color="red" type="labelv" text="VGVtcG8gKEJQTSk=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI1" x="404" y="665" w="50" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="/volume" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwxNg==" x="418" y="726" w="20" h="80" color="red" type="labelv" text="Vm9sdW1l" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxOA==" x="179" y="577" w="25" h="80" color="red" osc_cs="/midi/duration/value" type="labelv" text="VGlja3M=" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwxOQ==" x="248" y="577" w="25" h="80" color="red" osc_cs="/midi/velocity/value" type="labelv" text="MC0xMjc=" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwyMA==" x="312" y="577" w="25" h="80" color="red" osc_cs="/tempo/value" type="labelv" text="QlBN" size="14" background="true" outline="false"/>
+    <control name="bGFiZWw3" x="590" y="561" w="25" h="60" color="red" type="labelv" text="RnJhbWU6" size="14" background="true" outline="false"/>
+    <control name="bGFiZWw4" x="573" y="625" w="52" h="147" color="red" osc_cs="/pf/frame" type="labelv" text="MA==" size="29" background="true" outline="true"/>
+    <control name="cHVzaDE=" x="505" y="799" w="52" h="147" color="red" scalef="0.0" scalet="1.0" osc_cs="/pf/reset" type="push" local_off="false"/>
+    <control name="bGFiZWwy" x="520" y="831" w="25" h="80" color="red" type="labelv" text="RnVsbCBSZXNldA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzNQ==" x="734" y="445" w="25" h="80" color="green" type="labelv" text="Q29udHJvbA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw2NA==" x="736" y="641" w="25" h="80" color="red" type="labelv" text="QWJsZXRvbi9Hcmlk" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMQ==" x="4" y="666" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/enable/max" type="toggle" local_off="false"/>
+    <control name="dG9nZ2xlMg==" x="53" y="665" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="/enable/ableton" type="toggle" local_off="false"/>
+    <control name="bGFiZWw3Mw==" x="64" y="724" w="25" h="99" color="red" type="labelv" text="QWJsZXRvbiBMaXZl" size="14" background="true" outline="false"/>
+    <control name="bGFiZWw3NA==" x="15" y="723" w="25" h="99" color="red" type="labelv" text="TUFYL01TUA==" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwx" x="416" y="577" w="25" h="80" color="red" osc_cs="/volume/value" type="labelv" text="Vm9s" size="14" background="true" outline="false"/>
+    <control name="bXVsdGlmYWRlcjE=" x="26" y="943" w="430" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="/meter" type="multifaderh" inverted="false" centered="false" number="2"/>
+    <control name="bGVkMg==" x="684" y="102" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/health/FE" type="led"/>
+    <control name="bGFiZWwz" x="664" y="97" w="20" h="30" color="red" type="labelv" text="RkU=" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwxMw==" x="604" y="151" w="25" h="125" color="red" osc_cs="/sound/app/name" type="labelv" text="Tm9uZQ==" size="14" background="true" outline="false"/>
+    <control name="bGVkMTI=" x="684" y="143" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/health/LS" type="led"/>
+    <control name="bGFiZWwxNA==" x="664" y="138" w="20" h="30" color="red" type="labelv" text="TFM=" size="14" background="true" outline="false"/>
+    <control name="bGVkMTM=" x="684" y="183" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/health/VD" type="led"/>
+    <control name="bGFiZWwxNQ==" x="664" y="178" w="20" h="30" color="red" type="labelv" text="VkQ=" size="14" background="true" outline="false"/>
+    <control name="bGVkMTQ=" x="684" y="222" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/health/AL" type="led"/>
+    <control name="bGFiZWwxNg==" x="664" y="217" w="20" h="30" color="red" type="labelv" text="QUw=" size="14" background="true" outline="false"/>
+    <control name="bGVkMTU=" x="684" y="262" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/health/MX" type="led"/>
+    <control name="bGFiZWwxNw==" x="664" y="257" w="20" h="30" color="red" type="labelv" text="TVg=" size="14" background="true" outline="false"/>
+    <control name="bGVkMTY=" x="684" y="301" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/health/TO" type="led"/>
+    <control name="bGFiZWwxOA==" x="664" y="296" w="20" h="30" color="red" type="labelv" text="VE8=" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwy" x="694" y="392" w="20" h="30" color="green" osc_cs="/hits/visible/1" type="labelv" text="NDAw" size="12" background="true" outline="false"/>
+    <control name="bGFiZWwz" x="674" y="392" w="20" h="30" color="red" osc_cs="/hits/unknown/1" type="labelv" text="NDAw" size="12" background="true" outline="false"/>
+    <control name="bGFiZWw0" x="654" y="392" w="20" h="30" color="yellow" osc_cs="/hits/bg/1" type="labelv" text="NDAw" size="12" background="true" outline="false"/>
+    <control name="bGFiZWw1" x="694" y="422" w="20" h="30" color="green" osc_cs="/hits/visible/2" type="labelv" text="NDAw" size="12" background="true" outline="false"/>
+    <control name="bGFiZWw2" x="674" y="422" w="20" h="30" color="red" osc_cs="/hits/unknown/2" type="labelv" text="NDAw" size="12" background="true" outline="false"/>
+    <control name="bGFiZWw3" x="654" y="422" w="20" h="30" color="yellow" osc_cs="/hits/bg/2" type="labelv" text="NDAw" size="12" background="true" outline="false"/>
+    <control name="bGFiZWwyMA==" x="684" y="646" w="25" h="60" color="red" osc_cs="/touchosc/latency" type="labelv" text="bGF0ZW5jeQ==" size="14" background="false" outline="false"/>
+    <control name="bGVkMQ==" x="652" y="650" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="/snapshot" type="led"/>
+    <control name="bGFiZWw4" x="736" y="836" w="25" h="80" color="red" type="labelv" text="VmlkZW8=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMw==" x="735" y="248" w="25" h="80" color="red" type="labelv" text="UG9zaXRpb25z" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw2Mg==" x="736" y="69" w="25" h="80" color="red" type="labelv" text="TGFzZXI=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIx" x="38" y="77" w="194" h="50" color="red" scalef="-1.0" scalet="13.0" osc_cs="/pf/miny" type="faderh" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwz" x="105" y="89" w="80" h="25" color="red" type="labelh" text="TWluIFk=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIy" x="66" y="322" w="50" h="200" color="red" scalef="0.0" scalet="15.0" osc_cs="/pf/maxx" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwy" x="77" y="381" w="28" h="80" color="red" type="labelv" text="TWF4IFg=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI2" x="111" y="156" w="194" h="50" color="red" scalef="2.0" scalet="15.0" osc_cs="/pf/maxy" type="faderh" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw3" x="178" y="168" w="80" h="25" color="red" type="labelh" text="TWF4IFk=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI3" x="139" y="232" w="50" h="200" color="red" scalef="-15.0" scalet="0.0" osc_cs="/pf/minx" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw4" x="150" y="291" w="28" h="80" color="red" type="labelv" text="TWluIFg=" size="14" background="false" outline="false"/>
+  </tabpage>
+  <tabpage name="NA==" scalef="0.0" scalet="1.0" osc_cs="/page/ableton">
+    <control name="bGFiZWw0Mw==" x="484" y="382" w="80" h="80" color="gray" osc_cs="/grid/cell/60" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="cHVzaDE=" x="204" y="2" w="30" h="340" color="orange" scalef="0.0" scalet="1.0" osc_cs="/touchosc/song/incr" type="push" local_off="false"/>
+    <control name="bGFiZWwzNg==" x="735" y="637" w="25" h="80" color="green" type="labelv" text="QWJsZXRvbi9Hcmlk" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw2Mw==" x="736" y="69" w="25" h="80" color="red" type="labelv" text="TGFzZXI=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw2OA==" x="736" y="248" w="25" h="80" color="red" type="labelv" text="UG9zaXRpb25z" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw2OQ==" x="737" y="445" w="25" h="80" color="red" type="labelv" text="Q29udHJvbA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwx" x="158" y="-6" w="20" h="60" color="orange" osc_cs="/grid/table/heading/track" type="labelv" text="VHJhY2s=" size="16" background="false" outline="false"/>
+    <control name="bGFiZWwy" x="158" y="44" w="20" h="60" color="orange" osc_cs="/grid/table/heading/scene" type="labelv" text="U2NlbmU=" size="16" background="false" outline="false"/>
+    <control name="bGFiZWwz" x="158" y="104" w="20" h="220" color="orange" osc_cs="/grid/table/heading/clip" type="labelv" text="Q2xpcA==" size="16" background="false" outline="false"/>
+    <control name="bGFiZWw0" x="138" y="-6" w="20" h="60" color="orange" osc_cs="/grid/table/1/track" type="labelv" text="MQ==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1" x="138" y="44" w="20" h="60" color="orange" osc_cs="/grid/table/1/scene" type="labelv" text="UzE=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw2" x="138" y="104" w="20" h="220" color="orange" osc_cs="/grid/table/1/clip" type="labelv" text="QzE=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw3" x="118" y="-6" w="20" h="60" color="orange" osc_cs="/grid/table/2/track" type="labelv" text="Mg==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw4" x="118" y="44" w="20" h="60" color="orange" osc_cs="/grid/table/2/scene" type="labelv" text="UzI=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw5" x="118" y="104" w="20" h="220" color="orange" osc_cs="/grid/table/2/clip" type="labelv" text="QzI=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMA==" x="98" y="-6" w="20" h="60" color="orange" osc_cs="/grid/table/3/track" type="labelv" text="Mw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMQ==" x="98" y="44" w="20" h="60" color="orange" osc_cs="/grid/table/3/scene" type="labelv" text="UzM=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMg==" x="98" y="104" w="20" h="220" color="orange" osc_cs="/grid/table/3/clip" type="labelv" text="QzM=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMw==" x="78" y="-6" w="20" h="60" color="orange" osc_cs="/grid/table/4/track" type="labelv" text="NA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxNA==" x="78" y="44" w="20" h="60" color="orange" osc_cs="/grid/table/4/scene" type="labelv" text="UzQ=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxNQ==" x="78" y="104" w="20" h="220" color="orange" osc_cs="/grid/table/4/clip" type="labelv" text="QzQ=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxNg==" x="58" y="-6" w="20" h="60" color="orange" osc_cs="/grid/table/5/track" type="labelv" text="NQ==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxNw==" x="58" y="44" w="20" h="60" color="orange" osc_cs="/grid/table/5/scene" type="labelv" text="UzU=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxOA==" x="58" y="104" w="20" h="220" color="orange" osc_cs="/grid/table/5/clip" type="labelv" text="QzU=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxOQ==" x="38" y="-6" w="20" h="60" color="orange" osc_cs="/grid/table/6/track" type="labelv" text="Ng==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyMA==" x="38" y="44" w="20" h="60" color="orange" osc_cs="/grid/table/6/scene" type="labelv" text="UzY=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyMQ==" x="38" y="104" w="20" h="220" color="orange" osc_cs="/grid/table/6/clip" type="labelv" text="QzY=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyMg==" x="18" y="-6" w="20" h="60" color="orange" osc_cs="/grid/table/7/track" type="labelv" text="Nw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyMw==" x="18" y="44" w="20" h="60" color="orange" osc_cs="/grid/table/7/scene" type="labelv" text="Uzc=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyNA==" x="18" y="104" w="20" h="220" color="orange" osc_cs="/grid/table/7/clip" type="labelv" text="Qzc=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyNQ==" x="-2" y="-6" w="20" h="60" color="orange" osc_cs="/grid/table/8/track" type="labelv" text="OA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyNg==" x="-2" y="44" w="20" h="60" color="orange" osc_cs="/grid/table/8/scene" type="labelv" text="Uzg=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyNw==" x="-2" y="104" w="20" h="220" color="orange" osc_cs="/grid/table/8/clip" type="labelv" text="Qzg=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyOQ==" x="644" y="542" w="80" h="80" color="gray" osc_cs="/grid/cell/48" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwzMA==" x="644" y="622" w="80" h="80" color="gray" osc_cs="/grid/cell/39" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwzMQ==" x="644" y="702" w="80" h="80" color="gray" osc_cs="/grid/cell/30" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwzMg==" x="644" y="782" w="80" h="80" color="gray" osc_cs="/grid/cell/21" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwzNg==" x="564" y="462" w="80" h="80" color="gray" osc_cs="/grid/cell/55" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwzNw==" x="564" y="542" w="80" h="80" color="gray" osc_cs="/grid/cell/47" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwzOA==" x="564" y="622" w="80" h="80" color="gray" osc_cs="/grid/cell/38" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwzOQ==" x="564" y="702" w="80" h="80" color="gray" osc_cs="/grid/cell/29" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw0MA==" x="564" y="782" w="80" h="80" color="gray" osc_cs="/grid/cell/20" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw0MQ==" x="564" y="862" w="80" h="80" color="gray" osc_cs="/grid/cell/12" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw0NA==" x="484" y="462" w="80" h="80" color="gray" osc_cs="/grid/cell/54" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw0NQ==" x="484" y="542" w="80" h="80" color="gray" osc_cs="/grid/cell/46" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw0Ng==" x="484" y="622" w="80" h="80" color="gray" osc_cs="/grid/cell/37" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw0Nw==" x="484" y="702" w="80" h="80" color="gray" osc_cs="/grid/cell/28" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw0OA==" x="484" y="782" w="80" h="80" color="gray" osc_cs="/grid/cell/19" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw0OQ==" x="484" y="862" w="80" h="80" color="gray" osc_cs="/grid/cell/11" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw1MA==" x="484" y="942" w="80" h="80" color="gray" osc_cs="/grid/cell/5" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw1MQ==" x="404" y="382" w="80" h="80" color="gray" osc_cs="/grid/cell/59" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw1Mg==" x="404" y="462" w="80" h="80" color="gray" osc_cs="/grid/cell/53" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw1Mw==" x="404" y="542" w="80" h="80" color="gray" osc_cs="/grid/cell/45" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw1NA==" x="404" y="622" w="80" h="80" color="gray" osc_cs="/grid/cell/36" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw1NQ==" x="404" y="702" w="80" h="80" color="gray" osc_cs="/grid/cell/27" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw1Ng==" x="404" y="782" w="80" h="80" color="gray" osc_cs="/grid/cell/18" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw1Nw==" x="404" y="862" w="80" h="80" color="gray" osc_cs="/grid/cell/10" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw1OA==" x="404" y="942" w="80" h="80" color="gray" osc_cs="/grid/cell/4" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw1OQ==" x="324" y="382" w="80" h="80" color="gray" osc_cs="/grid/cell/58" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw2MA==" x="324" y="462" w="80" h="80" color="gray" osc_cs="/grid/cell/52" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw2MQ==" x="324" y="542" w="80" h="80" color="gray" osc_cs="/grid/cell/44" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw2Mg==" x="324" y="622" w="80" h="80" color="gray" osc_cs="/grid/cell/35" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw2Mw==" x="324" y="702" w="80" h="80" color="gray" osc_cs="/grid/cell/26" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw2NA==" x="324" y="782" w="80" h="80" color="gray" osc_cs="/grid/cell/17" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw2NQ==" x="324" y="862" w="80" h="80" color="gray" osc_cs="/grid/cell/9" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw2Ng==" x="324" y="942" w="80" h="80" color="gray" osc_cs="/grid/cell/3" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw2Nw==" x="244" y="382" w="80" h="80" color="gray" osc_cs="/grid/cell/57" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw2OA==" x="244" y="462" w="80" h="80" color="gray" osc_cs="/grid/cell/51" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw2OQ==" x="244" y="542" w="80" h="80" color="gray" osc_cs="/grid/cell/43" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw3MA==" x="244" y="622" w="80" h="80" color="gray" osc_cs="/grid/cell/34" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw3MQ==" x="244" y="702" w="80" h="80" color="gray" osc_cs="/grid/cell/25" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw3Mg==" x="244" y="782" w="80" h="80" color="gray" osc_cs="/grid/cell/16" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw3Mw==" x="244" y="862" w="80" h="80" color="gray" osc_cs="/grid/cell/8" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw3NA==" x="244" y="942" w="80" h="80" color="gray" osc_cs="/grid/cell/2" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw3NQ==" x="164" y="382" w="80" h="80" color="gray" osc_cs="/grid/cell/56" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw3Ng==" x="164" y="462" w="80" h="80" color="gray" osc_cs="/grid/cell/50" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw3Nw==" x="164" y="542" w="80" h="80" color="gray" osc_cs="/grid/cell/42" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw3OA==" x="164" y="622" w="80" h="80" color="gray" osc_cs="/grid/cell/33" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw3OQ==" x="164" y="702" w="80" h="80" color="gray" osc_cs="/grid/cell/24" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw4MA==" x="164" y="782" w="80" h="80" color="gray" osc_cs="/grid/cell/15" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw4MQ==" x="164" y="862" w="80" h="80" color="gray" osc_cs="/grid/cell/7" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw4Mg==" x="164" y="942" w="80" h="80" color="gray" osc_cs="/grid/cell/1" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw4NA==" x="84" y="462" w="80" h="80" color="gray" osc_cs="/grid/cell/49" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw4NQ==" x="84" y="542" w="80" h="80" color="gray" osc_cs="/grid/cell/41" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw4Ng==" x="84" y="622" w="80" h="80" color="gray" osc_cs="/grid/cell/32" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw4Nw==" x="84" y="702" w="80" h="80" color="gray" osc_cs="/grid/cell/23" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw4OA==" x="84" y="782" w="80" h="80" color="gray" osc_cs="/grid/cell/14" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw4OQ==" x="84" y="862" w="80" h="80" color="gray" osc_cs="/grid/cell/6" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw5Mw==" x="4" y="542" w="80" h="80" color="gray" osc_cs="/grid/cell/40" type="labelh" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw5NA==" x="4" y="622" w="80" h="80" color="gray" osc_cs="/grid/cell/31" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw5NQ==" x="4" y="702" w="80" h="80" color="gray" osc_cs="/grid/cell/22" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw5Ng==" x="4" y="782" w="80" h="80" color="gray" osc_cs="/grid/cell/13" type="labelv" text="MQ==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw5OQ==" x="207" y="2" w="25" h="340" color="orange" osc_cs="/grid/song" type="labelv" text="U29uZw==" size="21" background="false" outline="false"/>
+    <control name="bGFiZWwxMDE=" x="158" y="332" w="20" h="60" color="orange" osc_cs="/grid/table/heading/pos" type="labelv" text="UG9z" size="16" background="false" outline="false"/>
+    <control name="bGFiZWwxMDI=" x="138" y="317" w="20" h="140" color="orange" osc_cs="/grid/table/1/pos" type="labelv" text="UDE=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDM=" x="118" y="317" w="20" h="140" color="orange" osc_cs="/grid/table/2/pos" type="labelv" text="UDI=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDQ=" x="98" y="317" w="20" h="140" color="orange" osc_cs="/grid/table/3/pos" type="labelv" text="UDM=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDU=" x="78" y="317" w="20" h="140" color="orange" osc_cs="/grid/table/4/pos" type="labelv" text="UDQ=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDY=" x="58" y="317" w="20" h="140" color="orange" osc_cs="/grid/table/5/pos" type="labelv" text="UDU=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDc=" x="38" y="317" w="20" h="140" color="orange" osc_cs="/grid/table/6/pos" type="labelv" text="UDY=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDg=" x="18" y="317" w="20" h="140" color="orange" osc_cs="/grid/table/7/pos" type="labelv" text="UDc=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDk=" x="-2" y="317" w="20" h="140" color="orange" osc_cs="/grid/table/8/pos" type="labelv" text="UDg=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw3" x="736" y="836" w="25" h="80" color="red" type="labelv" text="VmlkZW8=" size="14" background="false" outline="false"/>
+  </tabpage>
+  <tabpage name="NQ==" scalef="0.0" scalet="1.0">
+    <control name="bGFiZWwx" x="736" y="836" w="25" h="80" color="green" type="labelv" text="VmlkZW8=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwy" x="735" y="445" w="25" h="80" color="red" type="labelv" text="Q29udHJvbA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwz" x="736" y="69" w="25" h="80" color="red" type="labelv" text="TGFzZXI=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1" x="736" y="642" w="25" h="80" color="red" type="labelv" text="QWJsZXRvbi9Hcmlk" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMg==" x="735" y="248" w="25" h="80" color="red" type="labelv" text="UG9zaXRpb25z" size="14" background="false" outline="false"/>
+    <control name="bXVsdGl0b2dnbGUx" x="396" y="75" w="200" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="/video/app/buttons" type="multitoggle" number_x="5" number_y="5" ex_mode="false" local_off="true"/>
+    <control name="bGFiZWwxNA==" x="604" y="76" w="25" h="80" color="red" osc_cs="/video/app/title" type="labelv" text="VmlkZW8gQXBw" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwxNQ==" x="604" y="151" w="25" h="125" color="red" osc_cs="/video/app/name" type="labelv" text="Tm9uZQ==" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwx" x="603" y="434" w="25" h="80" color="red" type="labelv" text="TmF2aWVy" size="14" background="true" outline="false"/>
+    <control name="ZmFkZXIz" x="542" y="385" w="50" h="200" color="red" scalef="0.0" scalet="0.0050" osc_cs="/video/navier/viscosity" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwy" x="556" y="446" w="20" h="80" color="red" type="labelv" text="VmlzY29zaXR5" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwz" x="554" y="297" w="25" h="80" color="red" osc_cs="/video/navier/viscosity/value" type="labelv" text="VmlzY29zaXR5" size="14" background="true" outline="false"/>
+    <control name="ZmFkZXI0" x="479" y="384" w="50" h="200" color="red" scalef="-5.0" scalet="2.0" osc_cs="/video/navier/diffusion" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0" x="493" y="445" w="20" h="80" color="red" type="labelv" text="RGlmZnVzaW9u" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1" x="491" y="296" w="25" h="80" color="red" osc_cs="/video/navier/diffusion/value" type="labelv" text="RGlmZnVzaW9u" size="14" background="true" outline="false"/>
+    <control name="ZmFkZXI1" x="416" y="384" w="50" h="200" color="red" scalef="0.0" scalet="4.0" osc_cs="/video/navier/scale" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw2" x="430" y="445" w="20" h="80" color="red" type="labelv" text="U2NhbGU=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw3" x="428" y="296" w="25" h="80" color="red" osc_cs="/video/navier/scale/value" type="labelv" text="U2NhbGU=" size="14" background="true" outline="false"/>
+    <control name="bGFiZWw4" x="605" y="707" w="25" h="80" color="red" type="labelv" text="RGFuY2U=" size="14" background="true" outline="false"/>
+    <control name="bGFiZWw5" x="418" y="638" w="24" h="229" color="red" osc_cs="/video/ddr/song" type="labelv" text="U29uZw==" size="14" background="true" outline="false"/>
+    <control name="cm90YXJ5MQ==" x="481" y="697" w="100" h="100" color="red" scalef="0.0" scalet="1.0" osc_cs="/video/ddr/songnum" type="rotaryv" response="absolute" inverted="false" centered="false" norollover="true"/>
+  </tabpage>
+</layout>

@@ -1,0 +1,4 @@
+unzip -u $1
+xmllint -format index.xml > $1.xml
+rm index.xml
+# Should use base64 -D to decode name= and text= values
