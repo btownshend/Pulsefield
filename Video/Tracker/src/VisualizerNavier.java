@@ -145,11 +145,8 @@ class VisualizerNavier extends Visualizer {
 			//PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
 			
 			float sz=.05f;
-			if (ps.groupsize > 1)
-				sz=20*ps.groupsize;
-			// Connect prior point to have a continuous stream
-			float dx=ps.getVelocityInMeters().x/t.frameRate*10;
-			float dy=ps.getVelocityInMeters().y/t.frameRate*10;
+			//if (ps.groupsize > 1)
+			//	sz=0.20f*ps.groupsize;
 			g.strokeWeight(sz);
 			g.line(ps.getOriginInMeters().x-dx, ps.getOriginInMeters().y-dy,ps.getOriginInMeters().x, ps.getOriginInMeters().y);
 		
@@ -211,7 +208,7 @@ class VisualizerNavier extends Visualizer {
 		g.imageMode(PConstants.CENTER);
 		g.tint(255);
 		long t4=System.nanoTime();
-		PApplet.println("floor center="+Tracker.getFloorCenter()+", size="+Tracker.getFloorSize());
+//		PApplet.println("floor center="+Tracker.getFloorCenter()+", size="+Tracker.getFloorSize());
 		g.image(buffer,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,g.width/Tracker.getPixelsPerMeter(),g.height/Tracker.getPixelsPerMeter());
 		long t5=System.nanoTime();
 		statsU1+=(t2-t1);
