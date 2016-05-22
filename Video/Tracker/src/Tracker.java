@@ -1,5 +1,7 @@
 import java.awt.Color;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import codeanticode.syphon.SyphonServer;
 import netP5.NetAddress;
@@ -68,6 +70,7 @@ public class Tracker extends PApplet {
 	Config jconfig;
 	static PVector alignCorners[]=new PVector[0];
 	static ProjCursor cursors[]=null;
+	Map<String,Boolean> unhandled;
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -173,7 +176,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "ping", "/ping");
 		oscP5.plug(this,  "setcursor", "/cal/cursor");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
-		
+		unhandled = new HashMap<String,Boolean>();
 		canvas = this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
 		projectors=new Projector[2];
 		projectors[0] = new Projector(this,1,1920,1080);
@@ -434,9 +437,10 @@ public class Tracker extends PApplet {
 			// PApplet.println("Unhandled set message: "+theOscMessage.addrPattern());
 		} else if (theOscMessage.addrPattern().startsWith("/vis/")) {
 			// PApplet.println("Unhandled vis message: "+theOscMessage.addrPattern());
-		} else {
-			PApplet.print("### Received an unhandled message: ");
+		} else if (!unhandled.containsKey(theOscMessage.addrPattern())) {
+			PApplet.print("Received an unhandled OSC message: ");
 			theOscMessage.print();
+			unhandled.put(theOscMessage.addrPattern(),true);		
 		}  /* print the address pattern and the typetag of the received OscMessage */
 	}
 
