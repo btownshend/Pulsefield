@@ -39,7 +39,7 @@ public class Config {
 			data.setJSONObject(group, new JSONObject());
 		JSONObject grp=data.getJSONObject(group);
 		grp.setFloat(param, value);
-		data.setJSONObject(param, value);
+		data.setJSONObject(group, grp);
 		modified=true;
 	}
 }
