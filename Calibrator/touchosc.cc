@@ -5,9 +5,8 @@
 TouchOSC *TouchOSC::theInstance=NULL;
 static const std::string flags[]={"body","legs","grid","background","alignment","test","outline","allocationTest","intensity"};
 
-TouchOSC::TouchOSC()  {
+TouchOSC::TouchOSC(URLConfig &urls)  {
     theInstance=this;
-    URLConfig urls("urlconfig.txt");
 
     /* Setup touchOSC sending */
     int touchOSCPort=urls.getPort("TO");

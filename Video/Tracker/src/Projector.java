@@ -133,16 +133,41 @@ public class Projector {
 		pcanvas.beginDraw();
 		float aspect=pcanvas.width*1.0f/pcanvas.height;
 		float vfov=(float)(2f*Math.atan(1f/(aspect*throwRatio*2)));
+		
+		pcanvas.pushMatrix();
 		pcanvas.perspective(vfov, aspect, 1f, 1e10f);
 		// Projector image needs to be flipped in z direction to align correctly
-		pcanvas.camera(pos.x,pos.y,pos.z,aim.x,aim.y,0.0f,(float)Math.sin(rotation*PConstants.PI/180),-1.0f*(float)Math.cos(rotation*PConstants.PI/180),0.0f);
+		pcanvas.camera(pos.x,pos.y,pos.z,aim.x,aim.y,0.0f,(float)Math.sin(rotation*PConstants.PI/180),1.0f*(float)Math.cos(rotation*PConstants.PI/180),0.0f);
 		//PApplet.println("Projector "+id+": pos=["+pos+"], aspect="+aspect+", vfov="+vfov*180f/Math.PI+" degrees.");
-
 		pcanvas.background(0);
 
 		pcanvas.imageMode(PConstants.CENTER);
 		PVector center=Tracker.getFloorCenter();
 		pcanvas.image(canvas,center.x,center.y,canvas.width/Tracker.getPixelsPerMeter(),canvas.height/Tracker.getPixelsPerMeter());
+		pcanvas.popMatrix();  // Back to normal coords
+
+		pcanvas.resetMatrix();
+		pcanvas.ortho();
+		pcanvas.translate(-pcanvas.width/2, -pcanvas.height/2);
+		ProjCursor c[]=Tracker.cursors;
+		if (c!=null) {
+			pcanvas.strokeWeight(2.0f);
+			pcanvas.fill(255,0,0);
+			pcanvas.stroke(0,255,0,255);
+			pcanvas.ellipseMode(PConstants.CENTER);
+			for (int i=0;i<c.length;i++) {
+				if (c[i]==null)
+					continue;
+				if (c[i].proj+1==id) {
+					final float CURSORLEN=50f;
+					//PApplet.println("Cursor for proj "+c[i].proj+" @ "+c[i].pos.x+", "+c[i].pos.y);
+
+					pcanvas.ellipse(c[i].pos.x, c[i].pos.y, CURSORLEN/2, CURSORLEN/2);
+					pcanvas.line(c[i].pos.x-CURSORLEN,c[i].pos.y,c[i].pos.x+CURSORLEN,c[i].pos.y);
+					pcanvas.line(c[i].pos.x,c[i].pos.y-CURSORLEN,c[i].pos.x,c[i].pos.y+CURSORLEN);
+				}
+			}
+		}
 		pcanvas.endDraw();
 		server.sendImage(pcanvas);
 	}

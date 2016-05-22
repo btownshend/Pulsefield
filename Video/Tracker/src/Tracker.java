@@ -67,6 +67,7 @@ public class Tracker extends PApplet {
 	Projector projectors[];
 	Config jconfig;
 	static PVector alignCorners[]=new PVector[0];
+	static ProjCursor cursors[]=null;
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -170,6 +171,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "tempo", "/tempo");
 		oscP5.plug(this, "volume", "/volume");
 		oscP5.plug(this, "ping", "/ping");
+		oscP5.plug(this,  "setcursor", "/cal/cursor");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		
 		canvas = this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
@@ -199,6 +201,20 @@ public class Tracker extends PApplet {
 		oscP5.send(msg,MPO);
 	}
 
+	public void setcursor(int cursor, int ncursor, int proj, float x, float y) {
+		PApplet.println("setcursor("+proj+","+cursor+","+ncursor+","+x+","+y+")");
+		if (ncursor==0)
+			cursors=null;
+		else if (cursors==null || cursors.length != ncursor) {
+			PApplet.println("setcursor: resizing to "+ncursor);
+			cursors=new ProjCursor[ncursor];
+		}
+		if (ncursor>0) {
+			assert(cursor<ncursor);
+			cursors[cursor]=new ProjCursor(proj, x, y);
+		}
+	}
+	
 	public void vsetapp(OscMessage msg) {
 		for (int i=0;i<vispos.length;i++) {
 			if (msg.checkAddrPattern("/video/app/buttons/"+vispos[i]) ) {

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "calibration.h"
+#include "trackerComm.h"
 #include "dbg.h"
 #include "opencv2/calib3d/calib3d.hpp"
 
@@ -22,14 +23,14 @@ static void send(std::string path, float val1, float val2)  {
     dbg("Calibration.send",2) << "send(" << path << "," << val1 << "," << val2 << ")" << std::endl;
 }
 
-// Convert from logarithmic speed (~1/32767 - 0.1) to [0,1] rotary setting
+// Convert from logarithmic speed (~1/1920 - 0.1) to [0,1] rotary setting
 static float speedToRotary(float speed) {
-    return log10(speed*32767)/log10(1000);
+    return log10(speed*1920)/log10(1000);
 }
 
 // And back
 static float rotaryToSpeed(float rotary) {
-    return pow(10,rotary*log10(1000))/32767;
+    return pow(10,rotary*log10(1000))/1920;
 }
 
 // From  http://dsp.stackexchange.com/questions/1484/how-to-compute-camera-pose-from-homography-matrix
@@ -148,45 +149,48 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
     return handled;
 }
 
-// Get coordinate of pt[i] in device [-32767,32767] or world ([-WORLDSIZE,WORLDSIZE],[0,WORLDSIZE])
+static Point relToProj(Point x) {
+    return Point((x.X()+1)*1920/2,(x.Y()+1)*1080/2);
+}
+
+static Point projToRel(Point x) {
+    return Point(x.X()/(1920/2)-1,x.Y()/(1080/2)-1);
+}
+
+// Get coordinate of pt[i] in device [0,0]-[1919,1079] or world ([-WORLDSIZE,WORLDSIZE],[0,WORLDSIZE])
 Point RelMapping::getDevicePt(int i,int which,bool doRound) const {
     Point res;
     if (which==-1)
 	which=selected;
     if (i==0)
-	res=pt1[which]*32767;
+	res=relToProj(pt1[which]);
     else if (isWorld) {
 	res=Point(pt2[which].X()*WORLDSIZE,(pt2[which].Y()+1)*WORLDSIZE/2);
 	if (doRound)
 	    res=Point(std::round(res.X()*100)/100,std::round(res.Y()*100)/100);
 	return res;
     } else
-	res=pt2[which]*32767;
-    if (res.X() <-32768 || res.Y() < -32768 || res.X() > 32767 || res.Y() > 32767) {
-	dbg("RelMapping.getDevicePt",1) << "Point out of bounds: " << res << std::endl;
-	res.setX(std::min(32767.0f,std::max(-32768.0f,res.X())));
-	res.setY(std::min(32767.0f,std::max(-32768.0f,res.Y())));
-    }
+	res=relToProj(pt2[which]);
     if (doRound)
 	res=Point(std::round(res.X()),std::round(res.Y()));
     return res;
 }
        
-// Set coordinate of pt[i] in device [-32767,32767] or world ([-WORLDSIZE,WORLDSIZE],[0,WORLDSIZE])
+// Set coordinate of pt[i] in device or world
 void  RelMapping::setDevicePt(Point p, int i,int which)  {
     dbg("RelMapping.setDevicePt",2) <<"setDevicePt(" << p << "," << i << "," << which << ")" << std::endl;
     Point res;
     if (which==-1)
 	which=selected;
     if (i==0)
-	pt1[which]=p/32767;
+	pt1[which]=projToRel(p);
     else if (isWorld) {
 	pt2[which]=Point(p.X()/WORLDSIZE,p.Y()*2/WORLDSIZE-1);
     } else
-	pt2[which]=p/32767;
+	pt2[which]=projToRel(p);
 }
        
-Calibration::Calibration(int _nunits): homographies(_nunits+1), statusLines(3), poses(_nunits), alignCorners(0) {
+Calibration::Calibration(int _nunits): homographies(_nunits+1), statusLines(3), poses(_nunits), alignCorners(0), config("settings_proj.json") {
     nunits = _nunits;
     dbg("Calibration.Calibration",1) << "Constructing calibration with " << nunits << " units." << std::endl;
     assert(nunits>0);
@@ -270,19 +274,15 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	    }
 	    handled=true;
 	} else if (strcmp(tok,"save")==0) {
-	    dbg("Calibration",0) << "TODO: SAVE" << std::endl;
+	    save();
 	    handled=true;
-	    //Lasers::instance()->save();
 	} else if (strcmp(tok,"load")==0) {
-	    dbg("Calibration",0) << "TODO: LOAD" << std::endl;
+	    load();
 	    handled=true;
-	    //Lasers::instance()->load();
 	} else if (strcmp(tok,"lasermode")==0) {
 	    if (argv[0]->f > 0) {
 		int col=atoi(strtok(NULL,"/"))-1;
 		laserMode=(LaserMode)(col);
-		dbg("Calibration",0) << "TODO: lasermode" << std::endl;
-		//Lasers::instance()->setFlag("calibration",laserMode!=CM_NORMAL);
 	    }
 	    handled=true;
 	}  else {
@@ -311,6 +311,15 @@ void Calibration::updateUI() const {
     send("/cal/error/total",std::round(sqrt(e2sum/e2cnt)*1000)/1000);
     for (int i=0;i<statusLines.size();i++)
 	send("/cal/status/"+std::to_string(i+1),statusLines[i]);
+
+    // Send cursor positions to tracker app
+    std::vector<Cursor> c;
+    for (int i=0;i<nunits;i++) {
+	std::vector<Point> pts=getCalPoints(i);
+	for (int j=0;j<pts.size();j++)
+	    c.push_back(Cursor(i,pts[j].X(),pts[j].Y()));
+    }
+    TrackerComm::instance()->sendCursors(c);
 }
 
 void RelMapping::sendCnt() const {
@@ -416,8 +425,9 @@ void RelMapping::load(ptree &p) {
     }
 }
 
-void Calibration::save(ptree &p) const {
+void Calibration::save()  {
     dbg("Calibration.save",1) << "Saving calibration to ptree" << std::endl;
+    ptree p;
     p.put("nunits",nunits);
     ptree rm;
     for (unsigned int i=0;i<relMappings.size();i++)  {
@@ -435,11 +445,24 @@ void Calibration::save(ptree &p) const {
 	flips.push_back(std::make_pair("",f));
     }
     p.put_child("flips",flips);
+    config.pt().put_child("calibration",p);
+    config.save();
     ((Calibration *)this)->showStatus("Saved configuration");
 }
 
-void Calibration::load(ptree &p) {
+void Calibration::load() {
     dbg("Calibration.load",1) << "Loading transform from ptree" << std::endl;
+
+    config.load();
+    ptree &p1=config.pt();
+    ptree p;
+    try {
+	p=p1.get_child("calibration");
+    } catch (boost::property_tree::ptree_bad_path ex) {
+	std::cerr << "Unable to find 'calib' in settings file" << std::endl;
+	return;
+    }
+
     int ldunits=p.get("nunits",nunits);
     if (ldunits!=nunits) {
 	dbg("Calibration.load",1) << "Loading file with " << ldunits << " into program setup with " << nunits << " units." << std::endl;
@@ -487,15 +510,13 @@ int RelMapping::addMatches(std::vector<cv::detail::ImageFeatures> &features,    
 	    for (int j=0;j<pt1.size();j++) {
 		if (!locked[j])
 		    continue;
-		dbg("RelMapping",0) << "TODO: set flat1" << std::endl;
-		Point flat1; // =Lasers::instance()->getLaser(pm.src_img_idx)->getTransform().deviceToFlat(getDevicePt(0,j));
+		Point flat1=getDevicePt(0,j);
 		Point flat2;
 		if (isWorld)
 		    flat2=getDevicePt(1,j);
 		else
 		    // Note: world is only on unit2, never on unit1
-		    dbg("RelMapping",0) << "TODO: set flat2" << std::endl;
-		    ;//flat2=Lasers::instance()->getLaser(pm.dst_img_idx)->getTransform().deviceToFlat(getDevicePt(1,j));
+		    flat2=getDevicePt(1,j);
 		dbg("RelMapping.addMatches",1) << "Adding pair from relMapping of laser " <<pm.src_img_idx << "@" << flat1 << " <->  laser " <<pm.dst_img_idx << "@" << flat2 << std::endl;
 		cv::KeyPoint kp1,kp2;
 		kp1.pt.x=flat1.X();
@@ -695,36 +716,22 @@ int Calibration::recompute() {
 }
 
 void Calibration::testMappings() const {
-	dbg("Calibration",0) << "TODO: testMappings()" << std::endl;
-#ifdef FALSE  // TODO
     std::vector<Point> worldPts = { Point(0,0), Point(0,1), Point(5,0), Point(0,5) };
-    std::vector<Point> flatPts = { Point(0,0), Point(0.5,0), Point(0.7,0.7) };
-    int laser=0;
-    dbg("Calibration",0) << "TODO: get transform" << std::endl;
-    Transform &t; //  = Lasers::instance()->getLaser(laser)->getTransform();
     for (int i=0;i<worldPts.size();i++) {
-	Point devPt=t.mapToDevice(worldPts[i]);
-	Point flatPt=t.deviceToFlat(devPt);
-	Point finalPt=t.flatToWorld(flatPt);
-	std::cout << "world: " << worldPts[i] << " -> device: " << devPt << " -> flat: " << flatPt << " -> world: " << finalPt << std::endl;
+	Point devPt=map(worldPts[i],nunits,0);
+	Point finalPt=map(devPt,0,nunits);
+	std::cout << "world: " << worldPts[i] << " -> device: " << devPt << " -> world: " << finalPt << std::endl;
     }
-    for (int i=0;i<flatPts.size();i++) {
-	Point devPt=t.flatToDevice(flatPts[i]);
-	Point worldPt=t.mapToWorld(devPt);
-	std::cout << "flat: " << flatPts[i] << " -> device: " << devPt << " -> world: " << worldPt << " -> dev: " << t.mapToDevice(worldPt) << std::endl;
-    }
-#endif
 }
 
-// Map to/from device coordinates (-32767:32767 for lasers, 
+// Map to/from device or world  coordinates
 Point Calibration::map(Point p, int fromUnit, int toUnit) const {
     if (toUnit<0)
 	toUnit=nunits;	// Map to world 
     std::vector<cv::Point2f> p1, p2, world;
     Point flat1;
     if (fromUnit<nunits) {
-	dbg("Calibration",0) << "TODO: set flat1" << std::endl;
-	// flat1=Lasers::instance()->getLaser(fromUnit)->getTransform().deviceToFlat(p);
+	flat1=p;
     } else
 	flat1=p;
 	
@@ -737,8 +744,7 @@ Point Calibration::map(Point p, int fromUnit, int toUnit) const {
     Point dev2;
 
     if (toUnit<nunits) {
-	dbg("Calibration",0) << "TODO: set dev2" << std::endl;
-	// dev2=Lasers::instance()->getLaser(toUnit)->getTransform().flatToDevice(flat2);
+	dev2=flat2;
     } else
 	dev2=flat2;
     

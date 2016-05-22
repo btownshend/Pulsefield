@@ -44,7 +44,7 @@ public:
     int addMatches(std::vector<cv::detail::ImageFeatures> &features,    std::vector<cv::detail::MatchesInfo> &pairwiseMatches) const;
     int getUnit(int i) { if (i==0) return unit1; else return unit2; }
     void sendCnt() const;  // Send OSC with cnt of locked points to TouchOSC
-    Point getDevicePt(int i,int which=-1,bool doRound=false) const;    // Get coordinate of pt[i] in device [-32767,32767] or world ([-WORLDSIZE,WORLDSIZE],[0,WORLDSIZE])
+    Point getDevicePt(int i,int which=-1,bool doRound=false) const;    // Get coordinate of pt[i] in device or world
     void setDevicePt(Point p, int i,int which=-1);
     std::vector<float> updateErrors();
     std::vector<Point> getCalPoints(int unit,bool selectedOnly) const;
@@ -72,6 +72,9 @@ class Calibration {
     std::vector<std::string> statusLines;		// Status lines to display
     std::vector<cv::Mat> poses;
     std::vector<Point> alignCorners;			// Alignment target positions in real world
+
+    // Configuration file
+    Configuration config;
  public:
     static void initialize(int nunits) { 
 	theInstance=std::shared_ptr<Calibration>(new Calibration(nunits)); 
@@ -85,8 +88,8 @@ class Calibration {
 	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
     }
     void updateUI() const;
-    void save(ptree &p) const;
-    void load(ptree &p);
+    void save();
+    void load();
     LaserMode getLaserMode() const { return laserMode; }		// Get the current mode for laser display
     std::vector<Point> getCalPoints(int unit) const;				// Get the set of calibration points that should be drawn for the given laser
     Point map(Point p, int fromUnit, int toUnit=-1) const;		// Map a point in one unit to another (or to the world)

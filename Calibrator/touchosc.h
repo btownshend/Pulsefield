@@ -193,7 +193,7 @@ class TouchOSC {
     unsigned int selectedGroup;
     int selectedLaser;
     // TouchOSC UI
-    TouchOSC();
+    TouchOSC(URLConfig &urls);
     ~TouchOSC();
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
     Fader *getFader_impl(std::string groupName, std::string faderName);
@@ -206,14 +206,16 @@ class TouchOSC {
     float visualThreshold,conductorGlobal,cellGlobal;
  public:
     static TouchOSC *instance() {
-	if (theInstance == NULL) {
-	    new TouchOSC();
-	    assert(theInstance != NULL);
-	    // Need to be careful of this being re-entrant into instance()
-	    theInstance->load("settings_default.txt");
-	}
+	assert(theInstance != NULL);
 	return theInstance;
     }
+    static void initialize(URLConfig &urls) {
+	assert(theInstance == NULL);
+	theInstance=new TouchOSC(urls);
+	    // Need to be careful of this being re-entrant into instance()
+	theInstance->load("settings_default.txt");
+    }
+    
     static int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
 	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
     }

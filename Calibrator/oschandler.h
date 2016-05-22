@@ -33,6 +33,7 @@ class OSCHandler {
 
 
     void pfframe(int frame, bool fake=false);
+    void pfaligncorner(int corner, int ncorners, float x, float y);
 
     // Changing bounds
     void setMinX(float x) { minx=x; updateBounds(); }
