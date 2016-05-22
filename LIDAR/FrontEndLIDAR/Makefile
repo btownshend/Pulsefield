@@ -32,7 +32,7 @@ CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(UTIL) -I$(SICKTOOLBOX)/lms
 CFLAGS=$(DEBUG)  $(OPTIMIZE)
 LDFLAGS=-L$(LIBLOLIBDIR) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) -L$(CAIROLIBDIR)
 LIBES=-llo $(SICKLIB) $(MATLABLIBES) $(CAIROLIBES) -L$(OPENCVLIBDIR) $(OPENCVLIBES) -g 
-CXXSRCS=frontend.cc handlers.cc dest.cc main.cc urlconfig.cc sickio.cc background.cc world.cc snapshot.cc vis.cc person.cc dbg.cc point.cc worlddraw.cc lookuptable.cc  leg.cc legstats.cc groups.cc kalmanfilter.cc
+CXXSRCS=frontend.cc handlers.cc dest.cc main.cc urlconfig.cc sickio.cc background.cc world.cc snapshot.cc vis.cc person.cc dbg.cc point.cc worlddraw.cc lookuptable.cc  leg.cc legstats.cc groups.cc kalmanfilter.cc findtargets.cc
 CSRCS=
 SRCS=$(CXXSRCS) $(CSRCS)
 all: frontend
@@ -154,7 +154,7 @@ background.o: /opt/local/include/cairo/cairo-deprecated.h
 background.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
 background.o: /opt/local/include/X11/Xfuncproto.h
 background.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
-background.o: ../Util/dest.h groups.h
+background.o: ../Util/dest.h groups.h ../Util/findtargets.h
 world.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 world.o: /opt/local/include/lo/lo_types.h
 world.o: /opt/local/include/lo/lo_osc_types.h

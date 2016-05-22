@@ -5,6 +5,7 @@
 #include "normal.h"
 #include "vis.h"
 #include "world.h"
+#include "findtargets.h"
 
 Background::Background() {
     scanRes=0;
@@ -233,6 +234,13 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    }
 	}
     }
+
+    // Find any calibration targets present
+    std::vector<Point> pts(sick.getNumMeasurements());
+    for (int i=0;i<sick.getNumMeasurements();i++)
+	pts[i].setThetaRange(sick.getAngleRad(i),currentRange[i]/UNITSPERM);
+    dbg("Background.update",3) << "Finding targets from " << pts.size() << " ranges." << std::endl;
+    targets=findTargets(pts);
 }
 
 mxArray *Background::convertToMX() const {
@@ -285,3 +293,9 @@ void Background::sendMessages(lo_address &addr, int scanpt) const {
     lo_send(addr,"/pf/background","iifff",scanpt,range[0].size(),angleDeg,range[0][scanpt]/UNITSPERM,currentRange[scanpt]/UNITSPERM);
 }
 
+void Background::sendTargets(lo_address &addr) const {
+    for (int i=0;i<targets.size();i++)
+	lo_send(addr,"/pf/aligncorner","iiff",i,targets.size(),targets[i].X(),targets[i].Y());
+    if (targets.size()==0) 
+	lo_send(addr,"/pf/aligncorner","iiff",-1,targets.size(),0.0,0.0);  // So receiver can clear list
+}

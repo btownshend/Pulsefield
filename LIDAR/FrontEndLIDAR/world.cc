@@ -574,6 +574,8 @@ void World::sendMessages(Destinations &dests, double elapsed) {
 	for (unsigned int i=0;i<addr.size();i++)
 	    bg.sendMessages(addr[i],scanpt);
     }
+    for (unsigned int i=0;i<addr.size();i++)
+	bg.sendTargets(addr[i]);
 
     // Done!
     for (unsigned int i=0;i<addr.size();i++)

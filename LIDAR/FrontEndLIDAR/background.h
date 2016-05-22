@@ -26,6 +26,7 @@ class Background {
     std::vector<float> sigma[NRANGES];  // Sigma for Gaussian for this range
     std::vector<float> freq[NRANGES];
     std::vector<int> consecutiveInvisible[NRANGES];
+    std::vector<Point> targets;   // Calibration targets detected
     float scanRes;
 
     void swap(int k, int i, int j);
@@ -47,5 +48,5 @@ public:
 
     bool isInitializing() const { return bginit; }
     int numRanges() const { return NRANGES-1; }  // 1 less than internal since last one is a placeholder for new values
+    void sendTargets(lo_address &addr) const;
 };
-
