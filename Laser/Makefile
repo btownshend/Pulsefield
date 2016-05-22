@@ -29,7 +29,7 @@ LIBES=-llo $(OPENCV) $(CAIROLIBES) $(BOOSTLIBES)
 # opencv generates many -Woverloaded-virtual warnings...
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES) -std=c++11 -Wno-overloaded-virtual
 CFLAGS=$(DEBUG) $(OPTIMIZE)
-CXXSRCS=calibration.cc configuration.cc shapeid.cc ranges.cc svg.cc oschandler.cc main.cc  laser.cc lasers.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc Simplex.cpp touchosc.cc connections.cc person.cc attributes.cc groups.cc cpoint.cc music.cc conductor.cc urlconfig.cc
+CXXSRCS=calibration.cc configuration.cc shapeid.cc ranges.cc svg.cc oschandler.cc main.cc  laser.cc lasers.cc drawing.cc bezier.cc video.cc transform.cc etherdream_bst.cc Simplex.cpp touchosc.cc connections.cc person.cc attributes.cc groups.cc cpoint.cc music.cc conductor.cc urlconfig.cc findtargets.cc
 FESRCS=dbg.cc point.cc dest.cc
 #CSRCS=$(EDL)/etherdream.c
 SRCS=$(CXXSRCS) $(CSRCS) $(FESRCS)
