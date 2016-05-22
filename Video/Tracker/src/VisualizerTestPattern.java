@@ -74,6 +74,8 @@ public class VisualizerTestPattern extends VisualizerDot {
 		g.strokeWeight(0.03f);
 		PVector ac[]=Tracker.alignCorners;  // Need to copy since it could be changed asynchronously
 		for (int i=0;i<ac.length;i++) {
+			if (ac[i]==null)
+				continue;
 			final float CLEN=0.5f;
 			g.line(ac[i].x, ac[i].y, ac[i].x-CLEN, ac[i].y+CLEN);
 			g.line(ac[i].x, ac[i].y, ac[i].x+CLEN, ac[i].y+CLEN);
