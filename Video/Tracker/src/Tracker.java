@@ -66,6 +66,7 @@ public class Tracker extends PApplet {
 	PGraphics canvas;
 	Projector projectors[];
 	Config jconfig;
+	static PVector alignCorners[]=new PVector[0];
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -152,6 +153,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "pfframe", "/pf/frame");
 		oscP5.plug(this, "pfupdate", "/pf/update");
 		oscP5.plug(this, "pfbackground","/pf/background");
+		oscP5.plug(this, "pfaligncorner","/pf/aligncorner");
 		oscP5.plug(this, "pfgeo","/pf/geo");
 		oscP5.plug(this, "pfgroup", "/pf/group");
 		oscP5.plug(this, "pfleg", "/pf/leg");
@@ -686,6 +688,17 @@ public class Tracker extends PApplet {
 		// Not implemented.
 	}
 	
+	public void pfaligncorner(int cornerNumber, int numCorners, float x, float y) {
+		//PApplet.println("Corner "+cornerNumber+"/"+numCorners+" at "+x+", "+y);
+
+		if (alignCorners.length!=numCorners) {
+			//PApplet.println("Resize alignCorners from "+alignCorners.length+" to "+numCorners);
+			alignCorners=new PVector[numCorners];
+		}
+		alignCorners[cornerNumber]=new PVector(x,y);
+	}
+	
+
 	public void pfgeo(int frame, int id, float centerDist, float otherDist, float existDist) {
 		// Not implemented.
 	}
