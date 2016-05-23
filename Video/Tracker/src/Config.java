@@ -42,4 +42,20 @@ public class Config {
 		data.setJSONObject(group, grp);
 		modified=true;
 	}
+	public static int getInt(String group, String param, int defVal) {
+		if (! data.hasKey(group))
+			data.setJSONObject(group, new JSONObject());
+		JSONObject grp=data.getJSONObject(group);
+		if (! grp.hasKey(param))
+			setFloat(group,param,defVal);
+		return data.getJSONObject(group).getInt(param);
+	}
+	public static void setInt(String group, String param, int value) {
+		if (! data.hasKey(group))
+			data.setJSONObject(group, new JSONObject());
+		JSONObject grp=data.getJSONObject(group);
+		grp.setInt(param, value);
+		data.setJSONObject(group, grp);
+		modified=true;
+	}
 }
