@@ -48,15 +48,34 @@ int TrackerComm::handleOSCMessage_impl(const char *path, const char *types, lo_a
 void TrackerComm::sendCursors(const std::vector<Cursor> &cursors) const {
     for (int i=0;i<cursors.size();i++) {
 	if (lo_send(remote,"/cal/cursor","iiiff",i,cursors.size(), cursors[i].unit, cursors[i].x, cursors[i].y) <0 ) {
-	    dbg("TrackerComm.send",1) << "Failed send of /cal/cursor/proj to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	    dbg("TrackerComm.sendCursors",1) << "Failed send of /cal/cursor/proj to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	    return;
 	}
     }
     if (cursors.size() == 0) {
 	// Send message indicating 0 length
 	if (lo_send(remote,"/cal/cursor","iiiff",-1,cursors.size(),0,0.0,0.0) <0 ) {
-	    dbg("TrackerComm.send",1) << "Failed send of /cal/cursor/proj to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	    dbg("TrackerComm.sendCursors",1) << "Failed send of /cal/cursor/proj to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	    return;
 	}
+    }
+}
+
+void TrackerComm::sendTransform(int unit, bool inverse, const cv::Mat &hom) const {
+    const char *path="/cal/transform";
+    if (inverse)
+	path="/cal/invtransform";
+    if (lo_send(remote,path,"ifffffffff",unit,hom.at<double>(0,0),hom.at<double>(0,1),hom.at<double>(0,2),hom.at<double>(1,0),hom.at<double>(1,1),hom.at<double>(1,2),hom.at<double>(2,0),hom.at<double>(2,1),hom.at<double>(2,2))) {
+	dbg("TrackerComm.sendTransform",1) << "Failed send of " << path << " to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	    return;
+    }
+}
+
+void TrackerComm::sendPose(int unit, const cv::Mat &pose) const {
+    if (lo_send(remote,"/cal/pose","iffffffffffff",unit,pose.at<double>(0,0),pose.at<double>(0,1),pose.at<double>(0,2),pose.at<double>(0,3),
+		pose.at<double>(1,0),pose.at<double>(1,1),pose.at<double>(1,2),pose.at<double>(1,3),
+		pose.at<double>(2,0),pose.at<double>(2,1),pose.at<double>(2,2),pose.at<double>(2,3))) {
+	dbg("TrackerComm.sendPose",1) << "Failed send of /cal/pose to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return;
     }
 }

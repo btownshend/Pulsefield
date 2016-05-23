@@ -196,6 +196,9 @@ Calibration::Calibration(int _nunits): homographies(_nunits+1), statusLines(3), 
     assert(nunits>0);
     for (int i=0;i<homographies.size();i++)
 	homographies[i]=cv::Mat::eye(3, 3, CV_64F);	// Initialize to identity matrix
+    for (int i=0;i<poses.size();i++) 
+	poses[i] = cv::Mat::eye(3, 4, CV_64FC1); //3x4 matrix
+
 
     for (int i=0;i<nunits;i++)
 	for (int j=i+1;j<nunits+1;j++) {
@@ -320,6 +323,15 @@ void Calibration::updateUI() const {
 	    c.push_back(Cursor(i,pts[j].X(),pts[j].Y()));
     }
     TrackerComm::instance()->sendCursors(c);
+    for (int i=0;i<homographies.size();i++) {
+	TrackerComm::instance()->sendTransform(i, false, homographies[i]);
+	cv::Mat inv=homographies[i].inv();
+	inv=inv/inv.at<double>(2,2);
+	TrackerComm::instance()->sendTransform(i, true, inv);
+    }
+    for (int i=0;i<poses.size();i++) {
+	TrackerComm::instance()->sendPose(i,poses[i]);
+    }
 }
 
 void RelMapping::sendCnt() const {

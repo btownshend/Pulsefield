@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dbg.h"
+#include "opencv2/stitching.hpp"
 
 // Cursors to be displayed in Tracker
 class Cursor {
@@ -30,5 +31,6 @@ class TrackerComm {
 	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
     }
     void sendCursors(const std::vector<Cursor> &c) const;
-    void sendTransform(int unit, const std::vector<float> &data) const;
+    void sendTransform(int unit, bool inverse, const cv::Mat &hom) const;
+    void sendPose(int unit, const cv::Mat &pose) const;
 };
