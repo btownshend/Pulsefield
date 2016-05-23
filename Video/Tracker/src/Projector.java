@@ -15,9 +15,12 @@ public class Projector {
 	float rotation;  // Rotation of projector in degrees -- normally 0
 	float h00,h01,h02,h03,h10,h11,h12,h13,h20,h21,h22,h23,h30,h31,h32,h33;
 	final boolean use3d=true;
+PApplet p0;
+
 	public Projector(PApplet parent, int id, int width, int height) {
 		// Create a syphon-based projector with given parameters
 		this.id=id;
+		p0=parent;
 		server=new SyphonServer(parent, "P"+id);
 		PApplet.println("parent matrix:");
 		parent.printMatrix();
