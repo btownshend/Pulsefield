@@ -12,7 +12,6 @@
 
 #include <dbg.h>
 #include "oschandler.h"
-#include "touchosc.h"
 #include "calibration.h"
 
 static void error(int num, const char *msg, const char *path)
@@ -25,10 +24,8 @@ static void error(int num, const char *msg, const char *path)
 static int generic_handler(const char *path, const char *types, lo_arg **argv,int argc, lo_message msg , void *user_data) {
     dbg("generic_handler",5) << "Received message: " << path << ", with types: " << types << std::endl;
     int nothandled=1;
-    if (strncmp(path,"/ui/",4)==0) {
-	nothandled=TouchOSC::handleOSCMessage(path,types,argv,argc,msg);
-    } else if (strncmp(path,"/cal/",5)==0) {
-	// TouchOSC calibration messages
+    if (strncmp(path,"/cal/",5)==0) {
+	// Calibration messages
 	nothandled=Calibration::handleOSCMessage(path,types,argv,argc,msg);
     }
     if (nothandled) {
@@ -164,10 +161,6 @@ void OSCHandler::pfframe(int frame, bool fake) {
     dbg("OSCHandler.pfframe",3) << "pfframe(" << frame << "), lastUpdateFrame=" << lastUpdateFrame << std::endl;
     gettimeofday(&lastFrameTime,0);
     lastUpdateFrame=frame;
-
-    // UI Tick
-    TouchOSC::frameTick(frame);
-
 }
 
 void OSCHandler::pfaligncorner(int corner, int ncorners, float x, float y) {

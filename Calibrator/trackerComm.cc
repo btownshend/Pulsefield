@@ -1,8 +1,8 @@
 #include <fstream>
 #include <sys/time.h>
-#include "touchosc.h"
-
+#include "lo_util.h"
 #include "trackerComm.h"
+#include "urlconfig.h"
 
 TrackerComm *TrackerComm::theInstance=NULL;
 

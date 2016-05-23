@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dbg.h"
+#include "urlconfig.h"
 #include "opencv2/stitching.hpp"
 
 // Cursors to be displayed in Tracker

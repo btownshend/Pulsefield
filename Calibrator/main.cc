@@ -43,9 +43,8 @@ int main(int argc, char *argv[]) {
     if (argc>0)
 	usage(argc,argv);
 
-    TouchOSC::initialize(urls);
     TrackerComm::initialize(urls);
-    Calibration::initialize(nproj);
+    Calibration::initialize(nproj,urls);
     Calibration::instance()->load();
     
     dbg("main",1) << "Creating OSCHandler on port " << port << std::endl;

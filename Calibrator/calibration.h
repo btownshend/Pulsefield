@@ -1,15 +1,17 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
 #include <string>
 #include <assert.h>
 #include <cmath>
+#include "lo_util.h"
 #include "lo/lo.h"
 #include "point.h"
-#include "touchosc.h"
 #include "configuration.h"
 #undef Status
 #include "opencv2/stitching.hpp"
+#include "urlconfig.h"
 
 // Class to store each individual relative mapping and associated GUI elements
 // These are mappings between 2 or more lasers device space coords that hit the same spot on ground
@@ -23,6 +25,10 @@ class RelMapping {
     int selected; 		// Which point is selected
     float e2sum;		// Sum of sqd error
     int e2cnt;
+
+    int send(std::string path, std::string value) const;
+    int send(std::string path, float v1, float v2) const;
+    int send(std::string path, float value) const;
 public:
     RelMapping(int u1, int u2, bool _isWorld): pt1(PTSPERPAIR), pt2(PTSPERPAIR), locked(PTSPERPAIR) {
 	isWorld=_isWorld;
@@ -65,7 +71,7 @@ class Calibration {
     float speed;		// speed of arrow movements in device coords/click
     void showStatus(std::string line);	// Display status in touchOSC
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
-    Calibration(int nunits);   // Only ever called by initialize()
+    Calibration(int nunits, URLConfig &urls);   // Only ever called by initialize()
     int recompute();		// Use acquired data to estimate transformations
     std::vector<cv::Mat> homographies;		// Each maps from laser flat space [-1,1] to world coordinates (which initially are arbitrary) use w=H*f
     void testMappings() const;
@@ -73,11 +79,13 @@ class Calibration {
     std::vector<cv::Mat> poses;
     std::vector<Point> alignCorners;			// Alignment target positions in real world
 
+    lo_address tosc;
+
     // Configuration file
     Configuration config;
  public:
-    static void initialize(int nunits) { 
-	theInstance=std::shared_ptr<Calibration>(new Calibration(nunits)); 
+    static void initialize(int nunits, URLConfig &urls) { 
+	theInstance=std::shared_ptr<Calibration>(new Calibration(nunits, urls)); 
 	theInstance->updateUI(); 	// After initialization is done
     }
     static std::shared_ptr<Calibration> instance() {
@@ -95,4 +103,8 @@ class Calibration {
     Point map(Point p, int fromUnit, int toUnit=-1) const;		// Map a point in one unit to another (or to the world)
     void setAlignment(const std::vector<Point> &c) { alignCorners=c; }
     std::vector<Point> getAlignment() const { return alignCorners; }
+
+    int send(std::string path, std::string value) const;
+    int send(std::string path, float v1, float v2) const;
+    int send(std::string path, float value) const;
 };

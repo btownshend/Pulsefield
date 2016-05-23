@@ -21,7 +21,7 @@ LIBES=-llo $(OPENCV) $(BOOSTLIBES)
 # opencv generates many -Woverloaded-virtual warnings...
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(INCLUDES) -std=c++11 -Wno-overloaded-virtual  -Wno-unused-local-typedef
 CFLAGS=$(DEBUG) $(OPTIMIZE)
-CXXSRCS=calibration.cc oschandler.cc main.cc touchosc.cc urlconfig.cc configuration.cc trackerComm.cc
+CXXSRCS=calibration.cc oschandler.cc main.cc urlconfig.cc configuration.cc trackerComm.cc
 FESRCS=dbg.cc point.cc dest.cc
 SRCS=$(CXXSRCS) $(CSRCS) $(FESRCS)
 

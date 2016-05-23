@@ -10,17 +10,45 @@ static const float WORLDSIZE=30;   // Maximum extents of world (in meters)
 
 std::shared_ptr<Calibration> Calibration::theInstance=NULL;   // Singleton
 
-static void send(std::string path, float value)  {
-    TouchOSC::instance()->send(path,value);
-    dbg("Calibration.send",3) << "send(" << path << "," << value << ")" << std::endl;
+int RelMapping::send(std::string path, float value) const {
+    return Calibration::instance()->send(path,value);
 }
-static void send(std::string path, std::string value)  {
-    TouchOSC::instance()->send(path,value);
-    dbg("Calibration.send",3) << "send(" << path << ",\"" << value << "\")" << std::endl;
+
+int RelMapping::send(std::string path, float v1, float v2) const {
+    return Calibration::instance()->send(path,v1,v2);
 }
-static void send(std::string path, float val1, float val2)  {
-    TouchOSC::instance()->send(path,val1,val2);
-    dbg("Calibration.send",2) << "send(" << path << "," << val1 << "," << val2 << ")" << std::endl;
+int RelMapping::send(std::string path, std::string value) const {
+    return Calibration::instance()->send(path,value);
+}
+
+int Calibration::send(std::string path, float value) const {
+    dbg("Calibration.send",4) << "send " << path << "," << value << std::endl;
+    if (lo_send(tosc,path.c_str(),"f",value) <0 ) {
+	dbg("Calibration.send",1) << "Failed send of " << path << " to " << loutil_address_get_url(tosc) << ": " << lo_address_errstr(tosc) << std::endl;
+	return -1;
+    }
+    usleep(10);
+    return 0;
+}
+
+int Calibration::send(std::string path, float v1, float v2) const {
+    dbg("Calibration.send",4) << "send " << path << "," << v1 << ", " << v2 << std::endl;
+    if (lo_send(tosc,path.c_str(),"ff",v1,v2) <0 ) {
+	dbg("Calibration.send",1) << "Failed send of " << path << " to " << loutil_address_get_url(tosc) << ": " << lo_address_errstr(tosc) << std::endl;
+	return -1;
+    }
+    usleep(10);
+    return 0;
+}
+
+int Calibration::send(std::string path, std::string value) const {
+    dbg("Calibration.send",4) << "send " << path << "," << value << std::endl;
+    if (lo_send(tosc,path.c_str(),"s",value.c_str()) <0 ) {
+	dbg("Calibration.send",1) << "Failed send of " << path << " to " << loutil_address_get_url(tosc) << ": " << lo_address_errstr(tosc) << std::endl;
+	return -1;
+    }
+    usleep(10);
+    return 0;
 }
 
 // Convert from logarithmic speed (~1/1920 - 0.1) to [0,1] rotary setting
@@ -190,7 +218,7 @@ void  RelMapping::setDevicePt(Point p, int i,int which)  {
 	pt2[which]=projToRel(p);
 }
        
-Calibration::Calibration(int _nunits): homographies(_nunits+1), statusLines(3), poses(_nunits), alignCorners(0), config("settings_proj.json") {
+Calibration::Calibration(int _nunits, URLConfig&urls): homographies(_nunits+1), statusLines(3), poses(_nunits), alignCorners(0), config("settings_proj.json") {
     nunits = _nunits;
     dbg("Calibration.Calibration",1) << "Constructing calibration with " << nunits << " units." << std::endl;
     assert(nunits>0);
@@ -211,6 +239,21 @@ Calibration::Calibration(int _nunits): homographies(_nunits+1), statusLines(3), 
     curMap=relMappings[0];
     speed=0.05;
     laserMode=CM_NORMAL;
+
+    /* Setup touchOSC sending */
+    int touchOSCPort=urls.getPort("TO");
+    const char *touchOSCHost=urls.getHost("TO");
+    if (touchOSCPort==-1 || touchOSCHost==0) {
+	fprintf(stderr,"Unable to locate TO in urlconfig.txt\n");
+	tosc=0;
+    } else {
+	char cbuf[10];
+	sprintf(cbuf,"%d",touchOSCPort);
+	tosc = lo_address_new(touchOSCHost, cbuf);
+	dbg("Calibration",1)  << "Set remote to " << loutil_address_get_url(tosc) << std::endl;
+	// Don't call sendOSC here as it will cause a recursive loop
+    }
+
     for (int i=0;i<statusLines.size();i++)
 	statusLines[i]="";
     showStatus("Initalized");
