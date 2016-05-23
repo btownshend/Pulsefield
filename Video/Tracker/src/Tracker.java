@@ -175,6 +175,8 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "volume", "/volume");
 		oscP5.plug(this, "ping", "/ping");
 		oscP5.plug(this,  "setcursor", "/cal/cursor");
+		oscP5.plug(this, "settransform","/cal/transform");
+		oscP5.plug(this, "setitransform","/cal/invtransform");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		unhandled = new HashMap<String,Boolean>();
 		canvas = this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
@@ -216,6 +218,30 @@ public class Tracker extends PApplet {
 			assert(cursor<ncursor);
 			cursors[cursor]=new ProjCursor(proj, x, y);
 		}
+	}
+	
+	public void settransform(int proj, float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21, float x22) {
+		PApplet.println("settransform("+proj+","+x00+","+x01+"...)");
+		if (proj<0 || proj>=projectors.length) {
+			PApplet.println("settransform: Bad projector number: "+proj);
+			return;
+		}
+		projectors[proj].setMatrix(
+				x00, x01, x02,
+				x10, x11, x12,
+				x20, x21, x22);  // 3x3 homographic matrix that maps from projector pixel address to world coordinates at z=0	
+	}
+	
+	public void setitransform(int proj, float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21, float x22) {
+		PApplet.println("setitransform("+proj+","+x00+","+x01+"...)");
+		if (proj<0 || proj>=projectors.length) {
+			PApplet.println("settransform: Bad projector number: "+proj);
+			return;
+		}
+		projectors[proj].setInvMatrix(
+				x00, x01, x02,
+				x10, x11, x12,
+				x20, x21, x22);  // 3x3 homographic matrix that maps from world coordinates at z=0	to pixel coordinates
 	}
 	
 	public void vsetapp(OscMessage msg) {
