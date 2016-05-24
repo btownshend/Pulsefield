@@ -9,14 +9,14 @@ import processing.opengl.PGraphicsOpenGL;
 
 public class Projector {
 	SyphonServer server;
-	PGraphics pcanvas;
+	PGraphicsOpenGL pcanvas;
 	int id;
 	float throwRatio;
 	PVector pos;
 	PVector aim;
 	float rotation;  // Rotation of projector in degrees -- normally 0
-	final boolean use3d=true;
-PApplet p0;
+
+	PApplet p0;
 
 	public Projector(PApplet parent, int id, int width, int height) {
 		// Create a syphon-based projector with given parameters
@@ -26,10 +26,21 @@ PApplet p0;
 		PApplet.println("parent matrix:");
 		parent.printMatrix();
 		parent.printCamera();
-		pcanvas = parent.createGraphics(width, height, use3d?PConstants.P3D:PConstants.P2D);
+		pcanvas = (PGraphicsOpenGL)parent.createGraphics(width, height,PConstants.P3D);
+
 		PApplet.println("canvas created, matrix=");
 		pcanvas.printMatrix();
 		pcanvas.printCamera();
+		
+		PApplet.println("Current modelview matrix=");
+		pcanvas.modelview.print();
+		
+		PApplet.println("Current proj matrix=");
+		pcanvas.printProjection();
+		PMatrix3D reconProj=extractProj(pcanvas.projmodelview);
+		PApplet.println("Reconstructed projection matrix:");
+		reconProj.print();
+
 
 		ttest(1,2,0);
 		throwRatio=0.25f;
@@ -38,11 +49,6 @@ PApplet p0;
 		rotation=0f;
 		loadSettings();
 		setTO();
-		h00=1;h01=0;h02=0;h03=0;
-		h10=0;h11=1;h12=0;h13=0;
-		h20=0;h21=0;h22=0;h23=0;
-		h30=0;h31=0;h32=0;h33=1;
-
 	}
 
 	public void setThrowRatio(float t) {
@@ -149,21 +155,25 @@ PApplet p0;
 		// Its center corresponds to Tracker.getFloorCenter() and is scaled by Tracker.getPixelsPerMeter()
 
 		pcanvas.beginDraw();
+		if (false) {
 		float aspect=pcanvas.width*1.0f/pcanvas.height;
 		float vfov=(float)(2f*Math.atan(1f/(aspect*throwRatio*2)));
-		
+
 		pcanvas.pushMatrix();
 		pcanvas.perspective(vfov, aspect, 1f, 1e10f);
 		// Projector image needs to be flipped in z direction to align correctly
 		pcanvas.camera(pos.x,pos.y,pos.z,aim.x,aim.y,0.0f,(float)Math.sin(rotation*PConstants.PI/180),1.0f*(float)Math.cos(rotation*PConstants.PI/180),0.0f);
 		//PApplet.println("Projector "+id+": pos=["+pos+"], aspect="+aspect+", vfov="+vfov*180f/Math.PI+" degrees.");
+		}
 		pcanvas.background(0);
 
 		pcanvas.imageMode(PConstants.CENTER);
 		PVector center=Tracker.getFloorCenter();
 		pcanvas.image(canvas,center.x,center.y,canvas.width/Tracker.getPixelsPerMeter(),canvas.height/Tracker.getPixelsPerMeter());
-		pcanvas.popMatrix();  // Back to normal coords
+		//pcanvas.popMatrix();  // Back to normal coords
 
+		pcanvas.pushMatrix();
+		pcanvas.pushProjection();
 		pcanvas.resetMatrix();
 		pcanvas.ortho();
 
@@ -188,60 +198,66 @@ PApplet p0;
 				}
 			}
 		}
+		pcanvas.popProjection();
+		pcanvas.popMatrix();
 		pcanvas.endDraw();
 		server.sendImage(pcanvas);
 	}
 
 	private void ttest(float x, float y, float z) {
-		if (use3d)
-			PApplet.println("["+x+","+y+","+z+"]->["+pcanvas.screenX(x,y,z)+","+pcanvas.screenY(x,y,z)+","+pcanvas.screenZ(x,y,z)+"]->"+
-					"["+p0.screenX(x,y,z)+","+p0.screenY(x,y,z)+","+p0.screenZ(x,y,z)+"]");
-		else
-			PApplet.println("["+x+","+y+"]->["+pcanvas.screenX(x,y)+","+pcanvas.screenY(x,y)+"]");
+		PApplet.println("["+x+","+y+","+z+"]->["+pcanvas.screenX(x,y,z)+","+pcanvas.screenY(x,y,z)+","+pcanvas.screenZ(x,y,z)+"]->"+
+				"["+p0.screenX(x,y,z)+","+p0.screenY(x,y,z)+","+p0.screenZ(x,y,z)+"]");
 	}
 
-		if (use3d) {
-			h00=x00;h01=x01;h02=0;h03=x02-pcanvas.width/2;
-			h10=x10;h11=x11;h12=0;h13=x12-pcanvas.height/2;
-			h20=0;  h21=0;  h22=1;h23=1;  // Fixes z dist in camera frame to 1.0 m
-			h30=x20;h31=x21;h32=0;h33=1;
-		}
-		PApplet.println("Matrix before reset");
-		pcanvas.printMatrix();
-		ttest(0,0,0);
-		ttest(0,2,0);
 	public void setMatrix(PMatrix3D projmodelview) {
 
-		pcanvas.resetMatrix();
-		PApplet.println("Matrix after reset");
-		pcanvas.printMatrix();
-		ttest(0,0,0);
-		ttest(0,2,0);
+	}
 
+	public PMatrix3D extractProj(PMatrix3D projmodelview) {
+		PMatrix3D proj=new PMatrix3D(projmodelview);
+		proj.apply(pcanvas.modelviewInv);
+		return proj;
+	}
 
 	public void setInvMatrix(PMatrix3D projmodelview) {
-
-	
-		PApplet.println("Matrix after applying transform");
-		pcanvas.printMatrix();
-		pcanvas.printCamera();
-
-		ttest(0,0,0);
-		ttest(0,2,0);
-		ttest(-2,2,0);
-		ttest(2,2,0);
-		ttest(0,0,1);
+		// Decompose to form independent projection and modelview matrices
+		//pcanvas.translate(1.0f, 2.0f, 3.0f);
+		//pcanvas.scale(5f,6f,7f);
+		PApplet.println("SetInvMatrix(");
+		projmodelview.print();
 		
-		pcanvas.ortho();
-		PApplet.println("Matrix after switching to ortho");
-		pcanvas.printMatrix();
-		pcanvas.printCamera();
+		// PGrraphics3D does additional scaling/centering of x,y after all the matrix transformations to get raw pixels
+		// so we need to back that out of the target matrix
+		PMatrix3D target=new PMatrix3D(projmodelview);
+		PMatrix3D finalscale=new PMatrix3D(
+				pcanvas.width/2, 0, 0, pcanvas.width/2,
+				0,-pcanvas.height/2, 0, pcanvas.height/2,
+				0, 0, 0.5f, 0.5f,
+				0, 0, 0, 1);
+		PMatrix3D unscale=new PMatrix3D(finalscale);
+		unscale.invert();
+		PApplet.println("unscale: ");
+		unscale.print();
+		target.preApply(unscale);
+		PApplet.println("target: ");
+		target.print();
+		
+		PMatrix3D newproj=extractProj(target);
+		PApplet.println("Extracted new proj matrix");
+		newproj.print();
+
+		pcanvas.setProjection(newproj);
+		PApplet.println("Updated proj matrix=");
+		pcanvas.printProjection();
+
+		PApplet.println("projmodelview Matrix after applying transform");
+		pcanvas.projmodelview.print();
 
 		ttest(0,0,0);
 		ttest(0,2,0);
 		ttest(-2,2,0);
 		ttest(2,2,0);
 		ttest(0,0,1);
-		assert(false);
+		//assert(false);
 	}
 }
