@@ -86,6 +86,7 @@ class Calibration {
  public:
     static void initialize(int nunits, URLConfig &urls) { 
 	theInstance=std::shared_ptr<Calibration>(new Calibration(nunits, urls)); 
+	theInstance->load();
 	theInstance->updateUI(); 	// After initialization is done
     }
     static std::shared_ptr<Calibration> instance() {
@@ -96,6 +97,7 @@ class Calibration {
 	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
     }
     void updateUI() const;
+    void updateTracker() const;
     void save();
     void load();
     LaserMode getLaserMode() const { return laserMode; }		// Get the current mode for laser display

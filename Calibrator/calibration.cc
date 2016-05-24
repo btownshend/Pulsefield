@@ -358,6 +358,10 @@ void Calibration::updateUI() const {
     for (int i=0;i<statusLines.size();i++)
 	send("/cal/status/"+std::to_string(i+1),statusLines[i]);
 
+    updateTracker();
+}
+
+void Calibration::updateTracker() const {
     // Send cursor positions to tracker app
     std::vector<Cursor> c;
     for (int i=0;i<nunits;i++) {
@@ -366,6 +370,7 @@ void Calibration::updateUI() const {
 	    c.push_back(Cursor(i,pts[j].X(),pts[j].Y()));
     }
     TrackerComm::instance()->sendCursors(c);
+
     for (int i=0;i<homographies.size();i++) {
 	TrackerComm::instance()->sendTransform(i, false, homographies[i]);
 	cv::Mat inv=homographies[i].inv();
