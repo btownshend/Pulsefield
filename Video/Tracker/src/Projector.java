@@ -163,13 +163,14 @@ public class Projector {
 		pcanvas.camera(pos.x,pos.y,pos.z,aim.x,aim.y,0.0f,(float)Math.sin(rotation*PConstants.PI/180),1.0f*(float)Math.cos(rotation*PConstants.PI/180),0.0f);
 		//PApplet.println("Projector "+id+": pos=["+pos+"], aspect="+aspect+", vfov="+vfov*180f/Math.PI+" degrees.");
 		}
+
 		pcanvas.background(0);
 
 		pcanvas.imageMode(PConstants.CENTER);
 		PVector center=Tracker.getFloorCenter();
 		pcanvas.image(canvas,center.x,center.y,canvas.width/Tracker.getPixelsPerMeter(),canvas.height/Tracker.getPixelsPerMeter());
 		//pcanvas.popMatrix();  // Back to normal coords
-
+		
 		pcanvas.pushMatrix();
 		pcanvas.pushProjection();
 		pcanvas.resetMatrix();  // Set camera, modelview to identity
@@ -221,7 +222,7 @@ public class Projector {
 		PApplet.println("SetInvMatrix(");
 		projmodelview.print();
 		
-		// PGrraphics3D does additional scaling/centering of x,y after all the matrix transformations to get raw pixels
+		// PGraphics3D does additional scaling/centering of x,y after all the matrix transformations to get raw pixels
 		// so we need to back that out of the target matrix
 		PMatrix3D target=new PMatrix3D(projmodelview);
 		PMatrix3D finalscale=new PMatrix3D(
