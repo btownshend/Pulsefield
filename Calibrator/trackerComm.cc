@@ -2,7 +2,6 @@
 #include <sys/time.h>
 #include "lo_util.h"
 #include "trackerComm.h"
-#include "urlconfig.h"
 
 TrackerComm *TrackerComm::theInstance=NULL;
 

@@ -10,6 +10,7 @@ import oscP5.OscP5;
 import oscP5.OscProperties;
 import processing.core.PApplet;
 import processing.core.PGraphics;
+import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PJOGL;
 
