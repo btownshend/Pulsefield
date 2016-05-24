@@ -227,10 +227,12 @@ public class Tracker extends PApplet {
 			PApplet.println("settransform: Bad projector number: "+proj);
 			return;
 		}
-		projectors[proj].setMatrix(
-				x00, x01, x02,
-				x10, x11, x12,
-				x20, x21, x22);  // 3x3 homographic matrix that maps from projector pixel address to world coordinates at z=0	
+		PMatrix3D mat=new PMatrix3D();
+		mat.set(x00,x01,0,x02,
+				x10,x11,0,x12,
+				  0,  0,1,  10f,
+				x20,x21,0,x22);
+		projectors[proj].setMatrix(mat);
 	}
 	
 	public void setitransform(int proj, float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21, float x22) {
@@ -239,10 +241,12 @@ public class Tracker extends PApplet {
 			PApplet.println("settransform: Bad projector number: "+proj);
 			return;
 		}
-		projectors[proj].setInvMatrix(
-				x00, x01, x02,
-				x10, x11, x12,
-				x20, x21, x22);  // 3x3 homographic matrix that maps from world coordinates at z=0	to pixel coordinates
+		PMatrix3D mat=new PMatrix3D();
+		mat.set(x00,x01,0,x02,
+				x10,x11,0,x12,
+				  0,  0,0,  0.5f,
+				x20,x21,0,x22);
+		projectors[proj].setInvMatrix(mat);
 	}
 	
 	public void vsetapp(OscMessage msg) {

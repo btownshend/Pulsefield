@@ -15,7 +15,6 @@ public class Projector {
 	PVector pos;
 	PVector aim;
 	float rotation;  // Rotation of projector in degrees -- normally 0
-	float h00,h01,h02,h03,h10,h11,h12,h13,h20,h21,h22,h23,h30,h31,h32,h33;
 	final boolean use3d=true;
 PApplet p0;
 
@@ -201,8 +200,6 @@ PApplet p0;
 			PApplet.println("["+x+","+y+"]->["+pcanvas.screenX(x,y)+","+pcanvas.screenY(x,y)+"]");
 	}
 
-	public void setMatrix(float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21,
-			float x22) {
 		if (use3d) {
 			h00=x00;h01=x01;h02=0;h03=x02-pcanvas.width/2;
 			h10=x10;h11=x11;h12=0;h13=x12-pcanvas.height/2;
@@ -213,6 +210,7 @@ PApplet p0;
 		pcanvas.printMatrix();
 		ttest(0,0,0);
 		ttest(0,2,0);
+	public void setMatrix(PMatrix3D projmodelview) {
 
 		pcanvas.resetMatrix();
 		PApplet.println("Matrix after reset");
@@ -221,7 +219,7 @@ PApplet p0;
 		ttest(0,2,0);
 
 
-		pcanvas.applyMatrix(h00,h01,h02,h03,h10,h11,h12,h13,h20,h21,h22,h23,h30,h31,h32,h33);
+	public void setInvMatrix(PMatrix3D projmodelview) {
 
 	
 		PApplet.println("Matrix after applying transform");
