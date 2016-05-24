@@ -172,11 +172,9 @@ public class Projector {
 
 		pcanvas.pushMatrix();
 		pcanvas.pushProjection();
-		pcanvas.resetMatrix();
-		pcanvas.ortho();
-
-		pcanvas.translate(-pcanvas.width/2, -pcanvas.height/2);
-
+		pcanvas.resetMatrix();  // Set camera, modelview to identity
+		pcanvas.ortho(0, pcanvas.width, -pcanvas.height, 0, 1e-10f,1e10f);
+			// Not clear why this needs to be [-height,0] instead of [0,height]
 		ProjCursor c[]=Tracker.cursors;
 		if (c!=null) {
 			pcanvas.strokeWeight(2.0f);
@@ -188,8 +186,8 @@ public class Projector {
 					continue;
 				if (c[i].proj+1==id) {
 					final float CURSORLEN=50f;
-					//PApplet.println("Cursor for proj "+c[i].proj+" @ "+c[i].pos.x+", "+c[i].pos.y);
-
+					//PApplet.println("Cursor "+i+"/"+c.length+" for proj "+c[i].proj+" @ "+c[i].pos.x+", "+c[i].pos.y);
+					//ttest(c[i].pos.x,c[i].pos.y,c[i].pos.z);
 					pcanvas.ellipse(c[i].pos.x, c[i].pos.y, CURSORLEN/2, CURSORLEN/2);
 					pcanvas.line(c[i].pos.x-CURSORLEN,c[i].pos.y,c[i].pos.x+CURSORLEN,c[i].pos.y);
 					pcanvas.line(c[i].pos.x,c[i].pos.y-CURSORLEN,c[i].pos.x,c[i].pos.y+CURSORLEN);
