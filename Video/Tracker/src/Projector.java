@@ -16,10 +16,12 @@ public class Projector {
 	PVector pos;
 	PVector aim;
 	float rotation;  // Rotation of projector in degrees -- normally 0
-
+	ProjectorParameters params;
+	
 	public Projector(PApplet parent, int id, int width, int height) {
 		// Create a syphon-based projector with given parameters
 		this.id=id;
+		params=ProjectorParameters.eh320ust();
 		server=new SyphonServer(parent, "P"+id);
 		PApplet.println("parent matrix:");
 		parent.printMatrix();
@@ -213,6 +215,29 @@ public class Projector {
 		PMatrix3D proj=new PMatrix3D(projmodelview);
 		proj.apply(pcanvas.modelviewInv);
 		return proj;
+	}
+	
+	public void decompose(PMatrix3D projmodelview, PMatrix3D proj, PMatrix3D camera, PMatrix3D modelview) {
+		// Decompose a complete mapping from world to screen coordinates into separate projection, camera, model+view, screen normalization
+		// PMV = S*P*C*MV
+		// Approach: S is known, assume P based on known projector lenses, set MV to identity;  multiply by inverses to find C
+		// Can then decompose C into eye, aim, up
+		proj=params.getProjection();
+		PApplet.println("decompose: proj=");
+		proj.print();
+		
+		PMatrix3D S=new PMatrix3D(
+				pcanvas.width/2, 0, 0, pcanvas.width/2,
+				0,-pcanvas.height/2, 0, pcanvas.height/2,
+				0, 0, 0.5f, 0.5f,
+				0, 0, 0, 1);
+		S.invert();
+		modelview.reset();
+		camera.reset();
+		camera.preApply(S);
+		camera.preApply(proj);
+		PApplet.println("camera: ");
+		camera.print();
 	}
 
 	public void setInvMatrix(PMatrix3D projmodelview) {
