@@ -7,6 +7,7 @@ import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
 
+
 public class Projector {
 	SyphonServer server;
 	PGraphicsOpenGL pcanvas;
@@ -16,12 +17,9 @@ public class Projector {
 	PVector aim;
 	float rotation;  // Rotation of projector in degrees -- normally 0
 
-	PApplet p0;
-
 	public Projector(PApplet parent, int id, int width, int height) {
 		// Create a syphon-based projector with given parameters
 		this.id=id;
-		p0=parent;
 		server=new SyphonServer(parent, "P"+id);
 		PApplet.println("parent matrix:");
 		parent.printMatrix();
@@ -205,8 +203,7 @@ public class Projector {
 	}
 
 	private void ttest(float x, float y, float z) {
-		PApplet.println("["+x+","+y+","+z+"]->["+pcanvas.screenX(x,y,z)+","+pcanvas.screenY(x,y,z)+","+pcanvas.screenZ(x,y,z)+"]->"+
-				"["+p0.screenX(x,y,z)+","+p0.screenY(x,y,z)+","+p0.screenZ(x,y,z)+"]");
+		PApplet.println("["+x+","+y+","+z+"]->["+pcanvas.screenX(x,y,z)+","+pcanvas.screenY(x,y,z)+","+pcanvas.screenZ(x,y,z)+"]");
 	}
 
 	public void setMatrix(PMatrix3D projmodelview) {
