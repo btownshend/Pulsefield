@@ -332,11 +332,62 @@ public class Projector {
 		proj=params.getProjection();
 		PApplet.println("decompose: proj=");
 		proj.print();
+		
+		PMatrix3D projinv=new PMatrix3D(proj);
+		projinv.invert();
+		PApplet.println("decompose: projinv=");
+		projinv.print();
+		
+		PMatrix3D modelInv=new PMatrix3D(model);
+		modelInv.invert();
+		
+		PMatrix3D pv=new PMatrix3D(projmodelview);
+		pv.apply(modelInv);  // Get rid of effect of model
+		
+		if (!zknown) {
+			// Reconstruct 3rd row and column of projmodelview from constraints
+			// pv=P*C, where P is known and have constraints that: C(4,:)=[0 0 0 1], norm(C(k,1:3))=1.0 for k=1,2,3
+			pv.m20=pv.m30*proj.m22/proj.m32;
+			pv.m21=pv.m31*proj.m22/proj.m32;
+			pv.m22=pv.m32*proj.m22/proj.m32;
+			pv.m23=pv.m33*proj.m22/proj.m32+proj.m23;	
+			pv.m32=-pv.m22*projinv.m32/projinv.m33;   // To make camera.m32=0
+			pv.m02=Float.NaN;
+			pv.m12=Float.NaN;
+			PApplet.println("so far, pv=:");
+			pv.print();		
+			camera.set(pv);
+			camera.preApply(projinv);
+			PApplet.println("camera: ");
+			camera.print();
+			// Figure out what camera.m*2 should be to normalize the rows
+			float norm0=camera.m00*camera.m00+camera.m01*camera.m01;
+			float cm02=(norm0<1)?(float)Math.sqrt(1-norm0):0;   // Two possible solutions
+			float norm1=camera.m10*camera.m10+camera.m11*camera.m11;
+			float cm12=(norm1<1)?(float)Math.sqrt(1-norm1):0;  // Two possible solutions
+			float norm2=camera.m20*camera.m20+camera.m21*camera.m21;
+			float cm22=(norm2<1)?(float)Math.sqrt(1-norm2):0;
+			pv.m02=cm02/projinv.m00;
+			PApplet.println("norm0="+norm0+", cm02="+cm02+", pv.m02="+pv.m02);
+			pv.m12=(cm12-projinv.m13*pv.m32)/projinv.m11;
+			PApplet.println("so far2, pv=:");
+			pv.print();	
+		}
+		camera.set(pv);
+		camera.preApply(projinv);
+		
 		PApplet.println("camera: ");
 		camera.print();
 		
 		decomposeCamera(camera);
 		
+		// Verify product (P*C*MV) == projmodelview
+		PMatrix3D product=new PMatrix3D(proj);
+		product.apply(camera);
+		product.apply(model);
+		
+		PApplet.println("product:");
+		product.print();
 	}
 
 	public void setInvMatrix(PMatrix3D projmodelview, boolean zknown) {
