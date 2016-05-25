@@ -44,7 +44,7 @@ public class ProjectorParameters {
 		float D=-2*far*near/(far-near);
 		return new PMatrix3D(
 				2*near/(right-left),0,                  A,0,
-				0,                  2*near/(top-bottom),B,0,
+				0,                  -2*near/(top-bottom),B,0,  // proj(2,2) is negated from expected (otherwises doesn't match observed matrix after calling frustum()
 				0,                  0,                  C,D,
 				0,                  0,                 -1,0);
 	}
