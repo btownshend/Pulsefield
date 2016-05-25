@@ -272,6 +272,12 @@ public class Projector {
 				c.print();
 			}
 		}
+		if (Math.abs(new PVector(c.m00,c.m01,c.m02).mag()-1) >.01f)
+			PApplet.println("Row 1 of camera matrix is not a unit vector");
+		if (Math.abs(new PVector(c.m10,c.m11,c.m12).mag()-1) >.01f)
+			PApplet.println("Row 2 of camera matrix is not a unit vector");
+		if (Math.abs(new PVector(c.m20,c.m21,c.m22).mag()-1) >.01f)
+			PApplet.println("Row 3 of camera matrix is not a unit vector");
 		PVector aim = new PVector(-c.m20,-c.m21,-c.m22);
 
 		// Compute the translation by pre-multiplying the camera matrix by the inverse of the untranslated camera matrix
