@@ -27,7 +27,8 @@ public class Projector {
 		parent.printMatrix();
 		parent.printCamera();
 		pcanvas = (PGraphicsOpenGL)parent.createGraphics(width, height,PConstants.P3D);
-
+		testdecompose();
+		
 		PApplet.println("canvas created, matrix=");
 		pcanvas.printMatrix();
 		pcanvas.printCamera();
@@ -217,6 +218,42 @@ public class Projector {
 		return proj;
 	}
 	
+	public void testdecompose() {
+		// Test decompose by setting up a matrix from known parts, then try to decompose
+		pcanvas.resetMatrix();
+		PMatrix3D model=new PMatrix3D(pcanvas.modelview);
+		PVector eye=new PVector(1f,2f,3f);
+		PVector ref=new PVector(4f,7f,0f);
+		PVector up=new PVector(0.1f,0.1f,1f);
+		up.normalize();
+		PVector aim=ref.copy();
+		aim.sub(eye);
+		aim.normalize();
+
+		PApplet.print("eye="+eye);
+		PApplet.print(", ref="+ref);
+		PApplet.print(", up="+up);
+		PApplet.println(", aim="+aim);
+		
+		pcanvas.camera(eye.x,eye.y,eye.z,ref.x,ref.y,ref.z,up.x,up.y,up.z);
+		pcanvas.frustum(params.left,params.right,params.bottom,params.top,params.near,params.far);
+		PApplet.println("preset model=");
+		model.print();
+		PApplet.println("preset camera=");
+		pcanvas.camera.print();
+		PApplet.println("preset proj=");
+		pcanvas.projection.print();
+		PApplet.println("preset modelview=");
+		pcanvas.modelview.print();
+		PApplet.println("preset projmodelview=");
+		pcanvas.projmodelview.print();
+		PMatrix3D dcamera=new PMatrix3D();
+		decompose(pcanvas.projmodelview,model,new PMatrix3D(),dcamera,false);
+		dcamera.invert();
+		dcamera.preApply(pcanvas.camera);
+		PApplet.println("camera*dcamera^-1: ");
+		dcamera.print();
+	}
 	
 	public void decomposeCamera(final PMatrix3D camera) {
 		final boolean debug=true;
