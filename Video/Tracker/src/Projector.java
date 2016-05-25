@@ -217,13 +217,6 @@ public class Projector {
 		return proj;
 	}
 	
-		// Decompose a complete mapping from world to screen coordinates into separate projection, camera, model+view, screen normalization
-		// PMV = S*P*C*MV
-		// Approach: S is known, assume P based on known projector lenses, set MV to identity;  multiply by inverses to find C
-		// Can then decompose C into eye, aim, up
-		proj=params.getProjection();
-		PApplet.println("decompose: proj=");
-		proj.print();
 		
 	public PMatrix3D screenToRelative(final PMatrix3D fulltransform) {
 		// Convert a transform that maps from world -> screen (in pixels) to one the maps to relative screen position (-1:1)
@@ -240,6 +233,14 @@ public class Projector {
 	}
 	
 	public void decompose(final PMatrix3D projmodelview, final PMatrix3D model, PMatrix3D proj, PMatrix3D camera, boolean zknown) {
+		// Decompose a complete mapping from world to screen coordinates and model into separate projection, camera, model, screen normalization
+		// PMV = P*C*M
+		// Approach: Assume P based on known projector lenses, set MV to identity;  multiply by inverses to find C
+		// Can then decompose C into eye, aim, up
+		// If zknown is false, then the 3rd row and 3rd column of projmodelview is unknown and needs to be infered from camera matrix constraints
+		proj=params.getProjection();
+		PApplet.println("decompose: proj=");
+		proj.print();
 		PApplet.println("camera: ");
 		camera.print();
 	}
