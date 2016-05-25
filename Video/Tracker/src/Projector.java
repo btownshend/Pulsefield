@@ -217,7 +217,6 @@ public class Projector {
 		return proj;
 	}
 	
-	public void decompose(PMatrix3D projmodelview, PMatrix3D proj, PMatrix3D camera, PMatrix3D modelview) {
 		// Decompose a complete mapping from world to screen coordinates into separate projection, camera, model+view, screen normalization
 		// PMV = S*P*C*MV
 		// Approach: S is known, assume P based on known projector lenses, set MV to identity;  multiply by inverses to find C
@@ -236,14 +235,16 @@ public class Projector {
 		camera.reset();
 		camera.preApply(S);
 		camera.preApply(proj);
+	public void decompose(final PMatrix3D projmodelview, final PMatrix3D model, PMatrix3D proj, PMatrix3D camera, boolean zknown) {
 		PApplet.println("camera: ");
 		camera.print();
 	}
 
-	public void setInvMatrix(PMatrix3D projmodelview) {
+	public void setInvMatrix(PMatrix3D projmodelview, boolean zknown) {
 		// Decompose to form independent projection and modelview matrices
-		//pcanvas.translate(1.0f, 2.0f, 3.0f);
-		//pcanvas.scale(5f,6f,7f);
+		// If zknown is false, then the 3rd row and 3rd column of projmodelview are undetermined 
+		// This results in 7 DOF, but the camera matrix has 7 constraints (form should be [ R : T ], where r is a rotation matrix -> 9 DOF in a 16 element matrix)
+		
 		PApplet.println("SetInvMatrix(");
 		projmodelview.print();
 		

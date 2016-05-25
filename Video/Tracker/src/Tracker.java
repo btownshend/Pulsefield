@@ -246,7 +246,7 @@ public class Tracker extends PApplet {
 				x10,x11,0,x12,
 				  0,  0,0,  0.5f,
 				x20,x21,0,x22);
-		projectors[proj].setInvMatrix(mat);
+		projectors[proj].setInvMatrix(mat,false);
 	}
 	
 	public void vsetapp(OscMessage msg) {
