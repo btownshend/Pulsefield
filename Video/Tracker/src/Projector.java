@@ -217,7 +217,61 @@ public class Projector {
 		return proj;
 	}
 	
+	
+	public void decomposeCamera(final PMatrix3D camera) {
+		final boolean debug=true;
 		
+		// Decompose a camera view matrix into eye, aim, up
+		PMatrix3D c=new PMatrix3D(camera);
+		if (c.m33!=1f) {
+			float rescale=1/c.m33;
+			c.set(  c.m00*rescale, c.m01*rescale, c.m02*rescale, c.m03*rescale,
+					c.m10*rescale, c.m11*rescale, c.m12*rescale, c.m13*rescale,
+					c.m20*rescale, c.m21*rescale, c.m22*rescale, c.m23*rescale,
+					c.m30*rescale, c.m31*rescale, c.m32*rescale, c.m33*rescale
+					);
+			if (debug) {
+				PApplet.println("decomposeCamera: rescaling matrix by "+rescale+" -> ");
+				c.print();
+			}
+		}
+		PVector aim = new PVector(-c.m20,-c.m21,-c.m22);
+		
+		// Compute the translation by pre-multiplying the camera matrix by the inverse of the untranslated camera matrix
+		PMatrix3D untranslatedInv=new PMatrix3D(camera);
+		untranslatedInv.m03=0; untranslatedInv.m13=0; untranslatedInv.m23=0; untranslatedInv.m33=1;
+		untranslatedInv.invert();
+		PMatrix3D translationMat=new PMatrix3D(camera);
+		translationMat.preApply(untranslatedInv);
+		PVector eye = new PVector(-translationMat.m03,-translationMat.m13,-translationMat.m23);
+
+		// Find a reference point that determines the aim, preferable at z=0
+		float aimscale=1f;
+		if (aim.z!=0) {
+			// Find a ref position with z=0
+			aimscale=-eye.z/aim.z;
+		}
+		PVector ref=aim.copy();
+		ref.mult(aimscale);
+		ref.add(eye);
+		
+		// Read out up vector (but may be different than original, which didn't have to be orthogonal to other axes -- this one is)
+		PVector up=new PVector(c.m10,c.m11,c.m12);
+		
+		if (debug) {
+			PApplet.print("reconstructed aim="+aim);
+			PApplet.print(", eye="+eye);
+			PApplet.print(", ref="+ref);
+			PApplet.println(", up="+up);
+			pcanvas.pushMatrix();
+			pcanvas.resetMatrix();
+			pcanvas.camera(eye.x,eye.y,eye.z,ref.x,ref.y,ref.z,up.x,up.y,up.z);
+			PApplet.println("recombine eye,ref,up: ");
+			pcanvas.printCamera();
+			pcanvas.popMatrix();
+		}
+	}
+	
 	public PMatrix3D screenToRelative(final PMatrix3D fulltransform) {
 		// Convert a transform that maps from world -> screen (in pixels) to one the maps to relative screen position (-1:1)
 		PMatrix3D S=new PMatrix3D(
@@ -243,6 +297,9 @@ public class Projector {
 		proj.print();
 		PApplet.println("camera: ");
 		camera.print();
+		
+		decomposeCamera(camera);
+		
 	}
 
 	public void setInvMatrix(PMatrix3D projmodelview, boolean zknown) {
