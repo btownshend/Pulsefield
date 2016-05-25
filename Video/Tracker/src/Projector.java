@@ -225,16 +225,20 @@ public class Projector {
 		PApplet.println("decompose: proj=");
 		proj.print();
 		
+	public PMatrix3D screenToRelative(final PMatrix3D fulltransform) {
+		// Convert a transform that maps from world -> screen (in pixels) to one the maps to relative screen position (-1:1)
 		PMatrix3D S=new PMatrix3D(
 				pcanvas.width/2, 0, 0, pcanvas.width/2,
 				0,-pcanvas.height/2, 0, pcanvas.height/2,
 				0, 0, 0.5f, 0.5f,
 				0, 0, 0, 1);
-		S.invert();
-		modelview.reset();
-		camera.reset();
-		camera.preApply(S);
-		camera.preApply(proj);
+		PMatrix3D SInv=new PMatrix3D(S);
+		SInv.invert();
+		PMatrix3D relative=new PMatrix3D(fulltransform);
+		relative.preApply(SInv);
+		return relative;
+	}
+	
 	public void decompose(final PMatrix3D projmodelview, final PMatrix3D model, PMatrix3D proj, PMatrix3D camera, boolean zknown) {
 		PApplet.println("camera: ");
 		camera.print();
@@ -250,17 +254,7 @@ public class Projector {
 		
 		// PGraphics3D does additional scaling/centering of x,y after all the matrix transformations to get raw pixels
 		// so we need to back that out of the target matrix
-		PMatrix3D target=new PMatrix3D(projmodelview);
-		PMatrix3D finalscale=new PMatrix3D(
-				pcanvas.width/2, 0, 0, pcanvas.width/2,
-				0,-pcanvas.height/2, 0, pcanvas.height/2,
-				0, 0, 0.5f, 0.5f,
-				0, 0, 0, 1);
-		PMatrix3D unscale=new PMatrix3D(finalscale);
-		unscale.invert();
-		PApplet.println("unscale: ");
-		unscale.print();
-		target.preApply(unscale);
+		PMatrix3D target=screenToRelative(projmodelview);
 		PApplet.println("target: ");
 		target.print();
 		
