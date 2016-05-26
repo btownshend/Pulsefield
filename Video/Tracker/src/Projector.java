@@ -29,19 +29,12 @@ public class Projector {
 		pcanvas = (PGraphicsOpenGL)parent.createGraphics(width, height,PConstants.P3D);
 		testdecompose();
 
-		PApplet.println("canvas created, matrix=");
-		pcanvas.printMatrix();
-		pcanvas.printCamera();
+		matprint("Projector: Current camera matrix",pcanvas.camera);
+		matprint("Projector: Current modelview matrix",pcanvas.modelview);
+		matprint("Projector: Current proj matrix",pcanvas.projection);
 
-		PApplet.println("Current modelview matrix=");
-		pcanvas.modelview.print();
-
-		PApplet.println("Current proj matrix=");
-		pcanvas.printProjection();
 		PMatrix3D reconProj=extractProj(pcanvas.projmodelview);
-		PApplet.println("Reconstructed projection matrix:");
-		reconProj.print();
-
+		matprint("Projector: Reconstructed projection matrix",reconProj);
 
 		ttest(1,2,0);
 		throwRatio=0.25f;
@@ -237,22 +230,16 @@ public class Projector {
 
 		pcanvas.camera(eye.x,eye.y,eye.z,ref.x,ref.y,ref.z,up.x,up.y,up.z);
 		pcanvas.frustum(params.left,params.right,params.bottom,params.top,params.near,params.far);
-		PApplet.println("preset model=");
-		model.print();
-		PApplet.println("preset camera=");
-		pcanvas.camera.print();
-		PApplet.println("preset proj=");
-		pcanvas.projection.print();
-		PApplet.println("preset modelview=");
-		pcanvas.modelview.print();
-		PApplet.println("preset projmodelview=");
-		pcanvas.projmodelview.print();
+		matprint("testdecompose: preset model",model);
+		matprint("testdecompose: preset camera",pcanvas.camera);
+		matprint("testdecompose: preset proj",pcanvas.projection);
+		matprint("testdecompose: preset modelview",pcanvas.modelview);
+		matprint("testdecompose: preset projmodelview",pcanvas.projmodelview);
 		PMatrix3D dcamera=new PMatrix3D();
 		decompose(pcanvas.projmodelview,model,new PMatrix3D(),dcamera,false);
 		dcamera.invert();
 		dcamera.preApply(pcanvas.camera);
-		PApplet.println("camera*dcamera^-1: ");
-		dcamera.print();
+		matprint("testdecompose: camera*dcamera^-1",dcamera);
 	}
 
 	public void decomposeCamera(final PMatrix3D camera) {
@@ -267,10 +254,8 @@ public class Projector {
 					c.m20*rescale, c.m21*rescale, c.m22*rescale, c.m23*rescale,
 					c.m30*rescale, c.m31*rescale, c.m32*rescale, c.m33*rescale
 					);
-			if (debug) {
-				PApplet.println("decomposeCamera: rescaling matrix by "+rescale+" -> ");
-				c.print();
-			}
+			if (debug)
+				matprint("decomposeCamera: rescaling matrix by "+rescale,c);
 		}
 		if (Math.abs(new PVector(c.m00,c.m01,c.m02).mag()-1) >.01f)
 			PApplet.println("Row 1 of camera matrix is not a unit vector");
@@ -286,6 +271,7 @@ public class Projector {
 		untranslatedInv.invert();
 		PMatrix3D translationMat=new PMatrix3D(camera);
 		translationMat.preApply(untranslatedInv);
+		matprint("decomposeCamera: translationMat",translationMat);
 		PVector eye = new PVector(-translationMat.m03,-translationMat.m13,-translationMat.m23);
 
 		// Find a reference point that determines the aim, preferable at z=0
@@ -326,10 +312,16 @@ public class Projector {
 		PMatrix3D SInv=new PMatrix3D(S);
 		SInv.invert();
 		PMatrix3D relative=new PMatrix3D(fulltransform);
+		matprint("screenToRelative: SInv",SInv);
 		relative.preApply(SInv);
 		return relative;
 	}
 
+	private void matprint(String label, final PMatrix3D mat) {
+		PApplet.println(label+":");
+		mat.print();
+	}
+	
 	public void decompose(final PMatrix3D projmodelview, final PMatrix3D model, PMatrix3D proj, PMatrix3D camera, boolean zknown) {
 		// Decompose a complete mapping from world to screen coordinates and model into separate projection, camera, model, screen normalization
 		// PMV = P*C*M
@@ -337,13 +329,11 @@ public class Projector {
 		// Can then decompose C into eye, aim, up
 		// If zknown is false, then the 3rd row and 3rd column of projmodelview is unknown and needs to be infered from camera matrix constraints
 		proj=params.getProjection();
-		PApplet.println("decompose: proj=");
-		proj.print();
+		matprint("decompose: proj",proj);
 
 		PMatrix3D projinv=new PMatrix3D(proj);
 		projinv.invert();
-		PApplet.println("decompose: projinv=");
-		projinv.print();
+		matprint("decompose: projinv",projinv);
 
 		PMatrix3D modelInv=new PMatrix3D(model);
 		modelInv.invert();
@@ -365,8 +355,8 @@ public class Projector {
 			pv.print();		
 			camera.set(pv);
 			camera.preApply(projinv);
-			PApplet.println("camera: ");
-			camera.print();
+			matprint("decompose: camera",camera);
+
 			// Figure out what camera.m*2 should be to normalize the rows
 			float norm0=camera.m00*camera.m00+camera.m01*camera.m01;
 			float cm02=(norm0<1)?(float)Math.sqrt(1-norm0):0;   // Two possible solutions
@@ -383,8 +373,7 @@ public class Projector {
 		camera.set(pv);
 		camera.preApply(projinv);
 
-		PApplet.println("camera: ");
-		camera.print();
+		matprint("decompose: camera",camera);
 
 		decomposeCamera(camera);
 
@@ -393,8 +382,8 @@ public class Projector {
 		product.apply(camera);
 		product.apply(model);
 
-		PApplet.println("product:");
-		product.print();
+		matprint("deccompose: product",product);
+
 		float mx=maxdiff(projmodelview,product);
 		if (mx>0.01f)
 			PApplet.println("reconstructed product differs from original by up to "+mx);
@@ -417,24 +406,18 @@ public class Projector {
 		// If zknown is false, then the 3rd row and 3rd column of projmodelview are undetermined 
 		// This results in 7 DOF, but the camera matrix has 7 constraints (form should be [ R : T ], where r is a rotation matrix -> 9 DOF in a 16 element matrix)
 
-		PApplet.println("SetInvMatrix(");
-		projmodelview.print();
+		matprint("setInvMatrix: projmodelview",projmodelview);
 
 		// PGraphics3D does additional scaling/centering of x,y after all the matrix transformations to get raw pixels
 		// so we need to back that out of the target matrix
 		PMatrix3D target=screenToRelative(projmodelview);
-		PApplet.println("target: ");
-		target.print();
+		matprint("setInvMatrix: target",target);
 
 		PMatrix3D newproj=extractProj(target);
-		PApplet.println("Extracted new proj matrix");
-		newproj.print();
+		matprint("setInvMatrix: Extracted new proj matrix",newproj);
 
 		pcanvas.setProjection(newproj);
-		PApplet.println("Updated proj matrix=");
-		pcanvas.printProjection();
-		PApplet.println("projmodelview Matrix after applying transform");
-		pcanvas.projmodelview.print();
+		matprint("setInvMatrix: projmodelview Matrix after applying transform",pcanvas.projmodelview);
 
 		ttest(0,0,0);
 		ttest(0,2,0);
