@@ -604,14 +604,34 @@ int RelMapping::addMatches(std::vector<cv::detail::ImageFeatures> &features,    
 }
 
 std::ostream &flatMat(std::ostream &s, const cv::Mat &m) {
-    assert(m.type()==CV_64F);
+//    s<<m << std::endl;
+//    return s;
+//    s << "m.type=" << std::hex <<  m.type() << ",  type&0x18=" << (m.type()&0x18) << std::dec << std::endl;
+    
+    if ((m.type()&0x7)!=CV_64F && (m.type()&0x7)!=CV_32F) {
+	s << "flatMat: unexpected m.type=" << m.type() << std::endl;
+	return s;
+    }
+    
+    //assert(m.type()==CV_64F);
     s << "[";
     for (int i=0;i<m.rows;i++) {
 	for (int j=0;j<m.cols;j++)
-	    s << m.at<double>(i,j) << " ";
-	s << std::endl;
-	if (i==m.cols-1)
+	    if ((m.type()&0x18) == 0x8) {
+		// 2d vector
+		s << m.at<cv::Point2d>(i,j).x << "," << m.at<cv::Point2d>(i,j).y << std::endl;
+	    } else if ((m.type()&0x18) == 0x10) {
+		// 3d vector
+		s << m.at<cv::Point3d>(i,j).x << "," << m.at<cv::Point3d>(i,j).y <<  "," << m.at<cv::Point3d>(i,j).z << std::endl;
+	    } else {
+		if ((m.type() & 0x7) == CV_64F)
+		    s << m.at<double>(i,j) << " ";
+		else if ((m.type() & 0x7) == CV_32F)
+		    s << m.at<float>(i,j) << " ";
+	    }
+	if (i==m.rows-1)
 	    s << "]";
+	s << std::endl;
     }
     return s;
 }
