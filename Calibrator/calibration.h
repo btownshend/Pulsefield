@@ -76,9 +76,10 @@ class Calibration {
     std::vector<cv::Mat> homographies;		// Each maps from laser flat space [-1,1] to world coordinates (which initially are arbitrary) use w=H*f
     void testMappings() const;
     std::vector<std::string> statusLines;		// Status lines to display
-    std::vector<cv::Mat> poses;
+    std::vector<cv::Mat> tvecs, rvecs;			// translation, rotation of camera frame as computed by solvePnP:  note that rotation is done before translation
+    std::vector<cv::Mat> poses;				// Position of camera lenses in world space (derived from inverting tvec and rvec)
     std::vector<Point> alignCorners;			// Alignment target positions in real world
-
+    cv::Mat projection;		// Projection matrix for camera (3x3)
     lo_address tosc;
 
     // Configuration file

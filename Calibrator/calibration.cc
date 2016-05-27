@@ -218,15 +218,30 @@ void  RelMapping::setDevicePt(Point p, int i,int which)  {
 	pt2[which]=projToRel(p);
 }
        
-Calibration::Calibration(int _nunits, URLConfig&urls): homographies(_nunits+1), statusLines(3), poses(_nunits), alignCorners(0), config("settings_proj.json") {
+Calibration::Calibration(int _nunits, URLConfig&urls): homographies(_nunits+1), statusLines(3), tvecs(_nunits), rvecs(_nunits), poses(_nunits), alignCorners(0), config("settings_proj.json") {
     nunits = _nunits;
     dbg("Calibration.Calibration",1) << "Constructing calibration with " << nunits << " units." << std::endl;
     assert(nunits>0);
     for (int i=0;i<homographies.size();i++)
 	homographies[i]=cv::Mat::eye(3, 3, CV_64F);	// Initialize to identity matrix
-    for (int i=0;i<poses.size();i++) 
-	poses[i] = cv::Mat::eye(3, 4, CV_64FC1); //3x4 matrix
-
+    for (int i=0;i<poses.size();i++)  {
+	poses[i] = cv::Mat::zeros(3, 1, CV_64FC1);
+	rvecs[i] = cv::Mat::zeros(3, 1, CV_64FC1);
+	tvecs[i] = cv::Mat::zeros(3, 1, CV_64FC1);
+    }
+    projection = cv::Mat::zeros(3, 3, CV_64FC1); //3x4 matrix
+    //float fh=547.392, fv=-547.3440, ch=0, cv=-1298.9;
+    //float fh=547.392, fv=-547.3440, ch=1920/2, cv=1080/2;
+    //float fh=964, fv=-fh, ch=1920/2, cv=1080/2;
+    float fh=486, fv=-fh, ch=1920/2, cv=1080/2;
+    cv=cv-fv*(.224+1.25)/0.56;    // Vertical offset from manual   
+    //float fh=0.66/2.48*1920, fv=-fh, ch=1920/2, cv=(1.52/2+.25)/1.52*1080;
+    projection.at<double>(0,0)=fh;
+    projection.at<double>(1,1)=fv;
+    projection.at<double>(0,2)=ch;
+    projection.at<double>(1,2)=cv;
+    projection.at<double>(2,2)=1;
+    
 
     for (int i=0;i<nunits;i++)
 	for (int j=i+1;j<nunits+1;j++) {
@@ -636,6 +651,39 @@ std::ostream &flatMat(std::ostream &s, const cv::Mat &m) {
     return s;
 }
 
+// Compute extrinsics (translation, rotation of camera) given a set of matchpoints and the camera intrinsic projection matrix
+// sensorPts (Nx2) - image points on camera sensor (0:width, 0:height) -- origin is at top-left
+// worldPts (Nx3) - corresponding points in world frame of reference
+static float computeExtrinsics(cv::InputArray &sensorPts, cv::InputArray &worldPts, const cv::Mat &projection, cv::Mat &rvec, cv::Mat &tvec, cv::Mat &pose) {
+	cv::Mat opoints = worldPts.getMat(), ipoints = sensorPts.getMat();
+
+	dbg("Calibration.recompute",1) << "computeExtrinsics() with " << sensorPts.size() << ", " << worldPts.size() << " points"  << std::endl;
+	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Projection = \n",projection) << std::endl;
+	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "sensorPts = \n",ipoints) << std::endl;
+	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "worldPts = \n",opoints) << std::endl;
+
+	cv::solvePnP(worldPts,sensorPts,projection,cv::Mat(),rvec,tvec,false,CV_EPNP);
+	// Reproject the points
+	cv::Mat reconPts;
+	cv::projectPoints(worldPts, rvec, tvec, projection, cv::Mat(), reconPts);
+	float totalErr=0;
+	for (int i=0;i<reconPts.rows;i++) {
+	    float e=norm(reconPts.at<cv::Point2d>()-ipoints.at<cv::Point2d>());
+	    std::cout << ipoints.at<cv::Point2d>(0,i) << " -> " << opoints.at<cv::Point3d>(0,i) << " -> " << reconPts.at<cv::Point2d>(i,0) << " e=" << e << std::endl;
+	    totalErr+=e;
+	}
+	totalErr /= reconPts.rows;
+	std::cout << "RMS error " << totalErr << " pixels" << std::endl;
+	// Convert to rotation matrix
+	cv::Mat rotMat;
+	cv::Rodrigues(rvec,rotMat);
+	// Map tvec back to world coordinates
+	pose=-rotMat.inv()*tvec;
+	std::cout << "Final pose = " << pose << std::endl;
+	return totalErr;
+}
+    
+
 // Compute all the homographies using openCV
 // see OpenCV motion_estimators.cpp for use (documentation doesn't cut it)
 int Calibration::recompute() {
@@ -766,14 +814,26 @@ int Calibration::recompute() {
     }
     
     // Compute origins
-    for (int i=0;i<nunits;i++) {
-	cameraPoseFromHomography(homographies[i],poses[i]);
-	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Inverse pose for laser " << i << " = \n",poses[i]) << std::endl;
-
-	cameraPoseFromHomography(homographies[i].inv(),poses[i]);
-
-	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Pose for laser " << i << " = \n",poses[i]) << std::endl;
-	dbg("Calibration.recompute",1) << "Laser " << i << " at [" << poses[i].at<double>(0,3) << "," << poses[i].at<double>(1,3) << "," << poses[i].at<double>(2,3) << "]" << std::endl;
+    for (int k=0;k<nunits;k++) {
+	std::vector<cv::Point2d> src;
+	std::vector<cv::Point3d> dst;
+	for (int j=0;j<pairwiseMatches.size();j++) {
+	    cv::detail::MatchesInfo pm = pairwiseMatches[j];
+	    if (pm.src_img_idx==k && pm.dst_img_idx==nunits) {  // Correspondence with world
+		for (int i=0;i<pm.matches.size();i++) {
+		    src.push_back(features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt);
+		    cv::Point2d dstpt=features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt;
+		    dst.push_back(cv::Point3d(dstpt.x,dstpt.y,0.0));
+		    dbg("Calibration.recompute",2) << pm.dst_img_idx << "." << pm.matches[i].trainIdx << std::endl;
+		}
+	    }
+	}
+	if (src.size()<3) {
+	    dbg("Calibration.recompute",0) << "Not enough correspondences between unit " << k << " and world to calculate positions (have " << src.size() << ")" << std::endl;
+	    continue;
+	}
+	computeExtrinsics(src,dst,projection,rvecs[k], tvecs[k], poses[k]);
+	dbg("Calibration.recompute",1) << "Laser " << k << " at [" << poses[k].at<double>(0,0) << "," << poses[k].at<double>(1,0) << "," << poses[k].at<double>(2,0) << "]" << std::endl;
     }
     
     // Push mappings to transforms.cc
