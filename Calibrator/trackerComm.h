@@ -33,5 +33,5 @@ class TrackerComm {
     }
     void sendCursors(const std::vector<Cursor> &c) const;
     void sendTransform(int unit, bool inverse, const cv::Mat &hom) const;
-    void sendPose(int unit, const cv::Mat &pose) const;
+    void sendPose(int unit, const cv::Mat &pose, const cv::Mat &poserotation) const;
 };

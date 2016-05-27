@@ -378,7 +378,7 @@ void Calibration::updateTracker() const {
 	TrackerComm::instance()->sendTransform(i, true, inv);
     }
     for (int i=0;i<poses.size();i++) {
-	TrackerComm::instance()->sendPose(i,poses[i]);
+	TrackerComm::instance()->sendPose(i,poses[i],rvecs[i]);
     }
 }
 

@@ -70,7 +70,7 @@ void TrackerComm::sendTransform(int unit, bool inverse, const cv::Mat &hom) cons
     }
 }
 
-void TrackerComm::sendPose(int unit, const cv::Mat &pose) const {
+void TrackerComm::sendPose(int unit, const cv::Mat &pose, const cv::Mat &poserotation) const {
     if (lo_send(remote,"/cal/pose","iffffffffffff",unit,pose.at<double>(0,0),pose.at<double>(0,1),pose.at<double>(0,2),pose.at<double>(0,3),
 		pose.at<double>(1,0),pose.at<double>(1,1),pose.at<double>(1,2),pose.at<double>(1,3),
 		pose.at<double>(2,0),pose.at<double>(2,1),pose.at<double>(2,2),pose.at<double>(2,3))) {
