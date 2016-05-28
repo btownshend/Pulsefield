@@ -136,17 +136,6 @@ public class Projector {
 		// Its center corresponds to Tracker.getFloorCenter() and is scaled by Tracker.getPixelsPerMeter()
 
 		pcanvas.beginDraw();
-		if (false) {
-			float aspect=pcanvas.width*1.0f/pcanvas.height;
-			float vfov=(float)(2f*Math.atan(1f/(aspect*throwRatio*2)));
-
-			pcanvas.pushMatrix();
-			pcanvas.perspective(vfov, aspect, 1f, 1e10f);
-			// Projector image needs to be flipped in z direction to align correctly
-			pcanvas.camera(pos.x,pos.y,pos.z,aim.x,aim.y,0.0f,(float)Math.sin(rotation*PConstants.PI/180),1.0f*(float)Math.cos(rotation*PConstants.PI/180),0.0f);
-			//PApplet.println("Projector "+id+": pos=["+pos+"], aspect="+aspect+", vfov="+vfov*180f/Math.PI+" degrees.");
-		}
-
 		pcanvas.background(0);
 
 		pcanvas.imageMode(PConstants.CENTER);
@@ -198,6 +187,7 @@ public class Projector {
 		return proj;
 	}
 
+	@Deprecated
 	public void testdecompose() {
 		// Test decompose by setting up a matrix from known parts, then try to decompose
 		pcanvas.resetMatrix();
@@ -315,6 +305,7 @@ public class Projector {
 		mat.print();
 	}
 	
+	@Deprecated
 	public void decompose(final PMatrix3D projmodelview, final PMatrix3D model, PMatrix3D proj, PMatrix3D camera, boolean zknown) {
 		// Decompose a complete mapping from world to screen coordinates and model into separate projection, camera, model, screen normalization
 		// PMV = P*C*M
