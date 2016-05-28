@@ -388,10 +388,10 @@ void Calibration::updateTracker() const {
 
 
     for (int i=0;i<poses.size();i++) {
-	TrackerComm::instance()->sendTransform(i, false, homographies[i]);
+	TrackerComm::instance()->sendScreenToWorld(i, homographies[i]);
 	cv::Mat inv=homographies[i].inv();
 	inv=inv/inv.at<double>(2,2);
-	TrackerComm::instance()->sendTransform(i, true, inv);
+	TrackerComm::instance()->sendWorldToScreen(i, inv);
 	TrackerComm::instance()->sendProjection(i,projection);
 
 	// Convert to rotation matrix

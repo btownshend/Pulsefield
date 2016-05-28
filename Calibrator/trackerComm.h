@@ -32,12 +32,24 @@ class TrackerComm {
 	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
     }
     void sendCursors(const std::vector<Cursor> &c) const;
-    void sendTransform(int unit, bool inverse, const cv::Mat &hom) const;
+
+    // Send various parts of the transformation between world and projector
+    void sendMatrix(const char *path, int unit, const cv::Mat &mat) const;
+
+    // Send complete transforms to go between world coordinates (in meters) and screen coordinates (0-width,0-height)
+    // Note that these are 3x3 homogenous matrices
+    void sendWorldToScreen(int unit, const cv::Mat &mat) const { sendMatrix("/cal/world2screen", unit, mat); }
+    void sendScreenToWorld(int unit, const cv::Mat &mat) const { sendMatrix("/cal/screen2world", unit, mat); }
+    
+    // Send position of projector; although this may be redundant with the other information, calculating it is non-trivial
     void sendPose(int unit, const cv::Mat &pose) const;
-    void sendMatrix(const char *path, int unit, const cv::Mat &projection) const;
-    void sendProjection(int unit, const cv::Mat &projection) const {
-	sendMatrix("/cal/projection", unit, projection);
-    }
+    
+    // Send projection (perspective map)
+    void sendProjection(int unit, const cv::Mat &projection) const { sendMatrix("/cal/projection", unit, projection); }
+    
+    // Send transform that converts world coordinates into the camera view frame (without projecting)
+    // Consists of [R:T] where R is 3x3 rotation matrix and T is 3x1 translation
+    // Translation is applied after rotation
     void sendCameraView(int unit, const cv::Mat &rotMat, const cv::Mat &tvec) const;
     
 };

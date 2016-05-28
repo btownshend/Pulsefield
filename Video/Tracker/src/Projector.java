@@ -424,7 +424,7 @@ public class Projector {
 		return mx;
 	}
 	
-	public void setInvMatrix(PMatrix3D projmodelview, boolean zknown) {
+	public void setWorld2Screen(PMatrix3D projmodelview, boolean zknown) {
 		// Decompose to form independent projection and modelview matrices
 		// If zknown is false, then the 3rd row and 3rd column of projmodelview are undetermined 
 		// This results in 7 DOF, but the camera matrix has 7 constraints (form should be [ R : T ], where r is a rotation matrix -> 9 DOF in a 16 element matrix)

@@ -69,6 +69,9 @@ void TrackerComm::sendMatrix(const char *path, int unit, const cv::Mat &m) const
     }
 }
 
+// Send transform that converts world coordinates into the camera view frame (without projecting)
+// Consists of [R:T] where R is 3x3 rotation matrix and T is 3x1 translation
+// Translation is applied after rotation
 void TrackerComm::sendCameraView(int unit, const cv::Mat &rotMat, const cv::Mat &tvec) const {
     assert(rotMat.rows==3 && rotMat.cols==3);
     assert(tvec.rows==3 && tvec.cols==1);
@@ -79,13 +82,8 @@ void TrackerComm::sendCameraView(int unit, const cv::Mat &rotMat, const cv::Mat 
     }
 }
 
-void TrackerComm::sendTransform(int unit, bool inverse, const cv::Mat &hom) const {
-    const char *path="/cal/transform";
-    if (inverse)
-	path="/cal/invtransform";
-    sendMatrix(path,unit,hom);
-}
-
+// Set position of projector
+// Although this may be redundant with the other information, calculating it is non-trivial
 void TrackerComm::sendPose(int unit, const cv::Mat &pose) const {
     if (lo_send(remote,"/cal/pose","ifff",unit,pose.at<double>(0,0),pose.at<double>(0,1),pose.at<double>(0,2)) < 0 ) {
 	dbg("TrackerComm.sendPose",1) << "Failed send of /cal/pose to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;

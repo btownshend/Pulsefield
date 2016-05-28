@@ -176,8 +176,8 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "volume", "/volume");
 		oscP5.plug(this, "ping", "/ping");
 		oscP5.plug(this,  "setcursor", "/cal/cursor");
-		oscP5.plug(this, "settransform","/cal/transform");
-		oscP5.plug(this, "setitransform","/cal/invtransform");
+		oscP5.plug(this, "setscreen2world","/cal/screen2world");
+		oscP5.plug(this, "setworld2screen","/cal/world2screen");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		unhandled = new HashMap<String,Boolean>();
 		canvas = this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
@@ -235,10 +235,10 @@ public class Tracker extends PApplet {
 		projectors[proj].setMatrix(mat);
 	}
 	
-	public void setitransform(int proj, float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21, float x22) {
-		PApplet.println("setitransform("+proj+","+x00+","+x01+"...)");
+	public void setworld2screen(int proj, float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21, float x22) {
+		PApplet.println("setworld2screen("+proj+","+x00+","+x01+"...)");
 		if (proj<0 || proj>=projectors.length) {
-			PApplet.println("settransform: Bad projector number: "+proj);
+			PApplet.println("setworld2screen: Bad projector number: "+proj);
 			return;
 		}
 		PMatrix3D mat=new PMatrix3D();
@@ -246,7 +246,7 @@ public class Tracker extends PApplet {
 				x10,x11,0,x12,
 				  0,  0,0,  0.5f,
 				x20,x21,0,x22);
-		projectors[proj].setInvMatrix(mat,false);
+		projectors[proj].setWorld2Screen(mat,false);
 	}
 	
 	public void vsetapp(OscMessage msg) {
