@@ -76,7 +76,7 @@ void TrackerComm::sendCameraView(int unit, const cv::Mat &rotMat, const cv::Mat 
     assert(rotMat.rows==3 && rotMat.cols==3);
     assert(tvec.rows==3 && tvec.cols==1);
     const char *path="/cal/cameraview";
-    if (lo_send(remote,path,"iffffffffffff",unit,rotMat.at<double>(0,0),rotMat.at<double>(0,1),rotMat.at<double>(0,2),tvec.at<double>(0,1),rotMat.at<double>(1,0),rotMat.at<double>(1,1),rotMat.at<double>(1,2),tvec.at<double>(1,1), rotMat.at<double>(2,0),rotMat.at<double>(2,1),rotMat.at<double>(2,2),tvec.at<double>(2,1)) < 0) {
+    if (lo_send(remote,path,"iffffffffffff",unit,rotMat.at<double>(0,0),rotMat.at<double>(0,1),rotMat.at<double>(0,2),tvec.at<double>(0,0),rotMat.at<double>(1,0),rotMat.at<double>(1,1),rotMat.at<double>(1,2),tvec.at<double>(1,0), rotMat.at<double>(2,0),rotMat.at<double>(2,1),rotMat.at<double>(2,2),tvec.at<double>(2,0)) < 0) {
 	dbg("TrackerComm.sendTransform",1) << "Failed send of " << path << " to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return;
     }
