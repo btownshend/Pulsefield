@@ -268,12 +268,12 @@ public class Tracker extends PApplet {
 		projectors[proj].setPosition(x, y, z);
 	}
 
-	public void setcameraview(int proj, float x00, float x01, float x02, float x03, float x10, float x11, float x12, float x13, float x20, float x21, float x22, float x23, float x30, float x31, float x32, float x33) {
+	public void setcameraview(int proj, float x00, float x01, float x02, float x03, float x10, float x11, float x12, float x13, float x20, float x21, float x22, float x23) {
 		PMatrix3D mat=new PMatrix3D();
 		mat.set(x00,x01,x02,x03,
 				x10,x11,x12,x13,
 				x20,x21,x22,x23,
-				x30,x31,x32,x33);
+				0,0,0,1);
 		PApplet.println("setcamerview("+proj+":");
 		mat.print();
 		projectors[proj].setCameraView(mat);
