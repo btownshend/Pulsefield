@@ -3,7 +3,6 @@
   "proj2": {
     "pos.x": 0,
     "pos.y": -0.5,
-    "throwratio": 0.25,
     "aim.x": 0,
     "rotation": 0,
     "aim.y": 2.5,
@@ -12,7 +11,6 @@
   "proj1": {
     "pos.x": 0,
     "pos.y": -0.5,
-    "throwratio": 0.25,
     "aim.x": 0,
     "rotation": 0,
     "aim.y": 2.5,
