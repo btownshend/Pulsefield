@@ -17,7 +17,8 @@ public class Projector {
 	PVector aim;
 	float rotation;  // Rotation of projector in degrees -- normally 0
 	ProjectorParameters params;
-
+	private final boolean debug=true;
+	
 	public Projector(PApplet parent, int id, int width, int height) {
 		// Create a syphon-based projector with given parameters
 		this.id=id;
@@ -29,14 +30,17 @@ public class Projector {
 		pcanvas = (PGraphicsOpenGL)parent.createGraphics(width, height,PConstants.P3D);
 		//testdecompose();
 
-		matprint("Projector: Current camera matrix",pcanvas.camera);
-		matprint("Projector: Current modelview matrix",pcanvas.modelview);
-		matprint("Projector: Current proj matrix",pcanvas.projection);
+		if (debug) {
+			matprint("Projector: Current camera matrix",pcanvas.camera);
+			matprint("Projector: Current modelview matrix",pcanvas.modelview);
+			matprint("Projector: Current proj matrix",pcanvas.projection);
 
-		PMatrix3D reconProj=extractProj(pcanvas.projmodelview);
-		matprint("Projector: Reconstructed projection matrix",reconProj);
+			PMatrix3D reconProj=extractProj(pcanvas.projmodelview);
+			matprint("Projector: Reconstructed projection matrix",reconProj);
 
-		ttest(1,2,0);
+			ttest(1,2,0);
+		}
+		
 		aim=Tracker.getFloorCenter();
 		pos=new PVector(0f,-0.5f,1.5f); // Assume it is above/behind lidar
 		rotation=0f;
@@ -62,7 +66,8 @@ public class Projector {
 	}
 
 	public void handleMessage(OscMessage msg) {
-		PApplet.println("Projector message: "+msg.toString());
+		if (debug)
+			PApplet.println("Projector message: "+msg.toString());
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
 
@@ -220,8 +225,6 @@ public class Projector {
 	}
 
 	public void decomposeCamera(final PMatrix3D camera) {
-		final boolean debug=true;
-
 		// Decompose a camera view matrix into eye, aim, up
 		PMatrix3D c=new PMatrix3D(camera);
 		if (c.m33!=1f) {
@@ -295,7 +298,8 @@ public class Projector {
 		PMatrix3D SInv=new PMatrix3D(S);
 		SInv.invert();
 		PMatrix3D relative=new PMatrix3D(fulltransform);
-		matprint("screenToRelative: SInv",SInv);
+		if (debug)
+			matprint("screenToRelative: SInv",SInv);
 		relative.preApply(SInv);
 		return relative;
 	}
@@ -417,33 +421,32 @@ public class Projector {
 		// If zknown is false, then the 3rd row and 3rd column of projmodelview are undetermined 
 		// This results in 7 DOF, but the camera matrix has 7 constraints (form should be [ R : T ], where r is a rotation matrix -> 9 DOF in a 16 element matrix)
 
-		matprint("setInvMatrix: projmodelview",projmodelview);
-
 		// PGraphics3D does additional scaling/centering of x,y after all the matrix transformations to get raw pixels
 		// so we need to back that out of the target matrix
 		PMatrix3D target=screenToRelative(projmodelview);
-		matprint("setInvMatrix: target",target);
-
-		//PMatrix3D model=new PMatrix3D();
-		//model.reset();
-		//decompose(target,model,new PMatrix3D(),new PMatrix3D(),zknown);
-
 		PMatrix3D newproj=extractProj(target);
-		matprint("setInvMatrix: Extracted new proj matrix",newproj);
+		
+		if (debug) {
+			matprint("setInvMatrix: projmodelview",projmodelview);
+			matprint("setInvMatrix: target",target);
+			matprint("setInvMatrix: Extracted new proj matrix",newproj);
+		}
+		
 		// Adjust so the projection matrix gives flat z-values at 0.5 so it is always inside clipping planes
 		float setz=0f;
 		newproj.m02=0; newproj.m12=0; newproj.m32=0; 
 		newproj.m20=newproj.m30*setz; newproj.m21=newproj.m31*setz; newproj.m22=newproj.m32*setz; newproj.m23=newproj.m33*setz;
-		matprint("setInvMatrix:Adjusted new proj matrix",newproj);
 
 		pcanvas.setProjection(newproj);
-		matprint("setInvMatrix: projmodelview Matrix after applying transform",pcanvas.projmodelview);
+		if (debug) {
+			matprint("setInvMatrix:Adjusted new proj matrix",newproj);
+			matprint("setInvMatrix: projmodelview Matrix after applying transform",pcanvas.projmodelview);
 
-		ttest(0,0,0);
-		ttest(0,2,0);
-		ttest(-2,2,0);
-		ttest(2,2,0);
-		ttest(0,0,1);
-		//assert(false);
+			ttest(0,0,0);
+			ttest(0,2,0);
+			ttest(-2,2,0);
+			ttest(2,2,0);
+			ttest(0,0,1);
+		}
 	}
 }
