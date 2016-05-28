@@ -3,6 +3,7 @@ import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
@@ -12,7 +13,6 @@ public class Projector {
 	SyphonServer server;
 	PGraphicsOpenGL pcanvas;
 	int id;
-	float throwRatio;
 	PVector pos;
 	PVector aim;
 	float rotation;  // Rotation of projector in degrees -- normally 0
@@ -37,7 +37,6 @@ public class Projector {
 		matprint("Projector: Reconstructed projection matrix",reconProj);
 
 		ttest(1,2,0);
-		throwRatio=0.25f;
 		aim=Tracker.getFloorCenter();
 		pos=new PVector(0f,-0.5f,1.5f); // Assume it is above/behind lidar
 		rotation=0f;
@@ -45,10 +44,6 @@ public class Projector {
 		setTO();
 	}
 
-	public void setThrowRatio(float t) {
-		throwRatio=t;
-		setTO();
-	}
 
 	public void setPosition(float x, float y, float z) {
 		// Set position and aiming of projector in floor coordinates
@@ -87,11 +82,6 @@ public class Projector {
 				pos.z=msg.get(0).floatValue();
 			else
 				PApplet.println("Bad projector pos message: "+msg.toString());
-		} else if (components.length==4 && components[3].equals("throwratio")&&msg.checkTypetag("f")) {
-			if (msg.get(0).floatValue() >= 0.1f && msg.get(0).floatValue()<= 2f)
-				throwRatio=msg.get(0).floatValue();
-			else
-				PApplet.println("Bad projector throwratio: "+msg.get(0).floatValue());
 		} else if (components.length==4 && components[3].equals("rotation")&&msg.checkTypetag("f")) {
 			rotation=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("save")) {
@@ -117,7 +107,6 @@ public class Projector {
 		setTOValue("pos/x",pos.x,"%.2f");
 		setTOValue("pos/y",pos.y,"%.2f");
 		setTOValue("pos/z",pos.z,"%.2f");
-		setTOValue("throwratio",throwRatio,"%.4f");
 		setTOValue("rotation",rotation,"%.4f");
 	}
 
@@ -129,7 +118,6 @@ public class Projector {
 		Config.setFloat("proj"+id, "pos.y", pos.y);
 		Config.setFloat("proj"+id, "pos.z", pos.z);
 		Config.setFloat("proj"+id, "rotation", rotation);
-		Config.setFloat("proj"+id, "throwratio", throwRatio);
 	}
 
 	public void loadSettings() {
@@ -141,7 +129,6 @@ public class Projector {
 		pos.y=Config.getFloat("proj"+id, "pos.y", pos.y);
 		pos.z=Config.getFloat("proj"+id, "pos.z", pos.z);
 		rotation=Config.getFloat("proj"+id, "rotation", rotation);
-		throwRatio=Config.getFloat("proj"+id, "throwratio", throwRatio);
 	}
 	public void render(PGraphics canvas) {
 		// Send the given canvas to the projector
