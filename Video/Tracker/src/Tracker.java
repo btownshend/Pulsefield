@@ -10,6 +10,7 @@ import oscP5.OscP5;
 import oscP5.OscProperties;
 import processing.core.PApplet;
 import processing.core.PGraphics;
+import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PJOGL;
@@ -178,6 +179,9 @@ public class Tracker extends PApplet {
 		oscP5.plug(this,  "setcursor", "/cal/cursor");
 		oscP5.plug(this, "setscreen2world","/cal/screen2world");
 		oscP5.plug(this, "setworld2screen","/cal/world2screen");
+		oscP5.plug(this, "setpose","/cal/pose");
+		oscP5.plug(this, "setcameraview","/cal/cameraview");
+		oscP5.plug(this, "setprojection","/cal/projection");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		unhandled = new HashMap<String,Boolean>();
 		canvas = this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
@@ -221,10 +225,10 @@ public class Tracker extends PApplet {
 		}
 	}
 	
-	public void settransform(int proj, float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21, float x22) {
-		PApplet.println("settransform("+proj+","+x00+","+x01+"...)");
+	public void setscreen2world(int proj, float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21, float x22) {
+		PApplet.println("setscreen2world("+proj+","+x00+","+x01+"...)");
 		if (proj<0 || proj>=projectors.length) {
-			PApplet.println("settransform: Bad projector number: "+proj);
+			PApplet.println("setscreen2world: Bad projector number: "+proj);
 			return;
 		}
 		PMatrix3D mat=new PMatrix3D();
@@ -232,7 +236,7 @@ public class Tracker extends PApplet {
 				x10,x11,0,x12,
 				  0,  0,1,  10f,
 				x20,x21,0,x22);
-		projectors[proj].setMatrix(mat);
+		projectors[proj].setScreen2World(mat);
 	}
 	
 	public void setworld2screen(int proj, float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21, float x22) {
@@ -246,9 +250,36 @@ public class Tracker extends PApplet {
 				x10,x11,0,x12,
 				  0,  0,0,  0.5f,
 				x20,x21,0,x22);
-		projectors[proj].setWorld2Screen(mat,false);
+		projectors[proj].setWorld2Screen(mat);
 	}
 	
+	public void setprojection(int proj, float x00, float x01, float x02, float x10, float x11, float x12) {
+		PMatrix2D mat=new PMatrix2D();
+		mat.set(x00,x01,x02,
+				x10,x11,x12);
+		PApplet.println("setprojection("+proj+":");
+		mat.print();
+		projectors[proj].setProjection(mat);
+	}
+	
+	public void setpose(int proj, float x, float y, float z) {
+		PVector vec=new PVector(x,y,z);
+		PApplet.println("setpose("+proj+","+vec+")");
+		projectors[proj].setPosition(x, y, z);
+	}
+
+	public void setcameraview(int proj, float x00, float x01, float x02, float x03, float x10, float x11, float x12, float x13, float x20, float x21, float x22, float x23, float x30, float x31, float x32, float x33) {
+		PMatrix3D mat=new PMatrix3D();
+		mat.set(x00,x01,x02,x03,
+				x10,x11,x12,x13,
+				x20,x21,x22,x23,
+				x30,x31,x32,x33);
+		PApplet.println("setcamerview("+proj+":");
+		mat.print();
+		projectors[proj].setCameraView(mat);
+	}
+
+
 	public void vsetapp(OscMessage msg) {
 		for (int i=0;i<vispos.length;i++) {
 			if (msg.checkAddrPattern("/video/app/buttons/"+vispos[i]) ) {

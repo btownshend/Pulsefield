@@ -69,14 +69,14 @@ void TrackerComm::sendMatrix(const char *path, int unit, const cv::Mat &m) const
     }
 }
 
-// Send transform that converts world coordinates into the camera view frame (without projecting)
+// Send transform that converts world coordinates into the camera view frame (without projecting)  3x4 matrix
 // Consists of [R:T] where R is 3x3 rotation matrix and T is 3x1 translation
 // Translation is applied after rotation
 void TrackerComm::sendCameraView(int unit, const cv::Mat &rotMat, const cv::Mat &tvec) const {
     assert(rotMat.rows==3 && rotMat.cols==3);
     assert(tvec.rows==3 && tvec.cols==1);
     const char *path="/cal/cameraview";
-    if (lo_send(remote,path,"iffffffffffffffff",unit,rotMat.at<double>(0,0),rotMat.at<double>(0,1),rotMat.at<double>(0,2),tvec.at<double>(0,1),rotMat.at<double>(1,0),rotMat.at<double>(1,1),rotMat.at<double>(1,2),tvec.at<double>(1,1), rotMat.at<double>(2,0),rotMat.at<double>(2,1),rotMat.at<double>(2,2),tvec.at<double>(2,1),0.0,0.0,0.0,1.0) < 0) {
+    if (lo_send(remote,path,"iffffffffffff",unit,rotMat.at<double>(0,0),rotMat.at<double>(0,1),rotMat.at<double>(0,2),tvec.at<double>(0,1),rotMat.at<double>(1,0),rotMat.at<double>(1,1),rotMat.at<double>(1,2),tvec.at<double>(1,1), rotMat.at<double>(2,0),rotMat.at<double>(2,1),rotMat.at<double>(2,2),tvec.at<double>(2,1)) < 0) {
 	dbg("TrackerComm.sendTransform",1) << "Failed send of " << path << " to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return;
     }
@@ -87,6 +87,15 @@ void TrackerComm::sendCameraView(int unit, const cv::Mat &rotMat, const cv::Mat 
 void TrackerComm::sendPose(int unit, const cv::Mat &pose) const {
     if (lo_send(remote,"/cal/pose","ifff",unit,pose.at<double>(0,0),pose.at<double>(0,1),pose.at<double>(0,2)) < 0 ) {
 	dbg("TrackerComm.sendPose",1) << "Failed send of /cal/pose to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return;
+    }
+}
+
+// Send projection (perspective map)
+void TrackerComm::sendProjection(int unit, const cv::Mat &projection) const {
+    if (lo_send(remote,"/cal/projection","iffffff",unit,projection.at<double>(0,0),projection.at<double>(0,1),projection.at<double>(0,2),
+		projection.at<double>(1,0),projection.at<double>(1,1),projection.at<double>(1,2)) < 0 ) {
+	dbg("TrackerComm.sendPose",1) << "Failed send of /cal/projection to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return;
     }
 }

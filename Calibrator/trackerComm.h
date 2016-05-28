@@ -45,7 +45,7 @@ class TrackerComm {
     void sendPose(int unit, const cv::Mat &pose) const;
     
     // Send projection (perspective map)
-    void sendProjection(int unit, const cv::Mat &projection) const { sendMatrix("/cal/projection", unit, projection); }
+    void sendProjection(int unit, const cv::Mat &projection) const;
     
     // Send transform that converts world coordinates into the camera view frame (without projecting)
     // Consists of [R:T] where R is 3x3 rotation matrix and T is 3x1 translation

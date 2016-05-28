@@ -201,7 +201,7 @@ public class Projector {
 		PApplet.println("["+x+","+y+","+z+"]->["+pcanvas.screenX(x,y,z)+","+pcanvas.screenY(x,y,z)+","+pcanvas.screenZ(x,y,z)+"]");
 	}
 
-	public void setMatrix(PMatrix3D projmodelview) {
+	public void setScreen2World(PMatrix3D s2w) {
 
 	}
 
@@ -426,7 +426,15 @@ public class Projector {
 		return mx;
 	}
 	
-	public void setWorld2Screen(PMatrix3D projmodelview, boolean zknown) {
+	public void setProjection(PMatrix2D projection) {
+		params.setAbsProjection(projection);
+	}
+	
+	public void setCameraView(PMatrix3D view) {
+	
+	}
+	
+	public void setWorld2Screen(PMatrix3D projmodelview) {
 		// Decompose to form independent projection and modelview matrices
 		// If zknown is false, then the 3rd row and 3rd column of projmodelview are undetermined 
 		// This results in 7 DOF, but the camera matrix has 7 constraints (form should be [ R : T ], where r is a rotation matrix -> 9 DOF in a 16 element matrix)
