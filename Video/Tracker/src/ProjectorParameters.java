@@ -34,7 +34,7 @@ public class ProjectorParameters {
 	
 	static public ProjectorParameters eh320ust() {
 		// Optoma EH320UST - from manual page 22
-		return new ProjectorParameters("EH320UST",0.56f,0.224f,2.21f,1920,1080);
+		return new ProjectorParameters("EH320UST",0.56f,0.224f,1.25f,1920,1080);
 	}
 	
 	public PMatrix3D getProjection() {
