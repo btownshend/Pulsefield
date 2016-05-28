@@ -217,7 +217,7 @@ public class Projector {
 		PMatrix3D model=new PMatrix3D(pcanvas.modelview);
 		PVector eye=new PVector(1f,2f,3f);
 		PVector ref=new PVector(4f,7f,0f);
-		PVector up=new PVector(0.1f,0.1f,1f);
+		PVector up=new PVector(0.1f,0.1f,1f);up.normalize();
 		up.normalize();
 		PVector aim=ref.copy();
 		aim.sub(eye);
