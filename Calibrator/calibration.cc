@@ -399,6 +399,8 @@ void Calibration::updateTracker() const {
 	TrackerComm::instance()->sendCameraView(i,rotMat,tvecs[i]);
 	TrackerComm::instance()->sendPose(i,poses[i]);
     }
+    for (int i=0;i<relMappings.size();i++)
+	relMappings[i]->updateTracker();
 }
 
 void RelMapping::sendCnt() const {
@@ -924,6 +926,12 @@ std::vector<float> RelMapping::updateErrors() {
 	}
     }
     return error;
+}
+
+void RelMapping::updateTracker() const {
+    for (int j=0;j<pt1.size();j++)
+	if (locked[j])
+	    TrackerComm::instance()->sendMapping(unit1, unit2, j, pt1.size(), getDevicePt(0,j), getDevicePt(1,j));
 }
 
 // Get the set of calibration points that should be drawn for the given laser

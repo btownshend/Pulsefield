@@ -56,6 +56,7 @@ public:
     std::vector<Point> getCalPoints(int unit,bool selectedOnly) const;
     float getE2Sum() const { return e2sum; }
     int getE2Cnt() const { return e2cnt; }
+    void updateTracker() const;
 };
 
 // Class for handling calibration of laser mappings

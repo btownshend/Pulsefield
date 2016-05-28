@@ -3,6 +3,7 @@
 #include "dbg.h"
 #include "urlconfig.h"
 #include "opencv2/stitching.hpp"
+#include "point.h"
 
 // Cursors to be displayed in Tracker
 class Cursor {
@@ -51,5 +52,6 @@ class TrackerComm {
     // Consists of [R:T] where R is 3x3 rotation matrix and T is 3x1 translation
     // Translation is applied after rotation
     void sendCameraView(int unit, const cv::Mat &rotMat, const cv::Mat &tvec) const;
-    
+
+    void sendMapping(int unit1, int unit2, int pnum, int numPoints, Point p1, Point p2) const;
 };

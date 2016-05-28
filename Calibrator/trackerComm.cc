@@ -99,3 +99,10 @@ void TrackerComm::sendProjection(int unit, const cv::Mat &projection) const {
 	return;
     }
 }
+
+void TrackerComm::sendMapping(int unit1, int unit2, int pnum, int numPoints, Point p1, Point p2) const {
+    if (lo_send(remote,"/cal/mapping","iiiiffff",unit1,unit2,pnum,numPoints,p1.X(),p1.Y(),p2.X(),p2.Y()) < 0) {
+	dbg("TrackerComm.sendMapping",1) << "Failed send of /cal/mapping to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return;
+    }
+}
