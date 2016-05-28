@@ -60,20 +60,34 @@ void TrackerComm::sendCursors(const std::vector<Cursor> &cursors) const {
     }
 }
 
-void TrackerComm::sendTransform(int unit, bool inverse, const cv::Mat &hom) const {
-    const char *path="/cal/transform";
-    if (inverse)
-	path="/cal/invtransform";
-    if (lo_send(remote,path,"ifffffffff",unit,hom.at<double>(0,0),hom.at<double>(0,1),hom.at<double>(0,2),hom.at<double>(1,0),hom.at<double>(1,1),hom.at<double>(1,2),hom.at<double>(2,0),hom.at<double>(2,1),hom.at<double>(2,2))) {
-	dbg("TrackerComm.sendTransform",1) << "Failed send of " << path << " to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+
+void TrackerComm::sendMatrix(const char *path, int unit, const cv::Mat &m) const {
+    assert(m.rows==3 && m.cols==3);
+    if (lo_send(remote,path,"ifffffffff",unit,m.at<double>(0,0),m.at<double>(0,1),m.at<double>(0,2),m.at<double>(1,0),m.at<double>(1,1),m.at<double>(1,2),m.at<double>(2,0),m.at<double>(2,1),m.at<double>(2,2)) < 0) {
+	dbg("TrackerComm.sendMatrix",1) << "Failed send of " << path << " to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	    return;
     }
 }
 
-void TrackerComm::sendPose(int unit, const cv::Mat &pose, const cv::Mat &poserotation) const {
-    if (lo_send(remote,"/cal/pose","iffffffffffff",unit,pose.at<double>(0,0),pose.at<double>(0,1),pose.at<double>(0,2),pose.at<double>(0,3),
-		pose.at<double>(1,0),pose.at<double>(1,1),pose.at<double>(1,2),pose.at<double>(1,3),
-		pose.at<double>(2,0),pose.at<double>(2,1),pose.at<double>(2,2),pose.at<double>(2,3))) {
+void TrackerComm::sendCameraView(int unit, const cv::Mat &rotMat, const cv::Mat &tvec) const {
+    assert(rotMat.rows==3 && rotMat.cols==3);
+    assert(tvec.rows==3 && tvec.cols==1);
+    const char *path="/cal/cameraview";
+    if (lo_send(remote,path,"iffffffffffffffff",unit,rotMat.at<double>(0,0),rotMat.at<double>(0,1),rotMat.at<double>(0,2),tvec.at<double>(0,1),rotMat.at<double>(1,0),rotMat.at<double>(1,1),rotMat.at<double>(1,2),tvec.at<double>(1,1), rotMat.at<double>(2,0),rotMat.at<double>(2,1),rotMat.at<double>(2,2),tvec.at<double>(2,1),0.0,0.0,0.0,1.0) < 0) {
+	dbg("TrackerComm.sendTransform",1) << "Failed send of " << path << " to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return;
+    }
+}
+
+void TrackerComm::sendTransform(int unit, bool inverse, const cv::Mat &hom) const {
+    const char *path="/cal/transform";
+    if (inverse)
+	path="/cal/invtransform";
+    sendMatrix(path,unit,hom);
+}
+
+void TrackerComm::sendPose(int unit, const cv::Mat &pose) const {
+    if (lo_send(remote,"/cal/pose","ifff",unit,pose.at<double>(0,0),pose.at<double>(0,1),pose.at<double>(0,2)) < 0 ) {
 	dbg("TrackerComm.sendPose",1) << "Failed send of /cal/pose to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
 	return;
     }

@@ -33,5 +33,11 @@ class TrackerComm {
     }
     void sendCursors(const std::vector<Cursor> &c) const;
     void sendTransform(int unit, bool inverse, const cv::Mat &hom) const;
-    void sendPose(int unit, const cv::Mat &pose, const cv::Mat &poserotation) const;
+    void sendPose(int unit, const cv::Mat &pose) const;
+    void sendMatrix(const char *path, int unit, const cv::Mat &projection) const;
+    void sendProjection(int unit, const cv::Mat &projection) const {
+	sendMatrix("/cal/projection", unit, projection);
+    }
+    void sendCameraView(int unit, const cv::Mat &rotMat, const cv::Mat &tvec) const;
+    
 };

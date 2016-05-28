@@ -386,14 +386,19 @@ void Calibration::updateTracker() const {
     }
     TrackerComm::instance()->sendCursors(c);
 
-    for (int i=0;i<homographies.size();i++) {
+
+    for (int i=0;i<poses.size();i++) {
 	TrackerComm::instance()->sendTransform(i, false, homographies[i]);
 	cv::Mat inv=homographies[i].inv();
 	inv=inv/inv.at<double>(2,2);
 	TrackerComm::instance()->sendTransform(i, true, inv);
-    }
-    for (int i=0;i<poses.size();i++) {
-	TrackerComm::instance()->sendPose(i,poses[i],rvecs[i]);
+	TrackerComm::instance()->sendProjection(i,projection);
+
+	// Convert to rotation matrix
+	cv::Mat rotMat;
+	cv::Rodrigues(rvecs[i],rotMat);
+	TrackerComm::instance()->sendCameraView(i,rotMat,tvecs[i]);
+	TrackerComm::instance()->sendPose(i,poses[i]);
     }
 }
 
