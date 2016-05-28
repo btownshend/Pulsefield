@@ -242,10 +242,10 @@ public class Tracker extends PApplet {
 			return;
 		}
 		PMatrix3D mat=new PMatrix3D();
-		mat.set(x00,x01,Float.NaN,x02,
-				x10,x11,Float.NaN,x12,
-				Float.NaN,  Float.NaN,Float.NaN,  Float.NaN,
-				x20,x21,Float.NaN,x22);
+		mat.set(x00,x01,0,x02,
+				x10,x11,0,x12,
+				  0,  0,0,  0.5f,
+				x20,x21,0,x22);
 		projectors[proj].setInvMatrix(mat,false);
 	}
 	
