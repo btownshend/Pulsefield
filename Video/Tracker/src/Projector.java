@@ -257,12 +257,16 @@ public class Projector {
 			if (debug)
 				matprint("decomposeCamera: rescaling matrix by "+rescale,c);
 		}
+		// Check if camera view matrix is of the correct form [ R : T ]
 		if (Math.abs(new PVector(c.m00,c.m01,c.m02).mag()-1) >.01f)
 			PApplet.println("Row 1 of camera matrix is not a unit vector");
 		if (Math.abs(new PVector(c.m10,c.m11,c.m12).mag()-1) >.01f)
 			PApplet.println("Row 2 of camera matrix is not a unit vector");
 		if (Math.abs(new PVector(c.m20,c.m21,c.m22).mag()-1) >.01f)
 			PApplet.println("Row 3 of camera matrix is not a unit vector");
+		if (c.m30!= 0 || c.m31!=0 || c.m32!=0 || c.m33!=1) 
+			PApplet.println("Row 4 of camera matrix is not [0 0 0 1]");
+		
 		PVector aim = new PVector(-c.m20,-c.m21,-c.m22);
 
 		// Compute the translation by pre-multiplying the camera matrix by the inverse of the untranslated camera matrix
