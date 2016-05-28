@@ -442,6 +442,11 @@ public class Projector {
 
 		PMatrix3D newproj=extractProj(target);
 		matprint("setInvMatrix: Extracted new proj matrix",newproj);
+		// Adjust so the projection matrix gives flat z-values at 0.5 so it is always inside clipping planes
+		float setz=0f;
+		newproj.m02=0; newproj.m12=0; newproj.m32=0; 
+		newproj.m20=newproj.m30*setz; newproj.m21=newproj.m31*setz; newproj.m22=newproj.m32*setz; newproj.m23=newproj.m33*setz;
+		matprint("setInvMatrix:Adjusted new proj matrix",newproj);
 
 		pcanvas.setProjection(newproj);
 		matprint("setInvMatrix: projmodelview Matrix after applying transform",pcanvas.projmodelview);
