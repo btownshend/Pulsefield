@@ -354,9 +354,7 @@ public class Projector {
 			pv.m23=pv.m33*proj.m22/proj.m32+proj.m23;	
 			pv.m32=-pv.m22*projinv.m32/projinv.m33;   // To make camera.m32=0
 			pv.m02=Float.NaN;
-			pv.m12=Float.NaN;
-			PApplet.println("so far, pv=:");
-			pv.print();		
+			pv.m12=Float.NaN;	
 			camera.set(pv);
 			camera.preApply(projinv);
 			matprint("decompose: camera",camera);
@@ -364,15 +362,36 @@ public class Projector {
 			// Figure out what camera.m*2 should be to normalize the rows
 			float norm0=camera.m00*camera.m00+camera.m01*camera.m01;
 			float cm02=(norm0<1)?(float)Math.sqrt(1-norm0):0;   // Two possible solutions
+			if (cm02!=0)
+				PApplet.println("Two solution for cm02: +/-"+cm02);
 			float norm1=camera.m10*camera.m10+camera.m11*camera.m11;
 			float cm12=(norm1<1)?(float)Math.sqrt(1-norm1):0;  // Two possible solutions
+			if (cm12!=0)
+				PApplet.println("Two solution for cm12: +/-"+cm12);
 			float norm2=camera.m20*camera.m20+camera.m21*camera.m21;
-			float cm22=(norm2<1)?(float)Math.sqrt(1-norm2):0;
-			pv.m02=cm02/projinv.m00;
-			PApplet.println("norm0="+norm0+", cm02="+cm02+", pv.m02="+pv.m02);
-			pv.m12=(cm12-projinv.m13*pv.m32)/projinv.m11;
-			PApplet.println("so far2, pv=:");
-			pv.print();	
+			float cm22=(norm2<1)?(float)Math.sqrt(1-norm2):0;  // TODO: Use this to resolve multiple solutions?
+			PMatrix3D pvbest=pv;
+			float bestmx=1e10f;
+			for (int i=0;i<4;i++) {
+				// Test the 4 possible signs of cm02 and cm12
+				pv.m02=cm02/projinv.m00;
+				PApplet.println("norm0="+norm0+", cm02="+cm02+", cm12="+cm12+", pv.m02="+pv.m02);
+				pv.m12=(cm12-projinv.m13*pv.m32)/projinv.m11;
+				matprint("reconstructed pv",pv);	
+				PMatrix3D pvmtest=new PMatrix3D(pv);
+				pvmtest.apply(model);
+				float mx=maxdiff(pvmtest,projmodelview);
+				PApplet.println("max error="+mx);
+				if (mx<bestmx) {
+					bestmx=mx;
+					pvbest=new PMatrix3D(pv);
+				}
+				cm02=-cm02;
+				if (i==1)
+					cm12=-cm12;
+			}
+			pv=pvbest;
+
 		}
 		camera.set(pv);
 		camera.preApply(projinv);
@@ -416,6 +435,10 @@ public class Projector {
 		// so we need to back that out of the target matrix
 		PMatrix3D target=screenToRelative(projmodelview);
 		matprint("setInvMatrix: target",target);
+
+		PMatrix3D model=new PMatrix3D();
+		model.reset();
+		decompose(target,model,new PMatrix3D(),new PMatrix3D(),zknown);
 
 		PMatrix3D newproj=extractProj(target);
 		matprint("setInvMatrix: Extracted new proj matrix",newproj);
