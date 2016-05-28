@@ -634,10 +634,10 @@ std::ostream &flatMat(std::ostream &s, const cv::Mat &m) {
 	for (int j=0;j<m.cols;j++)
 	    if ((m.type()&0x18) == 0x8) {
 		// 2d vector
-		s << m.at<cv::Point2d>(i,j).x << "," << m.at<cv::Point2d>(i,j).y << std::endl;
+		s << m.at<cv::Point2f>(i,j).x << "," << m.at<cv::Point2f>(i,j).y << std::endl;
 	    } else if ((m.type()&0x18) == 0x10) {
 		// 3d vector
-		s << m.at<cv::Point3d>(i,j).x << "," << m.at<cv::Point3d>(i,j).y <<  "," << m.at<cv::Point3d>(i,j).z << std::endl;
+		s << m.at<cv::Point3f>(i,j).x << "," << m.at<cv::Point3f>(i,j).y <<  "," << m.at<cv::Point3f>(i,j).z << std::endl;
 	    } else {
 		if ((m.type() & 0x7) == CV_64F)
 		    s << m.at<double>(i,j) << " ";
@@ -654,22 +654,22 @@ std::ostream &flatMat(std::ostream &s, const cv::Mat &m) {
 // Compute extrinsics (translation, rotation of camera) given a set of matchpoints and the camera intrinsic projection matrix
 // sensorPts (Nx2) - image points on camera sensor (0:width, 0:height) -- origin is at top-left
 // worldPts (Nx3) - corresponding points in world frame of reference
-static float computeExtrinsics(cv::InputArray &sensorPts, cv::InputArray &worldPts, const cv::Mat &projection, cv::Mat &rvec, cv::Mat &tvec, cv::Mat &pose) {
-	cv::Mat opoints = worldPts.getMat(), ipoints = sensorPts.getMat();
+static float computeExtrinsics(std::vector<cv::Point2f> &sensorPts, std::vector<cv::Point3f> &worldPts,  cv::Mat &projection, cv::Mat &rvec, cv::Mat &tvec, cv::Mat &pose) {
+    cv::Mat opoints = ((cv::InputArray)worldPts).getMat(), ipoints = ((cv::InputArray)sensorPts).getMat();
 
 	dbg("Calibration.recompute",1) << "computeExtrinsics() with " << sensorPts.size() << ", " << worldPts.size() << " points"  << std::endl;
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Projection = \n",projection) << std::endl;
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "sensorPts = \n",ipoints) << std::endl;
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "worldPts = \n",opoints) << std::endl;
 
-	cv::solvePnP(worldPts,sensorPts,projection,cv::Mat(),rvec,tvec,false,CV_EPNP);
+	    cv::solvePnP(worldPts,sensorPts,projection,cv::Mat(),rvec,tvec,false,CV_EPNP);
 	// Reproject the points
 	cv::Mat reconPts;
 	cv::projectPoints(worldPts, rvec, tvec, projection, cv::Mat(), reconPts);
 	float totalErr=0;
 	for (int i=0;i<reconPts.rows;i++) {
-	    float e=norm(reconPts.at<cv::Point2d>()-ipoints.at<cv::Point2d>());
-	    std::cout << ipoints.at<cv::Point2d>(0,i) << " -> " << opoints.at<cv::Point3d>(0,i) << " -> " << reconPts.at<cv::Point2d>(i,0) << " e=" << e << std::endl;
+	    float e=norm(reconPts.at<cv::Point2f>(0,i)-ipoints.at<cv::Point2f>(0,i));
+	    std::cout << ipoints.at<cv::Point2f>(0,i) << " -> " << opoints.at<cv::Point3f>(0,i) << " -> " << reconPts.at<cv::Point2f>(i,0) << " e=" << e << std::endl;
 	    totalErr+=e;
 	}
 	totalErr /= reconPts.rows;
@@ -815,15 +815,15 @@ int Calibration::recompute() {
     
     // Compute origins
     for (int k=0;k<nunits;k++) {
-	std::vector<cv::Point2d> src;
-	std::vector<cv::Point3d> dst;
+	std::vector<cv::Point2f> src;
+	std::vector<cv::Point3f> dst;
 	for (int j=0;j<pairwiseMatches.size();j++) {
 	    cv::detail::MatchesInfo pm = pairwiseMatches[j];
 	    if (pm.src_img_idx==k && pm.dst_img_idx==nunits) {  // Correspondence with world
 		for (int i=0;i<pm.matches.size();i++) {
 		    src.push_back(features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt);
-		    cv::Point2d dstpt=features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt;
-		    dst.push_back(cv::Point3d(dstpt.x,dstpt.y,0.0));
+		    cv::Point2f dstpt=features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt;
+		    dst.push_back(cv::Point3f(dstpt.x,dstpt.y,0.0));
 		    dbg("Calibration.recompute",2) << pm.dst_img_idx << "." << pm.matches[i].trainIdx << std::endl;
 		}
 	    }
