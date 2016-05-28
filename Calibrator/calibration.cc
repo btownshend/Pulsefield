@@ -662,7 +662,19 @@ static float computeExtrinsics(std::vector<cv::Point2f> &sensorPts, std::vector<
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "sensorPts = \n",ipoints) << std::endl;
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "worldPts = \n",opoints) << std::endl;
 
+	if (false) {
+	    std::vector<std::vector<cv::Point2f>>  imagePoints;
+	    std::vector<std::vector<cv::Point3f>> objectPoints;
+	    objectPoints.push_back(worldPts);
+	    imagePoints.push_back(sensorPts);
+	    cv::Mat distCoeffs;
+	    double fv=projection.at<double>(2,2);
+	    projection.at<double>(2,2)=std::abs(fv);
+	    cv::calibrateCamera(objectPoints, imagePoints, cv::Size(1920,1080), projection, distCoeffs, rvec, tvec,CV_CALIB_USE_INTRINSIC_GUESS);
+	    std::cout << "Updated projection matrix: " << projection << std::endl;
+	} else  {
 	    cv::solvePnP(worldPts,sensorPts,projection,cv::Mat(),rvec,tvec,false,CV_EPNP);
+	}
 	// Reproject the points
 	cv::Mat reconPts;
 	cv::projectPoints(worldPts, rvec, tvec, projection, cv::Mat(), reconPts);
