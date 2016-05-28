@@ -7,16 +7,16 @@ public class ProjectorParameters {
 	float distance;   // Distance from screen used for parameterization
 	float voffset;    // Distance projector is below bottom of screen
 	float screenheight;     // Image height
-	int vres, hres;   // Resolution in pixels
+	int height, width;   // Resolution in pixels
 	float left, right, top, bottom, near, far;
 	
-	public ProjectorParameters(String name, float distance, float voffset, float screenheight, int hres, int vres) {
+	public ProjectorParameters(String name, float distance, float voffset, float screenheight, int width, int height) {
 		this.name=name;
 		this.distance=distance;
 		this.voffset=voffset;
 		this.screenheight=screenheight;
-		this.vres=vres;
-		this.hres=hres;
+		this.height=height;
+		this.width=width;
 		computeProjection();
 	}
 	
@@ -27,7 +27,7 @@ public class ProjectorParameters {
 		float s=near/distance;   // Scaling of parameters
 		bottom=s*voffset;
 		top=bottom+s*screenheight;
-		left=-(top-bottom)*hres/vres/2;
+		left=-(top-bottom)*width/height/2;
 		right=-left;
 		PApplet.println(name+": left="+left+", right="+right+", bottom="+bottom+", top="+top+", near="+near+", far="+far);
 	}
