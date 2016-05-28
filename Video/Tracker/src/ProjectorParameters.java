@@ -1,5 +1,7 @@
 import processing.core.PApplet;
+import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
+import processing.core.PVector;
 
 public class ProjectorParameters {
 	// Parameters defining a project]
@@ -9,6 +11,7 @@ public class ProjectorParameters {
 	float screenheight;     // Image height
 	int height, width;   // Resolution in pixels
 	float left, right, top, bottom, near, far;
+	PMatrix3D projMatrix;  // 4x4 projection matrix  (applies perspective to scene in camera view; maps to cube(-1:1, -1:1, -1:1) ) 
 	
 	public ProjectorParameters(String name, float distance, float voffset, float screenheight, int width, int height) {
 		this.name=name;
@@ -30,6 +33,16 @@ public class ProjectorParameters {
 		left=-(top-bottom)*width/height/2;
 		right=-left;
 		PApplet.println(name+": left="+left+", right="+right+", bottom="+bottom+", top="+top+", near="+near+", far="+far);
+		float A=(right+left)/(right-left);
+		float B=(top+bottom)/(top-bottom);
+		float C=-(far+near)/(far-near);
+		float D=-2*far*near/(far-near);
+		// Set projection matrix based on above
+		setProjection(new PMatrix3D(
+				2*near/(right-left),0,                  A,0,
+				0,                  -2*near/(top-bottom),B,0,  // proj(2,2) is negated from expected (otherwises doesn't match observed matrix after calling frustum()
+				0,                  0,                  C,D,
+				0,                  0,                 -1,0));
 	}
 	
 	static public ProjectorParameters eh320ust() {
@@ -38,14 +51,43 @@ public class ProjectorParameters {
 	}
 	
 	public PMatrix3D getProjection() {
-		float A=(right+left)/(right-left);
-		float B=(top+bottom)/(top-bottom);
+		return projMatrix;
+	}
+
+	private void testProjection(PVector in, PVector expect) {
+		float result[]=new float[4];
+		float invect[]={in.x,in.y,in.z,1.0f};
+		projMatrix.mult(invect,result);
+		PVector res=new PVector(result[0]/result[3],result[1]/result[3],result[2]/result[3]);
+		PApplet.println("testProjection: proj*"+in+" -> "+res+", expected "+expect);
+	}
+	
+	public void setProjection(PMatrix3D projection) {
+		PApplet.println("ProjectorParameters.setProjection:");
+		projection.print();
+		projMatrix=projection;
+		// Verify that it is reasonable
+		testProjection(new PVector((left+right)/2,-(top+bottom)/2,-near),new PVector(0,0,-1));
+		testProjection(new PVector((left+right)/2*far/near,-(top+bottom)/2*far/near,-far),new PVector(0,0,1));
+		testProjection(new PVector(left,-bottom,-near),new PVector(-1,-1,-1));
+		testProjection(new PVector(right,-top,-near),new PVector(1,1,-1));
+	}
+	
+	public void setAbsProjection(PMatrix2D projection) {
+		PApplet.println("ProjectorParameters.setAbsProjection:");
+		projection.print();
 		float C=-(far+near)/(far-near);
 		float D=-2*far*near/(far-near);
-		return new PMatrix3D(
-				2*near/(right-left),0,                  A,0,
-				0,                  -2*near/(top-bottom),B,0,  // proj(2,2) is negated from expected (otherwises doesn't match observed matrix after calling frustum()
-				0,                  0,                  C,D,
-				0,                  0,                 -1,0);
+		projMatrix.set(projection.m00*2/width,projection.m01*2/width,projection.m02*2/width-1,0,
+				projection.m10*2/height,projection.m11*2/height,projection.m12*2/height-1,0,
+				0,0,C,D,
+				0,0,-1,0);
+		PApplet.println("Equivalent relative 3d projection:");
+		projMatrix.print();
+		// Verify that it is reasonable
+		testProjection(new PVector((left+right)/2,-(top+bottom)/2,-near),new PVector(0,0,-1));
+		testProjection(new PVector((left+right)/2*far/near,-(top+bottom)/2*far/near,-far),new PVector(0,0,1));
+		testProjection(new PVector(left,-bottom,-near),new PVector(-1,-1,-1));
+		testProjection(new PVector(right,-top,-near),new PVector(1,1,-1));
 	}
 }
