@@ -1,49 +1,85 @@
-% Plot projector positions
-actual=[1 0.3 1.2
-        -4 4 1.2];
-% With float fh=547.392, fv=-547.3440, ch=0, cv=1298.9;
-est=[6.2 3.2 1.8
-     2.2 0.4 1.9];
-% With float fh=-547.392, fv=547.3440, ch=0, cv=1298.9;
-%est=[-6.19559327523228 -3.193654034736601 1.806050612627703
-%-2.200758843820565 -0.4245316358490139 1.894282679762936];
+p(1).actual=[-4 4 1.2];
+p(2).actual=[1 0.3 1.2];
 
-setfig('projpos');clf;
-plot(actual(:,1),actual(:,2),'o');
-hold on;
-plot(est(:,1),est(:,2),'x');
-legend('actual','estimated');
-xlabel('X');
-ylabel('Y');
-axis equal
-
-src=[582.345458984375, 19.9511604309082, 808.1552124023438, 404.4752807617188, 577.7470703125, 217.7782287597656, 1058.904907226562, 923.2915649414062, 901.5184326171875, 443.0107727050781, 1353.303955078125, 492.4229431152344, 615.3204956054688, 821.5849609375];
-dst=[-2.386893510818481, 5.305253028869629, 0, -0.5837472081184387, 3.180337190628052, 0, -1.799497008323669, 3.984817504882812, 0, 0.7194727063179016, 1.461861133575439, 0, -0.2301059365272522, 3.07592511177063, 0, 1.20340633392334, 3.252561092376709, 0, -0.5198125243186951, 1.401631236076355, 0];
-
-src=reshape(src,2,[])';
-dst=reshape(dst,3,[])';
-setfig('mapping');clf;
-for i=1:size(src,1)
-  subplot(211);
-  plot(src(i,1),src(i,2),'o');
-  hold on;
-  text(src(i,1)+20,src(i,2)+10,sprintf('%d',i));
-  axis equal
-  axis ij
-  subplot(212);
-  plot(dst(i,1),dst(i,2),'o');
-  hold on;
-  text(dst(i,1)+0.1,dst(i,2)+0.1,sprintf('%d',i));
-  axis equal
-end
-subplot(211);
 bounds=[0 0 
         1920 0
         1920 1080
         0 1080
         0 0];
-plot(bounds(:,1),bounds(:,2));
-subplot(212);
-plot(actual(:,1),actual(:,2),'xg');
-plot(est(2,1),est(2,2),'+r');
+bounds(:,3)=1;
+
+for proj=1:length(p)
+  % Compute transformation from components
+  cview=p(proj).cameraview;
+  cview(4,:)=[0 0 0 1];
+  projmat=p(proj).proj;
+  projmat(4,4)=0;
+  projmat(4,3)=1;
+  trans=projmat*cview
   
+  pname=sprintf('Proj %d',proj);
+
+  spts=maps{proj,3}.p1;
+  wpts=maps{proj,3}.p2;
+  wpts(:,3)=0;	% At z=0;
+  wpts(:,4)=1;	% Homography
+  cpts=(cview*wpts')';
+
+  setfig(pname);clf;
+  for i=1:size(spts,1)
+    % World
+    subplot(131);
+    plot3(wpts(i,1),wpts(i,2),0,'o');
+    hold on;
+    text(wpts(i,1)+0.1,wpts(i,2)+0.1,0,sprintf('%d',i));
+    axis equal
+
+    subplot(132);
+    plot3(cpts(i,1),cpts(i,2),cpts(i,3),'o');
+    hold on;
+    text(cpts(i,1)+0.1,cpts(i,2)+0.1,cpts(i,3),sprintf('%d',i));
+    axis equal
+
+    subplot(133);
+    plot(spts(i,1),spts(i,2),'o');
+    hold on;
+    text(spts(i,1)+20,spts(i,2)+10,sprintf('%d',i));
+    axis equal
+    axis ij
+  end
+  subplot(131);
+  bmapped=(p(proj).screen2world*bounds')';
+  bmapped(:,4)=bmapped(:,3);
+  bmapped(:,3)=0;
+  plot3(bmapped(:,1)./bmapped(:,4),bmapped(:,2)./bmapped(:,4),bmapped(:,3)./bmapped(:,4));
+  plot3(p(proj).actual(1),p(proj).actual(2),p(proj).actual(3),'xg');
+  plot3(p(proj).pose(1),p(proj).pose(2),p(proj).pose(3),'+r');
+  title('World Coords');
+  xlabel('x'); ylabel('y'); zlabel('z');
+  
+  subplot(132);
+  
+  cmapped=(cview*bmapped')';
+  plot3(cmapped(:,1)./cmapped(:,4),cmapped(:,2)./cmapped(:,4),cmapped(:,3)./cmapped(:,4))
+  znear=1;
+  plot3(cmapped(:,1)./cmapped(:,3)*znear,cmapped(:,2)./cmapped(:,3)*znear,cmapped(:,3)./cmapped(:,3)*znear);  % frustum at 1m distance from camera
+  for k=1:size(cmapped,1)
+    plot3([0,cmapped(k,1)./cmapped(k,4)],[0,cmapped(k,2)./cmapped(k,4)],[0,cmapped(k,3)./cmapped(k,4)]);
+  end
+  xlabel('x'); ylabel('y'); zlabel('z');
+  title('Camera Coords');
+  
+  subplot(133);
+  plot(bounds(:,1),bounds(:,2));
+  title('Projector Coords');
+  xlabel('H'); ylabel('V');
+
+  for k=1:size(wpts,1)
+    s2=(p(proj).world2screen*wpts(k,[1,2,4])')';
+    s2=s2(1:2)/s2(3);
+    s3=(projmat*cview*wpts(k,:)')';
+    s3=s3(1:3)/s3(4);
+    fprintf('w: [%5.2f,%5.2f, %5.2f]  s: [%7.2f,%7.2f] w2s*w: [%7.2f,%7.2f] (e=%4.1f) p*c*w: [%7.2f %7.2f %7.2f] (e=%4.1f)\n',wpts(k,1:3), spts(k,1:2), s2, norm(s2-spts(k,1:2)), s3, norm(s3(1:2)-spts(k,1:2)));
+    plot(s2(1),s2(2),'+');
+  end
+end
