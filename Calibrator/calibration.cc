@@ -232,9 +232,8 @@ Calibration::Calibration(int _nunits, URLConfig&urls): homographies(_nunits+1), 
     projection = cv::Mat::zeros(3, 3, CV_64FC1); //3x4 matrix
     //float fh=547.392, fv=-547.3440, ch=0, cv=-1298.9;
     //float fh=547.392, fv=-547.3440, ch=1920/2, cv=1080/2;
-    //float fh=964, fv=-fh, ch=1920/2, cv=1080/2;
     float fh=486, fv=-fh, ch=1920/2, cv=1080/2;
-    cv=cv-fv*(.224+1.25)/0.56;    // Vertical offset from manual   
+    cv=cv-fv*(.224+1.25/2)/0.56;    // Vertical offset from manual   
     //float fh=0.66/2.48*1920, fv=-fh, ch=1920/2, cv=(1.52/2+.25)/1.52*1080;
     projection.at<double>(0,0)=fh;
     projection.at<double>(1,1)=fv;
