@@ -27,7 +27,7 @@ public class Projector {
 		parent.printMatrix();
 		parent.printCamera();
 		pcanvas = (PGraphicsOpenGL)parent.createGraphics(width, height,PConstants.P3D);
-		testdecompose();
+		//testdecompose();
 
 		matprint("Projector: Current camera matrix",pcanvas.camera);
 		matprint("Projector: Current modelview matrix",pcanvas.modelview);
@@ -308,6 +308,8 @@ public class Projector {
 
 	public PMatrix3D screenToRelative(final PMatrix3D fulltransform) {
 		// Convert a transform that maps from world -> screen (in pixels) to one the maps to relative screen position (-1:1)
+		// Z coords are mapping from [-1:1] to [0,1]
+		// final clipping will keep only points inside (-1:1, -1:1, 0:1)
 		PMatrix3D S=new PMatrix3D(
 				pcanvas.width/2, 0, 0, pcanvas.width/2,
 				0,-pcanvas.height/2, 0, pcanvas.height/2,
@@ -436,9 +438,9 @@ public class Projector {
 		PMatrix3D target=screenToRelative(projmodelview);
 		matprint("setInvMatrix: target",target);
 
-		PMatrix3D model=new PMatrix3D();
-		model.reset();
-		decompose(target,model,new PMatrix3D(),new PMatrix3D(),zknown);
+		//PMatrix3D model=new PMatrix3D();
+		//model.reset();
+		//decompose(target,model,new PMatrix3D(),new PMatrix3D(),zknown);
 
 		PMatrix3D newproj=extractProj(target);
 		matprint("setInvMatrix: Extracted new proj matrix",newproj);
