@@ -331,7 +331,7 @@ public class Projector {
 		// PMV = P*C*M
 		// Approach: Assume P based on known projector lenses, set MV to identity;  multiply by inverses to find C
 		// Can then decompose C into eye, aim, up
-		// If zknown is false, then the 3rd row and 3rd column of projmodelview is unknown and needs to be infered from camera matrix constraints
+		// If zknown is false, then the 3rd row and 3rd column of projmodelview is unknown and needs to be inferred from camera matrix constraints
 		proj=params.getProjection();
 		matprint("decompose: proj",proj);
 
