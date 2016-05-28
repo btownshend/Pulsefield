@@ -669,13 +669,15 @@ static float computeExtrinsics(std::vector<cv::Point2f> &sensorPts, std::vector<
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "worldPts = \n",opoints) << std::endl;
 
 	if (false) {
+	    // This won't work as OpenCV camera calibrate requires that the principal point is
+	    // within the image.  The projectors have a vertical offset that makes this not the case.
 	    std::vector<std::vector<cv::Point2f>>  imagePoints;
 	    std::vector<std::vector<cv::Point3f>> objectPoints;
 	    objectPoints.push_back(worldPts);
 	    imagePoints.push_back(sensorPts);
 	    cv::Mat distCoeffs;
-	    double fv=projection.at<double>(2,2);
-	    projection.at<double>(2,2)=std::abs(fv);
+	    projection.at<double>(0,0)=std::abs(projection.at<double>(0,0));
+	    projection.at<double>(1,1)=std::abs(projection.at<double>(1,1));
 	    cv::calibrateCamera(objectPoints, imagePoints, cv::Size(1920,1080), projection, distCoeffs, rvec, tvec,CV_CALIB_USE_INTRINSIC_GUESS);
 	    std::cout << "Updated projection matrix: " << projection << std::endl;
 	} else  {
@@ -697,6 +699,9 @@ static float computeExtrinsics(std::vector<cv::Point2f> &sensorPts, std::vector<
 	cv::Rodrigues(rvec,rotMat);
 	// Map tvec back to world coordinates
 	pose=-rotMat.inv()*tvec;
+	// FIXME: Not sure why, but the z-position comes out negative, probably due to the screen being a LH coord system
+	// In any case, negate the z pose
+	pose.at<double>(2,0)=-pose.at<double>(2,0);
 	std::cout << "Final pose = " << pose << std::endl;
 	return totalErr;
 }
