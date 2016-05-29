@@ -3,6 +3,7 @@ import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PImage;
 import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -132,18 +133,20 @@ public class Projector {
 		pos.z=Config.getFloat("proj"+id, "pos.z", pos.z);
 		rotation=Config.getFloat("proj"+id, "rotation", rotation);
 	}
-	public void render(PGraphics canvas) {
+	
+	public void render(PGraphics canvas, PGraphics mask) {
 		// Send the given canvas to the projector
 		// Assumes the canvas is on the floor (i.e. z=0)
 		// Its center corresponds to Tracker.getFloorCenter() and is scaled by Tracker.getPixelsPerMeter()
 
 		pcanvas.beginDraw();
 		pcanvas.background(0);
-
 		pcanvas.imageMode(PConstants.CENTER);
 		PVector center=Tracker.getFloorCenter();
+		pcanvas.blendMode(PConstants.ADD);
 		pcanvas.image(canvas,center.x,center.y,canvas.width/Tracker.getPixelsPerMeter(),canvas.height/Tracker.getPixelsPerMeter());
-		//pcanvas.popMatrix();  // Back to normal coords
+		pcanvas.blendMode(PConstants.MULTIPLY);
+		pcanvas.image(mask,center.x,center.y,canvas.width/Tracker.getPixelsPerMeter(),canvas.height/Tracker.getPixelsPerMeter());
 
 		pcanvas.pushMatrix();
 		pcanvas.pushProjection();

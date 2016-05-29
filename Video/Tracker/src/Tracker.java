@@ -9,6 +9,7 @@ import oscP5.OscMessage;
 import oscP5.OscP5;
 import oscP5.OscProperties;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
@@ -75,6 +76,7 @@ public class Tracker extends PApplet {
 	static ProjCursor cursors[]=null;
 	Map<String,Boolean> unhandled;
 	PVector[] lidar = new PVector[381];
+	PGraphicsOpenGL mask[]=new PGraphicsOpenGL[0];
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -410,8 +412,7 @@ public class Tracker extends PApplet {
 		if (server != null) {
 			server.sendImage(canvas);
 		}
-		
-
+		buildMasks(canvas);
 		projectors[0].render(canvas,mask[0]);
 		projectors[1].render(canvas,mask[1]);
 		
@@ -434,6 +435,106 @@ public class Tracker extends PApplet {
 		Config.saveIfModified(this);   // Save if modified
 	}
 
+	private void buildMasks(PGraphicsOpenGL canvas) {
+		final int mscale=4;
+		if (mask.length!=projectors.length) {
+			mask=new PGraphicsOpenGL[projectors.length];
+			for (int i=0;i<mask.length;i++)
+				mask[i]=(PGraphicsOpenGL) createGraphics(canvas.width/mscale, canvas.height/mscale,renderer);
+		} 
+	
+		for (int i=0;i<mask.length;i++) {
+			mask[i].beginDraw();
+			// Transform so that coords for drawing are in meters
+			mask[i].resetMatrix();
+			mask[i].translate(mask[i].width/2, mask[i].height/2);   // center coordinate system to middle of canvas
+			mask[i].scale(getPixelsPerMeter()/mscale, -getPixelsPerMeter()/mscale); // FIXME: Unclear why, but need to flip y here
+			mask[i].translate(-getFloorCenter().x, -getFloorCenter().y);  // translate to center of new space
+//			println("[0,0]->canvas "+canvas.screenX(0, 0)+","+canvas.screenY(0,0));
+//			println("[0,0]->mask "+mask[i].screenX(0, 0)+","+mask[i].screenY(0,0));
+			mask[i].blendMode(PConstants.REPLACE);
+			mask[i].imageMode(PConstants.CORNER);
+			mask[i].ellipseMode(PConstants.CENTER);
+			mask[i].background(127);  // default, nothing drawn
+//			mask[i].fill(127);
+//			mask[i].rect(i, 1+i, 1, 1);
+//			mask[i].fill(0);
+//			mask[i].rect(i, 1+i, 0.5f, 0.5f);
+			PVector projPos=projectors[i].pos;
+			mask[i].stroke(0);
+			mask[i].strokeWeight(0.5f);
+			for (Person ps: people.pmap.values()) {  
+				PVector pos=ps.getOriginInMeters();
+				PVector vec=PVector.sub(pos, projPos); vec.normalize();
+				vec.mult(6);  // Draw a line that will run past edge
+				mask[i].line(pos.x, pos.y, pos.x+vec.x, pos.y+vec.y);
+				//mask[i].ellipse(pos.x, pos.y, 0.5f, 0.5f);
+			}
+			mask[i].endDraw();
+			mask[i].loadPixels();
+		}
+		
+		int p[]=mask[0].pixels;
+		// Combine into mask[0] (0=must be proj1, 254=must be proj0, 127=dont care)
+		for (int i=0;i<p.length;i++)
+			p[i]=(255+p[i]-mask[1].pixels[i])/2;
+		// Spread the masks
+		int zn=0;
+		for (int n=0;n<100;n++) {
+			int n0=0, n1=0;
+			for (int i=n%2;i<mask[0].width;i+=2)  // Interleave steps to avoid propagating asymmetrically
+				for (int j=n%3;j<mask[0].height;j+=2) {
+					int ind=j*mask[0].width+i;
+					if (p[ind]==127) {// Indeterminate
+						//PApplet.println("len="+p.length+", j="+j+", ind="+ind);
+						int sum=((i<mask[0].width-1)?p[ind+1]:127)+
+								((i>0)?p[ind-1]:127)+
+								((j<mask[0].height-1)?p[ind+mask[0].width]:127)+
+								((j>0)?p[ind-mask[0].width]:127);
+						if (sum>127*4) {
+							p[ind]=255;
+							n0+=1;
+						} else if (sum<127*4) {
+							p[ind]=0;
+							n1+=1;
+						}
+					}
+				}
+			println("n="+n+": Dilated "+n0+","+n1+" pixels");
+			// Keep going until there is no change for 6 cycles (repeat of offsets)
+			if (n0+n1 == 0)
+				zn+=1;
+			else
+				zn=0;
+			if (zn==6)
+				break;
+		}
+		// Blur it
+//		mask[0].filter(BLUR);
+		// Make mask[1] the inverse
+		for (int i=0;i<p.length;i++)
+			mask[1].pixels[i]=255-p[i];
+		
+		for (int i=0;i<mask.length;i++)
+			mask[i].updatePixels();
+		
+//		mask[0].loadPixels();
+//		mask[1].loadPixels();
+//		for (int i=0;i<mask[0].width;i++)
+//			for (int j=0;j<mask[0].height;j++) {
+//				int alpha=Math.min(255,Math.max(0,((int)(255*((i*1.0/mask[0].width)-0.5)*3)+127)));
+//				mask[0].pixels[j*mask[0].width+i]=(alpha<<24)+(alpha<<16)+(alpha<<8)+alpha;
+//				alpha=255-alpha;
+//				mask[1].pixels[j*mask[1].width+i]=(alpha<<24)+(alpha<<16)+(alpha<<8)+alpha;
+////				if (j==100 && i==100)
+////					PApplet.println("alpha(100,100)="+PApplet.hex(alpha));
+//			}
+//		mask[0].updatePixels();
+//		mask[1].updatePixels();
+		//PApplet.println("m0="+PApplet.hex(mask[0].get(100, 100))+", m1="+PApplet.hex(mask[1].get(100, 100)));
+	}
+
+	
 	public void mouseReleased() {
 		//pfexit(0, 0, 98);
 		//mouseID=(mouseID-90+1)%10+90;
