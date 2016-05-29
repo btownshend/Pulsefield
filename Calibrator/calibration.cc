@@ -387,10 +387,6 @@ void Calibration::updateTracker() const {
 
 
     for (int i=0;i<poses.size();i++) {
-	TrackerComm::instance()->sendScreenToWorld(i, homographies[i]);
-	cv::Mat inv=homographies[i].inv();
-	inv=inv/inv.at<double>(2,2);
-	TrackerComm::instance()->sendWorldToScreen(i, inv);
 	TrackerComm::instance()->sendProjection(i,projection);
 
 	// Convert to rotation matrix
@@ -398,6 +394,11 @@ void Calibration::updateTracker() const {
 	cv::Rodrigues(rvecs[i],rotMat);
 	TrackerComm::instance()->sendCameraView(i,rotMat,tvecs[i]);
 	TrackerComm::instance()->sendPose(i,poses[i]);
+	// Send the homographies last since they trigger updates that need the camera view
+	TrackerComm::instance()->sendScreenToWorld(i, homographies[i]);
+	cv::Mat inv=homographies[i].inv();
+	inv=inv/inv.at<double>(2,2);
+	TrackerComm::instance()->sendWorldToScreen(i, inv);
     }
     for (int i=0;i<relMappings.size();i++)
 	relMappings[i]->updateTracker();
