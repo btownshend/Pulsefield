@@ -412,10 +412,26 @@ public class Tracker extends PApplet {
 		//		translate((width-height)/2f,0);
 
 		vis[currentvis].draw(this, canvas,people);
-		canvas.endDraw();
 
 		vis[currentvis].drawLaser(this,people);
 
+		boolean drawBounds=true;   // True to overlay projector bounds
+		if (drawBounds) {
+			canvas.strokeWeight(0.025f);
+			canvas.noFill();
+			for (int i=0;i<projectors.length;i++) {
+				canvas.stroke(i==0?255:0,i==1?255:0,i>1?255:0);
+				canvas.beginShape();
+				for (int j=0;j<projectors[i].bounds.length;j++) {
+					PVector p=projectors[i].bounds[j];
+					canvas.vertex(-p.x,p.y);
+					//PApplet.println("vertex("+projectors[i].bounds[j]+") -> "+canvas.screenX(p.x,p.y)+","+canvas.screenY(p.x, p.y));
+				}
+				canvas.endShape(CLOSE);
+			}
+		}
+		
+		canvas.endDraw();
 		// Syphon setup, requires OpenGL renderer (not FX2D?)
 		if (useSyphon && server==null)
 			server = new SyphonServer(this, "Tracker");
@@ -426,7 +442,8 @@ public class Tracker extends PApplet {
 		buildMasks(canvas);
 		projectors[0].render(canvas,mask[0]);
 		projectors[1].render(canvas,mask[1]);
-		
+	
+
 		imageMode(CENTER);
 		// Canvas is RH, so need to flip it back to draw on main window (which is LH)
 		pushMatrix();
@@ -445,10 +462,19 @@ public class Tracker extends PApplet {
 		rect(0, 0, pwidth, pheight);
 		imageMode(CORNER);
 		image(projectors[0].pcanvas, 1, 1, pwidth-2, pheight-2);
-
+		
 		pwidth=pheight*projectors[1].pcanvas.width/projectors[1].pcanvas.height; 
 		rect(width-pwidth, 0, pwidth, pheight);
 		image(projectors[1].pcanvas, width-pwidth+1, 1f, pwidth-2, pheight-2);
+		
+		boolean drawMasks = true;
+		if (drawMasks) {
+			// Draw masks on screen
+			rect(0, height-mask[0].height-2, mask[0].width+2, mask[0].height+2);
+			image(mask[0],1,height-mask[0].height-1);
+			rect(width-mask[0].width-2, height-mask[1].height-2, mask[1].width+2, mask[1].height+2);
+			image(mask[1],width-mask[0].width-1,height-mask[1].height-1);
+		}
 		//SyphonTest.draw(this);
 		Config.saveIfModified(this);   // Save if modified
 	}
