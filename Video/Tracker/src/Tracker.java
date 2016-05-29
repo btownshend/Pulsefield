@@ -196,8 +196,13 @@ public class Tracker extends PApplet {
 		projectors[1].setPosition(2f, 3f, 1.5f);
 		float mscale=4;	// How much smaller to make the masks
 		mask=new PGraphicsOpenGL[projectors.length];
-		for (int i=0;i<mask.length;i++)
+		for (int i=0;i<mask.length;i++) {
 			mask[i]=(PGraphicsOpenGL) createGraphics((int)(CANVASWIDTH/mscale+0.5), (int)(CANVASHEIGHT/mscale+0.5),renderer);
+			// Set for unmasked in case it is not used
+			mask[i].beginDraw();
+			mask[i].background(255);
+			mask[i].endDraw();
+		}
 		PApplet.println("Setup complete");
 		starting = false;
 	}
