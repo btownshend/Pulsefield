@@ -73,6 +73,7 @@ public class Tracker extends PApplet {
 	static PVector alignCorners[]=new PVector[0];
 	static ProjCursor cursors[]=null;
 	Map<String,Boolean> unhandled;
+	PVector[] lidar = new PVector[381];
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -496,8 +497,6 @@ public class Tracker extends PApplet {
 			synth.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/pf/set")) {
 			// PApplet.println("Unhandled set message: "+theOscMessage.addrPattern());
-		} else if (theOscMessage.addrPattern().startsWith("/pf/background")) {
-			// PApplet.println("Unhandled set message: "+theOscMessage.addrPattern());
 		} else if (theOscMessage.addrPattern().startsWith("/vis/")) {
 			// PApplet.println("Unhandled vis message: "+theOscMessage.addrPattern());
 		} else if (!unhandled.containsKey(theOscMessage.addrPattern())) {
@@ -767,10 +766,6 @@ public class Tracker extends PApplet {
 		resetcoords();
 	}
 
-	public void pfbackground(int scan, int nscan, float angle, float range) {
-		// Not implemented.
-	}
-	
 	public void pfaligncorner(int cornerNumber, int numCorners, float x, float y) {
 		//PApplet.println("Corner "+cornerNumber+"/"+numCorners+" at "+x+", "+y);
 
@@ -790,6 +785,12 @@ public class Tracker extends PApplet {
 		// Not implemented.
 	}
 
+	public void pfbackground(int scanPt,int nrange,float angle,float backRange,float currRange) {
+		if (lidar.length != nrange)
+			lidar=new PVector[nrange];
+		lidar[scanPt]=new PVector(currRange*cos(angle*PI/180),currRange*sin(angle*PI/180));
+		//PApplet.println("background("+scanPt,", "+nrange+", "+angle+", "+backRange+", "+currRange+") -> "+lidar[scanPt]);
+	}
 	
 	public void cycle() {
 		int newvis=currentvis;
