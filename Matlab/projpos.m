@@ -1,3 +1,8 @@
+% Test projector mappings
+% Run oscproj first, the run ../Calibration/calibration
+%   - this will setup p()
+% Can then run this program to plot coordinates
+% Run 'oscclose' when done to release port
 p(1).actual=[-4 4 1.2];
 p(2).actual=[1 0.3 1.2];
 
