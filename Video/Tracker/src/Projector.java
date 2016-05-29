@@ -125,6 +125,8 @@ public class Projector {
 
 	public void saveSettings() {
 		PApplet.println("Projector.saveSettings("+id+")");
+		Config.set("proj"+id,"s2w",s2w);
+		Config.set("proj"+id,"w2s",w2s);
 		Config.setFloat("proj"+id, "aim.x", aim.x);
 		Config.setFloat("proj"+id, "aim.y", aim.y);
 		Config.setFloat("proj"+id, "pos.x", pos.x);

@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.core.PMatrix3D;
 import processing.data.JSONObject;
 
 public class Config {
@@ -55,6 +56,33 @@ public class Config {
 			data.setJSONObject(group, new JSONObject());
 		JSONObject grp=data.getJSONObject(group);
 		grp.setInt(param, value);
+		data.setJSONObject(group, grp);
+		modified=true;
+	}
+	public static void set(String group, String param, PMatrix3D mat) {
+		if (! data.hasKey(group))
+			data.setJSONObject(group, new JSONObject());
+		JSONObject grp=data.getJSONObject(group);
+		if (! grp.hasKey(param))
+			grp.setJSONObject(param, new JSONObject());
+		JSONObject m=grp.getJSONObject(param);
+		m.setFloat("m00", mat.m00);
+		m.setFloat("m01", mat.m01);
+		m.setFloat("m02", mat.m02);
+		m.setFloat("m03", mat.m03);
+		m.setFloat("m10", mat.m10);
+		m.setFloat("m11", mat.m11);
+		m.setFloat("m12", mat.m12);
+		m.setFloat("m13", mat.m13);
+		m.setFloat("m20", mat.m20);
+		m.setFloat("m21", mat.m21);
+		m.setFloat("m22", mat.m22);
+		m.setFloat("m23", mat.m23);
+		m.setFloat("m30", mat.m30);
+		m.setFloat("m31", mat.m31);
+		m.setFloat("m32", mat.m32);
+		m.setFloat("m33", mat.m33);
+		grp.setJSONObject(param, m);
 		data.setJSONObject(group, grp);
 		modified=true;
 	}
