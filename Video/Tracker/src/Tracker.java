@@ -13,6 +13,7 @@ import processing.core.PGraphics;
 import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.opengl.PGraphicsOpenGL;
 import processing.opengl.PJOGL;
 
 
@@ -67,7 +68,7 @@ public class Tracker extends PApplet {
 	Boolean useSyphon = false;
 	final static int CANVASWIDTH=1200;
 	final static int CANVASHEIGHT=600;
-	PGraphics canvas;
+	PGraphicsOpenGL canvas;
 	Projector projectors[];
 	Config jconfig;
 	static PVector alignCorners[]=new PVector[0];
@@ -185,7 +186,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setprojection","/cal/projection");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		unhandled = new HashMap<String,Boolean>();
-		canvas = this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
+		canvas = (PGraphicsOpenGL) this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
 		projectors=new Projector[2];
 		projectors[0] = new Projector(this,1,1920,1080);
 		projectors[0].setPosition(0.0f, 0.0f, 1.5f);
