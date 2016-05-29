@@ -428,6 +428,19 @@ public class Projector {
 		if (debug)
 			matprint("setWorld2Screen: projmodelview",projmodelview);
 		
+		// Use last received camview to set the unspecified parts of target since it doesn't map z-values
+		PMatrix3D pcamview=new PMatrix3D(camview);
+		pcamview.preApply(params.getProjection());
+		if (debug)
+			matprint("setWorld2Screen: pcamview",pcamview);
+			
+//		target.m02=pcamview.m02;
+//		target.m12=pcamview.m12;
+//		target.m22=pcamview.m22;
+//		target.m32=pcamview.m32;
+//		target.m20=pcamview.m20;
+//		target.m21=pcamview.m21;
+//		target.m23=pcamview.m23;
 		if (debug)
 			matprint("setWorld2Screen: target",target);
 		
