@@ -459,7 +459,7 @@ public class Tracker extends PApplet {
 			// Transform so that coords for drawing are in meters
 			mask[i].resetMatrix();
 			mask[i].translate(mask[i].width/2, mask[i].height/2);   // center coordinate system to middle of canvas
-			mask[i].scale(getPixelsPerMeter()*mask[i].width/canvas.width, -getPixelsPerMeter()*mask[i].height/canvas.height); // FIXME: Unclear why, but need to flip y here
+			mask[i].scale(-getPixelsPerMeter()*mask[i].width/canvas.width, -getPixelsPerMeter()*mask[i].height/canvas.height); // FIXME: Unclear why, but need to flip y here
 			mask[i].translate(-getFloorCenter().x, -getFloorCenter().y);  // translate to center of new space
 //			println("[0,0]->canvas "+canvas.screenX(0, 0)+","+canvas.screenY(0,0));
 //			println("[0,0]->mask "+mask[i].screenX(0, 0)+","+mask[i].screenY(0,0));
