@@ -76,7 +76,7 @@ public class Tracker extends PApplet {
 	static ProjCursor cursors[]=null;
 	Map<String,Boolean> unhandled;
 	PVector[] lidar = new PVector[381];
-	PGraphicsOpenGL mask[]=new PGraphicsOpenGL[0];
+	PGraphicsOpenGL mask[];
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -188,12 +188,16 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setprojection","/cal/projection");
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		unhandled = new HashMap<String,Boolean>();
-		canvas = (PGraphicsOpenGL) this.createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
+		canvas = (PGraphicsOpenGL) createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
 		projectors=new Projector[2];
 		projectors[0] = new Projector(this,1,1920,1080);
 		projectors[0].setPosition(0.0f, 0.0f, 1.5f);
 		projectors[1] = new Projector(this,2,1920,1080);
 		projectors[1].setPosition(2f, 3f, 1.5f);
+		float mscale=4;	// How much smaller to make the masks
+		mask=new PGraphicsOpenGL[projectors.length];
+		for (int i=0;i<mask.length;i++)
+			mask[i]=(PGraphicsOpenGL) createGraphics((int)(CANVASWIDTH/mscale+0.5), (int)(CANVASHEIGHT/mscale+0.5),renderer);
 		PApplet.println("Setup complete");
 		starting = false;
 	}
@@ -436,19 +440,12 @@ public class Tracker extends PApplet {
 	}
 
 	private void buildMasks(PGraphicsOpenGL canvas) {
-		final int mscale=4;
-		if (mask.length!=projectors.length) {
-			mask=new PGraphicsOpenGL[projectors.length];
-			for (int i=0;i<mask.length;i++)
-				mask[i]=(PGraphicsOpenGL) createGraphics(canvas.width/mscale, canvas.height/mscale,renderer);
-		} 
-	
 		for (int i=0;i<mask.length;i++) {
 			mask[i].beginDraw();
 			// Transform so that coords for drawing are in meters
 			mask[i].resetMatrix();
 			mask[i].translate(mask[i].width/2, mask[i].height/2);   // center coordinate system to middle of canvas
-			mask[i].scale(getPixelsPerMeter()/mscale, -getPixelsPerMeter()/mscale); // FIXME: Unclear why, but need to flip y here
+			mask[i].scale(getPixelsPerMeter()*mask[i].width/canvas.width, -getPixelsPerMeter()*mask[i].height/canvas.height); // FIXME: Unclear why, but need to flip y here
 			mask[i].translate(-getFloorCenter().x, -getFloorCenter().y);  // translate to center of new space
 //			println("[0,0]->canvas "+canvas.screenX(0, 0)+","+canvas.screenY(0,0));
 //			println("[0,0]->mask "+mask[i].screenX(0, 0)+","+mask[i].screenY(0,0));
