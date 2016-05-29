@@ -404,13 +404,15 @@ public class Projector {
 	}
 	
 	public void setCameraView(PMatrix3D view) {
-		matprint("setCameraView: view",view);
-		matprint("setCameraView: pcanvas.modelview",pcanvas.modelview);
-		PMatrix3D test=new PMatrix3D(view);
-		test.preApply(params.getProjection());
-		matprint("setCameraView:Proj*CV",test);
-		matprint("setCameraView: pcanvas.projmodelview",pcanvas.projmodelview);
 		camview=view;
+		if (debug && false) {
+			matprint("setCameraView: view",view);
+			matprint("setCameraView: pcanvas.modelview",pcanvas.modelview);
+			PMatrix3D test=new PMatrix3D(view);
+			test.preApply(params.getProjection());
+			matprint("setCameraView:Proj*CV",test);
+			matprint("setCameraView: pcanvas.projmodelview",pcanvas.projmodelview);
+		}
 	}
 	
 	public void setWorld2Screen(PMatrix3D projmodelview) {
@@ -425,22 +427,21 @@ public class Projector {
 		PMatrix3D newproj=new PMatrix3D(target);
 		newproj.apply(pcanvas.modelviewInv);
 	
-
-		if (debug) {
-			matprint("setInvMatrix: projmodelview",projmodelview);
-			matprint("setInvMatrix: target",target);
-			matprint("setInvMatrix: Extracted new proj matrix",newproj);
-		}
+		if (debug)
+			matprint("setWorld2Screen: projmodelview",projmodelview);
 		
 		// Adjust so the projection matrix gives flat z-values at 0.5 so it is always inside clipping planes
 		float setz=0f;
 		newproj.m02=0; newproj.m12=0; newproj.m32=0; 
 		newproj.m20=newproj.m30*setz; newproj.m21=newproj.m31*setz; newproj.m22=newproj.m32*setz; newproj.m23=newproj.m33*setz;
+		if (debug)
+			matprint("setWorld2Screen: target",target);
+		if (debug)
+			matprint("setWorld2Screen: Extracted new camera matrix",newcam);
 
 		pcanvas.setProjection(newproj);
 		if (debug) {
-			matprint("setInvMatrix:Adjusted new proj matrix",newproj);
-			matprint("setInvMatrix: projmodelview Matrix after applying transform",pcanvas.projmodelview);
+			matprint("setWorld2Screen: projmodelview Matrix after applying transform",pcanvas.projmodelview);
 
 			ttest(0,0,0);
 			ttest(0,2,0);
