@@ -180,3 +180,9 @@ LIDAR/FrontEndLIDAR/Debug1.out
 Calibrator/Debug.out
 calibrator
 Video/Tracker/hs_err_pid19244.log
+
+Video/Tracker/src/console-broken
+
+Video/Tracker/src/console-new
+
+Video/Tracker/src/console-working

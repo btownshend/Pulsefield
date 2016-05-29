@@ -18,6 +18,7 @@ public class Projector {
 	float rotation;  // Rotation of projector in degrees -- normally 0
 	ProjectorParameters params;
 	private final boolean debug=true;
+	PMatrix3D camview=new PMatrix3D();
 	
 	public Projector(PApplet parent, int id, int width, int height) {
 		// Create a syphon-based projector with given parameters
@@ -409,6 +410,7 @@ public class Projector {
 		test.preApply(params.getProjection());
 		matprint("setCameraView:Proj*CV",test);
 		matprint("setCameraView: pcanvas.projmodelview",pcanvas.projmodelview);
+		camview=view;
 	}
 	
 	public void setWorld2Screen(PMatrix3D projmodelview) {
