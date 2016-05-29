@@ -20,6 +20,10 @@ public class Projector {
 	ProjectorParameters params;
 	private final boolean debug=true;
 	PMatrix3D camview=new PMatrix3D();
+	PMatrix3D w2s=new PMatrix3D();
+	PMatrix3D s2w=new PMatrix3D();
+	PVector bounds[];
+
 	
 	public Projector(PApplet parent, int id, int width, int height) {
 		// Create a syphon-based projector with given parameters
@@ -41,6 +45,12 @@ public class Projector {
 		
 		aim=Tracker.getFloorCenter();
 		pos=new PVector(0f,-0.5f,1.5f); // Assume it is above/behind lidar
+		
+		bounds=new PVector[4];  // Bounds of projector image in world coordinates
+		bounds[0]=new PVector(0,0);
+		bounds[1]=new PVector(0,1);
+		bounds[2]=new PVector(1,1);
+		bounds[3]=new PVector(1,0);
 		rotation=0f;
 		loadSettings();
 		setTO();
@@ -179,11 +189,38 @@ public class Projector {
 	}
 
 	private void ttest(float x, float y, float z) {
-		PApplet.println("["+x+","+y+","+z+"]->["+pcanvas.screenX(x,y,z)+","+pcanvas.screenY(x,y,z)+","+pcanvas.screenZ(x,y,z)+"]");
+		PApplet.println("["+x+","+y+","+z+"]->["+pcanvas.screenX(x,y,z)+","+pcanvas.screenY(x,y,z)+","+pcanvas.screenZ(x,y,z)+"]; expect "+world2screen(new PVector(x,y,z)));
 	}
 
-	public void setScreen2World(PMatrix3D s2w) {
+	public PVector screen2world(PVector s) {
+		// Map a vector in screen coords to one in world coords
+		float x=s2w.m00*s.x+s2w.m01*s.y+s2w.m03;
+		float y=s2w.m10*s.x+s2w.m11*s.y+s2w.m13;
+		float w=s2w.m30*s.x+s2w.m31*s.y+s2w.m33;
+		return new PVector(x/w,y/w);  // x is flipped
+	}
+	
+	public PVector world2screen(PVector world) {
+		// Map a vector in screen coords to one in world coords
+		float x=w2s.m00*world.x+w2s.m01*world.y+w2s.m03;
+		float y=w2s.m10*world.x+w2s.m11*world.y+w2s.m13;
+		float w=w2s.m30*world.x+w2s.m31*world.y+w2s.m33;
+		return new PVector(x/w,y/w);
+	}
+	
+	public void setScreen2World(PMatrix3D s2wMat) {
+		s2w=s2wMat;
+		bounds[0]=screen2world(new PVector(0,0));
+		bounds[1]=screen2world(new PVector(pcanvas.width,0));
+		bounds[2]=screen2world(new PVector(pcanvas.width,pcanvas.height));
+		bounds[3]=screen2world(new PVector(0,pcanvas.height));
 
+		PApplet.print("Projector "+id+" bounds:");
+		for (int i=0;i<bounds.length;i++) {
+			PVector recompute=world2screen(bounds[i]);
+			PApplet.print(bounds[i]+"->"+recompute);
+		}
+		PApplet.println("");	
 	}
 
 	@Deprecated
@@ -427,6 +464,7 @@ public class Projector {
 		
 		// PGraphics3D does additional scaling/centering of x,y after all the matrix transformations to get raw pixels
 		// so we need to back that out of the target matrix
+		w2s=projmodelview;
 		PMatrix3D target=screenToRelative(projmodelview);
 		if (debug)
 			matprint("setWorld2Screen: projmodelview",projmodelview);
