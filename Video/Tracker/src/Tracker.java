@@ -77,6 +77,7 @@ public class Tracker extends PApplet {
 	Map<String,Boolean> unhandled;
 	PVector[] lidar = new PVector[381];
 	PGraphicsOpenGL mask[];
+	int pselect[];
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -203,6 +204,9 @@ public class Tracker extends PApplet {
 			mask[i].background(255);
 			mask[i].endDraw();
 		}
+		pselect=new int[mask[0].width*mask[0].height];
+		for (int i=0;i<pselect.length;i++)
+			pselect[0]=0;  // Default to projector 0
 		PApplet.println("Setup complete");
 		starting = false;
 	}
@@ -453,6 +457,7 @@ public class Tracker extends PApplet {
 		image(canvas, width/2, height/2, canvas.width*cscale, canvas.height*cscale);
 		popMatrix();
 
+
 		// Use top-left, top-right corners for projector images
 		float pfrac = 0.25f;  // Use this much of the height of the window for projs
 		float pheight=this.height*pfrac;
@@ -470,6 +475,7 @@ public class Tracker extends PApplet {
 		boolean drawMasks = true;
 		if (drawMasks) {
 			// Draw masks on screen
+			imageMode(CORNER);
 			rect(0, height-mask[0].height-2, mask[0].width+2, mask[0].height+2);
 			image(mask[0],1,height-mask[0].height-1);
 			rect(width-mask[0].width-2, height-mask[1].height-2, mask[1].width+2, mask[1].height+2);
@@ -492,17 +498,26 @@ public class Tracker extends PApplet {
 			mask[i].blendMode(PConstants.REPLACE);
 			mask[i].imageMode(PConstants.CORNER);
 			mask[i].ellipseMode(PConstants.CENTER);
-			mask[i].background(127);  // default, nothing drawn
+			mask[i].background(0);  // default, nothing drawn
+			mask[i].fill(255);      // Can draw anywhere within bounds
+			mask[i].beginShape();
+			for (int j=0;j<projectors[i].bounds.length;j++) {
+				PVector p=projectors[i].bounds[j];
+				mask[i].vertex(-p.x,p.y);
+				//PApplet.println("vertex("+projectors[i].bounds[j]+") -> "+canvas.screenX(p.x,p.y)+","+canvas.screenY(p.x, p.y));
+			}
+			mask[i].endShape(CLOSE);
 //			mask[i].fill(127);
 //			mask[i].rect(i, 1+i, 1, 1);
 //			mask[i].fill(0);
 //			mask[i].rect(i, 1+i, 0.5f, 0.5f);
-			PVector projPos=projectors[i].pos;
-			mask[i].stroke(0);
+			PVector projPos=projectors[i].pos;projPos.z=0;
+			mask[i].stroke(1);  // Don't draw here, but not as insistent as being out of bounds
 			mask[i].strokeWeight(0.5f);
 			for (Person ps: people.pmap.values()) {  
 				PVector pos=ps.getOriginInMeters();
 				PVector vec=PVector.sub(pos, projPos); vec.normalize();
+				println("shadow of "+pos+" from proj@ "+projPos+": vec="+vec);
 				vec.mult(6);  // Draw a line that will run past edge
 				mask[i].line(pos.x, pos.y, pos.x+vec.x, pos.y+vec.y);
 				//mask[i].ellipse(pos.x, pos.y, 0.5f, 0.5f);
@@ -511,46 +526,63 @@ public class Tracker extends PApplet {
 			mask[i].loadPixels();
 		}
 		
-		int p[]=mask[0].pixels;
-		// Combine into mask[0] (0=must be proj1, 254=must be proj0, 127=dont care)
-		for (int i=0;i<p.length;i++)
-			p[i]=(255+p[i]-mask[1].pixels[i])/2;
-		// Spread the masks
-		int zn=0;
-		for (int n=0;n<100;n++) {
-			int n0=0, n1=0;
-			for (int i=n%2;i<mask[0].width;i+=2)  // Interleave steps to avoid propagating asymmetrically
-				for (int j=n%3;j<mask[0].height;j+=2) {
-					int ind=j*mask[0].width+i;
-					if (p[ind]==127) {// Indeterminate
-						//PApplet.println("len="+p.length+", j="+j+", ind="+ind);
-						int sum=((i<mask[0].width-1)?p[ind+1]:127)+
-								((i>0)?p[ind-1]:127)+
-								((j<mask[0].height-1)?p[ind+mask[0].width]:127)+
-								((j>0)?p[ind-mask[0].width]:127);
-						if (sum>127*4) {
-							p[ind]=255;
-							n0+=1;
-						} else if (sum<127*4) {
-							p[ind]=0;
-							n1+=1;
-						}
-					}
+		int maskcnt[]=new int[pselect.length];
+		// pselect is a persistent map of which projector gets which pixel
+		for (int i=0;i<pselect.length;i++) {
+			if ((mask[pselect[i]].pixels[i]&0xff)<255) {
+				for (int j=0;j<mask.length;j++) {
+					if ((mask[j].pixels[i]&0xff) > (mask[pselect[i]].pixels[i]&0xff))
+						pselect[i]=j;  // Switch to a better projector
 				}
-			println("n="+n+": Dilated "+n0+","+n1+" pixels");
-			// Keep going until there is no change for 6 cycles (repeat of offsets)
-			if (n0+n1 == 0)
-				zn+=1;
-			else
-				zn=0;
-			if (zn==6)
-				break;
+			}
+			maskcnt[pselect[i]]+=1;
 		}
+		
+		PApplet.println("Mask has projector 0: "+maskcnt[0]+", 1: "+maskcnt[1]);
+		// Now bring those back to the masks
+//		int fullon=0xffffffff;
+//		int fulloff=0xff000000;
+//		for (int j=0;j<mask.length;j++)
+//			for (int i=0;i<pselect.length;i++)
+//				mask[j].pixels[i]=(pselect[i]==j)?fullon:fulloff;
+		
+		
+//		// Spread the masks
+//		int zn=0;
+//		for (int n=0;n<500;n++) {
+//			int n0=0, n1=0;
+//			for (int i=n%2;i<mask[0].width;i+=2)  // Interleave steps to avoid propagating asymmetrically
+//				for (int j=n%3;j<mask[0].height;j+=2) {
+//					int ind=j*mask[0].width+i;
+//					if (p[ind]==127) {// Indeterminate
+//						//PApplet.println("len="+p.length+", j="+j+", ind="+ind);
+//						int sum=((i<mask[0].width-1)?p[ind+1]:127)+
+//								((i>0)?p[ind-1]:127)+
+//								((j<mask[0].height-1)?p[ind+mask[0].width]:127)+
+//								((j>0)?p[ind-mask[0].width]:127);
+//						if (sum>127*4) {
+//							p[ind]=255;
+//							n0+=1;
+//						} else if (sum<127*4) {
+//							p[ind]=0;
+//							n1+=1;
+//						}
+//					}
+//				}
+//			println("n="+n+": Dilated "+n0+","+n1+" pixels");
+//			// Keep going until there is no change for 6 cycles (repeat of offsets)
+//			if (n0+n1 == 0)
+//				zn+=1;
+//			else
+//				zn=0;
+//			if (zn==6)
+//				break;
+//		}
 		// Blur it
 //		mask[0].filter(BLUR);
-		// Make mask[1] the inverse
-		for (int i=0;i<p.length;i++)
-			mask[1].pixels[i]=255-p[i];
+//		// Make mask[1] the inverse
+//		for (int i=0;i<p.length;i++)
+//			mask[1].pixels[i]=255-p[i];
 		
 		for (int i=0;i<mask.length;i++)
 			mask[i].updatePixels();
