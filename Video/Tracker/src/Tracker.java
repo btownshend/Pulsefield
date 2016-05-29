@@ -364,7 +364,9 @@ public class Tracker extends PApplet {
 		canvas.resetMatrix();
 
 		canvas.translate(canvas.width/2, canvas.height/2);   // center coordinate system to middle of canvas
-		canvas.scale(getPixelsPerMeter());
+		// The LIDAR uses a RH x-y axis (with origin top-center), but PGraphics uses a LH (with origin top-left)
+		// So, we can flip the x-axis to get things aligned
+		canvas.scale(-getPixelsPerMeter(),getPixelsPerMeter()); 
 		canvas.translate(-getFloorCenter().x, -getFloorCenter().y);  // translate to center of new space
 
 		float cscale=Math.min((width-2)*1f/canvas.width,(height-2)*1f/canvas.height); // Scaling of canvas to window
@@ -420,8 +422,14 @@ public class Tracker extends PApplet {
 		projectors[0].render(canvas,mask[0]);
 		projectors[1].render(canvas,mask[1]);
 		
-		imageMode(CORNER);
-		image(canvas, 1, 1, canvas.width*cscale, canvas.height*cscale);
+		imageMode(CENTER);
+		// Canvas is RH, so need to flip it back to draw on main window (which is LH)
+		pushMatrix();
+		translate(width/2,height/2);
+		scale(-1,1);
+		translate(-width/2,-height/2);
+		image(canvas, width/2, height/2, canvas.width*cscale, canvas.height*cscale);
+		popMatrix();
 
 		// Use top-left, top-right corners for projector images
 		float pfrac = 0.25f;  // Use this much of the height of the window for projs
@@ -430,6 +438,7 @@ public class Tracker extends PApplet {
 		stroke(255,0,0);
 		strokeWeight(2);
 		rect(0, 0, pwidth, pheight);
+		imageMode(CORNER);
 		image(projectors[0].pcanvas, 1, 1, pwidth-2, pheight-2);
 
 		pwidth=pheight*projectors[1].pcanvas.width/projectors[1].pcanvas.height; 
