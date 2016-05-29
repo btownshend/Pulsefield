@@ -34,10 +34,6 @@ public class Projector {
 			matprint("Projector: Current camera matrix",pcanvas.camera);
 			matprint("Projector: Current modelview matrix",pcanvas.modelview);
 			matprint("Projector: Current proj matrix",pcanvas.projection);
-
-			PMatrix3D reconProj=extractProj(pcanvas.projmodelview);
-			matprint("Projector: Reconstructed projection matrix",reconProj);
-
 			ttest(1,2,0);
 		}
 		
@@ -184,12 +180,6 @@ public class Projector {
 
 	public void setScreen2World(PMatrix3D s2w) {
 
-	}
-
-	public PMatrix3D extractProj(PMatrix3D projmodelview) {
-		PMatrix3D proj=new PMatrix3D(projmodelview);
-		proj.apply(pcanvas.modelviewInv);
-		return proj;
 	}
 
 	@Deprecated
@@ -413,19 +403,27 @@ public class Projector {
 	}
 	
 	public void setCameraView(PMatrix3D view) {
-	
+		matprint("setCameraView: view",view);
+		matprint("setCameraView: pcanvas.modelview",pcanvas.modelview);
+		PMatrix3D test=new PMatrix3D(view);
+		test.preApply(params.getProjection());
+		matprint("setCameraView:Proj*CV",test);
+		matprint("setCameraView: pcanvas.projmodelview",pcanvas.projmodelview);
 	}
 	
 	public void setWorld2Screen(PMatrix3D projmodelview) {
-		// Decompose to form independent projection and modelview matrices
-		// If zknown is false, then the 3rd row and 3rd column of projmodelview are undetermined 
-		// This results in 7 DOF, but the camera matrix has 7 constraints (form should be [ R : T ], where r is a rotation matrix -> 9 DOF in a 16 element matrix)
-
+		// Setup canvas so that drawing commands follow the exact mapping 'projmodelview'
+		// This needs to be made up from the composition of P*C*M
+		// We can choose M to be the identity, so only need to break into P and C
+		// Do that by using the known projector perspective mapping (from params.getProjection()) and compute C
+		
 		// PGraphics3D does additional scaling/centering of x,y after all the matrix transformations to get raw pixels
 		// so we need to back that out of the target matrix
 		PMatrix3D target=screenToRelative(projmodelview);
-		PMatrix3D newproj=extractProj(target);
-		
+		PMatrix3D newproj=new PMatrix3D(target);
+		newproj.apply(pcanvas.modelviewInv);
+	
+
 		if (debug) {
 			matprint("setInvMatrix: projmodelview",projmodelview);
 			matprint("setInvMatrix: target",target);
