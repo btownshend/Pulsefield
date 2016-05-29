@@ -415,6 +415,7 @@ public class Projector {
 		}
 	}
 	
+
 	public void setWorld2Screen(PMatrix3D projmodelview) {
 		// Setup canvas so that drawing commands follow the exact mapping 'projmodelview'
 		// This needs to be made up from the composition of P*C*M
@@ -424,22 +425,27 @@ public class Projector {
 		// PGraphics3D does additional scaling/centering of x,y after all the matrix transformations to get raw pixels
 		// so we need to back that out of the target matrix
 		PMatrix3D target=screenToRelative(projmodelview);
-		PMatrix3D newproj=new PMatrix3D(target);
-		newproj.apply(pcanvas.modelviewInv);
-	
 		if (debug)
 			matprint("setWorld2Screen: projmodelview",projmodelview);
 		
-		// Adjust so the projection matrix gives flat z-values at 0.5 so it is always inside clipping planes
-		float setz=0f;
-		newproj.m02=0; newproj.m12=0; newproj.m32=0; 
-		newproj.m20=newproj.m30*setz; newproj.m21=newproj.m31*setz; newproj.m22=newproj.m32*setz; newproj.m23=newproj.m33*setz;
 		if (debug)
 			matprint("setWorld2Screen: target",target);
+		
+		// New target has the desired value for canvas.projmodelview 
+		// Decompose it into P*C
+		PMatrix3D newcam=new PMatrix3D(target);
+		PMatrix3D projInv = new PMatrix3D(params.getProjection()); projInv.invert();
+		newcam.preApply(projInv);
+
 		if (debug)
 			matprint("setWorld2Screen: Extracted new camera matrix",newcam);
 
-		pcanvas.setProjection(newproj);
+		pcanvas.setProjection(params.getProjection());
+		pcanvas.beginCamera();
+		pcanvas.resetMatrix();
+		pcanvas.applyMatrix(newcam);
+		pcanvas.endCamera();
+
 		if (debug) {
 			matprint("setWorld2Screen: projmodelview Matrix after applying transform",pcanvas.projmodelview);
 
