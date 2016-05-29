@@ -463,7 +463,7 @@ public class Tracker extends PApplet {
 		if (present)
 			PApplet.main(new String[] { "--present","Tracker"});
 		else
-			PApplet.main(new String[] {"Tracker" });
+			PApplet.main(new String[] {"--display=2","Tracker" });
 	}
 
 	/* incoming osc message are forwarded to the oscEvent method. */
