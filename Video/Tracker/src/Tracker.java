@@ -408,9 +408,10 @@ public class Tracker extends PApplet {
 		if (server != null) {
 			server.sendImage(canvas);
 		}
-		vis[currentvis].render(canvas, projectors);
 		
 
+		projectors[0].render(canvas,mask[0]);
+		projectors[1].render(canvas,mask[1]);
 		
 		imageMode(CORNER);
 		image(canvas, 1, 1, canvas.width*cscale, canvas.height*cscale);
