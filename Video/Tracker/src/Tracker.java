@@ -247,7 +247,7 @@ public class Tracker extends PApplet {
 		PMatrix3D mat=new PMatrix3D();
 		mat.set(x00,x01,0,x02,
 				x10,x11,0,x12,
-				  0,  0,1,  10f,
+				  0,  0,1,  0f,
 				x20,x21,0,x22);
 		projectors[proj].setScreen2World(mat);
 	}
