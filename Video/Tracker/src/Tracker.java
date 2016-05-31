@@ -10,7 +10,6 @@ import oscP5.OscP5;
 import oscP5.OscProperties;
 import processing.core.PApplet;
 import processing.core.PConstants;
-import processing.core.PGraphics;
 import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -89,9 +88,7 @@ public class Tracker extends PApplet {
 	public void setup() {
 		configFile="/Users/bst/DropBox/Pulsefield/src/urlconfig.txt";
 		jconfig=new Config("config.json");
-		Config.setFloat("main", "test", 1.0f);
-		Config.save(this);
-		//Config.load(this);
+		Config.load(this);
 		
 		try {
 			config=new URLConfig(configFile);
@@ -192,9 +189,7 @@ public class Tracker extends PApplet {
 		canvas = (PGraphicsOpenGL) createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
 		projectors=new Projector[2];
 		projectors[0] = new Projector(this,1,1920,1080);
-		projectors[0].setPosition(new PVector(0.0f, 0.0f, 1.5f));
 		projectors[1] = new Projector(this,2,1920,1080);
-		projectors[1].setPosition(new PVector(2f, 3f, 1.5f));
 		float mscale=4;	// How much smaller to make the masks
 		mask=new PGraphicsOpenGL[projectors.length];
 		for (int i=0;i<mask.length;i++) {

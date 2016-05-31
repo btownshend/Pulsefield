@@ -41,9 +41,10 @@ public class Projector {
 			matprint("Projector: Current proj matrix",pcanvas.projection);
 			ttest(1,2,0);
 		}
-		
-		pos=new PVector(0f,-0.5f,1.5f); // Assume it is above/behind lidar
-		
+		// Make sure canvas is fully initialized before resetting its matrices
+		pcanvas.beginDraw();
+		pcanvas.endDraw();
+		// Load settings from JSON
 		loadSettings();
 	}
 
@@ -69,19 +70,21 @@ public class Projector {
 
 	public void saveSettings() {
 		PApplet.println("Projector.saveSettings("+id+")");
-		Config.set("proj"+id,"s2w",s2w);
-		Config.set("proj"+id,"w2s",w2s);
-		Config.setFloat("proj"+id, "pos.x", pos.x);
-		Config.setFloat("proj"+id, "pos.y", pos.y);
-		Config.setFloat("proj"+id, "pos.z", pos.z);
+		Config.setVec("proj"+id, "pos", pos);
+		Config.setMat("proj"+id,"s2w",s2w);
+		Config.setMat("proj"+id,"w2s",w2s);
+		Config.setMat("proj"+id,"camview",camview);
+		Config.setMat("proj"+id,"projection",params.projMatrix);
 	}
 
 	public void loadSettings() {
 		PApplet.println("Projector.loadSettings("+id+")");
-		pos.x=Config.getFloat("proj"+id, "pos.x", pos.x);
-		PApplet.println("pos.x="+pos.x);
-		pos.y=Config.getFloat("proj"+id, "pos.y", pos.y);
-		pos.z=Config.getFloat("proj"+id, "pos.z", pos.z);
+		setPosition(Config.getVec("proj"+id,"pos",pos));
+		setCameraView(Config.getMat("proj"+id,"camview",camview));
+		params.setProjection(Config.getMat("proj"+id, "projection", params.projMatrix));
+		setScreen2World(Config.getMat("proj"+id,"s2w",s2w));
+		setWorld2Screen(Config.getMat("proj"+id,"w2s",w2s));
+		ttest(0,0,0);
 	}
 
 	public void render(PGraphics canvas, PGraphics mask) {
