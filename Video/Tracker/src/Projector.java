@@ -14,8 +14,6 @@ public class Projector {
 	PGraphicsOpenGL pcanvas;
 	int id;
 	PVector pos;
-	PVector aim;
-	float rotation;  // Rotation of projector in degrees -- normally 0
 	ProjectorParameters params;
 	private final boolean debug=true;
 	PMatrix3D camview=new PMatrix3D();
@@ -42,7 +40,6 @@ public class Projector {
 			ttest(1,2,0);
 		}
 		
-		aim=Tracker.getFloorCenter();
 		pos=new PVector(0f,-0.5f,1.5f); // Assume it is above/behind lidar
 		
 		bounds=new PVector[4];  // Bounds of projector image in world coordinates
@@ -50,24 +47,12 @@ public class Projector {
 		bounds[1]=new PVector(0,1);
 		bounds[2]=new PVector(1,1);
 		bounds[3]=new PVector(1,0);
-		rotation=0f;
 		loadSettings();
-		setTO();
 	}
 
 	public void setPosition(PVector newpos) {
 		// Set position and aiming of projector in floor coordinates
 		// Convert to canvas coordinates
-		setTO();
-	}
-	public void setAim(float aimx, float aimy) {
-		aim=new PVector(aimx, aimy);
-		setTO();
-	}
-
-	public void setRotation(float rotation) {
-		this.rotation=rotation;
-		setTO();
 		pos=newpos;
 	}
 
@@ -77,71 +62,29 @@ public class Projector {
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
 
-		if (components.length==5 && components[3].equals("aim")&&msg.checkTypetag("f")) {
-			if (components[4].equals("x"))
-				aim.x=msg.get(0).floatValue();
-			else if (components[4].equals("y"))
-				aim.y=msg.get(0).floatValue();
-			else
-				PApplet.println("Bad projector aim message: "+msg.toString());
-		} else if (components.length==5 && components[3].equals("pos")&&msg.checkTypetag("f")) {
-			if (components[4].equals("x"))
-				pos.x=msg.get(0).floatValue();
-			else if (components[4].equals("y"))
-				pos.y=msg.get(0).floatValue();
-			else if (components[4].equals("z"))
-				pos.z=msg.get(0).floatValue();
-			else
-				PApplet.println("Bad projector pos message: "+msg.toString());
-		} else if (components.length==4 && components[3].equals("rotation")&&msg.checkTypetag("f")) {
-			rotation=msg.get(0).floatValue();
+		if (components.length==4 && components[3].equals("load")) {
+			loadSettings();
 		} else if (components.length==4 && components[3].equals("save")) {
 			saveSettings();
 		} else 
 			PApplet.println("Unknown projector Message: "+msg.toString());
-		setTO();
-	}
-
-	private void setTOValue(String name, double value, String fmt) {
-		TouchOSC to=TouchOSC.getInstance();
-		OscMessage set = new OscMessage("/proj/"+id+"/"+name);
-		set.add(value);
-		to.sendMessage(set);
-		set=new OscMessage("/proj/"+id+"/"+name+"/value");
-		set.add(String.format(fmt, value));
-		to.sendMessage(set);
-	}
-
-	public void setTO() {
-		setTOValue("aim/x",aim.x,"%.2f");
-		setTOValue("aim/y",aim.y,"%.2f");
-		setTOValue("pos/x",pos.x,"%.2f");
-		setTOValue("pos/y",pos.y,"%.2f");
-		setTOValue("pos/z",pos.z,"%.2f");
-		setTOValue("rotation",rotation,"%.4f");
 	}
 
 	public void saveSettings() {
 		PApplet.println("Projector.saveSettings("+id+")");
 		Config.set("proj"+id,"s2w",s2w);
 		Config.set("proj"+id,"w2s",w2s);
-		Config.setFloat("proj"+id, "aim.x", aim.x);
-		Config.setFloat("proj"+id, "aim.y", aim.y);
 		Config.setFloat("proj"+id, "pos.x", pos.x);
 		Config.setFloat("proj"+id, "pos.y", pos.y);
 		Config.setFloat("proj"+id, "pos.z", pos.z);
-		Config.setFloat("proj"+id, "rotation", rotation);
 	}
 
 	public void loadSettings() {
 		PApplet.println("Projector.loadSettings("+id+")");
-		aim.x=Config.getFloat("proj"+id, "aim.x", aim.x);
-		aim.y=Config.getFloat("proj"+id, "aim.y", aim.y);
 		pos.x=Config.getFloat("proj"+id, "pos.x", pos.x);
 		PApplet.println("pos.x="+pos.x);
 		pos.y=Config.getFloat("proj"+id, "pos.y", pos.y);
 		pos.z=Config.getFloat("proj"+id, "pos.z", pos.z);
-		rotation=Config.getFloat("proj"+id, "rotation", rotation);
 	}
 
 	public void render(PGraphics canvas, PGraphics mask) {
