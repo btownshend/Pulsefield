@@ -56,11 +56,9 @@ public class Projector {
 		setTO();
 	}
 
-
-	public void setPosition(float x, float y, float z) {
+	public void setPosition(PVector newpos) {
 		// Set position and aiming of projector in floor coordinates
 		// Convert to canvas coordinates
-		pos=new PVector(x,y,z);
 		setTO();
 	}
 	public void setAim(float aimx, float aimy) {
@@ -71,6 +69,7 @@ public class Projector {
 	public void setRotation(float rotation) {
 		this.rotation=rotation;
 		setTO();
+		pos=newpos;
 	}
 
 	public void handleMessage(OscMessage msg) {

@@ -192,9 +192,9 @@ public class Tracker extends PApplet {
 		canvas = (PGraphicsOpenGL) createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
 		projectors=new Projector[2];
 		projectors[0] = new Projector(this,1,1920,1080);
-		projectors[0].setPosition(0.0f, 0.0f, 1.5f);
+		projectors[0].setPosition(new PVector(0.0f, 0.0f, 1.5f));
 		projectors[1] = new Projector(this,2,1920,1080);
-		projectors[1].setPosition(2f, 3f, 1.5f);
+		projectors[1].setPosition(new PVector(2f, 3f, 1.5f));
 		float mscale=4;	// How much smaller to make the masks
 		mask=new PGraphicsOpenGL[projectors.length];
 		for (int i=0;i<mask.length;i++) {
@@ -282,7 +282,7 @@ public class Tracker extends PApplet {
 	public void setpose(int proj, float x, float y, float z) {
 		PVector vec=new PVector(x,y,z);
 		PApplet.println("setpose("+proj+","+vec+")");
-		projectors[proj].setPosition(x, y, z);
+		projectors[proj].setPosition(vec);
 	}
 
 	public void setcameraview(int proj, float x00, float x01, float x02, float x03, float x10, float x11, float x12, float x13, float x20, float x21, float x22, float x23) {
