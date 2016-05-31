@@ -375,7 +375,7 @@ public class Tracker extends PApplet {
 		canvas.translate(canvas.width/2, canvas.height/2);   // center coordinate system to middle of canvas
 		// The LIDAR uses a RH x-y axis (with origin top-center), but PGraphics uses a LH (with origin top-left)
 		// So, we can flip the x-axis to get things aligned
-		canvas.scale(-getPixelsPerMeter(),getPixelsPerMeter()); 
+		canvas.scale(getPixelsPerMeter(),getPixelsPerMeter()); 
 		canvas.translate(-getFloorCenter().x, -getFloorCenter().y);  // translate to center of new space
 
 		float cscale=Math.min((width-2)*1f/canvas.width,(height-2)*1f/canvas.height); // Scaling of canvas to window
@@ -383,7 +383,7 @@ public class Tracker extends PApplet {
 		if (mousePressed) {
 			Person p=mousePeople.getOrCreate(mouseID,mouseID%16);
 			//PVector sMousePos=normalizedToFloor(new PVector(mouseX*2f/width-1, mouseY*2f/height-1));
-			float cmouseX=(mouseX/cscale-canvas.width/2)/getPixelsPerMeter()+(rawminx+rawmaxx)/2;
+			float cmouseX=-(mouseX/cscale-canvas.width/2)/getPixelsPerMeter()+(rawminx+rawmaxx)/2;
 			float cmouseY=(mouseY/cscale-canvas.height/2)/getPixelsPerMeter()+(rawminy+rawmaxy)/2;
 			PVector mousePos=new PVector(cmouseX, cmouseY);
 			//println("mouse="+mouseX+", "+mouseY+" -> "+cmouseX+", "+cmouseY);
@@ -428,7 +428,7 @@ public class Tracker extends PApplet {
 				canvas.beginShape();
 				for (int j=0;j<projectors[i].bounds.length;j++) {
 					PVector p=projectors[i].bounds[j];
-					canvas.vertex(-p.x,p.y);
+					canvas.vertex(p.x,p.y);
 					//PApplet.println("vertex("+projectors[i].bounds[j]+") -> "+canvas.screenX(p.x,p.y)+","+canvas.screenY(p.x, p.y));
 				}
 				canvas.endShape(CLOSE);
@@ -455,6 +455,17 @@ public class Tracker extends PApplet {
 		scale(-1,1);
 		translate(-width/2,-height/2);
 		image(canvas, width/2, height/2, canvas.width*cscale, canvas.height*cscale);
+		
+		boolean drawMasks = true;
+		if (drawMasks) {
+			// Draw masks on screen
+			imageMode(CORNER);
+			rect(0, height-mask[0].height-2, mask[0].width+2, mask[0].height+2);
+			image(mask[0],1,height-mask[0].height-1);
+			rect(width-mask[0].width-2, height-mask[1].height-2, mask[1].width+2, mask[1].height+2);
+			image(mask[1],width-mask[0].width-1,height-mask[1].height-1);
+		}
+		
 		popMatrix();
 
 
@@ -471,16 +482,7 @@ public class Tracker extends PApplet {
 		pwidth=pheight*projectors[1].pcanvas.width/projectors[1].pcanvas.height; 
 		rect(width-pwidth, 0, pwidth, pheight);
 		image(projectors[1].pcanvas, width-pwidth+1, 1f, pwidth-2, pheight-2);
-		
-		boolean drawMasks = true;
-		if (drawMasks) {
-			// Draw masks on screen
-			imageMode(CORNER);
-			rect(0, height-mask[0].height-2, mask[0].width+2, mask[0].height+2);
-			image(mask[0],1,height-mask[0].height-1);
-			rect(width-mask[0].width-2, height-mask[1].height-2, mask[1].width+2, mask[1].height+2);
-			image(mask[1],width-mask[0].width-1,height-mask[1].height-1);
-		}
+
 		//SyphonTest.draw(this);
 		Config.saveIfModified(this);   // Save if modified
 	}
@@ -491,7 +493,7 @@ public class Tracker extends PApplet {
 			// Transform so that coords for drawing are in meters
 			mask[i].resetMatrix();
 			mask[i].translate(mask[i].width/2, mask[i].height/2);   // center coordinate system to middle of canvas
-			mask[i].scale(-getPixelsPerMeter()*mask[i].width/canvas.width, -getPixelsPerMeter()*mask[i].height/canvas.height); // FIXME: Unclear why, but need to flip y here
+			mask[i].scale(getPixelsPerMeter()*mask[i].width/canvas.width, -getPixelsPerMeter()*mask[i].height/canvas.height); // FIXME: Unclear why, but need to flip y here
 			mask[i].translate(-getFloorCenter().x, -getFloorCenter().y);  // translate to center of new space
 //			println("[0,0]->canvas "+canvas.screenX(0, 0)+","+canvas.screenY(0,0));
 //			println("[0,0]->mask "+mask[i].screenX(0, 0)+","+mask[i].screenY(0,0));
@@ -503,7 +505,7 @@ public class Tracker extends PApplet {
 			mask[i].beginShape();
 			for (int j=0;j<projectors[i].bounds.length;j++) {
 				PVector p=projectors[i].bounds[j];
-				mask[i].vertex(-p.x,p.y);
+				mask[i].vertex(p.x,p.y);
 				//PApplet.println("vertex("+projectors[i].bounds[j]+") -> "+canvas.screenX(p.x,p.y)+","+canvas.screenY(p.x, p.y));
 			}
 			mask[i].endShape(CLOSE);
