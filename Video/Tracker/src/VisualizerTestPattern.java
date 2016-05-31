@@ -56,7 +56,7 @@ public class VisualizerTestPattern extends VisualizerDot {
 			y+=0.1f;
 		}
 		// Draw radial circles
-		g.stroke(255,0,0);
+		g.stroke(127,0,127);
 		g.fill(0,0);
 		g.ellipseMode(PConstants.CENTER);
 		float maxr=Math.max(Math.max(-Tracker.rawminx,Tracker.rawmaxx),Tracker.rawmaxy);
