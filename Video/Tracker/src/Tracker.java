@@ -454,11 +454,14 @@ public class Tracker extends PApplet {
 		boolean drawMasks = true;
 		if (drawMasks) {
 			// Draw masks on screen
+			float maskScale=4f;
+			float h=mask[0].height/maskScale;
+			float w=mask[0].width/maskScale;
 			imageMode(CORNER);
-			rect(0, height-mask[0].height-2, mask[0].width+2, mask[0].height+2);
-			image(mask[0],1,height-mask[0].height-1);
-			rect(width-mask[0].width-2, height-mask[1].height-2, mask[1].width+2, mask[1].height+2);
-			image(mask[1],width-mask[0].width-1,height-mask[1].height-1);
+			rect(0, height-h-2, w+2, h+2);
+			image(mask[0],1,height-h-1,w,h);
+			rect(width-w-2, height-h-2, w+2, h+2);
+			image(mask[1],width-w-1,height-h-1,w,h);
 		}
 		
 		popMatrix();
