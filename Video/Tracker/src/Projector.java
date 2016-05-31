@@ -15,7 +15,7 @@ public class Projector {
 	int id;
 	PVector pos;
 	ProjectorParameters params;
-	private final boolean debug=true;
+	private final int debug=1;
 	PMatrix3D camview=new PMatrix3D();
 	PMatrix3D w2s=new PMatrix3D();
 	PMatrix3D s2w=new PMatrix3D();
@@ -27,13 +27,15 @@ public class Projector {
 		this.id=id;
 		params=ProjectorParameters.eh320ust();
 		server=new SyphonServer(parent, "P"+id);
-		PApplet.println("parent matrix:");
-		parent.printMatrix();
-		parent.printCamera();
+		if (debug>5) {
+			PApplet.println("P"+id+" parent matrix:");
+			parent.printMatrix();
+			parent.printCamera();
+		}
 		pcanvas = (PGraphicsOpenGL)parent.createGraphics(width, height,PConstants.P3D);
 		//testdecompose();
 
-		if (debug) {
+		if (debug>5) {
 			matprint("Projector: Current camera matrix",pcanvas.camera);
 			matprint("Projector: Current modelview matrix",pcanvas.modelview);
 			matprint("Projector: Current proj matrix",pcanvas.projection);
@@ -57,7 +59,7 @@ public class Projector {
 	}
 
 	public void handleMessage(OscMessage msg) {
-		if (debug)
+		if (debug>0)
 			PApplet.println("Projector message: "+msg.toString());
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
@@ -208,7 +210,7 @@ public class Projector {
 					c.m20*rescale, c.m21*rescale, c.m22*rescale, c.m23*rescale,
 					c.m30*rescale, c.m31*rescale, c.m32*rescale, c.m33*rescale
 					);
-			if (debug)
+			if (debug>2)
 				matprint("decomposeCamera: rescaling matrix by "+rescale,c);
 		}
 		// Check if camera view matrix is of the correct form [ R : T ]
@@ -245,7 +247,7 @@ public class Projector {
 		// Read out up vector (but may be different than original, which didn't have to be orthogonal to other axes -- this one is)
 		PVector up=new PVector(c.m10,c.m11,c.m12);
 
-		if (debug) {
+		if (debug>1) {
 			PApplet.print("reconstructed aim="+aim);
 			PApplet.print(", eye="+eye);
 			PApplet.print(", ref="+ref);
@@ -272,14 +274,14 @@ public class Projector {
 		PMatrix3D SInv=new PMatrix3D(S);
 		SInv.invert();
 		PMatrix3D relative=new PMatrix3D(fulltransform);
-		if (debug)
+		if (debug>4)
 			matprint("screenToRelative: SInv",SInv);
 		relative.preApply(SInv);
 		return relative;
 	}
 
 	private void matprint(String label, final PMatrix3D mat) {
-		PApplet.println(label+":");
+		PApplet.println("P"+id+" "+label+":");
 		mat.print();
 	}
 
@@ -383,13 +385,16 @@ public class Projector {
 	}
 
 	public void setProjection(PMatrix2D projection) {
+		if (debug>0)
+			PApplet.println("setProjection: "+projection.toString());
 		params.setAbsProjection(projection);
 	}
 
 	public void setCameraView(PMatrix3D view) {
 		camview=view;
-		if (debug && false) {
+		if (debug>0)
 			matprint("setCameraView: view",view);
+		if (debug>3) {
 			matprint("setCameraView: pcanvas.modelview",pcanvas.modelview);
 			PMatrix3D test=new PMatrix3D(view);
 			test.preApply(params.getProjection());
@@ -409,13 +414,13 @@ public class Projector {
 		// so we need to back that out of the target matrix
 		w2s=projmodelview;
 		PMatrix3D target=screenToRelative(projmodelview);
-		if (debug)
+		if (debug>0)
 			matprint("setWorld2Screen: projmodelview",projmodelview);
 
 		// Use last received camview to set the unspecified parts of target since it doesn't map z-values
 		PMatrix3D pcamview=new PMatrix3D(camview);
 		pcamview.preApply(params.getProjection());
-		if (debug)
+		if (debug>1)
 			matprint("setWorld2Screen: pcamview",pcamview);
 //		target.m02=pcamview.m02;
 //		target.m12=pcamview.m12;
@@ -425,7 +430,7 @@ public class Projector {
 //		target.m21=pcamview.m21;
 //		target.m23=pcamview.m23;
 
-		if (debug)
+		if (debug>1)
 			matprint("setWorld2Screen: target",target);
 
 		// New target has the desired value for canvas.projmodelview 
@@ -434,7 +439,7 @@ public class Projector {
 		PMatrix3D projInv = new PMatrix3D(params.getProjection()); projInv.invert();
 		newcam.preApply(projInv);
 
-		if (debug)
+		if (debug>1)
 			matprint("setWorld2Screen: Extracted new camera matrix",newcam);
 
 		pcanvas.setProjection(params.getProjection());
@@ -443,14 +448,14 @@ public class Projector {
 		pcanvas.applyMatrix(newcam);
 		pcanvas.endCamera();
 
-		if (debug) {
+		if (debug>1) {
 			matprint("setWorld2Screen: projmodelview Matrix after applying transform",pcanvas.projmodelview);
-
 			ttest(0,0,0);
 			ttest(0,2,0);
 			ttest(-2,2,0);
 			ttest(2,2,0);
 			ttest(0,0,1);
 		}
+
 	}
 }
