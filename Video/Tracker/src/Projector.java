@@ -44,11 +44,6 @@ public class Projector {
 		
 		pos=new PVector(0f,-0.5f,1.5f); // Assume it is above/behind lidar
 		
-		bounds=new PVector[4];  // Bounds of projector image in world coordinates
-		bounds[0]=new PVector(0,0);
-		bounds[1]=new PVector(0,1);
-		bounds[2]=new PVector(1,1);
-		bounds[3]=new PVector(1,0);
 		loadSettings();
 	}
 
@@ -152,9 +147,9 @@ public class Projector {
 		float w=w2s.m30*world.x+w2s.m31*world.y+w2s.m33;
 		return new PVector(x/w,y/w);
 	}
-	public void setScreen2World(PMatrix3D s2wMat) {
-		s2w=s2wMat;
 
+	public void computeBounds() {
+		bounds=new PVector[4];  // Bounds of projector image in world coordinates
 		bounds[0]=screen2world(new PVector(0,0));
 		bounds[1]=screen2world(new PVector(pcanvas.width,0));
 		bounds[2]=screen2world(new PVector(pcanvas.width,pcanvas.height));
@@ -166,6 +161,11 @@ public class Projector {
 			PApplet.print(bounds[i]+"->"+recompute);
 		}
 		PApplet.println("");	
+	}
+
+	public void setScreen2World(PMatrix3D s2wMat) {
+		s2w=s2wMat;
+		computeBounds();
 	}
 
 	@Deprecated
