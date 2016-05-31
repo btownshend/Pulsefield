@@ -91,7 +91,6 @@ public class Projector {
 		// Send the given canvas to the projector
 		// Assumes the canvas is on the floor (i.e. z=0)
 		// Its center corresponds to Tracker.getFloorCenter() and is scaled by Tracker.getPixelsPerMeter()
-
 		pcanvas.beginDraw();
 		pcanvas.background(0);
 		pcanvas.imageMode(PConstants.CENTER);
@@ -424,14 +423,14 @@ public class Projector {
 		pcamview.preApply(params.getProjection());
 		if (debug>1)
 			matprint("setWorld2Screen: pcamview",pcamview);
-//		target.m02=pcamview.m02;
-//		target.m12=pcamview.m12;
-//		target.m22=pcamview.m22;
-//		target.m32=pcamview.m32;
-//		target.m20=pcamview.m20;
-//		target.m21=pcamview.m21;
-//		target.m23=pcamview.m23;
 
+		//		target.m02=pcamview.m02;
+		//		target.m12=pcamview.m12;
+		//		target.m22=pcamview.m22;
+		//		target.m32=pcamview.m32;
+		//		target.m20=pcamview.m20;
+		//		target.m21=pcamview.m21;
+		//		target.m23=pcamview.m23;
 		if (debug>1)
 			matprint("setWorld2Screen: target",target);
 
