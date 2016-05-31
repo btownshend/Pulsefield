@@ -579,13 +579,17 @@ public class Tracker extends PApplet {
 //				break;
 //		}
 		// Blur it
-//		mask[0].filter(BLUR);
+		
+
 //		// Make mask[1] the inverse
 //		for (int i=0;i<p.length;i++)
 //			mask[1].pixels[i]=255-p[i];
 		
-		for (int i=0;i<mask.length;i++)
+		for (int i=0;i<mask.length;i++) {
 			mask[i].updatePixels();
+			//mask[i].filter(DILATE);
+			//mask[i].filter(BLUR,0.05f);
+		}
 		
 //		mask[0].loadPixels();
 //		mask[1].loadPixels();
