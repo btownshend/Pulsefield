@@ -226,13 +226,11 @@ public class Projector {
 		PVector aim = new PVector(-c.m20,-c.m21,-c.m22);
 
 		// Compute the translation by pre-multiplying the camera matrix by the inverse of the untranslated camera matrix
-		PMatrix3D untranslatedInv=new PMatrix3D(camera);
-		untranslatedInv.m03=0; untranslatedInv.m13=0; untranslatedInv.m23=0; untranslatedInv.m33=1;
-		untranslatedInv.invert();
-		PMatrix3D translationMat=new PMatrix3D(camera);
-		translationMat.preApply(untranslatedInv);
-		matprint("decomposeCamera: translationMat",translationMat);
-		PVector eye = new PVector(-translationMat.m03,-translationMat.m13,-translationMat.m23);
+		PMatrix3D camInv=new PMatrix3D(camera);
+		camInv.invert();
+		matprint("inv(camera)",camInv);
+		PVector eye=new PVector(camInv.m03,camInv.m13,camInv.m23);
+
 
 		// Find a reference point that determines the aim, preferable at z=0
 		float aimscale=1f;
@@ -401,6 +399,7 @@ public class Projector {
 			matprint("setCameraView:Proj*CV",test);
 			matprint("setCameraView: pcanvas.projmodelview",pcanvas.projmodelview);
 		}
+		decomposeCamera(camview);
 	}
 
 
