@@ -3,7 +3,6 @@ import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
-import processing.core.PImage;
 import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -24,7 +23,7 @@ public class Projector {
 	PMatrix3D s2w=new PMatrix3D();
 	PVector bounds[];
 
-	
+
 	public Projector(PApplet parent, int id, int width, int height) {
 		// Create a syphon-based projector with given parameters
 		this.id=id;
@@ -144,7 +143,7 @@ public class Projector {
 		pos.z=Config.getFloat("proj"+id, "pos.z", pos.z);
 		rotation=Config.getFloat("proj"+id, "rotation", rotation);
 	}
-	
+
 	public void render(PGraphics canvas, PGraphics mask) {
 		// Send the given canvas to the projector
 		// Assumes the canvas is on the floor (i.e. z=0)
@@ -200,7 +199,7 @@ public class Projector {
 		float w=s2w.m30*s.x+s2w.m31*s.y+s2w.m33;
 		return new PVector(x/w,y/w);  // x is flipped
 	}
-	
+
 	public PVector world2screen(PVector world) {
 		// Map a vector in screen coords to one in world coords
 		float x=w2s.m00*world.x+w2s.m01*world.y+w2s.m03;
@@ -208,9 +207,9 @@ public class Projector {
 		float w=w2s.m30*world.x+w2s.m31*world.y+w2s.m33;
 		return new PVector(x/w,y/w);
 	}
-	
 	public void setScreen2World(PMatrix3D s2wMat) {
 		s2w=s2wMat;
+
 		bounds[0]=screen2world(new PVector(0,0));
 		bounds[1]=screen2world(new PVector(pcanvas.width,0));
 		bounds[2]=screen2world(new PVector(pcanvas.width,pcanvas.height));
@@ -278,7 +277,7 @@ public class Projector {
 			PApplet.println("Row 3 of camera matrix is not a unit vector");
 		if (c.m30!= 0 || c.m31!=0 || c.m32!=0 || c.m33!=1) 
 			PApplet.println("Row 4 of camera matrix is not [0 0 0 1]");
-		
+
 		PVector aim = new PVector(-c.m20,-c.m21,-c.m22);
 
 		// Compute the translation by pre-multiplying the camera matrix by the inverse of the untranslated camera matrix
@@ -340,7 +339,7 @@ public class Projector {
 		PApplet.println(label+":");
 		mat.print();
 	}
-	
+
 	@Deprecated
 	public void decompose(final PMatrix3D projmodelview, final PMatrix3D model, PMatrix3D proj, PMatrix3D camera, boolean zknown) {
 		// Decompose a complete mapping from world to screen coordinates and model into separate projection, camera, model, screen normalization
@@ -439,11 +438,11 @@ public class Projector {
 		}
 		return mx;
 	}
-	
+
 	public void setProjection(PMatrix2D projection) {
 		params.setAbsProjection(projection);
 	}
-	
+
 	public void setCameraView(PMatrix3D view) {
 		camview=view;
 		if (debug && false) {
@@ -455,27 +454,26 @@ public class Projector {
 			matprint("setCameraView: pcanvas.projmodelview",pcanvas.projmodelview);
 		}
 	}
-	
+
 
 	public void setWorld2Screen(PMatrix3D projmodelview) {
 		// Setup canvas so that drawing commands follow the exact mapping 'projmodelview'
 		// This needs to be made up from the composition of P*C*M
 		// We can choose M to be the identity, so only need to break into P and C
 		// Do that by using the known projector perspective mapping (from params.getProjection()) and compute C
-		
+
 		// PGraphics3D does additional scaling/centering of x,y after all the matrix transformations to get raw pixels
 		// so we need to back that out of the target matrix
 		w2s=projmodelview;
 		PMatrix3D target=screenToRelative(projmodelview);
 		if (debug)
 			matprint("setWorld2Screen: projmodelview",projmodelview);
-		
+
 		// Use last received camview to set the unspecified parts of target since it doesn't map z-values
 		PMatrix3D pcamview=new PMatrix3D(camview);
 		pcamview.preApply(params.getProjection());
 		if (debug)
 			matprint("setWorld2Screen: pcamview",pcamview);
-			
 //		target.m02=pcamview.m02;
 //		target.m12=pcamview.m12;
 //		target.m22=pcamview.m22;
@@ -483,9 +481,10 @@ public class Projector {
 //		target.m20=pcamview.m20;
 //		target.m21=pcamview.m21;
 //		target.m23=pcamview.m23;
+
 		if (debug)
 			matprint("setWorld2Screen: target",target);
-		
+
 		// New target has the desired value for canvas.projmodelview 
 		// Decompose it into P*C
 		PMatrix3D newcam=new PMatrix3D(target);
