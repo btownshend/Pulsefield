@@ -944,7 +944,8 @@ public class Tracker extends PApplet {
 			//PApplet.println("Resize alignCorners from "+alignCorners.length+" to "+numCorners);
 			alignCorners=new PVector[numCorners];
 		}
-		alignCorners[cornerNumber]=new PVector(x,y);
+		if (cornerNumber >= 0)
+			alignCorners[cornerNumber]=new PVector(x,y);
 	}
 	
 
