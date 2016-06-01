@@ -190,11 +190,12 @@ public class Tracker extends PApplet {
 		projectors=new Projector[2];
 		projectors[0] = new Projector(this,1,1920,1080);
 		projectors[1] = new Projector(this,2,1920,1080);
-		float mscale=4;	// How much smaller to make the masks
+		float mscale=1;	// How much smaller to make the masks
 		mask=new PGraphicsOpenGL[projectors.length];
 		for (int i=0;i<mask.length;i++) {
 			mask[i]=(PGraphicsOpenGL) createGraphics((int)(CANVASWIDTH/mscale+0.5), (int)(CANVASHEIGHT/mscale+0.5),renderer);
 			// Set for unmasked in case it is not used
+			mask[i].noSmooth();
 			mask[i].beginDraw();
 			mask[i].background(255);
 			mask[i].endDraw();
@@ -493,13 +494,15 @@ public class Tracker extends PApplet {
 			mask[i].translate(mask[i].width/2, mask[i].height/2);   // center coordinate system to middle of canvas
 			mask[i].scale(getPixelsPerMeter()*mask[i].width/canvas.width, -getPixelsPerMeter()*mask[i].height/canvas.height); // FIXME: Unclear why, but need to flip y here
 			mask[i].translate(-getFloorCenter().x, -getFloorCenter().y);  // translate to center of new space
-//			println("[0,0]->canvas "+canvas.screenX(0, 0)+","+canvas.screenY(0,0));
-//			println("[0,0]->mask "+mask[i].screenX(0, 0)+","+mask[i].screenY(0,0));
+
 			mask[i].blendMode(PConstants.REPLACE);
 			mask[i].imageMode(PConstants.CORNER);
 			mask[i].ellipseMode(PConstants.CENTER);
 			mask[i].background(0);  // default, nothing drawn
 			mask[i].fill(255);      // Can draw anywhere within bounds
+			// use a stroke to create an inset to prefer the other projector near the edges
+			mask[i].stroke(200);
+			mask[i].strokeWeight(0.2f);
 			mask[i].beginShape();
 			for (int j=0;j<projectors[i].bounds.length;j++) {
 				PVector p=projectors[i].bounds[j];
@@ -507,20 +510,28 @@ public class Tracker extends PApplet {
 				//PApplet.println("vertex("+projectors[i].bounds[j]+") -> "+canvas.screenX(p.x,p.y)+","+canvas.screenY(p.x, p.y));
 			}
 			mask[i].endShape(CLOSE);
-//			mask[i].fill(127);
-//			mask[i].rect(i, 1+i, 1, 1);
-//			mask[i].fill(0);
-//			mask[i].rect(i, 1+i, 0.5f, 0.5f);
+
 			PVector projPos=projectors[i].pos;projPos.z=0;
-			mask[i].stroke(1);  // Don't draw here, but not as insistent as being out of bounds
-			mask[i].strokeWeight(0.5f);
-			for (Person ps: people.pmap.values()) {  
-				PVector pos=ps.getOriginInMeters();
-				PVector vec=PVector.sub(pos, projPos); vec.normalize();
-				println("shadow of "+pos+" from proj@ "+projPos+": vec="+vec);
-				vec.mult(6);  // Draw a line that will run past edge
-				mask[i].line(pos.x, pos.y, pos.x+vec.x, pos.y+vec.y);
-				//mask[i].ellipse(pos.x, pos.y, 0.5f, 0.5f);
+			mask[i].blendMode(PConstants.MULTIPLY);  // Only affect the non-zero pixels
+			mask[i].fill(127);  // Don't draw here, but not as insistent as being out of bounds
+			float fardist=10f;  // Far distance of shadow
+			for (Person ps: people.pmap.values()) {  			
+				PVector l1=ps.legs[0].getOriginInMeters();
+				PVector l2=ps.legs[1].getOriginInMeters();
+				PVector legdir=PVector.sub(l2, l1); legdir.normalize();
+				l1=PVector.add(l1, PVector.mult(legdir, -ps.legs[0].getDiameterInMeters()/2));
+				l2=PVector.add(l2, PVector.mult(legdir, +ps.legs[1].getDiameterInMeters()/2));
+				PVector s1dir=PVector.sub(l1, projPos); s1dir.normalize();
+				PVector far1=PVector.add(l1, PVector.mult(s1dir, fardist) );
+				PVector s2dir=PVector.sub(l2, projPos); s2dir.normalize();
+				PVector far2=PVector.add(l2, PVector.mult(s2dir, fardist) );
+				mask[i].beginShape();
+				mask[i].vertex(l1.x,l1.y);
+				mask[i].vertex(l2.x,l2.y);
+				mask[i].vertex(far2.x,far2.y);
+				mask[i].vertex(far1.x,far1.y);
+				mask[i].endShape(CLOSE);
+				//println("shadow of "+l1+","+l2+" from proj@ "+projPos+": "+far1+", "+far2);
 			}
 			mask[i].endDraw();
 			mask[i].loadPixels();
@@ -529,82 +540,36 @@ public class Tracker extends PApplet {
 		int maskcnt[]=new int[pselect.length];
 		// pselect is a persistent map of which projector gets which pixel
 		for (int i=0;i<pselect.length;i++) {
+			if (pselect[i]==mask.length) {
+				// was a no-projector condition
+				pselect[i]=0;   // May be able to make this persistent and never check this pixel again (unless resized)
+			}
 			if ((mask[pselect[i]].pixels[i]&0xff)<255) {
 				for (int j=0;j<mask.length;j++) {
 					if ((mask[j].pixels[i]&0xff) > (mask[pselect[i]].pixels[i]&0xff))
 						pselect[i]=j;  // Switch to a better projector
 				}
+				if ((mask[pselect[i]].pixels[i]&0xff)==0) {
+					pselect[i]=mask.length;  // No projector 
+				}
 			}
 			maskcnt[pselect[i]]+=1;
 		}
-		
-		PApplet.println("Mask has projector 0: "+maskcnt[0]+", 1: "+maskcnt[1]);
+			
+		//PApplet.println("Mask has projector 0: "+maskcnt[0]+", 1: "+maskcnt[1]+", None: "+maskcnt[2]);
 		// Now bring those back to the masks
-//		int fullon=0xffffffff;
-//		int fulloff=0xff000000;
-//		for (int j=0;j<mask.length;j++)
-//			for (int i=0;i<pselect.length;i++)
-//				mask[j].pixels[i]=(pselect[i]==j)?fullon:fulloff;
-		
-		
-//		// Spread the masks
-//		int zn=0;
-//		for (int n=0;n<500;n++) {
-//			int n0=0, n1=0;
-//			for (int i=n%2;i<mask[0].width;i+=2)  // Interleave steps to avoid propagating asymmetrically
-//				for (int j=n%3;j<mask[0].height;j+=2) {
-//					int ind=j*mask[0].width+i;
-//					if (p[ind]==127) {// Indeterminate
-//						//PApplet.println("len="+p.length+", j="+j+", ind="+ind);
-//						int sum=((i<mask[0].width-1)?p[ind+1]:127)+
-//								((i>0)?p[ind-1]:127)+
-//								((j<mask[0].height-1)?p[ind+mask[0].width]:127)+
-//								((j>0)?p[ind-mask[0].width]:127);
-//						if (sum>127*4) {
-//							p[ind]=255;
-//							n0+=1;
-//						} else if (sum<127*4) {
-//							p[ind]=0;
-//							n1+=1;
-//						}
-//					}
-//				}
-//			println("n="+n+": Dilated "+n0+","+n1+" pixels");
-//			// Keep going until there is no change for 6 cycles (repeat of offsets)
-//			if (n0+n1 == 0)
-//				zn+=1;
-//			else
-//				zn=0;
-//			if (zn==6)
-//				break;
-//		}
-		// Blur it
-		
-
-//		// Make mask[1] the inverse
-//		for (int i=0;i<p.length;i++)
-//			mask[1].pixels[i]=255-p[i];
+		int fullon=0xffffffff;
+		int fulloff=0xff000000;
+		for (int j=0;j<mask.length;j++) {
+			for (int i=0;i<pselect.length;i++)
+				mask[j].pixels[i]=(pselect[i]==j)?fullon:fulloff;
+		}
 		
 		for (int i=0;i<mask.length;i++) {
 			mask[i].updatePixels();
 			//mask[i].filter(DILATE);
 			//mask[i].filter(BLUR,0.05f);
 		}
-		
-//		mask[0].loadPixels();
-//		mask[1].loadPixels();
-//		for (int i=0;i<mask[0].width;i++)
-//			for (int j=0;j<mask[0].height;j++) {
-//				int alpha=Math.min(255,Math.max(0,((int)(255*((i*1.0/mask[0].width)-0.5)*3)+127)));
-//				mask[0].pixels[j*mask[0].width+i]=(alpha<<24)+(alpha<<16)+(alpha<<8)+alpha;
-//				alpha=255-alpha;
-//				mask[1].pixels[j*mask[1].width+i]=(alpha<<24)+(alpha<<16)+(alpha<<8)+alpha;
-////				if (j==100 && i==100)
-////					PApplet.println("alpha(100,100)="+PApplet.hex(alpha));
-//			}
-//		mask[0].updatePixels();
-//		mask[1].updatePixels();
-		//PApplet.println("m0="+PApplet.hex(mask[0].get(100, 100))+", m1="+PApplet.hex(mask[1].get(100, 100)));
 	}
 
 	
