@@ -2,6 +2,7 @@ import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PShape;
 import processing.core.PVector;
 
 public abstract class Visualizer {
@@ -11,20 +12,53 @@ public abstract class Visualizer {
 		name="??";
 	}
 
+	static public void drawText(PGraphics g, float height, String text, float x, float y) {
+		// Draw text
+		// Need to flip x-axis to get a reasonable size
+		// Also, fonts are built based on the size, interpreted as pixels
+		// So, setup so the textSizes are in cm rather than m (so a 10cm font will use a 10pt rendering)
+		g.pushMatrix();
+		g.translate(x, y);
+		g.scale(-0.01f,0.01f);
+		g.textSize(height*100);
+		g.text(text, 0, 0);
+		g.popMatrix();
+	}
+	
+	static public void drawText(PGraphics g, float height, String text, float x, float y, float x2, float y2) {
+		// Draw text
+		// Need to flip x-axis to get a reasonable size
+		// Also, fonts are built based on the size, interpreted as pixels
+		// So, setup so the textSizes are in cm rather than m (so a 10cm font will use a 10pt rendering)
+		g.pushMatrix();
+		g.translate(x, y);
+		float scale=100f;
+		g.scale(-1/scale,1/scale);
+		g.textSize(height*scale);
+		g.text(text, 0, 0,x2*scale,y2*scale);
+		g.popMatrix();
+	}
+	
+	public static void drawShape(PGraphics g, PShape shape, float x, float y, float width, float height) {
+		// TODO Auto-generated method stub
+		g.pushMatrix();
+		g.translate(x, y);
+		g.scale(-1,1);
+		g.shape(shape,0,0,width, height);
+		g.popMatrix();
+	}
+	
 	public void drawWelcome(Tracker t, PGraphics g) {
 		final PVector center=Tracker.getFloorCenter();
 		final float textHeight=0.2f;   // Height in meters
 		final float lineSize=textHeight*2;
 		g.fill(50, 255, 255);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
-		g.textSize(textHeight);
 		g.stroke(255);
-		g.text("Welcome to the", center.x,center.y-lineSize*2);
-		g.textSize(textHeight*1.33f);
-		g.text("PULSEFIELD", center.x, center.y-lineSize);
-		g.textSize(textHeight);
-		g.text(name, center.x,center.y+lineSize);
-		g.text("Please enter...", center.x,center.y+2.5f*lineSize);
+		drawText(g,textHeight,"Welcome to the", center.x,center.y-lineSize*2);
+		drawText(g,textHeight*1.33f,"PULSEFIELD", center.x, center.y-lineSize);
+		drawText(g,textHeight,name, center.x,center.y+lineSize);
+		drawText(g,textHeight,"Please enter...", center.x,center.y+2.5f*lineSize);
 	}
 	
 	// Clean up graphics context to "default" state
@@ -40,7 +74,7 @@ public abstract class Visualizer {
 		// So, if there is 10x scaling and you use textSize(1.0), the font will be generated a 1pixel size
 		// then scaled up.
 		// Hack this by using a font that is larger than needed, which then will get scaled down 
-		g.textFont(t.createFont("Arial",30f),30f);
+		g.textFont(t.createFont("Arial",50f));
 	}
 	
 	public void draw(Tracker t, PGraphics g, People p) {
@@ -123,4 +157,6 @@ public abstract class Visualizer {
 		}
 		return result;
 	}
+
+
 }

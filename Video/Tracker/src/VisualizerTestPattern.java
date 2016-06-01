@@ -29,7 +29,6 @@ public class VisualizerTestPattern extends VisualizerDot {
 	@Override
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g, p);
-
 		// Draw grid
 		float minxpos=(float) (Math.ceil(Tracker.rawminx*10)/10f);
 		float maxxpos=(float) (Math.floor(Tracker.rawmaxx*10)/10f);
@@ -71,10 +70,9 @@ public class VisualizerTestPattern extends VisualizerDot {
 		g.line(0,0, 0, 2);
 		
 		g.textAlign(PConstants.CENTER,PConstants.BASELINE);
-		g.textSize(0.2f);
 		g.stroke(255);
 		g.fill(0,0,255);
-		g.text("(2,3)", 2, 3);
+		drawText(g,0.2f,"(2,3)", 2, 3);
 		// Draw any alignment corners
 		g.stroke(255,0,255);
 		g.strokeWeight(0.03f);

@@ -170,9 +170,8 @@ class Generator extends Fiducial {
 		g.ellipseMode(PConstants.CENTER);
 		g.ellipse(x, y, sz, sz);
 		g.fill(255);
-		g.textSize(sz*.7f);
 		g.textAlign(PConstants.CENTER,PConstants.BOTTOM);
-		g.text(genType.name,x,y-sz/2);
+		Visualizer.drawText(g,sz*0.7f,genType.name,x,y-sz/2);
 	}
 }
 
@@ -235,15 +234,14 @@ class Controller extends Fiducial {
 			g.rect(x, y, sz, sz);
 		}
 		g.fill(255);
-		g.textSize(sz*.5f);
 		if (cc!=null) {
 			if (cc.cc1!=-1) {
 				g.textAlign(PConstants.CENTER,PConstants.BASELINE);
-				g.text(String.format("%s=%d",cc.nm1,(int)cc1val),x,y-sz*0.7f);
+				Visualizer.drawText(g,sz*0.5f,String.format("%s=%d",cc.nm1,(int)cc1val),x,y-sz*0.7f);
 			}
 			if (cc.cc2!=-1) {
 				g.textAlign(PConstants.CENTER,PConstants.BASELINE);
-				g.text(String.format("%s=%d",cc.nm2,(int)cc2val),x,y+sz*1.1f);
+				Visualizer.drawText(g,sz*0.5f,String.format("%s=%d",cc.nm2,(int)cc2val),x,y+sz*1.1f);
 			}
 		}
 	}

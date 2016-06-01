@@ -50,7 +50,7 @@ public class VisualizerIcon extends Visualizer {
 			//icon.translate(-icon.width/2, -icon.height/2);
 //			PApplet.println("Display shape "+icon+" with native size "+icon.width+","+icon.height);
 			float scale=Math.min(sz/icon.width,sz/icon.height);
-			g.shape(icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y,icon.width*scale,icon.height*scale);
+			Visualizer.drawShape(g, icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y,icon.width*scale,icon.height*scale);
 			//icon.resetMatrix();
 		}
 	}

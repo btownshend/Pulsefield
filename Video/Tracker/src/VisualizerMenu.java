@@ -167,12 +167,11 @@ public class VisualizerMenu extends Visualizer {
 
 		g.stroke(0xffffffff);
 		g.textAlign(PConstants.CENTER, PConstants.CENTER);
-		g.textSize(TEXT_HEIGHT);
 		for(MenuItem item : menuItems) {
 			g.fill(0xff000000);
 			g.ellipse(item.position.x, item.position.y, 2*SELECTION_DISTANCE,2*SELECTION_DISTANCE );
 			g.fill(0xffffffff);
-			g.text(item.name, item.position.x, item.position.y);
+			drawText(g,TEXT_HEIGHT,item.name, item.position.x, item.position.y);
 		}
 		// Draw cursor for selecting person
 		Person ps=p.get(selectingPerson);
@@ -183,7 +182,7 @@ public class VisualizerMenu extends Visualizer {
 //		PApplet.println("Drawing cursor with scaling="+scale);
 		// cursor seems shifted
 		g.shapeMode(PConstants.CENTER);
-		g.shape(cursor,ps.getOriginInMeters().x, ps.getOriginInMeters().y,cursor.width*scale,cursor.height*scale);
+		Visualizer.drawShape(g, cursor,ps.getOriginInMeters().x, ps.getOriginInMeters().y,cursor.width*scale,cursor.height*scale);
 	}
 	
 	@Override

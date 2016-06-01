@@ -118,7 +118,6 @@ public class VisualizerGrid extends VisualizerPS {
 		super.draw(t, g, p);
 		if (p.pmap.isEmpty())
 			return;
-		g.textSize(0.16f);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		PVector gridOffset=new PVector(gridwidth/2, gridheight/2);
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
@@ -137,13 +136,12 @@ public class VisualizerGrid extends VisualizerPS {
 			Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
 			if (track.numClips()!=-1) {
 				Clip clip=track.getClip(cell%track.numClips());
-				g.text(track.getName()+"-"+clip.getName()+" P"+id,gcenter.x,gcenter.y,gridOffset.x,gridOffset.y);
+				drawText(g,0.16f,track.getName()+"-"+clip.getName()+" P"+id,gcenter.x,gcenter.y,gridOffset.x,gridOffset.y);
 			}
 		}
 		g.fill(127);
 		g.textAlign(PConstants.LEFT, PConstants.BASELINE);
-		g.textSize(0.24f);
-		g.text(Ableton.getInstance().trackSet.name,Tracker.rawminx+0.1f,Tracker.rawminy+0.24f+0.1f);
+		drawText(g,0.24f,Ableton.getInstance().trackSet.name,Tracker.rawminx+0.1f,Tracker.rawminy+0.24f+0.1f);
 	}
 
 	public void drawLaser(PApplet parent, People p) {

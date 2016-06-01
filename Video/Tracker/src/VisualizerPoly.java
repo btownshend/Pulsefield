@@ -104,11 +104,10 @@ class PolyState {
 			g.ellipse(Tracker.rawminx+dotsize,rowpos, dotsize, dotsize);
 			g.fill(255);
 			g.textAlign(PConstants.LEFT,PConstants.BASELINE);
-			g.textSize(0.8f*rowheight);
 			if (true) {
 				MidiProgram mp=synth.getMidiProgam(pos.channel);
 				if (mp!=null)
-					g.text(mp.name,Tracker.rawminx+3+dotsize,rowpos);
+					Visualizer.drawText(g,0.8f*rowheight,mp.name,Tracker.rawminx+3+dotsize,rowpos);
 			}
 		}
 	}

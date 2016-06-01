@@ -97,8 +97,6 @@ public class VisualizerProximity extends VisualizerPS {
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g, p);
 
-		g.textSize(0.16f);
-		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
 			int id1=entry.getKey();
 			int id2=entry.getValue();
@@ -112,8 +110,7 @@ public class VisualizerProximity extends VisualizerPS {
 		}
 		g.fill(127);
 		g.textAlign(PConstants.LEFT, PConstants.TOP);
-		g.textSize(0.24f);
-		g.text(ts.name,5,5);
+		drawText(g,0.24f,ts.name,5,5);
 	}
 
 	public void drawLaser(PApplet parent, People p) {

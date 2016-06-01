@@ -24,7 +24,7 @@ class Apple {
 			appleShape=g.loadShape(Tracker.SVGDIRECTORY+"apple.svg");
 //		PApplet.println("Drawing apple shape at "+p);
 		g.shapeMode(PConstants.CENTER);
-		g.shape(appleShape,position.x, position.y,appleRadius*2, appleRadius*2);
+		Visualizer.drawShape(g, appleShape,position.x, position.y,appleRadius*2, appleRadius*2);
 	}
 	
 	void update(People p) {
@@ -107,7 +107,7 @@ public class VisualizerCows extends VisualizerIcon {
 			final float sz=0.30f+0.60f*2*ps.userData;  // Size to make the icon's largest dimension, in pixels
 			
 			float scale=Math.min(sz/icon.width,sz/icon.height);
-			g.shape(icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y,icon.width*scale,icon.height*scale);
+			Visualizer.drawShape(g, icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y,icon.width*scale,icon.height*scale);
 			//icon.resetMatrix();
 		}	
 	}

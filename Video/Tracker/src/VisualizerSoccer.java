@@ -26,7 +26,7 @@ class Ball {
 
 		//PApplet.println("Ball at "+position.x+","+position.y);
 		g.shapeMode(PConstants.CENTER);
-		g.shape(ballShape,position.x, position.y,radius*2,radius*2);
+		Visualizer.drawShape(g, ballShape,position.x, position.y,radius*2,radius*2);
 	}
 	
 	public void drawLaser(Laser laser,PApplet parent) {
