@@ -98,6 +98,7 @@ public class Projector {
 		pcanvas.blendMode(PConstants.ADD);
 		pcanvas.image(canvas,center.x,center.y,canvas.width/Tracker.getPixelsPerMeter(),canvas.height/Tracker.getPixelsPerMeter());
 		pcanvas.blendMode(PConstants.MULTIPLY);
+		pcanvas.smooth();
 		pcanvas.image(mask,center.x,center.y,canvas.width/Tracker.getPixelsPerMeter(),canvas.height/Tracker.getPixelsPerMeter());
 		pcanvas.blendMode(PConstants.ADD);
 		pcanvas.pushMatrix();

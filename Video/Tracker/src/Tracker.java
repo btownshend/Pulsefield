@@ -190,15 +190,12 @@ public class Tracker extends PApplet {
 		projectors=new Projector[2];
 		projectors[0] = new Projector(this,1,1920,1080);
 		projectors[1] = new Projector(this,2,1920,1080);
-		float mscale=1;	// How much smaller to make the masks
+		float mscale=8;	// How much smaller to make the masks
 		mask=new PGraphicsOpenGL[projectors.length];
 		for (int i=0;i<mask.length;i++) {
 			mask[i]=(PGraphicsOpenGL) createGraphics((int)(CANVASWIDTH/mscale+0.5), (int)(CANVASHEIGHT/mscale+0.5),renderer);
 			// Set for unmasked in case it is not used
-			mask[i].noSmooth();
-			mask[i].beginDraw();
-			mask[i].background(255);
-			mask[i].endDraw();
+//			mask[i].noSmooth();
 		}
 		pselect=new int[mask[0].width*mask[0].height];
 		for (int i=0;i<pselect.length;i++)
@@ -455,7 +452,8 @@ public class Tracker extends PApplet {
 		boolean drawMasks = true;
 		if (drawMasks) {
 			// Draw masks on screen
-			float maskScale=4f;
+			float maskScale=mask[0].width/(width/4f);
+//			PApplet.println("maskscale="+maskScale);
 			float h=mask[0].height/maskScale;
 			float w=mask[0].width/maskScale;
 			imageMode(CORNER);
@@ -492,7 +490,7 @@ public class Tracker extends PApplet {
 			// Transform so that coords for drawing are in meters
 			mask[i].resetMatrix();
 			mask[i].translate(mask[i].width/2, mask[i].height/2);   // center coordinate system to middle of canvas
-			mask[i].scale(getPixelsPerMeter()*mask[i].width/canvas.width, -getPixelsPerMeter()*mask[i].height/canvas.height); // FIXME: Unclear why, but need to flip y here
+			mask[i].scale(getPixelsPerMeter()*mask[i].width/canvas.width, getPixelsPerMeter()*mask[i].height/canvas.height);
 			mask[i].translate(-getFloorCenter().x, -getFloorCenter().y);  // translate to center of new space
 
 			mask[i].blendMode(PConstants.REPLACE);
@@ -501,8 +499,9 @@ public class Tracker extends PApplet {
 			mask[i].background(0);  // default, nothing drawn
 			mask[i].fill(255);      // Can draw anywhere within bounds
 			// use a stroke to create an inset to prefer the other projector near the edges
-			mask[i].stroke(200);
-			mask[i].strokeWeight(0.2f);
+			//mask[i].stroke(200);
+			//mask[i].strokeWeight(0.2f);
+			mask[i].noStroke();
 			mask[i].beginShape();
 			for (int j=0;j<projectors[i].bounds.length;j++) {
 				PVector p=projectors[i].bounds[j];
@@ -515,27 +514,34 @@ public class Tracker extends PApplet {
 			mask[i].blendMode(PConstants.MULTIPLY);  // Only affect the non-zero pixels
 			mask[i].fill(127);  // Don't draw here, but not as insistent as being out of bounds
 			float fardist=10f;  // Far distance of shadow
-			for (Person ps: people.pmap.values()) {  			
+			float shadowOffset=0.1f;  // Distance beyond leg centers to begin shadow
+			for (Person ps: people.pmap.values()) {  
 				PVector l1=ps.legs[0].getOriginInMeters();
 				PVector l2=ps.legs[1].getOriginInMeters();
-				PVector legdir=PVector.sub(l2, l1); legdir.normalize();
-				l1=PVector.add(l1, PVector.mult(legdir, -ps.legs[0].getDiameterInMeters()/2));
-				l2=PVector.add(l2, PVector.mult(legdir, +ps.legs[1].getDiameterInMeters()/2));
-				PVector s1dir=PVector.sub(l1, projPos); s1dir.normalize();
-				PVector far1=PVector.add(l1, PVector.mult(s1dir, fardist) );
-				PVector s2dir=PVector.sub(l2, projPos); s2dir.normalize();
-				PVector far2=PVector.add(l2, PVector.mult(s2dir, fardist) );
+				PVector pos=PVector.mult(PVector.add(l1, l2), 0.5f);
+				PVector toPos=PVector.sub(pos, projPos); toPos.normalize();
+				PVector ra=toPos.cross(new PVector(0,0,1)); ra.normalize();
+				PVector l1tol2=PVector.sub(l2, l1);
+				float nearwidth=l1tol2.mag()+(ps.legs[0].getDiameterInMeters()+ps.legs[1].getDiameterInMeters())/2;
+				PVector near1=PVector.add(pos, PVector.mult(ra, nearwidth/2));
+				PVector near2=PVector.add(pos, PVector.mult(ra, -nearwidth/2));
+				PVector s1dir=PVector.sub(near1, projPos); s1dir.normalize();
+				near1=PVector.add(near1, PVector.mult(s1dir, shadowOffset));
+				PVector far1=PVector.add(near1, PVector.mult(s1dir, fardist) );
+				PVector s2dir=PVector.sub(near2, projPos); s2dir.normalize();
+				near2=PVector.add(near2, PVector.mult(s2dir, shadowOffset));
+				PVector far2=PVector.add(near2, PVector.mult(s2dir, fardist) );
 				mask[i].beginShape();
-				mask[i].vertex(l1.x,l1.y);
-				mask[i].vertex(l2.x,l2.y);
+				mask[i].vertex(near1.x,near1.y);
+				mask[i].vertex(near2.x,near2.y);
 				mask[i].vertex(far2.x,far2.y);
 				mask[i].vertex(far1.x,far1.y);
 				mask[i].endShape(CLOSE);
 				//println("shadow of "+l1+","+l2+" from proj@ "+projPos+": "+far1+", "+far2);
 			}
-			mask[i].endDraw();
 			mask[i].loadPixels();
 		}
+		
 		
 		int maskcnt[]=new int[pselect.length];
 		// pselect is a persistent map of which projector gets which pixel
@@ -561,17 +567,31 @@ public class Tracker extends PApplet {
 		int fullon=0xffffffff;
 		int fulloff=0xff000000;
 		for (int j=0;j<mask.length;j++) {
-			for (int i=0;i<pselect.length;i++)
+			mask[j].blendMode(ADD);
+			for (int i=0;i<pselect.length;i++) {
 				mask[j].pixels[i]=(pselect[i]==j)?fullon:fulloff;
-		}
-		
-		for (int i=0;i<mask.length;i++) {
-			mask[i].updatePixels();
-			//mask[i].filter(DILATE);
-			//mask[i].filter(BLUR,0.05f);
+			}
+			mask[j].pixels[10]=47;
+			mask[j].updatePixels();
+			mask[j].filter(BLUR,2f);
+//			mask[j].filter(ERODE);
+//			mask[j].filter(DILATE);
+
+//			mask[j].loadPixels();
+//			int pcnt[]=new int[256];
+//			for (int i=0;i<pselect.length;i++) {
+//				pcnt[mask[j].pixels[i]&0xff]+=1;
+//			}
+//			PApplet.print("mask "+j+": ");
+//			for (int i=0;i<pcnt.length;i++)
+//				if (pcnt[i]>0)
+//					PApplet.print(i+": "+pcnt[i]+", ");
+//			PApplet.println("");
+
+
+			mask[j].endDraw();
 		}
 	}
-
 	
 	public void mouseReleased() {
 		//pfexit(0, 0, 98);
