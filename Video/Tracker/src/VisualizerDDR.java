@@ -340,22 +340,21 @@ public class VisualizerDDR extends Visualizer {
 		}
 	}
 
-	public void drawScores(PGraphics parent, People allpos, PVector wsize) {
+	public void drawScores(PGraphics g, People allpos, PVector wsize) {
 		final float DOTSIZE=50f/Tracker.getPixelsPerMeter();
 		float lineHeight=wsize.y/12;
 
-		parent.stroke(255);
-		parent.fill(255);
-		parent.tint(255);
-		parent.pushMatrix();
+		g.stroke(255);
+		g.fill(255);
+		g.tint(255);
+		g.pushMatrix();
 		
 		
-		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
-		parent.translate(0,lineHeight/2);
-		parent.translate(0,lineHeight);
-		parent.textAlign(PConstants.LEFT,PConstants.CENTER);
-		parent.textSize(0.16f);
+		g.textAlign(PConstants.CENTER,PConstants.CENTER);
+		g.translate(0,lineHeight/2);
 		drawText(g,0.24f,"SCORES",wsize.x/2,0);
+		g.translate(0,lineHeight);
+		g.textAlign(PConstants.LEFT,PConstants.CENTER);
 
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
@@ -363,17 +362,17 @@ public class VisualizerDDR extends Visualizer {
 			if (p==null)
 				continue;
 			
-			parent.fill(p.getcolor());
-			parent.ellipse(DOTSIZE/2,0,DOTSIZE/2, DOTSIZE/2);
-			parent.fill(255);
-			parent.translate(0, lineHeight);
+			g.fill(p.getcolor());
+			g.ellipse(DOTSIZE/2,0,DOTSIZE/2, DOTSIZE/2);
+			g.fill(255);
 			drawText(g,0.16f,""+d.score,DOTSIZE*1.5f,0);
+			g.translate(0, lineHeight);
 		}
-		parent.popMatrix();
+		g.popMatrix();
 
 	}
 
-	public void drawTicker(PGraphics parent, PVector wsize, float now) {
+	public void drawTicker(PGraphics g, PVector wsize, float now) {
 		final float DURATION=12.0f;  // Duration of display top to bottom
 		final float HISTORY=3.0f;    // Amount of past showing
 		if (cursong==null) {
@@ -390,12 +389,12 @@ public class VisualizerDDR extends Visualizer {
 		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, now-HISTORY, now-HISTORY+DURATION);
 //		PApplet.println("Have "+notes.size()+" notes.");
 		//parent.ellipse(wsize.x/2,wsize.y/2,100,100);
-		parent.textAlign(PConstants.CENTER,PConstants.CENTER);
-		parent.tint(255);
-		parent.stroke(255);
-		parent.fill(255);
+		g.textAlign(PConstants.CENTER,PConstants.CENTER);
+		g.tint(255);
+		g.stroke(255);
+		g.fill(255);
 
-		float arrowsize=parent.width/4f/1.2f/Tracker.getPixelsPerMeter();
+		float arrowsize=g.width/4f/1.2f/Tracker.getPixelsPerMeter();
 		for (NoteData n: notes) {
 			final float angles[]={0f,-(float)(Math.PI/2),-(float)(3*Math.PI/2),-(float)Math.PI};
 			float ypos=(n.timestamp-(now-HISTORY))/DURATION*wsize.y;
@@ -405,16 +404,16 @@ public class VisualizerDDR extends Visualizer {
 					float xpos=(i+0.5f)*wsize.x/n.notes.length();
 					//PApplet.println("x="+xpos+", text="+n.notes.substring(i,i+1));
 					//parent.text(n.notes.substring(i,i+1),xpos,ypos);
-					parent.pushMatrix();
-					parent.translate(xpos,ypos);
-					parent.rotate(angles[i]);
-					parent.image(arrow, 0, 0, arrowsize, arrowsize);
-					parent.popMatrix();
+					g.pushMatrix();
+					g.translate(xpos,ypos);
+					g.rotate(angles[i]);
+					g.image(arrow, 0, 0, arrowsize, arrowsize);
+					g.popMatrix();
 				}
 			}
 		}
-		parent.strokeWeight(0.05f);
-		parent.line(0,HISTORY*wsize.y/DURATION,0,wsize.x,HISTORY*wsize.y/DURATION,0);
+		g.strokeWeight(0.05f);
+		g.line(0,HISTORY*wsize.y/DURATION,0,wsize.x,HISTORY*wsize.y/DURATION,0);
 		drawText(g,0.16f,String.format("%.2f", now), 5, wsize.y-10);
 	}
 	
