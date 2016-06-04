@@ -77,6 +77,8 @@ public class Tracker extends PApplet {
 	PVector[] lidar = new PVector[381];
 	PGraphicsOpenGL mask[];
 	int pselect[];
+	boolean drawBounds=false;   // True to overlay projector bounds
+	boolean drawMasks = true;
 	static Tracker theTracker;
 	
 	public void settings() {
@@ -414,7 +416,7 @@ public class Tracker extends PApplet {
 
 		vis[currentvis].drawLaser(this,people);
 
-		boolean drawBounds=true;   // True to overlay projector bounds
+
 		if (drawBounds) {
 			canvas.strokeWeight(0.025f);
 			canvas.noFill();
@@ -451,7 +453,7 @@ public class Tracker extends PApplet {
 		translate(-width/2,-height/2);
 		image(canvas, width/2, height/2, canvas.width*cscale, canvas.height*cscale);
 		
-		boolean drawMasks = true;
+
 		if (drawMasks) {
 			// Draw masks on screen
 			float maskScale=mask[0].width/(width/4f);
