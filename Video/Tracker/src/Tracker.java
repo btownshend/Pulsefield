@@ -77,6 +77,7 @@ public class Tracker extends PApplet {
 	PVector[] lidar = new PVector[381];
 	PGraphicsOpenGL mask[];
 	int pselect[];
+	static Tracker theTracker;
 	
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -201,6 +202,7 @@ public class Tracker extends PApplet {
 		for (int i=0;i<pselect.length;i++)
 			pselect[0]=0;  // Default to projector 0
 		PApplet.println("Setup complete");
+		theTracker = this;   // Keep a static copy of the (sole) tracker instance
 		starting = false;
 	}
 
