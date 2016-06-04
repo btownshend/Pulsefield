@@ -82,7 +82,8 @@ public abstract class Visualizer {
 		g.background(0, 0, 0); 
 		if (p.pmap.isEmpty())
 			drawWelcome(t, g);
-		drawBorders(g);
+		if (t.drawBounds)
+			drawBorders(g);
 	}
 
 	// Draw to laser
