@@ -79,6 +79,7 @@ public class Tracker extends PApplet {
 	int pselect[];
 	boolean drawBounds=false;   // True to overlay projector bounds
 	boolean drawMasks = true;
+	boolean useMasks = true;
 	static Tracker theTracker;
 	
 	public void settings() {
@@ -446,9 +447,9 @@ public class Tracker extends PApplet {
 			server.sendImage(canvas);
 		}
 		buildMasks(canvas);
-		projectors[0].render(canvas,mask[0]);
-		projectors[1].render(canvas,mask[1]);
-	
+		projectors[0].render(canvas,useMasks?mask[0]:null);
+		projectors[1].render(canvas,useMasks?mask[1]:null);
+
 
 		imageMode(CENTER);
 		// Canvas is RH, so need to flip it back to draw on main window (which is LH)

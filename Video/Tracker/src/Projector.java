@@ -97,10 +97,12 @@ public class Projector {
 		PVector center=Tracker.getFloorCenter();
 		pcanvas.blendMode(PConstants.ADD);
 		pcanvas.image(canvas,center.x,center.y,canvas.width/Tracker.getPixelsPerMeter(),canvas.height/Tracker.getPixelsPerMeter());
-		pcanvas.blendMode(PConstants.MULTIPLY);
-		pcanvas.smooth();
-		pcanvas.image(mask,center.x,center.y,canvas.width/Tracker.getPixelsPerMeter(),canvas.height/Tracker.getPixelsPerMeter());
-		pcanvas.blendMode(PConstants.ADD);
+		if (mask!=null) {
+			pcanvas.blendMode(PConstants.MULTIPLY);
+			pcanvas.smooth();
+			pcanvas.image(mask,center.x,center.y,canvas.width/Tracker.getPixelsPerMeter(),canvas.height/Tracker.getPixelsPerMeter());
+			pcanvas.blendMode(PConstants.ADD);
+		}
 		pcanvas.pushMatrix();
 		pcanvas.pushProjection();
 		pcanvas.resetMatrix();  // Set camera, modelview to identity

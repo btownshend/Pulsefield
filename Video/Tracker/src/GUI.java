@@ -29,10 +29,11 @@ import javax.swing.event.ChangeEvent;
 public class GUI extends JFrame {
 	public static GUI theGUI;
 	private JPanel contentPane;
-	private JCheckBox drawMask, drawBounds;
+	private JCheckBox drawMasks, drawBounds;
 	@SuppressWarnings("rawtypes")
 	private JComboBox appSelect;
 	private boolean initialized=false;
+	private JCheckBox useMasks;
 	
 	public static void start() {
 		EventQueue.invokeLater(new Runnable() {
@@ -64,11 +65,11 @@ public class GUI extends JFrame {
 		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 		contentPane.setLayout(gbl_contentPane);
 		
-		drawMask = new JCheckBox("Draw Mask");
+		drawMasks = new JCheckBox("Draw Mask");
 
-		drawMask.addActionListener(new ActionListener() {
+		drawMasks.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Tracker.theTracker.drawMasks=drawMask.isSelected();
+				Tracker.theTracker.drawMasks=drawMasks.isSelected();
 			}
 		});
 		
@@ -102,6 +103,14 @@ public class GUI extends JFrame {
 				Tracker.theTracker.setapp(appSelect.getSelectedIndex());
 			}
 		});
+		
+		useMasks = new JCheckBox("Use Mask");
+		useMasks.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Tracker.theTracker.useMasks=useMasks.isSelected();
+			}
+		});
+		contentPane.add(useMasks);
 		appSelect.setModel(new DefaultComboBoxModel(Tracker.visnames));
 		GridBagConstraints gbc_comboBox = new GridBagConstraints();
 		gbc_comboBox.insets = new Insets(0, 0, 0, 5);
@@ -123,8 +132,9 @@ public class GUI extends JFrame {
 			public void run() {
 				try {
 					PApplet.println("update run");
-					drawMask.setSelected(Tracker.theTracker.drawMasks);
+					drawMasks.setSelected(Tracker.theTracker.drawMasks);
 					drawBounds.setSelected(Tracker.theTracker.drawBounds);
+					useMasks.setSelected(Tracker.theTracker.useMasks);
 					appSelect.setSelectedIndex(Tracker.theTracker.currentvis);
 				} catch (Exception e) {
 					e.printStackTrace();
