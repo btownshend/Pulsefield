@@ -332,6 +332,8 @@ public class Tracker extends PApplet {
 			println("Bad video app number: "+appNum);
 			return;
 		}
+		if (appNum==currentvis)
+			return;
 		// Turn off old block
 		for (int k=0; k<vispos.length;k++)
 			if (k!=appNum) {
