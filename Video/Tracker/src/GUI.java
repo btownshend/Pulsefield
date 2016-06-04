@@ -58,12 +58,6 @@ public class GUI extends JFrame {
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[]{128, 0, 0};
-		gbl_contentPane.rowHeights = new int[]{48, 23, 23, 0};
-		gbl_contentPane.columnWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
-		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
-		contentPane.setLayout(gbl_contentPane);
 		
 		drawMasks = new JCheckBox("Draw Mask");
 
@@ -80,22 +74,9 @@ public class GUI extends JFrame {
 				PApplet.println("drawBounds="+drawBounds.toString());
 			}
 		});
-		GridBagConstraints gbc_drawBounds = new GridBagConstraints();
-		gbc_drawBounds.anchor = GridBagConstraints.NORTH;
-		gbc_drawBounds.fill = GridBagConstraints.HORIZONTAL;
-		gbc_drawBounds.insets = new Insets(0, 0, 5, 5);
-		gbc_drawBounds.gridx = 0;
-		gbc_drawBounds.gridy = 0;
-		contentPane.add(drawBounds, gbc_drawBounds);
-
-
-		GridBagConstraints gbc_drawMask = new GridBagConstraints();
-		gbc_drawMask.insets = new Insets(0, 0, 5, 5);
-		gbc_drawMask.anchor = GridBagConstraints.NORTH;
-		gbc_drawMask.fill = GridBagConstraints.HORIZONTAL;
-		gbc_drawMask.gridx = 0;
-		gbc_drawMask.gridy = 1;
-		contentPane.add(drawMask, gbc_drawMask);
+		contentPane.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		contentPane.add(drawBounds);
+		contentPane.add(drawMasks);
 		
 		appSelect = new JComboBox();
 		appSelect.addActionListener(new ActionListener() {
@@ -112,12 +93,7 @@ public class GUI extends JFrame {
 		});
 		contentPane.add(useMasks);
 		appSelect.setModel(new DefaultComboBoxModel(Tracker.visnames));
-		GridBagConstraints gbc_comboBox = new GridBagConstraints();
-		gbc_comboBox.insets = new Insets(0, 0, 0, 5);
-		gbc_comboBox.fill = GridBagConstraints.HORIZONTAL;
-		gbc_comboBox.gridx = 0;
-		gbc_comboBox.gridy = 2;
-		contentPane.add(appSelect, gbc_comboBox);
+		contentPane.add(appSelect);
 		initialized=true;
 		update();
 	}
