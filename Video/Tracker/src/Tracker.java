@@ -205,6 +205,7 @@ public class Tracker extends PApplet {
 			pselect[0]=0;  // Default to projector 0
 		PApplet.println("Setup complete");
 		theTracker = this;   // Keep a static copy of the (sole) tracker instance
+		GUI.start();
 		starting = false;
 	}
 
@@ -357,6 +358,8 @@ public class Tracker extends PApplet {
 		msg.add(visnames[currentvis]);
 		sendOSC("TO",msg);
 		vis[currentvis].start();
+		if (GUI.theGUI != null)
+			GUI.theGUI.update();
 	}
 
 	synchronized public void draw() {
