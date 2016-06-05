@@ -1,5 +1,6 @@
 import processing.core.PApplet;
 import processing.core.PGraphics;
+import processing.core.PImage;
 import processing.core.PShape;
 
 // Visualizer that just displays a dot for each person
@@ -7,6 +8,8 @@ import processing.core.PShape;
 public class VisualizerIcon extends Visualizer {
 	String icons[];
 	PShape iconShapes[];
+	PImage images[]=new PImage[0];
+	boolean useImages=true;
 	
 	VisualizerIcon(PApplet parent) {
 		super();
@@ -21,6 +24,15 @@ public class VisualizerIcon extends Visualizer {
 			PApplet.println("Loaded "+icons[i]+" with "+iconShapes[i].getChildCount()+" children, size "+iconShapes[i].width+"x"+iconShapes[i].height);
 		}
 	}
+	public void setImages(PApplet parent, String filenames[]) {
+		images=new PImage[filenames.length];
+		for (int i=0;i<filenames.length;i++) {
+			images[i]=parent.loadImage(filenames[i]);
+			assert(images[i]!=null);
+			PApplet.println("Loaded "+filenames[i]+": size "+images[i].width+"x"+images[i].height);
+		}
+	}
+	
 	public void start() {
 		super.start();
 		Laser.getInstance().setFlag("body",0.0f);
@@ -41,17 +53,25 @@ public class VisualizerIcon extends Visualizer {
 			return;
 		g.background(127);
 		g.shapeMode(PApplet.CENTER);
-		final float sz=60;  // Size to make the icon's largest dimension, in pixels
+		g.imageMode(PApplet.CENTER);
+		final float sz=0.5f;  // Size to make the image's largest dimension, in meters
+
 		for (Person ps: p.pmap.values()) {  
 			int c=ps.getcolor();
 			g.fill(c,255);
 			g.stroke(c,255);
-			PShape icon=iconShapes[ps.id%iconShapes.length];
-			//icon.translate(-icon.width/2, -icon.height/2);
-//			PApplet.println("Display shape "+icon+" with native size "+icon.width+","+icon.height);
-			float scale=Math.min(sz/icon.width,sz/icon.height);
-			Visualizer.drawShape(g, icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y,icon.width*scale,icon.height*scale);
-			//icon.resetMatrix();
+			if (useImages) {
+				PImage img=images[ps.id%images.length];
+				float scale=Math.min(sz/img.width,sz/img.height);
+				g.image(img,ps.getOriginInMeters().x, ps.getOriginInMeters().y,img.width*scale,img.height*scale);
+			} else {
+				PShape icon=iconShapes[ps.id%iconShapes.length];
+				//icon.translate(-icon.width/2, -icon.height/2);
+				//			PApplet.println("Display shape "+icon+" with native size "+icon.width+","+icon.height);
+				float scale=Math.min(sz/icon.width,sz/icon.height);
+				Visualizer.drawShape(g, icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y,icon.width*scale,icon.height*scale);
+				//icon.resetMatrix();
+			}
 		}
 	}
 	

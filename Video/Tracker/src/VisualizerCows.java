@@ -1,12 +1,14 @@
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PImage;
 import processing.core.PShape;
 import processing.core.PVector;
 
 class Apple {
 	PVector position;
 	PShape appleShape;
+	PImage appleImage;
 	int nextClip=0;
 	
 	static final float speed=0.04f;  // Meters/frame
@@ -20,11 +22,15 @@ class Apple {
 		laser.svgfile("apple.svg",position.x,position.y,0.5f,0f);
 	}
 	void draw(PGraphics g) {
-		if (appleShape==null)
-			appleShape=g.loadShape(Tracker.SVGDIRECTORY+"apple.svg");
+//		if (appleShape==null)
+//			appleShape=g.loadShape(Tracker.SVGDIRECTORY+"apple.svg");
+		if (appleImage==null)
+			appleImage=Tracker.theTracker.loadImage("49728.gif");
 //		PApplet.println("Drawing apple shape at "+p);
-		g.shapeMode(PConstants.CENTER);
-		Visualizer.drawShape(g, appleShape,position.x, position.y,appleRadius*2, appleRadius*2);
+//		g.shapeMode(PConstants.CENTER);
+//		Visualizer.drawShape(g, appleShape,position.x, position.y,appleRadius*2, appleRadius*2);
+		g.imageMode(PConstants.CENTER);
+		g.image(appleImage,position.x, position.y,appleRadius*2, appleRadius*2);
 	}
 	
 	void update(People p) {
@@ -68,9 +74,11 @@ public class VisualizerCows extends VisualizerIcon {
 	Apple apple;
 	
 	final String cowIcons[]={"cow1.svg","cow2.svg","cow3.svg","ToastingCow002.svg"};
+	final String cowImages[]={"cow_PNG2125.png","cow_PNG2127.png","cow_PNG2130.png","cow_PNG2138.png","cow_PNG2140.png","cow_PNG2141.png"};
 	VisualizerCows(PApplet parent) {
 		super(parent);
 		setIcons(parent,cowIcons);
+		setImages(parent,cowImages);
 		apple=new Apple(new PVector(0f,0f));
 	}
 	
@@ -93,23 +101,30 @@ public class VisualizerCows extends VisualizerIcon {
 			return;
 		}
 
-		g.background(127);
+		g.background(0);
 		g.shapeMode(PApplet.CENTER);
 		apple.draw(g);
-
+		
 		for (Person ps: p.pmap.values()) {  
+			final float sz=0.30f+0.60f*2*ps.userData;  // Size to make the icon's largest dimension, in meters
+
 			int c=ps.getcolor();
 			g.fill(c,255);
 			g.stroke(c,255);
-			PShape icon=iconShapes[ps.id%iconShapes.length];
-			//icon.translate(-icon.width/2, -icon.height/2);
-//			PApplet.println("Display shape "+icon+" with native size "+icon.width+","+icon.height);
-			final float sz=0.30f+0.60f*2*ps.userData;  // Size to make the icon's largest dimension, in pixels
-			
-			float scale=Math.min(sz/icon.width,sz/icon.height);
-			Visualizer.drawShape(g, icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y,icon.width*scale,icon.height*scale);
-			//icon.resetMatrix();
-		}	
+			if (useImages) {
+				assert(images.length>0);
+				PImage img=images[ps.id%images.length];
+				float scale=Math.min(sz/img.width,sz/img.height);
+				g.image(img,ps.getOriginInMeters().x, ps.getOriginInMeters().y,img.width*scale,img.height*scale);
+			} else {
+				PShape icon=iconShapes[ps.id%iconShapes.length];
+				//icon.translate(-icon.width/2, -icon.height/2);
+				//			PApplet.println("Display shape "+icon+" with native size "+icon.width+","+icon.height);
+				float scale=Math.min(sz/icon.width,sz/icon.height);
+				Visualizer.drawShape(g, icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y,icon.width*scale,icon.height*scale);
+				//icon.resetMatrix();
+			}
+		}
 	}
 	
 	@Override
