@@ -126,7 +126,12 @@ public class VisualizerCows extends VisualizerIcon {
 				assert(images.length>0);
 				PImage img=images[ps.id%images.length];
 				float scale=Math.min(sz/img.width,sz/img.height);
-				g.image(img,ps.getOriginInMeters().x, ps.getOriginInMeters().y,img.width*scale,img.height*scale);
+				g.pushMatrix();
+				g.translate(ps.getOriginInMeters().x, ps.getOriginInMeters().y);
+				if (ps.getVelocityInMeters().x >0.1)
+					g.scale(-1,1);
+				g.image(img,0,0,img.width*scale,img.height*scale);
+				g.popMatrix();
 			} else {
 				PShape icon=iconShapes[ps.id%iconShapes.length];
 				//icon.translate(-icon.width/2, -icon.height/2);
