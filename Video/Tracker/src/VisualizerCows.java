@@ -34,11 +34,20 @@ class Apple {
 	}
 	
 	void update(People p) {
+		final float minsize=0.1f;
+		final float maxsize=2.0f;
 		position.y=position.y+speed;
 		boolean hit=false;
 		if (position.y>Tracker.rawmaxy) {
 			// Hit bottom
 			hit=true;
+		}
+		int numhits=0;
+		for (Person ps: p.pmap.values()) {
+			float d=PVector.dist(position, ps.getOriginInMeters());
+			if (d<maxHitDist) {
+				numhits+=1;
+			}
 		}
 		for (Person ps: p.pmap.values()) {
 			if (ps.userData==0)
@@ -47,7 +56,7 @@ class Apple {
 			float d=PVector.dist(position, ps.getOriginInMeters());
 			if (d<maxHitDist) {
 				hit=true;
-				ps.userData+=0.1f;
+				ps.userData=(ps.userData+maxsize)/2;
 				PApplet.println("Person "+ps.id+" has size "+ps.userData);
 				TrackSet ts=Ableton.getInstance().trackSet;
 				int track=ps.id%(ts.numTracks)+ts.firstTrack;
@@ -57,8 +66,10 @@ class Apple {
 					Ableton.getInstance().playClip(track,nextClip);
 					nextClip=(nextClip+1)%nclips;
 				}
+			} else if (numhits>0) {
+				ps.userData=(ps.userData+minsize)/2;
 			} else {
-				ps.userData-=0.001f;
+				;
 			}
 			ps.userData=Math.max(0.0f, Math.min(1.0f, ps.userData));
 		}
