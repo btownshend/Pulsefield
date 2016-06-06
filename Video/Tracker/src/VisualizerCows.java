@@ -12,7 +12,7 @@ class Apple {
 	int nextClip=0;
 	
 	static final float speed=0.04f;  // Meters/frame
-	static final float maxHitDist=0.2f; // Meters
+	static final float maxHitDist=0.4f; // Meters
 	static final float appleRadius=0.3f;  // Meters
 	
 	Apple(PVector pos) { position=pos; }
