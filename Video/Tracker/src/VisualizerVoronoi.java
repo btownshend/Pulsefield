@@ -175,6 +175,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 	@Override
 	public void draw(Tracker t, PGraphics g, People allpos) {
+		final boolean showConnections=false;
 		super.draw(t, g, allpos);
 		if (allpos.pmap.isEmpty())
 			return;
@@ -184,15 +185,17 @@ public class VisualizerVoronoi extends VisualizerPS {
 		HashSet<Pnt> done = new HashSet<Pnt>(initialTriangle);
 		int tnum=0;
 		for (Triangle triangle : dt) {
-			g.noFill();
-			g.stroke(0,0,255);
-			g.strokeWeight(0.01f);
-			g.beginShape();
-			for (int i=0;i<3;i++) {
-				Pnt c=triangle.get(i);
-				g.vertex((float)c.coord(0),(float)c.coord(1));
+			if (showConnections){
+				g.noFill();
+				g.strokeWeight(0.01f);
+				g.stroke(0,0,255);
+				g.beginShape();
+				for (int i=0;i<3;i++) {
+					Pnt c=triangle.get(i);
+					g.vertex((float)c.coord(0),(float)c.coord(1));
+				}
+				g.endShape(PConstants.CLOSE);
 			}
-			g.endShape(PConstants.CLOSE);
 
 			Pnt cc=triangle.getCircumcenter();
 			g.fill(255);
