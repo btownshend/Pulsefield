@@ -23,7 +23,7 @@ public class Tracker extends PApplet {
 	 */
 	public static final String SVGDIRECTORY="../../../SVGFiles/";
 	private static boolean present = false;
-	private static boolean autocycle = true;
+	private static boolean autocycle = false;
 	private static boolean starting = true;   // Disable bad OSC messages before setup
 	private static boolean genFrameMsgs = false;
 	@SuppressWarnings("unused")
