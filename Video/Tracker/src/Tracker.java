@@ -78,7 +78,7 @@ public class Tracker extends PApplet {
 	PGraphicsOpenGL mask[];
 	int pselect[];
 	boolean drawBounds=false;   // True to overlay projector bounds
-	boolean drawMasks = true;
+	boolean drawMasks = false;
 	boolean useMasks = true;
 	static Tracker theTracker;
 	
