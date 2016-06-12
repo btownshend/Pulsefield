@@ -1,29 +1,16 @@
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-import com.jogamp.opengl.awt.GLCanvas;
-
 import processing.core.PApplet;
-
-import javax.swing.JButton;
-import javax.swing.AbstractAction;
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import java.awt.event.ActionListener;
-import java.awt.FlowLayout;
-import java.awt.Canvas;
-import javax.swing.JCheckBox;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 
 @SuppressWarnings("serial")
 public class GUI extends JFrame {
