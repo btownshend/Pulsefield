@@ -345,7 +345,7 @@ public class Tracker extends PApplet {
 				OscMessage msg = new OscMessage("/video/app/buttons/"+vispos[k]);
 				msg.add(0);
 				sendOSC("TO",msg);
-				PApplet.println("Sent "+msg.toString());
+				//PApplet.println("Sent "+msg.toString());
 			}
 
 		if (currentvis!=-1)
