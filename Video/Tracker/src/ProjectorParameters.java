@@ -5,6 +5,7 @@ import processing.core.PVector;
 
 public class ProjectorParameters {
 	// Parameters defining a project]
+	private int debug=0;
 	String name;
 	float distance;   // Distance from screen used for parameterization
 	float voffset;    // Distance projector is below bottom of screen
@@ -32,7 +33,8 @@ public class ProjectorParameters {
 		top=bottom+s*screenheight;
 		left=-(top-bottom)*width/height/2;
 		right=-left;
-		PApplet.println(name+": left="+left+", right="+right+", bottom="+bottom+", top="+top+", near="+near+", far="+far);
+		if (debug>0)
+			PApplet.println(name+": left="+left+", right="+right+", bottom="+bottom+", top="+top+", near="+near+", far="+far);
 		float A=(right+left)/(right-left);
 		float B=(top+bottom)/(top-bottom);
 		float C=-(far+near)/(far-near);
@@ -63,18 +65,23 @@ public class ProjectorParameters {
 	}
 	
 	public void setProjection(PMatrix3D projection) {
-		PApplet.println("ProjectorParameters.setProjection:");
-		projection.print();
+		if (debug>0) {
+			PApplet.println("ProjectorParameters.setProjection:");
+			projection.print();
+		}
 		projMatrix=projection;
-		// Verify that it is reasonable
-		testProjection(new PVector((left+right)/2,-(top+bottom)/2,-near),new PVector(0,0,-1));
-		testProjection(new PVector((left+right)/2*far/near,-(top+bottom)/2*far/near,-far),new PVector(0,0,1));
-		testProjection(new PVector(left,-bottom,-near),new PVector(-1,-1,-1));
-		testProjection(new PVector(right,-top,-near),new PVector(1,1,-1));
+		if (debug>0) {
+			// Verify that it is reasonable
+			testProjection(new PVector((left+right)/2,-(top+bottom)/2,-near),new PVector(0,0,-1));
+			testProjection(new PVector((left+right)/2*far/near,-(top+bottom)/2*far/near,-far),new PVector(0,0,1));
+			testProjection(new PVector(left,-bottom,-near),new PVector(-1,-1,-1));
+			testProjection(new PVector(right,-top,-near),new PVector(1,1,-1));
+		}
 	}
 	
 	public void setAbsProjection(PMatrix2D projection) {
-		PApplet.println("ProjectorParameters.setAbsProjection:");
+		if (debug>0)
+			PApplet.println("ProjectorParameters.setAbsProjection:");
 		projection.print();
 		float C=-(far+near)/(far-near);
 		float D=-2*far*near/(far-near);
@@ -82,12 +89,14 @@ public class ProjectorParameters {
 				projection.m10*2/height,projection.m11*2/height,projection.m12*2/height-1,0,
 				0,0,C,D,
 				0,0,-1,0);
-		PApplet.println("Equivalent relative 3d projection:");
-		projMatrix.print();
-		// Verify that it is reasonable
-		testProjection(new PVector((left+right)/2,-(top+bottom)/2,-near),new PVector(0,0,-1));
-		testProjection(new PVector((left+right)/2*far/near,-(top+bottom)/2*far/near,-far),new PVector(0,0,1));
-		testProjection(new PVector(left,-bottom,-near),new PVector(-1,-1,-1));
-		testProjection(new PVector(right,-top,-near),new PVector(1,1,-1));
+		if (debug>0) {
+			PApplet.println("Equivalent relative 3d projection:");
+			projMatrix.print();
+			// Verify that it is reasonable
+			testProjection(new PVector((left+right)/2,-(top+bottom)/2,-near),new PVector(0,0,-1));
+			testProjection(new PVector((left+right)/2*far/near,-(top+bottom)/2*far/near,-far),new PVector(0,0,1));
+			testProjection(new PVector(left,-bottom,-near),new PVector(-1,-1,-1));
+			testProjection(new PVector(right,-top,-near),new PVector(1,1,-1));
+		}
 	}
 }

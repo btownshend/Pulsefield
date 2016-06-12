@@ -15,7 +15,7 @@ public class Projector {
 	int id;
 	PVector pos;
 	ProjectorParameters params;
-	private final int debug=1;
+	private int debug=0;
 	PMatrix3D camview=new PMatrix3D();
 	PMatrix3D w2s=new PMatrix3D();
 	PMatrix3D s2w=new PMatrix3D();
@@ -160,12 +160,14 @@ public class Projector {
 		bounds[2]=screen2world(new PVector(pcanvas.width,pcanvas.height));
 		bounds[3]=screen2world(new PVector(0,pcanvas.height));
 
-		PApplet.print("Projector "+id+" bounds:");
-		for (int i=0;i<bounds.length;i++) {
-			PVector recompute=world2screen(bounds[i]);
-			PApplet.print(bounds[i]+"->"+recompute);
+		if (debug>0) {
+			PApplet.print("Projector "+id+" bounds:");
+			for (int i=0;i<bounds.length;i++) {
+				PVector recompute=world2screen(bounds[i]);
+				PApplet.print(bounds[i]+"->"+recompute);
+			}
+			PApplet.println("");	
 		}
-		PApplet.println("");	
 	}
 
 	public void setScreen2World(PMatrix3D s2wMat) {
@@ -233,7 +235,8 @@ public class Projector {
 		// Compute the translation by pre-multiplying the camera matrix by the inverse of the untranslated camera matrix
 		PMatrix3D camInv=new PMatrix3D(camera);
 		camInv.invert();
-		matprint("inv(camera)",camInv);
+		if (debug>0)
+			matprint("inv(camera)",camInv);
 		PVector eye=new PVector(camInv.m03,camInv.m13,camInv.m23);
 
 
