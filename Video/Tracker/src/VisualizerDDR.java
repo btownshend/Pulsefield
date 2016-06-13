@@ -164,8 +164,8 @@ public class VisualizerDDR extends Visualizer {
 		// Update internal state of the dancers
 		for (int id: allpos.pmap.keySet()) {
 			if (!dancers.containsKey(id))
-				dancers.put(id,new Dancer(allpos.get(id).getNormalizedPosition()));
-			PVector currentpos=allpos.get(id).getNormalizedPosition();
+				dancers.put(id,new Dancer(allpos.get(id).getOriginInMeters()));
+			PVector currentpos=allpos.get(id).getOriginInMeters();
 			dancers.get(id).update(currentpos);
 			//PApplet.println("Dancer "+id+" moved to "+currentpos.toString());
 		}
@@ -183,9 +183,9 @@ public class VisualizerDDR extends Visualizer {
 	
 	// Called each time a beat passes by
 	public void beat() {
-		final int AIMS[]={2,3,1,0};
+		final int AIMS[]={2,1,3,0};
 		// Note ordering in SIM file is left(0),up(1),down(2),right(3)
-		// Ordering based on angle goes CCW starting from right, so it right(0),down(1),left(2),up(3)
+		// Ordering based on angle goes CCW starting from right, so it right(0),up(1),left(2),down(3)
 		// Check current positions to see who is doing the right stuff
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, lastClipPosition, clip.position);
@@ -272,46 +272,50 @@ public class VisualizerDDR extends Visualizer {
 		if (p.pmap.isEmpty() || cursong==null)
 			return;
 
-		final float leftwidth=1.5f;
-		final float rightwidth=2.5f;
-		final float rightmargin=0.50f;
-		
-		PVector sz=Tracker.getFloorSize();
+		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
+
 		PVector center=Tracker.getFloorCenter();
+		PVector sz=Tracker.getFloorSize();
 		
-		g.imageMode(PConstants.CORNER);
 		PImage banner=cursong.getSimfile().getBanner(t,g);
-		if (banner!=null)
-			g.image(banner, center.x+(rightwidth+rightmargin-leftwidth)/2, center.y-sz.y/2, sz.x-leftwidth-rightwidth-rightmargin, sz.y/4);
+		
+		if (clip.position < 10f && banner!=null) { // Show banner for first several seconds
+			final float bannerWidth = 3f;   // Banner width in meters
+			g.imageMode(PConstants.CENTER);
+			float bannerHeight = banner.height*bannerWidth/banner.width;
+			g.pushMatrix();
+			g.translate(center.x, center.y-sz.y/4);
+			g.scale(-1,1);  // Flip to RH coord system
+			g.image(banner, 0, 0, bannerWidth, bannerHeight);
+			g.popMatrix();	
+		}
 		
 
-		drawScores(g,p,new PVector(leftwidth,sz.y));
-		g.translate(leftwidth,0);
-		drawPF(g,p,new PVector(sz.x-leftwidth-rightwidth,sz.y));
-		g.translate(sz.x-leftwidth-rightwidth,0);
-		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
+		//drawScores(g,p);
+		drawPF(g,p);
 		if (clip!=null) {
 //			PApplet.println("Clip at "+clip.position);
-			drawTicker(g,new PVector(rightwidth-rightmargin,sz.y),clip.position);
+			drawTicker(g,clip.position);
 		} else 
 			PApplet.println("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
 		float songdur=cursong.getSimfile().getduration(pattern);
-		if (clip.position>songdur) {
-			PApplet.println("Song duration "+songdur+" ended; clip Position="+clip.position+", songdur="+songdur);
-			t.setapp(4);
+		if ((clip.state==1 && clip.position>1) || clip.position>songdur) {
+			PApplet.println("Song duration "+songdur+" ended; clip Position="+clip.position+", songdur="+songdur+", state="+clip.state);
+			chooseSong();
 		}
 	}
 
 
-	public void drawPF(PGraphics g, People allpos, PVector wsize) {
-		final float DOTSIZE=50f/Tracker.getPixelsPerMeter();
+	public void drawPF(PGraphics g, People allpos) {
+		final float DOTSIZE=0.4f;  // Dotsize in meters
 		final float ARROWSIZE=DOTSIZE;
 		final float ARROWDIST=(ARROWSIZE+DOTSIZE)/2;
+		final float scoreHeight=DOTSIZE*0.7f;
 
-		drawBorders(g);
+		//drawBorders(g);
 		g.imageMode(PConstants.CENTER);
 		g.tint(255);
-
+		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		// Add drawing code here
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
@@ -322,16 +326,22 @@ public class VisualizerDDR extends Visualizer {
 			}
 			int quad=d.getAim();
 			g.pushMatrix();
-			g.translate((d.neutral.x+1)*wsize.x/2,(d.neutral.y+1)*wsize.y/2);
+			g.translate(d.neutral.x,d.neutral.y);
 			g.fill(p.getcolor());
+			g.stroke(p.getcolor());
 			g.ellipse(0,0,DOTSIZE,DOTSIZE);
-//			PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
+			// Draw score in reverse
+			g.fill(0xffffff-(p.getcolor()&0xffffff));
+			g.stroke(0);
+			g.fill(0);
+			drawText(g,scoreHeight,""+d.score,0,-scoreHeight/10);
+			//PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad);
 			if (quad>=0) {
 				g.rotate((float)(quad*Math.PI/2+Math.PI));
 				g.translate(-ARROWDIST, 0);
-//				if (d.isHit())
-//					parent.shape(hitIcons[d.getHitIconNumber()],0,0,ARROWSIZE,ARROWSIZE);
-//				else
+				if (d.isHit()) {
+					g.image(arrow, 0, 0, ARROWSIZE*1.2f, ARROWSIZE*1.2f);
+				} else
 					g.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
 			} else {
 				//parent.shape(dancer, 0, 0, ARROWSIZE, ARROWSIZE);
@@ -340,22 +350,26 @@ public class VisualizerDDR extends Visualizer {
 		}
 	}
 
-	public void drawScores(PGraphics g, People allpos, PVector wsize) {
+	public void drawScores(PGraphics g, People allpos) {
 		final float DOTSIZE=50f/Tracker.getPixelsPerMeter();
-		float lineHeight=wsize.y/12;
-
+		final float textHeight=0.16f;
+		final float lineHeight=textHeight*1.2f;
+		PVector center=Tracker.getFloorCenter();
+		PVector sz=Tracker.getFloorSize();
+		final float firstLine=center.y-sz.y/2+textHeight;
+		final float leftMargin=center.x-sz.x/2+0.2f;
 		g.stroke(255);
 		g.fill(255);
 		g.tint(255);
 		g.pushMatrix();
 		
 		
-		g.textAlign(PConstants.CENTER,PConstants.CENTER);
-		g.translate(0,lineHeight/2);
-		drawText(g,0.24f,"SCORES",wsize.x/2,0);
-		g.translate(0,lineHeight);
 		g.textAlign(PConstants.LEFT,PConstants.CENTER);
-
+		g.translate(-sz.x/2+leftMargin,-sz.y/2+firstLine);
+		drawText(g,textHeight*1.5f,"SCORES",0,0);
+		g.translate(0,lineHeight*1.5f);
+		g.textAlign(PConstants.LEFT,PConstants.CENTER);
+		g.ellipseMode(PConstants.CENTER);
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
 			Person p=allpos.get(id);
@@ -369,12 +383,15 @@ public class VisualizerDDR extends Visualizer {
 			g.translate(0, lineHeight);
 		}
 		g.popMatrix();
-
 	}
 
-	public void drawTicker(PGraphics g, PVector wsize, float now) {
+	public void drawTicker(PGraphics g, float now) {
 		final float DURATION=12.0f;  // Duration of display top to bottom
 		final float HISTORY=3.0f;    // Amount of past showing
+		final float tickerWidth=1f;  // Width of ticker in meters
+		PVector sz=Tracker.getFloorSize();
+		PVector center=Tracker.getFloorCenter();
+		
 		if (cursong==null) {
 			PApplet.println("cursong=null");
 			return;
@@ -394,14 +411,14 @@ public class VisualizerDDR extends Visualizer {
 		g.stroke(255);
 		g.fill(255);
 
-		float arrowsize=g.width/4f/1.2f/Tracker.getPixelsPerMeter();
+		float arrowsize=tickerWidth/5;
 		for (NoteData n: notes) {
 			final float angles[]={0f,-(float)(Math.PI/2),-(float)(3*Math.PI/2),-(float)Math.PI};
-			float ypos=(n.timestamp-(now-HISTORY))/DURATION*wsize.y;
+			float ypos=(n.timestamp-(now-HISTORY))/DURATION*sz.y+center.y/2;
 			//PApplet.println("At "+n.timestamp+", notes="+n.notes+", y="+ypos);
 			for (int i=0;i<n.notes.length()&&i<4;i++) {
 				if (n.notes.charAt(i) != '0') {
-					float xpos=(i+0.5f)*wsize.x/n.notes.length();
+					float xpos=center.x-tickerWidth/2+(i+0.5f)*tickerWidth/n.notes.length();
 					//PApplet.println("x="+xpos+", text="+n.notes.substring(i,i+1));
 					//parent.text(n.notes.substring(i,i+1),xpos,ypos);
 					g.pushMatrix();
@@ -413,8 +430,9 @@ public class VisualizerDDR extends Visualizer {
 			}
 		}
 		g.strokeWeight(0.05f);
-		g.line(0,HISTORY*wsize.y/DURATION,0,wsize.x,HISTORY*wsize.y/DURATION,0);
-		drawText(g,0.16f,String.format("%.2f", now), 5, wsize.y-10);
+		float ypos=HISTORY*sz.y/DURATION+center.y/2;
+		g.line(center.x-tickerWidth/2,ypos,0,center.x+tickerWidth/2,ypos,0);
+		drawText(g,0.16f,String.format("%.2f", now), center.x,ypos-0.2f);
 	}
 	
 	@Override
