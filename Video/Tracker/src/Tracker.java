@@ -389,8 +389,8 @@ public class Tracker extends PApplet {
 		if (mousePressed) {
 			Person p=mousePeople.getOrCreate(mouseID,mouseID%16);
 			//PVector sMousePos=normalizedToFloor(new PVector(mouseX*2f/width-1, mouseY*2f/height-1));
-			float cmouseX=-(mouseX/cscale-canvas.width/2)/getPixelsPerMeter()+(rawminx+rawmaxx)/2;
-			float cmouseY=(mouseY/cscale-canvas.height/2)/getPixelsPerMeter()+(rawminy+rawmaxy)/2;
+			float cmouseX=-(mouseX-width/2)/cscale/getPixelsPerMeter()+(rawminx+rawmaxx)/2;
+			float cmouseY=(mouseY-height/2)/cscale/getPixelsPerMeter()+(rawminy+rawmaxy)/2;
 			PVector mousePos=new PVector(cmouseX, cmouseY);
 			//println("mouse="+mouseX+", "+mouseY+" -> "+cmouseX+", "+cmouseY);
 			
