@@ -235,7 +235,7 @@ public class VisualizerTron extends Visualizer {
 					PVector c2=Tracker.normalizedToFloor(new PVector((i+1)*2.0f/gridWidth-1,j*2.0f/gridHeight-1));	
 
 					if (gd.exploding>0) {
-						final int explosionFrames = 400;
+						final int explosionFrames = 300;
 						assert(p.get(gid)!=null);
 						g.fill(p.get(gid).getcolor());
 						float w = (c2.x-c1.x)*(explosionFrames-gd.exploding)/explosionFrames;
