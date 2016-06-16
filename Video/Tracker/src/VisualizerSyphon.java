@@ -31,7 +31,7 @@ public class VisualizerSyphon extends VisualizerTestPattern {
 			}
 		} else
 			PApplet.println("Initialized syphon client ("+appName+", "+serverName+")");
-		wasActive=false;
+		wasActive=true;
 	}
 	
 	@Override
