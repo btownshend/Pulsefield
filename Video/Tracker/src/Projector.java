@@ -334,8 +334,8 @@ public class Projector {
 			float cm12=(norm1<1)?(float)Math.sqrt(1-norm1):0;  // Two possible solutions
 			if (cm12!=0)
 				PApplet.println("Two solution for cm12: +/-"+cm12);
-			float norm2=camera.m20*camera.m20+camera.m21*camera.m21;
-			float cm22=(norm2<1)?(float)Math.sqrt(1-norm2):0;  // TODO: Use this to resolve multiple solutions?
+			//float norm2=camera.m20*camera.m20+camera.m21*camera.m21;
+			//float cm22=(norm2<1)?(float)Math.sqrt(1-norm2):0;  // TODO: Use this to resolve multiple solutions?
 			PMatrix3D pvbest=pv;
 			float bestmx=1e10f;
 			for (int i=0;i<4;i++) {

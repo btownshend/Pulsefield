@@ -158,6 +158,4 @@ public abstract class Visualizer {
 		}
 		return result;
 	}
-
-
 }

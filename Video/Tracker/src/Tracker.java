@@ -44,10 +44,10 @@ public class Tracker extends PApplet {
 	VisualizerChuck visChuck;
 	VisualizerMenu visMenu;
 	VisualizerSyphon visSyphon;
-	public static final String visnames[]={"Pads","Navier","Tron","Grid","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Cows","Soccer","Menu","Visualizer","TestPattern","Syphon","Balls"};
-	public static boolean selectable[]={false,true,true,true,true,true,false,true,false,false,true,true,true,false,true,false,true,true};
+	public static final String visnames[]={"Pads","Navier","Tron","Grid","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Cows","Soccer","Menu","Visualizer","TestPattern","Syphon","Balls","Osmos"};
+	public static boolean selectable[]={false,true,true,true,true,true,false,true,false,false,true,true,true,false,true,false,true,true,true};
 //	public static boolean selectable[]={false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true};
-	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3","3/4","3/5","2/1","2/2","2/3"};
+	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3","3/4","3/5","2/1","2/2","2/3","2/4"};
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK, VD;
 	People people, mousePeople;
@@ -92,6 +92,8 @@ public class Tracker extends PApplet {
 	}
 
 	public void setup() {
+		theTracker = this;   // Keep a static copy of the (sole) tracker instance
+
 		configFile="/Users/bst/DropBox/Pulsefield/src/urlconfig.txt";
 		jconfig=new Config("config.json");
 		Config.load(this);
@@ -166,6 +168,7 @@ public class Tracker extends PApplet {
 		visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
 		vis[16]=visSyphon;
 		vis[17] = new VisualizerUnity(this,"Tutorial","Balls.app");
+		vis[18] = new VisualizerOsmos(this);
 		
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
@@ -211,7 +214,6 @@ public class Tracker extends PApplet {
 		for (int i=0;i<pselect.length;i++)
 			pselect[0]=0;  // Default to projector 0
 		PApplet.println("Setup complete");
-		theTracker = this;   // Keep a static copy of the (sole) tracker instance
 		GUI.start();
 		starting = false;
 	}
@@ -1014,6 +1016,11 @@ public class Tracker extends PApplet {
 	void controllerChange(int channel, int number, int value) {
 		// Receive a controllerChange
 		System.out.println("Got CC: channel="+channel+", CC="+number+", value="+value);
+	}
+
+	public boolean inBounds(PVector location) {
+		// TODO Auto-generated method stub
+		return location.x>=rawminx && location.x <=rawmaxx && location.y >= rawminy && location.y <= rawmaxy;
 	}
 
 }

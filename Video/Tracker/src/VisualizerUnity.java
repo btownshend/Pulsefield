@@ -2,7 +2,6 @@ import java.io.File;
 import java.io.IOException;
 
 import processing.core.PApplet;
-import processing.core.PGraphics;
 
 public class VisualizerUnity extends VisualizerSyphon {
 	File app;
