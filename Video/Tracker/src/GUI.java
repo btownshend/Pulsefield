@@ -21,6 +21,7 @@ public class GUI extends JFrame {
 	private JComboBox appSelect;
 	private boolean initialized=false;
 	private JCheckBox useMasks;
+	private JCheckBox showProjectors;
 	
 	public static void start() {
 		EventQueue.invokeLater(new Runnable() {
@@ -79,6 +80,14 @@ public class GUI extends JFrame {
 			}
 		});
 		contentPane.add(useMasks);
+		
+		showProjectors = new JCheckBox("Show Projectors");
+		showProjectors.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Tracker.theTracker.showProjectors=showProjectors.isSelected();
+			}
+		});
+		contentPane.add(showProjectors);
 		appSelect.setModel(new DefaultComboBoxModel(Tracker.visnames));
 		contentPane.add(appSelect);
 		initialized=true;
@@ -98,6 +107,7 @@ public class GUI extends JFrame {
 					drawMasks.setSelected(Tracker.theTracker.drawMasks);
 					drawBounds.setSelected(Tracker.theTracker.drawBounds);
 					useMasks.setSelected(Tracker.theTracker.useMasks);
+					showProjectors.setSelected(Tracker.theTracker.showProjectors);
 					appSelect.setSelectedIndex(Tracker.theTracker.currentvis);
 				} catch (Exception e) {
 					e.printStackTrace();

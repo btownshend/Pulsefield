@@ -81,6 +81,7 @@ public class Tracker extends PApplet {
 	boolean drawBounds=false;   // True to overlay projector bounds
 	boolean drawMasks = false;
 	boolean useMasks = true;
+	boolean showProjectors = false;
 	static Tracker theTracker;
 	
 	public void settings() {
@@ -479,21 +480,21 @@ public class Tracker extends PApplet {
 		
 		popMatrix();
 
-
-		// Use top-left, top-right corners for projector images
-		float pfrac = 0.25f;  // Use this much of the height of the window for projs
-		float pheight=this.height*pfrac;
-		float pwidth=pheight*projectors[0].pcanvas.width/projectors[0].pcanvas.height;  // preserve aspect
-		stroke(255,0,0);
-		strokeWeight(2);
-		rect(0, 0, pwidth, pheight);
-		imageMode(CORNER);
-		image(projectors[0].pcanvas, 1, 1, pwidth-2, pheight-2);
-		
-		pwidth=pheight*projectors[1].pcanvas.width/projectors[1].pcanvas.height; 
-		rect(width-pwidth, 0, pwidth, pheight);
-		image(projectors[1].pcanvas, width-pwidth+1, 1f, pwidth-2, pheight-2);
-
+		if (showProjectors) {
+			// Use top-left, top-right corners for projector images
+			float pfrac = 0.25f;  // Use this much of the height of the window for projs
+			float pheight=this.height*pfrac;
+			float pwidth=pheight*projectors[0].pcanvas.width/projectors[0].pcanvas.height;  // preserve aspect
+			stroke(255,0,0);
+			strokeWeight(2);
+			rect(0, 0, pwidth, pheight);
+			imageMode(CORNER);
+			image(projectors[0].pcanvas, 1, 1, pwidth-2, pheight-2);
+			
+			pwidth=pheight*projectors[1].pcanvas.width/projectors[1].pcanvas.height; 
+			rect(width-pwidth, 0, pwidth, pheight);
+			image(projectors[1].pcanvas, width-pwidth+1, 1f, pwidth-2, pheight-2);
+		}
 		//SyphonTest.draw(this);
 		Config.saveIfModified(this);   // Save if modified
 	}
