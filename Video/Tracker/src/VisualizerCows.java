@@ -130,14 +130,14 @@ public class VisualizerCows extends VisualizerIcon {
 				g.translate(ps.getOriginInMeters().x, ps.getOriginInMeters().y);
 				if (ps.getVelocityInMeters().x >0.1)
 					g.scale(-1,1);
-				g.image(img,0,0,img.width*scale,img.height*scale);
+				g.image(img,0,-sz/4,img.width*scale,img.height*scale);
 				g.popMatrix();
 			} else {
 				PShape icon=iconShapes[ps.id%iconShapes.length];
 				//icon.translate(-icon.width/2, -icon.height/2);
 				//			PApplet.println("Display shape "+icon+" with native size "+icon.width+","+icon.height);
 				float scale=Math.min(sz/icon.width,sz/icon.height);
-				Visualizer.drawShape(g, icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y,icon.width*scale,icon.height*scale);
+				Visualizer.drawShape(g, icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y-icon.height*scale/2,icon.width*scale,icon.height*scale);
 				//icon.resetMatrix();
 			}
 		}
