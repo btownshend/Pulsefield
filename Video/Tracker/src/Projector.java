@@ -463,6 +463,6 @@ public class Projector {
 			ttest(2,2,0);
 			ttest(0,0,1);
 		}
-
+		saveSettings();
 	}
 }
