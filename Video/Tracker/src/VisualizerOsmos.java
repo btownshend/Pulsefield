@@ -137,7 +137,10 @@ class PlayerMarble extends Marble {
 	private static final float MINMASS=0.05f;    // In kg
 	private static final float EJECTFUDGE=200;   // Make ejections give this much more momentum than they should
 	PVector pilot;
-
+	int propelClip=-1;  // My propulsion clip
+	boolean clipActive;
+	static int nextClip=0;   // Next clip available to allocate to any player
+	
 	PlayerMarble(PVector pos, PVector vel, PImage img) {
 		super(INITIALMASS,pos,vel,img);
 		pilot=new PVector();
@@ -164,6 +167,22 @@ class PlayerMarble extends Marble {
 			PVector ejectLocation=PVector.add(location, PVector.mult(ejectVelocity,1.05f*getRadius()/ejectVelocity.mag()));
 			Marble.create(ejectMass,ejectLocation,PVector.add(ejectVelocity,velocity));
 			mass=Math.max(MINMASS,mass-ejectMass);
+			TrackSet ts=Ableton.getInstance().trackSet;
+			int track=ts.firstTrack;
+			int nclips=Ableton.getInstance().getTrack(track).numClips();
+			PApplet.println("Track="+track+", nclips="+nclips);
+			if (nclips!=-1) {
+				if (propelClip < 0) {
+					propelClip=nextClip;
+					nextClip=(nextClip+1)%nclips;
+				}
+				Ableton.getInstance().playClip(track,propelClip);
+			}
+		} else if (clipActive) {
+			TrackSet ts=Ableton.getInstance().trackSet;
+			int track=ts.firstTrack;
+			Ableton.getInstance().stopClip(track, propelClip);
+			clipActive=false;
 		}
 		super.update();
 	}
@@ -213,6 +232,7 @@ public class VisualizerOsmos extends Visualizer {
 
 	public void start() {
 		super.start();
+		Ableton.getInstance().setTrackSet("Osmos");
 	}
 
 	public void stop() {
