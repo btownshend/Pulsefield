@@ -74,7 +74,7 @@ public abstract class Visualizer {
 		// So, if there is 10x scaling and you use textSize(1.0), the font will be generated a 1pixel size
 		// then scaled up.
 		// Hack this by using a font that is larger than needed, which then will get scaled down 
-		g.textFont(t.createFont("Arial",50f));
+		//g.textFont(t.createFont("Arial",50f));  // This is a memory leak!
 	}
 	
 	public void draw(Tracker t, PGraphics g, People p) {
