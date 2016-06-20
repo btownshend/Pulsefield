@@ -111,7 +111,7 @@ public class VisualizerCows extends VisualizerIcon {
 			super.draw(t, g, p);
 			return;
 		}
-
+		super.draw(t, g, p);
 		g.background(0);
 		g.shapeMode(PApplet.CENTER);
 		apple.draw(g);
