@@ -107,13 +107,14 @@ class Marble {
 					PApplet.println("Contact at "+b1.location+" - "+b2.location);
 					while (sep.mag() <= b1.getRadius()+b2.getRadius() && b1.isAlive) {
 						float xfr=Math.min(b1.mass, MASSEXCHANGERATE/Tracker.theTracker.frameRate);
+						if (b1 instanceof PlayerMarble && b1.mass-xfr<PlayerMarble.MINMASS)
+							break; // xfr=b1.mass-PlayerMarble.MINMASS;
 						b1.mass-=xfr;
 						b2.mass+=xfr;
 						b2.velocity=PVector.add(PVector.mult(b2.velocity,(b2.mass-xfr)/b2.mass), PVector.mult(b1.velocity, xfr/b2.mass));
 						PApplet.println("Xfr "+xfr+", new masses: "+b1.mass+", "+b2.mass);
 						if (b1.mass==0)
 							b1.destroy();
-						// TODO: Handle case where player is destroyed
 					}
 //					minsep=b1.getRadius()+b2.getRadius(); // Update sep
 //					if (sep.mag() < minsep) {
@@ -142,8 +143,8 @@ class PlayerMarble extends Marble {
 	private static final float SPRINGCONSTANT=0.1f;   // force=SPRINGCONSTANT*dx  (Newtons/m)
 	private static final float EJECTSPEED=2f;	// Speed of ejected particles (m/s)
 	private static final float INITIALMASS=0.5f;  // In kg
-	private static final float MINMASS=0.05f;    // In kg
 	private static final float EJECTFUDGE=200;   // Make ejections give this much more momentum than they should
+	public static final float MINMASS=0.02f;    // In kg
 	PVector pilot;
 	int propelClip=-1;  // My propulsion clip
 	boolean clipActive;
@@ -154,6 +155,7 @@ class PlayerMarble extends Marble {
 		pilot=new PVector();
 		pilot.x=pos.x;
 		pilot.y=pos.y;
+
 	}
 	
 	public void updatePosition(PVector newpilot) {
