@@ -69,6 +69,14 @@ class Marble {
 	static void create(float mass, PVector pos, PVector vel)  {
 		new Marble(mass,pos,vel,imgs.getRandom());
 	}
+	static void destroyAll() {
+		Object all[]=allMarbles.toArray();
+		for (Object o: all) {
+			Marble b=(Marble)o;
+			b.destroy();
+		}
+	}
+	
 	static void updateAll() {
 		Object all[]=allMarbles.toArray();
 		for (Object o: all) {
@@ -236,6 +244,7 @@ public class VisualizerOsmos extends Visualizer {
 	}
 
 	public void stop() {
+		Marble.destroyAll();
 		super.stop();
 		PApplet.println("Stopping Osmos at "+System.currentTimeMillis());
 	}
