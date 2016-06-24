@@ -9,7 +9,7 @@ import processing.core.PVector;
 
 class Marble {
 	private static final float DENSITY=1f;   // mass=DENSITY*r^2
-	private static final float DAMPING=0; //0.2f;  // accel=-DAMPING * v
+	private static final float DAMPING=0.2f; //0.2f;  // accel=-DAMPING * v
 	private static final float MASSEXCHANGERATE=0.05f;  // mass loss for in-contact marbles in kg/sec
 	PVector location;
 	PVector velocity;
@@ -141,10 +141,10 @@ class Marble {
 
 class PlayerMarble extends Marble {
 	private static final float SPRINGCONSTANT=0.1f;   // force=SPRINGCONSTANT*dx  (Newtons/m)
-	private static final float EJECTSPEED=2f;	// Speed of ejected particles (m/s)
+	private static final float EJECTSPEED=1f;	// Speed of ejected particles (m/s)
 	private static final float INITIALMASS=0.5f;  // In kg
-	private static final float EJECTFUDGE=200;   // Make ejections give this much more momentum than they should
 	public static final float MINMASS=0.02f;    // In kg
+	private static final float EJECTFUDGE=400;   // Make ejections give this much more momentum than they should
 	PVector pilot;
 	int propelClip=-1;  // My propulsion clip
 	boolean clipActive;
