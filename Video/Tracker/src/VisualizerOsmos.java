@@ -11,6 +11,7 @@ class Marble {
 	private static final float DENSITY=1f;   // mass=DENSITY*r^2
 	private static final float DAMPING=0.2f; //0.2f;  // accel=-DAMPING * v
 	private static final float MASSEXCHANGERATE=0.05f;  // mass loss for in-contact marbles in kg/sec
+	private static final float MAXMASS=1f;
 	PVector location;
 	PVector velocity;
 	float mass;
@@ -79,6 +80,15 @@ class Marble {
 	
 	static void updateAll() {
 		Object all[]=allMarbles.toArray();
+		for (Object o: all) {
+			Marble b=(Marble)o;
+			if (b.mass>MAXMASS) {
+				PVector newpos=b.location;
+				newpos.x+=b.getRadius();
+				create(b.mass/2,newpos,b.velocity);
+				b.mass/=2;
+			}
+		}
 		for (Object o: all) {
 			Marble b=(Marble)o;
 			b.update();
