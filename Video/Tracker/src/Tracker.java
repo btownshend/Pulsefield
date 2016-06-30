@@ -47,7 +47,6 @@ public class Tracker extends PApplet {
 	public static final String visnames[]={"Pads","Navier","Tron","Grid","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Cows","Soccer","Menu","Visualizer","TestPattern","Syphon","Balls","Osmos"};
 	public static boolean selectable[]={false,true,true,true,true,true,false,true,false,false,true,true,true,false,true,false,true,true,true};
 //	public static boolean selectable[]={false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true};
-	String vispos[]={"5/1","5/2","5/3","5/4","5/5","4/1","4/2","4/3","4/4","4/5","3/1","3/2","3/3","3/4","3/5","2/1","2/2","2/3","2/4"};
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK, VD;
 	People people, mousePeople;
@@ -145,6 +144,22 @@ public class Tracker extends PApplet {
 		fourier=new Fourier(this);
 		
 		// Visualizers
+		vispos=new String[visnames.length];
+		int row=5;
+		int col=1; 
+		for (int i=0;i<vispos.length;i++) {
+			vispos[i]=""+row+"/"+col;
+			col++;
+			if (col>5) {
+				col=1;
+				row--;
+				if (row==0) {
+					PApplet.println("Too many apps for TouchOSC panel");
+					break;
+				}
+			}
+		}
+		
 		vis=new Visualizer[visnames.length];
 		vis[0]=new VisualizerPads(this, synth);
 		visNavier=new VisualizerNavier(this,synth); vis[1]=visNavier;
