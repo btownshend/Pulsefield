@@ -47,6 +47,7 @@ public class Tracker extends PApplet {
 	public static final String visnames[]={"Pads","Navier","Tron","Grid","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Cows","Soccer","Menu","Visualizer","TestPattern","Syphon","Balls","Osmos"};
 	public static boolean selectable[]={false,true,true,true,true,true,false,true,false,false,true,true,true,false,true,false,true,true,true};
 //	public static boolean selectable[]={false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true};
+	public static String vispos[];
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK, VD;
 	People people, mousePeople;
