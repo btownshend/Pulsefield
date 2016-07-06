@@ -12,6 +12,7 @@ class Marble {
 	private static final float DAMPING=0.2f; //0.2f;  // accel=-DAMPING * v
 	private static final float MASSEXCHANGERATE=0.05f;  // mass loss for in-contact marbles in kg/sec
 	private static final float MAXMASS=1f;
+	private static final float G=0.05f;   // Gravitational constant
 	PVector location;
 	PVector velocity;
 	float mass;
@@ -60,6 +61,7 @@ class Marble {
 			velocity.y=-velocity.y;
 		if (location.y-radius < Tracker.rawminy && velocity.y<0)
 			velocity.y=-velocity.y;
+
 	}
 	public void draw(PGraphics g) {
 		float r=getRadius();
@@ -139,6 +141,10 @@ class Marble {
 //					b1.velocity=PVector.div(momentum, b1.mass+b2.mass);
 //					b2.velocity=b1.velocity;
 				}
+				float attraction = G*b1.mass*b2.mass/sep.magSq();
+				PVector acc=PVector.mult(sep,attraction/b1.mass);
+				PVector deltaVelocity=PVector.mult(acc, 1/Tracker.theTracker.frameRate);
+				b1.velocity.add(deltaVelocity);
 			}
 		}
 	}
