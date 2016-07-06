@@ -7,6 +7,7 @@ import processing.core.PVector;
 
 public abstract class Visualizer {
 	String name;
+	boolean selectable;
 	
 	Visualizer() {
 		name="??";
@@ -105,6 +106,7 @@ public abstract class Visualizer {
 	public void stats() { }
 
 	public void setName(String name) { this.name=name; }
+	public void setSelectable(boolean s) { selectable=s; }
 	
 	public void drawBorders(PGraphics g) {
 		this.drawBorders(g, 0.02f,0xff00ff00,255);

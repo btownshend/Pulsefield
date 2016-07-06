@@ -88,7 +88,10 @@ public class GUI extends JFrame {
 			}
 		});
 		contentPane.add(showProjectors);
-		appSelect.setModel(new DefaultComboBoxModel(Tracker.visnames));
+		String visnames[]=new String[Tracker.vis.length];
+		for (int i=0;i<Tracker.vis.length;i++)
+			visnames[i]=Tracker.vis[i].name;
+		appSelect.setModel(new DefaultComboBoxModel(visnames));
 		contentPane.add(appSelect);
 		initialized=true;
 		update();

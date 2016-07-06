@@ -35,19 +35,12 @@ public class Tracker extends PApplet {
 	static float minx=-5f, maxx=5f, miny=0f, maxy=5f;
 	static float rawminy=0f, rawmaxy=5f, rawminx=-5f, rawmaxx=5f;
 	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
-	Visualizer vis[];
+	static Visualizer vis[] = new Visualizer[0];
 	VisualizerGrid visAbleton;
-	VisualizerProximity visProx;
 	VisualizerNavier visNavier;
 	VisualizerDDR visDDR;
-	VisualizerDot visDot;
-	VisualizerChuck visChuck;
 	VisualizerMenu visMenu;
-	VisualizerSyphon visSyphon;
-	public static final String visnames[]={"Pads","Navier","Tron","Grid","DDR","Poly","Voronoi","Guitar","Dot","CHucK","Proximity","Cows","Soccer","Menu","Visualizer","TestPattern","Syphon","Balls","Osmos"};
-	public static boolean selectable[]={false,true,true,true,true,true,false,true,false,false,true,true,true,false,true,false,true,true,true};
-//	public static boolean selectable[]={false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true};
-	public static String vispos[];
+
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK, VD;
 	People people, mousePeople;
@@ -144,47 +137,28 @@ public class Tracker extends PApplet {
 		// Facility for real-time FFT of default input
 		fourier=new Fourier(this);
 		
-		// Visualizers
-		vispos=new String[visnames.length];
-		int row=5;
-		int col=1; 
-		for (int i=0;i<vispos.length;i++) {
-			vispos[i]=""+row+"/"+col;
-			col++;
-			if (col>5) {
-				col=1;
-				row--;
-				if (row==0) {
-					PApplet.println("Too many apps for TouchOSC panel");
-					break;
-				}
-			}
-		}
-		
-		vis=new Visualizer[visnames.length];
-		vis[0]=new VisualizerPads(this, synth);
-		visNavier=new VisualizerNavier(this,synth); vis[1]=visNavier;
-		vis[2]=new VisualizerTron(this,scale,synth);
-		visAbleton=new VisualizerGrid(this);vis[3]=visAbleton;
-		visDDR=new VisualizerDDR(this);vis[4]=visDDR;
-		vis[5]=new VisualizerPoly(this,scale,synth);
-		vis[6]=new VisualizerVoronoi(this,scale,synth);
-		vis[7]=new VisualizerGuitar(this,synth);
-		vis[8]=new VisualizerDot(this);
-		vis[9]=new VisualizerChuck(this);
-		vis[10]=new VisualizerProximity(this);
-		vis[11]=new VisualizerCows(this);
-		vis[12]=new VisualizerSoccer(this);
-		visMenu=new VisualizerMenu(this);vis[13]=visMenu;
-
-		vis[14]=new VisualizerMinim(this,fourier,renderer!=FX2D);
-		vis[15]=new VisualizerTestPattern(this);
-		setapp(15);
+		addVis("Pads",new VisualizerPads(this, synth),false);
+		addVis("Navier",visNavier=new VisualizerNavier(this,synth),true); 
+		addVis("Tron",new VisualizerTron(this,scale,synth),true);
+		addVis("Grid",visAbleton=new VisualizerGrid(this),true);
+		addVis("DDR",visDDR=new VisualizerDDR(this),true);
+		addVis("Poly",new VisualizerPoly(this,scale,synth),true);
+		addVis("Voronoi",new VisualizerVoronoi(this,scale,synth),true);
+		addVis("Guitar",new VisualizerGuitar(this,synth),true);
+		addVis("Dot",new VisualizerDot(this),false);
+		addVis("CHucK",new VisualizerChuck(this),false);
+		addVis("Proximity",new VisualizerProximity(this),true);
+		addVis("Cows",new VisualizerCows(this),true);
+		addVis("Soccer",new VisualizerSoccer(this),true);
+		addVis("Menu",visMenu=new VisualizerMenu(this),false);
+		addVis("Visualizer",new VisualizerMinim(this,fourier,renderer!=FX2D),true);
+		addVis("TestPattern",new VisualizerTestPattern(this),false);
+		setapp(vis.length-1);
 		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
-		visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
-		vis[16]=visSyphon;
-		vis[17] = new VisualizerUnity(this,"Tutorial","Balls.app");
-		vis[18] = new VisualizerOsmos(this);
+		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
+		//vis[16]=visSyphon;
+		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
+		addVis("Osmos",new VisualizerOsmos(this),true);
 		
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
@@ -234,6 +208,18 @@ public class Tracker extends PApplet {
 		starting = false;
 	}
 
+	public void addVis(String name, Visualizer v,boolean selectable) {
+		// Add a visualizer to the internal list
+		Visualizer tvis[]=vis;
+		vis=new Visualizer[tvis.length+1];
+		for (int i=0;i<tvis.length;i++)
+			vis[i]=tvis[i];
+		v.setName(name);
+		v.setSelectable(selectable);
+		// Set pos, selectable
+		vis[tvis.length]=v;
+	}
+	
 	public void tempo(float t) {
 		PApplet.println("tempo("+t+")");
 		MasterClock.settempo(t);
@@ -319,10 +305,15 @@ public class Tracker extends PApplet {
 		projectors[proj].setCameraView(mat);
 	}
 
-
+	private String vispos(int i) {
+		int row=i/5;
+		int col=i-row*5;
+		return ""+(row+1)+"/"+(col+1);
+	}
+	
 	public void vsetapp(OscMessage msg) {
-		for (int i=0;i<vispos.length;i++) {
-			if (msg.checkAddrPattern("/video/app/buttons/"+vispos[i]) ) {
+		for (int i=0;i<vis.length;i++) {
+			if (msg.checkAddrPattern("/video/app/buttons/"+vispos(i)) ) {
 				setapp(i);
 				return;
 			}		
@@ -361,9 +352,9 @@ public class Tracker extends PApplet {
 		if (appNum==currentvis)
 			return;
 		// Turn off old block
-		for (int k=0; k<vispos.length;k++)
+		for (int k=0; k<vis.length;k++)
 			if (k!=appNum) {
-				OscMessage msg = new OscMessage("/video/app/buttons/"+vispos[k]);
+				OscMessage msg = new OscMessage("/video/app/buttons/"+vispos(k));
 				msg.add(0);
 				sendOSC("TO",msg);
 				//PApplet.println("Sent "+msg.toString());
@@ -372,15 +363,15 @@ public class Tracker extends PApplet {
 		if (currentvis!=-1)
 			vis[currentvis].stop();
 		currentvis=appNum;
-		println("Switching to app "+currentvis+": "+visnames[currentvis]);
-		vis[currentvis].setName(visnames[currentvis]);
+		println("Switching to app "+currentvis+": "+vis[currentvis].name);
+		vis[currentvis].setName(vis[currentvis].name);
 		// Turn on block for current app
-		OscMessage msg = new OscMessage("/video/app/buttons/"+vispos[currentvis]);
+		OscMessage msg = new OscMessage("/video/app/buttons/"+vispos(currentvis));
 		msg.add(1.0);
 		sendOSC("TO",msg);
 
 		msg = new OscMessage("/video/app/name");
-		msg.add(visnames[currentvis]);
+		msg.add(vis[currentvis].name);
 		sendOSC("TO",msg);
 		vis[currentvis].start();
 		if (GUI.theGUI != null)
@@ -992,7 +983,7 @@ public class Tracker extends PApplet {
 		int newvis=currentvis;
 		do {
 			newvis=(newvis+1)%vis.length;
-		} while (!selectable[newvis]);
+		} while (!vis[newvis].selectable);
 		setapp(newvis);
 //		Calendar cal=Calendar.getInstance();
 //		int hour=cal.get(Calendar.HOUR_OF_DAY);

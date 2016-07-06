@@ -63,12 +63,12 @@ public class VisualizerMenu extends Visualizer {
 	private HashSet<Integer> getNextVisualizerIndexSet() {
 		HashSet<Integer> results = new HashSet<Integer>();
 		while(true) {
-			PApplet.println("getNextSet: "+nextVisualizerIndex+": "+Tracker.selectable[nextVisualizerIndex]);
-			if (Tracker.selectable[nextVisualizerIndex])
+			PApplet.println("getNextSet: "+nextVisualizerIndex+": "+Tracker.vis[nextVisualizerIndex].selectable);
+			if (Tracker.vis[nextVisualizerIndex].selectable)
 				results.add(nextVisualizerIndex);
 			nextVisualizerIndex++;
 			// If we reached the end of the list, we stop adding.
-			if (nextVisualizerIndex >= Tracker.visnames.length) {
+			if (nextVisualizerIndex >= Tracker.vis.length) {
 				nextVisualizerIndex = 0;
 				break;
 			}
@@ -225,6 +225,6 @@ class MenuItem {
 	public MenuItem(PVector position, int visualizer) {
 		this.position = position;
 		this.visualizer = visualizer;
-		 name = visualizer == -1 ? "More" : Tracker.visnames[visualizer];
+		 name = visualizer == -1 ? "More" : Tracker.vis[visualizer].name;
 	}
 }
