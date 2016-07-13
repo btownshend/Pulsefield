@@ -224,6 +224,7 @@ public class Tracker extends PApplet {
 		v.setSelectable(selectable);
 		// Set pos, selectable
 		vis[tvis.length]=v;
+		PApplet.println("Created "+name);
 	}
 	
 	public void tempo(float t) {
@@ -463,8 +464,16 @@ public class Tracker extends PApplet {
 		
 		canvas.endDraw();
 		// Syphon setup, requires OpenGL renderer (not FX2D?)
-		if (useSyphon && server==null)
-			server = new SyphonServer(this, "Tracker");
+		if (useSyphon && server==null) {
+			PApplet.println("Creating new syphon server...");
+			try {
+				server = new SyphonServer(this, "Tracker");
+			} catch (Exception e) {
+				e.printStackTrace();
+				exit();
+			}
+			PApplet.println("Done creating new syphon server");
+		}
 		
 		if (server != null) {
 			server.sendImage(canvas);
@@ -656,7 +665,7 @@ public class Tracker extends PApplet {
 		if (present)
 			PApplet.main(new String[] { "--present","Tracker"});
 		else
-			PApplet.main(new String[] {"--display=2","Tracker" });
+			PApplet.main(new String[] {"--display=1","Tracker" });
 	}
 
 	/* incoming osc message are forwarded to the oscEvent method. */
