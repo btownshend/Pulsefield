@@ -340,7 +340,8 @@ public class VisualizerDDR extends Visualizer {
 				g.rotate((float)(quad*Math.PI/2+Math.PI));
 				g.translate(-ARROWDIST, 0);
 				if (d.isHit()) {
-					g.image(arrow, 0, 0, ARROWSIZE*1.2f, ARROWSIZE*1.2f);
+					g.tint(0,255,0);
+					g.image(arrow, 0, 0, ARROWSIZE*1.5f, ARROWSIZE*1.5f);
 				} else
 					g.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
 			} else {
