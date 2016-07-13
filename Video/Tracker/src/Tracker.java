@@ -161,6 +161,7 @@ public class Tracker extends PApplet {
 		//vis[16]=visSyphon;
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
 		addVis("Osmos",new VisualizerOsmos(this),true);
+		addVis("VDMX",new VisualizerVDMX(this,"/Users/bst/Dropbox/Pulsefield/VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),true);
 		
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
