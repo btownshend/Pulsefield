@@ -8,6 +8,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import processing.core.PApplet;
@@ -22,6 +24,7 @@ public class GUI extends JFrame {
 	private boolean initialized=false;
 	private JCheckBox useMasks;
 	private JCheckBox showProjectors;
+	private JTextArea fps;
 	
 	public static void start() {
 		EventQueue.invokeLater(new Runnable() {
@@ -47,8 +50,10 @@ public class GUI extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		
+		fps=new JTextArea("FPS");
+		contentPane.add(fps);
+		
 		drawMasks = new JCheckBox("Draw Mask");
-
 		drawMasks.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Tracker.theTracker.drawMasks=drawMasks.isSelected();
@@ -88,6 +93,8 @@ public class GUI extends JFrame {
 			}
 		});
 		contentPane.add(showProjectors);
+
+		
 		String visnames[]=new String[Tracker.vis.length];
 		for (int i=0;i<Tracker.vis.length;i++)
 			visnames[i]=Tracker.vis[i].name;
@@ -95,6 +102,10 @@ public class GUI extends JFrame {
 		contentPane.add(appSelect);
 		initialized=true;
 		update();
+	}
+	
+	void updateFPS() {
+		fps.setText(String.format("%.0f", Tracker.theTracker.avgFrameRate));
 	}
 	
 	void update() {
