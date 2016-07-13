@@ -129,7 +129,7 @@ public class Tracker extends PApplet {
 		synth = new Max(this,oscP5, MAX);
 
 		synth.play(0,64,100,100,1);
-		Scale scale=new Scale("Major","C");
+
 		
 		prevMousePos=new PVector(0f,0f);
 		prevMousePressed=false;
@@ -137,31 +137,6 @@ public class Tracker extends PApplet {
 		
 		// Facility for real-time FFT of default input
 		fourier=new Fourier(this);
-		
-		addVis("Pads",new VisualizerPads(this, synth),false);
-		addVis("Navier",visNavier=new VisualizerNavier(this,synth),true); 
-		addVis("Tron",new VisualizerTron(this,scale,synth),true);
-		addVis("Grid",visAbleton=new VisualizerGrid(this),true);
-		addVis("DDR",visDDR=new VisualizerDDR(this),true);
-		addVis("Poly",new VisualizerPoly(this,scale,synth),true);
-		addVis("Voronoi",new VisualizerVoronoi(this,scale,synth),true);
-		addVis("Guitar",new VisualizerGuitar(this,synth),true);
-		addVis("Dot",new VisualizerDot(this),false);
-		addVis("CHucK",new VisualizerChuck(this),false);
-		addVis("Proximity",new VisualizerProximity(this),true);
-		addVis("Cows",new VisualizerCows(this),true);
-		addVis("Whack",new VisualizerWhack(this),true);
-		addVis("Soccer",new VisualizerSoccer(this),true);
-		addVis("Menu",visMenu=new VisualizerMenu(this),false);
-		addVis("Visualizer",new VisualizerMinim(this,fourier,renderer!=FX2D),true);
-		addVis("TestPattern",new VisualizerTestPattern(this),false);
-		setapp(vis.length-1);
-		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
-		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
-		//vis[16]=visSyphon;
-		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
-		addVis("Osmos",new VisualizerOsmos(this),true);
-		addVis("VDMX",new VisualizerVDMX(this,"/Users/bst/Dropbox/Pulsefield/VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),true);
 		
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
@@ -190,7 +165,6 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setpose","/cal/pose");
 		oscP5.plug(this, "setcameraview","/cal/cameraview");
 		oscP5.plug(this, "setprojection","/cal/projection");
-		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		unhandled = new HashMap<String,Boolean>();
 		canvas = (PGraphicsOpenGL) createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
 		projectors=new Projector[2];
@@ -211,6 +185,35 @@ public class Tracker extends PApplet {
 		starting = false;
 	}
 
+	private void addVisualizers() {
+		Scale scale=new Scale("Major","C");
+		addVis("Pads",new VisualizerPads(this, synth),false);
+		addVis("Navier",visNavier=new VisualizerNavier(this,synth),true); 
+		addVis("Tron",new VisualizerTron(this,scale,synth),true);
+		addVis("Grid",visAbleton=new VisualizerGrid(this),true);
+		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
+		addVis("DDR",visDDR=new VisualizerDDR(this),true);
+		addVis("Poly",new VisualizerPoly(this,scale,synth),true);
+		addVis("Voronoi",new VisualizerVoronoi(this,scale,synth),true);
+		addVis("Guitar",new VisualizerGuitar(this,synth),true);
+		addVis("Dot",new VisualizerDot(this),false);
+		addVis("CHucK",new VisualizerChuck(this),false);
+		addVis("Proximity",new VisualizerProximity(this),true);
+		addVis("Cows",new VisualizerCows(this),true);
+		addVis("Whack",new VisualizerWhack(this),true);
+		addVis("Soccer",new VisualizerSoccer(this),true);
+		addVis("Menu",visMenu=new VisualizerMenu(this),false);
+		addVis("Visualizer",new VisualizerMinim(this,fourier,renderer!=FX2D),true);
+		addVis("TestPattern",new VisualizerTestPattern(this),false);
+		setapp(vis.length-1);
+		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
+		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
+		//vis[16]=visSyphon;
+		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
+		addVis("Osmos",new VisualizerOsmos(this),true);
+		addVis("VDMX",new VisualizerVDMX(this,"/Users/bst/Dropbox/Pulsefield/VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),true);
+	}
+	
 	public void addVis(String name, Visualizer v,boolean selectable) {
 		// Add a visualizer to the internal list
 		Visualizer tvis[]=vis;
@@ -382,6 +385,10 @@ public class Tracker extends PApplet {
 	}
 
 	synchronized public void draw() {
+		if (vis.length==0) {
+			// Setup visualizers at first draw
+			addVisualizers();
+		}
 		tick++;
 		avgFrameRate=avgFrameRate*(1f-1f/20f)+frameRate/20f;
 		if (GUI.theGUI != null)
