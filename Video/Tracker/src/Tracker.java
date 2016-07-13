@@ -28,7 +28,8 @@ public class Tracker extends PApplet {
 	private static boolean genFrameMsgs = false;
 	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
-	int tick=0;
+	private int tick=0;
+	private int lastFPSDisplay=0;   // Last time FPS displayed
 	private float avgFrameRate=0;
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
@@ -381,10 +382,12 @@ public class Tracker extends PApplet {
 
 	synchronized public void draw() {
 		tick++;
-		avgFrameRate=avgFrameRate*(1f-1f/200f)+frameRate/200f;
-		if (tick%200 == 0) {
+		final float frameDisplayTime=5.0f;   // Display this many seconds
+		avgFrameRate=avgFrameRate*(1f-1f/20f)+frameRate/20f;
+		if ((tick-lastFPSDisplay)/avgFrameRate >= frameDisplayTime) {
 			println("Average frame rate = "+avgFrameRate);
 			vis[currentvis].stats();
+			lastFPSDisplay=tick;
 		}
 
 		canvas.beginDraw();
