@@ -93,8 +93,10 @@ public class VisualizerDDR extends Visualizer {
 	Simfile sf;
 	long startTime;
 	PImage arrow;   // Left pointing arrow
+	PImage arrowHit;   // Same, but for when the player hits the correct move
 	PShape hitIcons[];
 	PShape dancer;
+	Images dancerImages;
 	Song cursong=null;
 	int pattern=0;  // Current pattern
 	float lastClipPosition;
@@ -106,7 +108,9 @@ public class VisualizerDDR extends Visualizer {
 	VisualizerDDR(PApplet parent) {
 		super();
 		dancers = new HashMap<Integer, Dancer>();
-		arrow = parent.loadImage("arrow3.png");
+		arrow = parent.loadImage("DDR/arrow.png");
+		arrowHit = parent.loadImage("DDR/arrowHit.png");
+		dancerImages = new Images("DDR/dancers");
 		dancer=parent.loadShape(Tracker.SVGDIRECTORY+"dancer4.svg");
 		hitIcons = new PShape[4];
 		for (int i=0;i<hitIcons.length;i++)
@@ -284,7 +288,7 @@ public class VisualizerDDR extends Visualizer {
 			g.imageMode(PConstants.CENTER);
 			float bannerHeight = banner.height*bannerWidth/banner.width;
 			g.pushMatrix();
-			g.translate(center.x, center.y-sz.y/4);
+			g.translate(center.x, bannerHeight/2);
 			g.scale(-1,1);  // Flip to RH coord system
 			g.image(banner, 0, 0, bannerWidth, bannerHeight);
 			g.popMatrix();	
@@ -307,7 +311,7 @@ public class VisualizerDDR extends Visualizer {
 
 
 	public void drawPF(PGraphics g, People allpos) {
-		final float DOTSIZE=0.4f;  // Dotsize in meters
+		final float DOTSIZE=0.5f;  // Dotsize in meters
 		final float ARROWSIZE=DOTSIZE;
 		final float ARROWDIST=(ARROWSIZE+DOTSIZE)/2;
 		final float scoreHeight=DOTSIZE*0.7f;
@@ -316,7 +320,16 @@ public class VisualizerDDR extends Visualizer {
 		g.imageMode(PConstants.CENTER);
 		g.tint(255);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
-		// Add drawing code here
+		// Find current winner
+		int bestScore=-1;
+		int bestId=-1;
+		for (int id: dancers.keySet()) {
+			Dancer d=dancers.get(id);
+			if (d.score>bestScore) {
+				bestScore=d.score;
+				bestId=id;
+			}
+		}
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
 			Person p=allpos.get(id);
@@ -327,26 +340,32 @@ public class VisualizerDDR extends Visualizer {
 			int quad=d.getAim();
 			g.pushMatrix();
 			g.translate(d.neutral.x,d.neutral.y);
-			g.fill(p.getcolor());
-			g.stroke(p.getcolor());
-			g.ellipse(0,0,DOTSIZE,DOTSIZE);
-			// Draw score in reverse
-			g.fill(0xffffff-(p.getcolor()&0xffffff));
+//			g.fill(p.getcolor());
+//			g.stroke(p.getcolor());
+//			g.ellipse(0,0,DOTSIZE,DOTSIZE);
+			PImage img=dancerImages.get(id);
+			g.image(dancerImages.get(id),0,0,DOTSIZE,DOTSIZE*img.height/img.width);
+
+			// Draw score below
+			g.pushMatrix();
+			g.translate(-DOTSIZE, DOTSIZE);
 			g.stroke(0);
-			g.fill(0);
+			if (id==bestId)
+				g.fill(0,255,0);
+			else
+				g.fill(255,0,0);
 			drawText(g,scoreHeight,""+d.score,0,-scoreHeight/10);
+			g.popMatrix();
+			
 			//PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad);
 			if (quad>=0) {
 				g.rotate((float)(quad*Math.PI/2+Math.PI));
 				g.translate(-ARROWDIST, 0);
-				if (d.isHit()) {
-					g.tint(0,255,0);
-					g.image(arrow, 0, 0, ARROWSIZE*1.5f, ARROWSIZE*1.5f);
-				} else
-					g.image(arrow, 0, 0, ARROWSIZE, ARROWSIZE);
+				g.image(d.isHit()?arrowHit:arrow, 0, 0, ARROWSIZE, ARROWSIZE);
 			} else {
 				//parent.shape(dancer, 0, 0, ARROWSIZE, ARROWSIZE);
 			}
+
 			g.popMatrix();
 		}
 	}
@@ -371,6 +390,8 @@ public class VisualizerDDR extends Visualizer {
 		g.translate(0,lineHeight*1.5f);
 		g.textAlign(PConstants.LEFT,PConstants.CENTER);
 		g.ellipseMode(PConstants.CENTER);
+		g.imageMode(PConstants.CENTER);
+		g.textMode(PConstants.CENTER);
 		for (int id: dancers.keySet()) {
 			Dancer d=dancers.get(id);
 			Person p=allpos.get(id);
@@ -387,9 +408,10 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 	public void drawTicker(PGraphics g, float now) {
-		final float DURATION=12.0f;  // Duration of display top to bottom
-		final float HISTORY=2.0f;    // Amount of past showing
+		final float DURATION=8.0f;  // Duration of display top to bottom
+		final float HISTORY=1.0f;    // Amount of past showing
 		final float tickerWidth=1.5f;  // Width of ticker in meters
+		final float tickerTopMargin=1f;   // Ticker ends this distance from top of active area
 		PVector sz=Tracker.getFloorSize();
 		PVector center=Tracker.getFloorCenter();
 		
@@ -415,8 +437,9 @@ public class VisualizerDDR extends Visualizer {
 		float arrowsize=tickerWidth/5;
 		for (NoteData n: notes) {
 			final float angles[]={0f,-(float)(Math.PI/2),-(float)(3*Math.PI/2),-(float)Math.PI};
-			float ypos=(n.timestamp-(now-HISTORY))/DURATION*sz.y+center.y/2;
-			//PApplet.println("At "+n.timestamp+", notes="+n.notes+", y="+ypos);
+			float rel=(n.timestamp-(now-HISTORY))/DURATION;
+			float ypos=(rel-0.5f)*(sz.y-tickerTopMargin)+(center.y+tickerTopMargin/2);
+			//PApplet.println("At "+n.timestamp+", rel="+rel+", notes="+n.notes+", y="+ypos+",sz.y="+sz.y+",center.y="+center.y);
 			for (int i=0;i<n.notes.length()&&i<4;i++) {
 				if (n.notes.charAt(i) != '0') {
 					float xpos=center.x-tickerWidth/2+(i+0.5f)*tickerWidth/n.notes.length();
@@ -431,7 +454,7 @@ public class VisualizerDDR extends Visualizer {
 			}
 		}
 		g.strokeWeight(0.05f);
-		float ypos=HISTORY*sz.y/DURATION+center.y/2;
+		float ypos=(HISTORY/DURATION-0.5f)*(sz.y-tickerTopMargin)+(center.y+tickerTopMargin/2);
 		g.line(center.x-tickerWidth/2,ypos,0,center.x+tickerWidth/2,ypos,0);
 		drawText(g,0.16f,String.format("%.2f", now), center.x,ypos-0.2f);
 	}
