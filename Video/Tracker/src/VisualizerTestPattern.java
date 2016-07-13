@@ -43,7 +43,7 @@ public class VisualizerTestPattern extends VisualizerDot {
 			else
 				g.stroke(20);
 			g.line(x,minypos,x,maxypos);
-			x+=0.1f;
+			x+=0.5f;
 		}
 		float y=minxpos;
 		while (y<=maxypos) {
@@ -52,7 +52,7 @@ public class VisualizerTestPattern extends VisualizerDot {
 			else
 				g.stroke(20);
 			g.line(minxpos,y,maxxpos,y);
-			y+=0.1f;
+			y+=0.5f;
 		}
 		// Draw radial circles
 		g.stroke(127,0,127);
