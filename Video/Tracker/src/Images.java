@@ -40,4 +40,8 @@ public class Images {
 		PApplet.println("getRandom -> "+choose+"/"+imgs.size());
 		return imgs.get(choose);
 	}
+	
+	public PImage get(int id) {
+		return imgs.get(id%imgs.size());
+	}
 }

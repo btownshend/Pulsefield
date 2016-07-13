@@ -8,8 +8,8 @@ import processing.core.PShape;
 public class VisualizerIcon extends Visualizer {
 	String icons[];
 	PShape iconShapes[];
-	PImage images[]=new PImage[0];
-	boolean useImages=true;
+	Images images=null;
+	final boolean useImages=true;
 	
 	VisualizerIcon(PApplet parent) {
 		super();
@@ -24,13 +24,9 @@ public class VisualizerIcon extends Visualizer {
 			PApplet.println("Loaded "+icons[i]+" with "+iconShapes[i].getChildCount()+" children, size "+iconShapes[i].width+"x"+iconShapes[i].height);
 		}
 	}
-	public void setImages(PApplet parent, String filenames[]) {
-		images=new PImage[filenames.length];
-		for (int i=0;i<filenames.length;i++) {
-			images[i]=parent.loadImage(filenames[i]);
-			assert(images[i]!=null);
-			PApplet.println("Loaded "+filenames[i]+": size "+images[i].width+"x"+images[i].height);
-		}
+
+	public void setImages(PApplet parent, String imageDir) {
+		images=new Images(imageDir);
 	}
 	
 	public void start() {
@@ -61,7 +57,7 @@ public class VisualizerIcon extends Visualizer {
 			g.fill(c,255);
 			g.stroke(c,255);
 			if (useImages) {
-				PImage img=images[ps.id%images.length];
+				PImage img=images.get(ps.id);
 				float scale=Math.min(sz/img.width,sz/img.height);
 				g.image(img,ps.getOriginInMeters().x, ps.getOriginInMeters().y,img.width*scale,img.height*scale);
 			} else {

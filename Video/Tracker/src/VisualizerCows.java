@@ -25,7 +25,7 @@ class Apple {
 //		if (appleShape==null)
 //			appleShape=g.loadShape(Tracker.SVGDIRECTORY+"apple.svg");
 		if (appleImage==null)
-			appleImage=Tracker.theTracker.loadImage("49728.gif");
+			appleImage=Tracker.theTracker.loadImage("cows/49728.gif");
 //		PApplet.println("Drawing apple shape at "+p);
 //		g.shapeMode(PConstants.CENTER);
 //		Visualizer.drawShape(g, appleShape,position.x, position.y,appleRadius*2, appleRadius*2);
@@ -85,11 +85,11 @@ public class VisualizerCows extends VisualizerIcon {
 	Apple apple;
 	
 	final String cowIcons[]={"cow1.svg","cow2.svg","cow3.svg","ToastingCow002.svg"};
-	final String cowImages[]={"cow_PNG2125.png","cow_PNG2127.png","cow_PNG2130.png","cow_PNG2138.png","cow_PNG2140.png","cow_PNG2141.png"};
+	final String cowImageDir="data/cows/cows";
 	VisualizerCows(PApplet parent) {
 		super(parent);
 		setIcons(parent,cowIcons);
-		setImages(parent,cowImages);
+		setImages(parent,cowImageDir);
 		apple=new Apple(new PVector(0f,0f));
 	}
 	
@@ -123,8 +123,7 @@ public class VisualizerCows extends VisualizerIcon {
 			g.fill(c,255);
 			g.stroke(c,255);
 			if (useImages) {
-				assert(images.length>0);
-				PImage img=images[ps.id%images.length];
+				PImage img=images.get(ps.id);
 				float scale=Math.min(sz/img.width,sz/img.height);
 				g.pushMatrix();
 				g.translate(ps.getOriginInMeters().x, ps.getOriginInMeters().y);
