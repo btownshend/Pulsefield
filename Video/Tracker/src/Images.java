@@ -12,7 +12,7 @@ public class Images {
 	
 	public Images(String folder) {
 		// Retrieve a random image from the given folder within data
-		File d=new File(folder);
+		File d=new File("data/"+folder);
 		if (!d.isDirectory()) {
 			PApplet.println(d.getAbsolutePath()+" does not exist or is not a directory.");
 			assert(false);

@@ -23,7 +23,7 @@ class Marble {
 	
 	Marble(float mass, PVector pos, PVector vel, PImage img) {
 		if (imgs==null)
-			imgs=new Images("data/osmos/bubbles");
+			imgs=new Images("osmos/bubbles");
 		velocity=new PVector();
 		velocity.x=vel.x; velocity.y=vel.y;
 		location=new PVector();
@@ -230,7 +230,7 @@ public class VisualizerOsmos extends Visualizer {
 	VisualizerOsmos(PApplet parent) {
 		super();
 		marbles = new HashMap<Integer, PlayerMarble>();
-		marbleImages=new Images("data/osmos/marbles");
+		marbleImages=new Images("osmos/marbles");
 	}
 	
 	public void update(PApplet parent, People allpos) {		

@@ -85,7 +85,7 @@ public class VisualizerCows extends VisualizerIcon {
 	Apple apple;
 	
 	final String cowIcons[]={"cow1.svg","cow2.svg","cow3.svg","ToastingCow002.svg"};
-	final String cowImageDir="data/cows/cows";
+	final String cowImageDir="cows/cows";
 	VisualizerCows(PApplet parent) {
 		super(parent);
 		setIcons(parent,cowIcons);

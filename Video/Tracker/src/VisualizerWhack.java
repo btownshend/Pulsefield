@@ -80,8 +80,8 @@ class Mole {
 public class VisualizerWhack extends VisualizerIcon {
 	List<Mole> moles = new ArrayList<Mole>();
 	Images moleImages;
-	final String hammerDir="data/whack/hammers";
-	final String moleDir="data/whack/moles";
+	final String hammerDir="whack/hammers";
+	final String moleDir="whack/moles";
 	static final int numMoles=4;
 	
 	VisualizerWhack(PApplet parent) {
