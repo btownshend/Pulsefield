@@ -388,8 +388,8 @@ public class VisualizerDDR extends Visualizer {
 
 	public void drawTicker(PGraphics g, float now) {
 		final float DURATION=12.0f;  // Duration of display top to bottom
-		final float HISTORY=3.0f;    // Amount of past showing
-		final float tickerWidth=1f;  // Width of ticker in meters
+		final float HISTORY=2.0f;    // Amount of past showing
+		final float tickerWidth=1.5f;  // Width of ticker in meters
 		PVector sz=Tracker.getFloorSize();
 		PVector center=Tracker.getFloorCenter();
 		
