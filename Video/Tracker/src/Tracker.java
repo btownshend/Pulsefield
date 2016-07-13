@@ -439,7 +439,7 @@ public class Tracker extends PApplet {
 
 		vis[currentvis].draw(this, canvas,people);
 
-		vis[currentvis].drawLaser(this,people);
+		//vis[currentvis].drawLaser(this,people);
 
 
 		if (drawBounds) {
