@@ -10,7 +10,7 @@ import processing.core.PVector;
 
 // Class for a single mole 
 class Mole {
-	PVector position=new PVector();
+	PVector position=null;
 	PImage img;
 	int nextClip=0;
 	int explodeCounter;
@@ -36,6 +36,8 @@ class Mole {
 	
 	void reset(People p) {
 		// Choose new location for mole
+		if (position==null)
+			position=new PVector();
 		position.y=(float) (Math.random()*(Tracker.rawmaxy-Tracker.rawminy)+Tracker.rawminy); 
 		position.x=(float) (Math.random()*(Tracker.rawmaxx-Tracker.rawminx)+Tracker.rawminx);
 	}
