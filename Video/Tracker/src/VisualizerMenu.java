@@ -60,9 +60,9 @@ public class VisualizerMenu extends Visualizer {
 		g.ellipseMode(PConstants.CENTER);
 		g.stroke(255);
 		g.noFill();
-		g.strokeWeight(0.1f);
+		g.strokeWeight(0.02f);
 		g.ellipse(hotSpot.x,hotSpot.y,hotSpotRadius*2,hotSpotRadius*2);
-		PApplet.println("hostSpotDraw at "+hotSpot);
+		//PApplet.println("hostSpotDraw at "+hotSpot+" with radius "+hotSpotRadius);
 	}
 
 	/** Next visualizer to serve up.  Call getNextVisualizerIndexSet */

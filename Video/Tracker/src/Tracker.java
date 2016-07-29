@@ -351,6 +351,14 @@ public class Tracker extends PApplet {
 		sendOSC(dest,msg);
 	}
 
+	public int getAppIndex(String name) {
+		// Return index of app called 'name' or -1 if none
+		for (int i=0;i<vis.length;i++)
+			if (vis[i].name==name)
+				return i;
+		return -1;
+	}
+	
 	synchronized public void setapp(int appNum) {
 		if (appNum <0 || appNum > vis.length) {
 			println("Bad video app number: "+appNum);
@@ -435,7 +443,7 @@ public class Tracker extends PApplet {
 		}
 		prevMousePressed=mousePressed;
 		if (visMenu.hotSpotCheck(this,people))
-			setapp(13);
+			setapp(getAppIndex("Menu"));
 
 		sendMouseOSC();
 
@@ -443,7 +451,8 @@ public class Tracker extends PApplet {
 		//		translate((width-height)/2f,0);
 
 		vis[currentvis].draw(this, canvas,people);
-
+		visMenu.hotSpotDraw(canvas);
+		
 		//vis[currentvis].drawLaser(this,people);
 
 
