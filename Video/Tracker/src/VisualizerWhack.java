@@ -14,7 +14,8 @@ class Mole {
 	PImage img;
 	int nextClip=0;
 	int explodeCounter;
-	static final int explodeFrames=30;
+	static final int explodeFrames=15;
+	static final float maxExplodeScale=5f;
 	
 	static final float maxHitDist=0.4f; // Meters
 	static final float radius=0.3f;  // Meters
@@ -30,7 +31,7 @@ class Mole {
 		g.imageMode(PConstants.CENTER);
 		float r=radius;
 		if (explodeCounter > 0)
-			r=radius*(1+3f*(explodeFrames-explodeCounter)/explodeFrames);
+			r=radius*(1+maxExplodeScale*(explodeFrames-explodeCounter)/explodeFrames);
 		g.image(img,position.x, position.y,r*2, r*2);
 	}
 	
