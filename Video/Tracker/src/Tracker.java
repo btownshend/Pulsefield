@@ -180,9 +180,7 @@ public class Tracker extends PApplet {
 		pselect=new int[mask[0].width*mask[0].height];
 		for (int i=0;i<pselect.length;i++)
 			pselect[0]=0;  // Default to projector 0
-		PApplet.println("Setup complete");
-		GUI.start();
-		starting = false;
+		PApplet.println("settings() complete");
 	}
 
 	private void addVisualizers() {
@@ -394,9 +392,12 @@ public class Tracker extends PApplet {
 	}
 
 	synchronized public void draw() {
-		if (vis.length==0) {
+		if (starting) {
 			// Setup visualizers at first draw
 			addVisualizers();
+			GUI.start();
+			PApplet.println("Finished initialization");
+			starting = false;
 		}
 		tick++;
 		avgFrameRate=avgFrameRate*(1f-1f/20f)+frameRate/20f;
