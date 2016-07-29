@@ -27,8 +27,9 @@ public class VisualizerMenu extends Visualizer {
 	/** Text height (in meters) **/
 	static final float TEXT_HEIGHT = 0.25f;
 	
-	static final float HOTSPOTRADIUS=0.3f;   // Radius of hot spot in meters
-
+	static final float hotSpotRadius=0.3f;   // Radius of hot spot in meters
+	static final PVector hotSpot = new PVector(4f,1f);  // Center of hotspot
+	
 	/** Cursor radius (in meters) **/
 	static final float CURSOR_RADIUS = 0.3f;
 
@@ -44,16 +45,24 @@ public class VisualizerMenu extends Visualizer {
 	}
 	
 	boolean hotSpotCheck(PApplet parent, People people) {
-		PVector menuHotSpot = new PVector(4, (float)(12/39.37));
 		for(Person p : people.pmap.values()) {
 			PVector location = p.getOriginInMeters();
-			if(PVector.sub(location, menuHotSpot).mag() < HOTSPOTRADIUS) {
+			if(PVector.sub(location, hotSpot).mag() < hotSpotRadius) {
 				selectingPerson=p.id;
 				PApplet.println("Person hit hot spot: "+selectingPerson);
 				return true;
 			}
 		}
 		return false;
+	}
+	
+	void hotSpotDraw(PGraphics g) {
+		g.ellipseMode(PConstants.CENTER);
+		g.stroke(255);
+		g.noFill();
+		g.strokeWeight(0.1f);
+		g.ellipse(hotSpot.x,hotSpot.y,hotSpotRadius*2,hotSpotRadius*2);
+		PApplet.println("hostSpotDraw at "+hotSpot);
 	}
 
 	/** Next visualizer to serve up.  Call getNextVisualizerIndexSet */
