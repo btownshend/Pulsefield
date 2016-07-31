@@ -29,7 +29,6 @@ public class Tracker extends PApplet {
 	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
 	private int tick=0;
-	private int lastFPSDisplay=0;   // Last time FPS displayed
 	public float avgFrameRate=0;
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;

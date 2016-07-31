@@ -279,8 +279,6 @@ public class VisualizerDDR extends Visualizer {
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 
 		PVector center=Tracker.getFloorCenter();
-		PVector sz=Tracker.getFloorSize();
-		
 		PImage banner=cursong.getSimfile().getBanner(t,g);
 		
 		if (clip.position < 10f && banner!=null) { // Show banner for first several seconds

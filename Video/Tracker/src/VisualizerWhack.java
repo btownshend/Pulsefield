@@ -5,7 +5,6 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PImage;
-import processing.core.PShape;
 import processing.core.PVector;
 
 // Class for a single mole 
