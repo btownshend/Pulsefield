@@ -1,5 +1,7 @@
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -7,8 +9,10 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import processing.core.PApplet;
@@ -24,6 +28,7 @@ public class GUI extends JFrame {
 	private JCheckBox useMasks;
 	private JCheckBox showProjectors;
 	private JTextArea fps;
+	private JLabel lblFps;
 	
 	public static void start() {
 		EventQueue.invokeLater(new Runnable() {
@@ -48,16 +53,12 @@ public class GUI extends JFrame {
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		
-		fps=new JTextArea("FPS");
-		contentPane.add(fps);
-		
-		drawMasks = new JCheckBox("Draw Mask");
-		drawMasks.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Tracker.theTracker.drawMasks=drawMasks.isSelected();
-			}
-		});
+		GridBagLayout gbl_contentPane = new GridBagLayout();
+		gbl_contentPane.columnWidths = new int[]{66, 114, 64, 32, 15, 72, 0};
+		gbl_contentPane.rowHeights = new int[]{23, 27, 0, 0, 0, 0, 0, 0, 0, 0};
+		gbl_contentPane.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		contentPane.setLayout(gbl_contentPane);
 		
 		drawBounds = new JCheckBox("Draw Bounds");
 		drawBounds.addActionListener(new ActionListener() {
@@ -66,9 +67,31 @@ public class GUI extends JFrame {
 				PApplet.println("drawBounds="+drawBounds.toString());
 			}
 		});
-		contentPane.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		contentPane.add(drawBounds);
-		contentPane.add(drawMasks);
+		GridBagConstraints gbc_drawBounds = new GridBagConstraints();
+		gbc_drawBounds.anchor = GridBagConstraints.NORTHWEST;
+		gbc_drawBounds.insets = new Insets(0, 0, 5, 5);
+		gbc_drawBounds.gridx = 1;
+		gbc_drawBounds.gridy = 0;
+		contentPane.add(drawBounds, gbc_drawBounds);
+		
+		showProjectors = new JCheckBox("Show Projectors");
+		showProjectors.setHorizontalAlignment(SwingConstants.LEFT);
+		showProjectors.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Tracker.theTracker.showProjectors=showProjectors.isSelected();
+			}
+		});
+		GridBagConstraints gbc_showProjectors = new GridBagConstraints();
+		gbc_showProjectors.anchor = GridBagConstraints.EAST;
+		gbc_showProjectors.insets = new Insets(0, 0, 5, 5);
+		gbc_showProjectors.gridx = 1;
+		gbc_showProjectors.gridy = 1;
+		contentPane.add(showProjectors, gbc_showProjectors);
+
+		
+		String visnames[]=new String[Tracker.vis.length];
+		for (int i=0;i<Tracker.vis.length;i++)
+			visnames[i]=Tracker.vis[i].name;
 		
 		appSelect = new JComboBox();
 		appSelect.addActionListener(new ActionListener() {
@@ -83,22 +106,48 @@ public class GUI extends JFrame {
 				Tracker.theTracker.useMasks=useMasks.isSelected();
 			}
 		});
-		contentPane.add(useMasks);
+		GridBagConstraints gbc_useMasks = new GridBagConstraints();
+		gbc_useMasks.anchor = GridBagConstraints.NORTHWEST;
+		gbc_useMasks.insets = new Insets(0, 0, 5, 5);
+		gbc_useMasks.gridwidth = 2;
+		gbc_useMasks.gridx = 1;
+		gbc_useMasks.gridy = 2;
+		contentPane.add(useMasks, gbc_useMasks);
 		
-		showProjectors = new JCheckBox("Show Projectors");
-		showProjectors.addActionListener(new ActionListener() {
+		drawMasks = new JCheckBox("Draw Mask");
+		drawMasks.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Tracker.theTracker.showProjectors=showProjectors.isSelected();
+				Tracker.theTracker.drawMasks=drawMasks.isSelected();
 			}
 		});
-		contentPane.add(showProjectors);
-
-		
-		String visnames[]=new String[Tracker.vis.length];
-		for (int i=0;i<Tracker.vis.length;i++)
-			visnames[i]=Tracker.vis[i].name;
+		GridBagConstraints gbc_drawMasks = new GridBagConstraints();
+		gbc_drawMasks.anchor = GridBagConstraints.NORTHWEST;
+		gbc_drawMasks.insets = new Insets(0, 0, 5, 5);
+		gbc_drawMasks.gridwidth = 2;
+		gbc_drawMasks.gridx = 1;
+		gbc_drawMasks.gridy = 3;
+		contentPane.add(drawMasks, gbc_drawMasks);
 		appSelect.setModel(new DefaultComboBoxModel(visnames));
-		contentPane.add(appSelect);
+		GridBagConstraints gbc_appSelect = new GridBagConstraints();
+		gbc_appSelect.anchor = GridBagConstraints.NORTHWEST;
+		gbc_appSelect.insets = new Insets(0, 0, 5, 5);
+		gbc_appSelect.gridwidth = 2;
+		gbc_appSelect.gridx = 1;
+		gbc_appSelect.gridy = 4;
+		contentPane.add(appSelect, gbc_appSelect);
+		
+		lblFps = new JLabel("FPS:");
+		GridBagConstraints gbc_lblFps = new GridBagConstraints();
+		gbc_lblFps.insets = new Insets(0, 0, 0, 5);
+		gbc_lblFps.gridx = 4;
+		gbc_lblFps.gridy = 8;
+		contentPane.add(lblFps, gbc_lblFps);
+		
+		fps=new JTextArea("FPS");
+		GridBagConstraints gbc_fps = new GridBagConstraints();
+		gbc_fps.gridx = 5;
+		gbc_fps.gridy = 8;
+		contentPane.add(fps, gbc_fps);
 		initialized=true;
 		update();
 	}
