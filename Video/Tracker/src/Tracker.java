@@ -487,7 +487,8 @@ public class Tracker extends PApplet {
 		if (server != null) {
 			server.sendImage(canvas);
 		}
-		buildMasks(canvas);
+		if (useMasks)
+			buildMasks(canvas);
 		projectors[0].render(canvas,useMasks?mask[0]:null);
 		projectors[1].render(canvas,useMasks?mask[1]:null);
 
