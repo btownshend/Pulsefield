@@ -961,18 +961,18 @@ public class Tracker extends PApplet {
 		} */
 		// NOTE: Need to map xvelocity,yvelocity before using them!
 
-		if (xpos<Tracker.minx-1) {
-			PApplet.println("Got xpos ("+xpos+") less than minx ("+Tracker.minx+")");
-		}
-		if (xpos>Tracker.maxx+1) {
-			PApplet.println("Got xpos ("+xpos+") greater than maxx ("+Tracker.maxx+")");
-		}
-		if (ypos<Tracker.miny-1) {
-			PApplet.println("Got ypos ("+ypos+") less than miny ("+Tracker.miny+")");
-		}
-		if (ypos>Tracker.maxy+1) {
-			PApplet.println("Got ypos ("+ypos+") greater than maxy ("+Tracker.maxy+"),");
-		}
+//		if (xpos<Tracker.lidarminx-1) {
+//			PApplet.println("Got xpos ("+xpos+") less than lidarminx ("+Tracker.lidarminx+")");
+//		}
+//		if (xpos>Tracker.lidarmaxx+1) {
+//			PApplet.println("Got xpos ("+xpos+") greater than lidarmaxx ("+Tracker.lidarmaxx+")");
+//		}
+//		if (ypos<Tracker.lidarminy-1) {
+//			PApplet.println("Got ypos ("+ypos+") less than lidarminy ("+Tracker.lidarminy+")");
+//		}
+//		if (ypos>Tracker.lidarmaxy+1) {
+//			PApplet.println("Got ypos ("+ypos+") greater than lidarmaxy ("+Tracker.lidarmaxy+"),");
+//		}
 
 		people.getOrCreate(id,channel).move(new PVector(xpos, ypos), new PVector(xvelocity, yvelocity), groupid, groupsize, elapsed);
 	}
