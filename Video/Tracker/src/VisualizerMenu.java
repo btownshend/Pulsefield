@@ -27,10 +27,10 @@ public class VisualizerMenu extends Visualizer {
 	static final float SELECTION_DISTANCE = 0.3f;
 	
 	/** Text height (in meters) **/
-	static final float TEXT_HEIGHT = 0.25f;
+	static final float TEXT_HEIGHT = 0.15f;
 	
 	static final float hotSpotRadius=0.3f;   // Radius of hot spot in meters
-	static final PVector hotSpot = new PVector(4f,1f);  // Center of hotspot
+	static final PVector hotSpot = new PVector(0f,1f);  // Center of hotspot
 	
 	/** Cursor radius (in meters) **/
 	static final float CURSOR_RADIUS = 0.3f;
