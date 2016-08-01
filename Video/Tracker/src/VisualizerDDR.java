@@ -346,7 +346,7 @@ public class VisualizerDDR extends Visualizer {
 
 			// Draw score below
 			g.pushMatrix();
-			g.translate(-DOTSIZE, DOTSIZE);
+			g.translate(-DOTSIZE, -DOTSIZE);
 			g.stroke(0);
 			if (id==bestId)
 				g.fill(0,255,0);
