@@ -84,6 +84,14 @@ public class VisualizerTestPattern extends VisualizerDot {
 			g.line(ac[i].x, ac[i].y, ac[i].x-CLEN, ac[i].y+CLEN);
 			g.line(ac[i].x, ac[i].y, ac[i].x+CLEN, ac[i].y+CLEN);
 		}
+		g.stroke(0,255,0);
+		g.fill(0,255,0);
+		if (Tracker.theTracker.lidar != null)
+			for (PVector pt: Tracker.theTracker.lidar) {
+				if (pt!=null)
+					g.point(pt.x, pt.y);
+			}
+
 	}
 	
 	@Override
