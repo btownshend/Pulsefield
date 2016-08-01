@@ -22,8 +22,8 @@ class VisualizerNavier extends Visualizer {
 	long statsU3=0;
 	long statsU4=0;
 	Synth synth;
-	MusicVisLaser mvl;
 	final int downSample=1;   // amount to downsample fluid image
+	//MusicVisLaser mvl;
 	
 	VisualizerNavier(Tracker parent, Synth synth) {
 		super();
@@ -41,7 +41,7 @@ class VisualizerNavier extends Visualizer {
 		stats();
 		
 		this.synth=synth;
-		mvl=new MusicVisLaser(parent.fourier, MusicVisLaser.Modes.POLYGON);
+		//mvl=new MusicVisLaser(parent.fourier, MusicVisLaser.Modes.POLYGON);
 	}
 
 	@Override
@@ -179,7 +179,7 @@ class VisualizerNavier extends Visualizer {
 			fluidSolver.applyForce(cellX, cellY, dx, dy);
 		}
 		statsUpdate += System.nanoTime()-t1;
-		
+		//stats();
 	}
 
 	private void fluidCanvasStep(PGraphics g) {
@@ -274,7 +274,7 @@ class VisualizerNavier extends Visualizer {
 	@Override
 	public  void drawLaser(PApplet parent, People p) {
 		// Delegate to the mvl
-		mvl.drawLaser(parent, p);
+		//mvl.drawLaser(parent, p);
 	}
 }
 
