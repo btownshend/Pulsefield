@@ -3,6 +3,7 @@ import java.util.HashSet;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PImage;
 import processing.core.PShape;
 import processing.core.PVector;
 
@@ -14,6 +15,7 @@ import processing.core.PVector;
  */
 public class VisualizerMenu extends Visualizer {
 	int selectingPerson;
+	PImage menuImage;
 	
 	/** How many menu items to display at once (includes "next page" item). */
 	static final int ITEMS_PER_SCREENFUL = 20;
@@ -57,12 +59,12 @@ public class VisualizerMenu extends Visualizer {
 	}
 	
 	void hotSpotDraw(PGraphics g) {
-		g.ellipseMode(PConstants.CENTER);
-		g.stroke(255);
-		g.noFill();
-		g.strokeWeight(0.02f);
-		g.ellipse(hotSpot.x,hotSpot.y,hotSpotRadius*2,hotSpotRadius*2);
-		//PApplet.println("hostSpotDraw at "+hotSpot+" with radius "+hotSpotRadius);
+		//		if (appleShape==null)
+		//		appleShape=g.loadShape(Tracker.SVGDIRECTORY+"apple.svg");
+		if (menuImage==null)
+			menuImage=Tracker.theTracker.loadImage("menu/menu.png");
+		g.imageMode(PConstants.CENTER);
+		g.image(menuImage, hotSpot.x,hotSpot.y,hotSpotRadius*2,hotSpotRadius*2*menuImage.height/menuImage.width);
 	}
 
 	/** Next visualizer to serve up.  Call getNextVisualizerIndexSet */
