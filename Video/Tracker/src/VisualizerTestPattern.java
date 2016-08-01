@@ -86,8 +86,8 @@ public class VisualizerTestPattern extends VisualizerDot {
 		}
 		g.stroke(0,255,0);
 		g.fill(0,255,0);
-		if (Tracker.theTracker.lidar != null)
-			for (PVector pt: Tracker.theTracker.lidar) {
+		if (Tracker.theTracker.lidarbg != null)
+			for (PVector pt: Tracker.theTracker.lidarbg) {
 				if (pt!=null)
 					g.point(pt.x, pt.y);
 			}

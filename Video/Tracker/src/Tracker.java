@@ -68,6 +68,7 @@ public class Tracker extends PApplet {
 	static ProjCursor cursors[]=null;
 	Map<String,Boolean> unhandled;
 	PVector[] lidar = new PVector[381];
+	PVector[] lidarbg = new PVector[381];
 	PGraphicsOpenGL mask[];
 	int pselect[];
 	boolean drawBounds=false;   // True to overlay projector bounds
@@ -1036,9 +1037,13 @@ public class Tracker extends PApplet {
 	}
 
 	public void pfbackground(int scanPt,int nrange,float angle,float backRange,float currRange) {
-		if (lidar.length != nrange)
+		if (lidar.length != nrange) {
 			lidar=new PVector[nrange];
-		lidar[scanPt]=new PVector(currRange*cos(angle*PI/180),currRange*sin(angle*PI/180));
+			lidarbg=new PVector[nrange];
+		}
+		// pfbackground sends in range [-95,95]
+		lidar[scanPt]=new PVector(-currRange*sin(angle*PI/180),currRange*cos(angle*PI/180));
+		lidarbg[scanPt]=new PVector(-backRange*sin(angle*PI/180),backRange*cos(angle*PI/180));
 		//PApplet.println("background("+scanPt,", "+nrange+", "+angle+", "+backRange+", "+currRange+") -> "+lidar[scanPt]);
 	}
 	
