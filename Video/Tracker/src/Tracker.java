@@ -60,8 +60,7 @@ public class Tracker extends PApplet {
 	SyphonServer server=null;
 	String renderer=P2D;
 	Boolean useSyphon = false;
-	final static int CANVASWIDTH=1200;
-	final static int CANVASHEIGHT=600;
+	final static int CANVASAREA=1200*600;   // Area of canvas -- aspect depends on active area
 	PGraphicsOpenGL canvas;
 	Projector projectors[];
 	Config jconfig;
@@ -165,21 +164,34 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setcameraview","/cal/cameraview");
 		oscP5.plug(this, "setprojection","/cal/projection");
 		unhandled = new HashMap<String,Boolean>();
-		canvas = (PGraphicsOpenGL) createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
 		projectors=new Projector[2];
 		projectors[0] = new Projector(this,1,1920,1080);
 		projectors[1] = new Projector(this,2,1920,1080);
-		float mscale=8;	// How much smaller to make the masks
+
 		mask=new PGraphicsOpenGL[projectors.length];
-		for (int i=0;i<mask.length;i++) {
-			mask[i]=(PGraphicsOpenGL) createGraphics((int)(CANVASWIDTH/mscale+0.5), (int)(CANVASHEIGHT/mscale+0.5),renderer);
-			// Set for unmasked in case it is not used
-//			mask[i].noSmooth();
-		}
-		pselect=new int[mask[0].width*mask[0].height];
-		for (int i=0;i<pselect.length;i++)
-			pselect[0]=0;  // Default to projector 0
+		makeCanvases();
+
 		PApplet.println("settings() complete");
+	}
+	
+	private void makeCanvases() {
+		float area=(maxx-minx)*(maxy-miny);
+		float sc=sqrt(CANVASAREA/area);
+		int CANVASWIDTH=(int)(sc*(maxx-minx));
+		int CANVASHEIGHT=(int)(sc*(maxy-miny));
+		if (canvas==null || canvas.width!=CANVASWIDTH || canvas.height!=CANVASHEIGHT) {
+			PApplet.println("Making new canvas: "+CANVASWIDTH+"x"+CANVASHEIGHT);
+			canvas = (PGraphicsOpenGL) createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
+			float mscale=8;	// How much smaller to make the masks
+			for (int i=0;i<mask.length;i++) {
+				mask[i]=(PGraphicsOpenGL) createGraphics((int)(CANVASWIDTH/mscale+0.5), (int)(CANVASHEIGHT/mscale+0.5),renderer);
+				// Set for unmasked in case it is not used
+				//			mask[i].noSmooth();
+			}
+			pselect=new int[mask[0].width*mask[0].height];
+			for (int i=0;i<pselect.length;i++)
+				pselect[0]=0;  // Default to projector 0
+		}
 	}
 
 	private void addVisualizers() {
@@ -772,11 +784,12 @@ public class Tracker extends PApplet {
 	}
 	
 	public void resetcoords() {
+		makeCanvases();
 	}
 
 	// Get pixels per meter
 	public static float getPixelsPerMeter() {
-		return Math.min(CANVASWIDTH/getFloorSize().x, CANVASHEIGHT/getFloorSize().y);
+		return Math.min(theTracker.canvas.width/getFloorSize().x, theTracker.canvas.height/getFloorSize().y);
 	}
 	
 	// Get center of active area (in meters)
