@@ -138,19 +138,25 @@ class VisualizerNavier extends Visualizer {
 		drawBorders(g, 0.05f, bordercolor, 127);
 
 		g.ellipseMode(PConstants.CENTER);
-		for (Person ps: p.pmap.values()) {  
-			int c=ps.getcolor();
-			g.fill(c,255);
-			g.stroke(c,255);
-			//PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
-			
-			float sz=.3f;
-			//if (ps.groupsize > 1)
-			//	sz=0.20f*ps.groupsize;
-			//g.strokeWeight(sz);
-			//g.line(ps.getOriginInMeters().x, ps.getOriginInMeters().y,ps.getOriginInMeters().x, ps.getOriginInMeters().y);
-		
-			g.ellipse(ps.getOriginInMeters().x, ps.getOriginInMeters().y, sz, sz);
+
+		for (Person ps: p.pmap.values()) { 
+			g.fill(0);
+			g.stroke(0);
+			g.ellipse(ps.getOriginInMeters().x,ps.getOriginInMeters().y, ps.getLegSeparationInMeters(), ps.getLegSeparationInMeters());
+			for (int leg=0;leg<2;leg++) {
+				int c=(ps.id*17+leg*127)&0xff;
+				PApplet.println("leg "+leg+", c="+c);
+				g.fill(c,255,255);
+				g.stroke(c,255,255);
+				//PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
+
+				//float sz=.3f;
+				//if (ps.groupsize > 1)
+				//	sz=0.20f*ps.groupsize;
+				//g.strokeWeight(sz);
+				//g.line(ps.getOriginInMeters().x, ps.getOriginInMeters().y,ps.getOriginInMeters().x, ps.getOriginInMeters().y);
+				g.ellipse(ps.legs[leg].getOriginInMeters().x,ps.legs[leg].getOriginInMeters().y, ps.legs[leg].getDiameterInMeters(), ps.legs[leg].getDiameterInMeters());
+			}
 		}
 	}
 
@@ -206,7 +212,7 @@ class VisualizerNavier extends Visualizer {
 		}
 		long t3=System.nanoTime();
 		g.imageMode(PConstants.CENTER);
-		g.tint(255);
+		g.tint(255);  // Causes slow fade if <255
 		long t4=System.nanoTime();
 //		PApplet.println("floor center="+Tracker.getFloorCenter()+", size="+Tracker.getFloorSize());
 		g.image(buffer,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,g.width/Tracker.getPixelsPerMeter(),g.height/Tracker.getPixelsPerMeter());
