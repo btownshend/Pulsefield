@@ -636,9 +636,9 @@ public class Tracker extends PApplet {
 			for (int i=0;i<pselect.length;i++) {
 				mask[j].pixels[i]=(pselect[i]==j)?fullon:fulloff;
 			}
-			mask[j].pixels[10]=47;
+			//mask[j].pixels[10]=47;
 			mask[j].updatePixels();
-			mask[j].filter(BLUR,2f);
+			mask[j].filter(BLUR,1f);
 //			mask[j].filter(ERODE);
 //			mask[j].filter(DILATE);
 
