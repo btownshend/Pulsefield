@@ -56,6 +56,7 @@ public abstract class Visualizer {
 		g.fill(50, 255, 255);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		g.stroke(255);
+		g.strokeWeight(0.02f);
 		drawText(g,textHeight,"Welcome to the", center.x,center.y-lineSize*2);
 		drawText(g,textHeight*1.33f,"PULSEFIELD", center.x, center.y-lineSize);
 		drawText(g,textHeight,name, center.x,center.y+lineSize);
