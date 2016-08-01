@@ -783,7 +783,40 @@ public class Tracker extends PApplet {
 		return result;
 	}
 	
+	// Called after any update to LIDAR active area or projector bounds
 	public void resetcoords() {
+		// Choose bounds such that there is good projector coverage
+		
+		// Find center of projected area
+		PVector avg=new PVector(0,0);
+		float pminx=100,pminy=100,pmaxx=-100,pmaxy=-100;  // Extents of coverage of any pixels
+		int cnt=0;
+		for (int i=0;i<projectors.length;i++) {
+			for (int j=0;j<projectors[i].bounds.length;j++) {
+				PVector p=projectors[i].bounds[j];
+				p.y=max(0,p.y);  // Keep in front of LIDAR
+				pminx=min(pminx,p.x);
+				pminy=min(pminy,p.y);
+				pmaxx=max(pmaxx,p.x);
+				pmaxy=max(pmaxy,p.y);
+				avg.x+=p.x;
+				avg.y+=p.y;
+				cnt+=1;
+			}
+		}
+		avg.x/=cnt;
+		avg.y/=cnt;
+		//PApplet.println("Center of projection area: "+avg);
+		//PApplet.println("Min="+pminx+","+pminy+"; Max="+pmaxx+","+pmaxy);
+		// Set the bounds
+		float xradius=min(abs(pminx-avg.x),abs(pmaxx-avg.x));
+		float yradius=min(abs(pminy-avg.y),abs(pmaxy-avg.y));
+		float rscale=0.95f;
+		minx=avg.x-xradius*rscale;
+		maxx=avg.x+xradius*rscale;
+		miny=max(0,avg.y-yradius*rscale);
+		maxy=avg.y+yradius*rscale;
+		//PApplet.println("New bounds: "+minx+","+miny+";  "+maxx+","+maxy);
 		makeCanvases();
 	}
 
