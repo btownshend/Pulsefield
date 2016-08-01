@@ -324,7 +324,7 @@ public class Tracker extends PApplet {
 	private String vispos(int i) {
 		int row=i/5;
 		int col=i-row*5;
-		return ""+(row+1)+"/"+(col+1);
+		return ""+(5-row)+"/"+(col+1);
 	}
 	
 	public void vsetapp(OscMessage msg) {
