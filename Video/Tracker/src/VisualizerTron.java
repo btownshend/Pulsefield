@@ -294,7 +294,7 @@ public class VisualizerTron extends Visualizer {
 						assert(p.get(gid)!=null);
 						float w = (c2.x-c1.x)*(explosionFrames-g.exploding)/explosionFrames;
 						float h = (c2.y-c1.y)*(explosionFrames-g.exploding)/explosionFrames;
-						float disp=(Tracker.rawmaxx-Tracker.rawminx)*g.exploding/explosionFrames;
+						float disp=(Tracker.maxx-Tracker.minx)*g.exploding/explosionFrames;
 //						PApplet.println("exploding="+g.exploding+", w="+w+", h="+h+", disp="+disp);
 						laser.rect(c1.x,c1.y+disp,w,h);
 						laser.rect(c1.x,c1.y-disp,w,h);

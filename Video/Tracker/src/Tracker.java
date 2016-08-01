@@ -32,8 +32,8 @@ public class Tracker extends PApplet {
 	public float avgFrameRate=0;
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
-	static float minx=-5f, maxx=5f, miny=0f, maxy=5f;
-	static float rawminy=0f, rawmaxy=5f, rawminx=-5f, rawmaxx=5f;
+	static float lidarminy=0f, lidarmaxy=5f, lidarminx=-5f, lidarmaxx=5f;
+	static float miny=0f, maxy=5f, minx=-5f, maxx=5f;
 	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
 	static Visualizer vis[] = new Visualizer[0];
 	VisualizerGrid visAbleton;
@@ -418,8 +418,8 @@ public class Tracker extends PApplet {
 		if (mousePressed) {
 			Person p=mousePeople.getOrCreate(mouseID,mouseID%16);
 			//PVector sMousePos=normalizedToFloor(new PVector(mouseX*2f/width-1, mouseY*2f/height-1));
-			float cmouseX=-(mouseX-width/2)/cscale/getPixelsPerMeter()+(rawminx+rawmaxx)/2;
-			float cmouseY=(mouseY-height/2)/cscale/getPixelsPerMeter()+(rawminy+rawmaxy)/2;
+			float cmouseX=-(mouseX-width/2)/cscale/getPixelsPerMeter()+(minx+maxx)/2;
+			float cmouseY=(mouseY-height/2)/cscale/getPixelsPerMeter()+(miny+maxy)/2;
 			PVector mousePos=new PVector(cmouseX, cmouseY);
 			//println("mouse="+mouseX+", "+mouseY+" -> "+cmouseX+", "+cmouseY);
 			
@@ -772,16 +772,6 @@ public class Tracker extends PApplet {
 	}
 	
 	public void resetcoords() {
-		PVector tl=floorToNormalized(Tracker.rawminx,Tracker.rawmaxy);
-		PVector tr=floorToNormalized(Tracker.rawmaxx,Tracker.rawmaxy);
-		PVector bl=floorToNormalized(Tracker.rawminx,Tracker.rawminy);
-		PVector br=floorToNormalized(Tracker.rawmaxx,Tracker.rawminy);
-		Tracker.minx=Math.min(Math.min(tl.x,tr.x),Math.min(bl.x,br.x));
-		Tracker.maxx=Math.max(Math.max(tl.x,tr.x),Math.max(bl.x,br.x));
-		Tracker.miny=Math.min(Math.min(tl.y,tr.y),Math.min(bl.y,br.y));
-		Tracker.maxy=Math.max(Math.max(tl.y,tr.y),Math.max(bl.y,br.y));
-		//PApplet.println("Min/max raw:  "+Tracker.rawminx+":"+Tracker.rawmaxx+", "+Tracker.rawminy+":"+Tracker.rawmaxy);
-		//PApplet.println("Min/max scrn: "+Tracker.minx+":"+Tracker.maxx+", "+Tracker.miny+":"+Tracker.maxy);
 	}
 
 	// Get pixels per meter
@@ -791,12 +781,12 @@ public class Tracker extends PApplet {
 	
 	// Get center of active area (in meters)
 	public static PVector getFloorCenter() {
-		return new PVector((rawminx+rawmaxx)/2,(rawminy+rawmaxy)/2);
+		return new PVector((minx+maxx)/2,(miny+maxy)/2);
 	}
 	
 	// Get size of active area (in meters)
 	public static PVector getFloorSize() {
-		return new PVector(rawmaxx-rawminx,rawmaxy-rawminy);
+		return new PVector(maxx-minx,maxy-miny);
 	}
 	
 	synchronized public void pfstarted() {
@@ -925,17 +915,17 @@ public class Tracker extends PApplet {
 		} */
 		// NOTE: Need to map xvelocity,yvelocity before using them!
 
-		if (xpos<Tracker.rawminx-1) {
-			PApplet.println("Got xpos ("+xpos+") less than minx ("+Tracker.rawminx+")");
+		if (xpos<Tracker.minx-1) {
+			PApplet.println("Got xpos ("+xpos+") less than minx ("+Tracker.minx+")");
 		}
-		if (xpos>Tracker.rawmaxx+1) {
-			PApplet.println("Got xpos ("+xpos+") greater than maxx ("+Tracker.rawmaxx+")");
+		if (xpos>Tracker.maxx+1) {
+			PApplet.println("Got xpos ("+xpos+") greater than maxx ("+Tracker.maxx+")");
 		}
-		if (ypos<Tracker.rawminy-1) {
-			PApplet.println("Got ypos ("+ypos+") less than miny ("+Tracker.rawminy+")");
+		if (ypos<Tracker.miny-1) {
+			PApplet.println("Got ypos ("+ypos+") less than miny ("+Tracker.miny+")");
 		}
-		if (ypos>Tracker.rawmaxy+1) {
-			PApplet.println("Got ypos ("+ypos+") greater than maxy ("+Tracker.rawmaxy+"),");
+		if (ypos>Tracker.maxy+1) {
+			PApplet.println("Got ypos ("+ypos+") greater than maxy ("+Tracker.maxy+"),");
 		}
 
 		people.getOrCreate(id,channel).move(new PVector(xpos, ypos), new PVector(xvelocity, yvelocity), groupid, groupsize, elapsed);
@@ -963,19 +953,19 @@ public class Tracker extends PApplet {
 			p.legs[leg].move(new PVector(x,y),new PVector((float)(-spd*Math.sin(heading*Math.PI/180)),(float)(spd*Math.cos(heading*Math.PI/180))));
 	}
 	public void pfsetminx(float minx) {  
-		Tracker.rawminx=minx;
+		Tracker.lidarminx=minx;
 		resetcoords();
 	}
 	public void pfsetminy(float miny) {  
-		Tracker.rawminy=miny;
+		Tracker.lidarminy=miny;
 		resetcoords();
 	}
 	public void pfsetmaxx(float maxx) {  
-		Tracker.rawmaxx=maxx;
+		Tracker.lidarmaxx=maxx;
 		resetcoords();
 	}
 	public void pfsetmaxy(float maxy) {  
-		Tracker.rawmaxy=maxy;
+		Tracker.lidarmaxy=maxy;
 		resetcoords();
 	}
 
@@ -1054,7 +1044,7 @@ public class Tracker extends PApplet {
 
 	public boolean inBounds(PVector location) {
 		// TODO Auto-generated method stub
-		return location.x>=rawminx && location.x <=rawmaxx && location.y >= rawminy && location.y <= rawmaxy;
+		return location.x>=minx && location.x <=maxx && location.y >= miny && location.y <= maxy;
 	}
 
 }

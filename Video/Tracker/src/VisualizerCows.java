@@ -38,7 +38,7 @@ class Apple {
 		final float maxsize=2.0f;
 		position.y=position.y+speed;
 		boolean hit=false;
-		if (position.y>Tracker.rawmaxy) {
+		if (position.y>Tracker.maxy) {
 			// Hit bottom
 			hit=true;
 		}
@@ -76,7 +76,7 @@ class Apple {
 //		PApplet.println("apple position="+position+", hit="+hit);
 		if (hit) {
 			position.y=-1.0f;  // Give it some blanking time
-			position.x=(float) (Math.random()*(Tracker.rawmaxx-Tracker.rawminx)+Tracker.rawminx);
+			position.x=(float) (Math.random()*(Tracker.maxx-Tracker.minx)+Tracker.minx);
 		}
 	}
 }

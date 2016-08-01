@@ -30,10 +30,10 @@ public class VisualizerTestPattern extends VisualizerDot {
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g, p);
 		// Draw grid
-		float minxpos=(float) (Math.ceil(Tracker.rawminx*10)/10f);
-		float maxxpos=(float) (Math.floor(Tracker.rawmaxx*10)/10f);
-		float minypos=(float) (Math.ceil(Tracker.rawminy*10)/10f);
-		float maxypos=(float) (Math.floor(Tracker.rawmaxy*10)/10f);
+		float minxpos=(float) (Math.floor(Tracker.minx*2)/2f);
+		float maxxpos=(float) (Math.ceil(Tracker.maxx*2)/2f);
+		float minypos=(float) (Math.floor(Tracker.miny*2)/2f);
+		float maxypos=(float) (Math.ceil(Tracker.maxy*2)/2f);
 		float x=minxpos;
 		while (x<=maxxpos) {
 			if (Math.abs(x)<0.01f)
@@ -58,7 +58,7 @@ public class VisualizerTestPattern extends VisualizerDot {
 		g.stroke(127,0,127);
 		g.fill(0,0);
 		g.ellipseMode(PConstants.CENTER);
-		float maxr=Math.max(Math.max(-Tracker.rawminx,Tracker.rawmaxx),Tracker.rawmaxy);
+		float maxr=Math.max(Math.max(-Tracker.minx,Tracker.maxx),Tracker.maxy);
 		for (float r=0;r<=maxr;r++) {
 			g.ellipse(0f, 0f, 2*r, 2*r);
 		}

@@ -117,10 +117,10 @@ public abstract class Visualizer {
 		g.fill(color);
 		g.strokeWeight(strokeWeight);
 
-		g.line(Tracker.rawminx+strokeWeight/2, Tracker.rawminy+strokeWeight/2, Tracker.rawminx+strokeWeight/2, Tracker.rawmaxy-strokeWeight/2);
-		g.line(Tracker.rawminx+strokeWeight/2, Tracker.rawminy+strokeWeight/2, Tracker.rawmaxx-strokeWeight/2, Tracker.rawminy+strokeWeight/2);
-		g.line(Tracker.rawmaxx-strokeWeight/2, Tracker.rawmaxy-strokeWeight/2, Tracker.rawminx+strokeWeight/2, Tracker.rawmaxy-strokeWeight/2);
-		g.line(Tracker.rawmaxx-strokeWeight/2, Tracker.rawmaxy-strokeWeight/2, Tracker.rawmaxx-strokeWeight/2, Tracker.rawminy+strokeWeight/2);
+		g.line(Tracker.minx+strokeWeight/2, Tracker.miny+strokeWeight/2, Tracker.minx+strokeWeight/2, Tracker.maxy-strokeWeight/2);
+		g.line(Tracker.minx+strokeWeight/2, Tracker.miny+strokeWeight/2, Tracker.maxx-strokeWeight/2, Tracker.miny+strokeWeight/2);
+		g.line(Tracker.maxx-strokeWeight/2, Tracker.maxy-strokeWeight/2, Tracker.minx+strokeWeight/2, Tracker.maxy-strokeWeight/2);
+		g.line(Tracker.maxx-strokeWeight/2, Tracker.maxy-strokeWeight/2, Tracker.maxx-strokeWeight/2, Tracker.miny+strokeWeight/2);
 		g.ellipseMode(PConstants.CENTER);
 		g.ellipse(0f,0f,0.1f,0.1f);
 	}

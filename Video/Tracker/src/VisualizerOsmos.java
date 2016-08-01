@@ -53,13 +53,13 @@ class Marble {
 		location.add(PVector.mult(velocity,1/Tracker.theTracker.frameRate));
 		float radius=getRadius();
 		// Out of bounds, bounce back
-		if (location.x+radius > Tracker.rawmaxx && velocity.x>0)
+		if (location.x+radius > Tracker.maxx && velocity.x>0)
 			velocity.x=-velocity.x;
-		if (location.x-radius < Tracker.rawminx && velocity.x<0)
+		if (location.x-radius < Tracker.minx && velocity.x<0)
 			velocity.x=-velocity.x;
-		if (location.y+radius > Tracker.rawmaxy && velocity.y>0)
+		if (location.y+radius > Tracker.maxy && velocity.y>0)
 			velocity.y=-velocity.y;
-		if (location.y-radius < Tracker.rawminy && velocity.y<0)
+		if (location.y-radius < Tracker.miny && velocity.y<0)
 			velocity.y=-velocity.y;
 
 	}

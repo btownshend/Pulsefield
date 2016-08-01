@@ -37,33 +37,33 @@ class Ball {
 	public void update(PApplet parent) {
 		float elapsed=1.0f/parent.frameRate;
 		position.add(PVector.mult(velocity,elapsed));
-		if (position.x+radius>Tracker.rawmaxx && velocity.x>0) {
-			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.rawminx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
+		if (position.x+radius>Tracker.maxx && velocity.x>0) {
+			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
 			velocity.x*=-restitution;
-			position.x=2*(Tracker.rawmaxx-radius)-position.x;
+			position.x=2*(Tracker.maxx-radius)-position.x;
 			impactSound(0);
 		}
-		if (position.x-radius<Tracker.rawminx && velocity.x<0) {
-			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.rawminx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
+		if (position.x-radius<Tracker.minx && velocity.x<0) {
+			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
 			velocity.x*=-restitution;
-			position.x=2*(Tracker.rawminx+radius)-position.x;
+			position.x=2*(Tracker.minx+radius)-position.x;
 			impactSound(0);
 		}
-		if (position.y+radius>Tracker.rawmaxy && velocity.y>0 ) {
-			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.rawminx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
-			PApplet.println("Position.y="+position.y+", radius="+radius+", maxy="+Tracker.rawmaxy);
+		if (position.y+radius>Tracker.maxy && velocity.y>0 ) {
+			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
+			PApplet.println("Position.y="+position.y+", radius="+radius+", maxy="+Tracker.maxy);
 			velocity.y*=-restitution;
-			position.y=2*(Tracker.rawmaxy-radius)-position.y;
+			position.y=2*(Tracker.maxy-radius)-position.y;
 			impactSound(0);
 		}
-		if (position.y-radius<Tracker.rawminy && velocity.y<0) {
-			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.rawminx+","+Tracker.rawminy+","+Tracker.rawmaxx+","+Tracker.rawmaxy);
+		if (position.y-radius<Tracker.miny && velocity.y<0) {
+			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
 			velocity.y*=-restitution;
-			position.y=2*(Tracker.rawminy+radius)-position.y;
+			position.y=2*(Tracker.miny+radius)-position.y;
 			impactSound(0);
 		}
 		velocity.mult(1-deceleration*elapsed);
-		PVector toMiddle=PVector.sub(new PVector((Tracker.rawmaxx+Tracker.rawminx)/2,(Tracker.rawminy+Tracker.rawmaxy)/2),position);
+		PVector toMiddle=PVector.sub(new PVector((Tracker.maxx+Tracker.minx)/2,(Tracker.miny+Tracker.maxy)/2),position);
 		if (toMiddle.mag() > 0)
 			velocity.add(PVector.mult(toMiddle, midaccel*elapsed/position.mag()));
 //		PApplet.println("New ball position="+position+", velocity="+velocity+", inCollision="+inCollision);
@@ -130,7 +130,7 @@ public class VisualizerSoccer extends VisualizerDot {
 	@Override
 	public void update(PApplet parent, People p) {
 		if (ball==null)
-			ball=new Ball(new PVector((Tracker.rawmaxx+Tracker.rawminx)/2,(Tracker.rawmaxy+Tracker.rawminy)/2),new PVector(0f,0f));
+			ball=new Ball(new PVector((Tracker.maxx+Tracker.minx)/2,(Tracker.maxy+Tracker.miny)/2),new PVector(0f,0f));
 		// Update internal state
 		ball.update(parent);
 		for (Person ps: p.pmap.values()) {  

@@ -141,7 +141,7 @@ public class VisualizerGrid extends VisualizerPS {
 		}
 		g.fill(127);
 		g.textAlign(PConstants.LEFT, PConstants.BASELINE);
-		drawText(g,0.24f,Ableton.getInstance().trackSet.name,Tracker.rawminx+0.1f,Tracker.rawminy+0.24f+0.1f);
+		drawText(g,0.24f,Ableton.getInstance().trackSet.name,Tracker.minx+0.1f,Tracker.miny+0.24f+0.1f);
 	}
 
 	public void drawLaser(PApplet parent, People p) {

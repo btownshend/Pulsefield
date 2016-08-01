@@ -96,18 +96,18 @@ class PolyState {
 		}
 
 		if (row<NUMROWS) {
-			float rowpos=(row+1f)*rowheight+Tracker.rawminy;
+			float rowpos=(row+1f)*rowheight+Tracker.miny;
 			if (row>=NUMROWS/2)
 				rowpos+=maxRadius;
 			float dotsize=0.8f*rowheight;
 			g.fill(color);
-			g.ellipse(Tracker.rawminx+dotsize,rowpos, dotsize, dotsize);
+			g.ellipse(Tracker.minx+dotsize,rowpos, dotsize, dotsize);
 			g.fill(255);
 			g.textAlign(PConstants.LEFT,PConstants.BASELINE);
 			if (true) {
 				MidiProgram mp=synth.getMidiProgam(pos.channel);
 				if (mp!=null)
-					Visualizer.drawText(g,0.8f*rowheight,mp.name,Tracker.rawminx+3+dotsize,rowpos);
+					Visualizer.drawText(g,0.8f*rowheight,mp.name,Tracker.minx+3+dotsize,rowpos);
 			}
 		}
 	}
@@ -120,7 +120,7 @@ class PolyState {
 		}
 		if (pos.groupsize > 1) {
 			final int NBOLTS=20;
-			float BOLTLENGTH=(Tracker.rawmaxy-Tracker.rawminy)/20*pos.groupsize;
+			float BOLTLENGTH=(Tracker.maxy-Tracker.miny)/20*pos.groupsize;
 			for (int k=0;k<NBOLTS;k++)
 				if (Math.random() < 0.2) {
 					PVector delta=new PVector((float)Math.cos(Math.PI*2*k/NBOLTS)*BOLTLENGTH,(float)Math.sin(Math.PI*2*k/NBOLTS)*BOLTLENGTH);
@@ -226,8 +226,8 @@ public class VisualizerPoly extends Visualizer {
 	@Override
 	public void drawLaser(PApplet parent, People p) {
 		super.drawLaser(parent,p);
-		PVector center=new PVector((Tracker.rawminx+Tracker.rawmaxx)/2, (Tracker.rawminy+Tracker.rawmaxy)/2);
-		float maxRadius=Math.min(Tracker.rawmaxx-Tracker.rawminx,Tracker.rawmaxy-Tracker.rawminy)/2;
+		PVector center=new PVector((Tracker.minx+Tracker.maxx)/2, (Tracker.miny+Tracker.maxy)/2);
+		float maxRadius=Math.min(Tracker.maxx-Tracker.minx,Tracker.maxy-Tracker.miny)/2;
 		//PApplet.println("Poly drawLaser center="+center+", radius="+maxRadius);
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();

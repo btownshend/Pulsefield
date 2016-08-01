@@ -38,8 +38,8 @@ class Mole {
 		// Choose new location for mole
 		if (position==null)
 			position=new PVector();
-		position.y=(float) (Math.random()*(Tracker.rawmaxy-Tracker.rawminy)+Tracker.rawminy); 
-		position.x=(float) (Math.random()*(Tracker.rawmaxx-Tracker.rawminx)+Tracker.rawminx);
+		position.y=(float) (Math.random()*(Tracker.maxy-Tracker.miny)+Tracker.miny); 
+		position.x=(float) (Math.random()*(Tracker.maxx-Tracker.minx)+Tracker.minx);
 	}
 	
 	void update(People p) {

@@ -123,10 +123,10 @@ public class VisualizerVoronoi extends VisualizerPS {
 		
 		dt=new Triangulation(initialTriangle);
 		// Put points in corners
-		dt.delaunayPlace(new PntWithID(0,Tracker.rawminx,Tracker.rawminy));
-		dt.delaunayPlace(new PntWithID(0,Tracker.rawminx,Tracker.rawmaxy));
-		dt.delaunayPlace(new PntWithID(0,Tracker.rawmaxx,Tracker.rawminy));
-		dt.delaunayPlace(new PntWithID(0,Tracker.rawmaxx,Tracker.rawmaxy));
+		dt.delaunayPlace(new PntWithID(0,Tracker.minx,Tracker.miny));
+		dt.delaunayPlace(new PntWithID(0,Tracker.minx,Tracker.maxy));
+		dt.delaunayPlace(new PntWithID(0,Tracker.maxx,Tracker.miny));
+		dt.delaunayPlace(new PntWithID(0,Tracker.maxx,Tracker.maxy));
 		if (false) {
 			float gapAngle=(float)(10f*Math.PI /180);
 			float step=(float)(2*Math.PI-gapAngle)/8;
