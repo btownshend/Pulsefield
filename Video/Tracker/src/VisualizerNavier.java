@@ -22,8 +22,8 @@ class VisualizerNavier extends Visualizer {
 	long statsU3=0;
 	long statsU4=0;
 	Synth synth;
-	final int downSample=1;   // amount to downsample fluid image
 	//MusicVisLaser mvl;
+	final int downSample=2;   // amount to downsample fluid image
 	
 	VisualizerNavier(Tracker parent, Synth synth) {
 		super();
