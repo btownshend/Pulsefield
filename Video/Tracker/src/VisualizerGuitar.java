@@ -9,10 +9,11 @@ import processing.core.PVector;
 class GString {
 	final static int nfrets=22;
 	static float frets[];
-	final static float nut=-0.8f;  // Range of Y-coords for nut, bridge in [-1,1] normalized coordinates
-	final static float bridge=0.9f;
-	final static float minstring=-0.48f;  // Range of X-coords for strings in [-1,1] normalized coordinates
-	final static float maxstring=0.49f;
+	static float gscale=0.6f;
+	final static float nut=-0.8f*gscale;  // Range of Y-coords for nut, bridge in [-1,1] normalized coordinates
+	final static float bridge=0.9f*gscale;
+	final static float minstring=-0.48f*gscale;  // Range of X-coords for strings in [-1,1] normalized coordinates
+	final static float maxstring=0.49f*gscale;
 	final static int vibrateTime=1000;   // Milliseconds
 	int fretpitch;
 	float position;  // X-coord of string (in range -1 to 1)
@@ -109,7 +110,10 @@ public class VisualizerGuitar extends VisualizerPS {
 			return;
 		g.tint(127);
 		g.imageMode(PConstants.CENTER);
-		g.image(guitar, Tracker.getFloorCenter().x, Tracker.getFloorCenter().y, Tracker.getFloorSize().x, Tracker.getFloorSize().y);
+		float glength=Tracker.getFloorSize().x*GString.gscale; // Length of guitar in meters
+		//float gheight=glength*guitar.height/guitar.width*2;
+		float gheight=Tracker.getFloorSize().y*GString.gscale;
+		g.image(guitar, Tracker.getFloorCenter().x, Tracker.getFloorCenter().y, glength, gheight);
 		g.stroke(100);
 		g.strokeWeight(.02f);
 		for (int i=0;i<GString.nfrets;i++) {
