@@ -84,8 +84,8 @@ public class VisualizerGuitar extends VisualizerPS {
 		super(parent);
 		this.synth=synth;
 		lastpos=new HashMap<Integer,PVector>();
-		guitar = parent.loadImage("guitar-center.png");
-
+		guitar = parent.loadImage("guitar/guitar-center.png");
+		//guitar = parent.loadImage("guitar/fender.png");
 		for (int i=0;i<strings.length;i++)
 			strings[i].setPosition(i*(GString.maxstring-GString.minstring)/(strings.length-1)+GString.minstring);
 	}
