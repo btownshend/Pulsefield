@@ -470,7 +470,9 @@ public class Tracker extends PApplet {
 		avgFrameRate=avgFrameRate*(1f-1f/20f)+frameRate/20f;
 		if (GUI.theGUI != null)
 			GUI.theGUI.updateFPS();
-
+		if (tick%20 == 0)
+			updateTO(tick%40==0);
+		
 		canvas.beginDraw();
 		// Transform so that coords for drawing are in meters
 		canvas.resetMatrix();
@@ -906,14 +908,16 @@ public class Tracker extends PApplet {
 
 	void pfframe(int frame) {
 		//PApplet.println("Got frame "+frame);
-		if (frame%50 ==0) {
-			OscMessage msg = new OscMessage("/health/VD");
-			msg.add((frame%100==0)?1.0:0.0);
-			sendOSC("TO",msg);
-		}
+
 		lastFrameReceived=frame;
 	}
 
+	void updateTO(boolean ledOn) {
+		sendOSC("TO","/health/VD",ledOn?1f:0f);
+		sendOSC("TO","/touchosc/fps",String.format("%.1f",avgFrameRate));
+		sendOSC("TO","/video/borders",drawBounds?1f:0f);
+	}
+	
 	synchronized void add(int id, int channel) {
 		people.add(id, channel);
 	}
