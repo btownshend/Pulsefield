@@ -168,6 +168,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setpose","/cal/pose");
 		oscP5.plug(this, "setcameraview","/cal/cameraview");
 		oscP5.plug(this, "setprojection","/cal/projection");
+		oscP5.plug(this, "setborders", "/video/borders");
 		oscP5.plug(this, "setminx", "/video/minx");
 		oscP5.plug(this, "setmaxx", "/video/maxx");
 		oscP5.plug(this, "setminy", "/video/miny");
@@ -262,6 +263,15 @@ public class Tracker extends PApplet {
 		oscP5.send(msg,MPO);
 	}
 
+	public void setborders(float onoff) {
+		OscMessage msg = new OscMessage("/video/borders");
+		PApplet.println("Got /video/borders,"+onoff);
+		msg.add(onoff);
+		oscP5.send(msg,TO);
+		drawBounds=onoff!=0f;
+		GUI.theGUI.update();
+	}
+	
 	synchronized public void setminx(float minx) {
 		if (minx<maxx-1) {
 			Tracker.minx=minx;
