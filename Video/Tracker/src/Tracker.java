@@ -29,6 +29,7 @@ public class Tracker extends PApplet {
 	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
 	private int tick=0;
+	private int liveTick=0;  // Tick at which last AL message received
 	public float avgFrameRate=0;
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
@@ -760,6 +761,7 @@ public class Tracker extends PApplet {
 		else if (theOscMessage.addrPattern().startsWith("/grid")) {
 			visAbleton.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/live") || theOscMessage.addrPattern().startsWith("/remix/error")) {
+			liveTick=tick;
 			ableton.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/proj")) {
 			String pattern=theOscMessage.addrPattern();
@@ -914,6 +916,7 @@ public class Tracker extends PApplet {
 
 	void updateTO(boolean ledOn) {
 		sendOSC("TO","/health/VD",ledOn?1f:0f);
+		sendOSC("TO","/health/AL",ledOn&liveTick>0&liveTick-tick<500?1f:0f);  // Ableton is alive
 		sendOSC("TO","/touchosc/fps",String.format("%.1f",avgFrameRate));
 		sendOSC("TO","/video/borders",drawBounds?1f:0f);
 	}
