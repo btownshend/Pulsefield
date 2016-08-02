@@ -33,7 +33,7 @@ public class Tracker extends PApplet {
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
 	static float lidarminy=0f, lidarmaxy=5f, lidarminx=-5f, lidarmaxx=5f;
-	static float miny=0f, maxy=5f, minx=-5f, maxx=5f;
+	static float miny, maxy, minx, maxx;
 	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
 	static Visualizer vis[] = new Visualizer[0];
 	VisualizerGrid visAbleton;
@@ -90,6 +90,10 @@ public class Tracker extends PApplet {
 		configFile="/Users/bst/DropBox/Pulsefield/src/urlconfig.txt";
 		jconfig=new Config("config.json");
 		Config.load(this);
+		minx=Config.getFloat("video", "minx", -5f);
+		maxx=Config.getFloat("video", "maxx", 5f);
+		miny=Config.getFloat("video", "miny", 0f);
+		maxy=Config.getFloat("video", "maxy", 5f);
 		
 		try {
 			config=new URLConfig(configFile);
@@ -164,13 +168,17 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setpose","/cal/pose");
 		oscP5.plug(this, "setcameraview","/cal/cameraview");
 		oscP5.plug(this, "setprojection","/cal/projection");
+		oscP5.plug(this, "setminx", "/video/minx");
+		oscP5.plug(this, "setmaxx", "/video/maxx");
+		oscP5.plug(this, "setminy", "/video/miny");
+		oscP5.plug(this, "setmaxy", "/video/maxy");
 		unhandled = new HashMap<String,Boolean>();
 		projectors=new Projector[2];
 		projectors[0] = new Projector(this,1,1920,1080);
 		projectors[1] = new Projector(this,2,1920,1080);
 
 		mask=new PGraphicsOpenGL[projectors.length];
-		makeCanvases();
+		resetcoords();
 
 		PApplet.println("settings() complete");
 	}
@@ -254,6 +262,31 @@ public class Tracker extends PApplet {
 		oscP5.send(msg,MPO);
 	}
 
+	synchronized public void setminx(float minx) {
+		if (minx<maxx-1) {
+			Tracker.minx=minx;
+			resetcoords();
+		}
+	}
+	synchronized public void setmaxx(float maxx) {
+		if (maxx>minx+1) {
+			Tracker.maxx=maxx;
+			resetcoords();
+		}
+	}
+	synchronized public void setminy(float miny) {
+		if (miny<maxy-1) {
+			Tracker.miny=miny;
+			resetcoords();
+		}
+	}
+	synchronized public void setmaxy(float maxy) {
+		if (maxy>miny+1) {
+			Tracker.maxy=maxy;
+			resetcoords();
+		}
+	}
+	
 	public void setcursor(int cursor, int ncursor, int proj, float x, float y) {
 		PApplet.println("setcursor("+proj+","+cursor+","+ncursor+","+x+","+y+")");
 		if (ncursor==0)
@@ -356,6 +389,18 @@ public class Tracker extends PApplet {
 	}
 
 	public static void sendOSC(String dest, String path, int data) {
+		OscMessage msg=new OscMessage(path);
+		msg.add(data);
+		sendOSC(dest,msg);
+	}
+
+	public static void sendOSC(String dest, String path, float data) {
+		OscMessage msg=new OscMessage(path);
+		msg.add(data);
+		sendOSC(dest,msg);
+	}
+	
+	public static void sendOSC(String dest, String path, String data) {
 		OscMessage msg=new OscMessage(path);
 		msg.add(data);
 		sendOSC(dest,msg);
@@ -788,7 +833,7 @@ public class Tracker extends PApplet {
 	public void resetcoords() {
 		// Choose bounds such that there is good projector coverage
 		
-		// Find center of projected area
+		// Find bounds of projected area
 		PVector avg=new PVector(0,0);
 		float pminx=100,pminy=100,pmaxx=-100,pmaxy=-100;  // Extents of coverage of any pixels
 		int cnt=0;
@@ -805,19 +850,23 @@ public class Tracker extends PApplet {
 				cnt+=1;
 			}
 		}
-		avg.x/=cnt;
-		avg.y/=cnt;
-		//PApplet.println("Center of projection area: "+avg);
-		//PApplet.println("Min="+pminx+","+pminy+"; Max="+pmaxx+","+pmaxy);
-		// Set the bounds
-		float xradius=min(abs(pminx-avg.x),abs(pmaxx-avg.x));
-		float yradius=min(abs(pminy-avg.y),abs(pmaxy-avg.y));
-		float rscale=0.95f;
-		minx=avg.x-xradius*rscale;
-		maxx=avg.x+xradius*rscale;
-		miny=max(0,avg.y-yradius*rscale);
-		maxy=avg.y+yradius*rscale;
-		//PApplet.println("New bounds: "+minx+","+miny+";  "+maxx+","+maxy);
+		// Constrain to be no more than projected area
+		minx=max(minx,pminx);
+		maxx=min(maxx,pmaxx);
+		miny=max(miny,pminy);
+		maxy=min(maxy,pmaxy);
+		sendOSC("TO","/video/minx",minx);
+		sendOSC("TO","/video/minx/label","Min X: "+String.format("%.1f", minx));
+		sendOSC("TO","/video/maxx",maxx);
+		sendOSC("TO","/video/maxx/label","Max X: "+String.format("%.1f", maxx));
+		sendOSC("TO","/video/miny",miny);
+		sendOSC("TO","/video/miny/label","Min Y: "+String.format("%.1f", miny));
+		sendOSC("TO","/video/maxy",maxy);
+		sendOSC("TO","/video/maxy/label","Max Y: "+String.format("%.1f", maxy));
+		Config.setFloat("video", "minx", minx);
+		Config.setFloat("video", "maxx", maxx);
+		Config.setFloat("video", "miny", miny);
+		Config.setFloat("video", "maxy", maxy);
 		makeCanvases();
 	}
 
