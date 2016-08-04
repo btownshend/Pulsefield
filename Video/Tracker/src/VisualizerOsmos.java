@@ -48,6 +48,21 @@ class Marble {
 	}
 	public void update() {
 		// TODO: Update mass
+		if (mass>MAXMASS && false) {
+			// Throw off a secondary object at double speed, 1/4 mass
+			PVector newpos=location;
+			PVector newvel=PVector.mult(velocity, 2);
+			if (newvel.mag()==0)
+				newpos.x+=(1.05f*getRadius());
+			else
+				newpos.add(PVector.mult(velocity, 1.05f*getRadius()/velocity.mag()));
+			float newmass=mass/4;
+			PApplet.println("Splitting off at "+newpos+", with vel="+newvel+", new mass="+newmass);
+			Marble newm=create(newmass,newpos,PVector.mult(velocity,2));
+			mass-=newmass;
+			velocity.mult(0.5f);
+			newm.update();
+		}
 		// Damping
 		velocity.add(PVector.mult(velocity, -DAMPING/Tracker.theTracker.frameRate));
 		location.add(PVector.mult(velocity,1/Tracker.theTracker.frameRate));
@@ -69,8 +84,8 @@ class Marble {
 		g.imageMode(PConstants.CENTER);
 		g.image(img,location.x,location.y,r*2,r*2);
 	}
-	static void create(float mass, PVector pos, PVector vel)  {
-		new Marble(mass,pos,vel,imgs.getRandom());
+	static Marble create(float mass, PVector pos, PVector vel)  {
+		return new Marble(mass,pos,vel,imgs.getRandom());
 	}
 	static void destroyAll() {
 		Object all[]=allMarbles.toArray();
@@ -82,15 +97,6 @@ class Marble {
 	
 	static void updateAll() {
 		Object all[]=allMarbles.toArray();
-		for (Object o: all) {
-			Marble b=(Marble)o;
-			if (b.mass>MAXMASS) {
-				PVector newpos=b.location;
-				newpos.x+=b.getRadius();
-				create(b.mass/2,newpos,b.velocity);
-				b.mass/=2;
-			}
-		}
 		for (Object o: all) {
 			Marble b=(Marble)o;
 			b.update();
