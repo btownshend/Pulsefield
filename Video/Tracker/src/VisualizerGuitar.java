@@ -9,7 +9,7 @@ import processing.core.PVector;
 class GString {
 	final static int nfrets=22;
 	static float frets[];
-	static float gscale=0.6f;
+	static float gscale=0.98f;
 	final static float nut=-0.8f*gscale;  // Range of Y-coords for nut, bridge in [-1,1] normalized coordinates
 	final static float bridge=0.9f*gscale;
 	final static float minstring=-0.48f*gscale;  // Range of X-coords for strings in [-1,1] normalized coordinates
