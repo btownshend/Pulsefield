@@ -71,6 +71,7 @@ public abstract class Visualizer {
 		g.stroke(255);
 		g.imageMode(PConstants.CORNER);
 		g.noTint();
+		g.strokeWeight(0.02f);
 		// With the scaling from meters to pixels, processing by default will generate a font 
 		// with point-size using the textSize argument UNSCALED.  This is then scaled by the transform
 		// So, if there is 10x scaling and you use textSize(1.0), the font will be generated a 1pixel size
