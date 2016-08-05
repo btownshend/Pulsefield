@@ -31,7 +31,7 @@ class VisualizerNavier extends Visualizer {
 
 		visc = 0.001;
 		diff = 3.0e-4;
-		scale = 0.3;
+		scale = 2.0;
 
 		limitVelocity = 200;
 		// iao = loadImage("IAO.jpg");
@@ -145,7 +145,7 @@ class VisualizerNavier extends Visualizer {
 			g.ellipse(ps.getOriginInMeters().x,ps.getOriginInMeters().y, ps.getLegSeparationInMeters(), ps.getLegSeparationInMeters());
 			for (int leg=0;leg<2;leg++) {
 				int c=(ps.id*17+leg*127)&0xff;
-				PApplet.println("leg "+leg+", c="+c);
+				//PApplet.println("leg "+leg+", c="+c);
 				g.fill(c,255,255);
 				g.stroke(c,255,255);
 				//PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
