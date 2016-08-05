@@ -287,7 +287,7 @@ public class VisualizerDDR extends Visualizer {
 			g.imageMode(PConstants.CENTER);
 			float bannerHeight = banner.height*bannerWidth/banner.width;
 			g.pushMatrix();
-			g.translate(center.x, bannerHeight/2);
+			g.translate(center.x, bannerHeight/2+Tracker.miny);
 			g.scale(-1,1);  // Flip to RH coord system
 			g.image(banner, 0, 0, bannerWidth, bannerHeight);
 			g.popMatrix();	
