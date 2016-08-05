@@ -471,6 +471,7 @@ public class Tracker extends PApplet {
 	}
 
 	synchronized public void draw() {
+		try {
 		if (starting) {
 			// Setup visualizers at first draw
 			addVisualizers();
@@ -617,6 +618,10 @@ public class Tracker extends PApplet {
 		}
 		//SyphonTest.draw(this);
 		Config.saveIfModified(this);   // Save if modified
+		} catch (Exception e) {
+			PApplet.println("exception in draw(): "+e.getMessage());
+			e.printStackTrace();
+		}
 	}
 
 	private void buildMasks(PGraphicsOpenGL canvas) {
@@ -762,6 +767,7 @@ public class Tracker extends PApplet {
 
 	/* incoming osc message are forwarded to the oscEvent method. */
 	synchronized public void oscEvent(OscMessage theOscMessage) {
+		try {
 		//PApplet.println("Got message:"+theOscMessage.toString());
 		if (starting)
 			return;
@@ -800,6 +806,10 @@ public class Tracker extends PApplet {
 			theOscMessage.print();
 			unhandled.put(theOscMessage.addrPattern(),true);		
 		}  /* print the address pattern and the typetag of the received OscMessage */
+		} catch (Exception e) {
+			PApplet.println("oscEvent exception: "+e.getMessage()+"("+e.toString()+")");
+			e.printStackTrace();
+		}
 	}
 
 	public static PVector mapVelocity(PVector velInMetersPerSecond) {
