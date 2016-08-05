@@ -127,9 +127,10 @@ public class VisualizerDDR extends Visualizer {
 		if (components.length<3 || !components[2].equals("ddr")) 
 			PApplet.println("DDR: Expected /video/ddr messages, got "+msg.toString());
 		else if (components.length==4 && components[3].equals("songnum")) {
-			chooseSong((int)(msg.get(0).floatValue()*songs.size()));
+			if (songs!=null)
+				chooseSong((int)(msg.get(0).floatValue()*songs.size()));
 		} else 
-			PApplet.println("Unknown Navier Message: "+msg.toString());
+			PApplet.println("Unknown DDR Message: "+msg.toString());
 	}
 	
 	/* Randomly choose a song */
