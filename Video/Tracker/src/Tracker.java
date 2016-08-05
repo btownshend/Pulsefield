@@ -73,6 +73,7 @@ public class Tracker extends PApplet {
 	PGraphicsOpenGL mask[];
 	int pselect[];
 	boolean drawBounds=false;   // True to overlay projector bounds
+	boolean drawBorders=false;   // True to overlay active area bounds
 	boolean drawMasks = false;
 	boolean useMasks = true;
 	boolean showProjectors = false;
@@ -170,6 +171,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setcameraview","/cal/cameraview");
 		oscP5.plug(this, "setprojection","/cal/projection");
 		oscP5.plug(this, "setborders", "/video/borders");
+		oscP5.plug(this, "setbounds", "/video/bounds");
 		oscP5.plug(this, "setminx", "/video/minx");
 		oscP5.plug(this, "setmaxx", "/video/maxx");
 		oscP5.plug(this, "setminy", "/video/miny");
@@ -267,6 +269,15 @@ public class Tracker extends PApplet {
 	public void setborders(float onoff) {
 		OscMessage msg = new OscMessage("/video/borders");
 		PApplet.println("Got /video/borders,"+onoff);
+		msg.add(onoff);
+		oscP5.send(msg,TO);
+		drawBorders=onoff!=0f;
+		GUI.theGUI.update();
+	}
+	
+	public void setbounds(float onoff) {
+		OscMessage msg = new OscMessage("/video/bounds");
+		PApplet.println("Got /video/bounds,"+onoff);
 		msg.add(onoff);
 		oscP5.send(msg,TO);
 		drawBounds=onoff!=0f;
@@ -918,7 +929,8 @@ public class Tracker extends PApplet {
 		sendOSC("TO","/health/VD",ledOn?1f:0f);
 		sendOSC("TO","/health/AL",ledOn&liveTick>0&liveTick-tick<500?1f:0f);  // Ableton is alive
 		sendOSC("TO","/touchosc/fps",String.format("%.1f",avgFrameRate));
-		sendOSC("TO","/video/borders",drawBounds?1f:0f);
+		sendOSC("TO","/video/bounds",drawBounds?1f:0f);
+		sendOSC("TO","/video/borders",drawBorders?1f:0f);
 	}
 	
 	synchronized void add(int id, int channel) {

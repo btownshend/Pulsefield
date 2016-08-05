@@ -84,7 +84,7 @@ public abstract class Visualizer {
 		g.background(0, 0, 0); 
 		if (p.pmap.isEmpty())
 			drawWelcome(t, g);
-		if (t.drawBounds)
+		if (t.drawBorders)
 			drawBorders(g);
 	}
 

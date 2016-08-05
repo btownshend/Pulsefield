@@ -29,6 +29,7 @@ public class GUI extends JFrame {
 	private JCheckBox showProjectors;
 	private JTextArea fps;
 	private JLabel lblFps;
+	private JCheckBox drawBorders;
 	
 	public static void start() {
 		EventQueue.invokeLater(new Runnable() {
@@ -81,6 +82,19 @@ public class GUI extends JFrame {
 				Tracker.theTracker.showProjectors=showProjectors.isSelected();
 			}
 		});
+		
+		drawBorders = new JCheckBox("Draw Borders");
+		drawBorders.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Tracker.theTracker.drawBorders=drawBorders.isSelected();
+				PApplet.println("drawBorders="+drawBorders.toString());
+			}
+		});
+		GridBagConstraints gbc_drawBorders = new GridBagConstraints();
+		gbc_drawBorders.insets = new Insets(0, 0, 5, 5);
+		gbc_drawBorders.gridx = 2;
+		gbc_drawBorders.gridy = 0;
+		contentPane.add(drawBorders, gbc_drawBorders);
 		GridBagConstraints gbc_showProjectors = new GridBagConstraints();
 		gbc_showProjectors.anchor = GridBagConstraints.EAST;
 		gbc_showProjectors.insets = new Insets(0, 0, 5, 5);
@@ -168,6 +182,7 @@ public class GUI extends JFrame {
 					PApplet.println("update run");
 					drawMasks.setSelected(Tracker.theTracker.drawMasks);
 					drawBounds.setSelected(Tracker.theTracker.drawBounds);
+					drawBorders.setSelected(Tracker.theTracker.drawBorders);
 					useMasks.setSelected(Tracker.theTracker.useMasks);
 					showProjectors.setSelected(Tracker.theTracker.showProjectors);
 					appSelect.setSelectedIndex(Tracker.theTracker.currentvis);
