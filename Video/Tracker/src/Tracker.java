@@ -533,13 +533,16 @@ public class Tracker extends PApplet {
 		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);
 
+		canvas.pushStyle();
 		vis[currentvis].draw(this, canvas,people);
+		canvas.popStyle();
 		visMenu.hotSpotDraw(canvas);
 		
 		//vis[currentvis].drawLaser(this,people);
 
 
 		if (drawBounds) {
+			canvas.pushStyle();
 			canvas.strokeWeight(0.025f);
 			canvas.noFill();
 			for (int i=0;i<projectors.length;i++) {
@@ -552,6 +555,7 @@ public class Tracker extends PApplet {
 				}
 				canvas.endShape(CLOSE);
 			}
+			canvas.popStyle();
 		}
 		
 		canvas.endDraw();

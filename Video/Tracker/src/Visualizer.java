@@ -114,6 +114,7 @@ public abstract class Visualizer {
 	}
 	
 	public void drawBorders(PGraphics g, float strokeWeight, int color,int alpha) {
+		g.pushStyle();
 		g.stroke(color,alpha);
 		g.fill(color);
 		g.strokeWeight(strokeWeight);
@@ -124,6 +125,7 @@ public abstract class Visualizer {
 		g.line(Tracker.maxx-strokeWeight/2, Tracker.maxy-strokeWeight/2, Tracker.maxx-strokeWeight/2, Tracker.miny+strokeWeight/2);
 		g.ellipseMode(PConstants.CENTER);
 		g.ellipse(0f,0f,0.1f,0.1f);
+		g.popStyle();
 	}
 
 	public void handleMessage(OscMessage theOscMessage) {
