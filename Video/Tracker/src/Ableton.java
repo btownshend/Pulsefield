@@ -409,6 +409,10 @@ public class Ableton {
 	public void setClipPosition(int track, int clip, float position, float length, float loop_start, float loop_end) {
 		//PApplet.println("clipposition("+track+","+clip+") = "+position+"/"+length);
 		Track t=getTrack(track);
+		if (t.trackNum<trackSet.firstTrack || t.trackNum>=trackSet.firstTrack+trackSet.numTracks) {
+			PApplet.println("Got clip position message for track "+t.getName()+"("+t.trackNum+","+track+"), but current trackSet, "+trackSet.name+" is for tracks "+trackSet.firstTrack+"-"+(trackSet.firstTrack+trackSet.numTracks-1));
+			stopClip(track,clip);
+		}
 		Clip c=t.getClip(clip);
 		String oldFormatted=String.format("[%.0f-%.0f]@%.0f",c.loop_start,c.loop_end,c.position);
 		String newFormatted=String.format("[%.0f-%.0f]@%.0f",loop_start,loop_end,position);
