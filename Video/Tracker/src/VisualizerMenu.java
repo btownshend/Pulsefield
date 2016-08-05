@@ -30,7 +30,7 @@ public class VisualizerMenu extends Visualizer {
 	static final float TEXT_HEIGHT = 0.15f;
 	
 	static final float hotSpotRadius=0.3f;   // Radius of hot spot in meters
-	static final PVector hotSpot = new PVector(0f,1f);  // Center of hotspot
+	static final PVector hotSpot = new PVector(0f,0f);  // Location of hotspot (in meters) (updated when drawn)
 	
 	/** Cursor radius (in meters) **/
 	static final float CURSOR_RADIUS = 0.3f;
@@ -64,6 +64,8 @@ public class VisualizerMenu extends Visualizer {
 		if (menuImage==null)
 			menuImage=Tracker.theTracker.loadImage("menu/menu.png");
 		g.imageMode(PConstants.CENTER);
+		hotSpot.x=(Tracker.minx+Tracker.maxx)/2;
+		hotSpot.y=Tracker.miny+hotSpotRadius+0.05f;
 		g.image(menuImage, hotSpot.x,hotSpot.y,hotSpotRadius*2,hotSpotRadius*2*menuImage.height/menuImage.width);
 	}
 
