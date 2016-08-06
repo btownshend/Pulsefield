@@ -40,20 +40,17 @@ depend: $(SRCS)
 
 # DO NOT DELETE
 
-calibration.o: calibration.h ../LIDAR/Util/point.h touchosc.h lo_util.h
-calibration.o: ../LIDAR/Util/dbg.h ../LIDAR/Util/urlconfig.h configuration.h
-calibration.o: trackerComm.h
-oschandler.o: ../LIDAR/Util/dbg.h oschandler.h lo_util.h touchosc.h
-oschandler.o: ../LIDAR/Util/urlconfig.h calibration.h ../LIDAR/Util/point.h
-oschandler.o: configuration.h
-main.o: oschandler.h lo_util.h calibration.h ../LIDAR/Util/point.h touchosc.h
-main.o: ../LIDAR/Util/dbg.h ../LIDAR/Util/urlconfig.h configuration.h
-touchosc.o: touchosc.h lo_util.h ../LIDAR/Util/dbg.h
-touchosc.o: ../LIDAR/Util/urlconfig.h
+calibration.o: calibration.h lo_util.h ../LIDAR/Util/point.h configuration.h
+calibration.o: ../LIDAR/Util/urlconfig.h trackerComm.h ../LIDAR/Util/dbg.h
+oschandler.o: ../LIDAR/Util/dbg.h oschandler.h lo_util.h calibration.h
+oschandler.o: ../LIDAR/Util/point.h configuration.h ../LIDAR/Util/urlconfig.h
+main.o: oschandler.h lo_util.h calibration.h ../LIDAR/Util/point.h
+main.o: configuration.h ../LIDAR/Util/urlconfig.h ../LIDAR/Util/dbg.h
+main.o: trackerComm.h
 ../LIDAR/Util/urlconfig.o: ../LIDAR/Util/dbg.h ../LIDAR/Util/urlconfig.h
 ../Laser/configuration.o: configuration.h ../LIDAR/Util/dbg.h
-trackerComm.o: touchosc.h lo_util.h ../LIDAR/Util/dbg.h
-trackerComm.o: ../LIDAR/Util/urlconfig.h trackerComm.h
+trackerComm.o: lo_util.h trackerComm.h ../LIDAR/Util/dbg.h
+trackerComm.o: ../LIDAR/Util/urlconfig.h ../LIDAR/Util/point.h
 ../LIDAR/Util/dbg.o: ../LIDAR/Util/dbg.h
 ../LIDAR/Util/point.o: ../LIDAR/Util/point.h
 ../LIDAR/Util/dest.o: ../LIDAR/Util/dest.h ../LIDAR/Util/dbg.h
