@@ -14,7 +14,7 @@ public class VisualizerGrid extends VisualizerPS {
 	float gposx[], gposy[];
 	float gridwidth, gridheight;
 	int ncell;
-	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","AN"};
+	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","AN","PB"};
 	int song=0;
 	
 	VisualizerGrid(PApplet parent) {
@@ -69,6 +69,8 @@ public class VisualizerGrid extends VisualizerPS {
 
 
 	public void update(PApplet parent, People allpos) {
+		if (allpos.pmap.size() == 0)
+			songIncr(1);
 		super.update(parent,allpos);
 	//	HashMap<Integer,Integer> newAssignments=new HashMap<Integer,Integer>();
 		for (Person pos: allpos.pmap.values()) {
