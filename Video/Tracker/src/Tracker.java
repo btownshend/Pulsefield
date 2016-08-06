@@ -875,7 +875,6 @@ public class Tracker extends PApplet {
 		// Find bounds of projected area
 		PVector avg=new PVector(0,0);
 		float pminx=100,pminy=100,pmaxx=-100,pmaxy=-100;  // Extents of coverage of any pixels
-		int cnt=0;
 		for (int i=0;i<projectors.length;i++) {
 			for (int j=0;j<projectors[i].bounds.length;j++) {
 				PVector p=projectors[i].bounds[j];
@@ -886,7 +885,6 @@ public class Tracker extends PApplet {
 				pmaxy=max(pmaxy,p.y);
 				avg.x+=p.x;
 				avg.y+=p.y;
-				cnt+=1;
 			}
 		}
 		// Constrain to be no more than projected area

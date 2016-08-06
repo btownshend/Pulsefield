@@ -278,7 +278,10 @@ public class VisualizerDDR extends Visualizer {
 			return;
 
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
-
+		if (clip==null) {
+			PApplet.println("DDR.draw: Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
+			return;
+		}
 		PVector center=Tracker.getFloorCenter();
 		PImage banner=cursong.getSimfile().getBanner(t,g);
 		
@@ -296,11 +299,8 @@ public class VisualizerDDR extends Visualizer {
 
 		//drawScores(g,p);
 		drawPF(g,p);
-		if (clip!=null) {
 //			PApplet.println("Clip at "+clip.position);
 			drawTicker(g,clip.position);
-		} else 
-			PApplet.println("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
 		float songdur=cursong.getSimfile().getduration(pattern);
 		if ((clip.state==1 && clip.position>1) || clip.position>songdur) {
 			PApplet.println("Song duration "+songdur+" ended; clip Position="+clip.position+", songdur="+songdur+", state="+clip.state);
