@@ -36,8 +36,8 @@ class Marble {
 	private static final float DENSITY=1f;   // mass=DENSITY*r^2
 	private static final float DAMPING=0.2f; //0.2f;  // accel=-DAMPING * v
 	private static final float MASSEXCHANGERATE=0.05f;  // mass loss for in-contact marbles in kg/sec
-	private static final float MAXMASS=1f;
-	private static final float G=0.05f;   // Gravitational constant
+	private static final float MAXMASS=0.5f;
+	private static final float G=0.02f;   // Gravitational constant
 	PVector location;
 	PVector velocity;
 	float mass;
@@ -57,11 +57,11 @@ class Marble {
 		assert(img!=null);
 		this.img=img;
 		allMarbles.add(this);
-		PApplet.println("Created marble at "+location+" with velocity "+vel+" and mass "+mass);
+		//PApplet.println("Created marble at "+location+" with velocity "+vel+" and mass "+mass);
 		isAlive=true;
 	}
 	public void destroy() {
-		PApplet.println("Destroy marble at "+location);
+		//PApplet.println("Destroy marble at "+location);
 		allMarbles.remove(this);
 		isAlive=false;
 	}
@@ -145,31 +145,35 @@ class Marble {
 					continue;
 				PVector sep=PVector.sub(b2.location, b1.location);
 				float minsep=b1.getRadius()+b2.getRadius();
-				if (sep.mag() <= minsep && b1.mass<b2.mass) {
+				if (sep.mag() <= minsep && b1.mass<b2.mass && b1.isAlive) {
 					// Contact
-					PApplet.println("Contact at "+b1.location+" - "+b2.location);
-					while (sep.mag() <= b1.getRadius()+b2.getRadius() && b1.isAlive) {
-						float xfr=Math.min(b1.mass, MASSEXCHANGERATE/Tracker.theTracker.frameRate);
-						if (b1 instanceof PlayerMarble && b1.mass-xfr<PlayerMarble.MINMASS)
-							break; // xfr=b1.mass-PlayerMarble.MINMASS;
+					//PApplet.println("Contact at "+b1.location+" - "+b2.location);
+					float xfr=Math.min(b1.mass, MASSEXCHANGERATE/Tracker.theTracker.frameRate);
+					if (b2.mass<MAXMASS && !(b1 instanceof PlayerMarble && b1.mass-xfr<PlayerMarble.MINMASS)) {
 						b1.mass-=xfr;
 						b2.mass+=xfr;
 						b2.velocity=PVector.add(PVector.mult(b2.velocity,(b2.mass-xfr)/b2.mass), PVector.mult(b1.velocity, xfr/b2.mass));
-						PApplet.println("Xfr "+xfr+", new masses: "+b1.mass+", "+b2.mass);
+						//PApplet.println("Xfr "+xfr+", new masses: "+b1.mass+", "+b2.mass);
 						if (b1.mass==0)
 							b1.destroy();
 						else if (b1 instanceof PlayerMarble && b2 instanceof PlayerMarble) {
 							effects.play(((PlayerMarble)b2).person, "COLLIDE");
 						}
 					}
-//					minsep=b1.getRadius()+b2.getRadius(); // Update sep
-//					if (sep.mag() < minsep) {
-//						// Keep them in exact contact
-//						float movedist=(sep.mag()-minsep)/2;
-//						sep.normalize().mult(movedist);
-//						b2.location.add(sep);
-//						b1.location.sub(sep);
-//					}
+					minsep=b1.getRadius()+b2.getRadius(); // Update sep
+					float overlap=0.01f;   // Keep them overlapped up to this much
+					if (sep.mag() < minsep-overlap) {
+						// Keep them in exact contact (actually a little closer, so the stay in contact)
+						float movedist=minsep-overlap-sep.mag();
+						assert(movedist>0);
+						sep.normalize();
+						PApplet.println("Separate: sep="+sep+", minsep="+minsep+", movedist="+movedist);
+						PVector m1=PVector.mult(sep,-movedist*b2.mass/(b1.mass+b2.mass));
+						PVector m2=PVector.mult(sep,movedist*b1.mass/(b1.mass+b2.mass));
+						PApplet.println("Separate: sep="+sep+", minsep="+minsep+", movedist="+movedist,", m1="+m1+", m2="+m2);
+						b2.location.add(m2);
+						b1.location.add(m1);
+					}
 					// Fuse their momentum
 //					PVector momentum=PVector.add(b1.getMomentum(), b2.getMomentum());
 //					b1.velocity=PVector.div(momentum, b1.mass+b2.mass);
@@ -192,17 +196,18 @@ class Marble {
 class PlayerMarble extends Marble {
 	private static final float SPRINGCONSTANT=0.1f;   // force=SPRINGCONSTANT*dx  (Newtons/m)
 	private static final float EJECTSPEED=1f;	// Speed of ejected particles (m/s)
-	private static final float INITIALMASS=0.5f;  // In kg
+	private static final float INITIALMASS=0.15f;  // In kg
 	public static final float MINMASS=0.02f;    // In kg
 	private static final float EJECTFUDGE=400;   // Make ejections give this much more momentum than they should
 	PVector pilot;
+	Person person;
 	
-	PlayerMarble(PVector pos, PVector vel, PImage img) {
+	PlayerMarble(Person person, PVector pos, PVector vel, PImage img) {
 		super(INITIALMASS,pos,vel,img);
 		pilot=new PVector();
 		pilot.x=pos.x;
 		pilot.y=pos.y;
-
+		this.person=person;
 	}
 	
 	public void updatePosition(PVector newpilot) {
@@ -215,7 +220,7 @@ class PlayerMarble extends Marble {
 		// TODO: Update mass
 		PVector delta=PVector.sub(pilot,location);
 		if (delta.mag() > getRadius()) {
-			PVector force=PVector.mult(delta,SPRINGCONSTANT*mass);  // Not reall a spring, same accel indep of mass
+			PVector force=PVector.mult(delta,SPRINGCONSTANT*mass);  // Not really a spring, same accel indep of mass
 			PVector acc=PVector.mult(force,1/mass);
 			PVector deltaVelocity=PVector.mult(acc, 1/Tracker.theTracker.frameRate);
 			velocity.add(deltaVelocity);
@@ -239,6 +244,7 @@ class PlayerMarble extends Marble {
 public class VisualizerOsmos extends Visualizer {
 	long startTime;
 	Images marbleImages;
+	Synth synth;
 	Effects effects;
 
 	HashMap<Integer, PlayerMarble> marbles;
@@ -256,7 +262,7 @@ public class VisualizerOsmos extends Visualizer {
 		// Update internal state of the Marbles
 		for (int id: allpos.pmap.keySet()) {
 			if (!marbles.containsKey(id))
-				marbles.put(id,new PlayerMarble(allpos.get(id).getOriginInMeters(),allpos.get(id).getVelocityInMeters(),marbleImages.getRandom()));
+				marbles.put(id,new PlayerMarble(allpos.get(id),allpos.get(id).getOriginInMeters(),allpos.get(id).getVelocityInMeters(),marbleImages.getRandom()));
 			PVector currentpos=allpos.get(id).getOriginInMeters();
 			marbles.get(id).updatePosition(currentpos);
 			//PApplet.println("Marble "+id+" moved to "+currentpos.toString());
