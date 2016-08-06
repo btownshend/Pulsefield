@@ -9,7 +9,7 @@ do
     LOGFILE=$LOGDIR/$DSTR-frontend.log
     RECFILE=$LOGDIR/$DSTR.ferec
     echo Running frontend with output to $LOGFILE
-    ./frontend -B10 -D $LOGFILE -d2 -r $RECFILE
+    ./frontend -B10 -D $LOGFILE -d2 # -r $RECFILE
     echo frontend exitted, pausing 2 seconds to restart
     sleep 2
 done
