@@ -7,6 +7,31 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
 
+class Effects {
+	Synth synth;
+	HashMap<String,Integer> pitchMap;
+	
+	Effects(Synth synth) {
+		this.synth=synth;
+		pitchMap=new HashMap<String,Integer>();
+	}
+	void put(String effect, int pitch) {
+		pitchMap.put(effect,pitch);
+	}
+	
+	public void play(Person p, String effect) {
+		int velocity=127;
+		int duration=1000;  // Impact only
+		if (!pitchMap.containsKey(effect)) {
+			PApplet.println("No pitchMap entry for effect: "+effect);
+			return;
+		}
+		int pitch=pitchMap.get(effect);
+		PApplet.println("Effect ("+effect+"):  id: "+p.id+", pitch: "+pitch+", velocity: "+velocity);
+		synth.play(p.id, pitch, velocity, duration, p.channel);
+	}
+}
+
 class Marble {
 	private static final float DENSITY=1f;   // mass=DENSITY*r^2
 	private static final float DAMPING=0.2f; //0.2f;  // accel=-DAMPING * v
@@ -95,7 +120,7 @@ class Marble {
 		}
 	}
 	
-	static void updateAll() {
+	static void updateAll(Effects effects) {
 		Object all[]=allMarbles.toArray();
 		for (Object o: all) {
 			Marble b=(Marble)o;
@@ -133,6 +158,9 @@ class Marble {
 						PApplet.println("Xfr "+xfr+", new masses: "+b1.mass+", "+b2.mass);
 						if (b1.mass==0)
 							b1.destroy();
+						else if (b1 instanceof PlayerMarble && b2 instanceof PlayerMarble) {
+							effects.play(((PlayerMarble)b2).person, "COLLIDE");
+						}
 					}
 //					minsep=b1.getRadius()+b2.getRadius(); // Update sep
 //					if (sep.mag() < minsep) {
@@ -168,9 +196,6 @@ class PlayerMarble extends Marble {
 	public static final float MINMASS=0.02f;    // In kg
 	private static final float EJECTFUDGE=400;   // Make ejections give this much more momentum than they should
 	PVector pilot;
-	int propelClip=-1;  // My propulsion clip
-	boolean clipActive;
-	static int nextClip=0;   // Next clip available to allocate to any player
 	
 	PlayerMarble(PVector pos, PVector vel, PImage img) {
 		super(INITIALMASS,pos,vel,img);
@@ -199,22 +224,6 @@ class PlayerMarble extends Marble {
 			PVector ejectLocation=PVector.add(location, PVector.mult(ejectVelocity,1.05f*getRadius()/ejectVelocity.mag()));
 			Marble.create(ejectMass,ejectLocation,PVector.add(ejectVelocity,velocity));
 			mass=Math.max(MINMASS,mass-ejectMass);
-			TrackSet ts=Ableton.getInstance().trackSet;
-			int track=ts.firstTrack;
-			int nclips=Ableton.getInstance().getTrack(track).numClips();
-			PApplet.println("Track="+track+", nclips="+nclips);
-			if (nclips!=-1) {
-				if (propelClip < 0) {
-					propelClip=nextClip;
-					nextClip=(nextClip+1)%nclips;
-				}
-				Ableton.getInstance().playClip(track,propelClip);
-			}
-		} else if (clipActive) {
-			TrackSet ts=Ableton.getInstance().trackSet;
-			int track=ts.firstTrack;
-			Ableton.getInstance().stopClip(track, propelClip);
-			clipActive=false;
 		}
 		super.update();
 	}
@@ -230,13 +239,17 @@ class PlayerMarble extends Marble {
 public class VisualizerOsmos extends Visualizer {
 	long startTime;
 	Images marbleImages;
-	
+	Effects effects;
+
 	HashMap<Integer, PlayerMarble> marbles;
 
-	VisualizerOsmos(PApplet parent) {
+	VisualizerOsmos(PApplet parent, Synth synth) {
 		super();
 		marbles = new HashMap<Integer, PlayerMarble>();
 		marbleImages=new Images("osmos/marbles");
+		effects=new Effects(synth);
+		effects.put("COLLIDE",55);
+		effects.put("SPLIT",54);
 	}
 	
 	public void update(PApplet parent, People allpos) {		
@@ -257,8 +270,7 @@ public class VisualizerOsmos extends Visualizer {
 				iter.remove();
 			}
 		}
-		Marble.updateAll();
-		// TODO: Hit detection
+		Marble.updateAll(effects);
 	}
 
 
@@ -277,31 +289,6 @@ public class VisualizerOsmos extends Visualizer {
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g,p);
 		Marble.drawAll(g);
-		
-//		if (p.pmap.isEmpty())
-//			return;
-//
-//		PVector center=Tracker.getFloorCenter();
-//		PVector sz=Tracker.getFloorSize();
-//
-//		//drawBorders(g);
-//		g.imageMode(PConstants.CENTER);
-//		g.tint(255);
-//		g.textAlign(PConstants.CENTER,PConstants.CENTER);
-//		// Add drawing code here
-//		for (int id: marbles.keySet()) {
-//			PlayerMarble d=marbles.get(id);
-//			Person person=p.get(id);
-//			if (person==null) {
-//				PApplet.println("drawPF: Person "+id+" not found");
-//				continue;
-//			}
-//			g.pushMatrix();
-//			g.fill(person.getcolor());
-//			g.stroke(person.getcolor());
-//			d.draw(g);
-//			g.popMatrix();
-//		}
 	}
 
 }

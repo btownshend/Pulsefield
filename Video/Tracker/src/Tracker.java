@@ -232,7 +232,7 @@ public class Tracker extends PApplet {
 		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
 		//vis[16]=visSyphon;
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
-		addVis("Osmos",new VisualizerOsmos(this),true);
+		addVis("Osmos",new VisualizerOsmos(this,synth),true);
 		addVis("VDMX",new VisualizerVDMX(this,"/Users/bst/Dropbox/Pulsefield/VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
 	}
 	
