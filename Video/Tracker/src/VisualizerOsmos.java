@@ -9,13 +9,13 @@ import processing.core.PVector;
 
 class Effects {
 	Synth synth;
-	HashMap<String,Integer> pitchMap;
+	HashMap<String,Integer[]> pitchMap;
 	
 	Effects(Synth synth) {
 		this.synth=synth;
-		pitchMap=new HashMap<String,Integer>();
+		pitchMap=new HashMap<String,Integer[]>();
 	}
-	void put(String effect, int pitch) {
+	void put(String effect, Integer pitch[]) {
 		pitchMap.put(effect,pitch);
 	}
 	
@@ -26,7 +26,8 @@ class Effects {
 			PApplet.println("No pitchMap entry for effect: "+effect);
 			return;
 		}
-		int pitch=pitchMap.get(effect);
+		Integer pitches[]=pitchMap.get(effect);
+		int pitch=pitches[p.id%pitches.length];
 		PApplet.println("Effect ("+effect+"):  id: "+p.id+", pitch: "+pitch+", velocity: "+velocity);
 		synth.play(p.id, pitch, velocity, duration, p.channel);
 	}
@@ -244,7 +245,6 @@ class PlayerMarble extends Marble {
 public class VisualizerOsmos extends Visualizer {
 	long startTime;
 	Images marbleImages;
-	Synth synth;
 	Effects effects;
 
 	HashMap<Integer, PlayerMarble> marbles;
@@ -254,8 +254,8 @@ public class VisualizerOsmos extends Visualizer {
 		marbles = new HashMap<Integer, PlayerMarble>();
 		marbleImages=new Images("osmos/marbles");
 		effects=new Effects(synth);
-		effects.put("COLLIDE",55);
-		effects.put("SPLIT",54);
+		effects.put("COLLIDE",new Integer[]{52,53,54,55});
+		effects.put("SPLIT",new Integer[]{40,41,42});
 	}
 	
 	public void update(PApplet parent, People allpos) {		
