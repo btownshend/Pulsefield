@@ -153,7 +153,7 @@ void FrontEnd::matsave(const std::string &filename, int frames) {
 }
 
 void FrontEnd::run() {
-    while (true) {  /* Forever */
+    while (!doQuit) {  /* Forever */
 	// Read data from sensors
 	sick[0]->lock();	// Needs to be modified to support multiple LIDARs
 	sick[0]->waitForFrame();
@@ -165,7 +165,6 @@ void FrontEnd::run() {
 	    processFrames();
 	sick[0]->unlock();
     }
-    // NOT REACHED
 }
 
 // Processing incoming OSC messages in a separate thread
@@ -175,8 +174,10 @@ void *FrontEnd::processIncoming(void *arg) {
     dbg("FrontEnd.processIncoming",1) << "Started: s=" << std::setbase(16) << s << std::setbase(10) << std::endl;
     // Process all queued messages
     while (lo_server_recv(s) != 0)
-	if (doQuit)
+	if (doQuit) {
+	    dbg("FrontEnd.processIncoming",0) << "Quit" << std::endl;
 	    break;
+	}
     return NULL;
 }
 

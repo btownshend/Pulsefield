@@ -165,7 +165,7 @@ static int setMaxY_handler(const char *path, const char *types, lo_arg **argv, i
 
 
 void FrontEnd::addHandlers() {
-	lo_server_add_method(s, "/quit", "", quit_handler, this);
+	lo_server_add_method(s, "/pf/quit", "f", quit_handler, this);
 
 	lo_server_add_method(s,"/vis/start","",start_handler,this);
 	lo_server_add_method(s,"/vis/stop","",stop_handler,this);
