@@ -136,14 +136,16 @@ class TrackSet {
 	String name;
 	int firstTrack;
 	int numTracks;
+	int bgTrack;
 	float tempo;
 	boolean armed;
 	
-	TrackSet(String name, int firstTrack, int numTracks, float tempo) {
+	TrackSet(String name, int firstTrack, int numTracks, float tempo, int bgTrack) {
 		this.name=name;
 		this.firstTrack=firstTrack;
 		this.numTracks=numTracks;
 		this.tempo = tempo;
+		this.bgTrack = bgTrack;
 		armed=false;
 	}
 
@@ -183,12 +185,16 @@ public class Ableton {
 	float meter[] = new float[2];
 	int playstate = -1;
 
-	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips) {
-		tracksets.put(id,new TrackSet(name,firstTrack,numTracks,tempo));
+	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips,int bgTrack) {
+		tracksets.put(id,new TrackSet(name,firstTrack,numTracks,tempo,bgTrack));
 		for (int i=0;i<numTracks;i++) {
 			Track t=getTrack(i+firstTrack);
 			t.setSongTrack(id,i);
 		}
+	}
+	
+	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips) {
+		addSong(id,name,firstTrack,numTracks,tempo,nclips,-1);
 	}
 	
 	Ableton(OscP5 oscP5, NetAddress ALaddr) {
@@ -222,8 +228,8 @@ public class Ableton {
 		addSong("SteelPan","Steel Pan",109,1,120,0);
 		addSong("Cows","Cows",111,1,120,0);
 		addSong("Soccer","Soccer",112,1,120,0);
-//		addSong("PB","Polybus",114,9,130,13);
-		addSong("Osmos","Osmos",123,1,120,0);
+		addSong("PB","Polybus",114,9,130,13);
+		addSong("Osmos","Osmos",123,1,120,0,124);
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
 		// Clear track info
@@ -409,7 +415,11 @@ public class Ableton {
 	public void setClipPosition(int track, int clip, float position, float length, float loop_start, float loop_end) {
 		//PApplet.println("clipposition("+track+","+clip+") = "+position+"/"+length);
 		Track t=getTrack(track);
-		if (t.trackNum<trackSet.firstTrack || t.trackNum>=trackSet.firstTrack+trackSet.numTracks) {
+		if (t==null) {
+			PApplet.println("Unable to get track "+track);
+			return;
+		}
+		if ((t.trackNum<trackSet.firstTrack || t.trackNum>=trackSet.firstTrack+trackSet.numTracks) && trackSet.bgTrack!=t.trackNum) {
 			PApplet.println("Got clip position message for track "+t.getName()+"("+t.trackNum+","+track+"), but current trackSet, "+trackSet.name+" is for tracks "+trackSet.firstTrack+"-"+(trackSet.firstTrack+trackSet.numTracks-1));
 			stopClip(track,clip);
 		}
@@ -507,6 +517,18 @@ public class Ableton {
 		if (ts!=null) {
 			setALTempo(trackSet.tempo);  // Set AL tempo
 			TouchOSC.getInstance().sendMessage(new OscMessage("/grid/song").add(ts.name));
+			if (ts.bgTrack!=-1) {
+				PApplet.println("Starting bg track "+ts.bgTrack);
+				Track t=getTrack(ts.bgTrack);
+				if (t==null)
+					PApplet.println("Track "+ts.bgTrack+" not found.");
+				else {
+					int nclips=t.numClips();
+					int clip=(int)(Math.random()*nclips);
+					PApplet.println("Playing clip "+clip+"/"+nclips);
+					playClip(ts.bgTrack,clip);
+				}
+			}
 		}
 		return ts;
 	}
