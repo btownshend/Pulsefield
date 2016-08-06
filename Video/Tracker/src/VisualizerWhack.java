@@ -10,12 +10,16 @@ import processing.core.PVector;
 // Class for a single mole 
 class Mole {
 	PVector position=null;
+	PVector velocity=null;
+	
 	PImage img;
-	int nextClip=0;
 	int explodeCounter;
+	int ticksSinceReset=0;
 	static final int explodeFrames=15;
 	static final float maxExplodeScale=5f;
-	
+	static final float RESETPROB=0.05f;
+	static final int MINLIFE=20;  // Minimum number of ticks before reset
+	static final float MAXSPEED=1f/100;   // Maximum speed in meters/tick
 	static final float maxHitDist=0.4f; // Meters
 	static final float radius=0.3f;  // Meters
 	
@@ -38,22 +42,30 @@ class Mole {
 		// Choose new location for mole
 		if (position==null)
 			position=new PVector();
+		if (velocity==null)
+			velocity=new PVector();
 		position.y=(float) (Math.random()*(Tracker.maxy-Tracker.miny)+Tracker.miny); 
 		position.x=(float) (Math.random()*(Tracker.maxx-Tracker.minx)+Tracker.minx);
+		velocity.y=(float) ((Math.random()*2-1)*MAXSPEED);
+		velocity.x=(float) ((Math.random()*2-1)*MAXSPEED);
+		ticksSinceReset=0;
 	}
 	
-	void update(People p) {
+	void update(People p, Effects e) {
 		if (explodeCounter>0) {
 			explodeCounter-=1;
 			if (explodeCounter==0)
 				reset(p);
 			else
 				return;
-		}
+		} else 
+			ticksSinceReset+=1;
 		
-		if (position==null)
+		if (position==null || (ticksSinceReset>MINLIFE && Math.random()<RESETPROB))
 			reset(p);
-		
+		else
+			position.add(velocity);
+
 		for (Person ps: p.pmap.values()) {
 			float d=PVector.dist(position, ps.getOriginInMeters());
 			if (d<maxHitDist) {
@@ -66,11 +78,12 @@ class Mole {
 				else {
 					int track=ps.id%(ts.numTracks)+ts.firstTrack;
 					int nclips=Ableton.getInstance().getTrack(track).numClips();
-					PApplet.println("Track="+track+", nclips="+nclips);
 					if (nclips!=-1) {
-						Ableton.getInstance().playClip(track,nextClip);
-						nextClip=(nextClip+1)%nclips;
+						int clip=(int)(Math.random()*nclips);
+						PApplet.println("Track="+track+", nclips="+nclips+", clip="+clip);
+						Ableton.getInstance().playClip(track,clip);
 					}
+					//e.play(ps, "WHACK", 127, 1000);
 				}
 			}
 		}
@@ -83,14 +96,17 @@ public class VisualizerWhack extends VisualizerIcon {
 	final String hammerDir="whack/hammers";
 	final String moleDir="whack/moles";
 	static final int numMoles=4;
+	Effects effects;
 	
-	VisualizerWhack(PApplet parent) {
+	VisualizerWhack(PApplet parent, Synth synth) {
 		super(parent);
 		setImages(parent,hammerDir);
 		moleImages=new Images(moleDir);
 		for (int i=0;i<numMoles;i++) {
 			moles.add(new Mole(moleImages.getRandom()));
 		}
+		effects=new Effects(synth);
+		effects.put("WHACK",new Integer[]{52,53,54,55});
 	}
 	
 	@Override
@@ -103,7 +119,7 @@ public class VisualizerWhack extends VisualizerIcon {
 	public void update(PApplet parent, People p) {
 		super.update(parent, p);
 		for (Mole m: moles) 
-			m.update(p);
+			m.update(p,effects);
 	}
 	
 	@Override

@@ -230,6 +230,7 @@ public class Ableton {
 		addSong("Soccer","Soccer",112,1,120,0);
 		addSong("PB","Polybus",114,9,130,13);
 		addSong("Osmos","Osmos",123,1,120,0,124);
+		addSong("Whack","Whack",125,1,120,0);
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
 		// Clear track info
