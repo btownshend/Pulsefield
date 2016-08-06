@@ -219,7 +219,7 @@ public class Tracker extends PApplet {
 		addVis("Voronoi",new VisualizerVoronoi(this,scale,synth),true);
 		addVis("Guitar",new VisualizerGuitar(this,synth),true);
 		addVis("Dot",new VisualizerDot(this),false);
-		addVis("CHucK",new VisualizerChuck(this),false);
+		addVis("CHucK",new VisualizerChuck(this),true);
 		addVis("Proximity",new VisualizerProximity(this),true);
 		addVis("Cows",new VisualizerCows(this),true);
 		addVis("Whack",new VisualizerWhack(this),true);
@@ -233,7 +233,7 @@ public class Tracker extends PApplet {
 		//vis[16]=visSyphon;
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
 		addVis("Osmos",new VisualizerOsmos(this),true);
-		addVis("VDMX",new VisualizerVDMX(this,"/Users/bst/Dropbox/Pulsefield/VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),true);
+		addVis("VDMX",new VisualizerVDMX(this,"/Users/bst/Dropbox/Pulsefield/VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
 	}
 	
 	public void addVis(String name, Visualizer v,boolean selectable) {
