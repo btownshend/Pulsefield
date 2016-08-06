@@ -34,6 +34,8 @@ void FrontEnd::quit() {
     doQuit = true;
 }
 
+static int save_handler(const char *, const char *, lo_arg **, int, lo_message , void *user_data) { ((FrontEnd *)user_data)->save(); return 0; }
+
 static int start_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->startStop(true); return 0; }
 static int stop_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->startStop(false); return 0; }
 void FrontEnd::startStop(bool start) {
@@ -186,6 +188,8 @@ void FrontEnd::addHandlers() {
 	lo_server_add_method(s,"/pf/maxx","f",setMaxX_handler,world);
 	lo_server_add_method(s,"/pf/miny","f",setMinY_handler,world);
 	lo_server_add_method(s,"/pf/maxy","f",setMaxY_handler,world);
+
+	lo_server_add_method(s,"/pf/save","f",save_handler,this);
 	/* add method that will match any path and args if they haven't been caught explicitly */
 	lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
 

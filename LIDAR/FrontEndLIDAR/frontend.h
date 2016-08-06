@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include "lo/lo.h"
 #include "dest.h"
+#include "configuration.h"
 
 class SickIO;
 class World;
@@ -23,7 +24,8 @@ class FrontEnd {
     Destinations dests;
     lo_server s;
     lo_address touchOSC;
-
+    Configuration config;
+    
     int frame;
     struct timeval currenttime; 	// Time of last acquired frame (set either during realtime operation or by using stored acquired time when reading from a file)
     long int sendOnce, sendAlways;
@@ -69,6 +71,10 @@ class FrontEnd {
     int playFile(const char *filename, bool singleStep,float speedFactor=1.0f,bool overlayLive=false,int frame1=-1,int frameN=-1,bool savePerfData=false);
 
     void matsave(const std::string &filename, int frames);
+
+    // Save/load configuration
+    void save();
+    void load();
 
     // Handlers for OSC messages
     void quit();

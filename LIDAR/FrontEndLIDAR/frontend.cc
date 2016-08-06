@@ -28,7 +28,7 @@ static void error(int num, const char *msg, const char *path)
 }
 
 
-FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]) {
+FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]): config("settings.json") {
     dbg("FrontEnd",1) << "FrontEnd::FrontEnd(" << _nsick << ")" << std::endl;
 
     for (int i=0;i<argc;i++)
@@ -37,6 +37,7 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]) {
     starttime.tv_sec=0;
     starttime.tv_usec=0;
 
+    
 	matframes=0;
 	frame = 0;
 	nsick=_nsick;
@@ -47,6 +48,7 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]) {
 	    sick = new SickIO*[nsick];
 	
 	world = new World(maxRange);
+	load();
 	vis = new Vis();
 	snap=NULL;  // If needed, set in matsave()
 	nechoes=1;
@@ -586,3 +588,32 @@ void FrontEnd::sendMessages(double elapsed) {
 	world->sendMessages(dests,elapsed);
 }
 
+void FrontEnd::save()  {
+    dbg("FrontEnd.save",1) << "Saving settings" << std::endl;
+    ptree p;
+    p.put("minx",world->getMinX());
+    p.put("maxx",world->getMaxX());
+    p.put("miny",world->getMinY());
+    p.put("maxy",world->getMaxY());
+    config.pt().put_child("world",p);
+    config.save();
+}
+
+void FrontEnd::load() {
+    dbg("FrontEnd.load",1) << "Loading settings" << std::endl;
+
+    config.load();
+    ptree &p1=config.pt();
+    ptree p;
+    try {
+	p=p1.get_child("world");
+    } catch (boost::property_tree::ptree_bad_path ex) {
+	std::cerr << "Unable to find 'world' in settings file" << std::endl;
+	return;
+    }
+
+    world->setMinX(p.get("minx",-1.0f));
+    world->setMaxX(p.get("maxx",1.0f));
+    world->setMinY(p.get("miny",0.0f));
+    world->setMaxY(p.get("maxy",1.0f));
+}
