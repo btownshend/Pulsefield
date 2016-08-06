@@ -115,7 +115,8 @@ public class VisualizerMenu extends Visualizer {
 		HashSet<Integer> visualizerIndices = getNextVisualizerIndexSet();
 		for(int index : visualizerIndices) {
 			// TODO Improved location finding.
-			while(true) {
+			int nattempts=100;
+			while(nattempts>0) {
 				PVector proposedPosition = Tracker.normalizedToFloor(new PVector(
 						(float)((Math.random() * 1.8) - 0.9), 
 						(float)((Math.random() * 1.8) - 0.9)));
@@ -129,13 +130,18 @@ public class VisualizerMenu extends Visualizer {
 					}
 				}
 				// Found a good location
-				if(Float.isNaN(minDistance) || minDistance > MIN_DISTANCE) {
+				if(Float.isNaN(minDistance) || minDistance > MIN_DISTANCE*nattempts/100) {
 					menuItems.add(new MenuItem(proposedPosition, index));
 					allPositions.add(proposedPosition);
 					break;
 				}
+				nattempts-=1;
+			}
+			if (nattempts==0) {
+				PApplet.println("Unable to find a location for "+index);
 			}
 		}
+		PApplet.println("Found all positions");
 	}
 	
 	@Override
