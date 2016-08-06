@@ -45,6 +45,7 @@ abstract public class Synth {
 
 	abstract public void play(int id, int pitch, int channel);
 
+	// Play a note with given pitch(0-127), velocity(0-127), duration(msec), channel(0-15)
 	public void play(int id, int pitch, int velocity, int duration,
 			int channel) {
 		if(channel<0 && channel>=16) {

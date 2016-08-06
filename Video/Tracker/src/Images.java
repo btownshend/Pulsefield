@@ -37,7 +37,7 @@ public class Images {
 	
 	public PImage getRandom() {
 		int choose=rgen.nextInt(imgs.size());
-		PApplet.println("getRandom -> "+choose+"/"+imgs.size());
+		//PApplet.println("getRandom -> "+choose+"/"+imgs.size());
 		return imgs.get(choose);
 	}
 	
