@@ -7,32 +7,6 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
 
-class Effects {
-	Synth synth;
-	HashMap<String,Integer[]> pitchMap;
-	
-	Effects(Synth synth) {
-		this.synth=synth;
-		pitchMap=new HashMap<String,Integer[]>();
-	}
-	void put(String effect, Integer pitch[]) {
-		pitchMap.put(effect,pitch);
-	}
-	
-	public void play(Person p, String effect) {
-		int velocity=127;
-		int duration=1000;  // Impact only
-		if (!pitchMap.containsKey(effect)) {
-			PApplet.println("No pitchMap entry for effect: "+effect);
-			return;
-		}
-		Integer pitches[]=pitchMap.get(effect);
-		int pitch=pitches[p.id%pitches.length];
-		PApplet.println("Effect ("+effect+"):  id: "+p.id+", pitch: "+pitch+", velocity: "+velocity);
-		synth.play(p.id, pitch, velocity, duration, p.channel);
-	}
-}
-
 class Marble {
 	private static final float DENSITY=1f;   // mass=DENSITY*r^2
 	private static final float DAMPING=0.2f; //0.2f;  // accel=-DAMPING * v
@@ -136,7 +110,7 @@ class Marble {
 						// Small - big interaction -- reverse it!
 						b1.mass=(b1.mass+b2.mass)/2;
 						b2.mass=b1.mass;
-						effects.play(((PlayerMarble)b2).person, "SPLIT");
+						effects.play(((PlayerMarble)b2).person, "SPLIT",127,1000);
 					} else {
 						float xfr=Math.min(b1.mass, MASSEXCHANGERATE/Tracker.theTracker.frameRate);
 						if (b2.mass<MAXMASS && !(b1 instanceof PlayerMarble && b1.mass-xfr<PlayerMarble.MINMASS)) {
@@ -147,7 +121,7 @@ class Marble {
 							if (b1.mass==0)
 								b1.destroy();
 							else if (b1 instanceof PlayerMarble && b2 instanceof PlayerMarble) {
-								effects.play(((PlayerMarble)b2).person, "COLLIDE");
+								effects.play(((PlayerMarble)b2).person, "COLLIDE",127,1000);
 							}
 						}
 					}
