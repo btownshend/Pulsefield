@@ -16,6 +16,7 @@ public class VisualizerGrid extends VisualizerPS {
 	int ncell;
 	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","AN","PB"};
 	int song=0;
+	PVector titlePos = new PVector(0,0);
 	
 	VisualizerGrid(PApplet parent) {
 		super(parent);
@@ -72,10 +73,17 @@ public class VisualizerGrid extends VisualizerPS {
 		if (allpos.pmap.size() == 0)
 			songIncr(1);
 		super.update(parent,allpos);
+		titlePos.x=Tracker.minx+Tracker.getFloorSize().x/4;
+		titlePos.y=Tracker.miny+0.24f+0.1f;
 	//	HashMap<Integer,Integer> newAssignments=new HashMap<Integer,Integer>();
 		for (Person pos: allpos.pmap.values()) {
 			//PApplet.println("ID "+pos.id+" pos="+pos.origin);
 			// Find closest grid position
+			// Check for song advance
+			if (PVector.sub(titlePos, pos.getOriginInMeters()).mag() < 0.3f) {
+				// Change song
+				songIncr(1);
+			}
 			int closest=-1;
 			int current=-1;
 			double mindist=1e10f;
@@ -143,7 +151,7 @@ public class VisualizerGrid extends VisualizerPS {
 		}
 		g.fill(127);
 		g.textAlign(PConstants.LEFT, PConstants.BASELINE);
-		drawText(g,0.24f,Ableton.getInstance().trackSet.name,Tracker.minx+0.1f,Tracker.miny+0.24f+0.1f);
+		drawText(g,0.24f,Ableton.getInstance().trackSet.name,titlePos.x,titlePos.y);
 	}
 
 	public void drawLaser(PApplet parent, People p) {
