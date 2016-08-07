@@ -16,14 +16,14 @@ public class VisualizerMinim extends VisualizerGrid {
 		select=-1;			// activate first renderer in list
 		// setup renderers
 		radar = new RadarRenderer(fourier);
-		iso = new IsometricRenderer(parent,fourier);
 
 		if (is3D) {
 			// Can only do vortex if the main renderer supports 3D
 			vortex = new VortexRenderer(fourier);
+			iso = new IsometricRenderer(parent,fourier);
 			visuals = new Renderer[] {radar, vortex, iso};
 		} else {
-			visuals = new Renderer[] {radar, iso};
+			visuals = new Renderer[] {radar};
 		}
 	}
 
@@ -34,6 +34,7 @@ public class VisualizerMinim extends VisualizerGrid {
 		// Other initialization when this app becomes active
 		select=(select+1)%visuals.length;
 		visuals[select].start();
+		PApplet.println("Starting visual: "+visuals[select].name());
 		Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
 	}
