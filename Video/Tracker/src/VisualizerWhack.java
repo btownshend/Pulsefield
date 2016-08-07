@@ -17,8 +17,8 @@ class Mole {
 	int ticksSinceReset=0;
 	static final int explodeFrames=15;
 	static final float maxExplodeScale=5f;
-	static final float RESETPROB=0.05f;
-	static final int MINLIFE=20;  // Minimum number of ticks before reset
+	static final float RESETPROB=0.04f;
+	static final int MINLIFE=30;  // Minimum number of ticks before reset
 	static final float MAXSPEED=1f/100;   // Maximum speed in meters/tick
 	static final float maxHitDist=0.4f; // Meters
 	static final float radius=0.3f;  // Meters
@@ -95,7 +95,7 @@ public class VisualizerWhack extends VisualizerIcon {
 	Images moleImages;
 	final String hammerDir="whack/hammers";
 	final String moleDir="whack/moles";
-	static final int numMoles=4;
+	static final int numMoles=3;
 	Effects effects;
 	
 	VisualizerWhack(PApplet parent, Synth synth) {
