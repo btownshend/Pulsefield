@@ -137,15 +137,17 @@ class TrackSet {
 	int firstTrack;
 	int numTracks;
 	int bgTrack;
+	int bgClips[];
 	float tempo;
 	boolean armed;
 	
-	TrackSet(String name, int firstTrack, int numTracks, float tempo, int bgTrack) {
+	TrackSet(String name, int firstTrack, int numTracks, float tempo, int bgTrack, int bgClips[]) {
 		this.name=name;
 		this.firstTrack=firstTrack;
 		this.numTracks=numTracks;
 		this.tempo = tempo;
 		this.bgTrack = bgTrack;
+		this.bgClips = bgClips;
 		armed=false;
 	}
 
@@ -185,8 +187,8 @@ public class Ableton {
 	float meter[] = new float[2];
 	int playstate = -1;
 
-	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips,int bgTrack) {
-		tracksets.put(id,new TrackSet(name,firstTrack,numTracks,tempo,bgTrack));
+	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips,int bgTrack, int bgClips[]) {
+		tracksets.put(id,new TrackSet(name,firstTrack,numTracks,tempo,bgTrack, bgClips));
 		for (int i=0;i<numTracks;i++) {
 			Track t=getTrack(i+firstTrack);
 			t.setSongTrack(id,i);
@@ -194,7 +196,7 @@ public class Ableton {
 	}
 	
 	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips) {
-		addSong(id,name,firstTrack,numTracks,tempo,nclips,-1);
+		addSong(id,name,firstTrack,numTracks,tempo,nclips,-1, null);
 	}
 	
 	Ableton(OscP5 oscP5, NetAddress ALaddr) {
@@ -227,10 +229,10 @@ public class Ableton {
 		addSong("Navier", "Navier",105,4,120,0);
 		addSong("SteelPan","Steel Pan",109,1,120,0);
 		addSong("Cows","Cows",111,1,120,0);
-		addSong("Soccer","Soccer",112,1,120,0);
+		addSong("Soccer","Soccer",112,1,120,0,124,new int[]{11});
 		addSong("PB","Polybus",114,9,130,13);
-		addSong("Osmos","Osmos",123,1,120,0,124);
-		addSong("Whack","Whack",125,1,120,0);
+		addSong("Osmos","Osmos",123,1,120,0,124,new int[]{0,1,2,3,4,5,6});
+		addSong("Whack","Whack",125,1,120,0,124,new int[]{11});
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
 		// Clear track info
@@ -524,9 +526,9 @@ public class Ableton {
 				if (t==null)
 					PApplet.println("Track "+ts.bgTrack+" not found.");
 				else {
-					int nclips=t.numClips();
-					int clip=(int)(Math.random()*nclips);
-					PApplet.println("Playing clip "+clip+"/"+nclips);
+					int nclips=ts.bgClips.length;
+					int clip=ts.bgClips[(int)(Math.random()*nclips)];
+					PApplet.println("Playing bg clip "+clip);
 					playClip(ts.bgTrack,clip);
 				}
 			}
