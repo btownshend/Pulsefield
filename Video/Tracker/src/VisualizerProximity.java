@@ -111,6 +111,20 @@ public class VisualizerProximity extends VisualizerPS {
 		}
 	}
 
+	private void randomline(PGraphics g, PVector p1, PVector p2, float rfrac) {
+		float step=0.02f;
+		float dist=PVector.sub(p1, p2).mag();
+		if (dist < step)
+			g.line(p1.x, p1.y, p2.x, p2.y);
+		else {
+			PVector mid=PVector.mult(PVector.add(p1, p2), 0.5f);
+			mid.x+=(Math.random()*2-1)*dist*rfrac;
+			mid.y+=(Math.random()*2-1)*dist*rfrac;
+			randomline(g,p1,mid,rfrac);
+			randomline(g,mid,p2,rfrac);
+		}
+	}
+	
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g, p);
 
@@ -118,16 +132,24 @@ public class VisualizerProximity extends VisualizerPS {
 			int id1=entry.getKey();
 			int id2=entry.getValue();
 			if (id2!=-1) {
-			//PApplet.println("grid "+cell+", id="+id+" "+gridColors.get(cell));
-			g.fill(127,0,0,127);
-			g.strokeWeight(0.05f);
-			g.stroke(127,0,0);
-			g.line(p.get(id1).getOriginInMeters().x, p.get(id1).getOriginInMeters().y, p.get(id2).getOriginInMeters().x, p.get(id2).getOriginInMeters().y);
+				//PApplet.println("grid "+cell+", id="+id+" "+gridColors.get(cell));
+				g.pushStyle();
+				g.fill(127,0,0,127);
+				g.strokeWeight(0.01f);
+				g.colorMode(PConstants.HSB);
+				int color=(id1*34813747+id2*23873)&0xff;
+				//PApplet.println("id1="+id1+", id2="+id2+" -> color="+color);
+				g.stroke(color,255,255);
+				randomline(g, p.get(id1).legs[0].getOriginInMeters(), p.get(id2).legs[0].getOriginInMeters(),.2f);
+				randomline(g, p.get(id1).legs[0].getOriginInMeters(), p.get(id2).legs[1].getOriginInMeters(),.2f);
+				randomline(g, p.get(id1).legs[1].getOriginInMeters(), p.get(id2).legs[0].getOriginInMeters(),.2f);
+				randomline(g, p.get(id1).legs[1].getOriginInMeters(), p.get(id2).legs[1].getOriginInMeters(),.2f);
+				g.popStyle();
 			}
 		}
 		g.fill(127);
-		g.textAlign(PConstants.LEFT, PConstants.TOP);
-		drawText(g,0.24f,ts.name,5,5);
+		g.textAlign(PConstants.LEFT, PConstants.BASELINE);
+		drawText(g,0.24f,Ableton.getInstance().trackSet.name,titlePos.x,titlePos.y);
 	}
 
 	public void drawLaser(PApplet parent, People p) {
