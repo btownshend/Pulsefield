@@ -27,7 +27,7 @@ public class Scale {
 	ScaleType stype;
 	String key;
 	int notes[];  // Midi notes for center octave of scale
-	
+
 	/** Create a new scale
 	 * @param scaleName name of scale (e.g. "Major")
 	 * @param keyname key of scale (e.g. "C#" )
@@ -36,7 +36,10 @@ public class Scale {
 		final String keys[]={"C","C#","Db","D","D#","Eb","E","F","F#","Gb","G","G#","Ab","A","A#","Bb","B","B#","Cb"};
 		final int keyv[]={60,61,61,62,63,63,64,65,66,66,67,68,68,69,70,70,71,72,72};
 		ScaleType scale=ScaleType.find(scaleName);
-
+		if (scale==null) {
+			PApplet.println("No such scale type: "+scaleName);
+			assert(false);
+		}
 		int[] scpitches=scale.pattern;
 		int kpos=-1;
 		for (int i=0;i<keys.length;i++)
@@ -74,6 +77,7 @@ public class Scale {
 	public int get(int i) {
 		return notes[i];
 	}
+	
 	
 	/** Map a value to a MIDI note within scale 
 	 * @param val value to map
