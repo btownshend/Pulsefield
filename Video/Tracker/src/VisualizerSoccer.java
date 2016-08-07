@@ -109,6 +109,7 @@ class Goal {
 	float width, depth;
 	PImage img;
 	PShape outline;
+	boolean scoreDelay=false;  // True immediately after a goal
 	
 	Goal(PVector pos, float width, float depth) {
 		this.pos=pos;
@@ -131,7 +132,10 @@ class Goal {
 		//PApplet.println("Drawing image at "+pos+"; width="+width+", depth="+depth);
 		g.popMatrix();
 		
-		g.stroke(0,255,0);
+		if (scoreDelay)
+			g.stroke(255,0,0);
+		else
+			g.stroke(0,255,0);
 		g.noFill();
 		
 		outline=g.createShape();
@@ -164,26 +168,23 @@ class Goal {
 	// return true if this counts as a goal
 	boolean collisionDetect(Ball b) {
 		if (outline==null) {
-			PApplet.println("no outline");
+			//PApplet.println("no outline");
 			return false;
 		}
 			
 		PVector p1=outline.getVertex(0);
-		for (int i=0;i<outline.getVertexCount();i++) {
+		float mindist=1000;
+		for (int i=0;i<outline.getVertexCount()-1;i++) {
 			PVector p2=outline.getVertex((i+1)%outline.getVertexCount());
 			float dist=pt2line(p1,p2,b.position);
+			if (dist<mindist)
+				mindist=dist;
 			if (dist<b.radius) {
 				float dist2=pt2line(p1,p2,PVector.add(b.position, PVector.mult(b.velocity,1e-5f)));
 				// Check if its getting closer
 				if (dist2<dist) {
 					PApplet.println("ball at "+b.position+" hit goal line "+i+" between "+p1+" and "+p2);
 					PApplet.println("dist="+dist+", dist2="+dist);
-					if (i==outline.getVertexCount()-1) {
-						// Through the goal line
-						PApplet.println("Goal!");
-						b.impactSound(3);
-						return true;
-					}
 					// Resolve velocity into parallel and perp components
 					PVector parallel=PVector.sub(p2,p1);
 					parallel.normalize();
@@ -192,10 +193,20 @@ class Goal {
 					PApplet.println("vel="+b.velocity+"="+parallel+"(para) + "+perp);
 					b.velocity = PVector.sub(parallel,perp);  // Bounce
 					b.impactSound(2);
+					if (i==1 && !scoreDelay) {
+						// Through the goal line
+						PApplet.println("Goal!");
+						scoreDelay=true;
+						b.impactSound(3);
+						return true;
+					}
 				}
 			}
 			p1=p2;
 		}
+		// Check if ball has cleared goal area
+		if (mindist>1)
+			scoreDelay=false;   // Can now score again
 		return false;
 	}
 }
@@ -208,10 +219,10 @@ public class VisualizerSoccer extends VisualizerDot {
 	VisualizerSoccer(PApplet parent) {
 		super(parent);
 		goals=new Goal[2];
-		goals[0]=new Goal(new PVector(Tracker.getFloorCenter().x+Tracker.getFloorSize().x*0.35f,Tracker.getFloorCenter().y),
-				1.5f,0.5f);
-		goals[1]=new Goal(new PVector(Tracker.getFloorCenter().x-Tracker.getFloorSize().x*0.35f,Tracker.getFloorCenter().y),
-				1.5f,0.5f);
+		goals[0]=new Goal(new PVector(Tracker.getFloorCenter().x+Tracker.getFloorSize().x*0.5f-0.25f,Tracker.getFloorCenter().y),
+				1.0f,0.25f);
+		goals[1]=new Goal(new PVector(Tracker.getFloorCenter().x-Tracker.getFloorSize().x*0.5f+0.25f,Tracker.getFloorCenter().y),
+				1.0f,0.25f);
 		score=new int[2];
 	}
 
@@ -225,6 +236,7 @@ public class VisualizerSoccer extends VisualizerDot {
 		ball=null;
 		score[0]=0;
 		score[1]=0;
+		Tracker.theTracker.setborders(1.0f);
 	}
 	
 	@Override
@@ -232,6 +244,7 @@ public class VisualizerSoccer extends VisualizerDot {
 		super.stop();
 		// When this app is deactivated
 		ball=null;
+		Tracker.theTracker.setborders(0.0f);
 	}
 
 	@Override
@@ -246,8 +259,6 @@ public class VisualizerSoccer extends VisualizerDot {
 		for (int i=0;i<goals.length;i++) {
 			if (goals[i].collisionDetect(ball)) {
 				score[i]+=1;
-				ball.position=Tracker.getFloorCenter();
-				ball.velocity=new PVector(0,0);
 			}
 	
 		}
@@ -258,14 +269,16 @@ public class VisualizerSoccer extends VisualizerDot {
 		super.draw(t, g, p);
 		if (p.pmap.isEmpty())
 			return;
+		
 		for (Goal goal: goals)
 			goal.draw(g);
+		g.textAlign(PConstants.CENTER,PConstants.CENTER);
+		g.fill(70);
+		for (int i=0;i<score.length;i++) {
+			drawText(g,0.2f,String.format("%d",score[i]), goals[i].pos.x, goals[i].pos.y+goals[i].width*0.6f);
+		}
 		if (ball!=null)
 			ball.draw(g);
-		g.textAlign(PConstants.CENTER,PConstants.CENTER);
-		for (int i=0;i<score.length;i++) {
-			drawText(g,0.3f,String.format("%d",score[i]), Tracker.getFloorCenter().x-1+2*i,Tracker.getFloorCenter().y);
-		}
 	}
 	
 	@Override
