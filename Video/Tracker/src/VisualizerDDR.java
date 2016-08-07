@@ -101,7 +101,7 @@ public class VisualizerDDR extends Visualizer {
 	int pattern=0;  // Current pattern
 	float lastClipPosition;
 	final int targetDifficulty=4;
-	
+	int delayCounter=0;  // Counter to delay start of next song after one ends
 	
 	HashMap<Integer, Dancer> dancers;
 
@@ -303,9 +303,17 @@ public class VisualizerDDR extends Visualizer {
 			drawTicker(g,clip.position);
 		float songdur=cursong.getSimfile().getduration(pattern);
 		if ((clip.state==1 && clip.position>1) || clip.position>songdur) {
-			PApplet.println("Song duration "+songdur+" ended; clip Position="+clip.position+", songdur="+songdur+", state="+clip.state);
-			chooseSong();
-		}
+			delayCounter+=1;
+			if (delayCounter>150) {
+				PApplet.println("Song duration "+songdur+" ended; clip Position="+clip.position+", songdur="+songdur+", state="+clip.state);
+				chooseSong();
+				for (int id: dancers.keySet()) {
+					Dancer d=dancers.get(id);
+					d.score=0;
+				}
+			}
+		} else
+			delayCounter=0;
 	}
 
 
@@ -353,7 +361,10 @@ public class VisualizerDDR extends Visualizer {
 				g.fill(0,255,0);
 			else
 				g.fill(255,0,0);
-			drawText(g,scoreHeight,""+d.score,0,-scoreHeight/10);
+			float sh=scoreHeight;
+			if (id==bestId && delayCounter>0)
+				sh *= 3;  // Winner's score is in green and bigger
+			drawText(g,sh,""+d.score,0,-sh/10);
 			g.popMatrix();
 			
 			//PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad);
