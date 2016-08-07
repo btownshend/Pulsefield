@@ -53,10 +53,13 @@ public abstract class Visualizer {
 		final PVector center=Tracker.getFloorCenter();
 		final float textHeight=0.2f;   // Height in meters
 		final float lineSize=textHeight*2;
-		g.fill(50, 255, 255);
+
+		//g.fill(50, 255, 255);
+		t.visMinim.radar.draw(t, g);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		g.stroke(255);
 		g.strokeWeight(0.02f);
+		
 		drawText(g,textHeight,"Welcome to the", center.x,center.y-lineSize*2);
 		drawText(g,textHeight*1.33f,"PULSEFIELD", center.x, center.y-lineSize);
 		drawText(g,textHeight,name, center.x,center.y+lineSize);
@@ -82,9 +85,10 @@ public abstract class Visualizer {
 	
 	public void draw(Tracker t, PGraphics g, People p) {
 		initializeContext(t,g);
-		g.background(0, 0, 0); 
 		if (p.pmap.isEmpty())
 			drawWelcome(t, g);
+		else
+			g.background(0, 0, 0); 
 		if (t.drawBorders)
 			drawBorders(g);
 	}

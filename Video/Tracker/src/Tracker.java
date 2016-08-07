@@ -41,7 +41,8 @@ public class Tracker extends PApplet {
 	VisualizerNavier visNavier;
 	VisualizerDDR visDDR;
 	VisualizerMenu visMenu;
-
+	VisualizerMinim visMinim;
+	
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK, VD;
 	People people, mousePeople;
@@ -225,7 +226,7 @@ public class Tracker extends PApplet {
 		addVis("Whack",new VisualizerWhack(this,synth),true);
 		addVis("Soccer",new VisualizerSoccer(this),true);
 		addVis("Menu",visMenu=new VisualizerMenu(this),false);
-		addVis("Visualizer",new VisualizerMinim(this,fourier,renderer!=FX2D),true);
+		addVis("Visualizer",visMinim=new VisualizerMinim(this,fourier,renderer!=FX2D),false);
 		addVis("Calypso",new VisualizerCalypso(this,synth),true);
 		addVis("TestPattern",new VisualizerTestPattern(this),false);
 		setapp(vis.length-1);
