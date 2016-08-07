@@ -12,12 +12,16 @@ public class VisualizerTestPattern extends VisualizerDot {
 	@Override
 	public void start() {
 		super.start();
+		Tracker.theTracker.useMasks=false;
+		Tracker.theTracker.drawBorders=true;
 		// Other initialization when this app becomes active
 	}
 	
 	@Override
 	public void stop() {
 		super.stop();
+		Tracker.theTracker.useMasks=true;
+		Tracker.theTracker.drawBorders=false;
 		// When this app is deactivated
 	}
 
