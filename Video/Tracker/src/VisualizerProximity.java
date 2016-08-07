@@ -9,7 +9,7 @@ import processing.core.PVector;
 
 public class VisualizerProximity extends VisualizerPS {
 	HashMap<Integer,Integer> assignments;
-	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","AN","MV"};
+	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","AN","PB"};
 	int song=0;
 	TrackSet ts;
 	static final float MAXSEP=0.2f; // Maximum separation to trigger
@@ -147,6 +147,7 @@ public class VisualizerProximity extends VisualizerPS {
 				g.popStyle();
 			}
 		}
+
 		g.fill(127);
 		g.textAlign(PConstants.LEFT, PConstants.BASELINE);
 		drawText(g,0.24f,Ableton.getInstance().trackSet.name,titlePos.x,titlePos.y);
