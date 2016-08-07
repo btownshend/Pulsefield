@@ -146,6 +146,9 @@ public class VisualizerCalypso extends Visualizer {
 	@Override
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g, p);
+		if (p.pmap.isEmpty()) {
+			return;
+		}
 		for (Drum d: drums) 
 			d.draw(g);
 		g.pushStyle();
