@@ -49,15 +49,17 @@ public class RadarRenderer extends Renderer {
       // size of the aura
       float w2 = sz.x * aura, h2 = sz.y * aura;
       
+      float signalLevel=Math.abs(fourier.left[20]);
+      //PApplet.println("signal="+signalLevel);
       // smoke effect
       if(tracker.frameCount % delay == 0 ) {
-    	  //PVector smokeShift=new PVector(tracker.random(-0.05f,0.15f),tracker.random(-0.05f,0.15f));
-    	  PVector smokeShift=new PVector(0.005f,0.005f);
+    	  PVector smokeShift=new PVector(tracker.random(-signalLevel,signalLevel),tracker.random(-signalLevel,signalLevel));
+    	  //PVector smokeShift=new PVector(0.005f,0.005f);
     	  g.imageMode(PConstants.CORNER);
     	  PImage frame=g.get();
-    	  //g.tint(255,200);
+    	  g.tint(255,200);
     	  g.image(frame,center.x-sz.x/2+smokeShift.x,center.y-sz.y/2+smokeShift.y,sz.x+smokeShift.x, sz.y+smokeShift.y); 
-    	  //g.tint(255,255);
+    	  g.tint(255,255);
       }
       
       // draw polar curve 
