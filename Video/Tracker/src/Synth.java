@@ -111,4 +111,35 @@ abstract public class Synth {
 		return channelmap.get(ch);
 	}
 
+	/** Get the note name (e.g. "C3") for a midi pitch
+	 * @param i
+	 * @return
+	 */
+	public static String pitchToName(int midiPitch) {
+		final String keys[]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
+		int octave=(int)(midiPitch/12);
+		int note=midiPitch-octave*12;
+		return String.format("%s%d", keys[note],octave);
+	}
+	
+	/** Get the midi pitch for a note name (e.g. "C3")
+	 * @param i
+	 * @return
+	 */
+	public static int nameToPitch(String name) {
+		final String keys[]={"C","C#","Db","D","D#","Eb","E","F","F#","Gb","G","G#","Ab","A","A#","Bb","B","B#","Cb"};
+		final int keyv[]={60,61,61,62,63,63,64,65,66,66,67,68,68,69,70,70,71,72,72};
+		int octave=5;
+		char lastChar=name.charAt(name.length()-1);
+		if (lastChar>='0' && lastChar<='9') {
+			octave=(int)(lastChar-'0');
+			name=name.substring(0, name.length()-1);
+		}
+		for (int i=0;i<keys.length;i++) {
+			if (name.equals(keys[i]))
+				return keyv[i]+(octave-5)*12;
+		}
+		PApplet.println("Unable to parse note name: "+name);
+		return -1;
+	}
 }
