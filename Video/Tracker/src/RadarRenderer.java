@@ -21,6 +21,9 @@ public class RadarRenderer extends Renderer {
   }
   
   @Override
+  public String name() { return "Radar"; }
+
+  @Override
   public void start() {
 	 needsClear=true;
   }

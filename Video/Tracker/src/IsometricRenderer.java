@@ -33,6 +33,10 @@ public class IsometricRenderer extends Renderer {
  }
 
   @Override
+  public String name() { return "Isometric"; }
+
+
+  @Override
   public void start() { 
 
 

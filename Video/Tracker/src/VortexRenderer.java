@@ -20,6 +20,9 @@ public class VortexRenderer extends Renderer {
 	}
 
 	@Override
+	public String name() { return "Vortex"; }
+	
+	@Override
 	public synchronized void draw(Tracker tracker, PGraphics g) {
 		if(fourier.left != null) {  
 

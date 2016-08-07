@@ -10,6 +10,7 @@ public abstract class Renderer {
 		fourier=f;
 		mvl=new MusicVisLaser(fourier, laserMode);
 	}
+	abstract public String name();
 	public void start() {}
 	public void stop() {}
 	public abstract void draw(Tracker tracker, PGraphics g); 
