@@ -245,6 +245,7 @@ public class VisualizerOsmos extends Visualizer {
 
 	public void start() {
 		super.start();
+		marbles = new HashMap<Integer, PlayerMarble>();
 		Ableton.getInstance().setTrackSet("Osmos");
 	}
 
