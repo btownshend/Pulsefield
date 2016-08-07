@@ -13,6 +13,7 @@ public class VisualizerProximity extends VisualizerPS {
 	int song=0;
 	TrackSet ts;
 	static final float MAXSEP=0.2f; // Maximum separation to trigger
+	PVector titlePos = new PVector(0,0);;
 	
 	VisualizerProximity(PApplet parent) {
 		super(parent);
@@ -35,15 +36,31 @@ public class VisualizerProximity extends VisualizerPS {
 		assignments.clear();
 	}
 
+	public void songIncr(float set) {
+		if (set>0)
+			song=(song+1)%songs.length;
+		PApplet.println("Song="+song);
+		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);
+		PApplet.println("Starting grid with song "+song+": "+ts.name);
+	}
+
 	public int clipNumber(int nclips,int id1, int id2) {
 		return (id1*7+id2)%nclips;
 	}
 	
 	public void update(PApplet parent, People allpos) {
 		super.update(parent,allpos);
+		titlePos.x=Tracker.minx+Tracker.getFloorSize().x/4;
+		titlePos.y=Tracker.miny+0.24f+0.1f;
+		
 	//	HashMap<Integer,Integer> newAssignments=new HashMap<Integer,Integer>();
 		for (Map.Entry<Integer,Person> e1: allpos.pmap.entrySet()) {
 			int id1=e1.getKey();
+			// Check for song advance
+			if (PVector.sub(titlePos, e1.getValue().getOriginInMeters()).mag() < 0.3f) {
+				// Change song
+				songIncr(1);
+			}
 			PVector pos1=e1.getValue().getNormalizedPosition();
 			// Find closest NEIGHBOR	
 			int closest=-1;
