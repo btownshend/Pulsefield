@@ -1092,20 +1092,28 @@ public class Tracker extends PApplet {
 			p.legs[leg].move(new PVector(x,y),new PVector((float)(-spd*Math.sin(heading*Math.PI/180)),(float)(spd*Math.cos(heading*Math.PI/180))));
 	}
 	public void pfsetminx(float minx) {  
-		Tracker.lidarminx=minx;
-		resetcoords();
+		if (Tracker.lidarminx != minx) {
+			Tracker.lidarminx=minx;
+			resetcoords();
+		}
 	}
 	public void pfsetminy(float miny) {  
-		Tracker.lidarminy=miny;
-		resetcoords();
+		if (Tracker.lidarminy != miny) {
+			Tracker.lidarminy=miny;
+			resetcoords();
+		}
 	}
 	public void pfsetmaxx(float maxx) {  
-		Tracker.lidarmaxx=maxx;
-		resetcoords();
+		if (Tracker.lidarmaxx!=maxx) {
+			Tracker.lidarmaxx=maxx;
+			resetcoords();
+		}
 	}
-	public void pfsetmaxy(float maxy) {  
-		Tracker.lidarmaxy=maxy;
-		resetcoords();
+	public void pfsetmaxy(float maxy) { 
+		if (Tracker.lidarmaxy != maxy) {
+			Tracker.lidarmaxy=maxy;
+			resetcoords();
+		}
 	}
 
 	public void pfaligncorner(int cornerNumber, int numCorners, float x, float y) {
