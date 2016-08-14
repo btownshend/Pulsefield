@@ -36,7 +36,8 @@ LIDAR/FrontEndLIDAR/frontend
 LIDAR/FrontEndLIDAR/FELidar-0.1
 
 *.bak
-
+RUN/LOGS
+RUN/*.log
 LIDAR/FrontEndLIDAR/rec2.txt
 
 *.ferec

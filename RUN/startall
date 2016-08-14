@@ -1,0 +1,40 @@
+if [ "x$1" = "xstop" ]
+then
+   load="unload"
+elif [ "x$1" = "xstart" ]
+then
+   load="load"
+else
+   echo Usage: $0 '[start|stop]'
+   exit 1
+fi
+logdir=LOGS/$(date '+%Y%m%d')/$(date '+%H%M%S')
+[ -d $logdir ] || mkdir -p $logdir
+for f in *.log
+do
+    if [ -n $f ]
+    then
+	echo "**** Ran $load at " $(date) >> "$f"
+	mv "$f" $logdir
+    else
+	rm "$f"
+    fi
+done
+starttime=$
+for app in frontend calibrator osc9001 osc9998 osc9999 chuck tracker madmapper
+do
+  launchctl $load $app.plist
+  echo $load $app.plist
+done
+
+launchctl list | grep com.tc
+
+if [ "x$1" = "xstart" ]
+then
+   # Ableton doesn't respond well to launchctl -- keeps coming to foreground
+   # In any case, unload won't work with apps
+   echo Launching Ableton
+   open -a '/Applications/Ableton Live 9.6 Beta.app' &
+else
+   echo Ableton and MadMapper will continue to run
+fi

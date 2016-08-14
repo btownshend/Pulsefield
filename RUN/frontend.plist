@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Enabled</key>
+	<false/>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string></string>
+		<key>DYLD_LIBRARY_PATH</key>
+		<string>/Applications/MATLAB/bin/maci64</string>
+	</dict>
+	<key>RunAtLoad</key>
+	<false/>
+	<key>KeepAlive</key>
+	<true/>
+
+	<key>Label</key>
+	<string>com.tc.frontend</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/bst/Dropbox/Pulsefield/src/LIDAR/FrontEndLIDAR/frontend</string>
+		<string>-B10</string>
+		<string>-D</string>
+		<string>/Users/bst/Dropbox/Pulsefield/src/RUN/frontend_dbg.log</string>
+		<string>-d1</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>/Users/bst/Dropbox/Pulsefield/src/LIDAR/FrontEndLIDAR</string>
+	<key>StandardOutPath</key>
+	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/frontend_stdout.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/frontend_stderr.log</string>
+</dict>
+</plist>
