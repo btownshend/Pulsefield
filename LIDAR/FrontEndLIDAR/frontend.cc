@@ -437,6 +437,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    totalProcTime=0;
 	}
 
+#ifdef MATLAB
 	if (!matfile.empty()) {
 	    snap->append(vis,world);
 	    
@@ -452,6 +453,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 		snap->clear();
 	    }
 	}
+#endif
 	minPerfFrame=std::min(minPerfFrame,frame-1);
 	maxPerfFrame=std::max(maxPerfFrame,frame-1);
 	if (world->numPeople() > 0) {
@@ -511,12 +513,14 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	}
     }
 
+#ifdef MATLAB
     if (!matfile.empty()) {
 	char tmpfile[1000];
 	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),frame);
 	snap->save(tmpfile);
 	snap->clear();
     }
+#endif
     return 0;
 }
 

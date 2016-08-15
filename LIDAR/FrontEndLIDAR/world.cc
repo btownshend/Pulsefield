@@ -582,6 +582,7 @@ void World::sendMessages(Destinations &dests, double elapsed) {
 	lo_address_free(addr[i]);
 }
 
+#ifdef MATLAB
 mxArray *World::convertToMX() const {
     const char *fieldnames[]={"tracks","npeople","assignments","bglike","bestlike","bounds"};
     mxArray *world = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
@@ -641,4 +642,4 @@ mxArray *World::convertToMX() const {
 
     return world;
 }
-
+#endif

@@ -41,6 +41,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments)
     nextToUpdate=(nextToUpdate+1)%mixtures.size();
 }
 
+#ifdef MATLAB
 mxArray *Background::convertToMX() const {
     const char *fieldnames[]={"range","angle","freq"};
     mxArray *bg = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
@@ -77,3 +78,4 @@ mxArray *Background::convertToMX() const {
     }
     return bg;
 }
+#endif

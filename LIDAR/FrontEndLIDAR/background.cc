@@ -243,6 +243,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
     targets=findTargets(pts);
 }
 
+#ifdef MATLAB
 mxArray *Background::convertToMX() const {
     const char *fieldnames[]={"range","angle","freq","sigma"};
     mxArray *bg = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
@@ -283,6 +284,8 @@ mxArray *Background::convertToMX() const {
     }
     return bg;
 }
+#endif
+
 
 // Send /pf/background OSC message (includes current range for point too)
 void Background::sendMessages(lo_address &addr, int scanpt) const {

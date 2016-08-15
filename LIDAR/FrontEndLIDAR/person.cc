@@ -444,6 +444,7 @@ void Person::unGroup() {
     group.reset();
 }
 
+#ifdef MATLAB
 void Person::addToMX(mxArray *people, int index) const {
     // const char *fieldnames[]={"id","position","legs","predictedlegs","prevlegs","legvelocity","scanpts","persposvar", "posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
     // Note: for multidimensional arrays, first index changes most rapidly in accessing matlab data
@@ -605,4 +606,5 @@ void Person::addToMX(mxArray *people, int index) const {
     *(int *)mxGetPr(pTotalVisibleCount) = totalVisibleCount;
     mxSetField(people,index,"totalVisibleCount",pTotalVisibleCount);
 }
+#endif
 

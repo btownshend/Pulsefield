@@ -14,6 +14,7 @@ void Snapshot::clear() {
     world.clear();
 }
 
+#ifdef MATLAB
 void Snapshot::append(const Vis *v, const World *t) {
     vis.push_back(v->convertToMX());
     bg.push_back(t->getBackground().convertToMX());
@@ -53,4 +54,4 @@ void Snapshot::save(const char *filename) const {
 
     mxDestroyArray(snap);
 }
-
+#endif

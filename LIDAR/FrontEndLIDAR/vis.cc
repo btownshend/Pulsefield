@@ -8,6 +8,7 @@ void Vis::update(const SickIO *s) {
     sick=s;
 }
 
+#ifdef MATLAB
 mxArray *Vis::convertToMX() const {
     const char *fieldnames[]={"cframe","nmeasure","range","angle","frame","acquired"};
     mxArray *vis = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
@@ -49,3 +50,4 @@ mxArray *Vis::convertToMX() const {
 
     return vis;
 }
+#endif
