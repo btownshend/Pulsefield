@@ -21,7 +21,7 @@ do
     fi
 done
 starttime=$
-for app in frontend calibrator osc9001 osc9998 osc9999 chuck tracker madmapper
+for app in frontend calibrator osc9001 osc9998 osc9999 chuck tracker
 do
   launchctl $load $app.plist
   echo $load $app.plist
@@ -31,10 +31,12 @@ launchctl list | grep com.tc
 
 if [ "x$1" = "xstart" ]
 then
-   # Ableton doesn't respond well to launchctl -- keeps coming to foreground
+   # Apps don't respond well to launchctl -- keeps coming to foreground
    # In any case, unload won't work with apps
    echo Launching Ableton
-   open -a '/Applications/Ableton Live 9.6 Beta.app' &
+   open -a '/Applications/Ableton Live 9.7 Beta.app' '/Users/bst/Dropbox/Pulsefield/Marcos Share/PULSEFIELD1A Project/PULSEFIELD2016.als'
+   echo Launching MadMapper
+   open -a '/Applications/MadMapper.app' '/Users/bst/Dropbox/Pulsefield/MadMapper/Pulsefield-2Proj.mad'
 else
    echo Ableton and MadMapper will continue to run
 fi
