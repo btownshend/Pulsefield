@@ -30,6 +30,7 @@ public class GUI extends JFrame {
 	private JTextArea fps;
 	private JLabel lblFps;
 	private JCheckBox drawBorders;
+	private JCheckBox enableMenu;
 	
 	public static void start() {
 		EventQueue.invokeLater(new Runnable() {
@@ -120,6 +121,18 @@ public class GUI extends JFrame {
 				Tracker.theTracker.useMasks=useMasks.isSelected();
 			}
 		});
+		
+		enableMenu = new JCheckBox("Enable Menu");
+		enableMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Tracker.theTracker.enableMenu=enableMenu.isSelected();
+			}
+		});
+		GridBagConstraints gbc_enableMenu = new GridBagConstraints();
+		gbc_enableMenu.insets = new Insets(0, 0, 5, 5);
+		gbc_enableMenu.gridx = 2;
+		gbc_enableMenu.gridy = 1;
+		contentPane.add(enableMenu, gbc_enableMenu);
 		GridBagConstraints gbc_useMasks = new GridBagConstraints();
 		gbc_useMasks.anchor = GridBagConstraints.NORTHWEST;
 		gbc_useMasks.insets = new Insets(0, 0, 5, 5);
@@ -186,6 +199,7 @@ public class GUI extends JFrame {
 					useMasks.setSelected(Tracker.theTracker.useMasks);
 					showProjectors.setSelected(Tracker.theTracker.showProjectors);
 					appSelect.setSelectedIndex(Tracker.theTracker.currentvis);
+					enableMenu.setSelected(Tracker.theTracker.enableMenu);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

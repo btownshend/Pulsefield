@@ -78,6 +78,7 @@ public class Tracker extends PApplet {
 	boolean drawMasks = false;
 	boolean useMasks = true;
 	boolean showProjectors = false;
+	boolean enableMenu = true;   // True to enable menu
 	static Tracker theTracker;
 	
 	public void settings() {
@@ -173,6 +174,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setprojection","/cal/projection");
 		oscP5.plug(this, "setborders", "/video/borders");
 		oscP5.plug(this, "setbounds", "/video/bounds");
+		oscP5.plug(this, "menuenable", "/video/menu");
 		oscP5.plug(this, "setminx", "/video/minx");
 		oscP5.plug(this, "setmaxx", "/video/maxx");
 		oscP5.plug(this, "setminy", "/video/miny");
@@ -283,6 +285,15 @@ public class Tracker extends PApplet {
 		msg.add(onoff);
 		oscP5.send(msg,TO);
 		drawBounds=onoff!=0f;
+		GUI.theGUI.update();
+	}
+	
+	public void menuenable(float onoff) {
+		OscMessage msg = new OscMessage("/video/menu");
+		PApplet.println("Got /video/menu,"+onoff);
+		msg.add(onoff);
+		oscP5.send(msg,TO);
+		enableMenu=onoff!=0f;
 		GUI.theGUI.update();
 	}
 	
@@ -527,7 +538,7 @@ public class Tracker extends PApplet {
 			mouseVel.set(0f,0f);
 		}
 		prevMousePressed=mousePressed;
-		if (visMenu.hotSpotCheck(this,people))
+		if (enableMenu && visMenu.hotSpotCheck(this,people))
 			setapp(getAppIndex("Menu"));
 
 		sendMouseOSC();
@@ -538,7 +549,12 @@ public class Tracker extends PApplet {
 		canvas.pushStyle();
 		vis[currentvis].draw(this, canvas,people);
 		canvas.popStyle();
-		visMenu.hotSpotDraw(canvas);
+		
+		if (enableMenu) {
+			canvas.pushStyle();
+			visMenu.hotSpotDraw(canvas);
+			canvas.popStyle();
+		}
 		
 		//vis[currentvis].drawLaser(this,people);
 
