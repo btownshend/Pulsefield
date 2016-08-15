@@ -9,7 +9,7 @@
 		<key>PATH</key>
 		<string></string>
 		<key>DYLD_LIBRARY_PATH</key>
-		<string>/Applications/MATLAB/bin/maci64</string>
+		<string>/Users/bst/Dropbox/Pulsefield/src/LIDAR/FrontEndLIDAR</string>
 	</dict>
 	<key>RunAtLoad</key>
 	<false/>
