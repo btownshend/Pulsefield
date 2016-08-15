@@ -24,8 +24,8 @@
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/Chuck</string>
 	<key>StandardOutPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/chuck_stdout.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/chuck_stdout.log</string>
 	<key>StandardErrorPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/chuck_stderr.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/chuck_stderr.log</string>
 </dict>
 </plist>

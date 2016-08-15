@@ -21,8 +21,8 @@
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/Calibrator</string>
 	<key>StandardOutPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/calibration_stdout.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/calibration_stdout.log</string>
 	<key>StandardErrorPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/calibration_stderr.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/calibration_stderr.log</string>
 </dict>
 </plist>

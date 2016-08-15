@@ -28,8 +28,8 @@
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/RUN</string>
 	<key>StandardOutPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/osc9001_stdout.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/osc9001_stdout.log</string>
 	<key>StandardErrorPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/osc9001_stderr.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/osc9001_stderr.log</string>
 </dict>
 </plist>

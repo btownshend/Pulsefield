@@ -26,8 +26,8 @@
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/bin</string>
 	<key>StandardOutPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/tracker_stdout.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/tracker_stdout.log</string>
 	<key>StandardErrorPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/tracker_stderr.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/tracker_stderr.log</string>
 </dict>
 </plist>

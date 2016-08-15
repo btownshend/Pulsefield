@@ -23,14 +23,14 @@
 		<string>/Users/bst/Dropbox/Pulsefield/src/LIDAR/FrontEndLIDAR/frontend</string>
 		<string>-B10</string>
 		<string>-D</string>
-		<string>/Users/bst/Dropbox/Pulsefield/src/RUN/frontend_dbg.log</string>
+		<string>/Users/bst/Desktop/PF_LOGS/frontend_dbg.log</string>
 		<string>-d1</string>
 	</array>
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/LIDAR/FrontEndLIDAR</string>
 	<key>StandardOutPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/frontend_stdout.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/frontend_stdout.log</string>
 	<key>StandardErrorPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/frontend_stderr.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/frontend_stderr.log</string>
 </dict>
 </plist>

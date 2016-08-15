@@ -25,8 +25,8 @@
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/RUN</string>
 	<key>StandardOutPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/ableton_stdout.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/ableton_stdout.log</string>
 	<key>StandardErrorPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/ableton_stderr.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/ableton_stderr.log</string>
 </dict>
 </plist>

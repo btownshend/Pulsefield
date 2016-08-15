@@ -26,8 +26,8 @@
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/RUN</string>
 	<key>StandardOutPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/madmapper_stdout.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/madmapper_stdout.log</string>
 	<key>StandardErrorPath</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN/madmapper_stderr.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/madmapper_stderr.log</string>
 </dict>
 </plist>

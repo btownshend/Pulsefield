@@ -8,7 +8,7 @@ else
    echo Usage: $0 '[start|stop]'
    exit 1
 fi
-logdir=LOGS/$(date '+%Y%m%d')/$(date '+%H%M%S')
+logdir=/Users/bst/Desktop/PF_LOGS/OLD/$(date '+%Y%m%d')/$(date '+%H%M%S')
 [ -d $logdir ] || mkdir -p $logdir
 for f in *.log
 do
