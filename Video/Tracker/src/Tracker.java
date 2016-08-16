@@ -230,14 +230,15 @@ public class Tracker extends PApplet {
 		addVis("Menu",visMenu=new VisualizerMenu(this),false);
 		addVis("Visualizer",visMinim=new VisualizerMinim(this,fourier,renderer!=FX2D),false);
 		addVis("Calypso",new VisualizerCalypso(this,synth),true);
-		addVis("TestPattern",new VisualizerTestPattern(this),false);
-		setapp(vis.length-1);
+		addVis("DNA",new VisualizerDNA(this,synth),true);
 		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
 		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
 		//vis[16]=visSyphon;
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
 		addVis("Osmos",new VisualizerOsmos(this,synth),true);
 		addVis("VDMX",new VisualizerVDMX(this,"/Users/bst/Dropbox/Pulsefield/VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
+		addVis("TestPattern",new VisualizerTestPattern(this),false);
+		setapp(vis.length-1);
 	}
 	
 	public void addVis(String name, Visualizer v,boolean selectable) {
