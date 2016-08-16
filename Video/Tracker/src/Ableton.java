@@ -186,7 +186,8 @@ public class Ableton {
 	float tempo;
 	float meter[] = new float[2];
 	int playstate = -1;
-
+	int bgClip = -1;   // Currently playing bg clip
+	
 	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips,int bgTrack, int bgClips[]) {
 		tracksets.put(id,new TrackSet(name,firstTrack,numTracks,tempo,bgTrack, bgClips));
 		for (int i=0;i<numTracks;i++) {
@@ -340,6 +341,7 @@ public class Ableton {
 		t.setOccupiedClip(clip);
 		Clip c = t.getClip(clip);
 		PApplet.println("Track "+track+" ("+t.getName()+") clip "+clip+" state changed from "+c.state+" to "+state);
+		int oldState=c.state;
 		c.state = state;
 		if (c==t.playing)
 			t.playing=null;
@@ -351,6 +353,11 @@ public class Ableton {
 		else if (state==3)
 			t.triggered=c;
 
+		if (state==1 && clip==bgClip && oldState!=1) {  // For some reasons, get 1->1 messages when starting
+			bgClip=-1;
+			startBgTrack();   // Start a new bg track
+		}
+		
 		OscMessage msg = new OscMessage("/grid/table/"+(t.songTrack+1)+"/track");
 		if (state>=2)
 			msg.add(t.getName());
@@ -520,20 +527,24 @@ public class Ableton {
 		if (ts!=null) {
 			setALTempo(trackSet.tempo);  // Set AL tempo
 			TouchOSC.getInstance().sendMessage(new OscMessage("/grid/song").add(ts.name));
-			if (ts.bgTrack!=-1) {
-				PApplet.println("Starting bg track "+ts.bgTrack);
-				Track t=getTrack(ts.bgTrack);
-				if (t==null)
-					PApplet.println("Track "+ts.bgTrack+" not found.");
-				else {
-					int nclips=ts.bgClips.length;
-					int clip=ts.bgClips[(int)(Math.random()*nclips)];
-					PApplet.println("Playing bg clip "+clip);
-					playClip(ts.bgTrack,clip);
-				}
-			}
+			startBgTrack();
 		}
 		return ts;
+	}
+	
+	public void startBgTrack() {
+		if (trackSet.bgTrack!=-1) {
+			PApplet.println("Starting bg track "+trackSet.bgTrack);
+			Track t=getTrack(trackSet.bgTrack);
+			if (t==null)
+				PApplet.println("Track "+trackSet.bgTrack+" not found.");
+			else {
+				int nclips=trackSet.bgClips.length;
+				bgClip=trackSet.bgClips[(int)(Math.random()*nclips)];
+				PApplet.println("Playing bg clip "+bgClip+" (of "+nclips+")");
+				playClip(trackSet.bgTrack,bgClip);
+			}
+		}
 	}
 	
 	/** Set a control for a track
