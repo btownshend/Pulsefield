@@ -2,6 +2,7 @@ import java.util.HashMap;
 
 import processing.core.PApplet;
 
+// Effects using a midi map
 class Effects {
 	Synth synth;
 	HashMap<String,Integer[]> pitchMap;
