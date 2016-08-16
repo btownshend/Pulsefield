@@ -228,7 +228,7 @@ public class Ableton {
 		addSong("Poly","Poly",101,3,120,0);
 		addSong("Navier", "Navier",105,4,120,0);
 		addSong("SteelPan","Steel Pan",109,1,120,0);
-		addSong("Cows","Cows",111,1,120,0);
+		addSong("Cows","Cows",111,1,120,0,124,new int[]{12,13,14});
 		addSong("Soccer","Soccer",112,1,120,0,124,new int[]{11});
 		addSong("PB","Polybius",114,9,130,13);
 		addSong("Osmos","Osmos",123,1,120,0,124,new int[]{0,1,2,3,4,5,6});
