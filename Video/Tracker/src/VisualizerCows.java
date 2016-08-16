@@ -10,7 +10,7 @@ class Apple {
 	PShape appleShape;
 	PImage appleImage;
 	int nextClip=0;
-	
+	int entrySide=0;  // 0-top,1-right,2-bottom,3-left
 	static final float speed=0.04f;  // Meters/frame
 	static final float maxHitDist=0.4f; // Meters
 	static final float appleRadius=0.3f;  // Meters
@@ -29,19 +29,47 @@ class Apple {
 //		PApplet.println("Drawing apple shape at "+p);
 //		g.shapeMode(PConstants.CENTER);
 //		Visualizer.drawShape(g, appleShape,position.x, position.y,appleRadius*2, appleRadius*2);
+		g.pushMatrix();
 		g.imageMode(PConstants.CENTER);
-		g.image(appleImage,position.x, position.y,appleRadius*2, appleRadius*2);
+		g.translate(position.x, position.y);
+		g.rotate((float)(-entrySide*Math.PI/2));
+		g.image(appleImage,0f,0f,appleRadius*2, appleRadius*2);
+		g.popMatrix();
 	}
 	
 	void update(People p) {
 		final float minsize=0.1f;
 		final float maxsize=2.0f;
-		position.y=position.y+speed;
-		boolean hit=false;
-		if (position.y>Tracker.maxy) {
-			// Hit bottom
-			hit=true;
+		switch (entrySide) {
+			case 0:
+				position.y=position.y+speed;
+				break;
+			case 1:
+				position.x=position.x+speed;
+				break;
+			case 2:
+				position.y=position.y-speed;
+				break;
+			case 3:
+				position.x=position.x-speed;
+				break;
 		}
+		boolean hit=false;
+		switch (entrySide) {
+		case 0:
+			hit=position.y>Tracker.maxy;
+			break;
+		case 1:
+			hit=position.x>Tracker.maxx;
+			break;	
+		case 2:
+			hit=position.y<Tracker.miny;
+			break;
+		case 3:
+			hit=position.x<Tracker.minx;
+			break;	
+		}
+
 		int numhits=0;
 		for (Person ps: p.pmap.values()) {
 			float d=PVector.dist(position, ps.getOriginInMeters());
@@ -75,8 +103,25 @@ class Apple {
 		}
 //		PApplet.println("apple position="+position+", hit="+hit);
 		if (hit) {
-			position.y=-1.0f;  // Give it some blanking time
-			position.x=(float) (Math.random()*(Tracker.maxx-Tracker.minx)+Tracker.minx);
+			entrySide=(int)(Math.random()*4);
+			switch (entrySide) {
+			case 0:
+				position.y=Tracker.miny-1.0f;  // Give it some blanking time
+				position.x=(float) (Math.random()*(Tracker.maxx-Tracker.minx)+Tracker.minx);
+				break;
+			case 1:
+				position.x=Tracker.minx-1.0f;  // Give it some blanking time
+				position.y=(float) (Math.random()*(Tracker.maxy-Tracker.miny)+Tracker.miny);
+				break;
+			case 2:
+				position.y=Tracker.maxy+1.0f;  // Give it some blanking time
+				position.x=(float) (Math.random()*(Tracker.maxx-Tracker.minx)+Tracker.minx);
+				break;
+			case 3:
+				position.x=Tracker.maxx+1.0f;  // Give it some blanking time
+				position.y=(float) (Math.random()*(Tracker.maxy-Tracker.miny)+Tracker.miny);
+				break;
+			}
 		}
 	}
 }
