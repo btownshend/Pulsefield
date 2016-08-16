@@ -44,7 +44,7 @@ class Marble {
 		return (float) Math.pow(mass/DENSITY,1/2f);
 	}
 	public PVector getMomentum() {
-		return PVector.mult(location, mass);
+		return PVector.mult(velocity, mass);
 	}
 	public void update() {
 		// Damping
@@ -204,7 +204,7 @@ class PlayerMarble extends Marble {
 	}
 }
 
-// Dance revolution visualizer
+// Osmos visualizer
 public class VisualizerOsmos extends Visualizer {
 	long startTime;
 	Images marbleImages;
