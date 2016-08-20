@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,15 +8,23 @@ import processing.core.PGraphics;
 import processing.core.PVector;
 
 class Nucleotide {
-	private static final float RADIUS=0.05f;  
-	private static final float DAMPING=0.2f; //0.2f;  // accel=-DAMPING * v
-	private static final float SPINESTRENGTH=2f;
-	static final float SPINESEP=0.15f;  // Mean separation between nucleotides on a strand
-	static final float NOISE=0.05f;    // Random noise added to velocity
+	// Distance constants (in meters)
+	static final float RADIUS=0.05f;  
+	static final float SPINESEP=RADIUS*3;  // Mean separation between nucleotides on a strand
+	static final float LIGATEDIST=2*RADIUS;
+	static final float SPINEBREAKDIST=1f;
 	static final float HBONDLENGTH=RADIUS*3;  // Mean length of hydrogen-bond between base pair
-	static final float HBONDMAX=HBONDLENGTH*2;  // Breaking point of H-bond
-	static final float HBONDSTRENGTH=0.1f;
-	static final float OVERLAPFACTOR=1f;  // Strength of repulsion of overlapping nucleotides
+	static final float HBONDMAX=HBONDLENGTH*2;  // Breaking length of H-bond
+
+	static final float DAMPING=0.2f; //0.2f;  // accel=-DAMPING * v
+	static final float DAMPVEL=0.5f;  // Damp only when velocity is >DAMPVEL
+	static final float NOISE=0.05f;    // Random noise added to velocity (m/s)
+
+	// Strengths of effects (i.e. acceleration=strength*force )
+	static final float SPINESTRENGTH=2f;
+	static final float HBONDSTRENGTH=2f;
+
+
 	Nucleotide prior,next;   // 5' & 3' neighbors
 	Nucleotide bp;    // Base-paired neighbor
 	char label;
@@ -35,11 +42,18 @@ class Nucleotide {
 		PApplet.println("Create nucleotide "+label+" at "+pos+" with velocity "+vel);
 	}
 
+	int strandLength() {
+		if (next==null)
+			return 1;
+		else
+			return 1+next.strandLength();
+	}
+	
 	// Apply a force of given strength if separation from other is different from tgt
 	void addBondForce(PVector other, float bondLength, float strength) {
 		PVector sep=PVector.sub(other, location);
 		float dist=sep.mag();
-		PVector force=PVector.div(sep, sep.mag());
+		PVector force=PVector.div(sep, dist);
 		if (dist>bondLength)
 			force.mult((float)Math.pow(dist-bondLength,2f));
 		else
@@ -47,8 +61,38 @@ class Nucleotide {
 		
 		PVector acc=PVector.mult(force,  strength/Tracker.theTracker.frameRate);
 		velocity.add(acc);
-		if (acc.mag()>0.01f) 
-			PApplet.println("Added "+acc+" to velocity of nucleotide at "+location);
+//		if (acc.mag()>0.01f) 
+//			PApplet.println("Added "+acc+" to velocity of nucleotide at "+location);
+	}
+	
+	// Get the last nucleotide of this chain (the 3' one)
+	Nucleotide getEnd() {
+		if (next==null)
+			return this;
+		return next.getEnd();
+	}
+	
+	int helixLength() {
+		if (bp==null)
+			return 0;
+		int len=0;
+		Nucleotide n=next;
+		Nucleotide cn=bp.prior;
+		while (n!=null && cn!=null && n.bp==cn) {
+			len+=1;
+			n=n.next;
+			cn=cn.prior;
+		}
+		n=prior;
+		cn=bp.next;
+		while (n!=null && cn!=null & n.bp==cn) {
+			len+=1;
+			n=n.prior;
+			cn=cn.next;
+		}
+		if (len>3)
+			PApplet.println("Helix length ="+len+" at "+location);
+		return len;
 	}
 	
 	// Compute effect of another nucleotide, n, on this one
@@ -60,7 +104,7 @@ class Nucleotide {
 		} else {
 			bpcheck(n);
 			if (n==bp) {
-				addBondForce(n.location, HBONDLENGTH, HBONDSTRENGTH);
+				addBondForce(n.location, HBONDLENGTH, HBONDSTRENGTH*(float)Math.pow(helixLength(),2));
 			} 
 		}
 		
@@ -76,9 +120,20 @@ class Nucleotide {
 			PVector v1=PVector.mult(sep, PVector.dot(velocity, sep));  // Velocity of this towards n
 			PVector v2=PVector.mult(sep, PVector.dot(n.velocity, sep)); // Velocity of n away from this
 			PVector avgVel=PVector.add(v1, v2).div(2f);
-			velocity.sub(v1); velocity.add(PVector.div(avgVel,2f));
-			n.velocity.sub(v2); velocity.add(PVector.div(avgVel,2));
+			velocity.sub(v1); velocity.add(PVector.div(avgVel,1f));
+			n.velocity.sub(v2); velocity.add(PVector.div(avgVel,1f));
 			//PApplet.println("Overlap of "+location+" with "+n.location+": v1="+v1+", v2="+v2+", avg="+avgVel);
+			if (next==null && n.prior==null) {
+				// Check if they are already on the same strand (to avoid circularization)
+				if (n.getEnd() == this)
+					PApplet.println("Contact between strand ends at "+location+" and "+n.location);	
+				else {
+					// Ligate them
+					PApplet.println("Ligating strands at "+location+" and "+n.location);
+					next=n;
+					n.prior=this;
+				}
+			}
 		}
 	}
 	
@@ -94,32 +149,39 @@ class Nucleotide {
 				// Correct pairing
 				if ((bp==null || dist<PVector.sub(bp.location, location).mag()) && (n.bp==null || dist<PVector.sub(n.bp.location, n.location).mag())) {
 					if (bp!=null) {
-						PApplet.println("Replaced base-pair between "+label+"@"+location+" and "+bp.label+"@"+bp.location+" with dist "+PVector.sub(bp.location, location).mag());
+						//PApplet.println("Replaced base-pair between "+label+"@"+location+" and "+bp.label+"@"+bp.location+" with dist "+PVector.sub(bp.location, location).mag());
 						bp.bp=null;
 					}
 					if (n.bp!=null) {
-						PApplet.println("Replaced base-pair between "+n.label+"@"+location+" and "+n.bp.label+"@"+bp.location+" with dist "+PVector.sub(n.bp.location, n.location).mag());
+						//PApplet.println("Replaced base-pair between "+n.label+"@"+location+" and "+n.bp.label+"@"+bp.location+" with dist "+PVector.sub(n.bp.location, n.location).mag());
 						n.bp.bp=null;
 					}
 					bp=n;
 					n.bp=this;
-					PApplet.println("Formed new base-pair between "+label+"@"+location+" and "+n.label+"@"+n.location+" with dist "+dist);
+					//PApplet.println("Formed new base-pair between "+label+"@"+location+" and "+n.label+"@"+n.location+" with dist "+dist);
 				}
 			}
 		}
 	}
 	
-	void update() {
+	void update(Effects e) {
 		if (bp!=null) {
 			float bpdist=PVector.sub(bp.location, location).mag();
-			if (bpdist>HBONDMAX) {
-				PApplet.println("Broke base-pair between "+label+"@"+location+" and "+bp.label+"@"+bp.location+" with dist "+PVector.sub(bp.location, location).mag());
+			if (bpdist>HBONDMAX*helixLength()) {
+				//PApplet.println("Broke base-pair between "+label+"@"+location+" and "+bp.label+"@"+bp.location+" with dist "+PVector.sub(bp.location, location).mag());
 				bp.bp=null;
 				bp=null;
 			}
+			// Check if hydrogen bonds are mediating a splinted ligation
+			if (bp!=null && prior==null && bp.next!=null && bp.next.bp!=null && bp.next.bp.next==null) {
+				PApplet.println("Splinted Ligation");
+				prior=bp.next.bp;
+				prior.next=this;
+			}
 		}
 		// Damping
-		velocity.add(PVector.mult(velocity, -DAMPING/Tracker.theTracker.frameRate));
+		if (velocity.mag()>DAMPVEL)
+			velocity.add(PVector.mult(velocity, -DAMPING/Tracker.theTracker.frameRate));
 
 		// Add random noise
 		velocity.add(PVector.mult(PVector.random2D(),NOISE/Tracker.theTracker.frameRate));
@@ -134,6 +196,18 @@ class Nucleotide {
 			velocity.y=-velocity.y;
 		if (location.y-RADIUS < Tracker.miny && velocity.y<0)
 			velocity.y=-velocity.y;
+		
+		// Check for breakage
+		if (next!=null) {
+			float sep=PVector.sub(location, next.location).mag();
+			if (sep>SPINEBREAKDIST) {
+				PApplet.println("Breaking spine between "+location+" and "+next.location);
+				next.prior=null;
+				new Strand(next);
+				next=null;
+				e.play("BREAK", 127, 1000);
+			}
+		}
 	}
 	
 	public void draw(PGraphics g) {
@@ -155,13 +229,24 @@ class Nucleotide {
 			break;
 		}
 		g.fill(color);
-		g.stroke(color);
+		float drawRadius=RADIUS;
+		if (prior==null) {
+			g.stroke(0xff7f007f);  // 5' end
+			drawRadius*=1.5f;  // Bigger
+		} else if (next==null)
+			g.stroke(0xff007f7f);  // 3' end
+		else
+			g.stroke(color);
 		g.strokeWeight(0.02f);
 		g.ellipseMode(PConstants.CENTER);
-		g.ellipse(location.x, location.y, RADIUS*2, RADIUS*2);
+		g.rectMode(PConstants.CENTER);
+		if (prior==null)
+			g.rect(location.x, location.y, drawRadius*2, drawRadius*2);
+		else
+			g.ellipse(location.x, location.y, drawRadius*2, drawRadius*2);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		g.fill(255,255,255,255);  // White text
-		Visualizer.drawText(g, RADIUS*1.5f, ""+label, location.x, location.y);
+		Visualizer.drawText(g, RADIUS*1.8f, ""+label, location.x, location.y-drawRadius*0.2f);
 		if (bp!=null) {
 			g.stroke(255,0,0,127);
 			g.line(location.x, location.y, bp.location.x, bp.location.y);
@@ -170,24 +255,15 @@ class Nucleotide {
 	}
 }
 class Strand {
-	PVector location;
 	PVector velocity;
-	float mass;
 	boolean isAlive;
 	private static HashSet<Strand> allStrands = new HashSet<Strand>();
-	ArrayList<Nucleotide> nucs;   // Nucleotides in 5'->3' order
+	Nucleotide nucs;   // Nucleotides in 5'->3' order
 	
-	Strand(float mass, PVector pos, PVector vel, String seq) {
-		velocity=new PVector();
-		velocity.x=vel.x; velocity.y=vel.y;
-		location=new PVector();
-		location.x=pos.x; location.y=pos.y;
-		this.mass=mass;
-
+	Strand(PVector pos, PVector vel, String seq) {
 		allStrands.add(this);
 		//PApplet.println("Created Strand at "+location+" with velocity "+vel+" and mass "+mass);
 		isAlive=true;
-		nucs = new ArrayList<Nucleotide>();
 		PVector spine=new PVector(Nucleotide.SPINESEP*(seq.length()-1),0);
 		spine.rotate((float)(Math.random()*Math.PI*2));  // Random orientation
 		Nucleotide prior=null;
@@ -198,9 +274,20 @@ class Strand {
 				final String bases="ACGT";
 				base=bases.charAt((int)(Math.random()*4));
 			}
-			PVector nucpos=PVector.add(location, PVector.mult(spine, ((float)i)/(seq.length()-1)-0.5f));
-			nucs.add(prior=new Nucleotide(nucpos,vel,base,prior));
+			PVector nucpos=PVector.add(pos, PVector.mult(spine, ((float)i)/(seq.length()-1)-0.5f));
+			Nucleotide nn=new Nucleotide(nucpos,vel,base,prior);
+			if (i==0)
+				nucs=nn;
+			prior=nn;
 		}
+	}
+	
+	// Make an already existing nucleotide chain into a new strand
+	Strand(Nucleotide n) {
+		allStrands.add(this);
+		isAlive=true;
+		assert(n.prior==null);
+		nucs=n;
 	}
 	
 	public void destroy() {
@@ -208,47 +295,54 @@ class Strand {
 		allStrands.remove(this);
 		isAlive=false;
 	}
-	public float getRadius() {
-		// Return distance from center of mass to farthest nucleotide's center
-		float r=0;
-		for (Nucleotide nuc: nucs) {
-			r=Math.max(r, PVector.sub(location,nuc.location).mag());
-		}
-		return r;
+
+	public PVector location() {
+		return nucs.location;
 	}
-	public PVector getMomentum() {
-		return PVector.mult(velocity, mass);
-	}
-	public void update() {
-		//location.x=0;location.y=0;
-		velocity.x=0;velocity.y=0;
-		for (Nucleotide nuc: nucs) {
-			nuc.update();
-			//location.add(nuc.location);
-			velocity.add(nuc.velocity);
+	
+	public void update(Effects e) {
+		// Check if this strand has been ligated onto the end of another one
+		if (nucs.prior != null) {
+			if (this instanceof PlayerStrand) {
+				PApplet.println("Found a player strand pointing to a ligated chain, breaking it");
+				nucs.prior.next=null;
+				nucs.prior=null;
+			} else {
+				PApplet.println("Found a strand pointing to a ligated chain, destroying it");
+				e.play("LIGATE", 127, 1000);
+				destroy();
+				return;
+			}
 		}
-		// Set location, velocity to average of nucleotides
-		//location.div(nucs.size());
-		velocity.div(nucs.size());
-		// Actually, just use the 5' end as the location
-		location=nucs.get(0).location;
+		if (nucs.prior!=null)
+			// No update, the strand
+			return;
+		
+		for (Nucleotide nuc=nucs;nuc!=null;nuc=nuc.next) {
+			nuc.update(e);
+		}
 	}
 	public void draw(PGraphics g) {
 		Nucleotide prev=null;
 		g.pushStyle();
 		g.stroke(255,127);
 		g.strokeWeight(0.02f);
-		for (Nucleotide nuc: nucs) {
+		for (Nucleotide nuc=nucs;nuc!=null;nuc=nuc.next) {
 			nuc.draw(g);
 			if (prev!=null) {
-				g.line(prev.location.x, prev.location.y, nuc.location.x, nuc.location.y);
+				PVector indent=PVector.sub(prev.location, nuc.location);
+				indent.normalize();
+				indent.mult(Nucleotide.RADIUS);
+				PVector p1=PVector.sub(prev.location, indent);
+				PVector p2=PVector.add(nuc.location, indent);
+				g.line(p1.x,p1.y,p2.x,p2.y);
 			}
 			prev=nuc;
 		}
 		g.popStyle();
 	}
-	static Strand create(float mass, PVector pos, PVector vel, String seq)  {
-		return new Strand(mass,pos,vel,seq);
+	static Strand create(PVector pos, PVector vel, String seq)  {
+		return new Strand(pos,vel,seq);
 	}
 	static void destroyAll() {
 		Object all[]=allStrands.toArray();
@@ -262,7 +356,7 @@ class Strand {
 		Object all[]=allStrands.toArray();
 		for (Object o: all) {
 			Strand b=(Strand)o;
-			b.update();
+			b.update(effects);
 //			if (! (b  instanceof PlayerStrand)) {
 //				// Player Strands destroyed by visualizer when person is lost
 //				if (!Tracker.theTracker.inBounds(b.location))
@@ -279,47 +373,10 @@ class Strand {
 				Strand b2=(Strand)o2;
 				if (!b2.isAlive)
 					continue;
-				for (Nucleotide n1:b1.nucs)
-					for (Nucleotide n2:b2.nucs)
+				for (Nucleotide n1=b1.nucs;n1!=null;n1=n1.next)
+					for (Nucleotide n2=b2.nucs;n2!=null;n2=n2.next)
 						if (n1!=n2)
 							n1.interact(n2);
-				
-//				PVector sep=PVector.sub(b2.location, b1.location);
-//				float minsep=b1.getRadius()+b2.getRadius();
-//				if (sep.mag() <= minsep && b1.mass<b2.mass && b1.isAlive) {
-//					// Contact
-//					//PApplet.println("Contact at "+b1.location+" - "+b2.location);
-//
-//					float xfr=Math.min(b1.mass, MASSEXCHANGERATE/Tracker.theTracker.frameRate);
-//					if (b2.mass<MAXMASS && !(b1 instanceof PlayerStrand && b1.mass-xfr<PlayerStrand.MINMASS)) {
-//						b1.mass-=xfr;
-//						b2.mass+=xfr;
-//						b2.velocity=PVector.add(PVector.mult(b2.velocity,(b2.mass-xfr)/b2.mass), PVector.mult(b1.velocity, xfr/b2.mass));
-//						//PApplet.println("Xfr "+xfr+", new masses: "+b1.mass+", "+b2.mass);
-//						if (b1.mass==0)
-//							b1.destroy();
-//						else if (b1 instanceof PlayerStrand && b2 instanceof PlayerStrand) {
-//							effects.play(((PlayerStrand)b2).person, "COLLIDE",127,1000);
-//						}
-//					}
-//					minsep=b1.getRadius()+b2.getRadius(); // Update sep
-//					float overlap=0.02f;   // Keep them overlapped up to this much
-//					if (sep.mag() < minsep-overlap) {
-//						// Keep them in exact contact (actually a little closer, so the stay in contact)
-//						float movedist=minsep-overlap-sep.mag();
-//						assert(movedist>0);
-//						sep.normalize();
-//						PVector m1=PVector.mult(sep,-movedist*b2.mass/(b1.mass+b2.mass));
-//						PVector m2=PVector.mult(sep,movedist*b1.mass/(b1.mass+b2.mass));
-//						//PApplet.println("Separate: sep="+sep+", minsep="+minsep+", movedist="+movedist,", m1="+m1+", m2="+m2);
-//						b2.location.add(m2);
-//						b1.location.add(m1);
-//					}
-					// Fuse their momentum
-//					PVector momentum=PVector.add(b1.getMomentum(), b2.getMomentum());
-//					b1.velocity=PVector.div(momentum, b1.mass+b2.mass);
-//					b2.velocity=b1.velocity;
-//				}
 			}
 		}
 	}
@@ -331,15 +388,13 @@ class Strand {
 }
 
 class PlayerStrand extends Strand {
-	private static final float SPRINGCONSTANT=0.1f;   // force=SPRINGCONSTANT*dx  (Newtons/m)
-	private static final float INITIALMASS=0.15f;  // In kg
-	private static final String INITIALSEQ="NNNNNN";
-	public static final float MINMASS=0.02f;    // In kg'
+	private static final float SPRINGCONSTANT=0.5f;   // force=SPRINGCONSTANT*dx  (Newtons/m)
+	private static final String INITIALSEQ="ACCGGATCCGGT";
 	PVector pilot;
 	Person person;
 	
 	PlayerStrand(Person person, PVector pos, PVector vel) {
-		super(INITIALMASS,pos,vel,INITIALSEQ);
+		super(pos,vel,INITIALSEQ);
 		pilot=new PVector();
 		pilot.x=pos.x;
 		pilot.y=pos.y;
@@ -352,36 +407,32 @@ class PlayerStrand extends Strand {
 	}
 	
 	@Override
-	public void update() {
-		for (Nucleotide nuc: nucs) {
-			PVector delta=PVector.sub(pilot,nuc.location);
-			PVector acc=PVector.mult(delta,SPRINGCONSTANT);  // Not really a spring, same accel indep of mass
-			PVector deltaVelocity=PVector.mult(acc, nucs.size()/Tracker.theTracker.frameRate);
-			nuc.velocity.add(deltaVelocity);
-			break;  // Only pull the 5' end
-		}
-		super.update();
+	public void update(Effects e) {
+		PVector delta=PVector.sub(pilot,location());
+		PVector acc=PVector.mult(delta,SPRINGCONSTANT);  // Not really a spring, same accel indep of mass
+		PVector deltaVelocity=PVector.mult(acc, 1/Tracker.theTracker.frameRate);
+		nucs.velocity.add(deltaVelocity);
+		super.update(e);
 	}
 	
 	@Override
 	public void draw(PGraphics g) {
-		g.line(location.x, location.y, pilot.x, pilot.y);
+		g.line(location().x, location().y, pilot.x, pilot.y);
 		super.draw(g);
 	}
 }
 
 public class VisualizerDNA extends VisualizerDot {
+	static final int NUMRANDSTRANDS=10;
 	long startTime;
 	Effects effects;
 
 	HashMap<Integer, PlayerStrand> strands;
 
-	VisualizerDNA(PApplet parent, Synth synth) {
+	VisualizerDNA(PApplet parent) {
 		super(parent);
 		strands = new HashMap<Integer, PlayerStrand>();
-		effects=new Effects(synth);
-		effects.put("COLLIDE",new Integer[]{52,53,54,55});
-		effects.put("SPLIT",new Integer[]{40,41,42});
+		this.effects=Effects.defaultEffects;
 	}
 	
 	public void update(PApplet parent, People allpos) {		
@@ -409,13 +460,16 @@ public class VisualizerDNA extends VisualizerDot {
 	public void start() {
 		super.start();
 		strands = new HashMap<Integer, PlayerStrand>();
-		Ableton.getInstance().setTrackSet("Osmos");
+		Ableton.getInstance().setTrackSet("DNA");
+		for (int i=0;i<NUMRANDSTRANDS;i++)
+			new Strand(new PVector((float)Math.random()*(Tracker.maxx-Tracker.minx)+Tracker.minx,(float)Math.random()*(Tracker.maxy-Tracker.miny)+Tracker.miny),
+					PVector.random2D(),"NNNN");
 	}
 
 	public void stop() {
 		Strand.destroyAll();
 		super.stop();
-		PApplet.println("Stopping Osmos at "+System.currentTimeMillis());
+		PApplet.println("Stopping DNA at "+System.currentTimeMillis());
 	}
 
 	@Override
