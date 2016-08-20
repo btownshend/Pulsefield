@@ -57,6 +57,10 @@ abstract public class Synth {
 			return;
 		}
 		int track=ts.getTrack(channel);
+		playOnTrack(track,pitch,velocity,duration);
+	}
+	
+	public void playOnTrack(int track, int pitch, int velocity, int duration) {
 		long delay=duration*1000/480/4;
 		if (playing.get(track)==null)
 			playing.put(track, new HashMap<Integer,NoteOff>());
