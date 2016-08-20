@@ -13,9 +13,11 @@ class Mole {
 	PVector velocity=null;
 	
 	PImage img;
+	Images moleImages, whackedImages;
+	
 	int explodeCounter;
 	int ticksSinceReset=0;
-	static final int explodeFrames=15;
+	static final int explodeFrames=50;
 	static final float maxExplodeScale=5f;
 	static final float RESETPROB=0.04f;
 	static final int MINLIFE=30;  // Minimum number of ticks before reset
@@ -23,19 +25,23 @@ class Mole {
 	static final float maxHitDist=0.4f; // Meters
 	static final float radius=0.3f;  // Meters
 	
-	Mole(PImage img) { 
-		this.img=img;
+	Mole(Images m,Images w) { 
+		this.moleImages=m;
+		this.whackedImages=w;
+		this.img=null;
 		explodeCounter=0;
-		}
+	}
 	
 	void draw(PGraphics g) {
 		if (position==null)
 			return;
+		g.pushStyle();
 		g.imageMode(PConstants.CENTER);
 		float r=radius;
-		if (explodeCounter > 0)
-			r=radius*(1+maxExplodeScale*(explodeFrames-explodeCounter)/explodeFrames);
-		g.image(img,position.x, position.y,r*2, r*2);
+		if (explodeCounter>0)
+			g.tint(255,255*explodeCounter/explodeFrames);
+		Visualizer.drawImage(g,img,position.x, position.y,r*2, r*2);
+		g.popStyle();
 	}
 	
 	void reset(People p) {
@@ -49,6 +55,7 @@ class Mole {
 		velocity.y=(float) ((Math.random()*2-1)*MAXSPEED);
 		velocity.x=(float) ((Math.random()*2-1)*MAXSPEED);
 		ticksSinceReset=0;
+		img=moleImages.getRandom();
 	}
 	
 	void update(People p, Effects e) {
@@ -84,6 +91,7 @@ class Mole {
 						Ableton.getInstance().playClip(track,clip);
 					}
 					e.play("WHACK", 127, 1000);
+					img=whackedImages.getRandom();
 				}
 			}
 		}
@@ -93,25 +101,30 @@ class Mole {
 public class VisualizerWhack extends VisualizerIcon {
 	List<Mole> moles = new ArrayList<Mole>();
 	Images moleImages;
-	final String hammerDir="whack/hammers";
-	final String moleDir="whack/moles";
+	Images whackedImages;
+	final String hammerDir="hammers";
+	final String moleDir="moles";
+	final String whackedDir="whacked";
+	String trackSet;
 	static final int numMoles=3;
 	Effects effects;
 	
-	VisualizerWhack(PApplet parent) {
+	VisualizerWhack(PApplet parent, String dataDir, String trackSet) {
 		super(parent);
-		setImages(parent,hammerDir);
-		moleImages=new Images(moleDir);
+		setImages(parent,dataDir+"/"+hammerDir);
+		moleImages=new Images(dataDir+"/"+moleDir);
+		whackedImages=new Images(dataDir+"/"+whackedDir);
 		for (int i=0;i<numMoles;i++) {
-			moles.add(new Mole(moleImages.getRandom()));
+			moles.add(new Mole(moleImages,whackedImages));
 		}
 		this.effects=Effects.defaultEffects;
+		this.trackSet=trackSet;
 	}
 	
 	@Override
 	public void start() {
 		super.start();
-		Ableton.getInstance().setTrackSet("Whack");
+		Ableton.getInstance().setTrackSet(trackSet);
 	}
 	
 	@Override
