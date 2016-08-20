@@ -23,7 +23,7 @@ class Mole {
 	static final int MINLIFE=30;  // Minimum number of ticks before reset
 	static final float MAXSPEED=1f/100;   // Maximum speed in meters/tick
 	static final float maxHitDist=0.4f; // Meters
-	static final float radius=0.3f;  // Meters
+	float radius=0.3f;  // Meters
 	
 	Mole(Images m,Images w) { 
 		this.moleImages=m;
@@ -37,10 +37,10 @@ class Mole {
 			return;
 		g.pushStyle();
 		g.imageMode(PConstants.CENTER);
-		float r=radius;
 		if (explodeCounter>0)
 			g.tint(255,255*explodeCounter/explodeFrames);
-		Visualizer.drawImage(g,img,position.x, position.y,r*2, r*2);
+		float scale=radius*2/Math.max(img.width,img.height);
+		Visualizer.drawImage(g,img,position.x, position.y,scale*img.width, scale*img.height);
 		g.popStyle();
 	}
 	
@@ -54,6 +54,7 @@ class Mole {
 		position.x=(float) (Math.random()*(Tracker.maxx-Tracker.minx)+Tracker.minx);
 		velocity.y=(float) ((Math.random()*2-1)*MAXSPEED);
 		velocity.x=(float) ((Math.random()*2-1)*MAXSPEED);
+		radius=(float)(0.3f + Math.random()*0.3f);
 		ticksSinceReset=0;
 		img=moleImages.getRandom();
 	}
