@@ -73,9 +73,14 @@ abstract public class Synth {
 		} else {
 			play(pitch,velocity,track);
 		}
-		NoteOff noteOff=new NoteOff(this, pitch,64,track);
-		playing.get(track).put(pitch, noteOff);
-		timer.schedule(noteOff, delay);
+
+		if (duration==0)
+			endnote(track,pitch,64);
+		else {
+			NoteOff noteOff=new NoteOff(this, pitch,64,track);
+			playing.get(track).put(pitch, noteOff);
+			timer.schedule(noteOff, delay);
+		}
 		//System.out.println("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to track "+track+" for channel "+channel);
 	}
 
