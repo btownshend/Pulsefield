@@ -196,6 +196,7 @@ public class Ableton {
 		}
 	}
 	
+	
 	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips) {
 		addSong(id,name,firstTrack,numTracks,tempo,nclips,-1, null);
 	}
@@ -234,6 +235,7 @@ public class Ableton {
 		addSong("PB","Polybius",114,9,130,13);
 		addSong("Osmos","Osmos",123,1,120,0,124,new int[]{0,1,2,3,4,5,6});
 		addSong("Whack","Whack",125,1,120,0,124,new int[]{11});
+		addSong("DNA","DNA",123,1,120,0,124,new int[]{0,1,2,3,4,5,6});
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
 		// Clear track info
