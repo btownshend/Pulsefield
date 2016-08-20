@@ -540,9 +540,13 @@ public class Ableton {
 				PApplet.println("Track "+trackSet.bgTrack+" not found.");
 			else {
 				int nclips=trackSet.bgClips.length;
-				bgClip=trackSet.bgClips[(int)(Math.random()*nclips)];
-				PApplet.println("Playing bg clip "+bgClip+" (of "+nclips+")");
-				playClip(trackSet.bgTrack,bgClip);
+				if (nclips<1)
+					PApplet.println("startBgTrack: Track "+trackSet.bgTrack+" has no clips");
+				else {
+					bgClip=trackSet.bgClips[(int)(Math.random()*nclips)];
+					PApplet.println("Playing bg clip "+bgClip+" (of "+nclips+")");
+					playClip(trackSet.bgTrack,bgClip);
+				}
 			}
 		}
 	}
