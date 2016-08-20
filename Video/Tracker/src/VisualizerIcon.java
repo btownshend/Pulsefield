@@ -59,7 +59,7 @@ public class VisualizerIcon extends Visualizer {
 			if (useImages) {
 				PImage img=images.get(ps.id);
 				float scale=Math.min(sz/img.width,sz/img.height);
-				g.image(img,ps.getOriginInMeters().x, ps.getOriginInMeters().y,img.width*scale,img.height*scale);
+				Visualizer.drawImage(g,img,ps.getOriginInMeters().x, ps.getOriginInMeters().y,img.width*scale,img.height*scale);
 			} else {
 				PShape icon=iconShapes[ps.id%iconShapes.length];
 				//icon.translate(-icon.width/2, -icon.height/2);

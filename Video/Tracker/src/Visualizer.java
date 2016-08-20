@@ -2,6 +2,7 @@ import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PImage;
 import processing.core.PShape;
 import processing.core.PVector;
 
@@ -26,6 +27,16 @@ public abstract class Visualizer {
 		g.popMatrix();
 	}
 	
+	static public void drawImage(PGraphics g, PImage img, float x, float y, float w, float h) {
+		// Since coordinate system pulsefield uses has different handedness than expected, images will be flipped
+		// Unflip them
+		g.pushMatrix();
+		g.translate(x, y);
+		g.scale(-1,1);
+		g.image(img,0,0,w,h);
+		g.popMatrix();
+	}
+	
 	static public void drawText(PGraphics g, float height, String text, float x, float y, float x2, float y2) {
 		// Draw text
 		// Need to flip x-axis to get a reasonable size
@@ -34,7 +45,7 @@ public abstract class Visualizer {
 		g.pushMatrix();
 		g.translate(x, y);
 		float scale=100f;
-		g.scale(-1/scale,1/scale);
+		g.scale(-1/scale,1/scale);  // Flip coordinate system so we don't have mirror images
 		g.textSize(height*scale);
 		g.text(text, 0, 0,x2*scale,y2*scale);
 		g.popMatrix();
