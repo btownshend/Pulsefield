@@ -234,7 +234,7 @@ public class Ableton {
 		addSong("Soccer","Soccer",112,1,120,0,124,new int[]{11});
 		addSong("PB","Polybius",114,9,130,13);
 		addSong("Osmos","Osmos",123,1,120,0,124,new int[]{0,1,2,3,4,5,6});
-		addSong("Whack","Whack",125,1,120,0,124,new int[]{11});
+		addSong("Whack","Whack",125,1,120,0,124,new int[]{7,8,9,10});
 		addSong("DNA","DNA",123,1,120,0,124,new int[]{0,1,2,3,4,5,6});
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
