@@ -83,7 +83,7 @@ class Mole {
 						PApplet.println("Track="+track+", nclips="+nclips+", clip="+clip);
 						Ableton.getInstance().playClip(track,clip);
 					}
-					//e.play(ps, "WHACK", 127, 1000);
+					e.play("WHACK", 127, 1000);
 				}
 			}
 		}
@@ -98,15 +98,14 @@ public class VisualizerWhack extends VisualizerIcon {
 	static final int numMoles=3;
 	Effects effects;
 	
-	VisualizerWhack(PApplet parent, Synth synth) {
+	VisualizerWhack(PApplet parent) {
 		super(parent);
 		setImages(parent,hammerDir);
 		moleImages=new Images(moleDir);
 		for (int i=0;i<numMoles;i++) {
 			moles.add(new Mole(moleImages.getRandom()));
 		}
-		effects=new Effects(synth);
-		effects.put("WHACK",new Integer[]{52,53,54,55});
+		this.effects=Effects.defaultEffects;
 	}
 	
 	@Override

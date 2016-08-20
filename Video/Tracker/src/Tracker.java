@@ -136,7 +136,7 @@ public class Tracker extends PApplet {
 		synth = new Max(this,oscP5, MAX);
 
 		synth.play(0,64,100,100,1);
-
+		Effects.setupDefault(synth);
 		
 		prevMousePos=new PVector(0f,0f);
 		prevMousePressed=false;
@@ -225,12 +225,12 @@ public class Tracker extends PApplet {
 		addVis("CHucK",new VisualizerChuck(this),true);
 		addVis("Proximity",new VisualizerProximity(this),true);
 		addVis("Cows",new VisualizerCows(this),true);
-		addVis("Whack",new VisualizerWhack(this,synth),true);
+		addVis("Whack",new VisualizerWhack(this),true);
 		addVis("Soccer",new VisualizerSoccer(this),true);
 		addVis("Menu",visMenu=new VisualizerMenu(this),false);
 		addVis("Visualizer",visMinim=new VisualizerMinim(this,fourier,renderer!=FX2D),false);
 		addVis("Calypso",new VisualizerCalypso(this,synth),true);
-		addVis("DNA",new VisualizerDNA(this,synth),true);
+		addVis("DNA",new VisualizerDNA(this),true);
 		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
 		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
 		//vis[16]=visSyphon;

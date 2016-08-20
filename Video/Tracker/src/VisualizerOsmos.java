@@ -110,7 +110,7 @@ class Marble {
 						// Small - big interaction -- reverse it!
 						b1.mass=(b1.mass+b2.mass)/2;
 						b2.mass=b1.mass;
-						effects.play(((PlayerMarble)b2).person, "SPLIT",127,1000);
+						effects.play("SPLIT",127,1000);
 					} else {
 						float xfr=Math.min(b1.mass, MASSEXCHANGERATE/Tracker.theTracker.frameRate);
 						if (b2.mass<MAXMASS && !(b1 instanceof PlayerMarble && b1.mass-xfr<PlayerMarble.MINMASS)) {
@@ -121,7 +121,7 @@ class Marble {
 							if (b1.mass==0)
 								b1.destroy();
 							else if (b1 instanceof PlayerMarble && b2 instanceof PlayerMarble) {
-								effects.play(((PlayerMarble)b2).person, "COLLIDE",127,1000);
+								effects.play("COLLIDE",127,1000);
 							}
 						}
 					}
@@ -216,9 +216,9 @@ public class VisualizerOsmos extends Visualizer {
 		super();
 		marbles = new HashMap<Integer, PlayerMarble>();
 		marbleImages=new Images("osmos/marbles");
-		effects=new Effects(synth);
-		effects.put("COLLIDE",new Integer[]{52,53,54,55});
-		effects.put("SPLIT",new Integer[]{40,41,42});
+		effects=new Effects(synth,123);
+		effects.add("COLLIDE",52,55);
+		effects.add("SPLIT",40,42);
 	}
 	
 	public void update(PApplet parent, People allpos) {		
