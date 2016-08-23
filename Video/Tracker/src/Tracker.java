@@ -912,6 +912,7 @@ public class Tracker extends PApplet {
 		maxx=min(maxx,pmaxx);
 		miny=max(miny,pminy);
 		maxy=min(maxy,pmaxy);
+
 		sendOSC("TO","/video/minx",minx);
 		sendOSC("TO","/video/minx/label","Min X: "+String.format("%.1f", minx));
 		sendOSC("TO","/video/maxx",maxx);
@@ -920,6 +921,11 @@ public class Tracker extends PApplet {
 		sendOSC("TO","/video/miny/label","Min Y: "+String.format("%.1f", miny));
 		sendOSC("TO","/video/maxy",maxy);
 		sendOSC("TO","/video/maxy/label","Max Y: "+String.format("%.1f", maxy));
+		
+		sendOSC("TO","/pf/minx/label","Min X: "+String.format("%.1f", lidarminx));
+		sendOSC("TO","/pf/maxx/label","Max X: "+String.format("%.1f", lidarmaxx));
+		sendOSC("TO","/pf/miny/label","Min Y: "+String.format("%.1f", lidarminy));
+		sendOSC("TO","/pf/maxy/label","Max Y: "+String.format("%.1f", lidarmaxy));
 		Config.setFloat("video", "minx", minx);
 		Config.setFloat("video", "maxx", maxx);
 		Config.setFloat("video", "miny", miny);
