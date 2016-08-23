@@ -897,7 +897,7 @@ public class Tracker extends PApplet {
 		float pminx=100,pminy=100,pmaxx=-100,pmaxy=-100;  // Extents of coverage of any pixels
 		for (int i=0;i<projectors.length;i++) {
 			for (int j=0;j<projectors[i].bounds.length;j++) {
-				PVector p=projectors[i].bounds[j];
+				PVector p=new PVector(projectors[i].bounds[j].x,projectors[i].bounds[j].y);
 				p.y=max(0,p.y);  // Keep in front of LIDAR
 				pminx=min(pminx,p.x);
 				pminy=min(pminy,p.y);
