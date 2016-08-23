@@ -124,7 +124,7 @@ public class Projector {
 		}
 		ProjCursor c[]=Tracker.cursors;
 		if (c!=null) {
-			pcanvas.strokeWeight(2.0f);
+			pcanvas.strokeWeight(1.0f);
 			pcanvas.fill(255,0,0);
 			pcanvas.stroke(0,255,0,255);
 			pcanvas.ellipseMode(PConstants.CENTER);
