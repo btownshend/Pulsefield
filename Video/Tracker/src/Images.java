@@ -13,12 +13,14 @@ public class Images {
 	public Images(String folder) {
 		// Retrieve a random image from the given folder within data
 		File d=new File("data/"+folder);
+		if (!d.isDirectory()) 
+			d=new File(folder);
 		if (!d.isDirectory()) {
 			PApplet.println(d.getAbsolutePath()+" does not exist or is not a directory.");
 			assert(false);
 		}
 		File allfiles[]=d.listFiles();
-		if (allfiles.length<1) {
+		if (allfiles==null || allfiles.length<1) {
 			PApplet.println("No files found in "+d.getAbsolutePath());
 			assert(false);
 		}
