@@ -1,6 +1,7 @@
 .DS_Store
 /bin
 Video/Tracker/bin
+Video/Tracker/build
 *.o
 RealTime/ableton.csv
 frontend.dSYM
