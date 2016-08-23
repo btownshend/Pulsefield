@@ -256,6 +256,7 @@ public class VisualizerDDR extends Visualizer {
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Wherever You Are","Wherever You Are.sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Y.M.C.A","Y.M.C.A..sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/You Sexy Thing","You Sexy Thing.sm",clipCntr++));			
+			assert(clipCntr==31); // To check against Ableton
 		}
 		cursong=null;
 		Laser.getInstance().setFlag("body",0.0f);
