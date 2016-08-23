@@ -843,12 +843,15 @@ int Calibration::recompute() {
 	std::vector<cv::Point3f> dst;
 	for (int j=0;j<pairwiseMatches.size();j++) {
 	    cv::detail::MatchesInfo pm = pairwiseMatches[j];
-	    if (pm.src_img_idx==k && pm.dst_img_idx==nunits) {  // Correspondence with world
+	    if (/*pm.src_img_idx==k && */pm.dst_img_idx==nunits) {  // Correspondence with world
 		for (int i=0;i<pm.matches.size();i++) {
-		    src.push_back(features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt);
 		    cv::Point2f dstpt=features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt;
 		    dst.push_back(cv::Point3f(dstpt.x,dstpt.y,0.0));
+		    Point mappedPt=map(Point(dstpt.x,dstpt.y),nunits,k);
+		    //src.push_back(features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt);
+		    src.push_back(cv::Point2f(mappedPt.X(),mappedPt.Y()));
 		    dbg("Calibration.recompute",2) << pm.dst_img_idx << "." << pm.matches[i].trainIdx << std::endl;
+		    dbg("Calibration.recompute",2) << "src pt=" << features[pm.src_img_idx].keypoints[pm.matches[i].queryIdx].pt << ", remapped=" << mappedPt<< std::endl;
 		}
 	    }
 	}
