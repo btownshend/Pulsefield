@@ -225,8 +225,8 @@ public class Tracker extends PApplet {
 		addVis("CHucK",new VisualizerChuck(this),true);
 		addVis("Proximity",new VisualizerProximity(this),true);
 		addVis("Cows",new VisualizerCows(this),true);
-		addVis("Trump",new VisualizerWhack(this,"whack","Whack"),true);
-		addVis("Bowie",new VisualizerWhack(this,"bowie","Bowie"),true);
+		addVis("Trump",new VisualizerWhack(this,"whack","Whack","WHACK"),true);
+		addVis("Bowie",new VisualizerWhack(this,"bowie","Bowie","WHACK-Bowie"),true);
 		addVis("Soccer",new VisualizerSoccer(this),true);
 		addVis("Menu",visMenu=new VisualizerMenu(this),false);
 		addVis("Visualizer",visMinim=new VisualizerMinim(this,fourier,renderer!=FX2D),false);

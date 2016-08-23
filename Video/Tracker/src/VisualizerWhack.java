@@ -59,7 +59,7 @@ class Mole {
 		img=moleImages.getRandom();
 	}
 	
-	void update(People p, Effects e) {
+	void update(People p, Effects e, String whackEffect) {
 		if (explodeCounter>0) {
 			explodeCounter-=1;
 			if (explodeCounter==0)
@@ -91,7 +91,7 @@ class Mole {
 						PApplet.println("Track="+track+", nclips="+nclips+", clip="+clip);
 						Ableton.getInstance().playClip(track,clip);
 					}
-					e.play("WHACK", 127, 1000);
+					e.play(whackEffect, 127, 1000);
 					img=whackedImages.getRandom();
 				}
 			}
@@ -109,8 +109,9 @@ public class VisualizerWhack extends VisualizerIcon {
 	String trackSet;
 	static final int numMoles=3;
 	Effects effects;
+	String whackEffect;
 	
-	VisualizerWhack(PApplet parent, String dataDir, String trackSet) {
+	VisualizerWhack(PApplet parent, String dataDir, String trackSet, String whackEffect) {
 		super(parent);
 		setImages(parent,dataDir+"/"+hammerDir);
 		moleImages=new Images(dataDir+"/"+moleDir);
@@ -120,6 +121,7 @@ public class VisualizerWhack extends VisualizerIcon {
 		}
 		this.effects=Effects.defaultEffects;
 		this.trackSet=trackSet;
+		this.whackEffect=whackEffect;
 	}
 	
 	@Override
@@ -132,7 +134,7 @@ public class VisualizerWhack extends VisualizerIcon {
 	public void update(PApplet parent, People p) {
 		super.update(parent, p);
 		for (Mole m: moles) 
-			m.update(p,effects);
+			m.update(p,effects,whackEffect);
 	}
 	
 	@Override
