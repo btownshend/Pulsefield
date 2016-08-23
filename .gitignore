@@ -1,5 +1,6 @@
 .DS_Store
 /bin
+Video/Tracker/bin
 *.o
 RealTime/ableton.csv
 frontend.dSYM
@@ -194,3 +195,4 @@ Balls.app
 
 
 Video/Tracker/data/soccer/goal.mp3.asd
+

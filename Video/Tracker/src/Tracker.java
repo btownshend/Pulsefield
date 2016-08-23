@@ -561,22 +561,22 @@ public class Tracker extends PApplet {
 		//vis[currentvis].drawLaser(this,people);
 
 
-		if (drawBounds) {
-			canvas.pushStyle();
-			canvas.strokeWeight(0.025f);
-			canvas.noFill();
-			for (int i=0;i<projectors.length;i++) {
-				canvas.stroke(i==0?255:0,i==1?255:0,i>1?255:0);
-				canvas.beginShape();
-				for (int j=0;j<projectors[i].bounds.length;j++) {
-					PVector p=projectors[i].bounds[j];
-					canvas.vertex(p.x,p.y);
-					//PApplet.println("vertex("+projectors[i].bounds[j]+") -> "+canvas.screenX(p.x,p.y)+","+canvas.screenY(p.x, p.y));
-				}
-				canvas.endShape(CLOSE);
-			}
-			canvas.popStyle();
-		}
+//		if (drawBounds) {
+//			canvas.pushStyle();
+//			canvas.strokeWeight(0.025f);
+//			canvas.noFill();
+//			for (int i=0;i<projectors.length;i++) {
+//				canvas.stroke(i==0?255:0,i==1?255:0,i>1?255:0);
+//				canvas.beginShape();
+//				for (int j=0;j<projectors[i].bounds.length;j++) {
+//					PVector p=projectors[i].bounds[j];
+//					canvas.vertex(p.x,p.y);
+//					//PApplet.println("vertex("+projectors[i].bounds[j]+") -> "+canvas.screenX(p.x,p.y)+","+canvas.screenY(p.x, p.y));
+//				}
+//				canvas.endShape(CLOSE);
+//			}
+//			canvas.popStyle();
+//		}
 		
 		canvas.endDraw();
 		// Syphon setup, requires OpenGL renderer (not FX2D?)
@@ -596,8 +596,8 @@ public class Tracker extends PApplet {
 		}
 		if (useMasks)
 			buildMasks(canvas);
-		projectors[0].render(canvas,useMasks?mask[0]:null);
-		projectors[1].render(canvas,useMasks?mask[1]:null);
+		projectors[0].render(canvas,useMasks?mask[0]:null,drawBounds);
+		projectors[1].render(canvas,useMasks?mask[1]:null,drawBounds);
 
 
 		imageMode(CENTER);

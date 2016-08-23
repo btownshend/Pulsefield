@@ -87,7 +87,7 @@ public class Projector {
 		ttest(0,0,0);
 	}
 
-	public void render(PGraphics canvas, PGraphics mask) {
+	public void render(PGraphics canvas, PGraphics mask, boolean drawBounds) {
 		// Send the given canvas to the projector
 		// Assumes the canvas is on the floor (i.e. z=0)
 		// Its center corresponds to Tracker.getFloorCenter() and is scaled by Tracker.getPixelsPerMeter()
@@ -108,6 +108,20 @@ public class Projector {
 		pcanvas.resetMatrix();  // Set camera, modelview to identity
 		pcanvas.ortho(0, pcanvas.width, -pcanvas.height, 0, 1e-10f,1e10f);
 		// Not clear why this needs to be [-height,0] instead of [0,height]
+
+		if (drawBounds) {
+			pcanvas.stroke(id==1?255:0,id==2?255:0,id>2?255:0,255);
+			pcanvas.strokeWeight(1f);
+			pcanvas.noFill();
+			for (float inset=1;inset<=101;inset+=20) {
+				pcanvas.beginShape();
+				pcanvas.vertex(inset,inset);
+				pcanvas.vertex(pcanvas.width-1-inset,inset);
+				pcanvas.vertex(pcanvas.width-1-inset,pcanvas.height-1-inset);
+				pcanvas.vertex(inset,pcanvas.height-1-inset);
+				pcanvas.endShape(PConstants.CLOSE);
+			}
+		}
 		ProjCursor c[]=Tracker.cursors;
 		if (c!=null) {
 			pcanvas.strokeWeight(2.0f);
