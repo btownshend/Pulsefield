@@ -141,6 +141,14 @@ public abstract class Visualizer {
 		g.line(Tracker.maxx-strokeWeight/2, Tracker.maxy-strokeWeight/2, Tracker.maxx-strokeWeight/2, Tracker.miny+strokeWeight/2);
 		g.ellipseMode(PConstants.CENTER);
 		g.ellipse(0f,0f,0.1f,0.1f);
+		
+		// Draw lidar borders too
+		g.stroke(0xff00ffff,alpha);
+		g.line(Tracker.lidarminx+strokeWeight/2, Tracker.lidarminy+strokeWeight/2, Tracker.lidarminx+strokeWeight/2, Tracker.lidarmaxy-strokeWeight/2);
+		g.line(Tracker.lidarminx+strokeWeight/2, Tracker.lidarminy+strokeWeight/2, Tracker.lidarmaxx-strokeWeight/2, Tracker.lidarminy+strokeWeight/2);
+		g.line(Tracker.lidarmaxx-strokeWeight/2, Tracker.lidarmaxy-strokeWeight/2, Tracker.lidarminx+strokeWeight/2, Tracker.lidarmaxy-strokeWeight/2);
+		g.line(Tracker.lidarmaxx-strokeWeight/2, Tracker.lidarmaxy-strokeWeight/2, Tracker.lidarmaxx-strokeWeight/2, Tracker.lidarminy+strokeWeight/2);
+
 		g.popStyle();
 	}
 
