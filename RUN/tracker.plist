@@ -18,7 +18,8 @@
 	<string>com.tc.tracker</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/bin/java</string>
+	  <string>/usr/bin/java</string>
+	  <string>-ea</string>
 		<string>-Djava.library.path=/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/bin/runTracker_lib</string>
 		<string>-jar</string>
 		<string>/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/bin/runTracker.jar</string>
