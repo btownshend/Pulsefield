@@ -39,7 +39,7 @@ class Mole {
 		g.imageMode(PConstants.CENTER);
 		if (explodeCounter>0)
 			g.tint(255,255*explodeCounter/explodeFrames);
-		float scale=radius*2/Math.max(img.width,img.height);
+		float scale=(float)(radius*2/Math.sqrt(img.width*img.height));
 		Visualizer.drawImage(g,img,position.x, position.y,scale*img.width, scale*img.height);
 		g.popStyle();
 	}
