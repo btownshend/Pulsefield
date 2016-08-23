@@ -17,8 +17,18 @@ public class Config {
 		data=new JSONObject();
 	}
 	public static void load(PApplet parent) {
-		data=parent.loadJSONObject(configFileName);
-		PApplet.println("Loaded config from "+configFileName);
+		try {
+			data=parent.loadJSONObject(configFileName);
+			if (data==null) {
+				PApplet.println("Failed load of config from "+configFileName);
+				data=new JSONObject();
+			} else {
+				PApplet.println("Loaded config from "+configFileName);
+			}
+		} catch (Exception e) {
+			PApplet.println("Exception during load of config from "+configFileName+": "+e.getMessage());
+			data=new JSONObject();
+		}
 	}
 
 	public static void saveIfModified(PApplet parent) {
@@ -112,8 +122,17 @@ public class Config {
 	}
 	
 	public static void setVec(String group, String param, PVector vec) {
+		if (vec==null) {
+			PApplet.println("setVec("+group+","+param+",null");
+			return;
+		}
 		JSONObject grp=get(group);
+		if (grp==null) {
+			PApplet.println("setVec: group "+group+" not found");
+			return;
+		}
 		JSONArray array=new JSONArray();
+		assert(array!=null);
 		array.append(vec.x);
 		array.append(vec.y);
 		array.append(vec.z);
