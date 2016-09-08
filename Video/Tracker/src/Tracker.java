@@ -1193,16 +1193,23 @@ public class Tracker extends PApplet {
 		PApplet.println("/pf/set/npeople: now have "+n+" people, size="+people.pmap.size());
 		if (n==0)
 			setapp(currentvis);   // Cause a reset
-		if (n==0 && people.pmap.size()>0 && autocycle)
-			cycle();
+		if (n==0 && people.pmap.size()>0)
+			if (autocycle)
+				cycle();
+			else if (currentvis != getAppIndex("Bowie"))
+				setapp(getAppIndex("Navier"));
+		
 		people.setnpeople(n);  // Also clears positions
 	}
 
 	synchronized public void pfexit(int sampnum, float elapsed, int id) {
 		PApplet.println("exit: sampnum="+sampnum+", elapsed="+elapsed+", id="+id);
 		people.exit(id);
-		if (people.pmap.size()==0 && autocycle)
-			cycle();
+		if (people.pmap.size()==0)
+			if (autocycle)
+				cycle();
+			else if (currentvis != getAppIndex("Bowie"))
+				setapp(getAppIndex("Navier"));
 	}
 
 	synchronized public void pfentry(int sampnum, float elapsed, int id, int channel) {
