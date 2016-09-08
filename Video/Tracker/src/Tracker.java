@@ -79,6 +79,7 @@ public class Tracker extends PApplet {
 	boolean useMasks = true;
 	boolean showProjectors = false;
 	boolean enableMenu = true;   // True to enable menu
+	boolean enableTitle = true;
 	static Tracker theTracker;
 	
 	public void settings() {
@@ -551,7 +552,12 @@ public class Tracker extends PApplet {
 		canvas.pushStyle();
 		vis[currentvis].draw(this, canvas,people);
 		canvas.popStyle();
-		
+		if (enableTitle) {
+			canvas.pushStyle();
+			canvas.textAlign(PConstants.CENTER, PConstants.CENTER);
+			Visualizer.drawText(canvas, 0.2f, "The Pulsefield", minx+0.4f*(minx+maxx), maxy-0.3f);
+			canvas.popStyle();
+		}
 		if (enableMenu) {
 			canvas.pushStyle();
 			visMenu.hotSpotDraw(canvas);
