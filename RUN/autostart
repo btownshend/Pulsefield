@@ -1,0 +1,22 @@
+#!/bin/sh
+# Autostart
+declare -ix ndisplay=0
+cscreen -l | while  read id index d width height refresh
+do
+  export ndisplay
+  [[ "$id" = DisplayID || "$id" = "use" ]] && continue
+  echo Display $id at index $index
+done
+
+
+# Set for dummy if present
+dummy=5b81c5c4
+cscreen -i $dummy -x 1920 -y 1080
+cscreen -p -i $dummy
+
+# Otherwise, set for normal monitor
+cscreen -p -i 1a48be83
+
+# Start jobs
+cd /Users/bst/Dropbox/Pulsefield/src/RUN
+sh startall start
