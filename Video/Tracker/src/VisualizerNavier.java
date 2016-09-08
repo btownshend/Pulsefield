@@ -29,7 +29,7 @@ class VisualizerNavier extends Visualizer {
 		super();
 		fluidSolver = new NavierStokesSolver();
 
-		visc = 0.001;
+		visc = 0.002;
 		diff = 3.0e-4;
 		scale = 2.0;
 
