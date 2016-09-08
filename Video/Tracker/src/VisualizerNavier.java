@@ -113,7 +113,7 @@ class VisualizerNavier extends Visualizer {
 		if (buffer==null) {
 			buffer = new PImage(g.width/downSample, g.height/downSample);
 		}
-		if (p.pmap.isEmpty()) {
+		if (p.pmap.isEmpty() && false) {
 			g.background(0, 0, 0);  
 			g.colorMode(PConstants.RGB, 255);
 			drawWelcome(t,g);
@@ -183,6 +183,10 @@ class VisualizerNavier extends Visualizer {
 			dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
 			dy = (Math.abs(dy) > limitVelocity) ? Math.signum(dy) * limitVelocity : dy;
 			fluidSolver.applyForce(cellX, cellY, dx, dy);
+		}
+		if (p.pmap.isEmpty()) {
+		// Keep it moving
+			fluidSolver.applyForce((int)(Math.random()*n), (int)(Math.random()*n), limitVelocity/8*(Math.random()*2-1), limitVelocity/8*(Math.random()*2-1));
 		}
 		statsUpdate += System.nanoTime()-t1;
 		//stats();
