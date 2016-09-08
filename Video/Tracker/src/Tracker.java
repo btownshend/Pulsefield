@@ -222,7 +222,7 @@ public class Tracker extends PApplet {
 		addVis("Voronoi",new VisualizerVoronoi(this,scale,synth),true);
 		addVis("Guitar",new VisualizerGuitar(this,synth),true);
 		addVis("Dot",new VisualizerDot(this),false);
-		addVis("CHucK",new VisualizerChuck(this),true);
+		addVis("CHucK",new VisualizerChuck(this),false);
 		addVis("Proximity",new VisualizerProximity(this),true);
 		addVis("Cows",new VisualizerCows(this),true);
 		addVis("Trump",new VisualizerWhack(this,"whack","Whack","WHACK"),true);
