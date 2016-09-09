@@ -69,6 +69,7 @@ public class VisualizerMenu extends Visualizer {
 		if (menuImage==null)
 			menuImage=Tracker.theTracker.loadImage("menu/menu.png");
 		g.imageMode(PConstants.CENTER);
+		g.tint(255,255);
 		hotSpot.x=(Tracker.minx+Tracker.maxx)/2;
 		hotSpot.y=Tracker.miny+hotSpotRadius+0.05f;
 		Visualizer.drawImage(g,menuImage, hotSpot.x,hotSpot.y,hotSpotRadius*2,hotSpotRadius*2*menuImage.height/menuImage.width);
