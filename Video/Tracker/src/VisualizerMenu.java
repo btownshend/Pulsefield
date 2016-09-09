@@ -15,6 +15,7 @@ import processing.core.PVector;
  */
 public class VisualizerMenu extends Visualizer {
 	int selectingPerson;
+	int selectedCount;
 	PImage menuImage;
 	
 	/** How many menu items to display at once (includes "next page" item). */
@@ -31,6 +32,7 @@ public class VisualizerMenu extends Visualizer {
 	
 	static final float hotSpotRadius=0.3f;   // Radius of hot spot in meters
 	static final PVector hotSpot = new PVector(0f,0f);  // Location of hotspot (in meters) (updated when drawn)
+	static final int HOTSPOTCOUNT=30;  // Number of frames to trigger
 	
 	/** Cursor radius (in meters) **/
 	static final float CURSOR_RADIUS = 0.3f;
@@ -43,6 +45,7 @@ public class VisualizerMenu extends Visualizer {
 	VisualizerMenu(PApplet parent) {
 		super();
 		selectingPerson=-1;
+		selectedCount=0;
 		cursor=parent.loadShape(Tracker.SVGDIRECTORY+CURSOR);
 	}
 	
@@ -51,10 +54,12 @@ public class VisualizerMenu extends Visualizer {
 			PVector location = p.getOriginInMeters();
 			if(PVector.sub(location, hotSpot).mag() < hotSpotRadius) {
 				selectingPerson=p.id;
+				selectedCount+=1;
 				PApplet.println("Person hit hot spot: "+selectingPerson);
-				return true;
+				return selectedCount>=HOTSPOTCOUNT;
 			}
 		}
+		selectedCount=0;
 		return false;
 	}
 	
@@ -67,6 +72,11 @@ public class VisualizerMenu extends Visualizer {
 		hotSpot.x=(Tracker.minx+Tracker.maxx)/2;
 		hotSpot.y=Tracker.miny+hotSpotRadius+0.05f;
 		Visualizer.drawImage(g,menuImage, hotSpot.x,hotSpot.y,hotSpotRadius*2,hotSpotRadius*2*menuImage.height/menuImage.width);
+		if (selectedCount > 0 && selectedCount<=HOTSPOTCOUNT) {
+			g.fill(0);
+			g.textAlign(PConstants.CENTER,PConstants.CENTER);
+			Visualizer.drawText(g, 0.4f, Integer.toString(HOTSPOTCOUNT-selectedCount), hotSpot.x, hotSpot.y);
+		}
 	}
 
 	/** Next visualizer to serve up.  Call getNextVisualizerIndexSet */
