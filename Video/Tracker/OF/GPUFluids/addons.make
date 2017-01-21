@@ -1,0 +1,4 @@
+ofxFX
+ofxFluid
+ofxOsc
+ofxSyphon
