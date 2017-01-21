@@ -5,7 +5,7 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 
-public class VisualizerSyphon extends VisualizerTestPattern {
+public class VisualizerSyphon extends VisualizerDot {
 	SyphonClient client;
 	PGraphics canvas=null;
 	String appName, serverName;
@@ -45,6 +45,7 @@ public class VisualizerSyphon extends VisualizerTestPattern {
 	@Override
 	public void update(PApplet parent, People p) {
 		// Update internal state
+		super.update(parent, p);
 	}
 
 	@Override

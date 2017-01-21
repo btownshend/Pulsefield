@@ -42,6 +42,7 @@ public class Tracker extends PApplet {
 	VisualizerDDR visDDR;
 	VisualizerMenu visMenu;
 	VisualizerMinim visMinim;
+	VisualizerSyphon visSyphonOF;
 	
 	int currentvis=-1;
 	static NetAddress TO, MPO, AL, MAX, CK, VD;
@@ -236,7 +237,8 @@ public class Tracker extends PApplet {
 		addVis("DNA",new VisualizerDNA(this),true);
 		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
 		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
-		//vis[16]=visSyphon;
+		visSyphonOF = new VisualizerSyphon(this,"syTestDebug","Screen Output");
+		addVis("OF",visSyphonOF,true);
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
 		addVis("Osmos",new VisualizerOsmos(this,synth),true);
 		addVis("VDMX",new VisualizerVDMX(this,"/Users/bst/Dropbox/Pulsefield/VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
