@@ -73,10 +73,11 @@ public class VisualizerSyphon extends VisualizerDot {
 				PApplet.println("Syphon canvas size now "+canvas.width+"x"+canvas.height+"; target size="+g.width+"x"+g.height);
 			g.beginDraw();  // beginDraw resets the matrix
 			g.popMatrix();  // restore it
-			g.scale(-1,1);
+			initializeContext(t,g);
+//			g.scale(-1,1);
 			g.imageMode(PConstants.CENTER);
 			float ppm=Math.max(canvas.width/Tracker.getFloorSize().x,canvas.height/Tracker.getFloorSize().y);
-			g.image(canvas,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,
+			drawImage(g,canvas,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,
 					canvas.width/ppm,canvas.height/ppm);
 			wasActive=true;
 		}
