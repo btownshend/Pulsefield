@@ -197,3 +197,19 @@ Balls.app
 
 Video/Tracker/data/soccer/goal.mp3.asd
 
+
+*.jnilib
+
+Video/Tracker/OF/gltest/bin
+Video/Tracker/syTest/bin
+
+
+JNITest/oftest1/hs_err_pid8485.log
+
+JNITest/oftest1/hs_err_pid8498.log
+
+JNITest/oftest1/hs_err_pid9417.log
+
+JNITest/oftest1/libexampleLibrary.dylib
+
+Video/Tracker/OF/jni/libexamplelibrary.dylib
