@@ -1,0 +1,3 @@
+(cd ../bin; ./FIXLIB; )
+javac JNI_test.java
+java -Djava.library.path=../bin JNI_test
