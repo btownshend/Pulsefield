@@ -39,18 +39,20 @@ public class Tracker extends PApplet {
 	static Visualizer vis[] = new Visualizer[0];
 	VisualizerGrid visAbleton;
 	VisualizerNavier visNavier;
+	VisualizerNavierOF visNavierOF;
 	VisualizerDDR visDDR;
 	VisualizerMenu visMenu;
 	VisualizerMinim visMinim;
 	VisualizerSyphon visSyphonOF;
 	
 	int currentvis=-1;
-	static NetAddress TO, MPO, AL, MAX, CK, VD;
+	static NetAddress TO, OF, MPO, AL, MAX, CK, VD;
 	People people, mousePeople;
 	Ableton ableton;
 	boolean useMAX;
 	Synth synth;
 	TouchOSC touchOSC;
+	OFOSC oFOSC;
 	int mouseID;
 	String configFile;
 	URLConfig config;
@@ -123,6 +125,7 @@ public class Tracker extends PApplet {
 		oscP5 = new OscP5(this, oscProps);
 
 		TO = new NetAddress(config.getHost("TO"), config.getPort("TO"));
+		OF = new NetAddress(config.getHost("OF"), config.getPort("OF"));
 		MPO = new NetAddress(config.getHost("MPO"), config.getPort("MPO"));
 		AL = new NetAddress(config.getHost("AL"), config.getPort("AL"));
 		CK = new NetAddress(config.getHost("CK"), config.getPort("CK"));
@@ -132,6 +135,7 @@ public class Tracker extends PApplet {
 		PApplet.println("AL at "+config.getHost("AL")+":"+config.getPort("AL"));
 		MAX = new NetAddress(config.getHost("MAX"), config.getPort("MAX"));
 		touchOSC = new TouchOSC(oscP5, TO);
+		oFOSC = new OFOSC(oscP5,OF);
 		ableton = new Ableton(oscP5, AL);
 
 		new Laser(oscP5, new NetAddress(config.getHost("LASER"), config.getPort("LASER")));
@@ -216,7 +220,7 @@ public class Tracker extends PApplet {
 		Scale scale=new Scale("Major","C");
 		addVis("Pads",new VisualizerPads(this, synth),false);
 		addVis("Navier",visNavier=new VisualizerNavier(this,synth),true); 
-		//addVis("JNI",new VisualizerJNI(this),true); 
+		addVis("NavierOF",visNavierOF=new VisualizerNavierOF(this,synth,"GPUFluidsDebug","Screen Output"),true); 
 		addVis("Tron",new VisualizerTron(this,scale,synth),true);
 		addVis("Grid",visAbleton=new VisualizerGrid(this),true);
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
@@ -237,8 +241,6 @@ public class Tracker extends PApplet {
 		addVis("DNA",new VisualizerDNA(this),true);
 		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
 		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
-		visSyphonOF = new VisualizerSyphon(this,"syTestDebug","Screen Output");
-		addVis("OF",visSyphonOF,true);
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
 		addVis("Osmos",new VisualizerOsmos(this,synth),true);
 		addVis("VDMX",new VisualizerVDMX(this,"/Users/bst/Dropbox/Pulsefield/VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
@@ -826,6 +828,7 @@ public class Tracker extends PApplet {
 			}
 		} else if (theOscMessage.addrPattern().startsWith("/video/navier")) {
 			visNavier.handleMessage(theOscMessage);
+			visNavierOF.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/video/ddr")) {
 			visDDR.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
