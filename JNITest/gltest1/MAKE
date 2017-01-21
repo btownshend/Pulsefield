@@ -1,0 +1,6 @@
+#!/bin/sh -x
+
+H=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/GLUT.framework/Versions/A/Headers/
+g++ "-I$H" -c gltest.cpp
+g++ -o gltest gltest.o -framework GLUT -framework OpenGL
+./gltest
