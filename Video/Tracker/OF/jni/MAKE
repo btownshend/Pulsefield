@@ -1,0 +1,10 @@
+#!/bin/sh -x
+OF=$HOME/Dropbox/Pulsefield/OpenFrameworks/of_v0.9.8_osx_release
+OFOF=$OF/libs/openFrameworks
+OFEX=$OF/addons/ofxFluid/example
+GLEW=$OF/libs/glew/include
+TESS=$OF/libs/tess2/include
+BOOST=$OF/libs/boost/include
+g++ -Wno-c++11-extensions -Wno-c++11-long-long -I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers/ -I$OFEX/src -I$OFOF -I$OFOF/utils -I$OFOF/types -I$OFOF/math -I$OFOF/events -I$GLEW -I$TESS -I$BOOST -c VisualizerJNI.cpp
+g++ -dynamiclib -o libvisualizerjni.jnilib VisualizerJNI.o $OF/bin/libexampleLibrary.dylib -framework OpenGL
+

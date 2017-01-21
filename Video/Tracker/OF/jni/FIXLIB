@@ -1,0 +1,4 @@
+#!/bin/sh -x
+OF=$HOME/Dropbox/Pulsefield/OpenFrameworks/of_v0.9.8_osx_release
+install_name_tool -change @executable_path/libfmodex.dylib $OF/export/osx/libs/libfmodex.dylib libexampleLibrary.dylib
+otool -L libexampleLibrary.dylib
