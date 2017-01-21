@@ -2,7 +2,12 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="data"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="jni"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Tracker/OF/jni"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/promidi/library/promidi.jar" sourcepath="lib/promidi"/>
 	<classpathentry kind="lib" path="lib/oscP5/library/oscP5.jar" sourcepath="lib/oscP5/src">
 		<attributes>

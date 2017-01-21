@@ -215,6 +215,7 @@ public class Tracker extends PApplet {
 		Scale scale=new Scale("Major","C");
 		addVis("Pads",new VisualizerPads(this, synth),false);
 		addVis("Navier",visNavier=new VisualizerNavier(this,synth),true); 
+		//addVis("JNI",new VisualizerJNI(this),true); 
 		addVis("Tron",new VisualizerTron(this,scale,synth),true);
 		addVis("Grid",visAbleton=new VisualizerGrid(this),true);
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
