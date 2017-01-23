@@ -213,3 +213,5 @@ JNITest/oftest1/hs_err_pid9417.log
 JNITest/oftest1/libexampleLibrary.dylib
 
 Video/Tracker/OF/jni/libexamplelibrary.dylib
+
+Video/Tracker/OF/GPUFluids/bin/GPUFluidsDebug.app/Contents/MacOS/GPUFluidsDebug
