@@ -5,6 +5,11 @@ void ofApp::setup(){
     // Syphon setup
 	mainOutputSyphonServer.setName("Screen Output");
 
+    // OSC Setup
+    int PORT=7713;
+    std::cout << "listening for osc messages on port " << PORT << "\n";
+    receiver.setup( PORT );
+    
     ofSetFrameRate(30); // if vertical sync is off, we can go a bit fast... this caps the framerate
     ofEnableAlphaBlending();
     ofSetCircleResolution(100);
@@ -54,6 +59,40 @@ void ofApp::update(){
     fluid.update();
     
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
+    
+    // Check for OSC messages
+    // check for waiting messages
+    while( receiver.hasWaitingMessages() ) {
+        // get the next message
+        ofxOscMessage m;
+        receiver.getNextMessage( &m );
+        if (  m.getAddress()=="/navier/force" ) {
+            // both the arguments are int32's
+            int cellX = m.getArgAsInt32( 0 );
+            int cellY = m.getArgAsInt32( 1 );
+            float dX = m.getArgAsFloat(2);
+            float dY = m.getArgAsFloat(3);
+            cout << "(" << cellX << "," << cellY << ") v=(" << dX << "," << dY << ")" << endl;
+            ofPoint m = ofPoint(cellX, cellY);
+            ofPoint d = ofPoint(dX, dY)*10.0;
+            ofPoint c = ofPoint(width*0.5, height*0.5) - m;
+            c.normalize();
+            fluid.addTemporalForce(m, d, ofFloatColor(c.x,c.y,0.5)*sin(ofGetElapsedTimef()),3.0f);
+//        } else if (m.getAddress()=="/navier/scale") {
+//            fluid.scale=m.getArgAsFloat(0);
+//        } else if (m.getAddress()=="/navier/smokeBuoyancy") {
+//            fluid.smokeBuoyancy=m.getArgAsFloat(0);
+        } else if (m.getAddress()=="/navier/dissipation") {
+            fluid.dissipation=m.getArgAsFloat(0);
+        } else if (m.getAddress()=="/navier/velocityDissipation") {
+            fluid.velocityDissipation=m.getArgAsFloat(0);
+        } else if (m.getAddress()=="/navier/gravity") {
+            fluid.setGravity(ofVec2f(m.getArgAsFloat(0),m.getArgAsFloat(1)));
+        } else {
+            cout << "Unexpected OSC message: " << m.getAddress() << endl;
+        }
+        
+    }
 }
 
 //--------------------------------------------------------------

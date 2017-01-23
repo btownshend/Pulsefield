@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxSyphon.h"
 #include "ofxFluid.h"
+#include "ofxOsc.h"
 
 class ofApp : public ofBaseApp{
 
@@ -31,4 +32,7 @@ class ofApp : public ofBaseApp{
     ofVec2f oldM;
     int     width,height;
     bool    bPaint, bObstacle, bBounding, bClear;
+    
+    // ofxOsc stuff
+    ofxOscReceiver receiver;
 };
