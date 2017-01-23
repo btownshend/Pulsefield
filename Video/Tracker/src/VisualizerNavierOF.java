@@ -130,12 +130,13 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		}
 		for (Person pos: p.pmap.values()) {
 			//PApplet.println("update("+p.channel+"), enabled="+p.enabled);
-			int cellX = (int)( (pos.getNormalizedPosition().x+1)*nwidth / 2);
+			int cellX = (int)( (-pos.getNormalizedPosition().x+1)*nwidth / 2);
 			cellX=Math.max(0,Math.min(cellX,nwidth));
 			int cellY = (int) ((pos.getNormalizedPosition().y+1)*nheight/ 2);
 			cellY=Math.max(0,Math.min(cellY,nheight));
-			double dx=pos.getVelocityInMeters().x/parent.frameRate*10;
-			double dy=pos.getVelocityInMeters().y/parent.frameRate*10;
+			
+			double dx=pos.getNormalizedVelocity().x*nwidth/2/parent.frameRate;
+			double dy=pos.getNormalizedVelocity().y*nheight/2/parent.frameRate;
 			//PApplet.println("Cell="+cellX+","+cellY+", dx="+dx+", dy="+dy);
 
 			dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
