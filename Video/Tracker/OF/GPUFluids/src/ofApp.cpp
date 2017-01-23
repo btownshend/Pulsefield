@@ -6,11 +6,8 @@ void ofApp::setup(){
 	mainOutputSyphonServer.setName("Screen Output");
 
     ofSetFrameRate(30); // if vertical sync is off, we can go a bit fast... this caps the framerate
-    cout << "testApp.1" << endl;
     ofEnableAlphaBlending();
-    cout << "testApp.2" << endl;
     ofSetCircleResolution(100);
-    cout << "testApp.3" << endl;
     width = 917;
     height = 784;
     
@@ -38,9 +35,7 @@ void ofApp::setup(){
     // Adding constant forces
     //
     fluid.addConstantForce(ofPoint(width*0.5,height*0.85), ofPoint(0,-2), ofFloatColor(0.5,0.1,0.0), 10.f);
-    cout << "testApp.4" << endl;
     ofSetWindowShape(width, height);
-    cout << "testApp.5" << endl;
 }
 
 //--------------------------------------------------------------
