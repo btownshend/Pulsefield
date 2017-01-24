@@ -72,12 +72,16 @@ void ofApp::update(){
             int cellY = m.getArgAsInt32( 1 );
             float dX = m.getArgAsFloat(2);
             float dY = m.getArgAsFloat(3);
-            cout << "(" << cellX << "," << cellY << ") v=(" << dX << "," << dY << ")" << endl;
+            float red = m.getArgAsFloat(4);
+            float green = m.getArgAsFloat(5);
+            float blue = m.getArgAsFloat(6);
+            float radius = m.getArgAsFloat(7);
+            cout << "(" << cellX << "," << cellY << ") v=(" << dX << "," << dY << ")" << ", col=(" << red << "," << green << "," << blue << ")" << " radius=" << radius << endl;
             ofPoint m = ofPoint(cellX, cellY);
             ofPoint d = ofPoint(dX, dY)*10.0;
             ofPoint c = ofPoint(width*0.5, height*0.5) - m;
             c.normalize();
-            fluid.addTemporalForce(m, d, ofFloatColor(c.x,c.y,0.5)*sin(ofGetElapsedTimef()),3.0f);
+            fluid.addTemporalForce(m, d, ofFloatColor(red,green,blue),radius);
 //        } else if (m.getAddress()=="/navier/scale") {
 //            fluid.scale=m.getArgAsFloat(0);
 //        } else if (m.getAddress()=="/navier/smokeBuoyancy") {

@@ -128,12 +128,17 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		statsU4=0;
 	}
 
-	void applyForce(int cellX, int cellY, double dx, double dy) {
+	void applyForce(int cellX, int cellY, double dx, double dy, float red, float green, float blue, float radius) {
 		OscMessage msg = new OscMessage("/navier/force");
 		msg.add(cellX);
 		msg.add(cellY);
 		msg.add((float)dx);
 		msg.add((float)dy);
+		msg.add(red/255.0f);
+		msg.add(green/255.0f);
+		msg.add(blue/255.0f);
+		msg.add(radius);
+		//PApplet.println("red="+(red/255.0)+", green="+(green/255.0)+", blue="+(blue/255.0));
 		OFOSC.getInstance().sendMessage(msg);
 	}
 	
@@ -164,11 +169,11 @@ class VisualizerNavierOF extends VisualizerSyphon {
 
 			dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
 			dy = (Math.abs(dy) > limitVelocity) ? Math.signum(dy) * limitVelocity : dy;
-			applyForce(cellX, cellY, dx, dy);
+			applyForce(cellX, cellY, dx, dy, parent.red(pos.getcolor()), parent.green(pos.getcolor()),parent.blue(pos.getcolor()),20.0f);
 		}
 		if (p.pmap.isEmpty()) {
 		// Keep it moving
-			applyForce((int)(Math.random()*nwidth), (int)(Math.random()*nheight), limitVelocity/8*(Math.random()*2-1), limitVelocity/8*(Math.random()*2-1));
+			//applyForce((int)(Math.random()*nwidth), (int)(Math.random()*nheight), limitVelocity/8*(Math.random()*2-1), limitVelocity/8*(Math.random()*2-1));
 		}
 		statsUpdate += System.nanoTime()-t1;
 		//stats();
