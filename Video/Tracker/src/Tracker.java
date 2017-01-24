@@ -826,9 +826,10 @@ public class Tracker extends PApplet {
 				else
 					PApplet.println("Bad projector number: "+pnum);
 			}
+		} else if (theOscMessage.addrPattern().startsWith("/video/navierOF")) {
+			visNavierOF.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/video/navier")) {
 			visNavier.handleMessage(theOscMessage);
-			visNavierOF.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/video/ddr")) {
 			visDDR.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {

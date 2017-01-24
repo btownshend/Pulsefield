@@ -5,7 +5,7 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 
 class VisualizerNavierOF extends VisualizerSyphon {
-	double visc, diff, limitVelocity;
+	double dissipation, velocityDissipation, gravityX, gravityY, limitVelocity;
 	int oldMouseX = 1, oldMouseY = 1;
 	private int bordercolor;
 	private double scale;
@@ -27,9 +27,10 @@ class VisualizerNavierOF extends VisualizerSyphon {
 	VisualizerNavierOF(Tracker parent, Synth synth, String appName, String serverName) {
 		super(parent, appName, serverName);
 
-		visc = 0.002;
-		diff = 3.0e-4;
-		scale = 2.0;
+		dissipation=0.99;
+		velocityDissipation=0.99;
+		gravityX=0;
+		gravityY=-0.98;
 
 		limitVelocity = 200;
 		// iao = loadImage("IAO.jpg");
@@ -61,34 +62,56 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
 		
-		if (components.length<3 || !components[2].equals("navier")) 
-			PApplet.println("Navier: Expected /video/navier messages, got "+msg.toString());
-		else if (components.length==4 && components[3].equals("viscosity")) {
-			visc=msg.get(0).floatValue();
-		} else if (components.length==4 && components[3].equals("diffusion")) {
-			diff=Math.pow(10f,msg.get(0).floatValue());
-		} else if (components.length==4 && components[3].equals("scale")) {
-			scale=msg.get(0).floatValue();
+		if (components.length<3 || !components[2].equals("navierOF")) 
+			PApplet.println("Navier: Expected /video/navierOF messages, got "+msg.toString());
+		else if (components.length==4 && components[3].equals("dissipation")) {
+			dissipation=1-Math.pow(10f,msg.get(0).floatValue());
+		} else if (components.length==4 && components[3].equals("velocityDissipation")) {
+			velocityDissipation=1-Math.pow(10f,msg.get(0).floatValue());
+		} else if (components.length==5 && components[3].equals("gravity") && components[4].equals("x")) {
+			gravityX=msg.get(0).floatValue();
+		} else if (components.length==5 && components[3].equals("gravity") && components[4].equals("y")) {
+			gravityY=msg.get(0).floatValue();
 		} else 
-			PApplet.println("Unknown Navier Message: "+msg.toString());
-		PApplet.println("visc="+visc+", diff="+diff+", scale="+scale);
+			PApplet.println("Unknown NavierOF Message: "+msg.toString());
+		PApplet.println("dissipation="+dissipation+", velocityDissipation="+velocityDissipation+", gravity="+gravityX+","+gravityY);
 		setTO();
 	}
 
 	private void setTOValue(String name, double value, String fmt) {
 		TouchOSC to=TouchOSC.getInstance();
-		OscMessage set = new OscMessage("/video/navier/"+name);
+		OscMessage set = new OscMessage("/video/navierOF/"+name);
 		set.add(value);
 		to.sendMessage(set);
-		set=new OscMessage("/video/navier/"+name+"/value");
+		set=new OscMessage("/video/navierOF/"+name+"/value");
 		set.add(String.format(fmt, value));
 		to.sendMessage(set);
 	}
 	
+	private void setOF(String name, double value) {
+		// Send to OF
+		OscMessage set = new OscMessage("/navier/"+name);
+		set.add((float)value);
+		OFOSC.getInstance().sendMessage(set);
+	}
+	
+	private void setOF(String name, double v1, double v2) {
+		// Send to OF
+		OscMessage set = new OscMessage("/navier/"+name);
+		set.add((float)v1);
+		set.add((float)v2);
+		OFOSC.getInstance().sendMessage(set);
+	}
+	
 	public void setTO() {
 		setTOValue("scale",scale,"%.2f");
-		setTOValue("diffusion",Math.log10(diff),"%.2f");
-		setTOValue("viscosity",visc,"%.4f");
+		setTOValue("dissipation",Math.log10(1-dissipation),"%.2f");
+		setTOValue("velocityDissipation",Math.log10(1-velocityDissipation),"%.2f");
+		setTOValue("gravity/x",gravityX,"%.2f");
+		setTOValue("gravity/y",gravityY,"%.2f");
+		setOF("dissipation",dissipation);
+		setOF("velocityDissipation",velocityDissipation);
+		setOF("gravity",gravityX,gravityY);
 	}
 	
 	public void stats() {
