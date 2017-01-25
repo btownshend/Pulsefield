@@ -21,7 +21,7 @@ do
     fi
 done
 starttime=$
-for app in frontend calibrator osc9001 osc9998 osc9999 chuck tracker
+for app in frontend calibrator osc9001 osc9998 osc9999 chuck tracker gpufluid
 do
   launchctl $load $app.plist
   echo $load $app.plist
