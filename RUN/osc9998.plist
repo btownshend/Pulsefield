@@ -21,7 +21,7 @@
 		<string>/Users/bst/Dropbox/Pulsefield/bin/oscbroadcast</string>
 		<string>-s9998</string>
 		<string>-t</string>
-		<string>osc.udp://192.168.0.200:9998</string>
+		<string>osc.udp://192.168.0.100:9998</string>
 	</array>
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/RUN</string>
