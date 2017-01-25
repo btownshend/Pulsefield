@@ -1,3 +1,5 @@
+import java.awt.Color;
+
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -5,7 +7,8 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 
 class VisualizerNavierOF extends VisualizerSyphon {
-	double dissipation, velocityDissipation, gravityX, gravityY, limitVelocity;
+	float dissipation, velocityDissipation, tempDissipation, pressDissipation, gravityX, gravityY, limitVelocity; //  Parameters of model
+	float alpha, legScale, saturation, brightness, density, temperature;  // Parameters of leg effects
 	int oldMouseX = 1, oldMouseY = 1;
 	private int bordercolor;
 	private double scale;
@@ -27,11 +30,18 @@ class VisualizerNavierOF extends VisualizerSyphon {
 	VisualizerNavierOF(Tracker parent, Synth synth, String appName, String serverName) {
 		super(parent, appName, serverName);
 
-		dissipation=0.99;
-		velocityDissipation=0.99;
-		gravityX=0;
-		gravityY=-0.98;
-
+		dissipation=0.999f;
+		velocityDissipation=0.9f;
+		pressDissipation=0.9f;
+		tempDissipation=0.99f;
+		gravityX=0f;
+		gravityY=0f;
+		alpha=128f;
+		legScale=1.0f;
+		saturation=1.0f;
+		brightness=1.0f;
+		temperature=10f;
+		density=1f;
 		limitVelocity = 200;
 		// iao = loadImage("IAO.jpg");
 		//background(iao);
@@ -65,9 +75,27 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		if (components.length<3 || !components[2].equals("navierOF")) 
 			PApplet.println("Navier: Expected /video/navierOF messages, got "+msg.toString());
 		else if (components.length==4 && components[3].equals("dissipation")) {
-			dissipation=1-Math.pow(10f,msg.get(0).floatValue());
+			dissipation=(float) (1-Math.pow(10f,msg.get(0).floatValue()));
 		} else if (components.length==4 && components[3].equals("velocityDissipation")) {
-			velocityDissipation=1-Math.pow(10f,msg.get(0).floatValue());
+			velocityDissipation=(float) (1-Math.pow(10f,msg.get(0).floatValue()));
+		} else if (components.length==4 && components[3].equals("tempDissipation")) {
+			tempDissipation=(float) (1-Math.pow(10f,msg.get(0).floatValue()));
+		} else if (components.length==4 && components[3].equals("pressDissipation")) {
+			pressDissipation=(float) (1-Math.pow(10f,msg.get(0).floatValue()));
+		} else if (components.length==4 && components[3].equals("saturation")) {
+			saturation=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("brightness")) {
+			brightness=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("alpha")) {
+			alpha=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("legscale")) {
+			legScale=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("temperature")) {
+			temperature=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("density")) {
+			density=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("gravityClear") ) {
+			gravityX=0f; gravityY=0f;
 		} else if (components.length==5 && components[3].equals("gravity") && components[4].equals("x")) {
 			gravityX=msg.get(0).floatValue();
 		} else if (components.length==5 && components[3].equals("gravity") && components[4].equals("y")) {
@@ -107,10 +135,20 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		setTOValue("scale",scale,"%.2f");
 		setTOValue("dissipation",Math.log10(1-dissipation),"%.2f");
 		setTOValue("velocityDissipation",Math.log10(1-velocityDissipation),"%.2f");
+		setTOValue("tempDissipation",Math.log10(1-tempDissipation),"%.2f");
+		setTOValue("pressDissipation",Math.log10(1-pressDissipation),"%.2f");
 		setTOValue("gravity/x",gravityX,"%.2f");
 		setTOValue("gravity/y",gravityY,"%.2f");
+		setTOValue("brightness",brightness,"%.2f");
+		setTOValue("saturation",saturation,"%.2f");
+		setTOValue("alpha",alpha,"%.2f");
+		setTOValue("legscale",legScale,"%.2f");
+		setTOValue("temperature",temperature,"%.2f");
+		setTOValue("density",density,"%.2f");
 		setOF("dissipation",dissipation);
 		setOF("velocityDissipation",velocityDissipation);
+		setOF("temperatureDissipation",tempDissipation);
+		setOF("pressureDissipation",pressDissipation);
 		setOF("gravity",gravityX,gravityY);
 	}
 	
@@ -128,7 +166,7 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		statsU4=0;
 	}
 
-	void applyForce(int cellX, int cellY, double dx, double dy, float red, float green, float blue, float radius) {
+	void applyForce(int cellX, int cellY, double dx, double dy, float red, float green, float blue, float alpha, float radius, float temp, float dens) {
 		OscMessage msg = new OscMessage("/navier/force");
 		msg.add(cellX);
 		msg.add(cellY);
@@ -137,7 +175,10 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		msg.add(red/255.0f);
 		msg.add(green/255.0f);
 		msg.add(blue/255.0f);
+		msg.add(alpha);
 		msg.add(radius);
+		msg.add(temp);
+		msg.add(dens);
 		//PApplet.println("red="+(red/255.0)+", green="+(green/255.0)+", blue="+(blue/255.0));
 		OFOSC.getInstance().sendMessage(msg);
 	}
@@ -158,18 +199,23 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		}
 		for (Person pos: p.pmap.values()) {
 			//PApplet.println("update("+p.channel+"), enabled="+p.enabled);
-			int cellX = (int)( (-pos.getNormalizedPosition().x+1)*nwidth / 2);
-			cellX=Math.max(0,Math.min(cellX,nwidth));
-			int cellY = (int) ((pos.getNormalizedPosition().y+1)*nheight/ 2);
-			cellY=Math.max(0,Math.min(cellY,nheight));
-			
-			double dx=pos.getNormalizedVelocity().x*nwidth/2/parent.frameRate;
-			double dy=pos.getNormalizedVelocity().y*nheight/2/parent.frameRate;
-			//PApplet.println("Cell="+cellX+","+cellY+", dx="+dx+", dy="+dy);
+			for (int l=0;l<pos.legs.length;l++) {
+				Leg leg = pos.legs[l];
+				int cellX = (int)( (-leg.getNormalizedPosition().x+1)*nwidth / 2);
+				cellX=Math.max(0,Math.min(cellX,nwidth));
+				int cellY = (int) ((leg.getNormalizedPosition().y+1)*nheight/ 2);
+				cellY=Math.max(0,Math.min(cellY,nheight));
 
-			dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
-			dy = (Math.abs(dy) > limitVelocity) ? Math.signum(dy) * limitVelocity : dy;
-			applyForce(cellX, cellY, dx, dy, parent.red(pos.getcolor()), parent.green(pos.getcolor()),parent.blue(pos.getcolor()),20.0f);
+				double dx=leg.getNormalizedVelocity().x*nwidth/2; // In pixels/sec
+				double dy=leg.getNormalizedVelocity().y*nheight/2;
+				float radius=leg.getDiameterInMeters()/Tracker.getFloorSize().x*nwidth/2*legScale;
+				int c=Color.HSBtoRGB(((pos.id*17+l*127)&0xff)/255.0f,saturation,brightness);
+				
+				PApplet.println("Leg "+l+": Cell="+cellX+","+cellY+", vel="+dx+","+dy+ ", radius="+radius+", color="+PApplet.hex(c));
+				dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
+				dy = (Math.abs(dy) > limitVelocity) ? Math.signum(dy) * limitVelocity : dy;
+				applyForce(cellX, cellY, dx, dy, parent.red(c), parent.green(c),parent.blue(c),alpha,radius,temperature,density);
+			}
 		}
 		if (p.pmap.isEmpty()) {
 		// Keep it moving

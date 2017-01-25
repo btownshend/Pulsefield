@@ -75,13 +75,14 @@ void ofApp::update(){
             float red = m.getArgAsFloat(4);
             float green = m.getArgAsFloat(5);
             float blue = m.getArgAsFloat(6);
-            float radius = m.getArgAsFloat(7);
-            cout << "(" << cellX << "," << cellY << ") v=(" << dX << "," << dY << ")" << ", col=(" << red << "," << green << "," << blue << ")" << " radius=" << radius << endl;
+            float alpha = m.getArgAsFloat(7);
+            float radius = m.getArgAsFloat(8);
+            float temp = m.getArgAsFloat(9);
+            float den=m.getArgAsFloat(10);
+            cout << "(" << cellX << "," << cellY << ") v=(" << dX << "," << dY << ")" << ", col=(" << red << "," << green << "," << blue << ")" << " radius=" << radius << ", temp=" << temp << ", den=" << den << endl;
             ofPoint m = ofPoint(cellX, cellY);
-            ofPoint d = ofPoint(dX, dY)*10.0;
-            ofPoint c = ofPoint(width*0.5, height*0.5) - m;
-            c.normalize();
-            fluid.addTemporalForce(m, d, ofFloatColor(red,green,blue),radius);
+            ofPoint d = ofPoint(dX, dY)/ofGetFrameRate();
+            fluid.addTemporalForce(m, d, ofFloatColor(red,green,blue,alpha),radius,temp,den);
 //        } else if (m.getAddress()=="/navier/scale") {
 //            fluid.scale=m.getArgAsFloat(0);
 //        } else if (m.getAddress()=="/navier/smokeBuoyancy") {
@@ -90,6 +91,10 @@ void ofApp::update(){
             fluid.dissipation=m.getArgAsFloat(0);
         } else if (m.getAddress()=="/navier/velocityDissipation") {
             fluid.velocityDissipation=m.getArgAsFloat(0);
+        } else if (m.getAddress()=="/navier/temperatureDissipation") {
+            fluid.temperatureDissipation=m.getArgAsFloat(0);
+        } else if (m.getAddress()=="/navier/pressureDissipation") {
+            fluid.pressureDissipation=m.getArgAsFloat(0);
         } else if (m.getAddress()=="/navier/gravity") {
             fluid.setGravity(ofVec2f(m.getArgAsFloat(0),m.getArgAsFloat(1)));
         } else {

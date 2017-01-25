@@ -22,9 +22,15 @@ public class Leg {
 	PVector getOriginInMeters() {
 		return position;
 	}
-		
+	// Convert to normalized position - in range [-1,1] for extent of pulsefield
+	PVector getNormalizedPosition() {
+		return Tracker.floorToNormalized(position);
+	}
 	PVector getVelocityInMeters() {
 		return velocity;
+	}
+	PVector getNormalizedVelocity() {
+		return Tracker.mapVelocity(velocity);
 	}
 	float getDiameterInMeters() {
 		return 0.2f; // TODO
