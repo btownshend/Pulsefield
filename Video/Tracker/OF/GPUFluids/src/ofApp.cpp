@@ -65,7 +65,7 @@ void ofApp::update(){
     while( receiver.hasWaitingMessages() ) {
         // get the next message
         ofxOscMessage m;
-        receiver.getNextMessage( &m );
+        receiver.getNextMessage( m );
         if (  m.getAddress()=="/navier/force" ) {
             // both the arguments are int32's
             int cellX = m.getArgAsInt32( 0 );
