@@ -208,3 +208,6 @@ JNITest/oftest1/libexampleLibrary.dylib
 Video/Tracker/OF/jni/libexamplelibrary.dylib
 Video/Tracker/OF/GPUFluids/GPUFluids.xcodeproj/project.xcworkspace/xcuserdata/bst.xcuserdatad/UserInterfaceState.xcuserstate
 Video/Tracker/OF/GPUFluids/bin
+Video/Tracker/OF/GPUFluids/bin/GPUFluidsDebug.app/Contents/Frameworks/GLUT.framework/GLUT
+
+Video/Tracker/OF/GPUFluids/bin/GPUFluidsDebug.app/Contents/Frameworks/Syphon.framework/Syphon
