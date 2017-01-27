@@ -162,6 +162,7 @@ static int setMinX_handler(const char *path, const char *types, lo_arg **argv, i
 static int setMaxX_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((World *)user_data)->setMaxX(argv[0]->f*UNITSPERM); return 0; }
 static int setMinY_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((World *)user_data)->setMinY(argv[0]->f*UNITSPERM); return 0; }
 static int setMaxY_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((World *)user_data)->setMaxY(argv[0]->f*UNITSPERM); return 0; }
+static int setRotation_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((SickIO **)user_data)[0]->setCoordinateRotationDeg(argv[0]->f); return 0; }
 
 
 void FrontEnd::addHandlers() {
@@ -188,6 +189,7 @@ void FrontEnd::addHandlers() {
 	lo_server_add_method(s,"/pf/maxx","f",setMaxX_handler,world);
 	lo_server_add_method(s,"/pf/miny","f",setMinY_handler,world);
 	lo_server_add_method(s,"/pf/maxy","f",setMaxY_handler,world);
+	lo_server_add_method(s,"/pf/rotation","f",setRotation_handler,sick);
 
 	lo_server_add_method(s,"/pf/save","f",save_handler,this);
 	/* add method that will match any path and args if they haven't been caught explicitly */

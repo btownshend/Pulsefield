@@ -48,7 +48,6 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]): conf
 	    sick = new SickIO*[nsick];
 	
 	world = new World(maxRange);
-	load();
 	vis = new Vis();
 	snap=NULL;  // If needed, set in matsave()
 	nechoes=1;
@@ -56,6 +55,24 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]): conf
 	recordFD=NULL;
 
 	URLConfig urls("urlconfig.txt");
+
+	/* Start cameras */
+	printf("Initializing with %d sensors...",nsick);fflush(stdout);
+	for (int i=0;i<nsick;i++) {
+		char ident[20];
+		sprintf(ident,"SK%d",i+1);
+		int port=urls.getPort(ident);
+		if (port<0) {
+		    fprintf(stderr,"Unable to locate %s in config file %s\n", ident, urls.getFilename().c_str());
+			exit(1);
+		}
+		const char *host=urls.getHost(ident);
+		sick[i]=new SickIO(i+1,host,port);
+		sick[i]->start();
+	}
+	printf("done\n");fflush(stdout);
+	load();
+
 
 	serverPort=urls.getPort("FE");
 	if (serverPort<0) {
@@ -100,21 +117,6 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]): conf
 	    sendUIMessages();
 	}
 
-	/* Start cameras */
-	printf("Initializing with %d sensors...",nsick);fflush(stdout);
-	for (int i=0;i<nsick;i++) {
-		char ident[20];
-		sprintf(ident,"SK%d",i+1);
-		int port=urls.getPort(ident);
-		if (port<0) {
-		    fprintf(stderr,"Unable to locate %s in config file %s\n", ident, urls.getFilename().c_str());
-			exit(1);
-		}
-		const char *host=urls.getHost(ident);
-		sick[i]=new SickIO(i+1,host,port);
-		sick[i]->start();
-	}
-	printf("done\n");fflush(stdout);
 
 	addHandlers();
 
@@ -548,6 +550,7 @@ void FrontEnd::sendSetupMessages(const char *host, int port) const {
     lo_send(addr,"/pf/set/maxx","f",world->getMaxX()/UNITSPERM);
     lo_send(addr,"/pf/set/miny","f",world->getMinY()/UNITSPERM);
     lo_send(addr,"/pf/set/maxy","f",world->getMaxY()/UNITSPERM);
+    lo_send(addr,"/pf/set/rotation","f",sick[0]->getCoordinateRotationDeg());
     lo_send(addr,"/pf/set/groupdist","f",GROUPDIST/UNITSPERM);
     lo_send(addr,"/pf/set/ungroupdist","f",UNGROUPDIST/UNITSPERM);
     lo_send(addr,"/pf/set/numchannels","i",NCHANNELS);
@@ -568,6 +571,7 @@ void FrontEnd::sendUIMessages() {
 	lo_send(touchOSC,"/pf/maxx","f",world->getMaxX()/UNITSPERM);
 	lo_send(touchOSC,"/pf/miny","f",world->getMinY()/UNITSPERM);
 	lo_send(touchOSC,"/pf/maxy","f",world->getMaxY()/UNITSPERM);
+	lo_send(touchOSC,"/pf/set/rotation","f",sick[0]->getCoordinateRotationDeg());
 	lo_send(touchOSC,"/pf/frame","i",frame);
 	lo_send(touchOSC,"/health/FE","f",(frame%100 == 0)?1.0:0.0);
     }
@@ -600,6 +604,7 @@ void FrontEnd::save()  {
     p.put("maxx",world->getMaxX());
     p.put("miny",world->getMinY());
     p.put("maxy",world->getMaxY());
+    p.put("rotation",sick[0]->getCoordinateRotationDeg());
     config.pt().put_child("world",p);
     config.save();
 }
@@ -616,9 +621,11 @@ void FrontEnd::load() {
 	std::cerr << "Unable to find 'world' in settings file" << std::endl;
 	return;
     }
-
+    assert(world);
     world->setMinX(p.get("minx",-1.0f));
     world->setMaxX(p.get("maxx",1.0f));
     world->setMinY(p.get("miny",0.0f));
     world->setMaxY(p.get("maxy",1.0f));
+    assert(sick && sick[0]);
+    sick[0]->setCoordinateRotationDeg(p.get("rotation",1.0f));
 }

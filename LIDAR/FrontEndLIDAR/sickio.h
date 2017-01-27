@@ -41,6 +41,7 @@ private:
 	bool running;
 	int scanFreq;
 	double scanRes;
+	double coordinateRotation;   // Rotate the [x,y] coordinate system used internally and externally by this many degrees
 	void updateScanFreqAndRes();
 	bool fake;
 	// Synchronization
@@ -57,6 +58,7 @@ public:
 	    valid=false;
 	    pthread_mutex_init(&mutex,NULL);
 	    pthread_cond_init(&signal,NULL);
+	    coordinateRotation=0;
 	}
 	// Set values for faking
 	void set(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]);
@@ -87,7 +89,13 @@ public:
 
 	// Get angle of measurement in degrees
 	float getAngleDeg(int measurement)  const {
-	    return scanRes*(measurement-(num_measurements-1)/2.0);
+	    return scanRes*(measurement-(num_measurements-1)/2.0) +coordinateRotation;
+	}
+	float getCoordinateRotationDeg() const {
+	    return coordinateRotation;
+	}
+	void setCoordinateRotationDeg(float deg)  {
+	    coordinateRotation=int(deg/5)*5;  // Round to avoid tiny changes that throw off calibration
 	}
 	float getAngleRad(int measurement) const {
 	    return getAngleDeg(measurement)*M_PI/180;

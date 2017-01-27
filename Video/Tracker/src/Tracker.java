@@ -34,7 +34,7 @@ public class Tracker extends PApplet {
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
 	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
-	static float lidarminy=0f, lidarmaxy=5f, lidarminx=-5f, lidarmaxx=5f; // Bounds of tracking
+	static float lidarminy=0f, lidarmaxy=5f, lidarminx=-5f, lidarmaxx=5f, lidarRotation=0f; // Bounds of tracking
 	static float miny, maxy, minx, maxx; // Bound of video display (in LIDAR coordinates - meters)
 	static Visualizer vis[] = new Visualizer[0];
 	VisualizerGrid visAbleton;
@@ -167,6 +167,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "pfsetminy", "/pf/set/miny");
 		oscP5.plug(this, "pfsetmaxx", "/pf/set/maxx");
 		oscP5.plug(this, "pfsetmaxy", "/pf/set/maxy");
+		oscP5.plug(this, "pfsetrotation", "/pf/set/rotation");
 		oscP5.plug(this, "pfstarted", "/pf/started");
 		oscP5.plug(this, "pfstopped", "/pf/stopped");	
 		oscP5.plug(this, "tempo", "/tempo");
@@ -911,7 +912,7 @@ public class Tracker extends PApplet {
 		for (int i=0;i<projectors.length;i++) {
 			for (int j=0;j<projectors[i].bounds.length;j++) {
 				PVector p=new PVector(projectors[i].bounds[j].x,projectors[i].bounds[j].y);
-				p.y=max(0,p.y);  // Keep in front of LIDAR
+				//p.y=max(0,p.y);  // Keep in front of LIDAR
 				pminx=min(pminx,p.x);
 				pminy=min(pminy,p.y);
 				pmaxx=max(pmaxx,p.x);
@@ -939,6 +940,7 @@ public class Tracker extends PApplet {
 		sendOSC("TO","/pf/maxx/label","Max X: "+String.format("%.1f", lidarmaxx));
 		sendOSC("TO","/pf/miny/label","Min Y: "+String.format("%.1f", lidarminy));
 		sendOSC("TO","/pf/maxy/label","Max Y: "+String.format("%.1f", lidarmaxy));
+		sendOSC("TO","/pf/rotation/label","Rotation: "+String.format("%.1f", lidarRotation));
 		Config.setFloat("video", "minx", minx);
 		Config.setFloat("video", "maxx", maxx);
 		Config.setFloat("video", "miny", miny);
@@ -1149,6 +1151,13 @@ public class Tracker extends PApplet {
 	public void pfsetmaxy(float maxy) { 
 		if (Tracker.lidarmaxy != maxy) {
 			Tracker.lidarmaxy=maxy;
+			resetcoords();
+		}
+	}
+	
+	public void pfsetrotation(float deg) {
+		if (Tracker.lidarRotation != deg) {
+			Tracker.lidarRotation=deg;
 			resetcoords();
 		}
 	}
