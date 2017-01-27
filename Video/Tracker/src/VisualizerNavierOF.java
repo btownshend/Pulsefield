@@ -7,7 +7,7 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 
 class VisualizerNavierOF extends VisualizerSyphon {
-	float dissipation, velocityDissipation, tempDissipation, pressDissipation, gravityX, gravityY, limitVelocity; //  Parameters of model
+	float dissipation, velocityDissipation, tempDissipation, pressDissipation, limitVelocity; //  Parameters of model
 	float alpha, legScale, saturation, brightness, density, temperature;  // Parameters of leg effects
 	float flameTemperature, flameDensity, flameRadius;
 	boolean flameEnable;
@@ -37,8 +37,7 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		velocityDissipation=0.9f;
 		pressDissipation=0.9f;
 		tempDissipation=0.99f;
-		gravityX=0f;
-		gravityY=0f;
+		gravity=new PVector(0f,0f);
 		alpha=128f;
 		legScale=1.0f;
 		saturation=1.0f;
@@ -104,11 +103,10 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		} else if (components.length==4 && components[3].equals("density")) {
 			density=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("gravityClear") ) {
-			gravityX=0f; gravityY=0f;
-		} else if (components.length==5 && components[3].equals("gravity") && components[4].equals("x")) {
-			gravityX=msg.get(0).floatValue();
-		} else if (components.length==5 && components[3].equals("gravity") && components[4].equals("y")) {
-			gravityY=msg.get(0).floatValue();
+			gravity.x=0f; gravity.y=0f;
+		} else if (components.length==4 && components[3].equals("gravity") ) {
+			gravity.x=msg.get(0).floatValue();
+			gravity.y=msg.get(1).floatValue();
 		} else if (components.length==4 && components[3].equals("flameTemperature")) {
 			flameTemperature=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("flameDensity")) {
@@ -125,7 +123,7 @@ class VisualizerNavierOF extends VisualizerSyphon {
 			flameVelocity.y=msg.get(1).floatValue();
 		} else 
 			PApplet.println("Unknown NavierOF Message: "+msg.toString());
-		PApplet.println("dissipation="+dissipation+", velocityDissipation="+velocityDissipation+", gravity="+gravityX+","+gravityY);
+		PApplet.println("dissipation="+dissipation+", velocityDissipation="+velocityDissipation+", gravity="+gravity);
 		PApplet.println("flame at "+flamePosition+", vel="+flameVelocity+"enable="+flameEnable+", temp="+flameTemperature+", radius="+flameRadius+",den="+flameDensity);
 		setTO();
 	}
@@ -171,8 +169,7 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		setTOValue("velocityDissipation",Math.log10(1-velocityDissipation),"%.2f");
 		setTOValue("tempDissipation",Math.log10(1-tempDissipation),"%.2f");
 		setTOValue("pressDissipation",Math.log10(1-pressDissipation),"%.2f");
-		setTOValue("gravity/x",gravityX,"%.2f");
-		setTOValue("gravity/y",gravityY,"%.2f");
+		setTOValue("gravity",gravity.x, gravity.y,"%.2f,%.2f");
 		setTOValue("brightness",brightness,"%.2f");
 		setTOValue("saturation",saturation,"%.2f");
 		setTOValue("alpha",alpha,"%.2f");
@@ -189,7 +186,7 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		setOF("velocityDissipation",velocityDissipation);
 		setOF("temperatureDissipation",tempDissipation);
 		setOF("pressureDissipation",pressDissipation);
-		setOF("gravity",gravityX,gravityY);
+		setOF("gravity",gravity.x,gravity.y);
 		// Send flame settings to OF
 		OscMessage set = new OscMessage("/navier/flame");
 		set.add(flameEnable?1.0f:0.0f);
