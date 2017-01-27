@@ -24,6 +24,8 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		
+ private:
+		void updateFlame();
     	ofxSyphonServer mainOutputSyphonServer;
     
     // ofxFluid stuff
@@ -35,4 +37,10 @@ class ofApp : public ofBaseApp{
     
     // ofxOsc stuff
     ofxOscReceiver receiver;
+
+    // Flame parameters
+    Boolean flameEnable;
+    ofPoint flamePosition,flameVelocity;
+    ofFloatColor flameColor;
+    float flameRadius,flameTemperature,flameDensity;
 };

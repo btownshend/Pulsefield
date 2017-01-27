@@ -9,6 +9,9 @@ import processing.core.PImage;
 class VisualizerNavierOF extends VisualizerSyphon {
 	float dissipation, velocityDissipation, tempDissipation, pressDissipation, gravityX, gravityY, limitVelocity; //  Parameters of model
 	float alpha, legScale, saturation, brightness, density, temperature;  // Parameters of leg effects
+	float flameTemperature, flameDensity, flameRadius;
+	boolean flameEnable;
+	PVector flamePosition, flameVelocity, gravity;
 	int oldMouseX = 1, oldMouseY = 1;
 	private int bordercolor;
 	private double scale;
@@ -43,6 +46,12 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		temperature=10f;
 		density=1f;
 		limitVelocity = 200;
+		flamePosition = new PVector(0,0.7f);
+		flameVelocity = new PVector(0,-2);
+		flameRadius = 10f;
+		flameTemperature = 10f;
+		flameDensity = 1f;
+		flameEnable = true;
 		// iao = loadImage("IAO.jpg");
 		//background(iao);
 
@@ -100,9 +109,24 @@ class VisualizerNavierOF extends VisualizerSyphon {
 			gravityX=msg.get(0).floatValue();
 		} else if (components.length==5 && components[3].equals("gravity") && components[4].equals("y")) {
 			gravityY=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("flameTemperature")) {
+			flameTemperature=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("flameDensity")) {
+			flameDensity=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("flameRadius") ) {
+			flameRadius=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("flameEnable") ) {
+			flameEnable=msg.get(0).floatValue()>0.5;
+		} else if (components.length==4 && components[3].equals("flamePosition") ) {
+			flamePosition.x=msg.get(0).floatValue();
+			flamePosition.y=msg.get(1).floatValue();
+		} else if (components.length==4 && components[3].equals("flameVelocity") ) {
+			flameVelocity.x=msg.get(0).floatValue();
+			flameVelocity.y=msg.get(1).floatValue();
 		} else 
 			PApplet.println("Unknown NavierOF Message: "+msg.toString());
 		PApplet.println("dissipation="+dissipation+", velocityDissipation="+velocityDissipation+", gravity="+gravityX+","+gravityY);
+		PApplet.println("flame at "+flamePosition+", vel="+flameVelocity+"enable="+flameEnable+", temp="+flameTemperature+", radius="+flameRadius+",den="+flameDensity);
 		setTO();
 	}
 
@@ -113,6 +137,16 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		to.sendMessage(set);
 		set=new OscMessage("/video/navierOF/"+name+"/value");
 		set.add(String.format(fmt, value));
+		to.sendMessage(set);
+	}
+	private void setTOValue(String name, double v1, double v2, String fmt) {
+		TouchOSC to=TouchOSC.getInstance();
+		OscMessage set = new OscMessage("/video/navierOF/"+name);
+		set.add(v1);
+		set.add(v2);
+		to.sendMessage(set);
+		set=new OscMessage("/video/navierOF/"+name+"/value");
+		set.add(String.format(fmt, v1, v2));
 		to.sendMessage(set);
 	}
 	
@@ -145,11 +179,28 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		setTOValue("legscale",legScale,"%.2f");
 		setTOValue("temperature",temperature,"%.2f");
 		setTOValue("density",density,"%.2f");
+		setTOValue("flameTemperature",flameTemperature,"%.2f");
+		setTOValue("flameDensity",flameDensity,"%.2f");
+		setTOValue("flameRadius",flameRadius,"%.2f");
+		setTOValue("flameEnable",flameEnable?1.0:0.0,"%.0f");
+		setTOValue("flamePosition",flamePosition.x,flamePosition.y,"%.2f,%.2f");
+		setTOValue("flameVelocity",flameVelocity.x,flameVelocity.y,"%.2f,%.2f");
 		setOF("dissipation",dissipation);
 		setOF("velocityDissipation",velocityDissipation);
 		setOF("temperatureDissipation",tempDissipation);
 		setOF("pressureDissipation",pressDissipation);
 		setOF("gravity",gravityX,gravityY);
+		// Send flame settings to OF
+		OscMessage set = new OscMessage("/navier/flame");
+		set.add(flameEnable?1.0f:0.0f);
+		set.add(flamePosition.x);
+		set.add(flamePosition.y);
+		set.add(flameVelocity.x);
+		set.add(flameVelocity.y);
+		set.add(flameDensity);
+		set.add(flameTemperature);
+		set.add(flameRadius);
+		OFOSC.getInstance().sendMessage(set);
 	}
 	
 	public void stats() {

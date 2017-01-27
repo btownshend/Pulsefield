@@ -39,8 +39,26 @@ void ofApp::setup(){
     
     // Adding constant forces
     //
-    fluid.addConstantForce(ofPoint(width*0.5,height*0.85), ofPoint(0,-2), ofFloatColor(0.5,0.1,0.0), 10.f);
+    flameEnable=true;
+    flamePosition=ofPoint(0.0,0.7);
+    flameVelocity=ofPoint(0.0,-2.0);
+    flameColor= ofFloatColor(0.5,0.1,0.0);
+    flameRadius=10.0f;
+    flameTemperature=10.0f;
+    flameDensity=1.0f;
+    updateFlame();
+    
     ofSetWindowShape(width, height);
+}
+
+void ofApp::updateFlame() {
+    fluid.clearConstantForces();
+    if (flameEnable) {
+        fluid.addConstantForce(ofPoint(width*(flamePosition.x+1)/2,height*(flamePosition.y+1)/2), flameVelocity, flameColor, flameRadius, flameTemperature, flameDensity);
+        cout << "Flame enabled, pos=[" << flamePosition << "], vel=[" << flameVelocity << "], color=[" << flameColor << "], radius=" << flameRadius << ", temp=" << flameTemperature << ", den=" << flameDensity << endl;
+    } else
+        cout << "Flame disabled" << endl;
+    
 }
 
 //--------------------------------------------------------------
@@ -100,6 +118,17 @@ void ofApp::update(){
         } else {
             cout << "Unexpected OSC message: " << m.getAddress() << endl;
         }
+	} else if (m.getAddress()=="/navier/flame") {
+	    flameEnable=m.getArgAsFloat(0)>0.5;
+	    flamePosition=ofPoint(m.getArgAsFloat(1),m.getArgAsFloat(2));
+	    flameVelocity=ofPoint(m.getArgAsFloat(3),m.getArgAsFloat(4));
+	    flameDensity=m.getArgAsFloat(5);
+	    flameTemperature=m.getArgAsFloat(6);
+	    flameRadius=m.getArgAsFloat(7);
+	    updateFlame();
+    } else {
+        cout << "Unexpected OSC message: " << m.getAddress() << endl;
+    }
         
     }
 }
