@@ -5,6 +5,7 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PImage;
+import processing.core.PVector;
 
 class VisualizerNavierOF extends VisualizerSyphon {
 	float dissipation, velocityDissipation, tempDissipation, pressDissipation, limitVelocity; //  Parameters of model
@@ -33,8 +34,8 @@ class VisualizerNavierOF extends VisualizerSyphon {
 	VisualizerNavierOF(Tracker parent, Synth synth, String appName, String serverName) {
 		super(parent, appName, serverName);
 
-		dissipation=0.999f;
-		velocityDissipation=0.9f;
+		dissipation=0.99f;
+		velocityDissipation=0.99f;
 		pressDissipation=0.9f;
 		tempDissipation=0.99f;
 		gravity=new PVector(0f,0f);
