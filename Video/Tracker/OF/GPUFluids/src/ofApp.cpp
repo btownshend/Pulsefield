@@ -107,17 +107,18 @@ void ofApp::update(){
 //            fluid.smokeBuoyancy=m.getArgAsFloat(0);
         } else if (m.getAddress()=="/navier/dissipation") {
             fluid.dissipation=m.getArgAsFloat(0);
+            cout << "dissipation=" << fluid.dissipation << endl;
         } else if (m.getAddress()=="/navier/velocityDissipation") {
             fluid.velocityDissipation=m.getArgAsFloat(0);
+            cout << "velocity dissipation=" << fluid.velocityDissipation << endl;
         } else if (m.getAddress()=="/navier/temperatureDissipation") {
             fluid.temperatureDissipation=m.getArgAsFloat(0);
+            cout << "temperature dissipation=" << fluid.temperatureDissipation << endl;
         } else if (m.getAddress()=="/navier/pressureDissipation") {
             fluid.pressureDissipation=m.getArgAsFloat(0);
+            cout << "pressure dissipation=" << fluid.pressureDissipation << endl;
         } else if (m.getAddress()=="/navier/gravity") {
             fluid.setGravity(ofVec2f(m.getArgAsFloat(0),m.getArgAsFloat(1)));
-        } else {
-            cout << "Unexpected OSC message: " << m.getAddress() << endl;
-        }
 	} else if (m.getAddress()=="/navier/flame") {
 	    flameEnable=m.getArgAsFloat(0)>0.5;
 	    flamePosition=ofPoint(m.getArgAsFloat(1),m.getArgAsFloat(2));
