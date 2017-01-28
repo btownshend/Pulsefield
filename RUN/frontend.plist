@@ -26,6 +26,7 @@
 		<string>/Users/bst/Desktop/PF_LOGS/frontend_dbg.log</string>
 		<string>-d1</string>
 		<string>-R</string>
+		<string>/Users/bst/Desktop/PF_LOGS</string>
 	</array>
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/LIDAR/FrontEndLIDAR</string>
