@@ -8,7 +8,6 @@
 #include "findtargets.h"
 
 Background::Background() {
-    scanRes=0;
     bginit=true;
 }
 
@@ -16,6 +15,7 @@ void Background::setup(const SickIO &sick) {
     if (range[0].size() ==sick.getNumMeasurements())
 	return;
     currentRange.resize(sick.getNumMeasurements());
+    angle.resize(sick.getNumMeasurements());
     dbg("Background.setup",1) << "Setting up background vectors with " << sick.getNumMeasurements() << " entries." << std::endl;
     for (int i=0;i<NRANGES;i++) {
 	range[i].resize(sick.getNumMeasurements());
@@ -23,7 +23,6 @@ void Background::setup(const SickIO &sick) {
 	sigma[i].assign(sick.getNumMeasurements(),MEANBGSIGMA);
 	consecutiveInvisible[i].resize(sick.getNumMeasurements());
     }
-    scanRes=sick.getScanRes();
     bginit=true;
 }
 
@@ -103,6 +102,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
     // range[2] is the last value seen, not matching 0 or 1;   promoted to range[1] if its frequency passes range[1]
     float tc=UPDATETC;
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
+	angle[i]=sick.getAngleRad(i);
 	currentRange[i]=srange[i];
 	if (srange[i]<MINRANGE)
 	    continue;  // Ignore short points, not even including them in update.   That way all the bg probs are conditional on the LIDAR being able to scan the active area
@@ -260,7 +260,7 @@ mxArray *Background::convertToMX() const {
     assert(pAngle!=NULL);
     data=mxGetPr(pAngle);
     for (unsigned int i=0;i<range[0].size();i++)
-	*data++=(i-(range[0].size()-1)/2.0)*scanRes*M_PI/180;
+	*data++=angle[i];
     mxSetField(bg,0,"angle",pAngle);
 
     mxArray *pFreq = mxCreateDoubleMatrix(NRANGES,range[0].size(),mxREAL);
@@ -291,7 +291,7 @@ mxArray *Background::convertToMX() const {
 void Background::sendMessages(lo_address &addr, int scanpt) const {
     assert(scanpt>=0 && scanpt<=range[0].size());
     // Send one sample of background as scanpoint#, theta (in degress), range (in meters)
-    float angleDeg=scanRes*(scanpt-(range[0].size()-1)/2.0);
+    float angleDeg=angle[scanpt]*180/M_PI;
 
     lo_send(addr,"/pf/background","iifff",scanpt,range[0].size(),angleDeg,range[0][scanpt]/UNITSPERM,currentRange[scanpt]/UNITSPERM);
 }

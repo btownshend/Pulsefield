@@ -129,6 +129,7 @@ void World::draw(const Vis *vis) const {
      Point center=getCenter();
      cairo_translate(cr,-center.X(),-center.Y());
 
+
      if  (drawRange && vis!=NULL) {
 	 // Draw current range
 	 const SickIO *s = vis->getSick();
@@ -177,7 +178,6 @@ void World::draw(const Vis *vis) const {
      }
 
      // Draw background
-     float scanRes = bg.getScanRes()*M_PI/180;
      cairo_set_line_width(cr,1*pixel);
      for (int k=0;k<bg.numRanges();k++) {
 	 const std::vector<float> &range = bg.getRange(k);
@@ -186,7 +186,7 @@ void World::draw(const Vis *vis) const {
 	 for (unsigned int i=0;i<range.size();i++) {
 	     if (frac[i]>0.01) {
 		 Point p1,p2,p3,p4;
-		 float theta=(i-(range.size()-1)/2.0)*scanRes;
+		 float theta=bg.getAngleRad(i);
 		 float effDivergence=DIVERGENCE+EXITDIAMETER/range[i];
 		 p1.setThetaRange(theta+effDivergence/2,range[i]-2*sigma[i]);
 		 p2.setThetaRange(theta-effDivergence/2,range[i]-2*sigma[i]);

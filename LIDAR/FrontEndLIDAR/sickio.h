@@ -115,6 +115,7 @@ public:
 	
 	// Get scan index closest to angle (in degrees) 
 	int getScanAtAngle(float angle) const {
+	    angle-=coordinateRotation;
 	    while (angle>180)
 		angle-=2*180;
 	    while (angle<-180)
