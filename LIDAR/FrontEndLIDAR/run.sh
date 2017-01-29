@@ -1,7 +1,7 @@
 #!/bin/sh
 # Run frontend
 export DYLD_LIBRARY_PATH=.
-LOGDIR=~/Desktop/PFLogs
+LOGDIR=~/Desktop/PF_LOGS
 [ -d $LOGDIR ] || mkdir -p $LOGDIR
 while true
 do
