@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "9333CBD0313C7E2FBF8452282F2797D46D0BEC9F",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "9333CBD0313C7E2FBF8452282F2797D46D0BEC9F" : 9223372036854775807,
+    "7C37DBD915DC970C445B9C7545F7D25E8DF3D2BD" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "ECD8EB7C-A6E0-4962-909A-D3C9971A74FC",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "9333CBD0313C7E2FBF8452282F2797D46D0BEC9F" : "src\/",
+    "7C37DBD915DC970C445B9C7545F7D25E8DF3D2BD" : "OpenFrameworks\/ofxFluid-bst\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "GPUFluids",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Video\/Tracker\/OF\/GPUFluids\/GPUFluids.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/btownshend\/ofxFluid.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "7C37DBD915DC970C445B9C7545F7D25E8DF3D2BD"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/btownshend\/Pulsefield.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "9333CBD0313C7E2FBF8452282F2797D46D0BEC9F"
+    }
+  ]
+}
