@@ -3,8 +3,13 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     // Syphon setup
-	mainOutputSyphonServer.setName("Screen Output");
 
+	syphon[0].setName("Main");
+	syphon[1].setName("Screen");
+    syphon[2].setName("Velocity");
+    syphon[3].setName("Temperature");
+    syphon[4].setName("Pressure");
+    
     // OSC Setup
     int PORT=7713;
     std::cout << "listening for osc messages on port " << PORT << "\n";
@@ -142,6 +147,12 @@ void ofApp::update(){
     }
         
     }
+
+    syphon[0].publishTexture(&fluid.getTexture());
+    syphon[2].publishTexture(&fluid.getVelocityTexture());
+    syphon[3].publishTexture(&fluid.getTemperatureTexture());
+    syphon[4].publishTexture(&fluid.getPressureTexture());
+
 }
 
 void ofApp::saveTexture(string filename, const ofTexture &tex) {
@@ -154,7 +165,8 @@ void ofApp::saveTexture(string filename, const ofTexture &tex) {
 void ofApp::draw(){
     ofBackgroundGradient(ofColor::gray, ofColor::black, OF_GRADIENT_LINEAR);
     fluid.draw();
-    mainOutputSyphonServer.publishScreen();
+    
+    syphon[1].publishScreen();
 }
 
 //--------------------------------------------------------------

@@ -26,7 +26,7 @@ class ofApp : public ofBaseApp{
 		
  private:
 		void updateFlame();
-    	ofxSyphonServer mainOutputSyphonServer;
+    	ofxSyphonServer syphon[5];
     void saveTexture(string filename, const ofTexture &tex);
     
     // ofxFluid stuff
