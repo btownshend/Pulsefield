@@ -45,16 +45,20 @@ class Drum {
 		if (drawOutlines) {
 			g.noFill();
 			g.strokeWeight(0.05f);
-			g.stroke(255,0,0);
+			g.stroke(50);
 			g.ellipseMode(PConstants.CENTER);
 			g.ellipse(center.x,center.y,radius*2,radius*2);
 
 			g.strokeWeight(0.03f);
-			g.stroke(70);
 			g.textAlign(PConstants.CENTER,PConstants.CENTER);
 			for (NoteSpot n: noteSpots) {
+				if (n.activeFrames>0) {
+					g.stroke(0,255,0);
+					n.activeFrames--;
+				} else
+					g.stroke(70);
 				g.ellipse(n.pos.x, n.pos.y, n.radius*2, n.radius*2);
-				Visualizer.drawText(g, n.radius/2, Synth.pitchToName(n.pitch), n.pos.x, n.pos.y);
+				Visualizer.drawText(g, n.radius/2, Synth.pitchToName(n.pitch), n.pos.x, n.pos.y);			
 			}
 		}
 		g.popStyle();

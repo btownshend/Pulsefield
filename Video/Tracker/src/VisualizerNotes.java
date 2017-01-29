@@ -10,6 +10,7 @@ class NoteSpot {
 	int duration;  // in msec
 	PVector pos;
 	float radius;
+	int activeFrames;  // number of frames that this note will still be active
 	
 	NoteSpot(int pitch, int velocity, int duration, PVector pos, float radius) {
 		this.pitch=pitch;
@@ -23,6 +24,9 @@ class NoteSpot {
 		return PVector.sub(pos, tgt).mag()<=radius;
 	}
 	
+	void setActive(int frames) {
+		activeFrames=frames;
+	}
 }
 
 public class VisualizerNotes extends VisualizerDot {
