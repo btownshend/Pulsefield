@@ -18,8 +18,8 @@ void ofApp::setup(){
     ofSetFrameRate(30); // if vertical sync is off, we can go a bit fast... this caps the framerate
     ofEnableAlphaBlending();
     ofSetCircleResolution(100);
-    width = 917;
-    height = 784;
+    width = 500;
+    height = 500;
     
     // Initial Allocation
     //
