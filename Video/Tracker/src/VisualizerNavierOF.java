@@ -40,6 +40,7 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		pressDissipation=0.9f;
 		tempDissipation=0.99f;
 		gravity=new PVector(0f,0f);
+		viscosity=0.1f;
 		alpha=128f;
 		legScale=1.0f;
 		saturation=1.0f;
@@ -53,6 +54,7 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		flameTemperature = 10f;
 		flameDensity = 1f;
 		flameEnable = true;
+		iterations = 40;
 		// iao = loadImage("IAO.jpg");
 		//background(iao);
 
@@ -283,7 +285,7 @@ class VisualizerNavierOF extends VisualizerSyphon {
 				float radius=leg.getDiameterInMeters()/Tracker.getFloorSize().x*nwidth/2*legScale;
 				int c=Color.HSBtoRGB(((pos.id*17+l*127)&0xff)/255.0f,saturation,brightness);
 				
-				PApplet.println("Leg "+l+": Cell="+cellX+","+cellY+", vel="+dx+","+dy+ ", radius="+radius+", color="+PApplet.hex(c));
+				//PApplet.println("Leg "+l+": Cell="+cellX+","+cellY+", vel="+dx+","+dy+ ", radius="+radius+", color="+PApplet.hex(c));
 				dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
 				dy = (Math.abs(dy) > limitVelocity) ? Math.signum(dy) * limitVelocity : dy;
 				applyForce(cellX, cellY, dx, dy, parent.red(c), parent.green(c),parent.blue(c),alpha,radius,temperature,density);
