@@ -8,7 +8,8 @@ import processing.core.PImage;
 import processing.core.PVector;
 
 class VisualizerNavierOF extends VisualizerSyphon {
-	float dissipation, velocityDissipation, tempDissipation, pressDissipation, limitVelocity; //  Parameters of model
+	float viscosity, dissipation, velocityDissipation, tempDissipation, pressDissipation, limitVelocity; //  Parameters of model
+	int iterations;
 	float alpha, legScale, saturation, brightness, density, temperature;  // Parameters of leg effects
 	float flameTemperature, flameDensity, flameRadius;
 	boolean flameEnable;
@@ -91,6 +92,10 @@ class VisualizerNavierOF extends VisualizerSyphon {
 			tempDissipation=(float) (1-Math.pow(10f,msg.get(0).floatValue()));
 		} else if (components.length==4 && components[3].equals("pressDissipation")) {
 			pressDissipation=(float) (1-Math.pow(10f,msg.get(0).floatValue()));
+		} else if (components.length==4 && components[3].equals("iterations")) {
+			iterations=(int)msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("viscosity")) {
+			viscosity=(float) (Math.pow(10f,msg.get(0).floatValue()));
 		} else if (components.length==4 && components[3].equals("saturation")) {
 			saturation=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("brightness")) {
@@ -161,6 +166,13 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		OFOSC.getInstance().sendMessage(set);
 	}
 	
+	private void setOF(String name, int value) {
+		// Send to OF
+		OscMessage set = new OscMessage("/navier/"+name);
+		set.add(value);
+		OFOSC.getInstance().sendMessage(set);
+	}
+	
 	private void setOF(String name, double v1, double v2) {
 		// Send to OF
 		OscMessage set = new OscMessage("/navier/"+name);
@@ -171,6 +183,8 @@ class VisualizerNavierOF extends VisualizerSyphon {
 	
 	public void setTO() {
 		setTOValue("scale",scale,"%.2f");
+		setTOValue("iterations",iterations,"%.0f");
+		setTOValue("viscosity",Math.log10(viscosity),"%.2f");
 		setTOValue("dissipation",Math.log10(1-dissipation),"%.2f");
 		setTOValue("velocityDissipation",Math.log10(1-velocityDissipation),"%.2f");
 		setTOValue("tempDissipation",Math.log10(1-tempDissipation),"%.2f");
@@ -188,6 +202,8 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		setTOValue("flameEnable",flameEnable?1.0:0.0,"%.0f");
 		setTOValue("flamePosition",flamePosition.x,flamePosition.y,"%.2f,%.2f");
 		setTOValue("flameVelocity",flameVelocity.x,flameVelocity.y,"%.2f,%.2f");
+		setOF("viscosity",viscosity);
+		setOF("iterations",iterations);
 		setOF("dissipation",dissipation);
 		setOF("velocityDissipation",velocityDissipation);
 		setOF("temperatureDissipation",tempDissipation);

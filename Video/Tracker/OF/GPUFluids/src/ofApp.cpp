@@ -105,6 +105,12 @@ void ofApp::update(){
 //            fluid.scale=m.getArgAsFloat(0);
 //        } else if (m.getAddress()=="/navier/smokeBuoyancy") {
 //            fluid.smokeBuoyancy=m.getArgAsFloat(0);
+        } else if (m.getAddress()=="/navier/viscosity") {
+            fluid.viscosity=m.getArgAsFloat(0);
+            cout << "viscosity=" << fluid.viscosity << endl;
+        } else if (m.getAddress()=="/navier/iterations") {
+            fluid.numJacobiIterations=m.getArgAsInt32(0);
+            cout << "iterations=" << fluid.numJacobiIterations << endl;
         } else if (m.getAddress()=="/navier/dissipation") {
             fluid.dissipation=m.getArgAsFloat(0);
             cout << "dissipation=" << fluid.dissipation << endl;
