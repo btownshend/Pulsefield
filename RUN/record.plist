@@ -7,7 +7,7 @@
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string></string>
+		<string>.:/bin</string>
 	</dict>
 	<key>RunAtLoad</key>
 	<false/>
@@ -15,21 +15,17 @@
 	<true/>
 
 	<key>Label</key>
-	<string>com.tc.osc9998</string>
+	<string>com.tc.record</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Users/bst/Dropbox/Pulsefield/bin/oscbroadcast</string>
-		<string>-s9998</string>
-		<string>-t</string>
-		<string>osc.udp://192.168.0.100:9998</string>
-		<string>-t</string>
-		<string>osc.udp://127.0.0.1:7790</string>
+		<string>/bin/sh</string>
+		<string>/Users/bst/Dropbox/Pulsefield/OSC/record.sh</string>
 	</array>
 	<key>WorkingDirectory</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/RUN</string>
+	<string>/Users/bst/Dropbox/Pulsefield/OSC/recordOSC</string>
 	<key>StandardOutPath</key>
-	<string>/Users/bst/Desktop/PF_LOGS/osc9998_stdout.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/record_stdout.log</string>
 	<key>StandardErrorPath</key>
-	<string>/Users/bst/Desktop/PF_LOGS/osc9998_stderr.log</string>
+	<string>/Users/bst/Desktop/PF_LOGS/record_stderr.log</string>
 </dict>
 </plist>

@@ -26,6 +26,8 @@
 		<string>osc.udp://localhost:7002</string>
 		<string>-t</string>
 		<string>osc.udp://localhost:7780</string>
+		<string>-t</string>
+		<string>osc.udp://127.0.0.1:7790</string>
 	</array>
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/RUN</string>
