@@ -11,7 +11,7 @@ class Drum {
 	PImage img;
 	float radius;
 	ArrayList<NoteSpot> noteSpots; 
-	final boolean drawOutlines=false;
+	final boolean drawOutlines=true;
 	
 	Drum(PVector center, float radius, PImage img) {
 		this.center=center;
@@ -31,7 +31,7 @@ class Drum {
 		g.scale(-1f,1f);
 		float width;
 		float height;
-		if (img!=null) {
+		if (img!=null && !drawOutlines) {
 			if (img.width<img.height) {
 				width=radius*2;
 				height=width*img.height/img.width;
@@ -67,18 +67,18 @@ class Drum {
 class LeadDrum extends Drum {
 	LeadDrum(PVector pos, float radius) {
 		super(pos,radius,Tracker.theTracker.loadImage("calypso/pan.png"));
-		final float innerRadius=0.3f*radius;
+		final float innerRadius=0.25f*radius;
 		float a0=(float)Math.PI*0.29f;
 		float angleStep=(float)Math.PI*2/4;
-		float sz=radius/10;
+		float sz=radius/8;
 		addNote("E6", innerRadius, a0+0*angleStep, sz);
 		addNote("F6", innerRadius, a0+1*angleStep, sz);
 		addNote("D6", innerRadius, a0+2*angleStep, sz);
 		addNote("G6", innerRadius, a0+3*angleStep, sz);
-		final float outerRadius=0.75f*radius;
+		final float outerRadius=0.70f*radius;
 		a0=(float)(Math.PI*0.70f);
 		angleStep=(float)Math.PI*2/8;
-		sz=(float)(2*Math.PI*outerRadius/8)/2;
+		sz=(float)(2*Math.PI*outerRadius/8)/2f;
 		addNote("C5", outerRadius, a0+0*angleStep, sz);
 		addNote("A5", outerRadius, a0+1*angleStep, sz);
 		addNote("F5", outerRadius, a0+2*angleStep, sz);
@@ -100,7 +100,7 @@ public class VisualizerCalypso extends Visualizer {
 		this.synth=synth;
 		drums=new Drum[2];
 		PVector sz=Tracker.getFloorSize();
-		float dradius=sz.x/4;
+		float dradius=Math.min(sz.x,sz.y)/4;
 		drums[0]=new LeadDrum(PVector.add(Tracker.getFloorCenter(),new PVector(dradius,dradius/2)),dradius);
 		drums[1]=new LeadDrum(PVector.add(Tracker.getFloorCenter(),new PVector(-dradius,-dradius/2)),dradius);
 	}
@@ -138,6 +138,7 @@ public class VisualizerCalypso extends Visualizer {
 								// New pitch, trigger it
 								PApplet.println("Play note "+noteSpot.pitch+", vel="+noteSpot.velocity+", dur="+noteSpot.duration);
 								synth.play(ps.id, noteSpot.pitch, noteSpot.velocity, noteSpot.duration, ps.channel);
+								noteSpot.setActive((int)(noteSpot.duration*parent.frameRate/1000));
 							}
 						}
 					}
