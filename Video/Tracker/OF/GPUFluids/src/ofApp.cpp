@@ -119,6 +119,8 @@ void ofApp::update(){
             cout << "pressure dissipation=" << fluid.pressureDissipation << endl;
         } else if (m.getAddress()=="/navier/gravity") {
             fluid.setGravity(ofVec2f(m.getArgAsFloat(0),m.getArgAsFloat(1)));
+        } else if (m.getAddress()=="/navier/capture") {
+            saveTexture("/tmp/pingpong.tif",fluid.getTexture());
 	} else if (m.getAddress()=="/navier/flame") {
 	    flameEnable=m.getArgAsFloat(0)>0.5;
 	    flamePosition=ofPoint(m.getArgAsFloat(1),m.getArgAsFloat(2));
@@ -134,6 +136,12 @@ void ofApp::update(){
     }
 }
 
+void ofApp::saveTexture(string filename, const ofTexture &tex) {
+    ofPixels pixels;  // Converts to 8-bit from 32F texture format
+    tex.readToPixels(pixels);
+    ofSaveImage(pixels,filename);
+    cout << "Saved texture to " << filename << endl;
+}
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofBackgroundGradient(ofColor::gray, ofColor::black, OF_GRADIENT_LINEAR);

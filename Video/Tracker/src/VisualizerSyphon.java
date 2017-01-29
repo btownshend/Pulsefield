@@ -10,6 +10,7 @@ public class VisualizerSyphon extends VisualizerDot {
 	PGraphics canvas=null;
 	String appName, serverName;
 	boolean wasActive=false;
+	boolean captureNextFrame=false;
 	
 	VisualizerSyphon(PApplet parent, String appName, String serverName) {
 		super(parent);
@@ -69,6 +70,12 @@ public class VisualizerSyphon extends VisualizerDot {
 	    		return;
 	    	}
 			canvas=client.getGraphics(canvas);
+			if (captureNextFrame) {
+				String filename=new String("/tmp/canvas.tif");
+				PApplet.println("Saved frame in "+filename);
+				canvas.save(filename);
+				captureNextFrame=false;
+			}
 			if (!wasActive || canvas.width!=oldWidth || canvas.height!=oldHeight)
 				PApplet.println("Syphon canvas size now "+canvas.width+"x"+canvas.height+"; target size="+g.width+"x"+g.height);
 			g.beginDraw();  // beginDraw resets the matrix
