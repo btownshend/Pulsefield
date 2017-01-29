@@ -122,6 +122,8 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		} else if (components.length==4 && components[3].equals("flameVelocity") ) {
 			flameVelocity.x=msg.get(0).floatValue();
 			flameVelocity.y=msg.get(1).floatValue();
+		} else if (components.length==4 && components[3].equals("quit") ) {
+			setOF("quit",1);  // Make OF implementation exit
 		} else if (components.length==4 && components[3].equals("capture") ) {
 			setOF("capture",1);  // Make OF implementation exit
 			captureNextFrame=true;

@@ -121,6 +121,8 @@ void ofApp::update(){
             fluid.setGravity(ofVec2f(m.getArgAsFloat(0),m.getArgAsFloat(1)));
         } else if (m.getAddress()=="/navier/capture") {
             saveTexture("/tmp/pingpong.tif",fluid.getTexture());
+        } else if (m.getAddress()=="/navier/quit") {
+            ofExit();
 	} else if (m.getAddress()=="/navier/flame") {
 	    flameEnable=m.getArgAsFloat(0)>0.5;
 	    flamePosition=ofPoint(m.getArgAsFloat(1),m.getArgAsFloat(2));
