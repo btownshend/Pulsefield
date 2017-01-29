@@ -129,8 +129,10 @@ class VisualizerNavierOF extends VisualizerSyphon {
 			flameVelocity.y=msg.get(1).floatValue();
 		} else if (components.length==4 && components[3].equals("quit") ) {
 			setOF("quit",1);  // Make OF implementation exit
+		} else if (components.length==4 && components[3].equals("clear") ) {
+			setOF("clear",1);  // Clear frame buffers
 		} else if (components.length==4 && components[3].equals("capture") ) {
-			setOF("capture",1);  // Make OF implementation exit
+			setOF("capture",1);  // Capture a snapshot on both sides of syphon
 			captureNextFrame=true;
 		} else 
 			PApplet.println("Unknown NavierOF Message: "+msg.toString());
