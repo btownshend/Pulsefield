@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Enabled</key>
+	<false/>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string></string>
+	</dict>
+	<key>RunAtLoad</key>
+	<false/>
+	<key>KeepAlive</key>
+	<true/>
+
+	<key>Label</key>
+	<string>com.tc.osc9998</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/bst/Dropbox/Pulsefield/bin/oscbroadcast</string>
+		<string>-s9998</string>
+		<string>-t</string>
+		<string>osc.udp://192.168.0.165:9998</string>
+		<string>-t</string>
+		<string>osc.udp://127.0.0.1:7790</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>/Users/bst/Dropbox/Pulsefield/src/RUN</string>
+	<key>StandardOutPath</key>
+	<string>/Users/bst/Desktop/PF_LOGS/osc9998_stdout.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/bst/Desktop/PF_LOGS/osc9998_stderr.log</string>
+</dict>
+</plist>
