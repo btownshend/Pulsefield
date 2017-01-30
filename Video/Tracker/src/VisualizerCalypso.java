@@ -78,7 +78,7 @@ class LeadDrum extends Drum {
 		final float outerRadius=0.70f*radius;
 		a0=(float)(Math.PI*0.70f);
 		angleStep=(float)Math.PI*2/8;
-		sz=(float)(2*Math.PI*outerRadius/8)/2f;
+		sz=(float)(2*Math.PI*outerRadius/8)/2.1f;
 		addNote("C5", outerRadius, a0+0*angleStep, sz);
 		addNote("A5", outerRadius, a0+1*angleStep, sz);
 		addNote("F5", outerRadius, a0+2*angleStep, sz);
@@ -101,8 +101,8 @@ public class VisualizerCalypso extends Visualizer {
 		drums=new Drum[2];
 		PVector sz=Tracker.getFloorSize();
 		float dradius=Math.min(sz.x,sz.y)/4;
-		drums[0]=new LeadDrum(PVector.add(Tracker.getFloorCenter(),new PVector(dradius,dradius/2)),dradius);
-		drums[1]=new LeadDrum(PVector.add(Tracker.getFloorCenter(),new PVector(-dradius,-dradius/2)),dradius);
+		drums[0]=new LeadDrum(PVector.add(Tracker.getFloorCenter(),new PVector(dradius*0.9f,dradius*0.6f)),dradius*0.9f);
+		drums[1]=new LeadDrum(PVector.add(Tracker.getFloorCenter(),new PVector(-dradius*0.9f,-dradius*0.6f)),dradius*0.9f);
 	}
 
 	@Override
