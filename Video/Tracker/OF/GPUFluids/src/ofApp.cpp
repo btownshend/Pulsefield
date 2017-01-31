@@ -3,9 +3,9 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     // Syphon setup
-
-	syphon[0].setName("Main");
-	syphon[1].setName("Screen");
+    
+    syphon[0].setName("Main");
+    syphon[1].setName("Screen");
     syphon[2].setName("Velocity");
     syphon[3].setName("Temperature");
     syphon[4].setName("Pressure");
@@ -94,7 +94,7 @@ void ofApp::update(){
             // both the arguments are int32's
             int cellX = m.getArgAsInt32( 0 );
             int cellY = m.getArgAsInt32( 1 );
-            float dX = m.getArgAsFloat(2);
+            float dX = m.getArgAsFloat(2);  // Velocity in pixels/sec
             float dY = m.getArgAsFloat(3);
             float red = m.getArgAsFloat(4);
             float green = m.getArgAsFloat(5);
@@ -105,8 +105,6 @@ void ofApp::update(){
             float den=m.getArgAsFloat(10);
             cout << "(" << cellX << "," << cellY << ") v=(" << dX << "," << dY << ")" << ", col=(" << red << "," << green << "," << blue << "," << alpha << ")" << " radius=" << radius << ", temp=" << temp << ", den=" << den << endl;
             ofPoint m = ofPoint(cellX, cellY);
-//        } else if (m.getAddress()=="/navier/scale") {
-//            fluid.scale=m.getArgAsFloat(0);
             ofPoint d = ofPoint(dX, dY)/ofGetFrameRate();  // Velocity in pixels/frame
             pendingForces.push_back(punctualForce(m, d, ofFloatColor(red,green,blue,alpha),radius,temp,den));
         } else if (m.getAddress()=="/navier/updateForces") {
@@ -210,7 +208,8 @@ void ofApp::update(){
     syphon[2].publishTexture(&fluid.getVelocityTexture());
     syphon[3].publishTexture(&fluid.getTemperatureTexture());
     syphon[4].publishTexture(&fluid.getPressureTexture());
-
+    
+    
 }
 
 void ofApp::saveTexture(string filename, const ofTexture &tex) {
@@ -251,50 +250,50 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseEntered(int x, int y){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseExited(int x, int y){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::gotMessage(ofMessage msg){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
+    
 }
