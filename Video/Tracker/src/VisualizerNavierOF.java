@@ -192,6 +192,7 @@ class NavierOFSettings {
 		setTOValue("legscale",legScale,"%.2f");
 		setTOValue("temperature",temperature,"%.2f");
 		setTOValue("density",density,"%.2f");
+		setTOValue("multicolor",multiColor?1.0f:0.0f,"%.0f");
 		setTOValue("flameTemperature",flameTemperature,"%.2f");
 		setTOValue("flameDensity",flameDensity,"%.2f");
 		setTOValue("flameRadius",flameRadius,"%.2f");
@@ -222,6 +223,8 @@ class NavierOFSettings {
 		set.add(flameDensity);
 		set.add(flameTemperature);
 		set.add(flameRadius);
+		OFOSC.getInstance().sendMessage(set);
+		
 		// Send smoke settings
 		set = new OscMessage("/navier/smoke");
 		set.add(smokeEnable?1.0f:0.0f);
