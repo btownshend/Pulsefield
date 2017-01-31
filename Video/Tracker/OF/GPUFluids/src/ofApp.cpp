@@ -47,7 +47,7 @@ void ofApp::setup(){
     flameEnable=true;
     flamePosition=ofPoint(0.0,0.7);
     flameVelocity=ofPoint(0.0,-2.0);
-    flameColor= ofFloatColor(0.5,0.1,0.0);
+    flameColor= ofFloatColor(0.5,0.1,0.0,1.0);
     flameRadius=10.0f;
     flameTemperature=10.0f;
     flameDensity=1.0f;
@@ -74,7 +74,9 @@ void ofApp::update(){
     oldM = m;
     ofPoint c = ofPoint(640*0.5, 480*0.5) - m;
     c.normalize();
-    fluid.addTemporalForce(m, d, ofFloatColor(c.x,c.y,0.5)*sin(ofGetElapsedTimef()),3.0f);
+    ofFloatColor col(c.x*sin(ofGetElapsedTimef()),c.y*sin(ofGetElapsedTimef()),0.5f,0.1f);
+    cout << "mouse d=" << d << endl;
+    fluid.addTemporalForce(m, d, col,10.0f);
     
     //  Update
     //
@@ -101,7 +103,7 @@ void ofApp::update(){
             float radius = m.getArgAsFloat(8);
             float temp = m.getArgAsFloat(9);
             float den=m.getArgAsFloat(10);
-            cout << "(" << cellX << "," << cellY << ") v=(" << dX << "," << dY << ")" << ", col=(" << red << "," << green << "," << blue << ")" << " radius=" << radius << ", temp=" << temp << ", den=" << den << endl;
+            cout << "(" << cellX << "," << cellY << ") v=(" << dX << "," << dY << ")" << ", col=(" << red << "," << green << "," << blue << "," << alpha << ")" << " radius=" << radius << ", temp=" << temp << ", den=" << den << endl;
             ofPoint m = ofPoint(cellX, cellY);
 //        } else if (m.getAddress()=="/navier/scale") {
 //            fluid.scale=m.getArgAsFloat(0);
