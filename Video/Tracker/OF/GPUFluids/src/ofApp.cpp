@@ -60,10 +60,7 @@ void ofApp::setup(){
 void ofApp::updateFlame() {
     if (flameEnable) {
         pendingForces.push_back(punctualForce(ofPoint(width*(flamePosition.x+1)/2,height*(flamePosition.y+1)/2), flameVelocity, flameColor, flameRadius, flameTemperature, flameDensity));
-        cout << "Flame enabled, pos=[" << flamePosition << "], vel=[" << flameVelocity << "], color=[" << flameColor << "], radius=" << flameRadius << ", temp=" << flameTemperature << ", den=" << flameDensity << endl;
-    } else
-        cout << "Flame disabled" << endl;
-    
+    }
 }
 
 //--------------------------------------------------------------
@@ -203,6 +200,10 @@ void ofApp::update(){
                 flameDensity=m.getArgAsFloat(5);
                 flameTemperature=m.getArgAsFloat(6);
                 flameRadius=m.getArgAsFloat(7);
+                if (flameEnable) {
+                    cout << "Flame enabled, pos=[" << flamePosition << "], vel=[" << flameVelocity << "], color=[" << flameColor << "], radius=" << flameRadius << ", temp=" << flameTemperature << ", den=" << flameDensity << endl;
+                } else
+                    cout << "Flame disabled" << endl;
             }
         } else {
             cout << "Unexpected OSC message: " << m.getAddress() << endl;
