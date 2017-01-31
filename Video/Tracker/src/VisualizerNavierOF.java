@@ -114,8 +114,8 @@ class NavierOFSettings {
 		} else if (components.length==4 && components[3].equals("gravityClear") ) {
 			gravity.x=0f; gravity.y=0f;
 		} else if (components.length==4 && components[3].equals("gravity") ) {
-			gravity.x=msg.get(0).floatValue();
-			gravity.y=msg.get(1).floatValue();
+			gravity.y=msg.get(0).floatValue();
+			gravity.x=msg.get(1).floatValue();
 		} else if (components.length==4 && components[3].equals("flameTemperature")) {
 			flameTemperature=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("flameDensity")) {
@@ -125,11 +125,11 @@ class NavierOFSettings {
 		} else if (components.length==4 && components[3].equals("flameEnable") ) {
 			flameEnable=msg.get(0).floatValue()>0.5;
 		} else if (components.length==4 && components[3].equals("flamePosition") ) {
-			flamePosition.x=msg.get(0).floatValue();
-			flamePosition.y=msg.get(1).floatValue();
+			flamePosition.y=msg.get(0).floatValue();
+			flamePosition.x=msg.get(1).floatValue();
 		} else if (components.length==4 && components[3].equals("flameVelocity") ) {
-			flameVelocity.x=msg.get(0).floatValue();
-			flameVelocity.y=msg.get(1).floatValue();
+			flameVelocity.y=msg.get(0).floatValue();
+			flameVelocity.x=msg.get(1).floatValue();
 		} else if (components.length==5 && components[3].equals("smoke")) {
 			if (components[4].equals("buoyancy"))
 				smokeBuoyancy=msg.get(0).floatValue();
