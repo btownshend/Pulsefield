@@ -18,6 +18,7 @@ class NavierOFSettings {
 	float alpha, legScale, saturation, brightness, density, temperature;  // Parameters of leg effects
 	float flameTemperature, flameDensity, flameRadius;
 	boolean flameEnable;
+	boolean multiColor;
 	PVector flamePosition, flameVelocity, gravity;
 
 	NavierOFSettings(int _index) {
@@ -47,6 +48,7 @@ class NavierOFSettings {
 		flameDensity = 1f;
 		flameEnable = true;
 		iterations = 40;
+		multiColor = true;
 	}
 	public void updateOF() {
 		;
@@ -107,6 +109,8 @@ class NavierOFSettings {
 			temperature=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("density")) {
 			density=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("multicolor")) {
+			multiColor=msg.get(0).floatValue()>0.5f;
 		} else if (components.length==4 && components[3].equals("gravityClear") ) {
 			gravity.x=0f; gravity.y=0f;
 		} else if (components.length==4 && components[3].equals("gravity") ) {
@@ -375,7 +379,14 @@ class NavierOFSettings {
 					double dx=leg.getNormalizedVelocity().x*nwidth/2; // In pixels/sec
 					double dy=leg.getNormalizedVelocity().y*nheight/2;
 					float radius=leg.getDiameterInMeters()/Tracker.getFloorSize().x*nwidth/2*settings[currentSettings].legScale;
-					int c=Color.HSBtoRGB(((pos.id*17+l*127)&0xff)/255.0f,settings[currentSettings].saturation,settings[currentSettings].brightness);
+					int c;
+					if (settings[currentSettings].multiColor) {
+						//  c=parent.color((int)(128+127*Math.sin(parent.frameCount/101f)),(int)(128+127*Math.sin(parent.frameCount/93f)),(int)(128+127*Math.sin(parent.frameCount/107f)));
+						float hue=(float)(pos.id*17+l*20+128*Math.sin(parent.frameCount/101f));
+						hue=((int)hue%256)/255f;
+						c=Color.HSBtoRGB(hue,settings[currentSettings].saturation,settings[currentSettings].brightness);
+					} else
+						c=Color.HSBtoRGB(((pos.id*17+l*127)&0xff)/255.0f,settings[currentSettings].saturation,settings[currentSettings].brightness);
 
 					//PApplet.println("Leg "+l+": Cell="+cellX+","+cellY+", vel="+dx+","+dy+ ", radius="+radius+", color="+PApplet.hex(c));
 					dx = (Math.abs(dx) > settings[currentSettings].limitVelocity) ? Math.signum(dx) * settings[currentSettings].limitVelocity : dx;
