@@ -167,7 +167,21 @@ void ofApp::update(){
                 cout << "gravity=" << fluid.getGravity() << endl;
             }
         } else if (m.getAddress()=="/navier/capture") {
-            saveTexture("/tmp/pingpong.tif",fluid.getTexture());
+            string filename=m.getArgAsString(0);
+            saveTexture(filename+"-den.tif",fluid.getTexture());
+            saveTexture(filename+"-vel.tif",fluid.getVelocityTexture());
+            saveTexture(filename+"-temp.tif",fluid.getTemperatureTexture());
+            saveTexture(filename+"-press.tif",fluid.getPressureTexture());
+            cout << "Saved textures to " << filename << endl;
+        } else if (m.getAddress()=="/navier/setsize") {
+            int width=m.getArgAsInt32(0);
+            int height=m.getArgAsInt32(1);
+            float scale=m.getArgAsFloat(2);
+            if (width*scale!=fluid.getWidth() || height*scale!=fluid.getHeight() || scale!=fluid.scale) {
+                cout << "Resetting size to " << width << "x" << height << " with scale=" << scale << endl;
+                fluid.allocate(width*scale,height*scale,scale,true);
+                ofSetWindowShape(width, height);
+            }
         } else if (m.getAddress()=="/navier/clear") {
             fluid.clear();
         } else if (m.getAddress()=="/navier/quit") {
@@ -191,7 +205,7 @@ void ofApp::update(){
         }
         
     }
-
+    
     syphon[0].publishTexture(&fluid.getTexture());
     syphon[2].publishTexture(&fluid.getVelocityTexture());
     syphon[3].publishTexture(&fluid.getTemperatureTexture());
@@ -200,9 +214,19 @@ void ofApp::update(){
 }
 
 void ofApp::saveTexture(string filename, const ofTexture &tex) {
-    ofPixels pixels;  // Converts to 8-bit from 32F texture format
-    tex.readToPixels(pixels);
-    ofSaveImage(pixels,filename);
+    const ofTextureData &td=tex.getTextureData();
+    if (td.glInternalFormat==GL_RGBA) {
+        ofPixels pixels;  // Converts to 8-bit from 32F texture format
+        tex.readToPixels(pixels);
+        ofSaveImage(pixels,filename);
+    } else if (td.glInternalFormat==GL_RGBA32F) {
+        ofFloatPixels pixels;  // Converts to 8-bit from 32F texture format
+        tex.readToPixels(pixels);
+        ofSaveImage(pixels,filename);
+    } else {
+        cout << "ofApp::saveTexture - " << filename << ": unrecognized internal format 0x" << hex << td.glInternalFormat << dec << endl;
+        return;
+    }
     cout << "Saved texture to " << filename << endl;
 }
 //--------------------------------------------------------------
