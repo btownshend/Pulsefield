@@ -23,7 +23,7 @@ void ofApp::setup(){
     
     // Initial Allocation
     //
-    fluid.allocate(width, height, 0.5);
+    fluid.allocate(width, height, 0.5, true);
     
     // Seting the gravity set up & injecting the background image
     //
