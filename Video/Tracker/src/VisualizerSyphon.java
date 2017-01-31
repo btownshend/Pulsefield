@@ -21,8 +21,12 @@ public class VisualizerSyphon extends Visualizer {
 	@Override
 	public void start() {
 		super.start();
-
-		client=new SyphonClient(Tracker.theTracker,appName,serverName);
+		client=initClient(appName,serverName);
+		wasActive=true;
+	}
+	
+	public SyphonClient initClient(String appName,String serverName) {
+		SyphonClient client=new SyphonClient(Tracker.theTracker,appName,serverName);
 		if (client==null) {
 			PApplet.println("Unable to connect to syphon server ("+appName+", "+serverName+")");
 			PApplet.println("Available servers:");
@@ -32,7 +36,7 @@ public class VisualizerSyphon extends Visualizer {
 			}
 		} else
 			PApplet.println("Initialized syphon client ("+appName+", "+serverName+")");
-		wasActive=true;
+		return client;
 	}
 	
 	@Override
