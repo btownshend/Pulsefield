@@ -1,5 +1,6 @@
 import java.awt.Color;
 
+import codeanticode.syphon.SyphonClient;
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -18,7 +19,6 @@ class NavierOFSettings {
 	float flameTemperature, flameDensity, flameRadius;
 	boolean flameEnable;
 	PVector flamePosition, flameVelocity, gravity;
-	int syphonTexture;  // Which texture to display 0:normal,1:vel,2:temp,3:press
 
 	NavierOFSettings(int _index) {
 		index=_index;
@@ -47,7 +47,6 @@ class NavierOFSettings {
 		flameDensity = 1f;
 		flameEnable = true;
 		iterations = 40;
-		syphonTexture = 0;
 	}
 	public void updateOF() {
 		;
@@ -136,10 +135,6 @@ class NavierOFSettings {
 				smokeEnable=msg.get(0).floatValue()>0.5f;
 			else
 				PApplet.println("Unknown NavierOF Message: "+msg.toString());
-		} else if (components.length==6 && components[3].equals("texselect") ) {
-			if (msg.get(0).floatValue()>0.5f)
-				syphonTexture=Integer.valueOf(components[5])-1;
-			PApplet.println("syphon texture="+syphonTexture);
 		} else if (components.length==4 && components[3].equals("savepreset") ) {
 			if (msg.get(0).floatValue() > 0.5f)
 			 PApplet.println("*** saving preset not implemented");
@@ -200,7 +195,6 @@ class NavierOFSettings {
 		setTOValue("smoke/weight",smokeWeight,"%.2f");
 		setTOValue("smoke/enable",smokeEnable?1.0:0.0,"%.0f");
 		setTOValue("preset/"+Integer.toString(8-index)+"/1",1.0f,"%.0f");
-		setTOValue("texselect/1/"+Integer.toString(syphonTexture+1),1.0f,"%.0f");
 		setOF("ambient",ambient);
 		setOF("viscosity",viscosity);
 		setOF("diffusion",diffusion);
@@ -232,6 +226,9 @@ class NavierOFSettings {
 
 	class VisualizerNavierOF extends VisualizerSyphon {
 		NavierOFSettings[] settings;
+		SyphonClient clients[];
+		int syphonTexture;  // Which texture to display 0:normal,1:vel,2:temp,3:press
+
 		int currentSettings;
 		int oldMouseX = 1, oldMouseY = 1;
 		private int bordercolor;
@@ -250,9 +247,8 @@ class NavierOFSettings {
 		//MusicVisLaser mvl;
 		final int downSample=2;   // amount to downsample fluid image
 
-		VisualizerNavierOF(Tracker parent, Synth synth, String appName, String serverName) {
-			super(parent, appName, serverName);
-
+		VisualizerNavierOF(Tracker parent, Synth synth, String appName) {
+			super(parent, appName, "Main");
 
 			// iao = loadImage("IAO.jpg");
 			//background(iao);
@@ -271,6 +267,13 @@ class NavierOFSettings {
 		@Override
 		public void start() {
 			super.start();
+			// Client contains main window (density), setup array of additional clients
+			clients=new SyphonClient[4];
+			clients[0]=client;
+			clients[1]=initClient(appName,"Velocity");
+			clients[2]=initClient(appName,"Temperature");
+			clients[3]=initClient(appName,"Pressure");
+			syphonTexture = 0;
 			Laser.getInstance().setFlag("body",0.0f);
 			Laser.getInstance().setFlag("legs",0.0f);
 			Ableton.getInstance().setTrackSet("Navier");
@@ -278,9 +281,13 @@ class NavierOFSettings {
 
 		@Override
 		public void stop() {
-			super.stop();
+			super.stop();  // Stops clients[0]
+			clients[0]=null;
+			for (int i=1;i<clients.length;i++) {
+				clients[i].stop();
+				clients[i]=null;
+			}
 		}
-
 
 		public void handleMessage(OscMessage msg) {
 			PApplet.println("Navier message: "+msg.toString());
@@ -297,10 +304,14 @@ class NavierOFSettings {
 				if (newSetting>=0 && newSetting <settings.length && msg.get(0).floatValue()>0.5f)
 					currentSettings=newSetting;
 				PApplet.println("using settings "+currentSettings);
+			} else if (components.length==6 && components[3].equals("texselect") ) {
+				if (msg.get(0).floatValue()>0.5f)
+					syphonTexture=Integer.valueOf(components[5])-1;
+				PApplet.println("syphon texture="+syphonTexture);
 			} else if (currentSettings>0)  // Not defaults
 				settings[currentSettings].handleMessage(msg);
-			
 			settings[currentSettings].setTO();
+			settings[currentSettings].setTOValue("texselect/1/"+Integer.toString(syphonTexture+1),1.0f,"%.0f");
 		}
 
 
@@ -338,6 +349,9 @@ class NavierOFSettings {
 		@Override
 		public void update(PApplet parent, People p) {
 			Ableton.getInstance().updateMacros(p);
+			// Make sure VisualizerSyphon client points to correct syphon client
+			client=clients[syphonTexture];
+			assert(client!=null);
 			for (Person pos: p.pmap.values()) {
 				//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
 				if (pos.isMoving())
