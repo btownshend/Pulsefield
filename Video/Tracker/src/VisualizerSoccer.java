@@ -105,23 +105,26 @@ class Ball {
 }
 
 class Goal {
-	PVector pos;
+	PVector pos, dir; // Dir is direction from front of goal to back
 	float width, depth;
 	PImage img;
 	PShape outline;
 	boolean scoreDelay=false;  // True immediately after a goal
 	
-	Goal(PVector pos, float width, float depth) {
-		this.pos=pos;
-		this.width=width;
-		this.depth=depth;
+	Goal() {
 		this.img=Tracker.theTracker.loadImage("soccer/goal.jpg");
 		// Vector pointing into goal
 	}
 	
+	public void setpos(PVector pos, PVector dir, float width, float depth) {
+		this.pos=pos;
+		this.dir=dir;
+		this.width=width;
+		this.depth=depth;
+	}
+	
 	void draw(PGraphics g) {
-		PVector aim=PVector.sub(pos,Tracker.getFloorCenter());
-		aim.normalize();
+		PVector aim=dir;
 		
 		g.pushMatrix();
 		g.translate(pos.x, pos.y);
@@ -141,12 +144,11 @@ class Goal {
 		outline=g.createShape();
 		outline.noFill();
 		outline.beginShape();
-		outline.vertex(pos.x-depth/2*aim.x-width/2*aim.y, pos.y-depth/2*aim.y-width/2*aim.x);
-		outline.vertex(pos.x+depth/2*aim.x-width/2*aim.y, pos.y+depth/2*aim.y-width/2*aim.x);
-		outline.vertex(pos.x+depth/2*aim.x+width/2*aim.y, pos.y+depth/2*aim.y+width/2*aim.x);
-		outline.vertex(pos.x-depth/2*aim.x+width/2*aim.y, pos.y-depth/2*aim.y+width/2*aim.x);
+		outline.vertex(pos.x-depth/2*aim.x+width/2*aim.y, pos.y-depth/2*aim.y-width/2*aim.x);
+		outline.vertex(pos.x+depth/2*aim.x+width/2*aim.y, pos.y+depth/2*aim.y-width/2*aim.x);
+		outline.vertex(pos.x+depth/2*aim.x-width/2*aim.y, pos.y+depth/2*aim.y+width/2*aim.x);
+		outline.vertex(pos.x-depth/2*aim.x-width/2*aim.y, pos.y-depth/2*aim.y+width/2*aim.x);
 		outline.endShape();
-
 		g.shape(outline);
 	}
 	
@@ -168,7 +170,7 @@ class Goal {
 	// return true if this counts as a goal
 	boolean collisionDetect(Ball b) {
 		if (outline==null) {
-			//PApplet.println("no outline");
+			PApplet.println("no outline");
 			return false;
 		}
 			
@@ -183,8 +185,9 @@ class Goal {
 				float dist2=pt2line(p1,p2,PVector.add(b.position, PVector.mult(b.velocity,1e-5f)));
 				// Check if its getting closer
 				if (dist2<dist) {
+					boolean frontSide=PVector.dot(dir, b.velocity)>0;
 					PApplet.println("ball at "+b.position+" hit goal line "+i+" between "+p1+" and "+p2);
-					PApplet.println("dist="+dist+", dist2="+dist);
+					PApplet.println("dist="+dist+", dist2="+dist+", frontside="+frontSide);
 					// Resolve velocity into parallel and perp components
 					PVector parallel=PVector.sub(p2,p1);
 					parallel.normalize();
@@ -193,9 +196,9 @@ class Goal {
 					PApplet.println("vel="+b.velocity+"="+parallel+"(para) + "+perp);
 					b.velocity = PVector.sub(parallel,perp);  // Bounce
 					b.impactSound(2);
-					if (i==1 && !scoreDelay) {
+					if (i==1 && !scoreDelay && frontSide) {
 						// Through the goal line
-						PApplet.println("Goal!");
+						PApplet.println("Goal! dot(aim,vel) = ",PVector.dot(dir, b.velocity));
 						scoreDelay=true;
 						b.impactSound(3);
 						return true;
@@ -215,14 +218,13 @@ public class VisualizerSoccer extends VisualizerDot {
 	Ball ball;
 	Goal goals[];
 	int score[];
+	boolean goalsAtEnds = true;
 	
 	VisualizerSoccer(PApplet parent) {
 		super(parent);
 		goals=new Goal[2];
-		goals[0]=new Goal(new PVector(Tracker.getFloorCenter().x+Tracker.getFloorSize().x*0.5f-0.25f,Tracker.getFloorCenter().y),
-				1.0f,0.25f);
-		goals[1]=new Goal(new PVector(Tracker.getFloorCenter().x-Tracker.getFloorSize().x*0.5f+0.25f,Tracker.getFloorCenter().y),
-				1.0f,0.25f);
+		for (int i=0;i<goals.length;i++)
+			goals[i]=new Goal();
 		score=new int[2];
 	}
 
@@ -256,8 +258,9 @@ public class VisualizerSoccer extends VisualizerDot {
 		for (Person ps: p.pmap.values()) {  
 			ball.collisionDetect(ps);
 		}
+
 		for (int i=0;i<goals.length;i++) {
-			if (goals[i].collisionDetect(ball)) {
+			if (goals[i]!=null && goals[i].collisionDetect(ball)) {
 				score[i]+=1;
 			}
 	
@@ -270,12 +273,30 @@ public class VisualizerSoccer extends VisualizerDot {
 		if (p.pmap.isEmpty())
 			return;
 		
+		if (goalsAtEnds) {
+			goals[0].setpos(new PVector(Tracker.getFloorCenter().x+1.0f,Tracker.getFloorCenter().y+Tracker.getFloorSize().y*0.5f-0.5f),
+					new PVector(0f,1.0f),
+					1.0f,0.25f);
+			goals[1].setpos(new PVector(Tracker.getFloorCenter().x-1.0f,Tracker.getFloorCenter().y-Tracker.getFloorSize().y*0.5f+0.5f),
+					new PVector(0f,-1.0f),
+					1.0f,0.25f);
+		} else {
+			goals[0].setpos(new PVector(Tracker.getFloorCenter().x+Tracker.getFloorSize().x*0.5f-0.25f,Tracker.getFloorCenter().y),
+					new PVector(1.0f,0f),
+					1.0f,0.25f);
+			goals[1].setpos(new PVector(Tracker.getFloorCenter().x-Tracker.getFloorSize().x*0.5f+0.25f,Tracker.getFloorCenter().y),
+					new PVector(0f,1.0f),
+					1.0f,0.25f);
+		}
+		
 		for (Goal goal: goals)
-			goal.draw(g);
+			if (goal != null)
+				goal.draw(g);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		g.fill(70);
 		for (int i=0;i<score.length;i++) {
-			drawText(g,0.2f,String.format("%d",score[i]), goals[i].pos.x, goals[i].pos.y+goals[i].width*0.6f);
+			if (goals[i]!=null)
+				drawText(g,0.2f,String.format("%d",score[i]), goals[i].pos.x, goals[i].pos.y+goals[i].width*0.6f);
 		}
 		if (ball!=null)
 			ball.draw(g);
