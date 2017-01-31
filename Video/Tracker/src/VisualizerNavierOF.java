@@ -32,7 +32,7 @@ class NavierOFSettings {
 		velocityDissipation=0.99f;
 		pressDissipation=0.9f;
 		tempDissipation=0.99f;
-		gravity=new PVector(0f,0f);
+		gravity=new PVector(0f,-0.98f);
 		viscosity=0.1f;
 		alpha=1.0f;
 		legScale=1.0f;
@@ -240,8 +240,8 @@ class NavierOFSettings {
 		SyphonClient clients[];
 		int syphonTexture;  // Which texture to display 0:normal,1:vel,2:temp,3:press
 
+		float canvasScale=0.5f;   // Relative size of OF canvas to local floor image
 		int currentSettings;
-		int oldMouseX = 1, oldMouseY = 1;
 		private int bordercolor;
 		PImage buffer=null;
 		PImage iao;
@@ -348,8 +348,9 @@ class NavierOFSettings {
 			OscMessage msg = new OscMessage("/navier/force");
 			msg.add(cellX);
 			msg.add(cellY);
-			msg.add((float)dx);
-			msg.add((float)dy);
+			float vscale=20f;
+			msg.add((float)dx*vscale);
+			msg.add((float)dy*vscale);
 			msg.add(red/255.0f);
 			msg.add(green/255.0f);
 			msg.add(blue/255.0f);
