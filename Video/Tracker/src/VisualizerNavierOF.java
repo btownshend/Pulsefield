@@ -424,8 +424,8 @@ class NavierOFSettings {
 						//  c=parent.color((int)(128+127*Math.sin(parent.frameCount/101f)),(int)(128+127*Math.sin(parent.frameCount/93f)),(int)(128+127*Math.sin(parent.frameCount/107f)));
 						float colorPeriod=20;   // Cycle through all colors in this many seconds
 						float hue=(float)(pos.id*17+l*20+128*Math.sin(2*Math.PI*parent.frameCount/30/colorPeriod))/255f;
-						if (l==0 && parent.frameCount%10==0)
-							PApplet.println("frame="+parent.frameCount+", id="+pos.id+", hue="+hue+", cell="+cellX+","+cellY);
+//						if (l==0 && parent.frameCount%10==0)
+//							PApplet.println("frame="+parent.frameCount+", id="+pos.id+", hue="+hue+", cell="+cellX+","+cellY);
 						c=Color.HSBtoRGB(hue,settings[currentSettings].saturation,settings[currentSettings].brightness);
 					} else
 						// No change
