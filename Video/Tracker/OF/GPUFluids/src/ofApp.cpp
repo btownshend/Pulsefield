@@ -107,14 +107,19 @@ void ofApp::update(){
             ofPoint m = ofPoint(cellX, cellY);
 //        } else if (m.getAddress()=="/navier/scale") {
 //            fluid.scale=m.getArgAsFloat(0);
-//        } else if (m.getAddress()=="/navier/smokeBuoyancy") {
-//            fluid.smokeBuoyancy=m.getArgAsFloat(0);
             ofPoint d = ofPoint(dX, dY)/ofGetFrameRate();  // Velocity in pixels/frame
             pendingForces.push_back(punctualForce(m, d, ofFloatColor(red,green,blue,alpha),radius,temp,den));
         } else if (m.getAddress()=="/navier/updateForces") {
             fluid.setConstantForces(pendingForces);  // Fluid will use these until they are updated again
             pendingForces.clear();
             updateFlame();
+        } else if (m.getAddress()=="/navier/smoke") {
+            if (fluid.smokeEnabled!=m.getArgAsFloat(0)>0.5 || fluid.smokeBuoyancy!=m.getArgAsFloat(1) || fluid.smokeWeight!=m.getArgAsFloat(2)) {
+                fluid.smokeEnabled=m.getArgAsFloat(0)>0.5;
+                fluid.smokeBuoyancy=m.getArgAsFloat(1);
+                fluid.smokeWeight=m.getArgAsFloat(2);
+                cout << "smoke=" << (fluid.smokeEnabled?"Enabled":"Disabled") << ", " << fluid.smokeBuoyancy << ", " << fluid.smokeWeight << endl;
+            }
         } else if (m.getAddress()=="/navier/viscosity") {
             if (fluid.viscosity!=m.getArgAsFloat(0)) {
                 fluid.viscosity=m.getArgAsFloat(0);
