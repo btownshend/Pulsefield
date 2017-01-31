@@ -341,6 +341,8 @@ class NavierOFSettings {
 				settings[currentSettings].setOF("quit",1);  // Make OF implementation exit
 			} else if (components.length==4 && components[3].equals("clear") ) {
 				settings[currentSettings].setOF("clear",1);  // Clear frame buffers
+			} else if (components.length==4 && components[3].equals("frozen") ) {
+				settings[currentSettings].setOF("frozen",msg.get(0).floatValue());  // Freeze
 			} else if (components.length==6 && components[3].equals("texselect") ) {
 				if (msg.get(0).floatValue()>0.5f)
 					syphonTexture=Integer.valueOf(components[5])-1;

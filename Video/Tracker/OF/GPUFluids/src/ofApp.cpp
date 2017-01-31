@@ -20,6 +20,7 @@ void ofApp::setup(){
     ofSetCircleResolution(100);
     width = 500;
     height = 500;
+    frozen = false;
     
     // Initial Allocation
     //
@@ -157,6 +158,11 @@ void ofApp::update(){
             if (fluid.pressureDissipation!=m.getArgAsFloat(0)) {
                 fluid.pressureDissipation=m.getArgAsFloat(0);
                 cout << "pressure dissipation=" << fluid.pressureDissipation << endl;
+            }
+        } else if (m.getAddress()=="/navier/frozen") {
+            if (frozen!=m.getArgAsFloat(0)>0.5f) {
+                frozen=m.getArgAsFloat(0)>0.5f;
+                cout << "frozen=" << (frozen?"true":"false") << endl;
             }
         } else if (m.getAddress()=="/navier/gravity") {
             ofVec2f newGrav(m.getArgAsFloat(0),m.getArgAsFloat(1));

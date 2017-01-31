@@ -45,4 +45,7 @@ class ofApp : public ofBaseApp{
     ofPoint flamePosition,flameVelocity;
     ofFloatColor flameColor;
     float flameRadius,flameTemperature,flameDensity;
+    
+    // Freeze update
+    Boolean frozen;
 };
