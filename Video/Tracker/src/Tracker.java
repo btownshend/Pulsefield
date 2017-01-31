@@ -1207,8 +1207,8 @@ public class Tracker extends PApplet {
 	
 	synchronized public void pfsetnpeople(int n) {
 		PApplet.println("/pf/set/npeople: now have "+n+" people, size="+people.pmap.size());
-		if (n==0)
-			setapp(currentvis);   // Cause a reset
+//		if (n==0)
+//			setapp(currentvis);   // Cause a reset
 		if (n==0 && people.pmap.size()>0)
 			if (autocycle)
 				cycle();
