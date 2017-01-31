@@ -7,34 +7,16 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
 
-class VisualizerNavierOF extends VisualizerSyphon {
+class NavierOFSettings {
 	float viscosity, dissipation, velocityDissipation, tempDissipation, pressDissipation, limitVelocity; //  Parameters of model
 	int iterations;
 	float alpha, legScale, saturation, brightness, density, temperature;  // Parameters of leg effects
 	float flameTemperature, flameDensity, flameRadius;
 	boolean flameEnable;
 	PVector flamePosition, flameVelocity, gravity;
-	int oldMouseX = 1, oldMouseY = 1;
-	private int bordercolor;
 	private double scale;
-	PImage buffer=null;
-	PImage iao;
-	int rainbow = 0;
-	long statsLast = 0;
-	long statsTick = 0;
-	long statsStep = 0;
-	long statsUpdate = 0;
-	long statsU1=0;
-	long statsU2=0;
-	long statsU3=0;
-	long statsU4=0;
-	Synth synth;
-	//MusicVisLaser mvl;
-	final int downSample=2;   // amount to downsample fluid image
-	
-	VisualizerNavierOF(Tracker parent, Synth synth, String appName, String serverName) {
-		super(parent, appName, serverName);
 
+	NavierOFSettings() {
 		dissipation=0.99f;
 		velocityDissipation=0.99f;
 		pressDissipation=0.9f;
@@ -55,38 +37,39 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		flameDensity = 1f;
 		flameEnable = true;
 		iterations = 40;
-		// iao = loadImage("IAO.jpg");
-		//background(iao);
-
-		setTO();
-		stats();
-		
-		this.synth=synth;
-		//mvl=new MusicVisLaser(parent.fourier, MusicVisLaser.Modes.POLYGON);
+	}
+	public void updateOF() {
+		;
 	}
 
-	@Override
-	public void start() {
-		super.start();
-		Laser.getInstance().setFlag("body",0.0f);
-		Laser.getInstance().setFlag("legs",0.0f);
-		Ableton.getInstance().setTrackSet("Navier");
+	public void setOF(String name, double value) {
+		// Send to OF
+		OscMessage set = new OscMessage("/navier/"+name);
+		set.add((float)value);
+		OFOSC.getInstance().sendMessage(set);
 	}
 
-	@Override
-	public void stop() {
-		super.stop();
+	public void setOF(String name, int value) {
+		// Send to OF
+		OscMessage set = new OscMessage("/navier/"+name);
+		set.add(value);
+		OFOSC.getInstance().sendMessage(set);
 	}
 
+	public void setOF(String name, double v1, double v2) {
+		// Send to OF
+		OscMessage set = new OscMessage("/navier/"+name);
+		set.add((float)v1);
+		set.add((float)v2);
+		OFOSC.getInstance().sendMessage(set);
+	}
 
 	public void handleMessage(OscMessage msg) {
 		PApplet.println("Navier message: "+msg.toString());
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
-		
-		if (components.length<3 || !components[2].equals("navierOF")) 
-			PApplet.println("Navier: Expected /video/navierOF messages, got "+msg.toString());
-		else if (components.length==4 && components[3].equals("dissipation")) {
+
+		if (components.length==4 && components[3].equals("dissipation")) {
 			dissipation=(float) (1-Math.pow(10f,msg.get(0).floatValue()));
 		} else if (components.length==4 && components[3].equals("velocityDissipation")) {
 			velocityDissipation=(float) (1-Math.pow(10f,msg.get(0).floatValue()));
@@ -133,16 +116,14 @@ class VisualizerNavierOF extends VisualizerSyphon {
 			setOF("quit",1);  // Make OF implementation exit
 		} else if (components.length==4 && components[3].equals("clear") ) {
 			setOF("clear",1);  // Clear frame buffers
-		} else if (components.length==4 && components[3].equals("capture") ) {
-			setOF("capture",1);  // Capture a snapshot on both sides of syphon
-			captureNextFrame=true;
+
 		} else 
 			PApplet.println("Unknown NavierOF Message: "+msg.toString());
 		PApplet.println("dissipation="+dissipation+", velocityDissipation="+velocityDissipation+", gravity="+gravity);
 		PApplet.println("flame at "+flamePosition+", vel="+flameVelocity+"enable="+flameEnable+", temp="+flameTemperature+", radius="+flameRadius+",den="+flameDensity);
 		setTO();
 	}
-
+	
 	private void setTOValue(String name, double value, String fmt) {
 		TouchOSC to=TouchOSC.getInstance();
 		OscMessage set = new OscMessage("/video/navierOF/"+name);
@@ -162,29 +143,7 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		set.add(String.format(fmt, v1, v2));
 		to.sendMessage(set);
 	}
-	
-	private void setOF(String name, double value) {
-		// Send to OF
-		OscMessage set = new OscMessage("/navier/"+name);
-		set.add((float)value);
-		OFOSC.getInstance().sendMessage(set);
-	}
-	
-	private void setOF(String name, int value) {
-		// Send to OF
-		OscMessage set = new OscMessage("/navier/"+name);
-		set.add(value);
-		OFOSC.getInstance().sendMessage(set);
-	}
-	
-	private void setOF(String name, double v1, double v2) {
-		// Send to OF
-		OscMessage set = new OscMessage("/navier/"+name);
-		set.add((float)v1);
-		set.add((float)v2);
-		OFOSC.getInstance().sendMessage(set);
-	}
-	
+
 	public void setTO() {
 		setTOValue("scale",scale,"%.2f");
 		setTOValue("iterations",iterations,"%.0f");
@@ -225,93 +184,167 @@ class VisualizerNavierOF extends VisualizerSyphon {
 		set.add(flameRadius);
 		OFOSC.getInstance().sendMessage(set);
 	}
-	
-	public void stats() {
-		long elapsed=System.nanoTime()-statsLast;
-		PApplet.println("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
-		PApplet.println("U=",statsU1*100f/elapsed,", ",statsU2*100f/elapsed,", ",statsU3*100f/elapsed,", ",statsU4*100f/elapsed);
-		statsLast = System.nanoTime();
-		statsTick=0;
-		statsStep=0;
-		statsUpdate=0;
-		statsU1=0;
-		statsU2=0;
-		statsU3=0;
-		statsU4=0;
+
 	}
 
-	void applyForce(int cellX, int cellY, double dx, double dy, float red, float green, float blue, float alpha, float radius, float temp, float dens) {
-		OscMessage msg = new OscMessage("/navier/force");
-		msg.add(cellX);
-		msg.add(cellY);
-		msg.add((float)dx);
-		msg.add((float)dy);
-		msg.add(red/255.0f);
-		msg.add(green/255.0f);
-		msg.add(blue/255.0f);
-		msg.add(alpha);
-		msg.add(radius);
-		msg.add(temp);
-		msg.add(dens);
-		//PApplet.println("red="+(red/255.0)+", green="+(green/255.0)+", blue="+(blue/255.0));
-		OFOSC.getInstance().sendMessage(msg);
-	}
-	
-	@Override
-	public void update(PApplet parent, People p) {
-		Ableton.getInstance().updateMacros(p);
-		for (Person pos: p.pmap.values()) {
-			//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
-			if (pos.isMoving())
-				synth.play(pos.id,pos.channel+35,127,480,pos.channel);
-		}
-		long t1=System.nanoTime();
-		int nwidth=1024, nheight=1024;
-		if (canvas!=null) {
-			nwidth=canvas.width;
-			nheight=canvas.height;
-		}
-		for (Person pos: p.pmap.values()) {
-			//PApplet.println("update("+p.channel+"), enabled="+p.enabled);
-			for (int l=0;l<pos.legs.length;l++) {
-				Leg leg = pos.legs[l];
-				int cellX = (int)( (-leg.getNormalizedPosition().x+1)*nwidth / 2);
-				cellX=Math.max(0,Math.min(cellX,nwidth));
-				int cellY = (int) ((leg.getNormalizedPosition().y+1)*nheight/ 2);
-				cellY=Math.max(0,Math.min(cellY,nheight));
+	class VisualizerNavierOF extends VisualizerSyphon {
+		NavierOFSettings[] settings;
+		int currentSettings;
+		int syphonTexture;  // Which texture to display 0:normal,1:vel,2:temp,3:press
+		int oldMouseX = 1, oldMouseY = 1;
+		private int bordercolor;
+		PImage buffer=null;
+		PImage iao;
+		int rainbow = 0;
+		long statsLast = 0;
+		long statsTick = 0;
+		long statsStep = 0;
+		long statsUpdate = 0;
+		long statsU1=0;
+		long statsU2=0;
+		long statsU3=0;
+		long statsU4=0;
+		Synth synth;
+		//MusicVisLaser mvl;
+		final int downSample=2;   // amount to downsample fluid image
 
-				double dx=leg.getNormalizedVelocity().x*nwidth/2; // In pixels/sec
-				double dy=leg.getNormalizedVelocity().y*nheight/2;
-				float radius=leg.getDiameterInMeters()/Tracker.getFloorSize().x*nwidth/2*legScale;
-				int c=Color.HSBtoRGB(((pos.id*17+l*127)&0xff)/255.0f,saturation,brightness);
-				
-				//PApplet.println("Leg "+l+": Cell="+cellX+","+cellY+", vel="+dx+","+dy+ ", radius="+radius+", color="+PApplet.hex(c));
-				dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
-				dy = (Math.abs(dy) > limitVelocity) ? Math.signum(dy) * limitVelocity : dy;
-				applyForce(cellX, cellY, dx, dy, parent.red(c), parent.green(c),parent.blue(c),alpha,radius,temperature,density);
+		VisualizerNavierOF(Tracker parent, Synth synth, String appName, String serverName) {
+			super(parent, appName, serverName);
+
+
+			// iao = loadImage("IAO.jpg");
+			//background(iao);
+			currentSettings=0;
+			settings=new NavierOFSettings[8];
+			settings[0].setTO();
+			stats();
+
+			this.synth=synth;
+			//mvl=new MusicVisLaser(parent.fourier, MusicVisLaser.Modes.POLYGON);
+		}
+
+		@Override
+		public void start() {
+			super.start();
+			Laser.getInstance().setFlag("body",0.0f);
+			Laser.getInstance().setFlag("legs",0.0f);
+			Ableton.getInstance().setTrackSet("Navier");
+		}
+
+		@Override
+		public void stop() {
+			super.stop();
+		}
+
+
+		public void handleMessage(OscMessage msg) {
+			PApplet.println("Navier message: "+msg.toString());
+			String pattern=msg.addrPattern();
+			String components[]=pattern.split("/");
+
+			if (components.length<3 || !components[2].equals("navierOF")) {
+				PApplet.println("Navier: Expected /video/navierOF messages, got "+msg.toString());
+			} else if (components.length==4 && components[3].equals("capture") ) {
+				settings[currentSettings].setOF("capture",1);  // Capture a snapshot on both sides of syphon
+				captureNextFrame=true;
+			} else if (components.length==4 && components[3].equals("texselect") ) {
+				syphonTexture=msg.get(0).intValue();
+			} else if (components.length==4 && components[3].equals("preset") ) {
+				int newSetting=msg.get(0).intValue();
+				if (newSetting>=0 && newSetting <settings.length)
+					currentSetting=newSetting;
+			} else if (currentSettings>0)  // Not defaults
+				settings[currentSettings].handleMessage(msg);
+			
+			settings[currentSettings].setTO();
+		}
+
+
+		public void stats() {
+			long elapsed=System.nanoTime()-statsLast;
+			PApplet.println("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
+			PApplet.println("U=",statsU1*100f/elapsed,", ",statsU2*100f/elapsed,", ",statsU3*100f/elapsed,", ",statsU4*100f/elapsed);
+			statsLast = System.nanoTime();
+			statsTick=0;
+			statsStep=0;
+			statsUpdate=0;
+			statsU1=0;
+			statsU2=0;
+			statsU3=0;
+			statsU4=0;
+		}
+
+		void applyForce(int cellX, int cellY, double dx, double dy, float red, float green, float blue, float alpha, float radius, float temp, float dens) {
+			OscMessage msg = new OscMessage("/navier/force");
+			msg.add(cellX);
+			msg.add(cellY);
+			msg.add((float)dx);
+			msg.add((float)dy);
+			msg.add(red/255.0f);
+			msg.add(green/255.0f);
+			msg.add(blue/255.0f);
+			msg.add(alpha);
+			msg.add(radius);
+			msg.add(temp);
+			msg.add(dens);
+			//PApplet.println("red="+(red/255.0)+", green="+(green/255.0)+", blue="+(blue/255.0));
+			OFOSC.getInstance().sendMessage(msg);
+		}
+
+		@Override
+		public void update(PApplet parent, People p) {
+			Ableton.getInstance().updateMacros(p);
+			for (Person pos: p.pmap.values()) {
+				//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
+				if (pos.isMoving())
+					synth.play(pos.id,pos.channel+35,127,480,pos.channel);
 			}
+			long t1=System.nanoTime();
+			int nwidth=1024, nheight=1024;
+			if (canvas!=null) {
+				nwidth=canvas.width;
+				nheight=canvas.height;
+			}
+			for (Person pos: p.pmap.values()) {
+				//PApplet.println("update("+p.channel+"), enabled="+p.enabled);
+				for (int l=0;l<pos.legs.length;l++) {
+					Leg leg = pos.legs[l];
+					int cellX = (int)( (-leg.getNormalizedPosition().x+1)*nwidth / 2);
+					cellX=Math.max(0,Math.min(cellX,nwidth));
+					int cellY = (int) ((leg.getNormalizedPosition().y+1)*nheight/ 2);
+					cellY=Math.max(0,Math.min(cellY,nheight));
+
+					double dx=leg.getNormalizedVelocity().x*nwidth/2; // In pixels/sec
+					double dy=leg.getNormalizedVelocity().y*nheight/2;
+					float radius=leg.getDiameterInMeters()/Tracker.getFloorSize().x*nwidth/2*settings[currentSettings].legScale;
+					int c=Color.HSBtoRGB(((pos.id*17+l*127)&0xff)/255.0f,settings[currentSettings].saturation,settings[currentSettings].brightness);
+
+					//PApplet.println("Leg "+l+": Cell="+cellX+","+cellY+", vel="+dx+","+dy+ ", radius="+radius+", color="+PApplet.hex(c));
+					dx = (Math.abs(dx) > settings[currentSettings].limitVelocity) ? Math.signum(dx) * settings[currentSettings].limitVelocity : dx;
+					dy = (Math.abs(dy) > settings[currentSettings].limitVelocity) ? Math.signum(dy) * settings[currentSettings].limitVelocity : dy;
+					applyForce(cellX, cellY, dx, dy, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,radius,settings[currentSettings].temperature,settings[currentSettings].density);
+				}
+			}
+			if (p.pmap.isEmpty()) {
+				// Keep it moving
+				//applyForce((int)(Math.random()*nwidth), (int)(Math.random()*nheight), limitVelocity/8*(Math.random()*2-1), limitVelocity/8*(Math.random()*2-1));
+			}
+			statsUpdate += System.nanoTime()-t1;
+			//stats();
 		}
-		if (p.pmap.isEmpty()) {
-		// Keep it moving
-			//applyForce((int)(Math.random()*nwidth), (int)(Math.random()*nheight), limitVelocity/8*(Math.random()*2-1), limitVelocity/8*(Math.random()*2-1));
+
+		public int lerpColor(PApplet parent, int c1, int c2, float l) {
+			parent.colorMode(PConstants.RGB, 255);
+			float r1 = parent.red(c1)+0.5f;
+			float g1 = parent.green(c1)+0.5f;
+			float b1 = parent.blue(c1)+0.5f;
+
+			float r2 = parent.red(c2)+0.5f;
+			float g2 = parent.green(c2)+0.5f;
+			float b2 = parent.blue(c2)+0.5f;
+
+			return parent.color( PApplet.lerp(r1, r2, l), PApplet.lerp(g1, g2, l), PApplet.lerp(b1, b2, l) );
 		}
-		statsUpdate += System.nanoTime()-t1;
-		//stats();
+
 	}
-
-	
-	public int lerpColor(PApplet parent, int c1, int c2, float l) {
-		parent.colorMode(PConstants.RGB, 255);
-		float r1 = parent.red(c1)+0.5f;
-		float g1 = parent.green(c1)+0.5f;
-		float b1 = parent.blue(c1)+0.5f;
-
-		float r2 = parent.red(c2)+0.5f;
-		float g2 = parent.green(c2)+0.5f;
-		float b2 = parent.blue(c2)+0.5f;
-
-		return parent.color( PApplet.lerp(r1, r2, l), PApplet.lerp(g1, g2, l), PApplet.lerp(b1, b2, l) );
-	}
-	
-}
 
