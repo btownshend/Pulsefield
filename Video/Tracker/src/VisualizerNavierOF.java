@@ -20,9 +20,14 @@ class NavierOFSettings {
 	boolean flameEnable;
 	boolean multiColor;
 	PVector flamePosition, flameVelocity, gravity;
-
+	boolean modified;  // True of any settings changed, but not written
+	
 	NavierOFSettings(int _index) {
 		index=_index;
+		loadPreset();
+	}
+	
+	public void loadPreset() {
 		ambient=0f;
 		smokeBuoyancy=1.0f;
 		smokeWeight=0.05f;
@@ -32,6 +37,7 @@ class NavierOFSettings {
 		velocityDissipation=0.99f;
 		pressDissipation=0.9f;
 		tempDissipation=0.99f;
+		gravity=Config.getVec("navier"+index,"gravity",new PVector(0f,-0.98f));
 		gravity=new PVector(0f,-0.98f);
 		viscosity=0.1f;
 		alpha=1.0f;
@@ -50,7 +56,16 @@ class NavierOFSettings {
 		flameEnable = true;
 		iterations = 40;
 		multiColor = true;
+		modified = false;
 	}
+	
+	public void savePreset() {
+		String group="navier"+index;
+		PApplet.println("Saving presets for Navier "+index);
+		Config.setVec(group, "gravity", gravity);
+		modified=false;
+	}
+	
 	public void updateOF() {
 		;
 	}
@@ -151,7 +166,10 @@ class NavierOFSettings {
 				PApplet.println("Unknown NavierOF Message: "+msg.toString());
 		} else if (components.length==4 && components[3].equals("savepreset") ) {
 			if (msg.get(0).floatValue() > 0.5f)
-			 PApplet.println("*** saving preset not implemented");
+				savePreset();
+		} else if (components.length==4 && components[3].equals("loadpreset") ) {
+			if (msg.get(0).floatValue() > 0.5f)
+				loadPreset();
 		} else 
 			PApplet.println("Unknown NavierOF Message: "+msg.toString());
 		PApplet.println("dissipation="+dissipation+", velocityDissipation="+velocityDissipation+", gravity="+gravity);
@@ -206,6 +224,7 @@ class NavierOFSettings {
 		setTOValue("smoke/weight",smokeWeight,"%.2f");
 		setTOValue("smoke/enable",smokeEnable?1.0:0.0,"%.0f");
 		setTOValue("preset/"+Integer.toString(8-index)+"/1",1.0f,"%.0f");
+		setTOValue("presetled/"+Integer.toString(index),modified?1.0f:0.0f,"%.0f");
 		setOF("ambient",ambient);
 		setOF("viscosity",viscosity);
 		setOF("diffusion",diffusion);
