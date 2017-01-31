@@ -561,7 +561,7 @@ public class Tracker extends PApplet {
 		if (enableTitle) {
 			canvas.pushStyle();
 			canvas.textAlign(PConstants.CENTER, PConstants.CENTER);
-			Visualizer.drawText(canvas, 0.2f, "The Pulsefield", minx+0.2f*(maxx-minx), miny+0.9f*(maxy-miny));
+			Visualizer.drawText(canvas, 0.2f, "The Pulsefield", minx+0.3f*(maxx-minx), miny+0.9f*(maxy-miny));
 			canvas.popStyle();
 		}
 		if (enableMenu) {
