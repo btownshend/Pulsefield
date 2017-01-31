@@ -34,7 +34,7 @@ class NavierOFSettings {
 		tempDissipation=0.99f;
 		gravity=new PVector(0f,0f);
 		viscosity=0.1f;
-		alpha=128f;
+		alpha=1.0f;
 		legScale=1.0f;
 		saturation=1.0f;
 		brightness=1.0f;
