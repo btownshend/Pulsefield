@@ -15,7 +15,7 @@ class NavierOFSettings {
 	float smokeBuoyancy, smokeWeight;
 	boolean smokeEnable;
 	int iterations;
-	float alpha, legScale, saturation, brightness, density, temperature;  // Parameters of leg effects
+	float alpha, legScale, velScale, saturation, brightness, density, temperature;  // Parameters of leg effects
 	float flameTemperature, flameDensity, flameRadius;
 	boolean flameEnable;
 	boolean multiColor;
@@ -36,6 +36,7 @@ class NavierOFSettings {
 		viscosity=0.1f;
 		alpha=1.0f;
 		legScale=1.0f;
+		velScale=20.0f;
 		saturation=1.0f;
 		brightness=1.0f;
 		temperature=10f;
@@ -112,6 +113,8 @@ class NavierOFSettings {
 			alpha=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("legscale")) {
 			legScale=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("velscale")) {
+			velScale=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("temperature")) {
 			temperature=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("density")) {
@@ -348,9 +351,8 @@ class NavierOFSettings {
 			OscMessage msg = new OscMessage("/navier/force");
 			msg.add(cellX);
 			msg.add(cellY);
-			float vscale=20f;
-			msg.add((float)dx*vscale);
-			msg.add((float)dy*vscale);
+			msg.add((float)dx);
+			msg.add((float)dy);
 			msg.add(red/255.0f);
 			msg.add(green/255.0f);
 			msg.add(blue/255.0f);
@@ -403,6 +405,8 @@ class NavierOFSettings {
 					//PApplet.println("Leg "+l+": Cell="+cellX+","+cellY+", vel="+dx+","+dy+ ", radius="+radius+", color="+PApplet.hex(c));
 					dx = (Math.abs(dx) > settings[currentSettings].limitVelocity) ? Math.signum(dx) * settings[currentSettings].limitVelocity : dx;
 					dy = (Math.abs(dy) > settings[currentSettings].limitVelocity) ? Math.signum(dy) * settings[currentSettings].limitVelocity : dy;
+					dx *= settings[currentSettings].velScale;
+					dy *= settings[currentSettings].velScale;
 					applyForce(cellX, cellY, dx, dy, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,radius,settings[currentSettings].temperature,settings[currentSettings].density);
 				}
 			}
