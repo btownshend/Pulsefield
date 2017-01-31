@@ -8,6 +8,7 @@ import processing.core.PImage;
 import processing.core.PVector;
 
 class NavierOFSettings {
+	int index;  // Which setting# this is
 	float viscosity, diffusion, dissipation, velocityDissipation, tempDissipation, pressDissipation, limitVelocity; //  Parameters of model
 	float ambient;
 	float smokeBuoyancy, smokeWeight;
@@ -17,9 +18,10 @@ class NavierOFSettings {
 	float flameTemperature, flameDensity, flameRadius;
 	boolean flameEnable;
 	PVector flamePosition, flameVelocity, gravity;
-
-	NavierOFSettings() {
 	int syphonTexture;  // Which texture to display 0:normal,1:vel,2:temp,3:press
+
+	NavierOFSettings(int _index) {
+		index=_index;
 		ambient=0f;
 		smokeBuoyancy=1.0f;
 		smokeWeight=0.05f;
@@ -254,9 +256,12 @@ class NavierOFSettings {
 
 			// iao = loadImage("IAO.jpg");
 			//background(iao);
-			currentSettings=0;
 			settings=new NavierOFSettings[8];
-			settings[0].setTO();
+			for (int i=0;i<settings.length;i++) {
+				settings[i]=new NavierOFSettings(i);
+			}
+			currentSettings=0;
+			settings[currentSettings].setTO();
 			stats();
 
 			this.synth=synth;
