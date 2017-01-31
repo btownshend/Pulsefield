@@ -420,12 +420,15 @@ class NavierOFSettings {
 					int c;
 					if (settings[currentSettings].multiColor) {
 						//  c=parent.color((int)(128+127*Math.sin(parent.frameCount/101f)),(int)(128+127*Math.sin(parent.frameCount/93f)),(int)(128+127*Math.sin(parent.frameCount/107f)));
-						float hue=(float)(pos.id*17+l*20+128*Math.sin(parent.frameCount/101f));
-						hue=((int)hue%256)/255f;
+						float colorPeriod=20;   // Cycle through all colors in this many seconds
+						float hue=(float)(pos.id*17+l*20+128*Math.sin(2*Math.PI*parent.frameCount/30/colorPeriod))/255f;
+						if (l==0 && parent.frameCount%10==0)
+							PApplet.println("frame="+parent.frameCount+", id="+pos.id+", hue="+hue+", cell="+cellX+","+cellY);
 						c=Color.HSBtoRGB(hue,settings[currentSettings].saturation,settings[currentSettings].brightness);
 					} else
-						c=Color.HSBtoRGB(((pos.id*17+l*127)&0xff)/255.0f,settings[currentSettings].saturation,settings[currentSettings].brightness);
-
+						// No change
+						c=Color.HSBtoRGB(((pos.id*17+l*20)&0xff)/255.0f,settings[currentSettings].saturation,settings[currentSettings].brightness);
+				
 					//PApplet.println("Leg "+l+": Cell="+cellX+","+cellY+", vel="+dx+","+dy+ ", radius="+radius+", color="+PApplet.hex(c));
 					dx = (Math.abs(dx) > settings[currentSettings].limitVelocity) ? Math.signum(dx) * settings[currentSettings].limitVelocity : dx;
 					dy = (Math.abs(dy) > settings[currentSettings].limitVelocity) ? Math.signum(dy) * settings[currentSettings].limitVelocity : dy;
