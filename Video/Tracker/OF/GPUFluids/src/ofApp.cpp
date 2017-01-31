@@ -57,9 +57,8 @@ void ofApp::setup(){
 }
 
 void ofApp::updateFlame() {
-    fluid.clearConstantForces();
     if (flameEnable) {
-        fluid.addConstantForce(ofPoint(width*(flamePosition.x+1)/2,height*(flamePosition.y+1)/2), flameVelocity, flameColor, flameRadius, flameTemperature, flameDensity);
+        pendingForces.push_back(punctualForce(ofPoint(width*(flamePosition.x+1)/2,height*(flamePosition.y+1)/2), flameVelocity, flameColor, flameRadius, flameTemperature, flameDensity));
         cout << "Flame enabled, pos=[" << flamePosition << "], vel=[" << flameVelocity << "], color=[" << flameColor << "], radius=" << flameRadius << ", temp=" << flameTemperature << ", den=" << flameDensity << endl;
     } else
         cout << "Flame disabled" << endl;
@@ -104,12 +103,16 @@ void ofApp::update(){
             float den=m.getArgAsFloat(10);
             cout << "(" << cellX << "," << cellY << ") v=(" << dX << "," << dY << ")" << ", col=(" << red << "," << green << "," << blue << ")" << " radius=" << radius << ", temp=" << temp << ", den=" << den << endl;
             ofPoint m = ofPoint(cellX, cellY);
-            ofPoint d = ofPoint(dX, dY)/ofGetFrameRate();
-            fluid.addTemporalForce(m, d, ofFloatColor(red,green,blue,alpha),radius,temp,den);
 //        } else if (m.getAddress()=="/navier/scale") {
 //            fluid.scale=m.getArgAsFloat(0);
 //        } else if (m.getAddress()=="/navier/smokeBuoyancy") {
 //            fluid.smokeBuoyancy=m.getArgAsFloat(0);
+            ofPoint d = ofPoint(dX, dY)/ofGetFrameRate();  // Velocity in pixels/frame
+            pendingForces.push_back(punctualForce(m, d, ofFloatColor(red,green,blue,alpha),radius,temp,den));
+        } else if (m.getAddress()=="/navier/updateForces") {
+            fluid.setConstantForces(pendingForces);  // Fluid will use these until they are updated again
+            pendingForces.clear();
+            updateFlame();
         } else if (m.getAddress()=="/navier/viscosity") {
             fluid.viscosity=m.getArgAsFloat(0);
             cout << "viscosity=" << fluid.viscosity << endl;

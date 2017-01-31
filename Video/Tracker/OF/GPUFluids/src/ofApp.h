@@ -25,6 +25,7 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
  private:
+    vector<punctualForce> pendingForces;
 		void updateFlame();
     	ofxSyphonServer syphon[5];
     void saveTexture(string filename, const ofTexture &tex);

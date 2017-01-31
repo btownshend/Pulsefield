@@ -383,6 +383,11 @@ class NavierOFSettings {
 			OFOSC.getInstance().sendMessage(msg);
 		}
 
+		void updateForces() {
+			OscMessage msg = new OscMessage("/navier/updateForces");
+			OFOSC.getInstance().sendMessage(msg);
+		}
+
 		@Override
 		public void update(PApplet parent, People p) {
 			Ableton.getInstance().updateMacros(p);
@@ -433,6 +438,7 @@ class NavierOFSettings {
 				// Keep it moving
 				//applyForce((int)(Math.random()*nwidth), (int)(Math.random()*nheight), limitVelocity/8*(Math.random()*2-1), limitVelocity/8*(Math.random()*2-1));
 			}
+			updateForces();
 			statsUpdate += System.nanoTime()-t1;
 			//stats();
 		}
