@@ -74,11 +74,14 @@ void ofApp::update(){
     c.normalize();
     ofFloatColor col(c.x*sin(ofGetElapsedTimef()),c.y*sin(ofGetElapsedTimef()),0.5f,0.1f);
     cout << "mouse d=" << d << endl;
-    fluid.addTemporalForce(m, d, col,10.0f);
-    
-    //  Update
-    //
-    fluid.update();
+    if (!frozen) {
+        fluid.addTemporalForce(m, d, col,10.0f);
+        
+        //  Update
+        //
+        
+        fluid.update();
+    }
     
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
     
