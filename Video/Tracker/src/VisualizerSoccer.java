@@ -296,7 +296,7 @@ public class VisualizerSoccer extends VisualizerDot {
 		g.fill(70);
 		for (int i=0;i<score.length;i++) {
 			if (goals[i]!=null)
-				drawText(g,0.2f,String.format("%d",score[i]), goals[i].pos.x, goals[i].pos.y+goals[i].width*0.6f);
+				drawText(g,0.2f,String.format("%d",score[i]), goals[i].pos.x, goals[i].pos.y);
 		}
 		if (ball!=null)
 			ball.draw(g);
