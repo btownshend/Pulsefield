@@ -116,42 +116,74 @@ void ofApp::update(){
             pendingForces.clear();
             updateFlame();
         } else if (m.getAddress()=="/navier/viscosity") {
-            fluid.viscosity=m.getArgAsFloat(0);
-            cout << "viscosity=" << fluid.viscosity << endl;
+            if (fluid.viscosity!=m.getArgAsFloat(0)) {
+                fluid.viscosity=m.getArgAsFloat(0);
+                cout << "viscosity=" << fluid.viscosity << endl;
+            }
+        } else if (m.getAddress()=="/navier/diffusion") {
+            if (fluid.diffusion!=m.getArgAsFloat(0)) {
+                fluid.diffusion=m.getArgAsFloat(0);
+                cout << "diffusion=" << fluid.diffusion << endl;
+            }
         } else if (m.getAddress()=="/navier/iterations") {
-            fluid.numJacobiIterations=m.getArgAsInt32(0);
-            cout << "iterations=" << fluid.numJacobiIterations << endl;
+            if (fluid.numJacobiIterations != m.getArgAsInt32(0)) {
+                fluid.numJacobiIterations=m.getArgAsInt32(0);
+                cout << "iterations=" << fluid.numJacobiIterations << endl;
+            }
         } else if (m.getAddress()=="/navier/dissipation") {
-            fluid.dissipation=m.getArgAsFloat(0);
-            cout << "dissipation=" << fluid.dissipation << endl;
+            if (fluid.dissipation != m.getArgAsFloat(0)) {
+                fluid.dissipation=m.getArgAsFloat(0);
+                cout << "dissipation=" << fluid.dissipation << endl;
+            }
         } else if (m.getAddress()=="/navier/velocityDissipation") {
-            fluid.velocityDissipation=m.getArgAsFloat(0);
-            cout << "velocity dissipation=" << fluid.velocityDissipation << endl;
+            if (fluid.velocityDissipation!=m.getArgAsFloat(0)) {
+                fluid.velocityDissipation=m.getArgAsFloat(0);
+                cout << "velocity dissipation=" << fluid.velocityDissipation << endl;
+            }
+        } else if (m.getAddress()=="/navier/ambient") {
+            if (fluid.ambientTemperature!=m.getArgAsFloat(0)) {
+                fluid.ambientTemperature=m.getArgAsFloat(0);
+                cout << "ambient temp=" << fluid.ambientTemperature << endl;
+            }
         } else if (m.getAddress()=="/navier/temperatureDissipation") {
-            fluid.temperatureDissipation=m.getArgAsFloat(0);
-            cout << "temperature dissipation=" << fluid.temperatureDissipation << endl;
+            if (fluid.temperatureDissipation!=m.getArgAsFloat(0)) {
+                fluid.temperatureDissipation=m.getArgAsFloat(0);
+                cout << "temperature dissipation=" << fluid.temperatureDissipation << endl;
+            }
         } else if (m.getAddress()=="/navier/pressureDissipation") {
-            fluid.pressureDissipation=m.getArgAsFloat(0);
-            cout << "pressure dissipation=" << fluid.pressureDissipation << endl;
+            if (fluid.pressureDissipation!=m.getArgAsFloat(0)) {
+                fluid.pressureDissipation=m.getArgAsFloat(0);
+                cout << "pressure dissipation=" << fluid.pressureDissipation << endl;
+            }
         } else if (m.getAddress()=="/navier/gravity") {
-            fluid.setGravity(ofVec2f(m.getArgAsFloat(0),m.getArgAsFloat(1)));
+            ofVec2f newGrav(m.getArgAsFloat(0),m.getArgAsFloat(1));
+            if (fluid.getGravity()!=newGrav) {
+                fluid.setGravity(newGrav);
+                cout << "gravity=" << fluid.getGravity() << endl;
+            }
         } else if (m.getAddress()=="/navier/capture") {
             saveTexture("/tmp/pingpong.tif",fluid.getTexture());
         } else if (m.getAddress()=="/navier/clear") {
             fluid.clear();
         } else if (m.getAddress()=="/navier/quit") {
             ofExit();
-	} else if (m.getAddress()=="/navier/flame") {
-	    flameEnable=m.getArgAsFloat(0)>0.5;
-	    flamePosition=ofPoint(m.getArgAsFloat(1),m.getArgAsFloat(2));
-	    flameVelocity=ofPoint(m.getArgAsFloat(3),m.getArgAsFloat(4));
-	    flameDensity=m.getArgAsFloat(5);
-	    flameTemperature=m.getArgAsFloat(6);
-	    flameRadius=m.getArgAsFloat(7);
-	    updateFlame();
-    } else {
-        cout << "Unexpected OSC message: " << m.getAddress() << endl;
-    }
+        } else if (m.getAddress()=="/navier/flame") {
+            if ((flameEnable!=m.getArgAsFloat(0)>0.5) ||
+                (flamePosition!=ofPoint(m.getArgAsFloat(1),m.getArgAsFloat(2))) ||
+                (flameVelocity!=ofPoint(m.getArgAsFloat(3),m.getArgAsFloat(4))) ||
+                (flameDensity!=m.getArgAsFloat(5)) ||
+                (flameTemperature!=m.getArgAsFloat(6)) ||
+                (flameRadius!=m.getArgAsFloat(7))) {
+                flameEnable=m.getArgAsFloat(0)>0.5;
+                flamePosition=ofPoint(m.getArgAsFloat(1),m.getArgAsFloat(2));
+                flameVelocity=ofPoint(m.getArgAsFloat(3),m.getArgAsFloat(4));
+                flameDensity=m.getArgAsFloat(5);
+                flameTemperature=m.getArgAsFloat(6);
+                flameRadius=m.getArgAsFloat(7);
+            }
+        } else {
+            cout << "Unexpected OSC message: " << m.getAddress() << endl;
+        }
         
     }
 
