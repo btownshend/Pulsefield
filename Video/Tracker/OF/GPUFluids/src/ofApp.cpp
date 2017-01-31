@@ -224,11 +224,11 @@ void ofApp::update(){
 
 void ofApp::saveTexture(string filename, const ofTexture &tex) {
     const ofTextureData &td=tex.getTextureData();
-    if (td.glInternalFormat==GL_RGBA) {
+    if (td.glInternalFormat==GL_RGBA || td.glInternalFormat==GL_RGB ) {
         ofPixels pixels;  // Converts to 8-bit from 32F texture format
         tex.readToPixels(pixels);
         ofSaveImage(pixels,filename);
-    } else if (td.glInternalFormat==GL_RGBA32F) {
+    } else if (td.glInternalFormat==GL_RGBA32F || td.glInternalFormat==GL_RGB32F ) {
         ofFloatPixels pixels;  // Converts to 8-bit from 32F texture format
         tex.readToPixels(pixels);
         ofSaveImage(pixels,filename);
