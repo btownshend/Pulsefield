@@ -73,7 +73,7 @@ void ofApp::update(){
     ofPoint c = ofPoint(640*0.5, 480*0.5) - m;
     c.normalize();
     ofFloatColor col(c.x*sin(ofGetElapsedTimef()),c.y*sin(ofGetElapsedTimef()),0.5f,0.1f);
-    cout << "mouse d=" << d << endl;
+   // cout << "mouse d=" << d << endl;
     if (!frozen) {
         fluid.addTemporalForce(m, d, col,10.0f);
         
@@ -104,7 +104,7 @@ void ofApp::update(){
             float radius = m.getArgAsFloat(8);
             float temp = m.getArgAsFloat(9);
             float den=m.getArgAsFloat(10);
-            cout << "(" << cellX << "," << cellY << ") v=(" << dX << "," << dY << ")" << ", col=(" << red << "," << green << "," << blue << "," << alpha << ")" << " radius=" << radius << ", temp=" << temp << ", den=" << den << endl;
+//            cout << "(" << cellX << "," << cellY << ") v=(" << dX << "," << dY << ")" << ", col=(" << red << "," << green << "," << blue << "," << alpha << ")" << " radius=" << radius << ", temp=" << temp << ", den=" << den << endl;
             ofPoint m = ofPoint(cellX, cellY);
             ofPoint d = ofPoint(dX, dY)/ofGetFrameRate();  // Velocity in pixels/frame
             pendingForces.push_back(punctualForce(m, d, ofFloatColor(red,green,blue,alpha),radius,temp,den));
