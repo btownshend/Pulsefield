@@ -389,6 +389,21 @@ class NavierOFSettings {
 
 			return parent.color( PApplet.lerp(r1, r2, l), PApplet.lerp(g1, g2, l), PApplet.lerp(b1, b2, l) );
 		}
-
+		@Override
+		public void draw(Tracker t, PGraphics g, People p) {
+			super.draw(t, g, p);
+			if (canvas!=null) {
+				int newWidth=(int)(g.width*canvasScale);
+				int newHeight=(int)(g.height*canvasScale);
+				if (canvas.width!=newWidth || canvas.height!=newHeight) {
+					PApplet.println("Resetting OF size from "+canvas.width+","+canvas.height+" to "+newWidth+","+newHeight);
+					OscMessage set = new OscMessage("/navier/setsize");
+					set.add(newWidth);
+					set.add(newHeight);
+					set.add(1.0f);  // Just display at same resolution as internal textures
+					OFOSC.getInstance().sendMessage(set);
+				}
+			}
+		}
 	}
 
