@@ -85,8 +85,10 @@ public class VisualizerTestPattern extends VisualizerDot {
 			if (ac[i]==null)
 				continue;
 			final float CLEN=0.5f;
-			g.line(ac[i].x, ac[i].y, ac[i].x-CLEN, ac[i].y+CLEN);
-			g.line(ac[i].x, ac[i].y, ac[i].x+CLEN, ac[i].y+CLEN);
+			double angle=Math.atan2(ac[i].y,ac[i].x)-Math.PI/4;
+			g.line(ac[i].x, ac[i].y, (float)(ac[i].x+CLEN*Math.cos(angle)), (float)(ac[i].y+CLEN*Math.sin(angle)));
+			angle+=Math.PI/2;
+			g.line(ac[i].x, ac[i].y, (float)(ac[i].x+CLEN*Math.cos(angle)),(float)(ac[i].y+CLEN*Math.sin(angle)));
 		}
 		g.stroke(0,255,0);
 		g.fill(0,255,0);
