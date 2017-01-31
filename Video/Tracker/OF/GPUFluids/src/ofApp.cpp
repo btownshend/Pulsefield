@@ -230,7 +230,8 @@ void ofApp::saveTexture(string filename, const ofTexture &tex) {
 }
 //--------------------------------------------------------------
 void ofApp::draw(){
-    ofBackgroundGradient(ofColor::gray, ofColor::black, OF_GRADIENT_LINEAR);
+    // ofBackgroundGradient(ofColor::gray, ofColor::black, OF_GRADIENT_LINEAR);
+    
     fluid.draw();
     
     syphon[1].publishScreen();
