@@ -8,15 +8,23 @@ import processing.core.PImage;
 import processing.core.PVector;
 
 class NavierOFSettings {
-	float viscosity, dissipation, velocityDissipation, tempDissipation, pressDissipation, limitVelocity; //  Parameters of model
+	float viscosity, diffusion, dissipation, velocityDissipation, tempDissipation, pressDissipation, limitVelocity; //  Parameters of model
+	float ambient;
+	float smokeBuoyancy, smokeWeight;
+	boolean smokeEnable;
 	int iterations;
 	float alpha, legScale, saturation, brightness, density, temperature;  // Parameters of leg effects
 	float flameTemperature, flameDensity, flameRadius;
 	boolean flameEnable;
 	PVector flamePosition, flameVelocity, gravity;
-	private double scale;
 
 	NavierOFSettings() {
+	int syphonTexture;  // Which texture to display 0:normal,1:vel,2:temp,3:press
+		ambient=0f;
+		smokeBuoyancy=1.0f;
+		smokeWeight=0.05f;
+		smokeEnable=true;
+		diffusion=0.1f;
 		dissipation=0.99f;
 		velocityDissipation=0.99f;
 		pressDissipation=0.9f;
@@ -37,6 +45,7 @@ class NavierOFSettings {
 		flameDensity = 1f;
 		flameEnable = true;
 		iterations = 40;
+		syphonTexture = 0;
 	}
 	public void updateOF() {
 		;
@@ -81,6 +90,10 @@ class NavierOFSettings {
 			iterations=(int)msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("viscosity")) {
 			viscosity=(float) (Math.pow(10f,msg.get(0).floatValue()));
+		} else if (components.length==4 && components[3].equals("diffusion")) {
+			diffusion=(float) (Math.pow(10f,msg.get(0).floatValue()));
+		} else if (components.length==4 && components[3].equals("ambient")) {
+			ambient=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("saturation")) {
 			saturation=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("brightness")) {
@@ -112,11 +125,26 @@ class NavierOFSettings {
 		} else if (components.length==4 && components[3].equals("flameVelocity") ) {
 			flameVelocity.x=msg.get(0).floatValue();
 			flameVelocity.y=msg.get(1).floatValue();
+		} else if (components.length==5 && components[3].equals("smoke")) {
+			if (components[4].equals("buoyancy"))
+				smokeBuoyancy=msg.get(0).floatValue();
+			else if (components[4].equals("weight"))
+				smokeWeight=msg.get(0).floatValue();
+			else if (components[4].equals("enable"))
+				smokeEnable=msg.get(0).floatValue()>0.5f;
+			else
+				PApplet.println("Unknown NavierOF Message: "+msg.toString());
+		} else if (components.length==6 && components[3].equals("texselect") ) {
+			if (msg.get(0).floatValue()>0.5f)
+				syphonTexture=Integer.valueOf(components[5])-1;
+			PApplet.println("syphon texture="+syphonTexture);
+		} else if (components.length==4 && components[3].equals("savepreset") ) {
+			if (msg.get(0).floatValue() > 0.5f)
+			 PApplet.println("*** saving preset not implemented");
 		} else if (components.length==4 && components[3].equals("quit") ) {
 			setOF("quit",1);  // Make OF implementation exit
 		} else if (components.length==4 && components[3].equals("clear") ) {
 			setOF("clear",1);  // Clear frame buffers
-
 		} else 
 			PApplet.println("Unknown NavierOF Message: "+msg.toString());
 		PApplet.println("dissipation="+dissipation+", velocityDissipation="+velocityDissipation+", gravity="+gravity);
@@ -145,9 +173,10 @@ class NavierOFSettings {
 	}
 
 	public void setTO() {
-		setTOValue("scale",scale,"%.2f");
+		setTOValue("ambient",ambient,"%.2f");
 		setTOValue("iterations",iterations,"%.0f");
 		setTOValue("viscosity",Math.log10(viscosity),"%.2f");
+		setTOValue("diffusion",Math.log10(diffusion),"%.2f");
 		setTOValue("dissipation",Math.log10(1-dissipation),"%.2f");
 		setTOValue("velocityDissipation",Math.log10(1-velocityDissipation),"%.2f");
 		setTOValue("tempDissipation",Math.log10(1-tempDissipation),"%.2f");
@@ -165,7 +194,14 @@ class NavierOFSettings {
 		setTOValue("flameEnable",flameEnable?1.0:0.0,"%.0f");
 		setTOValue("flamePosition",flamePosition.x,flamePosition.y,"%.2f,%.2f");
 		setTOValue("flameVelocity",flameVelocity.x,flameVelocity.y,"%.2f,%.2f");
+		setTOValue("smoke/buoyancy",smokeBuoyancy,"%.2f");
+		setTOValue("smoke/weight",smokeWeight,"%.2f");
+		setTOValue("smoke/enable",smokeEnable?1.0:0.0,"%.0f");
+		setTOValue("preset/"+Integer.toString(8-index)+"/1",1.0f,"%.0f");
+		setTOValue("texselect/1/"+Integer.toString(syphonTexture+1),1.0f,"%.0f");
+		setOF("ambient",ambient);
 		setOF("viscosity",viscosity);
+		setOF("diffusion",diffusion);
 		setOF("iterations",iterations);
 		setOF("dissipation",dissipation);
 		setOF("velocityDissipation",velocityDissipation);
@@ -182,6 +218,11 @@ class NavierOFSettings {
 		set.add(flameDensity);
 		set.add(flameTemperature);
 		set.add(flameRadius);
+		// Send smoke settings
+		set = new OscMessage("/navier/smoke");
+		set.add(smokeEnable?1.0f:0.0f);
+		set.add(smokeBuoyancy);
+		set.add(smokeWeight);
 		OFOSC.getInstance().sendMessage(set);
 	}
 
@@ -190,7 +231,6 @@ class NavierOFSettings {
 	class VisualizerNavierOF extends VisualizerSyphon {
 		NavierOFSettings[] settings;
 		int currentSettings;
-		int syphonTexture;  // Which texture to display 0:normal,1:vel,2:temp,3:press
 		int oldMouseX = 1, oldMouseY = 1;
 		private int bordercolor;
 		PImage buffer=null;
@@ -247,12 +287,11 @@ class NavierOFSettings {
 			} else if (components.length==4 && components[3].equals("capture") ) {
 				settings[currentSettings].setOF("capture",1);  // Capture a snapshot on both sides of syphon
 				captureNextFrame=true;
-			} else if (components.length==4 && components[3].equals("texselect") ) {
-				syphonTexture=msg.get(0).intValue();
-			} else if (components.length==4 && components[3].equals("preset") ) {
-				int newSetting=msg.get(0).intValue();
-				if (newSetting>=0 && newSetting <settings.length)
-					currentSetting=newSetting;
+			} else if (components.length==6 && components[3].equals("preset") ) {
+				int newSetting=8-Integer.valueOf(components[4]);
+				if (newSetting>=0 && newSetting <settings.length && msg.get(0).floatValue()>0.5f)
+					currentSettings=newSetting;
+				PApplet.println("using settings "+currentSettings);
 			} else if (currentSettings>0)  // Not defaults
 				settings[currentSettings].handleMessage(msg);
 			
