@@ -68,6 +68,13 @@ class NavierOFSettings {
 		OFOSC.getInstance().sendMessage(set);
 	}
 
+	public void setOF(String name, String value) {
+		// Send to OF
+		OscMessage set = new OscMessage("/navier/"+name);
+		set.add(value);
+		OFOSC.getInstance().sendMessage(set);
+	}
+	
 	public void setOF(String name, double v1, double v2) {
 		// Send to OF
 		OscMessage set = new OscMessage("/navier/"+name);
@@ -142,10 +149,6 @@ class NavierOFSettings {
 		} else if (components.length==4 && components[3].equals("savepreset") ) {
 			if (msg.get(0).floatValue() > 0.5f)
 			 PApplet.println("*** saving preset not implemented");
-		} else if (components.length==4 && components[3].equals("quit") ) {
-			setOF("quit",1);  // Make OF implementation exit
-		} else if (components.length==4 && components[3].equals("clear") ) {
-			setOF("clear",1);  // Clear frame buffers
 		} else 
 			PApplet.println("Unknown NavierOF Message: "+msg.toString());
 		PApplet.println("dissipation="+dissipation+", velocityDissipation="+velocityDissipation+", gravity="+gravity);
@@ -153,7 +156,7 @@ class NavierOFSettings {
 		setTO();
 	}
 	
-	private void setTOValue(String name, double value, String fmt) {
+	void setTOValue(String name, double value, String fmt) {
 		TouchOSC to=TouchOSC.getInstance();
 		OscMessage set = new OscMessage("/video/navierOF/"+name);
 		set.add(value);
@@ -162,7 +165,7 @@ class NavierOFSettings {
 		set.add(String.format(fmt, value));
 		to.sendMessage(set);
 	}
-	private void setTOValue(String name, double v1, double v2, String fmt) {
+	void setTOValue(String name, double v1, double v2, String fmt) {
 		TouchOSC to=TouchOSC.getInstance();
 		OscMessage set = new OscMessage("/video/navierOF/"+name);
 		set.add(v1);
@@ -208,6 +211,7 @@ class NavierOFSettings {
 		setOF("temperatureDissipation",tempDissipation);
 		setOF("pressureDissipation",pressDissipation);
 		setOF("gravity",gravity.x,gravity.y);
+		
 		// Send flame settings to OF
 		OscMessage set = new OscMessage("/navier/flame");
 		set.add(flameEnable?1.0f:0.0f);
@@ -300,14 +304,18 @@ class NavierOFSettings {
 
 			if (components.length<3 || !components[2].equals("navierOF")) {
 				PApplet.println("Navier: Expected /video/navierOF messages, got "+msg.toString());
-			} else if (components.length==4 && components[3].equals("capture") ) {
-				settings[currentSettings].setOF("capture",1);  // Capture a snapshot on both sides of syphon
+			} else if (components.length==4 && components[3].equals("capture")  && msg.get(0).floatValue()>0.5f) {
+				settings[currentSettings].setOF("capture","/tmp/ofcapt");  // Capture a snapshot on both sides of syphon
 				captureNextFrame=true;
 			} else if (components.length==6 && components[3].equals("preset") ) {
 				int newSetting=8-Integer.valueOf(components[4]);
 				if (newSetting>=0 && newSetting <settings.length && msg.get(0).floatValue()>0.5f)
 					currentSettings=newSetting;
 				PApplet.println("using settings "+currentSettings);
+			} else if (components.length==4 && components[3].equals("quit") ) {
+				settings[currentSettings].setOF("quit",1);  // Make OF implementation exit
+			} else if (components.length==4 && components[3].equals("clear") ) {
+				settings[currentSettings].setOF("clear",1);  // Clear frame buffers
 			} else if (components.length==6 && components[3].equals("texselect") ) {
 				if (msg.get(0).floatValue()>0.5f)
 					syphonTexture=Integer.valueOf(components[5])-1;
