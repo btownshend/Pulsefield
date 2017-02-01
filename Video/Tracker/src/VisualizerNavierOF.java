@@ -28,41 +28,68 @@ class NavierOFSettings {
 	}
 	
 	public void loadPreset() {
-		ambient=0f;
-		smokeBuoyancy=1.0f;
-		smokeWeight=0.05f;
-		smokeEnable=true;
-		diffusion=0.1f;
-		dissipation=0.99f;
-		velocityDissipation=0.99f;
-		pressDissipation=0.9f;
-		tempDissipation=0.99f;
-		gravity=Config.getVec("navier"+index,"gravity",new PVector(0f,-0.98f));
-		gravity=new PVector(0f,-0.98f);
-		viscosity=0.1f;
-		alpha=1.0f;
-		legScale=1.0f;
-		velScale=20.0f;
-		saturation=1.0f;
-		brightness=1.0f;
-		temperature=10f;
-		density=1f;
-		limitVelocity = 200;
-		flamePosition = new PVector(0,0.7f);
-		flameVelocity = new PVector(0,-2);
-		flameRadius = 10f;
-		flameTemperature = 10f;
-		flameDensity = 1f;
-		flameEnable = true;
-		iterations = 40;
-		multiColor = true;
+		String group="navier"+index;
+		ambient=Config.getFloat(group,"ambient",0f);
+		smokeBuoyancy=Config.getFloat(group,"smokeBuoyancy",1.0f);
+		smokeWeight=Config.getFloat(group,"smokeWeight",0.05f);
+		smokeEnable=Config.getInt(group,"smokeEnable",1)!=0;;
+		diffusion=Config.getFloat(group,"diffusion",0.1f);
+		dissipation=Config.getFloat(group,"dissipation",0.99f);
+		velocityDissipation=Config.getFloat(group,"velocityDissipation",0.99f);
+		pressDissipation=Config.getFloat(group,"pressDissipation",0.9f);
+		tempDissipation=Config.getFloat(group,"tempDissipation",0.99f);
+		gravity=Config.getVec(group,"gravity",new PVector(0f,-0.98f));
+		viscosity=Config.getFloat(group,"viscosity",0.1f);
+		alpha=Config.getFloat(group,"alpha",1.0f);
+		legScale=Config.getFloat(group,"legScale",1.0f);
+		velScale=Config.getFloat(group,"velScale",20.0f);
+		saturation=Config.getFloat(group,"saturation",1.0f);
+		brightness=Config.getFloat(group,"brightness",1.0f);
+		temperature=Config.getFloat(group,"temperature",10f);
+		density=Config.getFloat(group,"density",1f);
+		limitVelocity = Config.getFloat(group,"limitVelocity",200f);
+		flamePosition = Config.getVec(group,"flamePosition",new PVector(0,0.7f));
+		flameVelocity = Config.getVec(group,"flameVelocity",new PVector(0,-2));
+		flameRadius = Config.getFloat(group,"flameRadius",10f);
+		flameTemperature = Config.getFloat(group,"flameTemperature",10f);
+		flameDensity = Config.getFloat(group,"flameDensity",1f);
+		flameEnable = Config.getInt(group,"flameEnable",1)!=0;
+		iterations = Config.getInt(group,"iterations",40);
+		multiColor = Config.getInt(group,"multiColor",1)!=0;
 		modified = false;
 	}
 	
 	public void savePreset() {
 		String group="navier"+index;
+
 		PApplet.println("Saving presets for Navier "+index);
-		Config.setVec(group, "gravity", gravity);
+		Config.setFloat(group,"ambient",ambient);
+		Config.setFloat(group,"smokeBuoyancy",smokeBuoyancy);
+		Config.setFloat(group,"smokeWeight",smokeWeight);
+		Config.setInt(group,"smokeEnable",smokeEnable?1:0);
+		Config.setFloat(group,"diffusion",diffusion);
+		Config.setFloat(group,"dissipation",dissipation);
+		Config.setFloat(group,"velocityDissipation",velocityDissipation);
+		Config.setFloat(group,"pressDissipation",pressDissipation);
+		Config.setFloat(group,"tempDissipation",tempDissipation);
+		Config.setVec(group,"gravity",gravity);
+		Config.setFloat(group,"viscosity",viscosity);
+		Config.setFloat(group,"alpha",alpha);
+		Config.setFloat(group,"legScale",legScale);
+		Config.setFloat(group,"velScale",velScale);
+		Config.setFloat(group,"saturation",saturation);
+		Config.setFloat(group,"brightness",brightness);
+		Config.setFloat(group,"temperature",temperature);
+		Config.setFloat(group,"density",density);
+		Config.setFloat(group,"limitVelocity",limitVelocity);
+		Config.setVec(group,"flamePosition",flamePosition);
+		Config.setVec(group,"flameVelocity",flameVelocity);
+		Config.setFloat(group,"flameRadius",flameRadius);
+		Config.setFloat(group,"flameTemperature",flameTemperature);
+		Config.setFloat(group,"flameDensity",flameDensity);
+		Config.setInt(group,"flameEnable",flameEnable?1:0);
+		Config.setInt(group,"iterations",iterations);
+		Config.setInt(group,"multiColor",multiColor?1:0);
 		modified=false;
 	}
 	
@@ -167,13 +194,18 @@ class NavierOFSettings {
 		} else if (components.length==4 && components[3].equals("savepreset") ) {
 			if (msg.get(0).floatValue() > 0.5f)
 				savePreset();
+			return;
 		} else if (components.length==4 && components[3].equals("loadpreset") ) {
 			if (msg.get(0).floatValue() > 0.5f)
 				loadPreset();
-		} else 
+			return;
+		} else {
 			PApplet.println("Unknown NavierOF Message: "+msg.toString());
+			return;
+		}
 		PApplet.println("dissipation="+dissipation+", velocityDissipation="+velocityDissipation+", gravity="+gravity);
 		PApplet.println("flame at "+flamePosition+", vel="+flameVelocity+"enable="+flameEnable+", temp="+flameTemperature+", radius="+flameRadius+",den="+flameDensity);
+		modified=true;
 		setTO();
 	}
 	
