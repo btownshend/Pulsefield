@@ -210,6 +210,7 @@ class NavierOFSettings {
 		setTOValue("brightness",brightness,"%.2f");
 		setTOValue("saturation",saturation,"%.2f");
 		setTOValue("alpha",alpha,"%.2f");
+		setTOValue("velscale",velScale,"%.2f");
 		setTOValue("legscale",legScale,"%.2f");
 		setTOValue("temperature",temperature,"%.2f");
 		setTOValue("density",density,"%.2f");
