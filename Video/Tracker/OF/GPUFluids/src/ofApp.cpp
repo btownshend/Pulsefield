@@ -72,7 +72,7 @@ void ofApp::update(){
     oldM = m;
     ofPoint c = ofPoint(640*0.5, 480*0.5) - m;
     c.normalize();
-    ofFloatColor col(c.x*sin(ofGetElapsedTimef()),c.y*sin(ofGetElapsedTimef()),0.5f,0.1f);
+    ofFloatColor col(c.x*sin(ofGetElapsedTimef()),c.y*sin(ofGetElapsedTimef()),0.5f,1.0f);
    // cout << "mouse d=" << d << endl;
     if (!frozen) {
         fluid.addTemporalForce(m, d, col,10.0f);
