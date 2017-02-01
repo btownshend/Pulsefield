@@ -12,14 +12,11 @@ public class VisualizerSyphon extends Visualizer {
 	String appName, serverName;
 	boolean wasActive=false;
 	boolean captureNextFrame=false;
-	int gc[]=new int[256];
 	
 	VisualizerSyphon(PApplet parent, String appName, String serverName) {
 		super();
 		this.appName=appName;
 		this.serverName=serverName;
-		for (int i=0;i<256;i++)
-			gc[i]=(int)(Math.pow(i/256.0,1.0/2.2)*256+0.5);  // Gamma correction table
 	}
 
 	@Override
@@ -82,17 +79,6 @@ public class VisualizerSyphon extends Visualizer {
 	    		canvas.format=PConstants.ARGB;
 	    	}
 
-			if (false) {
-				canvas.loadPixels();
-				for (int i=0;i<canvas.pixels.length;i++) {
-					int pix=canvas.pixels[i];
-					if (((pix&0xff0000) != 0xff0000) && ((pix&0xff00)!=0xff00) && ((pix&0xff)!=0xff))
-						// Unsaturated pixel -- unmap gamma
-						pix=(pix&0xff000000)|(gc[pix>>16 & 0xff]<<16)|(gc[pix>>8 & 0xff]<<8)|(gc[pix & 0xff]);
-					canvas.pixels[i]=pix;
-					}
-				canvas.updatePixels();
-			}
 			if (captureNextFrame) {
 				String filename=new String("/tmp/canvas.tif");
 				PApplet.println("Saved frame in "+filename);
