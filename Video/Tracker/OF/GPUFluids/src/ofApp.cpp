@@ -214,6 +214,7 @@ void ofApp::update(){
         
     }
     
+    fluid.clearAlpha();
     syphon[0].publishTexture(&fluid.getTexture());
     syphon[2].publishTexture(&fluid.getVelocityTexture());
     syphon[3].publishTexture(&fluid.getTemperatureTexture());
