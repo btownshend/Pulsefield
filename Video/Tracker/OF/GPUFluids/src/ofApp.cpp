@@ -48,7 +48,7 @@ void ofApp::setup(){
     flameEnable=true;
     flamePosition=ofPoint(0.0,0.7);
     flameVelocity=ofPoint(0.0,-2.0);
-    flameColor= ofFloatColor(0.5,0.1,0.0,1.0);
+    flameColor= ofFloatColor(1,0.2,0.0,1.0);
     flameRadius=10.0f;
     flameTemperature=10.0f;
     flameDensity=1.0f;
