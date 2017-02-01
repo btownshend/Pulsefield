@@ -206,7 +206,7 @@ class NavierOFSettings {
 		setTOValue("velocityDissipation",Math.log10(1-velocityDissipation),"%.2f");
 		setTOValue("tempDissipation",Math.log10(1-tempDissipation),"%.2f");
 		setTOValue("pressDissipation",Math.log10(1-pressDissipation),"%.2f");
-		setTOValue("gravity",gravity.x, gravity.y,"%.2f,%.2f");
+		setTOValue("gravity",gravity.y, gravity.x,"%.2f,%.2f");
 		setTOValue("brightness",brightness,"%.2f");
 		setTOValue("saturation",saturation,"%.2f");
 		setTOValue("alpha",alpha,"%.2f");
@@ -218,8 +218,8 @@ class NavierOFSettings {
 		setTOValue("flameDensity",flameDensity,"%.2f");
 		setTOValue("flameRadius",flameRadius,"%.2f");
 		setTOValue("flameEnable",flameEnable?1.0:0.0,"%.0f");
-		setTOValue("flamePosition",flamePosition.x,flamePosition.y,"%.2f,%.2f");
-		setTOValue("flameVelocity",flameVelocity.x,flameVelocity.y,"%.2f,%.2f");
+		setTOValue("flamePosition",flamePosition.y,flamePosition.x,"%.2f,%.2f");
+		setTOValue("flameVelocity",flameVelocity.y,flameVelocity.x,"%.2f,%.2f");
 		setTOValue("smoke/buoyancy",smokeBuoyancy,"%.2f");
 		setTOValue("smoke/weight",smokeWeight,"%.2f");
 		setTOValue("smoke/enable",smokeEnable?1.0:0.0,"%.0f");
