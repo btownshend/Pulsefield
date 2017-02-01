@@ -472,9 +472,9 @@ class NavierOFSettings {
 				for (int l=0;l<pos.legs.length;l++) {
 					Leg leg = pos.legs[l];
 					int cellX = (int)( (-leg.getNormalizedPosition().x+1)*nwidth / 2);
-					cellX=Math.max(0,Math.min(cellX,nwidth));
+					cellX=Math.max(0,Math.min(cellX,nwidth-1));
 					int cellY = (int) ((leg.getNormalizedPosition().y+1)*nheight/ 2);
-					cellY=Math.max(0,Math.min(cellY,nheight));
+					cellY=Math.max(0,Math.min(cellY,nheight-1));
 
 					double dx=leg.getNormalizedVelocity().x*nwidth/2; // In pixels/sec
 					double dy=leg.getNormalizedVelocity().y*nheight/2;
