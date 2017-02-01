@@ -18,7 +18,7 @@ class NavierOFSettings {
 	float alpha, legScale, velScale, saturation, brightness, density, temperature;  // Parameters of leg effects
 	float flameTemperature, flameDensity, flameRadius;
 	boolean flameEnable;
-	boolean multiColor;
+	boolean multiColor, rainbow, border;
 	PVector flamePosition, flameVelocity, gravity;
 	boolean modified;  // True of any settings changed, but not written
 	
@@ -56,6 +56,8 @@ class NavierOFSettings {
 		flameEnable = Config.getInt(group,"flameEnable",1)!=0;
 		iterations = Config.getInt(group,"iterations",40);
 		multiColor = Config.getInt(group,"multiColor",1)!=0;
+		rainbow = Config.getInt(group,"rainbow",1)!=0;
+		border = Config.getInt(group,"border",1)!=0;
 		modified = false;
 	}
 	
@@ -90,6 +92,8 @@ class NavierOFSettings {
 		Config.setInt(group,"flameEnable",flameEnable?1:0);
 		Config.setInt(group,"iterations",iterations);
 		Config.setInt(group,"multiColor",multiColor?1:0);
+		Config.setInt(group,"rainbow",rainbow?1:0);
+		Config.setInt(group,"border",border?1:0);
 		modified=false;
 	}
 	
@@ -163,6 +167,10 @@ class NavierOFSettings {
 			density=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("multicolor")) {
 			multiColor=msg.get(0).floatValue()>0.5f;
+		} else if (components.length==4 && components[3].equals("rainbow")) {
+			rainbow=msg.get(0).floatValue()>0.5f;
+		} else if (components.length==4 && components[3].equals("border")) {
+			border=msg.get(0).floatValue()>0.5f;
 		} else if (components.length==4 && components[3].equals("gravityClear") ) {
 			gravity.x=0f; gravity.y=0f;
 		} else if (components.length==4 && components[3].equals("gravity") ) {
@@ -247,6 +255,8 @@ class NavierOFSettings {
 		setTOValue("temperature",temperature,"%.2f");
 		setTOValue("density",density,"%.2f");
 		setTOValue("multicolor",multiColor?1.0f:0.0f,"%.0f");
+		setTOValue("rainbow",rainbow?1.0f:0.0f,"%.0f");
+		setTOValue("border",border?1.0f:0.0f,"%.0f");
 		setTOValue("flameTemperature",flameTemperature,"%.2f");
 		setTOValue("flameDensity",flameDensity,"%.2f");
 		setTOValue("flameRadius",flameRadius,"%.2f");
@@ -267,7 +277,6 @@ class NavierOFSettings {
 		setOF("temperatureDissipation",tempDissipation);
 		setOF("pressureDissipation",pressDissipation);
 		setOF("gravity",gravity.x,gravity.y);
-		
 		// Send flame settings to OF
 		OscMessage set = new OscMessage("/navier/flame");
 		set.add(flameEnable?1.0f:0.0f);
@@ -418,6 +427,24 @@ class NavierOFSettings {
 			OFOSC.getInstance().sendMessage(msg);
 		}
 
+		void applyLineForce(int cellX0, int cellY0, int cellX1, int cellY1, double dx, double dy, float red, float green, float blue, float alpha, float radius, float temp, float dens) {
+			OscMessage msg = new OscMessage("/navier/lineforce");
+			msg.add(cellX0);
+			msg.add(cellY0);
+			msg.add(cellX1);
+			msg.add(cellY1);
+			msg.add((float)dx);
+			msg.add((float)dy);
+			msg.add(red/255.0f);
+			msg.add(green/255.0f);
+			msg.add(blue/255.0f);
+			msg.add(alpha);
+			msg.add(radius);
+			msg.add(temp);
+			msg.add(dens);
+			//PApplet.println("red="+(red/255.0)+", green="+(green/255.0)+", blue="+(blue/255.0));
+			OFOSC.getInstance().sendMessage(msg);
+		}
 		void updateForces() {
 			OscMessage msg = new OscMessage("/navier/updateForces");
 			OFOSC.getInstance().sendMessage(msg);
@@ -471,6 +498,19 @@ class NavierOFSettings {
 					dy *= settings[currentSettings].velScale;
 					applyForce(cellX, cellY, dx, dy, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,radius,settings[currentSettings].temperature,settings[currentSettings].density);
 				}
+			}
+			if (settings[currentSettings].border) {
+				int c;
+				if (settings[currentSettings].rainbow) {
+					float colorPeriod=20;   // Cycle through all colors in this many seconds
+					float hue=(float)(0.5+0.5*Math.sin(2*Math.PI*parent.frameCount/30/colorPeriod))/255f;
+					c=Color.HSBtoRGB(hue,settings[currentSettings].saturation,settings[currentSettings].brightness);
+				} else 
+					c=0;
+				applyLineForce(0,        0,         nwidth-1, 0,         0f, 0f, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,1f,settings[currentSettings].temperature,settings[currentSettings].density);
+				applyLineForce(0,        0,         0,        nheight-1, 0f, 0f, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,1f,settings[currentSettings].temperature,settings[currentSettings].density);
+				applyLineForce(0,        nheight-1, nwidth-1, nheight-1, 0f, 0f, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,1f,settings[currentSettings].temperature,settings[currentSettings].density);
+				applyLineForce(nwidth-1, 0,         nwidth-1, nheight-1, 0f, 0f, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,1f,settings[currentSettings].temperature,settings[currentSettings].density);
 			}
 			if (p.pmap.isEmpty()) {
 				// Keep it moving
