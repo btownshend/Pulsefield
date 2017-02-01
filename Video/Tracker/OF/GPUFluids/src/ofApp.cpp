@@ -24,7 +24,7 @@ void ofApp::setup(){
     
     // Initial Allocation
     //
-    fluid.allocate(width, height, 0.5, true);
+    fluid.allocate(width, height, 1.0, false);
     
     // Seting the gravity set up & injecting the background image
     //
@@ -183,7 +183,7 @@ void ofApp::update(){
             float scale=m.getArgAsFloat(2);
             if (width*scale!=fluid.getWidth() || height*scale!=fluid.getHeight() || scale!=fluid.scale) {
                 cout << "Resetting size to " << width << "x" << height << " with scale=" << scale << endl;
-                fluid.allocate(width*scale,height*scale,scale,true);
+                fluid.allocate(width*scale,height*scale,scale,false);
                 ofSetWindowShape(width, height);
             }
         } else if (m.getAddress()=="/navier/clear") {
