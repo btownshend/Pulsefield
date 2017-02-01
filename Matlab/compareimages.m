@@ -15,10 +15,10 @@ imshow((ij-ic(:,:,1:3)+0.5))
 title('Java-C++');
 
 
-sel=1:100:size(compare,1);
 setfig('Alpha Times');clf;
 lbls={'Red','Green','Blue','Alpha'};
 compare=[reshape(ic(:,:,1:4),[],4),reshape(ij(:,:,1:3),[],3)];
+sel=1:100:size(compare,1);
 cols='rgb';
 subplot(121);
 for c=1:3
