@@ -100,7 +100,7 @@ class NavierOFSettings {
 	}
 
 	public void handleMessage(OscMessage msg) {
-		PApplet.println("Navier message: "+msg.toString());
+		//PApplet.println("Navier message: "+msg.toString());
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
 
