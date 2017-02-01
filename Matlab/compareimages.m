@@ -1,40 +1,47 @@
-ic=imread('/tmp/pingpong.tif');
-ij=imread('/tmp/canvas.tif');
-setfig('C++');clf;
+ic=im2double(imread('/tmp/ofcapt-den.tif'));
+ij=im2double(imread('/tmp/canvas.tif'));
+setfig('Images');clf;
+subplot(221);
 imshow(ic(:,:,1:3));
 title('C++');
-setfig('Java');clf;
+subplot(222);
+imshow(ic(:,:,4));
+title('C++ alpha');
+subplot(223);
 imshow(ij);
 title('Java');
-setfig('map');clf;
+subplot(224);
+imshow((ij-ic(:,:,1:3)+0.5))
+title('Java-C++');
+
+
+sel=1:100:size(compare,1);
+setfig('Alpha Times');clf;
 lbls={'Red','Green','Blue','Alpha'};
+compare=[reshape(ic(:,:,1:4),[],4),reshape(ij(:,:,1:3),[],3)];
+cols='rgb';
+subplot(121);
 for c=1:3
-  ijf=ij(:,:,c);ijf=ijf(:)+1;
-  icf=ic(:,:,c); icf=icf(:)+1;
-  map=zeros(256,256);
-  for i=1:length(ijf)
-    map(ijf(i),icf(i))=map(ijf(i),icf(i))+1;
-  end
-  map(end+1,:)=nan;
-  map(:,end+1)=nan;
-  map(1,1)=0;
-  subplot(2,2,c);
-  pcolor(log10(map));
-  colorbar;
-  title(lbls{c});
-  shading flat;
+  plot(compare(sel,c).*compare(sel,4),compare(sel,c+4),['.',cols(c)]);
+  hold on;
 end
-subplot(2,2,4);
-for i=1:256
-  mnj(i)=mean(ijf(icf==i));
+%c=axis;c(1)=0;c(3)=0; axis(c);
+axis([0,1,0,1]);
+axis equal
+legend('R','G','B');
+xlabel('C++ color*alpha');
+ylabel('Java color');
+
+subplot(122);
+for c=1:3
+  plot(compare(sel,c),compare(sel,c+4),['.',cols(c)]);
+  hold on;
 end
-plot(0:255,mnj-1);
-hold on;
-plot(0:255,((0:255)/256).^2.2*256,':');
-title('Gamma=2.2');
-xlabel('C++');
-ylabel('Java');
+%c=axis;c(1)=0;c(3)=0; axis(c);
+axis([0,1,0,1]);
+axis equal
+legend('R','G','B');
+xlabel('C++ color');
+ylabel('Java color');
 
-
-% Compute relative on a pixel-by-pixel basis
-rel=log(im2double(ij(:,:,1:3)))./log(im2double(ic(:,:,1:3)));
+fprintf('Alpha = [%d,%d], mean %.1f\n', min(compare(:,4)), max(compare(:,4)), mean(compare(:,4)));
