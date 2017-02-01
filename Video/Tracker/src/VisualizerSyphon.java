@@ -93,6 +93,16 @@ public class VisualizerSyphon extends Visualizer {
 //			g.scale(-1,1);
 			g.imageMode(PConstants.CENTER);
 			float ppm=Math.max(canvas.width/Tracker.getFloorSize().x,canvas.height/Tracker.getFloorSize().y);
+			if (false) {
+				canvas.loadPixels();
+				for (int x=0;x<3;x++)
+					for (int y=0;y<3;y++) {
+						int c=canvas.pixels[x+canvas.width*y];
+						PApplet.print("("+x+","+y+")="+PApplet.hex(c)+" ");
+					}
+				PApplet.println("");
+				//canvas.updatePixels();
+			}
 			drawImage(g,canvas,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,
 					canvas.width/ppm,canvas.height/ppm);
 			wasActive=true;
