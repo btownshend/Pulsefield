@@ -1224,8 +1224,8 @@ public class Tracker extends PApplet {
 		if (people.pmap.size()==0)
 			if (autocycle)
 				cycle();
-			else if (currentvis != getAppIndex("Bowie"))
-				setapp(getAppIndex("Navier"));
+//			else if (currentvis != getAppIndex("Bowie"))
+//				setapp(getAppIndex("Navier"));
 	}
 
 	synchronized public void pfentry(int sampnum, float elapsed, int id, int channel) {
