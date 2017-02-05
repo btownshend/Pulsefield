@@ -50,6 +50,7 @@ public class VisualizerProximity extends VisualizerPS {
 	
 	public void update(PApplet parent, People allpos) {
 		super.update(parent,allpos);
+		ts=Ableton.getInstance().trackSet;
 		titlePos.x=Tracker.minx+Tracker.getFloorSize().x/4;
 		titlePos.y=Tracker.miny+0.24f+0.1f;
 		
