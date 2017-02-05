@@ -45,7 +45,7 @@ public class VisualizerZiggy extends VisualizerWhack {
 		g.pushMatrix();
 		g.translate(Tracker.getFloorCenter().x, Tracker.getFloorCenter().y);
 		g.scale(-1,1);
-		g.image(playadust, 0,0, glength, gheight);
+		//g.image(playadust, 0,0, glength, gheight);
 		g.popMatrix();
 		// Add drawing code here
 	}
