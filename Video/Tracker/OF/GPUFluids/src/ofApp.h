@@ -35,7 +35,6 @@ class ofApp : public ofBaseApp{
     
     ofVec2f oldM;
     int     width,height;
-    bool    bPaint, bObstacle, bBounding, bClear;
     
     // ofxOsc stuff
     ofxOscReceiver receiver;

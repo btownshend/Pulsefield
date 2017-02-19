@@ -265,14 +265,6 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    if( key == 'p')
-        bPaint = !bPaint;
-    if( key == 'o')
-        bObstacle = !bObstacle;
-    if( key == 'b')
-        bBounding = !bBounding;
-    if( key == 'c')
-        bClear = !bClear;
 }
 
 //--------------------------------------------------------------
