@@ -39,9 +39,14 @@ void ofApp::setup(){
     fluid.begin();
     ofSetColor(0,0);
     ofSetColor(255);
-    ofDrawCircle(width*0.5, height*0.35, 40);
-    fluid.end();
-    fluid.setUseObstacles(false);
+    //ofDrawCircle(width*0.5, height*0.35, 40);
+    ofDrawLine(1, 1, 1, height-1);
+    ofDrawLine(width-1,1,width-1,height-1);
+    ofDrawLine(1, height-1, width-1, height-1);
+    ofDrawLine(1, 1, width-1, 1);
+    //ofDrawLine(0,0,width-1,height-1);  // Test with a diagonal
+        fluid.end();
+    fluid.setUseObstacles(true);
     
     // Adding constant forces
     //
