@@ -23,7 +23,7 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
-    
+    void setSize(int _width, int _height, float scale, Boolean hd);
 private:
     vector<punctualForce> pendingForces;
     void updateFlame();

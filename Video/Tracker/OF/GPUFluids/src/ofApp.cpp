@@ -18,13 +18,9 @@ void ofApp::setup(){
     ofSetFrameRate(30); // if vertical sync is off, we can go a bit fast... this caps the framerate
     ofEnableAlphaBlending();
     ofSetCircleResolution(100);
-    width = 500;
-    height = 500;
     frozen = false;
     
-    // Initial Allocation
-    //
-    fluid.allocate(width, height, 1.0, true);
+    setSize(500, 500, 1.0, true);
     
     // Seting the gravity set up & injecting the background image
     //
@@ -59,6 +55,15 @@ void ofApp::setup(){
     flameDensity=1.0f;
     updateFlame();
     
+    
+}
+
+void ofApp::setSize(int _width, int _height, float scale, Boolean hd) {
+    // Initial Allocation
+    //
+    width=_width;
+    height=_height;
+    fluid.allocate(width*scale,height*scale,scale,hd);
     ofSetWindowShape(width, height);
 }
 
@@ -188,8 +193,7 @@ void ofApp::update(){
             float scale=m.getArgAsFloat(2);
             if (width*scale!=fluid.getWidth() || height*scale!=fluid.getHeight() || scale!=fluid.scale) {
                 cout << "Resetting size to " << width << "x" << height << " with scale=" << scale << endl;
-                fluid.allocate(width*scale,height*scale,scale,true);
-                ofSetWindowShape(width, height);
+                setSize(width*scale,height*scale,scale,true);
             }
         } else if (m.getAddress()=="/navier/clear") {
             fluid.clear();
