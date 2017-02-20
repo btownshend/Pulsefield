@@ -30,19 +30,6 @@ void ofApp::setup(){
     fluid.setGravity(ofVec2f(0.0,0.0));
     //    fluid.setGravity(ofVec2f(0.0,0.0098));
     
-    //  Set obstacle
-    //
-    fluid.begin();
-    ofSetColor(0,0);
-    ofSetColor(255);
-    //ofDrawCircle(width*0.5, height*0.35, 40);
-    ofDrawLine(1, 1, 1, height-1);
-    ofDrawLine(width-1,1,width-1,height-1);
-    ofDrawLine(1, height-1, width-1, height-1);
-    ofDrawLine(1, 1, width-1, 1);
-    //ofDrawLine(0,0,width-1,height-1);  // Test with a diagonal
-        fluid.end();
-    fluid.setUseObstacles(true);
     
     // Adding constant forces
     //
@@ -84,6 +71,21 @@ void ofApp::update(){
     c.normalize();
     ofFloatColor col(c.x*sin(ofGetElapsedTimef()),c.y*sin(ofGetElapsedTimef()),0.5f,1.0f);
    // cout << "mouse d=" << d << endl;
+    
+    //  Set obstacle
+    //
+    fluid.begin();
+        ofSetColor(255);
+        //ofDrawCircle(width*0.5, height*0.35, 40);
+        ofDrawLine(1, 1, 1, height-1);
+        ofDrawLine(width-1,1,width-1,height-1);
+        ofDrawLine(1, height-1, width-1, height-1);
+        ofDrawLine(1, 1, width-1, 1);
+        //ofDrawLine(0,0,width-1,height-1);  // Test with a diagonal
+    fluid.end();
+    // The main texture of fluid is copied to the obstacles FBO at each fluid.update()
+    fluid.setUseObstacles(true);
+    
     if (!frozen) {
         fluid.addTemporalForce(m, d, col,10.0f);
         
