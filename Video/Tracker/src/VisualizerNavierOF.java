@@ -427,21 +427,13 @@ class NavierOFSettings {
 			OFOSC.getInstance().sendMessage(msg);
 		}
 
-		void applyLineForce(int cellX0, int cellY0, int cellX1, int cellY1, double dx, double dy, float red, float green, float blue, float alpha, float radius, float temp, float dens) {
-			OscMessage msg = new OscMessage("/navier/lineforce");
-			msg.add(cellX0);
-			msg.add(cellY0);
-			msg.add(cellX1);
-			msg.add(cellY1);
-			msg.add((float)dx);
-			msg.add((float)dy);
+		void setBorder(boolean onOff, float red, float green, float blue) {
+			OscMessage msg = new OscMessage("/navier/border");
+			msg.add(onOff?1.0f:0.0f);
 			msg.add(red/255.0f);
 			msg.add(green/255.0f);
 			msg.add(blue/255.0f);
-			msg.add(alpha);
-			msg.add(radius);
-			msg.add(temp);
-			msg.add(dens);
+
 			//PApplet.println("red="+(red/255.0)+", green="+(green/255.0)+", blue="+(blue/255.0));
 			OFOSC.getInstance().sendMessage(msg);
 		}
@@ -499,19 +491,16 @@ class NavierOFSettings {
 					applyForce(cellX, cellY, dx, dy, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,radius,settings[currentSettings].temperature,settings[currentSettings].density);
 				}
 			}
-			if (settings[currentSettings].border) {
-				int c;
-				if (settings[currentSettings].rainbow) {
-					float colorPeriod=20;   // Cycle through all colors in this many seconds
-					float hue=(float)(0.5+0.5*Math.sin(2*Math.PI*parent.frameCount/30/colorPeriod))/255f;
-					c=Color.HSBtoRGB(hue,settings[currentSettings].saturation,settings[currentSettings].brightness);
-				} else 
-					c=0;
-				applyLineForce(0,        0,         nwidth-1, 0,         0f, 0f, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,1f,settings[currentSettings].temperature,settings[currentSettings].density);
-				applyLineForce(0,        0,         0,        nheight-1, 0f, 0f, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,1f,settings[currentSettings].temperature,settings[currentSettings].density);
-				applyLineForce(0,        nheight-1, nwidth-1, nheight-1, 0f, 0f, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,1f,settings[currentSettings].temperature,settings[currentSettings].density);
-				applyLineForce(nwidth-1, 0,         nwidth-1, nheight-1, 0f, 0f, parent.red(c), parent.green(c),parent.blue(c),settings[currentSettings].alpha,1f,settings[currentSettings].temperature,settings[currentSettings].density);
-			}
+
+			int c;
+			if (settings[currentSettings].rainbow) {
+				float colorPeriod=20;   // Cycle through all colors in this many seconds
+				float hue=(float)(0.5+0.5*Math.sin(2*Math.PI*parent.frameCount/30/colorPeriod))/255f;
+				c=Color.HSBtoRGB(hue,settings[currentSettings].saturation,settings[currentSettings].brightness);
+			} else 
+				c=0;
+			setBorder(settings[currentSettings].border,parent.red(c), parent.green(c),parent.blue(c));
+
 			if (p.pmap.isEmpty()) {
 				// Keep it moving
 				//applyForce((int)(Math.random()*nwidth), (int)(Math.random()*nheight), limitVelocity/8*(Math.random()*2-1), limitVelocity/8*(Math.random()*2-1));

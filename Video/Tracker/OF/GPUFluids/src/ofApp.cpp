@@ -42,6 +42,8 @@ void ofApp::setup(){
     flameDensity=1.0f;
     updateFlame();
     
+    borderColor=ofColor(255,0,0);
+    borderEnable=true;
     
 }
 
@@ -75,6 +77,7 @@ void ofApp::update(){
     //  Set obstacle
     //
     fluid.begin();
+    if (borderEnable) {
         ofSetColor(255);
         //ofDrawCircle(width*0.5, height*0.35, 40);
         ofDrawLine(1, 1, 1, height-1);
@@ -82,6 +85,9 @@ void ofApp::update(){
         ofDrawLine(1, height-1, width-1, height-1);
         ofDrawLine(1, 1, width-1, 1);
         //ofDrawLine(0,0,width-1,height-1);  // Test with a diagonal
+    } else {
+        ofClear(0);
+    }
     fluid.end();
     // The main texture of fluid is copied to the obstacles FBO at each fluid.update()
     fluid.setUseObstacles(true);
@@ -130,6 +136,13 @@ void ofApp::update(){
                 fluid.smokeBuoyancy=m.getArgAsFloat(1);
                 fluid.smokeWeight=m.getArgAsFloat(2);
                 cout << "smoke=" << (fluid.smokeEnabled?"Enabled":"Disabled") << ", " << fluid.smokeBuoyancy << ", " << fluid.smokeWeight << endl;
+            }
+        } else if (m.getAddress()=="/navier/border") {
+            ofColor newColor=ofColor(m.getArgAsFloat(1),m.getArgAsFloat(2),m.getArgAsFloat(3));
+            if (borderEnable!=m.getArgAsFloat(0)>0.5 || borderColor!=newColor) {
+                borderEnable=m.getArgAsFloat(0)>0.5;
+                borderColor=newColor;
+                cout << "border=" << (borderEnable?"Enabled":"Disabled") << ": " << borderColor << endl;
             }
         } else if (m.getAddress()=="/navier/viscosity") {
             if (fluid.viscosity!=m.getArgAsFloat(0)) {

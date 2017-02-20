@@ -45,6 +45,10 @@ private:
     ofFloatColor flameColor;
     float flameRadius,flameTemperature,flameDensity;
     
+    // Border parameters
+    Boolean borderEnable;
+    ofFloatColor borderColor;
+    
     // Freeze update
     Boolean frozen;
 };
