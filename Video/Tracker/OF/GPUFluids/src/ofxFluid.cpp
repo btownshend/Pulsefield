@@ -515,8 +515,9 @@ void ofxFluid::update(){
     advect(pingPong, dissipation);
     pingPong.swap();
     
-    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
-    ofDisableBlendMode();
+    ofEnableAlphaBlending();
+    //ofEnableBlendMode(OF_BLENDMODE_ADD);
+    //glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     //  Update temperature, Color (PingPong) and Velocity buffers
     //
     if(colorAddPct>0.0||velocityAddPct>0.0){
@@ -543,34 +544,33 @@ void ofxFluid::update(){
     }
     
 
+
     // Apply one-time (temporal) forces to temperature, density(color;pingpong), and velocity buffers
     if ( temporalForces.size() != 0){
-        ofEnableBlendMode(OF_BLENDMODE_ADD);
-        ofDisableBlendMode();
         for(int i = 0; i < temporalForces.size(); i++){
             applyImpulse(temperatureBuffer, temporalForces[i].pos, ofVec3f(temporalForces[i].temp,temporalForces[i].temp,temporalForces[i].temp), temporalForces[i].rad);
-            applyImpulse(pingPong, temporalForces[i].pos, temporalForces[i].color * temporalForces[i].den, temporalForces[i].rad);
             if (temporalForces[i].vel.length() != 0) {
                 applyImpulse(velocityBuffer , temporalForces[i].pos, temporalForces[i].vel, temporalForces[i].rad);
                 velocityUpdated=true;
             }
+
+            applyImpulse(pingPong, temporalForces[i].pos, temporalForces[i].color * temporalForces[i].den, temporalForces[i].rad);
         }
         temporalForces.clear();
     }
     
     // Apply constant forces to temperature, density(color;pingpong), and velocity buffers
     if ( constantForces.size() != 0){
-        ofEnableBlendMode(OF_BLENDMODE_ADD);
-        ofDisableBlendMode();
         for(int i = 0; i < constantForces.size(); i++){
             applyImpulse(temperatureBuffer, constantForces[i].pos, ofVec3f(constantForces[i].temp,constantForces[i].temp,constantForces[i].temp), constantForces[i].rad);
-            applyImpulse(pingPong, constantForces[i].pos, constantForces[i].color * constantForces[i].den, constantForces[i].rad);
-            if (constantForces[i].vel.length() != 0) {
+             if (constantForces[i].vel.length() != 0) {
                 applyImpulse(velocityBuffer , constantForces[i].pos, constantForces[i].vel, constantForces[i].rad);
                 velocityUpdated=true;
             }
+            applyImpulse(pingPong, constantForces[i].pos, constantForces[i].color * constantForces[i].den, constantForces[i].rad);
         }
     }
+    ofDisableBlendMode();
     if (velocityUpdated)
         project();
 }
@@ -695,7 +695,6 @@ void ofxFluid::computeDivergence(){
 }
 
 void ofxFluid::applyImpulse(ofxSwapBuffer& _buffer, ofBaseHasTexture &_baseTex, float _pct, bool _isVel){
-    glEnable(GL_BLEND);
     _buffer.dst->begin();
     applyTextureShader.begin();
     applyTextureShader.setUniformTexture("backbuffer", *(_buffer.src), 0);
@@ -706,11 +705,9 @@ void ofxFluid::applyImpulse(ofxSwapBuffer& _buffer, ofBaseHasTexture &_baseTex, 
     applyTextureShader.end();
     _buffer.dst->end();
     _buffer.swap();
-    glDisable(GL_BLEND);
 }
 
 void ofxFluid::applyImpulse(ofxSwapBuffer& _buffer, ofPoint _force, ofPoint _value, float _radio){
-    glEnable(GL_BLEND);
     _buffer.src->begin();
     applyImpulseShader.begin();
     
@@ -722,12 +719,9 @@ void ofxFluid::applyImpulse(ofxSwapBuffer& _buffer, ofPoint _force, ofPoint _val
     
     applyImpulseShader.end();
     _buffer.src->end();
-    glDisable(GL_BLEND);
 }
 
 void ofxFluid::applyImpulse(ofxSwapBuffer& _buffer, ofPoint _force, ofFloatColor _value, float _radio){
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     _buffer.src->begin();
     applyImpulseShader.begin();
     
@@ -739,7 +733,6 @@ void ofxFluid::applyImpulse(ofxSwapBuffer& _buffer, ofPoint _force, ofFloatColor
     
     applyImpulseShader.end();
     _buffer.src->end();
-    glDisable(GL_BLEND);
 }
 
 void ofxFluid::applyBuoyancy(){
