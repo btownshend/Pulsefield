@@ -201,6 +201,7 @@ void ofApp::update(){
             saveTexture(filename+"-vel.tif",fluid.getVelocityTexture());
             saveTexture(filename+"-temp.tif",fluid.getTemperatureTexture());
             saveTexture(filename+"-press.tif",fluid.getPressureTexture());
+            saveTexture(filename+"-div.tif",fluid.getDivergenceTexture());
             cout << "Saved textures to " << filename << endl;
         } else if (m.getAddress()=="/navier/setsize") {
             int width=m.getArgAsInt32(0);
@@ -269,7 +270,7 @@ void ofApp::saveTexture(string filename, const ofTexture &tex) {
         ofPixels pixels;  // Converts to 8-bit from 32F texture format
         tex.readToPixels(pixels);
         ofSaveImage(pixels,filename);
-    } else if (td.glInternalFormat==GL_RGBA32F || td.glInternalFormat==GL_RGB32F ) {
+    } else if (td.glInternalFormat==GL_RGBA32F || td.glInternalFormat==GL_RGB32F || td.glInternalFormat==GL_RGB16F ) {
         ofFloatPixels pixels;  // Converts to 8-bit from 32F texture format
         tex.readToPixels(pixels);
         ofSaveImage(pixels,filename);
