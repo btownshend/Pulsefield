@@ -1,6 +1,7 @@
 dir='/tmp/';
 iv=im2double(imread([dir,'/ofcapt-vel.tif']));
 id=im2double(imread([dir,'/ofcapt-den.tif']));
+id2=im2double(imread([dir,'/ofcapt-den2.tif']));
 ip=im2double(imread([dir,'/ofcapt-press.tif']));
 ip=ip(:,:,1);
 it=im2double(imread([dir,'/ofcapt-temp.tif']));
@@ -55,7 +56,14 @@ subplot(224)
 imshow(pfinal,[min(pfinal(:)),max(pfinal(:))]);
 title('Pressure');
 suptitle('Final');
-return;
+
+setfig('denscheck');
+subplot(121);
+imshow(id(:,:,1:3));
+title('Den');
+subplot(122);
+imshow(id2(:,:,1:3));
+title('Den2');
 
 function plotdiv(div,name)
 ii=div(:,:,1);

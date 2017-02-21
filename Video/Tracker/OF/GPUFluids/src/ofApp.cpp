@@ -199,6 +199,8 @@ void ofApp::update(){
             saveTexture(filename+"-temp.tif",fluid.getTemperatureTexture());
             saveTexture(filename+"-press.tif",fluid.getPressureTexture());
             saveTexture(filename+"-div.tif",fluid.getDivergenceTexture());
+            fluid.update();
+            saveTexture(filename+"-den2.tif",fluid.getTexture());
             cout << "Saved textures to " << filename << endl;
         } else if (m.getAddress()=="/navier/setsize") {
             int width=m.getArgAsInt32(0);
