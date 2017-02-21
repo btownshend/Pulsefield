@@ -101,6 +101,9 @@ public:
         return pressureBuffer.src->getTexture();
     };
     
+    ofTexture & getDivergenceTexture() {
+        return divergenceFbo.getTexture();
+    };
     //ofTexture & getTexture();
     const ofTexture & getTexture() const;
     
