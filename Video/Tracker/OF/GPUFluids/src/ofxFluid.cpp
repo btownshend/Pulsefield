@@ -47,7 +47,7 @@ ofxFluid::ofxFluid(){
     // ADVECT
     fragmentShader = STRINGIFY(uniform sampler2DRect Obstacles;         // Real obstacles, non-zero in red channel
                                uniform sampler2DRect backbuffer;
-                               uniform sampler2DRect VelocityTexture;
+                               uniform sampler2DRect Velocity;
                                
                                uniform float TimeStep;
                                uniform float Dissipation;
@@ -62,7 +62,7 @@ ofxFluid::ofxFluid(){
                                        return;
                                    }
                                    
-                                   vec2 u = texture2DRect(VelocityTexture, st).rg;
+                                   vec2 u = texture2DRect(Velocity, st).rg;
                                    vec2 coord =  st - TimeStep * u;
                                    
                                    gl_FragColor = Dissipation * texture2DRect(backbuffer, coord);
@@ -616,7 +616,7 @@ void ofxFluid::advect(ofxSwapBuffer& _buffer, float _dissipation){
     shader.begin();
     shader.setUniform1f("TimeStep", timeStep);
     shader.setUniform1f("Dissipation", _dissipation);
-    shader.setUniformTexture("VelocityTexture", velocityBuffer.src->getTexture(), 0);
+    shader.setUniformTexture("Velocity", velocityBuffer.src->getTexture(), 0);
     shader.setUniformTexture("backbuffer", _buffer.src->getTexture(), 1);
     shader.setUniformTexture("Obstacles", obstaclesFbo.getTexture(), 2);
     renderFrame(gridWidth,gridHeight);
