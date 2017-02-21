@@ -71,7 +71,7 @@ ofxFluid::ofxFluid(){
                            );
     
     
-    // JACOBI
+    // JACOBI for pressure update
     string fragmentJacobiShader = STRINGIFY(uniform sampler2DRect Pressure;
                                             uniform sampler2DRect Divergence;
                                             uniform sampler2DRect Obstacles;
@@ -110,6 +110,41 @@ ofxFluid::ofxFluid(){
     jacobiShader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragmentJacobiShader);
     jacobiShader.linkProgram();
     
+    // JACOBI for diffusion update
+    string fragmentDiffusionShader = STRINGIFY(uniform sampler2DRect Buffer;
+                                            uniform sampler2DRect Obstacles;
+                                            
+                                            uniform float Alpha;
+                                            uniform float InverseBeta;
+                                            
+                                            void main() {
+                                                vec2 st = gl_TexCoord[0].st;
+                                                
+                                                vec4 bN = texture2DRect(Buffer, st + vec2(0.0, 1.0));
+                                                vec4 bS = texture2DRect(Buffer, st + vec2(0.0, -1.0));
+                                                vec4 bE = texture2DRect(Buffer, st + vec2(1.0, 0.0));
+                                                vec4 bW = texture2DRect(Buffer, st + vec2(-1.0, 0.0));
+                                                vec4 bC = texture2DRect(Buffer, st);
+                                                
+                                                float oN = texture2DRect(Obstacles, st + vec2(0.0, 1.0)).r;
+                                                float oS = texture2DRect(Obstacles, st + vec2(0.0, -1.0)).r;
+                                                float oE = texture2DRect(Obstacles, st + vec2(1.0, 0.0)).r;
+                                                float oW = texture2DRect(Obstacles, st + vec2(-1.0, 0.0)).r;
+                                                
+                                                // Assume obstacles have the same buffer value just inside as outside; So there is no diffusion through the boundary
+                                                if (oN > 0.1) bN = bC;
+                                                if (oS > 0.1) bS = bC;
+                                                if (oE > 0.1) bE = bC;
+                                                if (oW > 0.1) bW = bC;
+                                                
+                                                gl_FragColor = (bW + bE + bS + bN + Alpha * bC) * InverseBeta;
+                                            }
+                                            
+                                            );
+    
+    diffusionShader.unload();
+    diffusionShader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragmentDiffusionShader);
+    diffusionShader.linkProgram();
     
     //SUBSTRACT GRADIENT
     string fragmentSubtractGradientShader = STRINGIFY(uniform sampler2DRect Velocity;
@@ -605,20 +640,19 @@ void ofxFluid::jacobi(){
     pressureBuffer.dst->end();
 }
 
-// Using the jacobiShader to solve the viscous diffusion equation (also Poisson)
+// Using the diffusionShader to solve the viscous diffusion equation (also Poisson)
 void ofxFluid::viscousDiffusion(ofxSwapBuffer& _buffer, float _viscosity){
     _buffer.dst->begin();
-    jacobiShader.begin();
+    diffusionShader.begin();
     float alpha=cellSize * cellSize/_viscosity*ofGetFrameRate();
-    jacobiShader.setUniform1f("Alpha",alpha);
-    jacobiShader.setUniform1f("InverseBeta", 1.0f/(4+alpha));
-    jacobiShader.setUniformTexture("Pressure", _buffer.src->getTexture(), 0);
-    jacobiShader.setUniformTexture("Divergence", _buffer.src->getTexture(), 1);
-    jacobiShader.setUniformTexture("tex0", obstaclesFbo.getTexture(), 2);
+    diffusionShader.setUniform1f("Alpha",alpha);
+    diffusionShader.setUniform1f("InverseBeta", 1.0f/(4+alpha));
+    diffusionShader.setUniformTexture("Buffer", _buffer.src->getTexture(), 0);
+    diffusionShader.setUniformTexture("Obstacles", obstaclesFbo.getTexture(), 1);
     
     renderFrame(gridWidth,gridHeight);
     
-    jacobiShader.end();
+    diffusionShader.end();
     _buffer.dst->end();
 }
 

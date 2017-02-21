@@ -143,6 +143,7 @@ private:
     ofShader applyImpulseShader;
     ofShader applyTextureShader;
     ofShader applyBuoyancyShader;
+    ofShader diffusionShader;
     
     ofxSwapBuffer  velocityBuffer;
     ofxSwapBuffer  temperatureBuffer;
