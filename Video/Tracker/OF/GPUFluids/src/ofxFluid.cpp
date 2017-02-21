@@ -84,6 +84,13 @@ ofxFluid::ofxFluid(){
                                             void main() {
                                                 vec2 st = gl_TexCoord[0].st;
                                                 
+                                                float oC = texture2DRect(Obstacles, st).r;
+                                                if (oC > 0.1) {
+                                                    // Pressure inside obstacles not used
+                                                    gl_FragColor=vec4(0.0,0.0,0.0,0.0);
+                                                    return;
+                                                }
+                                                
                                                 vec4 pN = texture2DRect(Pressure, st + vec2(0.0, 1.0));
                                                 vec4 pS = texture2DRect(Pressure, st + vec2(0.0, -1.0));
                                                 vec4 pE = texture2DRect(Pressure, st + vec2(1.0, 0.0));
