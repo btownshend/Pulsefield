@@ -246,19 +246,20 @@ void ofApp::update(){
     
     
     if (false) {
-        ofTexture &t=fluid.getTexture();
+        // Display the pixel values from top left corner for debuggin
+        ofTexture &t=fluid.getVelocityTexture();
         ofTextureData td=t.getTextureData();
         cout << "Texture type=" << hex << td.glInternalFormat << ", min=" << td.minFilter << ", mag=" << td.magFilter << ", compression=" << td.compressionType << dec << endl;
-        ofPixels pixels;  // Converts to 8-bit from 32F texture format
+        ofFloatPixels pixels;  // Converts to 8-bit from 32F texture format
         t.readToPixels(pixels);
         cout << "pixels: type=" << pixels.getImageType() << ", width=" << pixels.getWidth() << ", height=" << pixels.getHeight() << ", bits/pix=" << pixels.getBitsPerPixel() << endl;
         for (int x=0;x<3;x++) {
             for (int y=0;y<3;y++) {
-                ofColor c=pixels.getColor(x,y);
-                cout << "(" << x << "," << y << ")="  << hex << c << dec << " " ;
+                auto c=pixels.getColor(x,y);
+                cout << "(" << x << "," << y << ")="  << c << " " ;
             }
+            cout << endl;
         }
-        cout << endl;
     }
 }
 
