@@ -58,6 +58,8 @@ ofxFluid::ofxFluid(){
                                    float solid = texture2DRect(Obstacles, st).r;
                                    
                                    if (solid > 0.1) {
+                                       // Pixel is within an obstacle, zero it
+                                       // Note that velocities within obstacles are never used by the computeDivergence shader
                                        gl_FragColor = vec4(0.0,0.0,0.0,0.0);
                                        return;
                                    }
@@ -146,7 +148,7 @@ ofxFluid::ofxFluid(){
     diffusionShader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragmentDiffusionShader);
     diffusionShader.linkProgram();
     
-    //SUBSTRACT GRADIENT
+    //SUBTRACT GRADIENT
     string fragmentSubtractGradientShader = STRINGIFY(uniform sampler2DRect Velocity;
                                                       uniform sampler2DRect Pressure;
                                                       uniform sampler2DRect Obstacles;
@@ -208,6 +210,7 @@ ofxFluid::ofxFluid(){
                                                            vec2 vS = texture2DRect(Velocity, st + vec2(0.0,-1.0)).rg;
                                                            vec2 vE = texture2DRect(Velocity, st + vec2(1.0,0.0)).rg;
                                                            vec2 vW = texture2DRect(Velocity, st + vec2(-1.0,0.0)).rg;
+                                                           vec2 vC = texture2DRect(Velocity, st).rg;
                                                            
                                                            float oN = texture2DRect(Obstacles, st + vec2(0.0,1.0)).r;
                                                            float oS = texture2DRect(Obstacles, st + vec2(0.0,-1.0)).r;
