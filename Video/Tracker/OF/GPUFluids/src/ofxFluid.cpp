@@ -45,7 +45,7 @@ ofxFluid::ofxFluid(){
     internalFormat = GL_RGBA;
     
     // ADVECT
-    fragmentShader = STRINGIFY(uniform sampler2DRect tex0;         // Real obstacles
+    fragmentShader = STRINGIFY(uniform sampler2DRect Obstacles;         // Real obstacles, non-zero in red channel
                                uniform sampler2DRect backbuffer;
                                uniform sampler2DRect VelocityTexture;
                                
@@ -55,7 +55,7 @@ ofxFluid::ofxFluid(){
                                void main(){
                                    vec2 st = gl_TexCoord[0].st;
                                    
-                                   float solid = texture2DRect(tex0, st).r;
+                                   float solid = texture2DRect(Obstacles, st).r;
                                    
                                    if (solid > 0.1) {
                                        gl_FragColor = vec4(0.0,0.0,0.0,0.0);
@@ -74,7 +74,7 @@ ofxFluid::ofxFluid(){
     // JACOBI
     string fragmentJacobiShader = STRINGIFY(uniform sampler2DRect Pressure;
                                             uniform sampler2DRect Divergence;
-                                            uniform sampler2DRect tex0;
+                                            uniform sampler2DRect Obstacles;
                                             
                                             uniform float Alpha;
                                             uniform float InverseBeta;
@@ -88,15 +88,17 @@ ofxFluid::ofxFluid(){
                                                 vec4 pW = texture2DRect(Pressure, st + vec2(-1.0, 0.0));
                                                 vec4 pC = texture2DRect(Pressure, st);
                                                 
-                                                vec3 oN = texture2DRect(tex0, st + vec2(0.0, 1.0)).rgb;
-                                                vec3 oS = texture2DRect(tex0, st + vec2(0.0, -1.0)).rgb;
-                                                vec3 oE = texture2DRect(tex0, st + vec2(1.0, 0.0)).rgb;
-                                                vec3 oW = texture2DRect(tex0, st + vec2(-1.0, 0.0)).rgb;
+                                                float oN = texture2DRect(Obstacles, st + vec2(0.0, 1.0)).r;
+                                                float oS = texture2DRect(Obstacles, st + vec2(0.0, -1.0)).r;
+                                                float oE = texture2DRect(Obstacles, st + vec2(1.0, 0.0)).r;
+                                                float oW = texture2DRect(Obstacles, st + vec2(-1.0, 0.0)).r;
                                                 
-                                                if (oN.x > 0.1) pN = pC;
-                                                if (oS.x > 0.1) pS = pC;
-                                                if (oE.x > 0.1) pE = pC;
-                                                if (oW.x > 0.1) pW = pC;
+                                                // Assume obstacles have the same pressure just inside as outside at the boundaries
+                                                if (oN > 0.1) pN = pC;
+                                                if (oS > 0.1) pS = pC;
+                                                if (oE > 0.1) pE = pC;
+                                                if (oW > 0.1) pW = pC;
+                                                // Doesn't matter what pressure gets set for the obstacle; it is never used
                                                 
                                                 vec4 bC = texture2DRect(Divergence, st );
                                                 gl_FragColor = (pW + pE + pS + pN + Alpha * bC) * InverseBeta;
@@ -112,16 +114,16 @@ ofxFluid::ofxFluid(){
     //SUBSTRACT GRADIENT
     string fragmentSubtractGradientShader = STRINGIFY(uniform sampler2DRect Velocity;
                                                       uniform sampler2DRect Pressure;
-                                                      uniform sampler2DRect tex0;
+                                                      uniform sampler2DRect Obstacles;
                                                       
                                                       uniform float GradientScale;
                                                       
                                                       void main(){
                                                           vec2 st = gl_TexCoord[0].st;
                                                           
-                                                          vec3 oC = texture2DRect(tex0, st ).rgb;
-                                                          if (oC.x > 0.1) {
-                                                              gl_FragColor.gb = oC.yz;
+                                                          float oC = texture2DRect(Obstacles, st ).r;
+                                                          if (oC > 0.1) {
+                                                              gl_FragColor.gb = vec2(0.0,0.0);
                                                               return;
                                                           }
                                                           
@@ -131,24 +133,25 @@ ofxFluid::ofxFluid(){
                                                           float pW = texture2DRect(Pressure, st + vec2(-1.0, 0.0)).r;
                                                           float pC = texture2DRect(Pressure, st).r;
                                                           
-                                                          vec3 oN = texture2DRect(tex0, st + vec2(0.0, 1.0)).rgb;
-                                                          vec3 oS = texture2DRect(tex0, st + vec2(0.0, -1.0)).rgb;
-                                                          vec3 oE = texture2DRect(tex0, st + vec2(1.0, 0.0)).rgb;
-                                                          vec3 oW = texture2DRect(tex0, st + vec2(-1.0, 0.0)).rgb;
+                                                          float oN = texture2DRect(Obstacles, st + vec2(0.0, 1.0)).r;
+                                                          float oS = texture2DRect(Obstacles, st + vec2(0.0, -1.0)).r;
+                                                          float oE = texture2DRect(Obstacles, st + vec2(1.0, 0.0)).r;
+                                                          float oW = texture2DRect(Obstacles, st + vec2(-1.0, 0.0)).r;
                                                           
-                                                          vec2 obstV = vec2(0.0,0.0);
                                                           vec2 vMask = vec2(1.0,1.0);
                                                           
-                                                          if (oN.x > 0.1) { pN = pC; obstV.y = oN.z; vMask.y = 0.0; }\
-                                                          if (oS.x > 0.1) { pS = pC; obstV.y = oS.z; vMask.y = 0.0; }\
-                                                          if (oE.x > 0.1) { pE = pC; obstV.x = oE.y; vMask.x = 0.0; }\
-                                                          if (oW.x > 0.1) { pW = pC; obstV.x = oW.y; vMask.x = 0.0; }\
+                                                          // Pressure inside an obstacle is assumed to be the same as outside
+                                                          // Also, impart obstacle's velocity onto neighboring cells, ignoring gradient
+                                                          if (oN > 0.1) { pN = pC;  vMask.y = 0.0; }
+                                                          if (oS > 0.1) { pS = pC;  vMask.y = 0.0; }
+                                                          if (oE > 0.1) { pE = pC;  vMask.x = 0.0; }
+                                                          if (oW > 0.1) { pW = pC;  vMask.x = 0.0; }
                                                           
                                                           vec2 oldV = texture2DRect(Velocity, st).rg;
                                                           vec2 grad = vec2(pE - pW, pN - pS) * GradientScale;
                                                           vec2 newV = oldV - grad;
                                                           
-                                                          gl_FragColor.rg = (vMask * newV) + obstV;
+                                                          gl_FragColor.rg = (vMask * newV);
                                                           
                                                       }
                                                       );
@@ -159,7 +162,7 @@ ofxFluid::ofxFluid(){
     
     // COMPUTE DIVERGENCE
     string fragmentComputeDivergenceShader = STRINGIFY(uniform sampler2DRect Velocity;
-                                                       uniform sampler2DRect tex0;
+                                                       uniform sampler2DRect Obstacles;
                                                        
                                                        uniform float HalfInverseCellSize;
                                                        
@@ -171,15 +174,16 @@ ofxFluid::ofxFluid(){
                                                            vec2 vE = texture2DRect(Velocity, st + vec2(1.0,0.0)).rg;
                                                            vec2 vW = texture2DRect(Velocity, st + vec2(-1.0,0.0)).rg;
                                                            
-                                                           vec3 oN = texture2DRect(tex0, st + vec2(0.0,1.0)).rgb;
-                                                           vec3 oS = texture2DRect(tex0, st + vec2(0.0,-1.0)).rgb;
-                                                           vec3 oE = texture2DRect(tex0, st + vec2(1.0,0.0)).rgb;
-                                                           vec3 oW = texture2DRect(tex0, st + vec2(-1.0,0.0)).rgb;
+                                                           float oN = texture2DRect(Obstacles, st + vec2(0.0,1.0)).r;
+                                                           float oS = texture2DRect(Obstacles, st + vec2(0.0,-1.0)).r;
+                                                           float oE = texture2DRect(Obstacles, st + vec2(1.0,0.0)).r;
+                                                           float oW = texture2DRect(Obstacles, st + vec2(-1.0,0.0)).r;
                                                            
-                                                           if (oN.x > 0.1) vN = oN.yz;
-                                                           if (oS.x > 0.1) vS = oS.yz;
-                                                           if (oE.x > 0.1) vE = oE.yz;
-                                                           if (oW.x > 0.1) vW = oW.yz;
+                                                           // If there is an obstacle, assume the negative of velocity across boundary (no flow)
+                                                           if (oN > 0.1) vN = -vC;
+                                                           if (oS > 0.1) vS = -vC;
+                                                           if (oE > 0.1) vE = -vC;
+                                                           if (oW > 0.1) vW = -vC;
                                                            
                                                            gl_FragColor.r = HalfInverseCellSize * (vE.x - vW.x + vN.y - vS.y);
                                                        }
@@ -579,7 +583,7 @@ void ofxFluid::advect(ofxSwapBuffer& _buffer, float _dissipation){
     shader.setUniform1f("Dissipation", _dissipation);
     shader.setUniformTexture("VelocityTexture", velocityBuffer.src->getTexture(), 0);
     shader.setUniformTexture("backbuffer", _buffer.src->getTexture(), 1);
-    shader.setUniformTexture("tex0", obstaclesFbo.getTexture(), 2);
+    shader.setUniformTexture("Obstacles", obstaclesFbo.getTexture(), 2);
     renderFrame(gridWidth,gridHeight);
     shader.end();
     _buffer.dst->end();
@@ -593,7 +597,7 @@ void ofxFluid::jacobi(){
     jacobiShader.setUniform1f("InverseBeta", 0.25f);
     jacobiShader.setUniformTexture("Pressure", pressureBuffer.src->getTexture(), 0);
     jacobiShader.setUniformTexture("Divergence", divergenceFbo.getTexture(), 1);
-    jacobiShader.setUniformTexture("tex0", obstaclesFbo.getTexture(), 2);
+    jacobiShader.setUniformTexture("Obstacles", obstaclesFbo.getTexture(), 2);
     
     renderFrame(gridWidth,gridHeight);
     
@@ -625,7 +629,7 @@ void ofxFluid::subtractGradient(){
     
     subtractGradientShader.setUniformTexture("Velocity", velocityBuffer.src->getTexture(), 0);
     subtractGradientShader.setUniformTexture("Pressure", pressureBuffer.src->getTexture(), 1);
-    subtractGradientShader.setUniformTexture("tex0", obstaclesFbo.getTexture(), 2);
+    subtractGradientShader.setUniformTexture("Obstacles", obstaclesFbo.getTexture(), 2);
     
     renderFrame(gridWidth,gridHeight);
     
@@ -638,7 +642,7 @@ void ofxFluid::computeDivergence(){
     computeDivergenceShader.begin();
     computeDivergenceShader.setUniform1f("HalfInverseCellSize", 0.5f / cellSize);
     computeDivergenceShader.setUniformTexture("Velocity", velocityBuffer.src->getTexture(), 0);
-    computeDivergenceShader.setUniformTexture("tex0", obstaclesFbo.getTexture(), 1);
+    computeDivergenceShader.setUniformTexture("Obstacles", obstaclesFbo.getTexture(), 1);
     
     renderFrame(gridWidth,gridHeight);
 
