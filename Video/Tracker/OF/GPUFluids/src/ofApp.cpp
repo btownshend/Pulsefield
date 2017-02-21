@@ -22,8 +22,6 @@ void ofApp::setup(){
     
     setSize(500, 500, 1.0, true);
     
-    // Seting the gravity set up & injecting the background image
-    //
     fluid.dissipation = 0.99;
     fluid.velocityDissipation = 0.99;
     
@@ -47,9 +45,8 @@ void ofApp::setup(){
     
 }
 
+// Set size of fluid with scale times extra internal points per output pixel
 void ofApp::setSize(int _width, int _height, float scale, Boolean hd) {
-    // Initial Allocation
-    //
     width=_width;
     height=_height;
     fluid.allocate(width*scale,height*scale,scale,hd);
