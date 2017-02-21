@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0B68D4345691B16D73DCC38E /* ofxFXObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BA1BC93D1F1816E12F231CD /* ofxFXObject.cpp */; };
-		0FD275011E3B24CE00504726 /* ofxFluid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FD274FF1E3B24CE00504726 /* ofxFluid.cpp */; };
+		0FFA1B9C1E5BD07400F6571C /* ofxFluid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FFA1B9A1E5BD07400F6571C /* ofxFluid.cpp */; };
 		2319FCC714C4C100DA8604C1 /* NetworkingUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C043C21A79C1FE6A79D1B69 /* NetworkingUtils.cpp */; };
 		4D508D34156E7076531D9084 /* Syphon.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = D58DCB2C0AEFDE6171E29540 /* Syphon.framework */; };
 		55FE8E44EB3DD9A7305A8DAA /* OscPrintReceivedElements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F4DDED514FFD4068A7446A2 /* OscPrintReceivedElements.cpp */; };
@@ -67,9 +67,9 @@
 		042327F6BBA93D72445B4C25 /* ofxOscParameterSync.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxOscParameterSync.cpp; path = ../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/src/ofxOscParameterSync.cpp; sourceTree = SOURCE_ROOT; };
 		079D87738884DCF695A20EEC /* ofxSyphonServer.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxSyphonServer.h; path = ../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxSyphon/src/ofxSyphonServer.h; sourceTree = SOURCE_ROOT; };
 		0B5533767A68D1B77BF27F45 /* ofxThreshold.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxThreshold.h; path = ../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFX/src/operations/ofxThreshold.h; sourceTree = SOURCE_ROOT; };
-		0FD274FF1E3B24CE00504726 /* ofxFluid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ofxFluid.cpp; path = "../../../../../OpenFrameworks/ofxFluid-bst/src/ofxFluid.cpp"; sourceTree = "<group>"; };
-		0FD275001E3B24CE00504726 /* ofxFluid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxFluid.h; path = "../../../../../OpenFrameworks/ofxFluid-bst/src/ofxFluid.h"; sourceTree = "<group>"; };
 		0FDEF448CF5F1C9100A041F2 /* UdpSocket.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = UdpSocket.h; path = ../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs/oscpack/src/ip/UdpSocket.h; sourceTree = SOURCE_ROOT; };
+		0FFA1B9A1E5BD07400F6571C /* ofxFluid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxFluid.cpp; sourceTree = "<group>"; };
+		0FFA1B9B1E5BD07400F6571C /* ofxFluid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxFluid.h; sourceTree = "<group>"; };
 		1BA1BC93D1F1816E12F231CD /* ofxFXObject.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxFXObject.cpp; path = ../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFX/src/ofxFXObject.cpp; sourceTree = SOURCE_ROOT; };
 		1E3318C1C6AB2E69C43B72FB /* OscTypes.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = OscTypes.cpp; path = ../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs/oscpack/src/osc/OscTypes.cpp; sourceTree = SOURCE_ROOT; };
 		1EBA02CE68203E2E57C40603 /* ofxOscMessage.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxOscMessage.h; path = ../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/src/ofxOscMessage.h; sourceTree = SOURCE_ROOT; };
@@ -166,15 +166,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0FD275021E3B24D400504726 /* ofxFluid */ = {
-			isa = PBXGroup;
-			children = (
-				0FD274FF1E3B24CE00504726 /* ofxFluid.cpp */,
-				0FD275001E3B24CE00504726 /* ofxFluid.h */,
-			);
-			name = ofxFluid;
-			sourceTree = "<group>";
-		};
 		2317994671CD76BBA16927B8 /* libs */ = {
 			isa = PBXGroup;
 			children = (
@@ -414,7 +405,6 @@
 			children = (
 				E4B6FCAD0C3E899E008CF71C /* openFrameworks-Info.plist */,
 				E4EB6923138AFD0F00A09F29 /* Project.xcconfig */,
-				0FD275021E3B24D400504726 /* ofxFluid */,
 				E4B69E1C0A3A1BDC003C02F2 /* src */,
 				E4EEC9E9138DF44700A80321 /* openFrameworks */,
 				BB4B014C10F69532006C3DED /* addons */,
@@ -426,6 +416,8 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				0FFA1B9A1E5BD07400F6571C /* ofxFluid.cpp */,
+				0FFA1B9B1E5BD07400F6571C /* ofxFluid.h */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1E0A3A1BDC003C02F2 /* ofApp.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
@@ -573,7 +565,6 @@
 				8664A78059C1C5182FBB8207 /* ofxOscSender.cpp in Sources */,
 				6AED5071C39FB26481D10144 /* IpEndpointName.cpp in Sources */,
 				2319FCC714C4C100DA8604C1 /* NetworkingUtils.cpp in Sources */,
-				0FD275011E3B24CE00504726 /* ofxFluid.cpp in Sources */,
 				FBF25251A193F2D8156A75FE /* UdpSocket.cpp in Sources */,
 				6B8B9E54F356746B8C7FA0FE /* OscOutboundPacketStream.cpp in Sources */,
 				55FE8E44EB3DD9A7305A8DAA /* OscPrintReceivedElements.cpp in Sources */,
@@ -581,6 +572,7 @@
 				E3D0A003C392FE5CBC10A3A1 /* OscTypes.cpp in Sources */,
 				782B476417D2B34AA8377459 /* ofxSyphonClient.mm in Sources */,
 				8493C5A88CA7FABA38FD0C02 /* ofxSyphonServer.mm in Sources */,
+				0FFA1B9C1E5BD07400F6571C /* ofxFluid.cpp in Sources */,
 				8EC95A402AB8168AAD35E770 /* ofxSyphonServerDirectory.mm in Sources */,
 				BFC5142103A2E90D8F0F1D07 /* SyphonNameboundClient.m in Sources */,
 			);
