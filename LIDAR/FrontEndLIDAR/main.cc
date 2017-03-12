@@ -27,8 +27,9 @@ void usage(int argc,char *argv[]) {
     fprintf(stderr,"\t\t-M file\tspecify mat-file name (without suffix)\n");
     fprintf(stderr,"\t\t-D file\tspecify debug file name\n");
     fprintf(stderr,"\t-d debug\t\tset debug option (e.g -d4, -dFrontEnd:4)\n");
-    fprintf(stderr,"\t-c commentt\tlog a comment\n");
+    fprintf(stderr,"\t-c comment\tlog a comment\n");
     fprintf(stderr,"\t-V\t\tenable /vis messages\n");
+    fprintf(stderr,"\t-n nlidar\t\tnumber of LIDAR units\n");
     exit(1);
 }
 
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
 
     SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 
-    while ((ch=getopt(argc,argv,"d:D:B:sr:R:p:Llx:m:M:VF:c:P"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:D:B:sr:R:p:Llx:m:M:VF:c:Pn:"))!=-1) {
 	switch (ch) {
 	case 'd':
 	    SetDebug(optarg);
@@ -79,6 +80,9 @@ int main(int argc, char *argv[])
 		    std::cout << "Running frames " << frame1 << ":" << frameN << std::endl;
 		}
 	    }
+	    break;
+	case 'n':
+	    nsick=atoi(optarg);
 	    break;
 	case 's':
 	    singlestep=true;
