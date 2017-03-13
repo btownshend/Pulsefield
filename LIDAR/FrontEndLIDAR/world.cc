@@ -563,17 +563,6 @@ void World::sendMessages(Destinations &dests, double elapsed) {
 	}
     }
 
-    // Background
-    static int scanpt=0;
-    // cycle through all available scanpts to send just four point/transmission, to not load network and keep things balanced
-    for (int k=0;k<4;k++) {
-	scanpt=(scanpt+1)%bg.getRange(0).size();
-	for (unsigned int i=0;i<addr.size();i++)
-	    bg.sendMessages(addr[i],scanpt);
-    }
-    for (unsigned int i=0;i<addr.size();i++)
-	bg.sendCalTargets(addr[i]);
-
     // Done!
     for (unsigned int i=0;i<addr.size();i++)
 	lo_address_free(addr[i]);

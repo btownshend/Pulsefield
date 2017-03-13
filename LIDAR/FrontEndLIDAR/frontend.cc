@@ -631,9 +631,13 @@ void FrontEnd::sendMessages(double elapsed) {
 	    sendSetupMessages(dests.getHost(i),dests.getPort(i));
     }
 
-    if (frame%2 == 0)
+    if (frame%2 == 0) {
 	// Downsample to 25 fps
 	world->sendMessages(dests,elapsed);
+	for (int j=0;j<nsick;j++)
+	    for (int i=0;i<dests.size();i++)
+		sick[j]->sendMessages(dests.getHost(i),dests.getPort(i));
+    }
 }
 
 void FrontEnd::save()  {

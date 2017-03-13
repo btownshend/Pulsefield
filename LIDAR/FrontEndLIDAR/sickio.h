@@ -197,4 +197,5 @@ public:
 	void updateBackground(const std::vector<int> &assignments, bool all) const {
 	    ((SickIO *)this)->bg.update(*this,assignments,all);
 	}
+	void sendMessages(const char *host, int port) const;
 };

@@ -12,7 +12,8 @@
 #include <assert.h>
 #include <pthread.h>
 #include "sickio.h"
-
+#include "findtargets.h"
+#include "parameters.h"
 #include "mat.h"
 #include "dbg.h"
 
@@ -283,3 +284,34 @@ void SickIO::unlock()  {
     pthread_mutex_unlock(&mutex);
 }
 
+
+void SickIO::sendMessages(const char *host, int port) const {
+    dbg("SickIO.sendMessages",2) << "Sending  messages to " << host << ":" << port << std::endl;
+    char cbuf[10];
+    sprintf(cbuf,"%d",port);
+    lo_address addr = lo_address_new(host, cbuf);
+
+    // Background
+    static int scanpt=0;
+    // cycle through all available scanpts to send just four point/transmission, to not load network and keep things balanced
+    for (int k=0;k<4;k++) {
+	scanpt=(scanpt+1)%bg.getRange(0).size();
+	bg.sendMessages(addr,scanpt);
+    }
+
+    // Find any calibration targets present
+    std::vector<Point> pts(getNumMeasurements());
+    for (int i=0;i<getNumMeasurements();i++) 
+	pts[i]=getPoint(i) / UNITSPERM;
+    dbg("SickIO.update",3) << "Unit " << id << ": Finding targets from " << pts.size() << " ranges." << std::endl;
+    std::vector<Point> calTargets=findTargets(pts);
+
+    // Send Calibration Targets
+    for (int i=0;i<calTargets.size();i++)
+	lo_send(addr,"/pf/aligncorner","iiiff",id,i,calTargets.size(),calTargets[i].X(),calTargets[i].Y());
+    if (calTargets.size()==0) 
+	lo_send(addr,"/pf/aligncorner","iiiff",id,-1,calTargets.size(),0.0,0.0);  // So receiver can clear list
+
+    // Done!
+    lo_address_free(addr);
+}
