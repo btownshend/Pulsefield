@@ -572,7 +572,7 @@ void World::sendMessages(Destinations &dests, double elapsed) {
 	    bg.sendMessages(addr[i],scanpt);
     }
     for (unsigned int i=0;i<addr.size();i++)
-	bg.sendTargets(addr[i]);
+	bg.sendCalTargets(addr[i]);
 
     // Done!
     for (unsigned int i=0;i<addr.size();i++)
