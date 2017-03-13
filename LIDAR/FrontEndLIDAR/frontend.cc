@@ -41,11 +41,10 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]): conf
 	matframes=0;
 	frame = 0;
 	nsick=_nsick;
-	if (nsick==0) {
-	    sick=new SickIO*[1];
-	    sick[0]=0;
-	} else
+	if (nsick>0)
 	    sick = new SickIO*[nsick];
+	else
+	    sick = 0;
 	
 	world = new World(maxRange);
 	vis = new Vis();
@@ -337,7 +336,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     int activeFrames=0;
 
     while (true) {
-	int cid,nechoes,nmeasure;
+	int cid,nechoes,nmeasure;   // CID is unit number with 1-origin
 	struct timeval acquired;
 	int nread;
 	if (EOF==(nread=fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&frame,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure))) {
@@ -414,6 +413,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	
 	struct timeval processStart; gettimeofday(&processStart,0);
 	if (overlayLive) {
+	    // TODO: Fix to handle multiple LIDAR
 	    sick[0]->lock();
 	    sick[0]->waitForFrame();
 	    assert(sick[0]->isValid());
@@ -422,16 +422,33 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    assert(!sick[0]->isValid());
 	    sick[0]->unlock();
 	} else {
-	    if (nsick==0) {
-		sick[0]=new SickIO();
-		nsick=1;
+	    if (cid>nsick) {
+		printf("Increasing number of LIDARS from %d to %d\n",nsick,cid);
+	        SickIO **newSick=new SickIO*[cid];
+		for (int i=0;i<nsick;i++)
+		    newSick[i]=sick[i];
+		for (int i=nsick;i<cid;i++)
+		    newSick[i]=new SickIO();
+		if (sick!=0)
+		    delete [] sick;
+
+		sick=newSick;
+		nsick=cid;
+		load();
 	    }
-	    sick[0]->lock();
-	    sick[0]->set(cid,frame, acquired,  nmeasure, nechoes, range,reflect);
-	    assert(sick[0]->isValid());
-	    processFrames();
-	    assert(!sick[0]->isValid());
-	    sick[0]->unlock();
+	    sick[cid-1]->lock();
+	    sick[cid-1]->set(cid,frame, acquired,  nmeasure, nechoes, range,reflect);
+	    sick[cid-1]->unlock();
+	    bool allValid=true;
+	    for (int i=0;i<nsick;i++)
+		allValid&=sick[i]->isValid();
+	    if (allValid) {
+		for (int i=0;i<nsick;i++)
+		    sick[i]->lock();
+		processFrames();
+		for (int i=0;i<nsick;i++)
+		    sick[i]->unlock();
+	    }
 	}
 	struct timeval processDone; gettimeofday(&processDone,0);
 	float procTime=(processDone.tv_sec-processStart.tv_sec)+(processDone.tv_usec-processStart.tv_usec)/1e6;
@@ -560,6 +577,7 @@ void FrontEnd::sendSetupMessages(const char *host, int port) const {
     lo_send(addr,"/pf/set/maxx","f",world->getMaxX()/UNITSPERM);
     lo_send(addr,"/pf/set/miny","f",world->getMinY()/UNITSPERM);
     lo_send(addr,"/pf/set/maxy","f",world->getMaxY()/UNITSPERM);
+    // TODO: Send data for multiple LIDARs
     lo_send(addr,"/pf/set/rotation","f",sick[0]->getCoordinateRotationDeg());
     lo_send(addr,"/pf/set/groupdist","f",GROUPDIST/UNITSPERM);
     lo_send(addr,"/pf/set/ungroupdist","f",UNGROUPDIST/UNITSPERM);
@@ -654,8 +672,8 @@ void FrontEnd::load() {
     world->setMaxX(p.get("maxx",1.0f));
     world->setMinY(p.get("miny",0.0f));
     world->setMaxY(p.get("maxy",1.0f));
-    assert(sick && sick[0]);
     for (int i=0;i<nsick;i++) {
+	assert(sick && sick[i]);
 	std::string path="sick"+std::to_string(i)+".";
 	sick[i]->setCoordinateRotationDeg(p1.get(path+"rotation",1.0f));
 	sick[i]->setOrigin(Point(p1.get(path+"origin.x",0.0f),p1.get(path+"origin.y",0.0f)));
