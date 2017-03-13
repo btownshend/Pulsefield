@@ -105,7 +105,7 @@ std::vector<Point> findTargets( const std::vector<Point> background) {
 	}
 	if (dTheta==0)
 	    dbg("findTargetrs",0) << "all ranges are zero!" << std::endl;
-	dbg("findTargets",3) << "dTheta=" << dTheta << std::endl;
+	dbg("findTargets",4) << "dTheta=" << dTheta << std::endl;
 	float lastRange=background[0].norm();
 	int inTargetCnt=0;
 	std::vector<Point> calCorners;		// Corners of possible alignment targets
@@ -118,7 +118,7 @@ std::vector<Point> findTargets( const std::vector<Point> background) {
 	    float range=background[i].norm();
 	    dbg("findTargets",(i%100==0)?4:10) <<  "i=" << i << ", range=" << range << ", inTargetCnt=" << inTargetCnt << std::endl;
 	    float maxsep=std::min(range,lastRange)*dTheta*SEPFACTOR;	// Maximum distance between points of same object
-	    dbg("findTargets",4) << "maxsep=" << maxsep << std::endl;
+	    dbg("findTargets",5) << "maxsep=" << maxsep << std::endl;
 	    if (range==0 || fabs(range-lastRange)>maxsep)  {
 		// At end of an object
 		if (inTargetCnt>=MINTARGETHITS) {
