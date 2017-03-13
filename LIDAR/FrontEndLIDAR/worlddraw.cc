@@ -143,15 +143,15 @@ void World::draw(int nsick, const SickIO * const * sick) const {
 		 float effDivergence=DIVERGENCE+EXITDIAMETER/range[i];
 		 p1.setThetaRange(theta+effDivergence/2,range[i]);
 		 p2.setThetaRange(theta-effDivergence/2,range[i]);
-		 p1=p1+s->getOrigin();
-		 p2=p2+s->getOrigin();
+		 p1=s->localToWorld(p1);
+		 p2=s->localToWorld(p2);
 		 cairo_move_to(cr, p1.X(), p1.Y());
 		 cairo_line_to(cr, p2.X(), p2.Y());
 		 cairo_stroke(cr);
 	     }
 	     // Draw LIDAR position
 	     cairo_move_to(cr,s->getOrigin().X(),s->getOrigin().Y());
-	     cairo_arc(cr,s->getOrigin().X(),s->getOrigin().Y(),300.0f,s->getAngleRad(0)+M_PI/2,s->getAngleRad(s->getNumMeasurements()-1)+M_PI/2);
+	     cairo_arc(cr,s->getOrigin().X(),s->getOrigin().Y(),300.0f,s->getAngleRad(0)+s->getCoordinateRotationDeg()*M_PI/180+M_PI/2,s->getAngleRad(s->getNumMeasurements()-1)+s->getCoordinateRotationDeg()*M_PI/180+M_PI/2);
 	     cairo_stroke(cr);
 	 }
      }
@@ -202,6 +202,10 @@ void World::draw(int nsick, const SickIO * const * sick) const {
 			 p2.setThetaRange(theta-effDivergence/2,range[i]-2*sigma[i]);
 			 p3.setThetaRange(theta-effDivergence/2,range[i]+2*sigma[i]);
 			 p4.setThetaRange(theta+effDivergence/2,range[i]+2*sigma[i]);
+			 p1=sick[j]->localToWorld(p1);
+			 p2=sick[j]->localToWorld(p2);
+			 p3=sick[j]->localToWorld(p3);
+			 p4=sick[j]->localToWorld(p4);
 			 cairo_set_source_rgb (cr, frac[i],frac[i],frac[i]);
 			 cairo_move_to(cr, p1.X(), p1.Y());
 			 cairo_line_to(cr, p2.X(), p2.Y());
