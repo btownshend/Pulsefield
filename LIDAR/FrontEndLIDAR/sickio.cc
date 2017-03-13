@@ -85,8 +85,6 @@ void SickIO::set(int _id, int _frame, const timeval &_acquired, int _nmeasure, i
 	for (int i=0;i<num_measurements;i++) {
 	    range[e][i]=_range[e][i];
 	    reflect[e][i]=_reflect[e][i];
-	    x[e][i]=cos(getAngleRad(i)+M_PI/2)*range[e][i];
-	    y[e][i]=sin(getAngleRad(i)+M_PI/2)*range[e][i];
 	}
     dbg("Sickio.set",5) << "Set values for frame " << frame << std::endl;
     valid=true;
@@ -116,8 +114,6 @@ void SickIO::overlay(int _id, int _frame, const timeval &_acquired, int _nmeasur
 		cnt++;
 		range[e][i]=_range[e][i];
 		reflect[e][i]=_reflect[e][i];
-		x[e][i]=cos(getAngleRad(i)+M_PI/2)*range[e][i];
-		y[e][i]=sin(getAngleRad(i)+M_PI/2)*range[e][i];
 	    }
 	}
     dbg("SickIO.overlay",4) << "Overlaid " << cnt << " points." << std::endl;
@@ -246,8 +242,6 @@ void SickIO::get() {
 		for (int e=0;e<nechoes;e++) {
 		    range[e][i]=rangetmp[e][i];
 		    reflect[e][i]=reflecttmp[e][i];
-		    x[e][i]=cos(getAngleRad(i)+M_PI/2)*range[e][i];
-		    y[e][i]=sin(getAngleRad(i)+M_PI/2)*range[e][i];
 		}
 	    valid=true;
 	    pthread_cond_signal(&signal);

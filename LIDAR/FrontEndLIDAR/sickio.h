@@ -26,9 +26,6 @@ private:
 	unsigned int range[MAXECHOES][MAXMEASUREMENTS];
 	unsigned int reflect[MAXECHOES][MAXMEASUREMENTS];
 	unsigned int status;
-	// Compute x,y based on acquired ranges
-	float x[MAXECHOES][MAXMEASUREMENTS];
-	float y[MAXECHOES][MAXMEASUREMENTS];
 	int num_measurements;
 	struct timeval acquired;
 	unsigned int frame;   // Frame number of frame currently stored in range,reflect,x,y,acquired
