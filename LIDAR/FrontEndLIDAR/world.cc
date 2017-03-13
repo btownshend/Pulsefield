@@ -457,9 +457,6 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 	    dbg("World.track",2)  << people[i] << std::endl;
     }
 
-    if (frame%2==0)
-	draw(&vis);
-
 }
         
 void World::sendMessages(Destinations &dests, double elapsed) {

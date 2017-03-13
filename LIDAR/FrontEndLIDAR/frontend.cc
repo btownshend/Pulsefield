@@ -73,7 +73,6 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]): conf
 	printf("done\n");fflush(stdout);
 	load();
 
-
 	serverPort=urls.getPort("FE");
 	if (serverPort<0) {
 	    fprintf(stderr,"Invalid server port retrieved from %s when looking for FE: %d\n", urls.getFilename().c_str(),serverPort);
@@ -156,16 +155,22 @@ void FrontEnd::matsave(const std::string &filename, int frames) {
 
 void FrontEnd::run() {
     while (!doQuit) {  /* Forever */
-	// Read data from sensors
-	sick[0]->lock();	// Needs to be modified to support multiple LIDARs
-	sick[0]->waitForFrame();
-	bool allValid=true;
+	// Wait for all sensors to be ready
 	for (int i=0;i<nsick;i++) {
-	    allValid&=sick[i]->isValid();
+	    while (!sick[i]->isValid()) {
+		sick[i]->lock();
+		sick[i]->waitForFrame();
+		sick[i]->unlock();
+	    }
 	}
-	if (allValid)
-	    processFrames();
-	sick[0]->unlock();
+	// Lock all sensors
+	for (int i=0;i<nsick;i++)
+		sick[i]->lock();
+	// Read data from sensors	
+	processFrames();
+	// Unlock all sensors
+	for (int i=0;i<nsick;i++)
+	    sick[i]->unlock();
     }
 }
 
@@ -210,12 +215,17 @@ void FrontEnd::processFrames() {
 	    // clear valid flag so another frame can be read
 	    sick[c]->clearValid();
 	}
-	currenttime=sick[0]->getAcquired();
-	if (starttime.tv_sec==0)
-	    starttime=currenttime;
-	vis->update(sick[0]);
-	double elapsed=(currenttime.tv_sec-starttime.tv_sec)+(currenttime.tv_usec-starttime.tv_usec)*1e-6;
-	world->track(*vis,frame,sick[0]->getScanFreq(),elapsed);
+	double elapsed=0;
+	for (int i=0;i<nsick;i++) {
+	    currenttime=sick[i]->getAcquired();
+	    if (starttime.tv_sec==0)
+		starttime=currenttime;
+	    vis->update(sick[i]);
+	    elapsed=(currenttime.tv_sec-starttime.tv_sec)+(currenttime.tv_usec-starttime.tv_usec)*1e-6;
+	    world->track(*vis,frame,sick[i]->getScanFreq(),elapsed);
+	    if (frame%2==0)
+		world->draw(nsick,sick);
+	}
 	sendMessages(elapsed);
 	sendOnce=0;
 	dbg("FrontEnd",2) << "Bounds=[" << world->getMinX() << "," << world->getMaxX() << "," << world->getMinY() << "," << world->getMaxY() << "]" << std::endl;

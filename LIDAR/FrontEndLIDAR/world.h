@@ -54,7 +54,7 @@ public:
     mxArray *convertToMX() const;
 
     // Drawing routines
-    void draw(const Vis *vis=NULL) const;
+    void draw(int nsick=0, const SickIO * const*sick=NULL) const;
 
     const Background &getBackground() const { return bg; }
 

@@ -90,7 +90,7 @@ void World::drawinfo(cairo_t *cr, float left,  float top, float width, float hei
      cairo_restore(cr);
 }
 
-void World::draw(const Vis *vis) const {
+void World::draw(int nsick, const SickIO * const * sick) const {
     if (surface==NULL)
 	return;
     
@@ -129,13 +129,13 @@ void World::draw(const Vis *vis) const {
      Point center=getCenter();
      cairo_translate(cr,-center.X(),-center.Y());
 
-
-     if  (drawRange && vis!=NULL) {
+     if  (drawRange && nsick>0) {
 	 // Draw current range
-	 const SickIO *s = vis->getSick();
-
 	 cairo_set_line_width(cr,1*pixel);
-	 cairo_set_source_rgb (cr, 1.0,0.0,0.0);
+	 for (int j=0;j<nsick;j++) {
+	     cairo_set_source_rgb (cr, (j==0)?1.0:0.0,(j==1)?1.0:0.0,(j==2)?1.0:0.0);
+	     const SickIO *s = sick[j];
+
 	     const unsigned int *range = s->getRange(0);
 	     for (unsigned int i=0;i<s->getNumMeasurements();i++) {
 		 Point p1,p2;
@@ -147,6 +147,11 @@ void World::draw(const Vis *vis) const {
 		 p2=p2+s->getOrigin();
 		 cairo_move_to(cr, p1.X(), p1.Y());
 		 cairo_line_to(cr, p2.X(), p2.Y());
+		 cairo_stroke(cr);
+	     }
+	     // Draw LIDAR position
+	     cairo_move_to(cr,s->getOrigin().X(),s->getOrigin().Y());
+	     cairo_arc(cr,s->getOrigin().X(),s->getOrigin().Y(),300.0f,s->getAngleRad(0)+M_PI/2,s->getAngleRad(s->getNumMeasurements()-1)+M_PI/2);
 	     cairo_stroke(cr);
 	 }
      }
@@ -180,27 +185,30 @@ void World::draw(const Vis *vis) const {
      }
 
      // Draw background
-     cairo_set_line_width(cr,1*pixel);
-     for (int k=0;k<bg.numRanges();k++) {
-	 const std::vector<float> &range = bg.getRange(k);
-	 const std::vector<float> &sigma = bg.getSigma(k);
-	 const std::vector<float> &frac = bg.getFreq(k);
-	 for (unsigned int i=0;i<range.size();i++) {
-	     if (frac[i]>0.01) {
-		 Point p1,p2,p3,p4;
-		 float theta=bg.getAngleRad(i);
-		 float effDivergence=DIVERGENCE+EXITDIAMETER/range[i];
-		 p1.setThetaRange(theta+effDivergence/2,range[i]-2*sigma[i]);
-		 p2.setThetaRange(theta-effDivergence/2,range[i]-2*sigma[i]);
-		 p3.setThetaRange(theta-effDivergence/2,range[i]+2*sigma[i]);
-		 p4.setThetaRange(theta+effDivergence/2,range[i]+2*sigma[i]);
-		 cairo_set_source_rgb (cr, frac[i],frac[i],frac[i]);
-		 cairo_move_to(cr, p1.X(), p1.Y());
-		 cairo_line_to(cr, p2.X(), p2.Y());
-		 cairo_line_to(cr, p3.X(), p3.Y());
-		 cairo_line_to(cr, p4.X(), p4.Y());
-		 cairo_line_to(cr, p1.X(), p1.Y());
-		 cairo_stroke(cr);
+     bool drawBG=false;
+     if (drawBG) {
+	 cairo_set_line_width(cr,1*pixel);
+	 for (int k=0;k<bg.numRanges();k++) {
+	     const std::vector<float> &range = bg.getRange(k);
+	     const std::vector<float> &sigma = bg.getSigma(k);
+	     const std::vector<float> &frac = bg.getFreq(k);
+	     for (unsigned int i=0;i<range.size();i++) {
+		 if (frac[i]>0.01) {
+		     Point p1,p2,p3,p4;
+		     float theta=bg.getAngleRad(i);
+		     float effDivergence=DIVERGENCE+EXITDIAMETER/range[i];
+		     p1.setThetaRange(theta+effDivergence/2,range[i]-2*sigma[i]);
+		     p2.setThetaRange(theta-effDivergence/2,range[i]-2*sigma[i]);
+		     p3.setThetaRange(theta-effDivergence/2,range[i]+2*sigma[i]);
+		     p4.setThetaRange(theta+effDivergence/2,range[i]+2*sigma[i]);
+		     cairo_set_source_rgb (cr, frac[i],frac[i],frac[i]);
+		     cairo_move_to(cr, p1.X(), p1.Y());
+		     cairo_line_to(cr, p2.X(), p2.Y());
+		     cairo_line_to(cr, p3.X(), p3.Y());
+		     cairo_line_to(cr, p4.X(), p4.Y());
+		     cairo_line_to(cr, p1.X(), p1.Y());
+		     cairo_stroke(cr);
+		 }
 	     }
 	 }
      }
