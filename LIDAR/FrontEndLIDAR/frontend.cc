@@ -571,7 +571,18 @@ void FrontEnd::sendUIMessages() {
 	lo_send(touchOSC,"/pf/maxx","f",world->getMaxX()/UNITSPERM);
 	lo_send(touchOSC,"/pf/miny","f",world->getMinY()/UNITSPERM);
 	lo_send(touchOSC,"/pf/maxy","f",world->getMaxY()/UNITSPERM);
-	lo_send(touchOSC,"/pf/set/rotation","f",sick[0]->getCoordinateRotationDeg());
+	for (int i=0;i<nsick;i++) {
+	    char msg[100];
+	    lo_send(touchOSC,("/pf/sick"+std::to_string(i)+"/rotation").c_str(),"f",sick[i]->getCoordinateRotationDeg());
+	    lo_send(touchOSC,("/pf/sick"+std::to_string(i)+"/x").c_str(),"f",sick[i]->getOrigin().X()/UNITSPERM);
+	    lo_send(touchOSC,("/pf/sick"+std::to_string(i)+"/y").c_str(),"f",sick[i]->getOrigin().Y()/UNITSPERM);
+	    sprintf(msg,"Rotation: %.0f",sick[i]->getCoordinateRotationDeg());
+	    lo_send(touchOSC,("/pf/sick"+std::to_string(i)+"/rotation/label").c_str(),"s",msg);
+	    sprintf(msg,"X: %.2f",sick[i]->getOrigin().X()/UNITSPERM);
+	    lo_send(touchOSC,("/pf/sick"+std::to_string(i)+"/x/label").c_str(),"s",msg);
+	    sprintf(msg,"Y: %.2f",sick[i]->getOrigin().Y()/UNITSPERM);
+	    lo_send(touchOSC,("/pf/sick"+std::to_string(i)+"/y/label").c_str(),"s",msg);
+	}
 	lo_send(touchOSC,"/pf/frame","i",frame);
 	lo_send(touchOSC,"/health/FE","f",(frame%100 == 0)?1.0:0.0);
     }
@@ -604,8 +615,15 @@ void FrontEnd::save()  {
     p.put("maxx",world->getMaxX());
     p.put("miny",world->getMinY());
     p.put("maxy",world->getMaxY());
-    p.put("rotation",sick[0]->getCoordinateRotationDeg());
     config.pt().put_child("world",p);
+    for (int i=0;i<nsick;i++) {
+	std::string path="sick"+std::to_string(i);
+	ptree p;
+	p.put("rotation",sick[i]->getCoordinateRotationDeg());
+	p.put("origin.x",sick[i]->getOrigin().X());
+	p.put("origin.y",sick[i]->getOrigin().Y());
+	config.pt().put_child(path,p);
+    }
     config.save();
 }
 
@@ -627,5 +645,9 @@ void FrontEnd::load() {
     world->setMinY(p.get("miny",0.0f));
     world->setMaxY(p.get("maxy",1.0f));
     assert(sick && sick[0]);
-    sick[0]->setCoordinateRotationDeg(p.get("rotation",1.0f));
+    for (int i=0;i<nsick;i++) {
+	std::string path="sick"+std::to_string(i)+".";
+	sick[i]->setCoordinateRotationDeg(p1.get(path+"rotation",1.0f));
+	sick[i]->setOrigin(Point(p1.get(path+"origin.x",0.0f),p1.get(path+"origin.y",0.0f)));
+    }
 }

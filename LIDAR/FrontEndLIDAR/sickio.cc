@@ -51,6 +51,7 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	scanFreq=50;
 	scanRes=0.3333;
 	coordinateRotation=0;
+	origin=Point(0,0);
 	updateScanFreqAndRes();
 	running=false;
 	pthread_mutex_init(&mutex,NULL);

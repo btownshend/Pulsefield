@@ -41,6 +41,7 @@ private:
 	bool running;
 	int scanFreq;
 	double scanRes;
+	Point origin;   // Origin in world coordinates
 	double coordinateRotation;   // Rotate the [x,y] coordinate system used internally and externally by this many degrees
 	void updateScanFreqAndRes();
 	bool fake;
@@ -102,15 +103,35 @@ public:
 	}
 
 	float getX(int measurement, int echo=0)  const {
-	    return x[echo][measurement];
+	    return x[echo][measurement]+origin.X();
 	}
 
 	float getY(int measurement, int echo=0) const {
-	    return y[echo][measurement];
+	    return y[echo][measurement]+origin.Y();
 	}
 
 	Point getPoint(int measurement) const {
 	    return Point(getX(measurement),getY(measurement));
+	}
+
+	Point getOrigin() const {
+	    return origin;
+	}
+
+	void setOrigin(Point p)  {
+	    origin.setX(p.X());
+	    origin.setY(p.Y());
+	    dbg("FrontEnd.setOrigin",1) << "Set origin to " << origin << std::endl;
+	}
+
+	void setOriginX(float x) {
+	    origin.setX(x);
+	    dbg("FrontEnd.setOriginX",1) << "Set origin to " << origin << std::endl;
+	}
+
+	void setOriginY(float y) {
+	    origin.setY(y);
+	    dbg("FrontEnd.setOriginY",1) << "Set origin to " << origin << std::endl;
 	}
 	
 	// Get scan index closest to angle (in degrees) 

@@ -136,15 +136,17 @@ void World::draw(const Vis *vis) const {
 
 	 cairo_set_line_width(cr,1*pixel);
 	 cairo_set_source_rgb (cr, 1.0,0.0,0.0);
-	 const unsigned int *range = s->getRange(0);
-	 for (unsigned int i=0;i<s->getNumMeasurements();i++) {
-	     Point p1,p2;
-	     float theta=s->getAngleRad(i);
-	     float effDivergence=DIVERGENCE+EXITDIAMETER/range[i];
-	     p1.setThetaRange(theta+effDivergence/2,range[i]);
-	     p2.setThetaRange(theta-effDivergence/2,range[i]);
-	     cairo_move_to(cr, p1.X(), p1.Y());
-	     cairo_line_to(cr, p2.X(), p2.Y());
+	     const unsigned int *range = s->getRange(0);
+	     for (unsigned int i=0;i<s->getNumMeasurements();i++) {
+		 Point p1,p2;
+		 float theta=s->getAngleRad(i);
+		 float effDivergence=DIVERGENCE+EXITDIAMETER/range[i];
+		 p1.setThetaRange(theta+effDivergence/2,range[i]);
+		 p2.setThetaRange(theta-effDivergence/2,range[i]);
+		 p1=p1+s->getOrigin();
+		 p2=p2+s->getOrigin();
+		 cairo_move_to(cr, p1.X(), p1.Y());
+		 cairo_line_to(cr, p2.X(), p2.Y());
 	     cairo_stroke(cr);
 	 }
      }
