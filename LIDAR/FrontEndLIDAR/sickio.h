@@ -135,16 +135,6 @@ public:
 	    dbg("FrontEnd.setOriginY",1) << "Set origin to " << origin << std::endl;
 	}
 	
-	// Get scan index closest to angle (in degrees) 
-	int getScanAtAngle(float angle) const {
-	    angle-=coordinateRotation;
-	    while (angle>180)
-		angle-=2*180;
-	    while (angle<-180)
-		angle+=2*180;
-	    return (int)(angle/scanRes+(num_measurements-1)/2.0 + 0.5);
-	}
-
 	// Distance between two scan points
 	float distance(int i, int j) const {
 	    return sqrt(pow(getX(i)-getX(j),2) + pow(getY(i)-getY(j),2));
