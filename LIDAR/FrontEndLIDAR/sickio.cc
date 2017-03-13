@@ -302,11 +302,12 @@ void SickIO::sendMessages(const char *host, int port) const {
     std::vector<Point> calTargets=findTargets(pts);
 
     // Send Calibration Targets
-	lo_send(addr,"/pf/aligncorner","iiiff",id,i,calTargets.size(),calTargets[i].X(),calTargets[i].Y());
     for (int i=0;i<calTargets.size();i++) {
+	Point w=localToWorld(calTargets[i]*UNITSPERM)/UNITSPERM;
+	lo_send(addr,"/pf/aligncorner","iiiffff",id,i,calTargets.size(),calTargets[i].X(),calTargets[i].Y(),w.X(),w.Y());
     }
     if (calTargets.size()==0) 
-	lo_send(addr,"/pf/aligncorner","iiiff",id,-1,calTargets.size(),0.0,0.0);  // So receiver can clear list
+	lo_send(addr,"/pf/aligncorner","iiiffff",id,-1,calTargets.size(),0.0,0.0,0.0,0.0);  // So receiver can clear list
 
     // Done!
     lo_address_free(addr);
