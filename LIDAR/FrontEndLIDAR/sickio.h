@@ -137,7 +137,9 @@ public:
 	
 	// Distance between two scan points
 	float distance(int i, int j) const {
-	    return sqrt(pow(getX(i)-getX(j),2) + pow(getY(i)-getY(j),2));
+	    Point p1=getLocalPoint(i);
+	    Point p2=getLocalPoint(j);
+	    return (p1-p2).norm();
 	}
 
 	unsigned int getFrame() const {
