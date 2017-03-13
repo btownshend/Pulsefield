@@ -28,7 +28,6 @@ class World {
 
     float minx,maxx,miny,maxy;	// Active region bounds
 
-    Background bg;		// Background model
     std::vector<float> bglike;	// Current background likelihoods (regardless of assignment)
     std::vector<int> assignments;   // Which person is assigned to each scan line -- -1 for background, -2 for new track
     std::vector<unsigned int> legassigned;  		    // For each assignment, leg number assigned (0 or 1);  0 for assignments without legs (such as bg)
@@ -55,8 +54,6 @@ public:
 
     // Drawing routines
     void draw(int nsick=0, const SickIO * const*sick=NULL) const;
-
-    const Background &getBackground() const { return bg; }
 
     // Boundary operations
     bool inRange(Point p) const { return p.X()>=minx && p.X() <=maxx && p.Y()>=miny && p.Y()<=maxy; }

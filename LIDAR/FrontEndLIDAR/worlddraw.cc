@@ -187,27 +187,29 @@ void World::draw(int nsick, const SickIO * const * sick) const {
      // Draw background
      bool drawBG=false;
      if (drawBG) {
-	 cairo_set_line_width(cr,1*pixel);
-	 for (int k=0;k<bg.numRanges();k++) {
-	     const std::vector<float> &range = bg.getRange(k);
-	     const std::vector<float> &sigma = bg.getSigma(k);
-	     const std::vector<float> &frac = bg.getFreq(k);
-	     for (unsigned int i=0;i<range.size();i++) {
-		 if (frac[i]>0.01) {
-		     Point p1,p2,p3,p4;
-		     float theta=bg.getAngleRad(i);
-		     float effDivergence=DIVERGENCE+EXITDIAMETER/range[i];
-		     p1.setThetaRange(theta+effDivergence/2,range[i]-2*sigma[i]);
-		     p2.setThetaRange(theta-effDivergence/2,range[i]-2*sigma[i]);
-		     p3.setThetaRange(theta-effDivergence/2,range[i]+2*sigma[i]);
-		     p4.setThetaRange(theta+effDivergence/2,range[i]+2*sigma[i]);
-		     cairo_set_source_rgb (cr, frac[i],frac[i],frac[i]);
-		     cairo_move_to(cr, p1.X(), p1.Y());
-		     cairo_line_to(cr, p2.X(), p2.Y());
-		     cairo_line_to(cr, p3.X(), p3.Y());
-		     cairo_line_to(cr, p4.X(), p4.Y());
-		     cairo_line_to(cr, p1.X(), p1.Y());
-		     cairo_stroke(cr);
+	 for (int j=0;j<nsick;j++) {
+	     cairo_set_line_width(cr,1*pixel);
+	     for (int k=0;k<sick[j]->getBackground().numRanges();k++) {
+		 const std::vector<float> &range = sick[j]->getBackground().getRange(k);
+		 const std::vector<float> &sigma = sick[j]->getBackground().getSigma(k);
+		 const std::vector<float> &frac = sick[j]->getBackground().getFreq(k);
+		 for (unsigned int i=0;i<range.size();i++) {
+		     if (frac[i]>0.01) {
+			 Point p1,p2,p3,p4;
+			 float theta=sick[j]->getBackground().getAngleRad(i);
+			 float effDivergence=DIVERGENCE+EXITDIAMETER/range[i];
+			 p1.setThetaRange(theta+effDivergence/2,range[i]-2*sigma[i]);
+			 p2.setThetaRange(theta-effDivergence/2,range[i]-2*sigma[i]);
+			 p3.setThetaRange(theta-effDivergence/2,range[i]+2*sigma[i]);
+			 p4.setThetaRange(theta+effDivergence/2,range[i]+2*sigma[i]);
+			 cairo_set_source_rgb (cr, frac[i],frac[i],frac[i]);
+			 cairo_move_to(cr, p1.X(), p1.Y());
+			 cairo_line_to(cr, p2.X(), p2.Y());
+			 cairo_line_to(cr, p3.X(), p3.Y());
+			 cairo_line_to(cr, p4.X(), p4.Y());
+			 cairo_line_to(cr, p1.X(), p1.Y());
+			 cairo_stroke(cr);
+		     }
 		 }
 	     }
 	 }

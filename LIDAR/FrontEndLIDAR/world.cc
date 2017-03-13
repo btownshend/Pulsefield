@@ -267,10 +267,10 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
     dbg("World.makeAssignments",3) << "Assigned " << nassigned << " points to existing people,  " << nbg  << " to background, and " << nentries << " to entries." << std::endl;
     if (nbg < nassigned+nentries) {
 	dbg("World.makeAssignments",2) << "Only have " << nbg*1.0/(nbg+nassigned+nentries)*100 << "% of points assigned to background, using all points for update." << std::endl;
-	bg.update(*sick,assignments,true);
+	sick->updateBackground(assignments,true);
     } else {
 	// Update background only with points assumed to be background
-	bg.update(*sick,assignments,false);
+	sick->updateBackground(assignments,false);
     }
 
     if (nentries>=MINCREATEHITS) {
@@ -329,14 +329,14 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
     dbg("World.track",2) << "Tracking frame " << frame << std::endl;
 
     // Calculate background likelihoods
-    bglike=bg.like(vis,*this);
+    bglike=vis.getSick()->getBackground().like(vis,*this);
 
-    if (!bg.isInitializing())
+    if (!vis.getSick()->getBackground().isInitializing())
 	// Map scans to tracks, and update background
 	makeAssignments(vis,entrylike);
     else
 	// Update all points for background
-	bg.update(*vis.getSick(),assignments,true);
+	vis.getSick()->updateBackground(assignments,true);
 	
 
     // Implement assignment

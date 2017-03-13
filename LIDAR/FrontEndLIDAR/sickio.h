@@ -14,6 +14,7 @@
 
 #include "point.h"
 #include "dbg.h"
+#include "background.h"
 
 class SickIO {
 public:
@@ -48,6 +49,7 @@ private:
 	// Synchronization
 	pthread_mutex_t mutex;
 	pthread_cond_t signal;
+	Background bg;		// Background model
 public:
 	SickIO(int _id, const char *host, int port);
 	// Constructor to fake the data from a scan
@@ -189,4 +191,10 @@ public:
 	void waitForFrame();
 	void lock();
 	void unlock();
+
+	Background &getBackground()  { return bg; }
+	const Background &getBackground() const  { return bg; }
+	void updateBackground(const std::vector<int> &assignments, bool all) const {
+	    ((SickIO *)this)->bg.update(*this,assignments,all);
+	}
 };
