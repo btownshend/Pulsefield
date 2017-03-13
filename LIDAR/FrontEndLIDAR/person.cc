@@ -126,7 +126,7 @@ void Person::setupGrid(const Vis &vis, const std::vector<int> fs[2]) {
     // Make sure all hits are included
     for (int i=0;i<2;i++)
 	for (int j=0;j<fs[i].size();j++)  {
-	    Point pt=vis.getSick()->getPoint(fs[i][j]);
+	    Point pt=vis.getSick()->getWorldPoint(fs[i][j]);
 	    // Compute expected target center for this point
 	    Point phit=pt+pt/pt.norm()*legStats.getDiam()/2;
 	    // Adjust point back to person-centered space from leg-centered space

@@ -150,7 +150,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	bool assigned=false;
 	for (int i=targets.size()-1;i>=0;i--) {
 	    // Check if we can add this point to an existing target
-	    if ((sick->getPoint(f)-targets[i].lastHit()).norm()<=MAXLEGDIAM)  {
+	    if ((sick->getWorldPoint(f)-targets[i].lastHit()).norm()<=MAXLEGDIAM)  {
 		// Check if all intervening scans have a shorter range (i.e. we jumping over a near obstruction)
 		bool canmerge=true;
 		for (int j=targets[i].lastScan()+1;j<f;j++) {
@@ -164,7 +164,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 		}
 		if (!canmerge)
 		    break;
-		targets.back().append(f,sick->getPoint(f));
+		targets.back().append(f,sick->getWorldPoint(f));
 		nassigned++;
 		assigned=true;
 		dbg("World.makeAssignments",4) << "Assigned scan " << f << " with range " << range[f] << " to target " << i << std::endl;
@@ -174,7 +174,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	if (!assigned)  {
 	    // Not a match to current target, add a new one
 	    Target t;
-	    t.append(f,sick->getPoint(f));
+	    t.append(f,sick->getWorldPoint(f));
 	    targets.push_back(t);
 	    dbg("World.makeAssignments",4) << "Assigned scan " << f << "with range " << range[f] << " to new target " << targets.size()-1 << std::endl;
 	    nassigned++;
@@ -350,7 +350,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 	    for (unsigned int j=0;j<assignments.size();j++) 
 		if (assignments[j]==(int)p) {
 		    // Redo assignments to which leg based on observertion
-		    Point sickpt=vis.getSick()->getPoint(j);
+		    Point sickpt=vis.getSick()->getWorldPoint(j);
 		    float l1=people[p].getObsLike(sickpt,0,vis.getSick()->getFrame());
 		    float l2=people[p].getObsLike(sickpt,1,vis.getSick()->getFrame());
 		    ldiff.push_back(l1-l2);
@@ -403,7 +403,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		if (fs[f].size()>0 && fs[1-f].size()==0) {
 		    // Still one empty, look for a large range jump
 		    for (unsigned int i=1;i<fs[f].size();i++) { 
-			float rjump=(vis.getSick()->getPoint(fs[f][i])-vis.getSick()->getPoint(fs[f][i-1])).norm();
+			float rjump=(vis.getSick()->getWorldPoint(fs[f][i])-vis.getSick()->getWorldPoint(fs[f][i-1])).norm();
 			if (rjump>INITLEGDIAM/2) {
 			    for (unsigned int j=i;j<fs[f].size();j++)
 				fs[1-f].push_back(fs[f][j]);
@@ -421,7 +421,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		for (int f=0;f<2;f++)
 		    for (int leg=0;leg<2;leg++) {
 			for (unsigned int i=0;i<fs[f].size();i++) {
-			    Point sickpt=vis.getSick()->getPoint(fs[f][i]);
+			    Point sickpt=vis.getSick()->getWorldPoint(fs[f][i]);
 			    float like = people[p].getObsLike(sickpt,leg,vis.getSick()->getFrame());
 			    if (leg==f)
 				swaplike+=like;

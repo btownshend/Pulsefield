@@ -49,7 +49,7 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
     std::vector<float> result(sick.getNumMeasurements(),0.0);
     const unsigned int *srange = sick.getRange(0);
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
-	if (!world.inRange(sick.getPoint(i)) || srange[i]<MINRANGE)
+	if (!world.inRange(sick.getWorldPoint(i)) || srange[i]<MINRANGE)
 	    result[i]=1.0;
 	else {
 	    // Compute result

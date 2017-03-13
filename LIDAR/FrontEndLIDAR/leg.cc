@@ -214,14 +214,14 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    // Likelihood with respect to unobstructed paths (leg can't be in these paths)
 	    float dclr=1e10;
 	    for (unsigned int k=0;k<clearsel.size();k++)
-		dclr=std::min(dclr,segment2pt(Point(0,0),vis.getSick()->getPoint(clearsel[k]),pt));
+		dclr=std::min(dclr,segment2pt(Point(0,0),vis.getSick()->getWorldPoint(clearsel[k]),pt));
 	    float clearlike=log(normcdf(log(dclr*2),LOGDIAMMU,LOGDIAMSIGMA));
 
 	    // Likelihood with respect to positive hits
 	    float glike=0;
 	    float bgsum=0;
 	    for (unsigned int k=0;k<fs.size();k++) {
-		float dpt=(vis.getSick()->getPoint(fs[k])-pt).norm();
+		float dpt=(vis.getSick()->getWorldPoint(fs[k])-pt).norm();
 		// Scale it so it is a density per meter in the area of the mean
 		float obslike=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA)*(UNITSPERM/ls.getDiam()));
 		// Take the most likely of the observation being background or this target 
@@ -381,7 +381,7 @@ void Leg::updateDiameterEstimates(const Vis &vis, LegStats &ls) const {
 	    dbg("Leg.updateDiameterEstimates",3) << "Right edge too close to background: " << srange[lastScan+1] << "<" << srange[lastScan]+4*ls.getDiam() <<  std::endl;
 	    return;
 	}
-	float diamEstimate = (vis.getSick()->getPoint(lastScan)-vis.getSick()->getPoint(firstScan)).norm();
+	float diamEstimate = (vis.getSick()->getWorldPoint(lastScan)-vis.getSick()->getWorldPoint(firstScan)).norm();
 	ls.updateDiameter(diamEstimate,diamEstimate/scanpts.size());   // TODO- improve estimate
     }
 }

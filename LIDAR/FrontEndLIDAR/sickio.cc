@@ -301,14 +301,16 @@ void SickIO::sendMessages(const char *host, int port) const {
 
     // Find any calibration targets present
     std::vector<Point> pts(getNumMeasurements());
-    for (int i=0;i<getNumMeasurements();i++) 
-	pts[i]=getPoint(i) / UNITSPERM;
+    for (int i=0;i<getNumMeasurements();i++)  {
+	pts[i]=getLocalPoint(i) / UNITSPERM;
+    }
     dbg("SickIO.update",3) << "Unit " << id << ": Finding targets from " << pts.size() << " ranges." << std::endl;
     std::vector<Point> calTargets=findTargets(pts);
 
     // Send Calibration Targets
-    for (int i=0;i<calTargets.size();i++)
 	lo_send(addr,"/pf/aligncorner","iiiff",id,i,calTargets.size(),calTargets[i].X(),calTargets[i].Y());
+    for (int i=0;i<calTargets.size();i++) {
+    }
     if (calTargets.size()==0) 
 	lo_send(addr,"/pf/aligncorner","iiiff",id,-1,calTargets.size(),0.0,0.0);  // So receiver can clear list
 

@@ -90,30 +90,32 @@ public:
 		return acquired;
 	}
 
-	// Get angle of measurement in degrees
+	// Get angle of measurement in degrees (local coordinates)
 	float getAngleDeg(int measurement)  const {
-	    return scanRes*(measurement-(num_measurements-1)/2.0) +coordinateRotation;
+	    return scanRes*(measurement-(num_measurements-1)/2.0);
 	}
 	float getCoordinateRotationDeg() const {
-	    return coordinateRotation;
+	    return coordinateRotation*180/M_PI;
 	}
 	void setCoordinateRotationDeg(float deg)  {
-	    coordinateRotation=int(deg/5)*5;  // Round to avoid tiny changes that throw off calibration
+	    coordinateRotation=M_PI/180*int(deg/5)*5;  // Round to avoid tiny changes that throw off calibration
 	}
-	float getAngleRad(int measurement) const {
+	// Get angle of measurement in radians (local coordinates)
+	float getAngleRad(int measurement) const {  
 	    return getAngleDeg(measurement)*M_PI/180;
 	}
-
-	float getX(int measurement, int echo=0)  const {
-	    return x[echo][measurement]+origin.X();
+	Point getLocalPoint(int measurement, int echo=0) const {
+	    Point p;
+	    p.setThetaRange(getAngleRad(measurement), range[echo][measurement]);
+	    return p;
 	}
 
-	float getY(int measurement, int echo=0) const {
-	    return y[echo][measurement]+origin.Y();
+	Point localToWorld(Point p) const {
+	    return p.rotate(coordinateRotation)+origin;
 	}
-
-	Point getPoint(int measurement) const {
-	    return Point(getX(measurement),getY(measurement));
+	
+	Point getWorldPoint(int measurement, int echo=0) const {
+	    return localToWorld(getLocalPoint(measurement,echo));
 	}
 
 	Point getOrigin() const {
