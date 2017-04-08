@@ -1,45 +1,35 @@
 import processing.core.PApplet;
 import processing.core.PGraphics;
 
+// A Visualizer is responsible for all of the logic and display of a Pulsefield application
+// Some visualizers also handle music/sound for the app
 public class VisualizerTemplate extends Visualizer {
 
 	VisualizerTemplate(PApplet parent) {
+		// Constructor is called only once when main program starts up
 		super();
 	}
 
 	@Override
 	public void start() {
 		super.start();
-		// Other initialization when this app becomes active
+		// Other initialization called each time this app becomes active
 	}
 	
 	@Override
 	public void stop() {
 		super.stop();
-		// When this app is deactivated
+		// Cleanup called each time this app is deactivated
 	}
 
 	@Override
 	public void update(PApplet parent, People p) {
-		// Update internal state
+		// Update internal state using the positions/statistics of people in the Pulsefield
 	}
 
 	@Override
 	public void draw(Tracker t, PGraphics g, People p) {
+		// Draw this app onto the pgraphics canvas which is mapped to the floor area of the pulsefield
 		super.draw(t, g, p);
-
-		// Add drawing code here
-	}
-	
-	@Override
-	public void drawLaser(PApplet parent, People p) {
-//		Laser laser=Laser.getInstance();
-//		laser.bgBegin();   // Start a background drawing
-//		for (Position ps: p.positions.values()) {  
-//			laser.cellBegin(ps.id); // Start a cell-specific drawing
-//			Laser drawing code
-//			laser.cellEnd(ps.id);
-//		}
-//		laser.bgEnd();
 	}
 }
