@@ -90,7 +90,7 @@ std::vector<Point> findTargets( const std::vector<Point> background) {
 	static const float MAXTARGETWIDTH=0.35;	// Maximum width of target in meters
 	static const float MAXFITERROR=0.05;	// RMS error between fitted corner and points
 	static const float MAXCORNERERROR=20; // Error in angle of corner in degrees
-	static const float MAXORIENTERROR=30;	// Error in which way corner is aiming in degrees
+	static const float MAXORIENTERROR=180;	// Error in which way corner is aiming in degrees
 	static const float MAXTARGETDIST=8;		// Maximum distance
 	static const float MINTARGETDIST=1;		// Minimum distance
 	static const float MINSIDELENGTH=0.15;
@@ -135,7 +135,7 @@ std::vector<Point> findTargets( const std::vector<Point> background) {
 			float side1= (corners[1]-corners[0]).norm();
 			float side2= (corners[2]-corners[1]).norm();
 			
-			if (rms<=MAXFITERROR && fabs(cornerAngle-90)<MAXCORNERERROR && fabs(orient)<MAXORIENTERROR 
+			if (rms<=MAXFITERROR && ( fabs(cornerAngle-90)<MAXCORNERERROR  || fabs(cornerAngle-270)<MAXCORNERERROR) && fabs(orient)<MAXORIENTERROR 
 			    && dist<=MAXTARGETDIST && dist >= MINTARGETDIST && fmin(side1,side2)>=MINSIDELENGTH) {
 			    dbg("findTargets",3) << "alignment pattern accepted at scans " << i-inTargetCnt << "-" << i-1 << " at {" << corners[0] << ", " <<  corners[1] << ", " << corners[2] << "} with edge lengths  " 
 						 << side1<< ", " << side2 << ", angle=" << cornerAngle << ", orient=" << orient 
