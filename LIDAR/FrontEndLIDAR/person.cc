@@ -51,7 +51,7 @@ Person::Person(int _id, int _channel, const Point &leg1, const Point &leg2) {
 }
 
 Person::~Person() {
-    dbg("Person",2) << "Deleting person " << *this << std::endl;
+    dbg("Person",1) << "Deleting person " << *this << std::endl;
     if (group!=nullptr)
 	group->remove(id);
     // NOTE: If we get an assertion error when removing the group, its probably because somewhere in the code a copy of the person is being made;  when that's deleted the dtor is called and it removes the group prematurely
@@ -349,7 +349,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     float legsep=(legs[0].position-legs[1].position).norm();
     float maxLegSep=MAXLEGSEP;
     if (legsep>maxLegSep) {
-	dbg("Person.update",1) << "legs are " << legsep << " apart (> " << maxLegSep << "), moving together" << std::endl;
+	dbg("Person.update",2) << "legs are " << legsep << " apart (> " << maxLegSep << "), moving together" << std::endl;
 	Point vec;
 	vec=(legs[0].position-legs[1].position)*(maxLegSep/legsep-1);
 	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));

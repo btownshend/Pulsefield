@@ -168,7 +168,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     float mintheta=std::min(std::min(theta[0],theta[1]),std::min(theta[2],theta[3]));
     float maxtheta=std::max(std::max(theta[0],theta[1]),std::max(theta[2],theta[3]));
     std::vector<int> clearsel;
-    dbg("Leg.update",3) << "Clear paths for " << mintheta*180/M_PI << "-" << maxtheta*180/M_PI <<  " degrees:   ";
+    dbg("Leg.update",3) << "Clear paths for " << mintheta*180/M_PI << ":" << maxtheta*180/M_PI <<  " degrees:   ";
     for (unsigned int i=0;i<vis.getSick()->getNumMeasurements();i++) {
 	float angle=vis.getSick()->getAngleRad(i);
 	if (angle>=mintheta && angle<=maxtheta) {
@@ -285,12 +285,13 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    assert(prob>0);
 	    sum=sum+pt*prob;
 	    tprob+=prob;
+	    //dbg("Leg.updateMLE",3) << "prob=" << prob << ", like=" << like[ix*likeny+iy] << ", pt=" << pt << ", sum=" << sum << std::endl;
 	}
     }
     assert(tprob>0);  // Since MLE was found, there must be some point that works
     Point mean=sum/tprob;
 
-    dbg("Leg.update",3) << "Got MLE=" << mlepos << " with like=" << *mle << ", mean position=" << mean << ", tprob=" << tprob << std::endl;
+    dbg("Leg.update",3) << "Got MLE=" << mlepos << " with like=" << *mle << ", mean position=" << mean << ", tprob=" << tprob << ", nsum=" << nsum << std::endl;
     Point newposition;
     if (USEMLE)
 	newposition=mlepos;

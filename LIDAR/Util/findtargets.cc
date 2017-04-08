@@ -62,7 +62,7 @@ static std::vector<Point> findCorner(const std::vector<Point> &pts, float &rms, 
 	    float cy=orthoval(fit1,cx);
 	    float cy2=orthoval(fit2,cx);
 	    if (std::abs(cy-cy2)>0.001) {
-		dbg("findCorner",0) << "Inconsistent corner point: " << Point(cx,cy) << " vs. " << Point(cx,cy2) << " with error " << std::abs(cy-cy2) << std::endl;
+		dbg("findCorner",1) << "Inconsistent corner point: " << Point(cx,cy) << " vs. " << Point(cx,cy2) << " with error " << std::abs(cy-cy2) << std::endl;
 	    }
 	    soln[1]=Point(cx,cy);
 	    x=pts[pts.size()-1].X();
