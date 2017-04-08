@@ -1,6 +1,6 @@
 BASEDIR=../../..
 
-UTIL=../Util
+UTIL=../../lib/C++Util
 VPATH=.:$(UTIL)
 
 LIBLOLIBDIR=/opt/local/lib
@@ -59,8 +59,8 @@ frontend.o: /opt/local/include/lo/lo_osc_types.h
 frontend.o: /opt/local/include/lo/lo_errors.h
 frontend.o: /opt/local/include/lo/lo_lowlevel.h
 frontend.o: /opt/local/include/lo/lo_serverthread.h
-frontend.o: /opt/local/include/lo/lo_macros.h ../Util/dest.h configuration.h
-frontend.o: /opt/local/include/boost/property_tree/ptree.hpp
+frontend.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/dest.h
+frontend.o: configuration.h /opt/local/include/boost/property_tree/ptree.hpp
 frontend.o: /opt/local/include/boost/property_tree/ptree_fwd.hpp
 frontend.o: /opt/local/include/boost/config.hpp
 frontend.o: /opt/local/include/boost/config/user.hpp
@@ -611,7 +611,7 @@ frontend.o: /opt/local/include/boost/multi_index/detail/value_compare.hpp
 frontend.o: /opt/local/include/boost/multi_index/detail/duplicates_iterator.hpp
 frontend.o: /opt/local/include/boost/multi_index/member.hpp
 frontend.o: /opt/local/include/boost/property_tree/detail/ptree_implementation.hpp
-frontend.o: ../Util/urlconfig.h sickio.h
+frontend.o: ../../lib/C++Util/urlconfig.h sickio.h
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -621,8 +621,9 @@ frontend.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 frontend.o: /Applications/MATLAB/extern/include/mat.h
 frontend.o: /Applications/MATLAB/extern/include/matrix.h
-frontend.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
-frontend.o: ../Util/dbg.h world.h /opt/local/include/cairo/cairo-xlib.h
+frontend.o: /Applications/MATLAB/extern/include/tmwtypes.h
+frontend.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h background.h
+frontend.o: world.h /opt/local/include/cairo/cairo-xlib.h
 frontend.o: /opt/local/include/cairo/cairo.h
 frontend.o: /opt/local/include/cairo/cairo-version.h
 frontend.o: /opt/local/include/cairo/cairo-features.h
@@ -630,7 +631,7 @@ frontend.o: /opt/local/include/cairo/cairo-deprecated.h
 frontend.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
 frontend.o: /opt/local/include/X11/Xfuncproto.h
 frontend.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
-frontend.o: background.h groups.h snapshot.h vis.h parameters.h
+frontend.o: groups.h snapshot.h vis.h parameters.h
 handlers.o: frontend.h /opt/local/include/lo/lo.h
 handlers.o: /opt/local/include/lo/lo_endian.h
 handlers.o: /opt/local/include/lo/lo_types.h
@@ -638,8 +639,8 @@ handlers.o: /opt/local/include/lo/lo_osc_types.h
 handlers.o: /opt/local/include/lo/lo_errors.h
 handlers.o: /opt/local/include/lo/lo_lowlevel.h
 handlers.o: /opt/local/include/lo/lo_serverthread.h
-handlers.o: /opt/local/include/lo/lo_macros.h ../Util/dest.h configuration.h
-handlers.o: /opt/local/include/boost/property_tree/ptree.hpp
+handlers.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/dest.h
+handlers.o: configuration.h /opt/local/include/boost/property_tree/ptree.hpp
 handlers.o: /opt/local/include/boost/property_tree/ptree_fwd.hpp
 handlers.o: /opt/local/include/boost/config.hpp
 handlers.o: /opt/local/include/boost/config/user.hpp
@@ -1200,9 +1201,9 @@ handlers.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 handlers.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 handlers.o: /Applications/MATLAB/extern/include/mat.h
 handlers.o: /Applications/MATLAB/extern/include/matrix.h
-handlers.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
-handlers.o: ../Util/dbg.h parameters.h world.h
-handlers.o: /opt/local/include/cairo/cairo-xlib.h
+handlers.o: /Applications/MATLAB/extern/include/tmwtypes.h
+handlers.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h background.h
+handlers.o: parameters.h world.h /opt/local/include/cairo/cairo-xlib.h
 handlers.o: /opt/local/include/cairo/cairo.h
 handlers.o: /opt/local/include/cairo/cairo-version.h
 handlers.o: /opt/local/include/cairo/cairo-features.h
@@ -1210,14 +1211,14 @@ handlers.o: /opt/local/include/cairo/cairo-deprecated.h
 handlers.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
 handlers.o: /opt/local/include/X11/Xfuncproto.h
 handlers.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
-handlers.o: background.h groups.h
+handlers.o: groups.h
 main.o: frontend.h /opt/local/include/lo/lo.h
 main.o: /opt/local/include/lo/lo_endian.h /opt/local/include/lo/lo_types.h
 main.o: /opt/local/include/lo/lo_osc_types.h
 main.o: /opt/local/include/lo/lo_errors.h /opt/local/include/lo/lo_lowlevel.h
 main.o: /opt/local/include/lo/lo_serverthread.h
-main.o: /opt/local/include/lo/lo_macros.h ../Util/dest.h configuration.h
-main.o: /opt/local/include/boost/property_tree/ptree.hpp
+main.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/dest.h
+main.o: configuration.h /opt/local/include/boost/property_tree/ptree.hpp
 main.o: /opt/local/include/boost/property_tree/ptree_fwd.hpp
 main.o: /opt/local/include/boost/config.hpp
 main.o: /opt/local/include/boost/config/user.hpp
@@ -1767,7 +1768,7 @@ main.o: /opt/local/include/boost/multi_index/detail/value_compare.hpp
 main.o: /opt/local/include/boost/multi_index/detail/duplicates_iterator.hpp
 main.o: /opt/local/include/boost/multi_index/member.hpp
 main.o: /opt/local/include/boost/property_tree/detail/ptree_implementation.hpp
-main.o: ../Util/dbg.h parameters.h
+main.o: ../../lib/C++Util/dbg.h parameters.h
 sickio.o: sickio.h
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -1778,16 +1779,27 @@ sickio.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 sickio.o: /Applications/MATLAB/extern/include/mat.h
 sickio.o: /Applications/MATLAB/extern/include/matrix.h
-sickio.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
-sickio.o: ../Util/dbg.h
-background.o: background.h /opt/local/include/lo/lo.h
-background.o: /opt/local/include/lo/lo_endian.h
+sickio.o: /Applications/MATLAB/extern/include/tmwtypes.h
+sickio.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h background.h
+sickio.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
+sickio.o: /opt/local/include/lo/lo_types.h
+sickio.o: /opt/local/include/lo/lo_osc_types.h
+sickio.o: /opt/local/include/lo/lo_errors.h
+sickio.o: /opt/local/include/lo/lo_lowlevel.h
+sickio.o: /opt/local/include/lo/lo_serverthread.h
+sickio.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/findtargets.h
+sickio.o: parameters.h
+background.o: background.h /Applications/MATLAB/extern/include/mat.h
+background.o: /Applications/MATLAB/extern/include/matrix.h
+background.o: /Applications/MATLAB/extern/include/tmwtypes.h
+background.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 background.o: /opt/local/include/lo/lo_types.h
 background.o: /opt/local/include/lo/lo_osc_types.h
 background.o: /opt/local/include/lo/lo_errors.h
 background.o: /opt/local/include/lo/lo_lowlevel.h
 background.o: /opt/local/include/lo/lo_serverthread.h
-background.o: /opt/local/include/lo/lo_macros.h sickio.h
+background.o: /opt/local/include/lo/lo_macros.h parameters.h
+background.o: ../../lib/C++Util/dbg.h normal.h vis.h sickio.h
 background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -1795,10 +1807,7 @@ background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5x
 background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-background.o: /Applications/MATLAB/extern/include/mat.h
-background.o: /Applications/MATLAB/extern/include/matrix.h
-background.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
-background.o: ../Util/dbg.h parameters.h normal.h vis.h world.h
+background.o: ../../lib/C++Util/point.h world.h
 background.o: /opt/local/include/cairo/cairo-xlib.h
 background.o: /opt/local/include/cairo/cairo.h
 background.o: /opt/local/include/cairo/cairo-version.h
@@ -1807,7 +1816,7 @@ background.o: /opt/local/include/cairo/cairo-deprecated.h
 background.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
 background.o: /opt/local/include/X11/Xfuncproto.h
 background.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
-background.o: ../Util/dest.h groups.h ../Util/findtargets.h
+background.o: ../../lib/C++Util/dest.h groups.h
 world.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 world.o: /opt/local/include/lo/lo_types.h
 world.o: /opt/local/include/lo/lo_osc_types.h
@@ -1824,8 +1833,9 @@ world.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
 world.o: /opt/local/include/X11/Xfuncproto.h /opt/local/include/X11/Xosdefs.h
 world.o: person.h /Applications/MATLAB/extern/include/mat.h
 world.o: /Applications/MATLAB/extern/include/matrix.h
-world.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
-world.o: legstats.h leg.h ../Util/dest.h background.h sickio.h
+world.o: /Applications/MATLAB/extern/include/tmwtypes.h
+world.o: ../../lib/C++Util/point.h legstats.h leg.h ../../lib/C++Util/dest.h
+world.o: background.h groups.h vis.h sickio.h
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -1833,7 +1843,7 @@ world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuff
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-world.o: ../Util/dbg.h groups.h vis.h parameters.h
+world.o: ../../lib/C++Util/dbg.h parameters.h
 snapshot.o: sickio.h
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -1844,23 +1854,24 @@ snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 snapshot.o: /Applications/MATLAB/extern/include/mat.h
 snapshot.o: /Applications/MATLAB/extern/include/matrix.h
-snapshot.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
-snapshot.o: ../Util/dbg.h world.h /opt/local/include/cairo/cairo-xlib.h
-snapshot.o: /opt/local/include/cairo/cairo.h
-snapshot.o: /opt/local/include/cairo/cairo-version.h
-snapshot.o: /opt/local/include/cairo/cairo-features.h
-snapshot.o: /opt/local/include/cairo/cairo-deprecated.h
-snapshot.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
-snapshot.o: /opt/local/include/X11/Xfuncproto.h
-snapshot.o: /opt/local/include/X11/Xosdefs.h person.h
+snapshot.o: /Applications/MATLAB/extern/include/tmwtypes.h
+snapshot.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h background.h
 snapshot.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 snapshot.o: /opt/local/include/lo/lo_types.h
 snapshot.o: /opt/local/include/lo/lo_osc_types.h
 snapshot.o: /opt/local/include/lo/lo_errors.h
 snapshot.o: /opt/local/include/lo/lo_lowlevel.h
 snapshot.o: /opt/local/include/lo/lo_serverthread.h
-snapshot.o: /opt/local/include/lo/lo_macros.h legstats.h leg.h ../Util/dest.h
-snapshot.o: background.h groups.h snapshot.h vis.h
+snapshot.o: /opt/local/include/lo/lo_macros.h world.h
+snapshot.o: /opt/local/include/cairo/cairo-xlib.h
+snapshot.o: /opt/local/include/cairo/cairo.h
+snapshot.o: /opt/local/include/cairo/cairo-version.h
+snapshot.o: /opt/local/include/cairo/cairo-features.h
+snapshot.o: /opt/local/include/cairo/cairo-deprecated.h
+snapshot.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
+snapshot.o: /opt/local/include/X11/Xfuncproto.h
+snapshot.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
+snapshot.o: ../../lib/C++Util/dest.h groups.h snapshot.h vis.h
 vis.o: vis.h sickio.h
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -1871,8 +1882,13 @@ vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 vis.o: /Applications/MATLAB/extern/include/mat.h
 vis.o: /Applications/MATLAB/extern/include/matrix.h
-vis.o: /Applications/MATLAB/extern/include/tmwtypes.h ../Util/point.h
-vis.o: ../Util/dbg.h parameters.h
+vis.o: /Applications/MATLAB/extern/include/tmwtypes.h
+vis.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h background.h
+vis.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
+vis.o: /opt/local/include/lo/lo_types.h /opt/local/include/lo/lo_osc_types.h
+vis.o: /opt/local/include/lo/lo_errors.h /opt/local/include/lo/lo_lowlevel.h
+vis.o: /opt/local/include/lo/lo_serverthread.h
+vis.o: /opt/local/include/lo/lo_macros.h parameters.h
 person.o: person.h /Applications/MATLAB/extern/include/mat.h
 person.o: /Applications/MATLAB/extern/include/matrix.h
 person.o: /Applications/MATLAB/extern/include/tmwtypes.h
@@ -1882,8 +1898,8 @@ person.o: /opt/local/include/lo/lo_osc_types.h
 person.o: /opt/local/include/lo/lo_errors.h
 person.o: /opt/local/include/lo/lo_lowlevel.h
 person.o: /opt/local/include/lo/lo_serverthread.h
-person.o: /opt/local/include/lo/lo_macros.h ../Util/point.h legstats.h leg.h
-person.o: vis.h sickio.h
+person.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/point.h
+person.o: legstats.h leg.h vis.h sickio.h
 person.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -1891,7 +1907,8 @@ person.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuf
 person.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-person.o: ../Util/dbg.h parameters.h normal.h lookuptable.h groups.h
+person.o: ../../lib/C++Util/dbg.h background.h parameters.h normal.h
+person.o: lookuptable.h groups.h
 worlddraw.o: /opt/local/include/cairo/cairo.h
 worlddraw.o: /opt/local/include/cairo/cairo-version.h
 worlddraw.o: /opt/local/include/cairo/cairo-features.h
@@ -1909,8 +1926,9 @@ worlddraw.o: /opt/local/include/lo/lo_osc_types.h
 worlddraw.o: /opt/local/include/lo/lo_errors.h
 worlddraw.o: /opt/local/include/lo/lo_lowlevel.h
 worlddraw.o: /opt/local/include/lo/lo_serverthread.h
-worlddraw.o: /opt/local/include/lo/lo_macros.h ../Util/point.h legstats.h
-worlddraw.o: leg.h ../Util/dest.h background.h sickio.h
+worlddraw.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/point.h
+worlddraw.o: legstats.h leg.h ../../lib/C++Util/dest.h background.h groups.h
+worlddraw.o: ../../lib/C++Util/dbg.h parameters.h vis.h sickio.h
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -1918,14 +1936,14 @@ worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-worlddraw.o: ../Util/dbg.h groups.h parameters.h vis.h
-lookuptable.o: lookuptable.h normal.h parameters.h ../Util/dbg.h
+lookuptable.o: lookuptable.h normal.h parameters.h ../../lib/C++Util/dbg.h
 leg.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 leg.o: /opt/local/include/lo/lo_types.h /opt/local/include/lo/lo_osc_types.h
 leg.o: /opt/local/include/lo/lo_errors.h /opt/local/include/lo/lo_lowlevel.h
 leg.o: /opt/local/include/lo/lo_serverthread.h
-leg.o: /opt/local/include/lo/lo_macros.h legstats.h leg.h ../Util/point.h
-leg.o: parameters.h ../Util/dbg.h normal.h vis.h sickio.h
+leg.o: /opt/local/include/lo/lo_macros.h legstats.h leg.h
+leg.o: ../../lib/C++Util/point.h parameters.h ../../lib/C++Util/dbg.h
+leg.o: normal.h vis.h sickio.h
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -1935,7 +1953,8 @@ leg.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 leg.o: /Applications/MATLAB/extern/include/mat.h
 leg.o: /Applications/MATLAB/extern/include/matrix.h
-leg.o: /Applications/MATLAB/extern/include/tmwtypes.h lookuptable.h
+leg.o: /Applications/MATLAB/extern/include/tmwtypes.h background.h
+leg.o: lookuptable.h
 legstats.o: person.h /Applications/MATLAB/extern/include/mat.h
 legstats.o: /Applications/MATLAB/extern/include/matrix.h
 legstats.o: /Applications/MATLAB/extern/include/tmwtypes.h
@@ -1945,19 +1964,19 @@ legstats.o: /opt/local/include/lo/lo_osc_types.h
 legstats.o: /opt/local/include/lo/lo_errors.h
 legstats.o: /opt/local/include/lo/lo_lowlevel.h
 legstats.o: /opt/local/include/lo/lo_serverthread.h
-legstats.o: /opt/local/include/lo/lo_macros.h ../Util/point.h legstats.h
-legstats.o: leg.h parameters.h ../Util/dbg.h
+legstats.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/point.h
+legstats.o: legstats.h leg.h parameters.h ../../lib/C++Util/dbg.h
 groups.o: groups.h /opt/local/include/lo/lo.h
 groups.o: /opt/local/include/lo/lo_endian.h /opt/local/include/lo/lo_types.h
 groups.o: /opt/local/include/lo/lo_osc_types.h
 groups.o: /opt/local/include/lo/lo_errors.h
 groups.o: /opt/local/include/lo/lo_lowlevel.h
 groups.o: /opt/local/include/lo/lo_serverthread.h
-groups.o: /opt/local/include/lo/lo_macros.h ../Util/point.h person.h
-groups.o: /Applications/MATLAB/extern/include/mat.h
+groups.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/point.h
+groups.o: person.h /Applications/MATLAB/extern/include/mat.h
 groups.o: /Applications/MATLAB/extern/include/matrix.h
 groups.o: /Applications/MATLAB/extern/include/tmwtypes.h legstats.h leg.h
-groups.o: ../Util/dbg.h parameters.h
+groups.o: ../../lib/C++Util/dbg.h parameters.h
 kalmanfilter.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
 kalmanfilter.o: /opt/local/include/opencv2/core.hpp
 kalmanfilter.o: /opt/local/include/opencv2/core/cvdef.h
@@ -1984,8 +2003,8 @@ kalmanfilter.o: /opt/local/include/opencv2/core/types_c.h
 kalmanfilter.o: /opt/local/include/opencv2/core/optim.hpp
 kalmanfilter.o: /opt/local/include/opencv2/imgproc.hpp
 kalmanfilter.o: /opt/local/include/opencv2/imgproc/imgproc_c.h
-kalmanfilter.o: /opt/local/include/opencv2/imgproc/types_c.h ../Util/point.h
-kalmanfilter.o: ../Util/dbg.h
+kalmanfilter.o: /opt/local/include/opencv2/imgproc/types_c.h
+kalmanfilter.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h
 configuration.o: configuration.h
 configuration.o: /opt/local/include/boost/property_tree/ptree.hpp
 configuration.o: /opt/local/include/boost/property_tree/ptree_fwd.hpp
@@ -2538,7 +2557,7 @@ configuration.o: /opt/local/include/boost/multi_index/detail/value_compare.hpp
 configuration.o: /opt/local/include/boost/multi_index/detail/duplicates_iterator.hpp
 configuration.o: /opt/local/include/boost/multi_index/member.hpp
 configuration.o: /opt/local/include/boost/property_tree/detail/ptree_implementation.hpp
-configuration.o: ../Util/dbg.h
+configuration.o: ../../lib/C++Util/dbg.h
 configuration.o: /opt/local/include/boost/property_tree/json_parser.hpp
 configuration.o: /opt/local/include/boost/property_tree/detail/json_parser_error.hpp
 configuration.o: /opt/local/include/boost/property_tree/detail/file_parser_error.hpp
