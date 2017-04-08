@@ -696,25 +696,7 @@
 				GCC_MODEL_TUNING = NONE;
 				HEADER_SEARCH_PATHS = (
 					"$(OF_CORE_HEADERS)",
-					"$(OF_PATH)/addons/ofxFX/src",
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFX/src/composers,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFX/src/filters,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFX/src/generative,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFX/src/operations,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFluid/src,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs/oscpack,
 					"$(OF_PATH)/addons/ofxOsc/libs/oscpack/src",
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs/oscpack/src/ip/posix,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs/oscpack/src/ip/win32,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs/oscpack/src/osc,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/src,
-					"$(OF_PATH)/addons/ofxSyphon/libs",
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxSyphon/libs/Syphon,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxSyphon/libs/Syphon/lib,
-					"$(OF_PATH)/addons/ofxSyphon/libs/Syphon/lib/osx",
-					"$(OF_PATH)/addons/ofxSyphon/libs/Syphon/src",
-					"$(OF_PATH)/addons/ofxSyphon/src",
 				);
 				ICON = "$(ICON_NAME_DEBUG)";
 				ICON_FILE = "$(ICON_FILE_PATH)$(ICON)";
@@ -742,25 +724,7 @@
 				GCC_MODEL_TUNING = NONE;
 				HEADER_SEARCH_PATHS = (
 					"$(OF_CORE_HEADERS)",
-					"$(OF_PATH)/addons/ofxFX/src",
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFX/src/composers,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFX/src/filters,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFX/src/generative,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFX/src/operations,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFluid/src,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs/oscpack,
 					"$(OF_PATH)/addons/ofxOsc/libs/oscpack/src",
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs/oscpack/src/ip/posix,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs/oscpack/src/ip/win32,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/libs/oscpack/src/osc,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxOsc/src,
-					"$(OF_PATH)/addons/ofxSyphon/libs",
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxSyphon/libs/Syphon,
-					../../../../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxSyphon/libs/Syphon/lib,
-					"$(OF_PATH)/addons/ofxSyphon/libs/Syphon/lib/osx",
-					"$(OF_PATH)/addons/ofxSyphon/libs/Syphon/src",
-					"$(OF_PATH)/addons/ofxSyphon/src",
 				);
 				ICON = "$(ICON_NAME_RELEASE)";
 				ICON_FILE = "$(ICON_FILE_PATH)$(ICON)";
