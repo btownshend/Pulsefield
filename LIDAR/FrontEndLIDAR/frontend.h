@@ -50,6 +50,7 @@ class FrontEnd {
 
     // OSC Message handling
     void addHandlers();
+    void addSickHandlers(int i);
     static bool doQuit;
 
     // Startup messages to OSC

@@ -192,9 +192,7 @@ void FrontEnd::addHandlers() {
 	lo_server_add_method(s,"/pf/miny","f",setMinY_handler,world);
 	lo_server_add_method(s,"/pf/maxy","f",setMaxY_handler,world);
 	for (int i=0;i<nsick;i++) {
-	    lo_server_add_method(s,("/pf/sick"+std::to_string(i)+"/rotation").c_str(),"f",setRotation_handler,sick[i]);
-	    lo_server_add_method(s,("/pf/sick"+std::to_string(i)+"/x").c_str(),"f",setXOrigin_handler,sick[i]);
-	    lo_server_add_method(s,("/pf/sick"+std::to_string(i)+"/y").c_str(),"f",setYOrigin_handler,sick[i]);
+	    addSickHandlers(i);
 	}
 
 	lo_server_add_method(s,"/pf/save","f",save_handler,this);
@@ -202,3 +200,11 @@ void FrontEnd::addHandlers() {
 	lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
 
 }
+
+void FrontEnd::addSickHandlers(int i) {
+    // Add handlers for sick device i
+    lo_server_add_method(s,("/pf/sick"+std::to_string(i)+"/rotation").c_str(),"f",setRotation_handler,sick[i]);
+    lo_server_add_method(s,("/pf/sick"+std::to_string(i)+"/x").c_str(),"f",setXOrigin_handler,sick[i]);
+    lo_server_add_method(s,("/pf/sick"+std::to_string(i)+"/y").c_str(),"f",setYOrigin_handler,sick[i]);
+}
+    
