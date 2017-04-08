@@ -20,14 +20,13 @@ void ofApp::setup(){
     ofSetCircleResolution(100);
     frozen = false;
     
-    setSize(500, 500, 1.0, true);
+    setSize(200, 200, 1.0, true);
     
-    fluid.dissipation = 0.99;
-    fluid.velocityDissipation = 0.99;
+    fluid.dissipation = 1.0f; //0.99;
+    fluid.velocityDissipation = 1.0f;//0.99;
     
-    fluid.setGravity(ofVec2f(0.0,0.0));
-    //    fluid.setGravity(ofVec2f(0.0,0.0098));
-    
+    //fluid.setGravity(ofVec2f(0.0,0.0));
+    fluid.setGravity(ofVec2f(0.0,0.0098));
     
     // Adding constant forces
     //
