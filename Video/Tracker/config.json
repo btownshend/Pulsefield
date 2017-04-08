@@ -1,5 +1,5 @@
 {
-  "dateSaved": "Thu Feb 02 20:24:47 PST 2017",
+  "dateSaved": "Fri Apr 07 17:22:54 PDT 2017",
   "navier6": {},
   "navier5": {},
   "navier4": {},
@@ -127,9 +127,9 @@
     ]
   },
   "video": {
-    "miny": -3.153409004211426,
-    "minx": -5.192307472229004,
-    "maxy": 3.9204540252685547,
+    "miny": 0.1704540252685547,
+    "minx": -4.615384101867676,
+    "maxy": 3.75,
     "maxx": -0.9890108108520508
   },
   "proj1": {
@@ -260,11 +260,11 @@
     "velScale": 40.659339904785156,
     "smokeEnable": 0,
     "ambient": 0,
-    "velocityDissipation": 0.9900000095367432,
-    "legScale": 1,
+    "velocityDissipation": 0.9890739917755127,
+    "legScale": 2.2132692337036133,
     "smokeBuoyancy": 1,
     "limitVelocity": 200,
-    "saturation": 1.4835164546966553,
+    "saturation": 0.8351648449897766,
     "smokeWeight": 0.05000000074505806,
     "flameVelocity": [
       0,
@@ -274,14 +274,14 @@
     "flameRadius": 10,
     "alpha": 1,
     "temperature": 10,
-    "dissipation": 0.9898726940155029,
+    "dissipation": 0.9999989867210388,
     "border": 1,
     "flameDensity": 1,
     "density": 1,
     "pressDissipation": 0.8999999761581421,
     "flameTemperature": 10,
     "flameEnable": 0,
-    "iterations": 34,
+    "iterations": 63,
     "rainbow": 1,
     "viscosity": 0.10000000149011612,
     "brightness": 1,
