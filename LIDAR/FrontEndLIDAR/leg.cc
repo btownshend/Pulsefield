@@ -160,17 +160,32 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     
 
     // Find the rays that will hit this box
+    // Use LIDAR local coordinates since we'll be mapping this to particular scans
     float theta[4];
-    theta[0]=Point(maxval.X(),minval.Y()).getTheta();
-    theta[1]=Point(maxval.X(),maxval.Y()).getTheta();
-    theta[2]=Point(minval.X(),minval.Y()).getTheta();
-    theta[3]=Point(minval.X(),maxval.Y()).getTheta();
+    theta[0]=vis.getSick()->worldToLocal(Point(maxval.X(),minval.Y())).getTheta();
+    theta[1]=vis.getSick()->worldToLocal(Point(maxval.X(),maxval.Y())).getTheta();
+    theta[2]=vis.getSick()->worldToLocal(Point(minval.X(),minval.Y())).getTheta();
+    theta[3]=vis.getSick()->worldToLocal(Point(minval.X(),maxval.Y())).getTheta();
+    // Make sure they are all in the same "wrap" -- that there is not a 360 deg jump
+    // Move the others to same wrap as theta[0]
+    for (int k=1;k<4;k++) {
+	if (theta[k]>theta[0]+M_PI)
+	    theta[k]-=2*M_PI;
+	else if (theta[k]<theta[0]-M_PI)
+	    theta[k]+=2*M_PI;
+    }
+    
     float mintheta=std::min(std::min(theta[0],theta[1]),std::min(theta[2],theta[3]));
     float maxtheta=std::max(std::max(theta[0],theta[1]),std::max(theta[2],theta[3]));
     std::vector<int> clearsel;
     dbg("Leg.update",3) << "Clear paths for " << mintheta*180/M_PI << ":" << maxtheta*180/M_PI <<  " degrees:   ";
     for (unsigned int i=0;i<vis.getSick()->getNumMeasurements();i++) {
 	float angle=vis.getSick()->getAngleRad(i);
+	// Wrap to same section as theta[0]
+	if (angle>theta[0]+M_PI)
+	    angle-=2*M_PI;
+	else if (angle<theta[0]-M_PI)
+	    angle+=2*M_PI;
 	if (angle>=mintheta && angle<=maxtheta) {
 	    clearsel.push_back(i);
 	    dbgn("Leg.update",3) << i << ",";
@@ -214,6 +229,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    // Likelihood with respect to unobstructed paths (leg can't be in these paths)
 	    float dclr=1e10;
 	    for (unsigned int k=0;k<clearsel.size();k++)
+		// TODO: Fix for translated LIDAR
 		dclr=std::min(dclr,segment2pt(Point(0,0),vis.getSick()->getWorldPoint(clearsel[k]),pt));
 	    float clearlike=log(normcdf(log(dclr*2),LOGDIAMMU,LOGDIAMSIGMA));
 
@@ -271,6 +287,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     // Find mean location by averaging over grid
     Point sum(0,0);
     double tprob=0;
+    int nsum=0;
     for (int ix=0;ix<likenx;ix++) {
 	float x=minval.X()+ix*stepx;
 	for (int iy=0;iy<likeny;iy++) {
@@ -285,6 +302,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    assert(prob>0);
 	    sum=sum+pt*prob;
 	    tprob+=prob;
+	    nsum++;
 	    //dbg("Leg.updateMLE",3) << "prob=" << prob << ", like=" << like[ix*likeny+iy] << ", pt=" << pt << ", sum=" << sum << std::endl;
 	}
     }

@@ -94,6 +94,9 @@ public:
 	float getCoordinateRotationDeg() const {
 	    return coordinateRotation*180/M_PI;
 	}
+	float getCoordinateRotationRad() const {
+	    return coordinateRotation;
+	}
 	void setCoordinateRotationDeg(float deg)  {
 	    coordinateRotation=M_PI/180*int(deg/5)*5;  // Round to avoid tiny changes that throw off calibration
 	}
@@ -109,6 +112,9 @@ public:
 
 	Point localToWorld(Point p) const {
 	    return p.rotate(coordinateRotation)+origin;
+	}
+	Point worldToLocal(Point p) const {
+	    return (p-origin).rotate(-coordinateRotation);
 	}
 	
 	Point getWorldPoint(int measurement, int echo=0) const {
