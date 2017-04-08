@@ -1,7 +1,0 @@
-Connecting to: 50/51:  flickery LEDS
-52/53: Stops Arduino (no show msgs), resumes when unplugged
-40/41: LEDs not changing, random colors
-
-
-Looks like 50-53 are SPI ports used to communicate with ethernet shield
-

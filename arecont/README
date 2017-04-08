@@ -1,6 +1,0 @@
-Usage procedure:
- Run capture to acquire images of 17x17 checkerboard
- Delete any images in C?/ directory that doesn't have clean checkerboard
- Run run.m to analyze
- symbolic link C?/c?-Results_left.mat to ../Experimental
-

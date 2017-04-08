@@ -1,5 +1,0 @@
-javah -jni oftest
-cp -p oftest.h ../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFluid/example/src
-cp -p ../../OpenFrameworks/of_v0.9.8_osx_release/addons/ofxFluid/example/bin/libexampleLibrary.dylib .
-install_name_tool -change @executable_path/libfmodex.dylib ../../OpenFrameworks/of_v0.9.8_osx_release/export/osx/libs/libfmodex.dylib libexampleLibrary.dylib
-java oftest
