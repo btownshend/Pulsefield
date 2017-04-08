@@ -1,8 +1,8 @@
 #CXX=/opt/local/bin/g++
 CXX=clang++
 BASEDIR=../..
-UTIL=../LIDAR/Util
-VPATH=.:$(UTIL):../Laser
+UTIL=../../lib/C++Util
+VPATH=.:$(UTIL)
 LIBLOLIBDIR=/opt/local/lib
 
 OPENCVINC=/opt/local/include
@@ -40,17 +40,20 @@ depend: $(SRCS)
 
 # DO NOT DELETE
 
-calibration.o: calibration.h lo_util.h ../LIDAR/Util/point.h configuration.h
-calibration.o: ../LIDAR/Util/urlconfig.h trackerComm.h ../LIDAR/Util/dbg.h
-oschandler.o: ../LIDAR/Util/dbg.h oschandler.h lo_util.h calibration.h
-oschandler.o: ../LIDAR/Util/point.h configuration.h ../LIDAR/Util/urlconfig.h
-main.o: oschandler.h lo_util.h calibration.h ../LIDAR/Util/point.h
-main.o: configuration.h ../LIDAR/Util/urlconfig.h ../LIDAR/Util/dbg.h
+calibration.o: calibration.h lo_util.h ../../lib/C++Util/point.h
+calibration.o: configuration.h ../../lib/C++Util/urlconfig.h trackerComm.h
+calibration.o: ../../lib/C++Util/dbg.h
+oschandler.o: ../../lib/C++Util/dbg.h oschandler.h lo_util.h calibration.h
+oschandler.o: ../../lib/C++Util/point.h configuration.h
+oschandler.o: ../../lib/C++Util/urlconfig.h
+main.o: oschandler.h lo_util.h calibration.h ../../lib/C++Util/point.h
+main.o: configuration.h ../../lib/C++Util/urlconfig.h ../../lib/C++Util/dbg.h
 main.o: trackerComm.h
-../LIDAR/Util/urlconfig.o: ../LIDAR/Util/dbg.h ../LIDAR/Util/urlconfig.h
-../Laser/configuration.o: configuration.h ../LIDAR/Util/dbg.h
-trackerComm.o: lo_util.h trackerComm.h ../LIDAR/Util/dbg.h
-trackerComm.o: ../LIDAR/Util/urlconfig.h ../LIDAR/Util/point.h
-../LIDAR/Util/dbg.o: ../LIDAR/Util/dbg.h
-../LIDAR/Util/point.o: ../LIDAR/Util/point.h
-../LIDAR/Util/dest.o: ../LIDAR/Util/dest.h ../LIDAR/Util/dbg.h
+../../lib/C++Util/urlconfig.o: ../../lib/C++Util/dbg.h
+../../lib/C++Util/urlconfig.o: ../../lib/C++Util/urlconfig.h
+configuration.o: configuration.h ../../lib/C++Util/dbg.h
+trackerComm.o: lo_util.h trackerComm.h ../../lib/C++Util/dbg.h
+trackerComm.o: ../../lib/C++Util/urlconfig.h ../../lib/C++Util/point.h
+../../lib/C++Util/dbg.o: ../../lib/C++Util/dbg.h
+../../lib/C++Util/point.o: ../../lib/C++Util/point.h
+../../lib/C++Util/dest.o: ../../lib/C++Util/dest.h ../../lib/C++Util/dbg.h
