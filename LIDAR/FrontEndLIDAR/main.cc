@@ -17,12 +17,12 @@ void usage(int argc,char *argv[]) {
     fprintf(stderr,"\t-R dir\t\trecord into default filename based on current date and time\n");
     fprintf(stderr,"\t-r file\t\trecord into given file\n");
     fprintf(stderr,"\t-p file\t\tplayback from given file\n");
-    fprintf(stderr,"\t-F\t\tplayback only give number of frames or frame number range\n");
-    fprintf(stderr,"\t-P\tappend performance summary to performance.csv\n");
     fprintf(stderr,"\t\t-L\toverlay live as well during playback\n");
     fprintf(stderr,"\t\t-s\tsingle-step playback\n");
     fprintf(stderr,"\t\t-l\tloop file continuously\n");
     fprintf(stderr,"\t\t-x x\tslow down playback by a factor of k use -x 0 to run at max speed\n");
+    fprintf(stderr,"\t-F\t\tplayback only given number of frames or frame number range\n");
+    fprintf(stderr,"\t-P\tappend performance summary to performance.csv\n");
     fprintf(stderr,"\t-m matframes\tsave given number of frames to frontend_dump.mat file and exit (or 0 to do all)\n");
     fprintf(stderr,"\t\t-M file\tspecify mat-file name (without suffix)\n");
     fprintf(stderr,"\t\t-D file\tspecify debug file name\n");
