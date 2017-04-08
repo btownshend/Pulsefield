@@ -69,7 +69,7 @@ static int pfsetminx_handler(const char *path, const char *types, lo_arg **argv,
 static int pfsetminy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMinY(argv[0]->f); return 0; }
 static int pfsetmaxx_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxX(argv[0]->f); return 0; }
 static int pfsetmaxy_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->setMaxY(argv[0]->f); return 0; }
-static int pfaligncorner_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfaligncorner(argv[0]->i,argv[1]->i,argv[2]->f,argv[3]->f); return 0; }
+static int pfaligncorner_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((OSCHandler *)user_data)->pfaligncorner(argv[0]->i,argv[1]->i,argv[2]->i,argv[3]->f,argv[4]->f,argv[5]->f,argv[6]->f); return 0; }
 
 OSCHandler::OSCHandler(int port) {
     dbg("OSCHandler",1) << "OSCHandler::OSCHandler()" << std::endl;
@@ -105,7 +105,7 @@ OSCHandler::OSCHandler(int port) {
 	lo_server_add_method(s,"/pf/set/maxx","f",pfsetmaxx_handler,this);
 	lo_server_add_method(s,"/pf/set/miny","f",pfsetminy_handler,this);
 	lo_server_add_method(s,"/pf/set/maxy","f",pfsetmaxy_handler,this);
-	lo_server_add_method(s,"/pf/aligncorner","iiff",pfaligncorner_handler,this);
+	lo_server_add_method(s,"/pf/aligncorner","iiiffff",pfaligncorner_handler,this);
 
 	/* add method that will match any path and args if they haven't been caught above */
 	lo_server_add_method(s, NULL, NULL, generic_handler, this);
@@ -163,7 +163,7 @@ void OSCHandler::pfframe(int frame, bool fake) {
     lastUpdateFrame=frame;
 }
 
-void OSCHandler::pfaligncorner(int corner, int ncorners, float x, float y) {
+void OSCHandler::pfaligncorner(int unit, int corner, int ncorners, float x, float y, float gx, float gy) {
     std::vector<Point> align = Calibration::instance()->getAlignment();
     dbg("OSCHandler.pfaligncorner",((ncorners==align.size())?3:1)) << "pfaligncorner(" << corner << "," << ncorners << ", " << x << ", " << y << ")" << std::endl;
     align.resize(ncorners);
