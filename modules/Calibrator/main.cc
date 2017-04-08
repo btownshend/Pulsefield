@@ -15,7 +15,7 @@ void usage(int argc,char *argv[]) {
 int main(int argc, char *argv[]) {
     int ch;
     int nproj=2;
-    URLConfig urls("urlconfig.txt");
+    URLConfig urls("config/urlconfig.txt");
     int port=urls.getPort("CAL");
     SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 

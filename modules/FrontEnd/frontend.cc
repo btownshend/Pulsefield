@@ -53,7 +53,7 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]): conf
 	recording=false;
 	recordFD=NULL;
 
-	URLConfig urls("urlconfig.txt");
+	URLConfig urls("config/urlconfig.txt");
 
 	/* Start cameras */
 	printf("Initializing with %d sensors...",nsick);fflush(stdout);
