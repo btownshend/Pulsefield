@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout version="15" mode="1" orientation="vertical">
+  <tabpage name="Mw==" scalef="0.0" scalet="16.0" osc_cs="L3BhZ2UvY29udHJvbA==">
+    <control name="cHVzaDI=" x="654" y="642" w="17" h="106" color="red" scalef="0.0" scalet="1.0" osc_cs="L3NuYXBzaG90L3RyaWdnZXI=" type="push" local_off="false"/>
+    <control name="bGFiZWwyMg==" x="649" y="642" w="25" h="110" color="red" osc_cs="L3NuYXBzaG90L2xhYmVs" type="labelv" text="ICAgICAgU25hcHNob3Q=" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwyMQ==" x="684" y="642" w="25" h="110" color="red" type="labelv" text="ICAgICAgICAgICAgIEZQUw==" size="14" background="true" outline="true"/>
+    <control name="cHVzaDI=" x="574" y="804" w="52" h="147" color="red" scalef="9998.0" scalet="9998.0" osc_cs="L3BmL2Rlc3QvYWRkL3BvcnQvVE8=" type="push" local_off="false"/>
+    <control name="bGFiZWwxMg==" x="588" y="805" w="24" h="143" color="red" type="labelv" text="T1NDIENvbm5lY3Q=" size="14" background="false" outline="false"/>
+    <control name="YmF0dGVyeTM=" x="688" y="922" w="25" h="80" color="red" type="batteryv" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwxNA==" x="688" y="842" w="25" h="80" color="red" type="labelv" text="QmF0dGVyeTo=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw3" x="590" y="561" w="25" h="60" color="red" type="labelv" text="RnJhbWU6" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw4" x="573" y="625" w="52" h="147" color="red" osc_cs="L3BmL2ZyYW1l" type="labelv" text="MA==" size="29" background="true" outline="true"/>
+    <control name="bGVkMg==" x="684" y="102" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="L2hlYWx0aC9GRQ==" type="led"/>
+    <control name="bGFiZWwz" x="664" y="97" w="20" h="30" color="red" type="labelv" text="RkU=" size="14" background="true" outline="false"/>
+    <control name="bGVkMTM=" x="684" y="138" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="L2hlYWx0aC9WRA==" type="led"/>
+    <control name="bGFiZWwxNQ==" x="664" y="133" w="20" h="30" color="red" type="labelv" text="VkQ=" size="14" background="true" outline="false"/>
+    <control name="bGVkMTQ=" x="684" y="177" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="L2hlYWx0aC9BTA==" type="led"/>
+    <control name="bGFiZWwxNg==" x="664" y="172" w="20" h="30" color="red" type="labelv" text="QUw=" size="14" background="true" outline="false"/>
+    <control name="bGVkMTU=" x="684" y="217" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="L2hlYWx0aC9NWA==" type="led"/>
+    <control name="bGFiZWwxNw==" x="664" y="212" w="20" h="30" color="red" type="labelv" text="TVg=" size="14" background="true" outline="false"/>
+    <control name="bGVkMTY=" x="684" y="256" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="L2hlYWx0aC9UTw==" type="led"/>
+    <control name="bGFiZWwxOA==" x="664" y="251" w="20" h="30" color="red" type="labelv" text="VE8=" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwyMA==" x="684" y="646" w="25" h="60" color="red" osc_cs="L3RvdWNob3NjL2Zwcw==" type="labelv" text="ZnBz" size="14" background="false" outline="false"/>
+    <control name="bGVkMQ==" x="652" y="650" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="L3NuYXBzaG90" type="led"/>
+    <control name="bGFiZWwyOTI=" x="645" y="868" w="25" h="80" color="red" type="labelv" text="T2NjdXBhbnRzOg==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyOTM=" x="644" y="943" w="25" h="31" color="red" osc_cs="L3BmL3NldC9ucGVvcGxl" type="labelv" text="MA==" size="14" background="true" outline="false"/>
+    <control name="ZmFkZXIxMA==" x="24" y="625" w="194" h="50" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3ZpZGVvL21pbnk=" type="faderh" response="absolute" inverted="true" centered="false"/>
+    <control name="bGFiZWwyOTg=" x="24" y="637" w="191" h="25" color="red" osc_cs="L3ZpZGVvL21pbnkvbGFiZWw=" type="labelh" text="TWluIFk=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIxMQ==" x="96" y="753" w="50" h="200" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3ZpZGVvL21heHg=" type="faderv" response="absolute" inverted="true" centered="false"/>
+    <control name="bGFiZWwyOTk=" x="107" y="751" w="28" h="203" color="red" osc_cs="L3ZpZGVvL21heHgvbGFiZWw=" type="labelv" text="TWF4IFg=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIxMg==" x="22" y="686" w="194" h="49" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3ZpZGVvL21heHk=" type="faderh" response="absolute" inverted="true" centered="false"/>
+    <control name="bGFiZWwzMDA=" x="19" y="697" w="197" h="25" color="red" osc_cs="L3ZpZGVvL21heHkvbGFiZWw=" type="labelh" text="TWF4IFk=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIxMw==" x="163" y="752" w="50" h="200" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3ZpZGVvL21pbng=" type="faderv" response="absolute" inverted="true" centered="false"/>
+    <control name="bGFiZWwzMDE=" x="173" y="753" w="28" h="199" color="red" osc_cs="L3ZpZGVvL21pbngvbGFiZWw=" type="labelv" text="TWluIFg=" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMTI=" x="466" y="906" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL2JvcmRlcnM=" type="toggle" local_off="true"/>
+    <control name="bGFiZWwzMTk=" x="481" y="828" w="20" h="80" color="red" type="labelv" text="Qm9yZGVyczo=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIxNw==" x="26" y="146" w="194" h="50" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3BmL21pbnk=" type="faderh" response="absolute" inverted="true" centered="false"/>
+    <control name="bGFiZWwzMjA=" x="40" y="227" w="80" h="25" color="red" osc_cs="L3BmL21pbnkvbGFiZWw=" type="labelh" text="TWluIFk=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIxOA==" x="98" y="274" w="50" h="200" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3BmL21heHg=" type="faderv" response="absolute" inverted="true" centered="false"/>
+    <control name="bGFiZWwzMjE=" x="109" y="333" w="28" h="80" color="red" osc_cs="L3BmL21heHgvbGFiZWw=" type="labelv" text="TWF4IFg=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIxOQ==" x="24" y="206" w="194" h="50" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3BmL21heHk=" type="faderh" response="absolute" inverted="true" centered="false"/>
+    <control name="bGFiZWwzMjI=" x="91" y="218" w="80" h="25" color="red" osc_cs="L3BmL21heHkvbGFiZWw=" type="labelh" text="TWF4IFk=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIyMA==" x="164" y="273" w="50" h="200" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3BmL21pbng=" type="faderv" response="absolute" inverted="true" centered="false"/>
+    <control name="bGFiZWwzMjM=" x="175" y="332" w="28" h="80" color="red" osc_cs="L3BmL21pbngvbGFiZWw=" type="labelv" text="TWluIFg=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzMjU=" x="218" y="251" w="25" h="80" color="red" type="labelv" text="RnJvbnRFbmQ=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzMjY=" x="218" y="733" w="25" h="80" color="red" type="labelv" text="VmlkZW8=" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMTM=" x="416" y="907" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL2JvdW5kcw==" type="toggle" local_off="true"/>
+    <control name="bGFiZWwzMjc=" x="431" y="829" w="20" h="80" color="red" type="labelv" text="Qm91bmRzOg==" size="14" background="false" outline="false"/>
+    <control name="cHVzaDI5" x="603" y="89" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3BmL3F1aXQ=" type="push" local_off="false"/>
+    <control name="bGFiZWwzMjg=" x="575" y="69" w="34" h="84" color="red" type="labelv" text="RkUgUmVzZXQ=" size="13" background="false" outline="false"/>
+    <control name="cHVzaDMw" x="43" y="360" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3BmL3NhdmU=" type="push" local_off="false"/>
+    <control name="bGFiZWwzMjk=" x="15" y="340" w="34" h="84" color="red" type="labelv" text="U2F2ZQ==" size="13" background="false" outline="false"/>
+    <control name="dG9nZ2xlMTQ=" x="367" y="907" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL21lbnU=" type="toggle" local_off="true"/>
+    <control name="bGFiZWwzNDE=" x="382" y="829" w="20" h="80" color="red" type="labelv" text="TWVudTo=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzNDI=" x="91" y="157" w="80" h="25" color="red" osc_cs="L3BmL21pbnkvbGFiZWw=" type="labelh" text="TWluIFk=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIzOA==" x="253" y="56" w="50" h="200" color="red" scalef="-180.0" scalet="180.0" osc_cs="L3BmL3NpY2swL3JvdGF0aW9u" type="faderv" response="absolute" inverted="false" centered="true"/>
+    <control name="bGFiZWwzNjk=" x="264" y="115" w="28" h="80" color="red" osc_cs="L3BmL3NpY2swL3JvdGF0aW9uL2xhYmVs" type="labelv" text="Um90YXRpb24=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NTE=" x="735" y="324" w="25" h="80" color="red" type="labelv" text="QXBwcy9BdWRpbw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NTI=" x="735" y="84" w="25" h="80" color="green" type="labelv" text="U2V0dXA=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NTM=" x="735" y="816" w="25" h="80" color="red" type="labelv" text="Q2FsaWJyYXRl" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NTQ=" x="735" y="562" w="25" h="80" color="red" type="labelv" text="TmF2aWVy" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI2OQ==" x="318" y="59" w="50" h="200" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3BmL3NpY2swL3k=" type="faderv" response="absolute" inverted="false" centered="true"/>
+    <control name="bGFiZWw1NTg=" x="329" y="118" w="28" h="80" color="red" osc_cs="L3BmL3NpY2swL3kvbGFiZWw=" type="labelv" text="WQ==" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI3MA==" x="384" y="58" w="50" h="200" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3BmL3NpY2swL3g=" type="faderv" response="absolute" inverted="false" centered="true"/>
+    <control name="bGFiZWw1NTk=" x="395" y="117" w="28" h="80" color="red" osc_cs="L3BmL3NpY2swL3gvbGFiZWw=" type="labelv" text="WA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1NjE=" x="442" y="119" w="25" h="80" color="red" type="labelv" text="TElEQVIgMA==" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI3MQ==" x="251" y="279" w="50" h="200" color="red" scalef="-180.0" scalet="180.0" osc_cs="L3BmL3NpY2sxL3JvdGF0aW9u" type="faderv" response="absolute" inverted="false" centered="true"/>
+    <control name="bGFiZWw1NjI=" x="262" y="338" w="28" h="80" color="red" osc_cs="L3BmL3NpY2sxL3JvdGF0aW9uL2xhYmVs" type="labelv" text="Um90YXRpb24=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI3Mg==" x="316" y="282" w="50" h="200" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3BmL3NpY2sxL3k=" type="faderv" response="absolute" inverted="false" centered="true"/>
+    <control name="bGFiZWw1NjM=" x="327" y="341" w="28" h="80" color="red" osc_cs="L3BmL3NpY2sxL3kvbGFiZWw=" type="labelv" text="WQ==" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI3Mw==" x="382" y="281" w="50" h="200" color="red" scalef="-15.0" scalet="15.0" osc_cs="L3BmL3NpY2sxL3g=" type="faderv" response="absolute" inverted="false" centered="true"/>
+    <control name="bGFiZWw1NjQ=" x="393" y="340" w="28" h="80" color="red" osc_cs="L3BmL3NpY2sxL3gvbGFiZWw=" type="labelv" text="WA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1NjU=" x="440" y="342" w="25" h="80" color="red" type="labelv" text="TElEQVIgMQ==" size="14" background="false" outline="false"/>
+  </tabpage>
+  <tabpage name="NA==" scalef="0.0" scalet="1.0" osc_cs="L3BhZ2UvYWJsZXRvbg==">
+    <control name="cHVzaDE=" x="204" y="2" w="30" h="432" color="orange" scalef="0.0" scalet="1.0" osc_cs="L3RvdWNob3NjL3NvbmcvaW5jcg==" type="push" local_off="false"/>
+    <control name="bGFiZWwx" x="158" y="-6" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvaGVhZGluZy90cmFjaw==" type="labelv" text="VHJhY2s=" size="16" background="false" outline="false"/>
+    <control name="bGFiZWwy" x="158" y="44" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvaGVhZGluZy9zY2VuZQ==" type="labelv" text="U2NlbmU=" size="16" background="false" outline="false"/>
+    <control name="bGFiZWwz" x="158" y="104" w="20" h="220" color="orange" osc_cs="L2dyaWQvdGFibGUvaGVhZGluZy9jbGlw" type="labelv" text="Q2xpcA==" size="16" background="false" outline="false"/>
+    <control name="bGFiZWw0" x="138" y="-6" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvMS90cmFjaw==" type="labelv" text="MQ==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1" x="138" y="44" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvMS9zY2VuZQ==" type="labelv" text="UzE=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw2" x="138" y="104" w="20" h="220" color="orange" osc_cs="L2dyaWQvdGFibGUvMS9jbGlw" type="labelv" text="QzE=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw3" x="118" y="-6" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvMi90cmFjaw==" type="labelv" text="Mg==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw4" x="118" y="44" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvMi9zY2VuZQ==" type="labelv" text="UzI=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw5" x="118" y="104" w="20" h="220" color="orange" osc_cs="L2dyaWQvdGFibGUvMi9jbGlw" type="labelv" text="QzI=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMA==" x="98" y="-6" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvMy90cmFjaw==" type="labelv" text="Mw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMQ==" x="98" y="44" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvMy9zY2VuZQ==" type="labelv" text="UzM=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMg==" x="98" y="104" w="20" h="220" color="orange" osc_cs="L2dyaWQvdGFibGUvMy9jbGlw" type="labelv" text="QzM=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMw==" x="78" y="-6" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvNC90cmFjaw==" type="labelv" text="NA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxNA==" x="78" y="44" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvNC9zY2VuZQ==" type="labelv" text="UzQ=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxNQ==" x="78" y="104" w="20" h="220" color="orange" osc_cs="L2dyaWQvdGFibGUvNC9jbGlw" type="labelv" text="QzQ=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxNg==" x="58" y="-6" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvNS90cmFjaw==" type="labelv" text="NQ==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxNw==" x="58" y="44" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvNS9zY2VuZQ==" type="labelv" text="UzU=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxOA==" x="58" y="104" w="20" h="220" color="orange" osc_cs="L2dyaWQvdGFibGUvNS9jbGlw" type="labelv" text="QzU=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxOQ==" x="38" y="-6" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvNi90cmFjaw==" type="labelv" text="Ng==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyMA==" x="38" y="44" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvNi9zY2VuZQ==" type="labelv" text="UzY=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyMQ==" x="38" y="104" w="20" h="220" color="orange" osc_cs="L2dyaWQvdGFibGUvNi9jbGlw" type="labelv" text="QzY=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyMg==" x="18" y="-6" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvNy90cmFjaw==" type="labelv" text="Nw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyMw==" x="18" y="44" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvNy9zY2VuZQ==" type="labelv" text="Uzc=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyNA==" x="18" y="104" w="20" h="220" color="orange" osc_cs="L2dyaWQvdGFibGUvNy9jbGlw" type="labelv" text="Qzc=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyNQ==" x="-2" y="-6" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvOC90cmFjaw==" type="labelv" text="OA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyNg==" x="-2" y="44" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvOC9zY2VuZQ==" type="labelv" text="Uzg=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyNw==" x="-2" y="104" w="20" h="220" color="orange" osc_cs="L2dyaWQvdGFibGUvOC9jbGlw" type="labelv" text="Qzg=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw5OQ==" x="206" y="2" w="25" h="429" color="orange" osc_cs="L2dyaWQvc29uZw==" type="labelv" text="U29uZw==" size="21" background="false" outline="false"/>
+    <control name="bGFiZWwxMDE=" x="158" y="353" w="20" h="60" color="orange" osc_cs="L2dyaWQvdGFibGUvaGVhZGluZy9wb3M=" type="labelv" text="UG9z" size="16" background="false" outline="false"/>
+    <control name="bGFiZWwxMDI=" x="138" y="317" w="20" h="140" color="orange" osc_cs="L2dyaWQvdGFibGUvMS9wb3M=" type="labelv" text="UDE=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDM=" x="118" y="317" w="20" h="140" color="orange" osc_cs="L2dyaWQvdGFibGUvMi9wb3M=" type="labelv" text="UDI=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDQ=" x="98" y="317" w="20" h="140" color="orange" osc_cs="L2dyaWQvdGFibGUvMy9wb3M=" type="labelv" text="UDM=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDU=" x="78" y="317" w="20" h="140" color="orange" osc_cs="L2dyaWQvdGFibGUvNC9wb3M=" type="labelv" text="UDQ=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDY=" x="58" y="317" w="20" h="140" color="orange" osc_cs="L2dyaWQvdGFibGUvNS9wb3M=" type="labelv" text="UDU=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDc=" x="38" y="317" w="20" h="140" color="orange" osc_cs="L2dyaWQvdGFibGUvNi9wb3M=" type="labelv" text="UDY=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDg=" x="18" y="317" w="20" h="140" color="orange" osc_cs="L2dyaWQvdGFibGUvNy9wb3M=" type="labelv" text="UDc=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwxMDk=" x="-2" y="317" w="20" h="140" color="orange" osc_cs="L2dyaWQvdGFibGUvOC9wb3M=" type="labelv" text="UDg=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI4" x="44" y="618" w="50" h="200" color="red" scalef="60.0" scalet="480.0" osc_cs="L3RlbXBv" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwyOTQ=" x="56" y="663" w="23" h="123" color="red" type="labelv" text="VGVtcG8gKEJQTSk=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI5" x="99" y="618" w="50" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZvbHVtZQ==" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwyOTU=" x="113" y="679" w="20" h="80" color="red" type="labelv" text="Vm9sdW1l" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwyOTY=" x="52" y="531" w="25" h="80" color="red" osc_cs="L3RlbXBvL3ZhbHVl" type="labelv" text="QlBN" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwyOTc=" x="111" y="530" w="25" h="80" color="red" osc_cs="L3ZvbHVtZS92YWx1ZQ==" type="labelv" text="Vm9s" size="14" background="true" outline="false"/>
+    <control name="bXVsdGlmYWRlcjE=" x="26" y="943" w="430" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="L21ldGVy" type="multifaderh" inverted="false" centered="false" number="2"/>
+    <control name="bXVsdGl0b2dnbGU3" x="482" y="20" w="200" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL2FwcC9idXR0b25z" type="multitoggle" number_x="5" number_y="5" ex_mode="false" local_off="true"/>
+    <control name="bGFiZWwzMzA=" x="690" y="21" w="25" h="80" color="red" osc_cs="L3ZpZGVvL2FwcC90aXRsZQ==" type="labelv" text="QXBw" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzMzE=" x="690" y="96" w="25" h="125" color="red" osc_cs="L3ZpZGVvL2FwcC9uYW1l" type="labelv" text="Tm9uZQ==" size="14" background="true" outline="false"/>
+    <control name="bGFiZWwzMzI=" x="689" y="379" w="25" h="80" color="red" type="labelv" text="TmF2aWVy" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIyMQ==" x="628" y="330" w="50" h="200" color="red" scalef="0.0" scalet="0.005" osc_cs="L3ZpZGVvL25hdmllci92aXNjb3NpdHk=" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwzMzM=" x="642" y="391" w="20" h="80" color="red" type="labelv" text="VmlzY29zaXR5" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzMzQ=" x="640" y="242" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllci92aXNjb3NpdHkvdmFsdWU=" type="labelv" text="VmlzY29zaXR5" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIyMg==" x="565" y="329" w="50" h="200" color="red" scalef="-5.0" scalet="5.0" osc_cs="L3ZpZGVvL25hdmllci9kaWZmdXNpb24=" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwzMzU=" x="579" y="390" w="20" h="80" color="red" type="labelv" text="RGlmZnVzaW9u" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzMzY=" x="577" y="241" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllci9kaWZmdXNpb24vdmFsdWU=" type="labelv" text="RGlmZnVzaW9u" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXIyMw==" x="502" y="329" w="50" h="200" color="red" scalef="0.0" scalet="4.0" osc_cs="L3ZpZGVvL25hdmllci9zY2FsZQ==" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWwzMzc=" x="516" y="390" w="20" h="80" color="red" type="labelv" text="U2NhbGU=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzMzg=" x="514" y="241" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllci9zY2FsZS92YWx1ZQ==" type="labelv" text="U2NhbGU=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzMzk=" x="691" y="652" w="25" h="80" color="red" type="labelv" text="RGFuY2U=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzNDA=" x="504" y="583" w="24" h="229" color="red" osc_cs="L3ZpZGVvL2Rkci9zb25n" type="labelv" text="U29uZw==" size="14" background="true" outline="false"/>
+    <control name="cm90YXJ5NA==" x="567" y="642" w="100" h="100" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL2Rkci9zb25nbnVt" type="rotaryv" response="absolute" inverted="false" centered="false" norollover="true"/>
+    <control name="bGFiZWw0NDc=" x="735" y="324" w="25" h="80" color="green" type="labelv" text="QXBwcy9BdWRpbw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NDg=" x="735" y="84" w="25" h="80" color="red" type="labelv" text="U2V0dXA=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NDk=" x="735" y="816" w="25" h="80" color="red" type="labelv" text="Q2FsaWJyYXRl" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NTA=" x="735" y="562" w="25" h="80" color="red" type="labelv" text="TmF2aWVy" size="14" background="false" outline="false"/>
+  </tabpage>
+  <tabpage name="Nw==" scalef="0.0" scalet="1.0">
+    <control name="bXVsdGl0b2dnbGUxMA==" x="264" y="948" w="291" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3ByZXNldA==" type="multitoggle" number_x="8" number_y="1" ex_mode="true" local_off="true"/>
+    <control name="bGFiZWw1MzI=" x="480" y="948" w="34" h="47" color="red" type="labelv" text="MQ==" size="13" background="false" outline="false"/>
+    <control name="ZmFkZXI2Ng==" x="364" y="408" w="50" h="200" color="red" scalef="-6.0" scalet="0.0" osc_cs="L3ZpZGVvL25hdmllck9GL2Rpc3NpcGF0aW9u" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0NTU=" x="735" y="324" w="25" h="80" color="red" type="labelv" text="QXBwcy9BdWRpbw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NTY=" x="735" y="84" w="25" h="80" color="red" type="labelv" text="U2V0dXA=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NTc=" x="735" y="816" w="25" h="80" color="red" type="labelv" text="Q2FsaWJyYXRl" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NTg=" x="735" y="562" w="25" h="80" color="green" type="labelv" text="TmF2aWVy" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI0Mg==" x="531" y="172" w="45" h="45" color="red" scalef="-6.0" scalet="0.0" osc_cs="L3ZpZGVvL25hdmllck9GL2Rpc3NpcGF0aW9u" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0NzQ=" x="377" y="468" w="25" h="80" color="red" type="labelv" text="RGlzc2lwYXRpb24=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NzU=" x="374" y="321" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL2Rpc3NpcGF0aW9uL3ZhbHVl" type="labelv" text="RGlzc2lwYXRpb24=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI0Mw==" x="311" y="408" w="50" h="200" color="red" scalef="-6.0" scalet="0.0" osc_cs="L3ZpZGVvL25hdmllck9GL3ZlbG9jaXR5RGlzc2lwYXRpb24=" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0NzY=" x="325" y="409" w="20" h="199" color="red" type="labelv" text="VmVsb2NpdHkgRGlzc2lwYXRpb24=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0Nzc=" x="323" y="321" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL3ZlbG9jaXR5RGlzc2lwYXRpb24vdmFsdWU=" type="labelv" text="VmVsLiBEaXNzaXBhdGlvbg==" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI0Ng==" x="519" y="715" w="50" h="200" color="red" scalef="0.01" scalet="4.0" osc_cs="L3ZpZGVvL25hdmllck9GL2xlZ3NjYWxl" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0ODI=" x="533" y="775" w="20" h="80" color="red" type="labelv" text="TGVnIFNjYWxpbmc=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0ODM=" x="531" y="629" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL2xlZ3NjYWxlL3ZhbHVl" type="labelv" text="TGVnIFNjYWxl" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI0Nw==" x="467" y="715" w="50" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL2FscGhh" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0ODQ=" x="481" y="716" w="20" h="199" color="red" type="labelv" text="QWxwaGE=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0ODU=" x="479" y="629" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL2FscGhhL3ZhbHVl" type="labelv" text="QWxwaGE=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI0OA==" x="415" y="715" w="50" h="200" color="red" scalef="0.0" scalet="2.0" osc_cs="L3ZpZGVvL25hdmllck9GL3NhdHVyYXRpb24=" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0ODY=" x="429" y="775" w="20" h="80" color="red" type="labelv" text="U2F0dXJhdGlvbg==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0ODc=" x="427" y="629" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL3NhdHVyYXRpb24vdmFsdWU=" type="labelv" text="U2F0dXJhdGlvbg==" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI0OQ==" x="363" y="715" w="50" h="200" color="red" scalef="0.0" scalet="4.0" osc_cs="L3ZpZGVvL25hdmllck9GL2JyaWdodG5lc3M=" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0ODg=" x="375" y="629" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL2JyaWdodG5lc3MvdmFsdWU=" type="labelv" text="QnJpZ2h0bmVzcw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0ODk=" x="377" y="775" w="20" h="80" color="red" type="labelv" text="QnJpZ2h0bmVzcw==" size="14" background="false" outline="false"/>
+    <control name="cHVzaDUw" x="414" y="49" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL2dyYXZpdHlDbGVhcg==" type="push" local_off="false"/>
+    <control name="ZmFkZXI1MA==" x="259" y="408" w="50" h="200" color="red" scalef="-6.0" scalet="0.0" osc_cs="L3ZpZGVvL25hdmllck9GL3RlbXBEaXNzaXBhdGlvbg==" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0OTA=" x="273" y="409" w="20" h="199" color="red" type="labelv" text="VGVtcGVyYXR1cmUgRGlzc2lwYXRpb24=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0OTE=" x="271" y="321" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL3RlbXBEaXNzaXBhdGlvbi92YWx1ZQ==" type="labelv" text="VGVtcC4gRGlzc2lwYXRpb24=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI1MQ==" x="208" y="408" w="50" h="200" color="red" scalef="-6.0" scalet="0.0" osc_cs="L3ZpZGVvL25hdmllck9GL3ByZXNzRGlzc2lwYXRpb24=" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0OTI=" x="222" y="409" w="20" h="199" color="red" type="labelv" text="UHJlc3N1cmUgRGlzc2lwYXRpb24=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0OTM=" x="220" y="321" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL3ByZXNzRGlzc2lwYXRpb24vdmFsdWU=" type="labelv" text="UHJlc3MuIERpc3NpcGF0aW9u" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI1Mg==" x="311" y="715" w="50" h="200" color="red" scalef="0.0" scalet="100.0" osc_cs="L3ZpZGVvL25hdmllck9GL3RlbXBlcmF0dXJl" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0OTQ=" x="323" y="626" w="25" h="86" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL3RlbXBlcmF0dXJlL3ZhbHVl" type="labelv" text="VGVtcGVyYXR1cmU=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0OTU=" x="325" y="760" w="20" h="117" color="red" type="labelv" text="VGVtcGVyYXR1cmU=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI1Mw==" x="259" y="715" w="50" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL2RlbnNpdHk=" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw0OTY=" x="271" y="629" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL2RlbnNpdHkvdmFsdWU=" type="labelv" text="RGVuc2l0eQ==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0OTc=" x="273" y="775" w="20" h="80" color="red" type="labelv" text="RGVuc2l0eQ==" size="14" background="false" outline="false"/>
+    <control name="eHkxMQ==" x="26" y="253" w="150" h="150" color="red" scalef="-4.0" scalet="4.0" osc_cs="L3ZpZGVvL25hdmllck9GL2ZsYW1lVmVsb2NpdHk=" type="xy" inverted_x="false" inverted_y="false"/>
+    <control name="eHkxMg==" x="26" y="90" w="150" h="150" color="red" scalef="-1.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL2ZsYW1lUG9zaXRpb24=" type="xy" inverted_x="false" inverted_y="false"/>
+    <control name="bGFiZWw1MDE=" x="180" y="205" w="25" h="80" color="red" type="labelv" text="RmxhbWU=" size="16" background="false" outline="false"/>
+    <control name="bGFiZWw1MDI=" x="3" y="131" w="25" h="80" color="red" type="labelv" text="UG9zaXRpb24=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1MDM=" x="1" y="298" w="25" h="80" color="red" type="labelv" text="VmVsb2NpdHk=" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMjA=" x="129" y="33" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL2ZsYW1lRW5hYmxl" type="toggle" local_off="false"/>
+    <control name="bGFiZWw1MDQ=" x="104" y="16" w="25" h="80" color="red" type="labelv" text="RW5hYmxl" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI1OA==" x="75" y="408" w="50" h="200" color="red" scalef="0.0" scalet="100.0" osc_cs="L3ZpZGVvL25hdmllck9GL2ZsYW1lVGVtcGVyYXR1cmU=" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw1MDg=" x="90" y="614" w="25" h="86" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL2ZsYW1lVGVtcGVyYXR1cmUvdmFsdWU=" type="labelv" text="VGVtcGVyYXR1cmU=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1MDk=" x="89" y="409" w="20" h="199" color="red" type="labelv" text="VGVtcGVyYXR1cmU=" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI1OQ==" x="24" y="408" w="50" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL2ZsYW1lRGVuc2l0eQ==" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw1MTA=" x="39" y="611" w="20" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL2ZsYW1lRGVuc2l0eS92YWx1ZQ==" type="labelv" text="RGVuc2l0eQ==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1MTE=" x="38" y="468" w="20" h="80" color="red" type="labelv" text="RGVuc2l0eQ==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1MTI=" x="698" y="771" w="25" h="80" color="red" type="labelv" text="VXNlcg==" size="16" background="false" outline="false"/>
+    <control name="ZmFkZXI2MA==" x="126" y="408" w="50" h="200" color="red" scalef="0.01" scalet="50.0" osc_cs="L3ZpZGVvL25hdmllck9GL2ZsYW1lUmFkaXVz" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw1MTM=" x="141" y="613" w="25" h="86" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL2ZsYW1lUmFkaXVzL3ZhbHVl" type="labelv" text="UmFkaXVz" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1MTQ=" x="140" y="409" w="20" h="199" color="red" type="labelv" text="UmFkaXVz" size="14" background="false" outline="false"/>
+    <control name="eHkxMw==" x="311" y="106" w="150" h="150" color="red" scalef="-2.0" scalet="2.0" osc_cs="L3ZpZGVvL25hdmllck9GL2dyYXZpdHk=" type="xy" inverted_x="false" inverted_y="false"/>
+    <control name="bGFiZWw1MTU=" x="288" y="147" w="25" h="80" color="red" type="labelv" text="R3Jhdml0eQ==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1MTY=" x="387" y="32" w="25" h="80" color="red" type="labelv" text="WmVybw==" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI2MQ==" x="467" y="408" w="50" h="200" color="red" scalef="-1.0" scalet="8.0" osc_cs="L3ZpZGVvL25hdmllck9GL3Zpc2Nvc2l0eQ==" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw1MTc=" x="481" y="468" w="20" h="80" color="red" type="labelv" text="VmlzY29zaXR5" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1MTg=" x="479" y="321" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL3Zpc2Nvc2l0eS92YWx1ZQ==" type="labelv" text="VmlzY29zaXR5" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI2Mg==" x="519" y="408" w="50" h="200" color="red" scalef="5.0" scalet="200.0" osc_cs="L3ZpZGVvL25hdmllck9GL2l0ZXJhdGlvbnM=" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw1MTk=" x="533" y="468" w="20" h="80" color="red" type="labelv" text="SXRlcmF0aW9ucw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1MjA=" x="531" y="321" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL2l0ZXJhdGlvbnMvdmFsdWU=" type="labelv" text="SXRlcmF0aW9ucw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1MjE=" x="50" y="762" w="34" h="84" color="red" type="labelv" text="RnJlZXpl" size="13" background="false" outline="false"/>
+    <control name="cHVzaDUy" x="76" y="852" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL2NsZWFy" type="push" local_off="false"/>
+    <control name="bGFiZWw1MjI=" x="50" y="832" w="34" h="84" color="red" type="labelv" text="Q2xlYXI=" size="13" background="false" outline="false"/>
+    <control name="cHVzaDU0" x="203" y="926" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3NhdmVwcmVzZXQ=" type="push" local_off="false"/>
+    <control name="bGFiZWw1MjQ=" x="209" y="932" w="34" h="33" color="red" type="labelv" text="U2F2ZQ==" size="13" background="false" outline="false"/>
+    <control name="bGFiZWw1MjU=" x="559" y="930" w="34" h="84" color="red" type="labelv" text="UHJlc2V0cw==" size="13" background="false" outline="false"/>
+    <control name="bGFiZWw1MjY=" x="517" y="949" w="34" h="47" color="red" type="labelv" text="RGVm" size="13" background="false" outline="false"/>
+    <control name="bGFiZWw1Mjc=" x="300" y="947" w="34" h="51" color="red" type="labelv" text="Ng==" size="13" background="false" outline="false"/>
+    <control name="bGFiZWw1Mjg=" x="336" y="949" w="34" h="47" color="red" type="labelv" text="NQ==" size="13" background="false" outline="false"/>
+    <control name="bGFiZWw1Mjk=" x="372" y="948" w="34" h="49" color="red" type="labelv" text="NA==" size="13" background="false" outline="false"/>
+    <control name="bGFiZWw1MzA=" x="408" y="947" w="34" h="52" color="red" type="labelv" text="Mw==" size="13" background="false" outline="false"/>
+    <control name="bGFiZWw1MzE=" x="444" y="949" w="34" h="46" color="red" type="labelv" text="Mg==" size="13" background="false" outline="false"/>
+    <control name="bGFiZWw1MzM=" x="264" y="947" w="34" h="49" color="red" type="labelv" text="Nw==" size="13" background="false" outline="false"/>
+    <control name="ZmFkZXI2Mw==" x="415" y="408" w="50" h="200" color="red" scalef="-2.0" scalet="2.0" osc_cs="L3ZpZGVvL25hdmllck9GL2RpZmZ1c2lvbg==" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw1MzQ=" x="428" y="468" w="20" h="80" color="red" type="labelv" text="RGlmZnVzaW9u" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1MzU=" x="426" y="321" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL2RpZmZ1c2lvbi92YWx1ZQ==" type="labelv" text="RGlmZnVzaW9u" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI2NA==" x="581" y="95" w="50" h="200" color="red" scalef="0.0" scalet="0.2" osc_cs="L3ZpZGVvL25hdmllck9GL3Ntb2tlL3dlaWdodA==" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw1MzY=" x="595" y="156" w="20" h="80" color="red" type="labelv" text="V2VpZ2h0" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1Mzc=" x="593" y="7" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL3Ntb2tlL3dlaWdodC92YWx1ZQ==" type="labelv" text="V2VpZ2h0" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI2NQ==" x="633" y="95" w="50" h="200" color="red" scalef="0.0" scalet="2.0" osc_cs="L3ZpZGVvL25hdmllck9GL3Ntb2tlL2J1b3lhbmN5" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw1Mzg=" x="647" y="156" w="20" h="80" color="red" type="labelv" text="QnVveWFuY3k=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1Mzk=" x="645" y="7" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL3Ntb2tlL2J1b3lhbmN5L3ZhbHVl" type="labelv" text="QnVveWFuY3k=" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMjE=" x="531" y="172" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3Ntb2tlL2VuYWJsZQ==" type="toggle" local_off="false"/>
+    <control name="bGFiZWw1NDA=" x="540" y="95" w="25" h="80" color="red" type="labelv" text="RW5hYmxl" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1NDE=" x="690" y="141" w="25" h="80" color="red" type="labelv" text="U21va2U=" size="16" background="false" outline="false"/>
+    <control name="ZmFkZXI2Nw==" x="572" y="408" w="50" h="200" color="red" scalef="0.0" scalet="50.0" osc_cs="L3ZpZGVvL25hdmllck9GL2FtYmllbnQ=" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw1NDI=" x="586" y="468" w="20" h="80" color="red" type="labelv" text="QW1iaWVudA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1NDM=" x="584" y="321" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL2FtYmllbnQvdmFsdWU=" type="labelv" text="QW1iaWVudA==" size="14" background="false" outline="false"/>
+    <control name="cHVzaDU1" x="76" y="922" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL2NhcHR1cmU=" type="push" local_off="false"/>
+    <control name="bGFiZWw1NDY=" x="50" y="902" w="34" h="84" color="red" type="labelv" text="Q2FwdHVyZQ==" size="13" background="false" outline="false"/>
+    <control name="bGVkMzg=" x="310" y="1000" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3ByZXNldGxlZC82" type="led"/>
+    <control name="bGVkMzk=" x="346" y="1000" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3ByZXNldGxlZC81" type="led"/>
+    <control name="bGVkNDA=" x="382" y="1000" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3ByZXNldGxlZC80" type="led"/>
+    <control name="bGVkNDE=" x="417" y="1000" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3ByZXNldGxlZC8z" type="led"/>
+    <control name="bGVkNDI=" x="453" y="1000" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3ByZXNldGxlZC8y" type="led"/>
+    <control name="bGVkNDM=" x="489" y="1000" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3ByZXNldGxlZC8x" type="led"/>
+    <control name="bGVkNDQ=" x="275" y="1000" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3ByZXNldGxlZC83" type="led"/>
+    <control name="bXVsdGl0b2dnbGUxMQ==" x="131" y="773" w="50" h="200" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3RleHNlbGVjdA==" type="multitoggle" number_x="1" number_y="4" ex_mode="true" local_off="true"/>
+    <control name="bGFiZWw1NDc=" x="139" y="782" w="34" h="36" color="red" type="labelv" text="Tm9ybWFs" size="13" background="false" outline="false"/>
+    <control name="bGFiZWw1NDg=" x="139" y="830" w="34" h="36" color="red" type="labelv" text="VmVs" size="13" background="false" outline="false"/>
+    <control name="bGFiZWw1NDk=" x="139" y="878" w="34" h="36" color="red" type="labelv" text="VGVtcA==" size="13" background="false" outline="false"/>
+    <control name="bGFiZWw1NTA=" x="139" y="927" w="34" h="36" color="red" type="labelv" text="UHJlc3M=" size="13" background="false" outline="false"/>
+    <control name="dG9nZ2xlMjI=" x="643" y="719" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL211bHRpY29sb3I=" type="toggle" local_off="false"/>
+    <control name="bGFiZWw1NTE=" x="620" y="702" w="25" h="80" color="red" type="labelv" text="TXVsdGljb2xvcg==" size="14" background="false" outline="false"/>
+    <control name="ZmFkZXI2OA==" x="572" y="715" w="50" h="200" color="red" scalef="0.0" scalet="100.0" osc_cs="L3ZpZGVvL25hdmllck9GL3ZlbHNjYWxl" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="bGFiZWw1NTI=" x="586" y="713" w="20" h="204" color="red" type="labelv" text="VmVsb2NpdHkgU2NhbGluZw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw1NTM=" x="584" y="629" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllck9GL3ZlbHNjYWxlL3ZhbHVl" type="labelv" text="VmVsLiBTY2FsZQ==" size="14" background="false" outline="false"/>
+    <control name="cHVzaDU2" x="204" y="974" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL2xvYWRwcmVzZXQ=" type="push" local_off="false"/>
+    <control name="bGFiZWw1NTQ=" x="210" y="980" w="34" h="33" color="red" type="labelv" text="TG9hZA==" size="13" background="false" outline="false"/>
+    <control name="cHVzaDU3" x="76" y="713" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3F1aXQ=" type="push" local_off="false"/>
+    <control name="bGFiZWw1NTU=" x="50" y="693" w="34" h="84" color="red" type="labelv" text="UmVzZXQ=" size="13" background="false" outline="false"/>
+    <control name="dG9nZ2xlMjM=" x="76" y="783" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL2Zyb3plbg==" type="toggle" local_off="false"/>
+    <control name="dG9nZ2xlMjQ=" x="643" y="415" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL2JvcmRlcg==" type="toggle" local_off="false"/>
+    <control name="bGFiZWw1NTY=" x="620" y="398" w="25" h="80" color="red" type="labelv" text="Qm9yZGVy" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMjU=" x="643" y="487" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL25hdmllck9GL3JhaW5ib3c=" type="toggle" local_off="false"/>
+    <control name="bGFiZWw1NTc=" x="620" y="470" w="25" h="80" color="red" type="labelv" text="UmFpbmJvdw==" size="14" background="false" outline="false"/>
+  </tabpage>
+  <tabpage name="NA==" scalef="0.0" scalet="1.0">
+    <control name="cHVzaDMy" x="382" y="132" w="49" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9hbGlnbg==" type="push" local_off="true"/>
+    <control name="dG9nZ2xlMTU=" x="337" y="513" w="59" h="63" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sb2Nr" type="toggle" local_off="true"/>
+    <control name="bGFiZWwzNzA=" x="298" y="28" w="141" h="98" color="red" type="labelh" text="" size="14" background="true" outline="true"/>
+    <control name="eHk5" x="34" y="128" w="250" h="250" color="red" scalef="-1.0" scalet="1.0" osc_cs="L2NhbC94eS8x" type="xy" inverted_x="false" inverted_y="true"/>
+    <control name="cHVzaDMz" x="65" y="60" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9zZWwvbGVmdC8x" type="push" local_off="false"/>
+    <control name="cHVzaDM0" x="195" y="60" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9zZWwvcmlnaHQvMQ==" type="push" local_off="false"/>
+    <control name="bGFiZWwzNzE=" x="64" y="78" w="60" h="25" color="purple" type="labelh" text="PA==" size="24" background="false" outline="false"/>
+    <control name="bGFiZWwzNzI=" x="195" y="77" w="60" h="25" color="purple" type="labelh" text="Pg==" size="24" background="false" outline="false"/>
+    <control name="bGFiZWwzNzM=" x="129" y="60" w="59" h="59" color="red" osc_cs="L2NhbC9zZWwvdmFsLzE=" type="labelh" text="MQ==" size="23" background="false" outline="false"/>
+    <control name="cHVzaDM1" x="71" y="480" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWZ0LzE=" type="push" local_off="false"/>
+    <control name="cHVzaDM2" x="129" y="421" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC91cC8x" type="push" local_off="false"/>
+    <control name="cHVzaDM3" x="129" y="539" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9kb3duLzE=" type="push" local_off="false"/>
+    <control name="bGFiZWwzNzQ=" x="70" y="498" w="60" h="25" color="purple" type="labelh" text="PA==" size="24" background="false" outline="false"/>
+    <control name="bGFiZWwzNzU=" x="129" y="556" w="60" h="25" color="purple" type="labelh" text="dg==" size="27" background="false" outline="false"/>
+    <control name="bGFiZWwzNzY=" x="187" y="497" w="60" h="25" color="purple" type="labelh" text="Pg==" size="24" background="false" outline="false"/>
+    <control name="bGFiZWwzNzc=" x="129" y="439" w="60" h="25" color="purple" type="labelh" text="Xg==" size="30" background="false" outline="false"/>
+    <control name="bXVsdGl0b2dnbGU4" x="118" y="625" w="500" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9zZWxwYWly" type="multitoggle" number_x="10" number_y="1" ex_mode="true" local_off="true"/>
+    <control name="cHVzaDM4" x="656" y="779" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9zYXZl" type="push" local_off="false"/>
+    <control name="bGFiZWwzNzg=" x="654" y="828" w="46" h="25" color="purple" type="labelh" text="U2F2ZQ==" size="14" background="false" outline="false"/>
+    <control name="cHVzaDM5" x="592" y="779" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sb2Fk" type="push" local_off="false"/>
+    <control name="bGFiZWwzNzk=" x="590" y="828" w="46" h="25" color="purple" type="labelh" text="TG9hZA==" size="14" background="false" outline="false"/>
+    <control name="cHVzaDQw" x="343" y="779" w="45" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9yZWNvbXB1dGU=" type="push" local_off="false"/>
+    <control name="cHVzaDQx" x="187" y="480" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9yaWdodC8x" type="push" local_off="false"/>
+    <control name="bGFiZWwzODA=" x="119" y="384" w="80" h="25" color="red" osc_cs="L2NhbC94LzE=" type="labelh" text="MA==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwzODE=" x="3" y="208" w="25" h="80" color="red" osc_cs="L2NhbC95LzE=" type="labelv" text="MA==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWwzODI=" x="189" y="498" w="60" h="25" color="purple" type="labelh" text="Pg==" size="24" background="false" outline="false"/>
+    <control name="bGFiZWwzODM=" x="341" y="580" w="54" h="20" color="purple" type="labelh" text="TG9jaw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzODQ=" x="2" y="890" w="733" h="25" color="red" osc_cs="L2NhbC9zdGF0dXMvMQ==" type="labelh" text="c3RhdHVzLzE=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzODU=" x="2" y="915" w="733" h="25" color="red" osc_cs="L2NhbC9zdGF0dXMvMg==" type="labelh" text="c3RhdHVzLzI=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzODY=" x="2" y="940" w="733" h="25" color="red" osc_cs="L2NhbC9zdGF0dXMvMw==" type="labelh" text="c3RhdHVzLzM=" size="14" background="false" outline="false"/>
+    <control name="bGVkMjc=" x="136" y="682" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWQvMQ==" type="led"/>
+    <control name="bGVkMjg=" x="185" y="682" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWQvMg==" type="led"/>
+    <control name="bGVkMjk=" x="234" y="682" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWQvMw==" type="led"/>
+    <control name="bGVkMzA=" x="284" y="682" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWQvNA==" type="led"/>
+    <control name="bGVkMzE=" x="333" y="682" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWQvNQ==" type="led"/>
+    <control name="bGVkMzI=" x="383" y="682" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWQvNg==" type="led"/>
+    <control name="bGVkMzM=" x="432" y="682" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWQvNw==" type="led"/>
+    <control name="bGVkMzQ=" x="482" y="682" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWQvOA==" type="led"/>
+    <control name="bGVkMzU=" x="531" y="682" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWQvOQ==" type="led"/>
+    <control name="bGVkMzY=" x="581" y="682" w="20" h="20" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWQvMTA=" type="led"/>
+    <control name="bGFiZWwzODc=" x="121" y="716" w="50" h="25" color="red" osc_cs="L2NhbC9lcnJvci8x" type="labelh" text="NC41Ng==" size="14" background="false" outline="true"/>
+    <control name="bGFiZWwzODg=" x="567" y="716" w="50" h="25" color="red" osc_cs="L2NhbC9lcnJvci8xMA==" type="labelh" text="NC41Ng==" size="14" background="false" outline="true"/>
+    <control name="bGFiZWwzODk=" x="-10" y="385" w="46" h="25" color="purple" type="labelh" text="RmxpcA==" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMTY=" x="-2" y="344" w="30" h="30" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9mbGlweS8x" type="toggle" local_off="true"/>
+    <control name="dG9nZ2xlMTc=" x="36" y="383" w="30" h="30" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9mbGlweC8x" type="toggle" local_off="true"/>
+    <control name="cm90YXJ5NQ==" x="332" y="398" w="72" h="72" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9zcGVlZA==" type="rotaryv" response="absolute" inverted="false" centered="false" norollover="true"/>
+    <control name="bGFiZWwzOTA=" x="345" y="470" w="46" h="25" color="purple" type="labelh" text="U3BlZWQ=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWwzOTE=" x="170" y="716" w="50" h="25" color="red" osc_cs="L2NhbC9lcnJvci8y" type="labelh" text="NC41Ng==" size="14" background="false" outline="true"/>
+    <control name="bGFiZWwzOTI=" x="220" y="716" w="50" h="25" color="red" osc_cs="L2NhbC9lcnJvci8z" type="labelh" text="NC41Ng==" size="14" background="false" outline="true"/>
+    <control name="bGFiZWwzOTM=" x="269" y="716" w="50" h="25" color="red" osc_cs="L2NhbC9lcnJvci80" type="labelh" text="NC41Ng==" size="14" background="false" outline="true"/>
+    <control name="bGFiZWwzOTQ=" x="319" y="716" w="50" h="25" color="red" osc_cs="L2NhbC9lcnJvci81" type="labelh" text="NC41Ng==" size="14" background="false" outline="true"/>
+    <control name="bGFiZWwzOTU=" x="368" y="716" w="50" h="25" color="red" osc_cs="L2NhbC9lcnJvci82" type="labelh" text="NC41Ng==" size="14" background="false" outline="true"/>
+    <control name="bGFiZWwzOTY=" x="418" y="716" w="50" h="25" color="red" osc_cs="L2NhbC9lcnJvci83" type="labelh" text="NC41Ng==" size="14" background="false" outline="true"/>
+    <control name="bGFiZWwzOTc=" x="467" y="716" w="50" h="25" color="red" osc_cs="L2NhbC9lcnJvci84" type="labelh" text="NC41Ng==" size="14" background="false" outline="true"/>
+    <control name="bGFiZWwzOTg=" x="517" y="716" w="50" h="25" color="red" osc_cs="L2NhbC9lcnJvci85" type="labelh" text="NC41Ng==" size="14" background="false" outline="true"/>
+    <control name="eHkxMA==" x="439" y="128" w="250" h="250" color="red" scalef="-1.0" scalet="1.0" osc_cs="L2NhbC94eS8y" type="xy" inverted_x="false" inverted_y="true"/>
+    <control name="cHVzaDQy" x="470" y="60" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9zZWwvbGVmdC8y" type="push" local_off="false"/>
+    <control name="cHVzaDQz" x="600" y="60" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9zZWwvcmlnaHQvMg==" type="push" local_off="false"/>
+    <control name="bGFiZWwzOTk=" x="469" y="78" w="60" h="25" color="purple" type="labelh" text="PA==" size="24" background="false" outline="false"/>
+    <control name="bGFiZWw0MDA=" x="600" y="77" w="60" h="25" color="purple" type="labelh" text="Pg==" size="24" background="false" outline="false"/>
+    <control name="bGFiZWw0MDE=" x="535" y="60" w="59" h="59" color="red" osc_cs="L2NhbC9zZWwvdmFsLzI=" type="labelh" text="Mg==" size="23" background="false" outline="false"/>
+    <control name="cHVzaDQ0" x="476" y="480" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sZWZ0LzI=" type="push" local_off="false"/>
+    <control name="cHVzaDQ1" x="534" y="421" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC91cC8y" type="push" local_off="false"/>
+    <control name="cHVzaDQ2" x="534" y="539" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9kb3duLzI=" type="push" local_off="false"/>
+    <control name="bGFiZWw0MDI=" x="475" y="498" w="60" h="25" color="purple" type="labelh" text="PA==" size="24" background="false" outline="false"/>
+    <control name="bGFiZWw0MDM=" x="534" y="556" w="60" h="25" color="purple" type="labelh" text="dg==" size="27" background="false" outline="false"/>
+    <control name="bGFiZWw0MDQ=" x="592" y="497" w="60" h="25" color="purple" type="labelh" text="Pg==" size="24" background="false" outline="false"/>
+    <control name="bGFiZWw0MDU=" x="534" y="439" w="60" h="25" color="purple" type="labelh" text="Xg==" size="30" background="false" outline="false"/>
+    <control name="cHVzaDQ3" x="592" y="480" w="60" h="60" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9yaWdodC8y" type="push" local_off="false"/>
+    <control name="bGFiZWw0MDY=" x="524" y="384" w="80" h="25" color="red" osc_cs="L2NhbC94LzI=" type="labelh" text="MA==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw0MDc=" x="696" y="208" w="25" h="80" color="red" osc_cs="L2NhbC95LzI=" type="labelv" text="MA==" size="14" background="true" outline="true"/>
+    <control name="bGFiZWw0MDg=" x="594" y="498" w="60" h="25" color="purple" type="labelh" text="Pg==" size="24" background="false" outline="false"/>
+    <control name="bGFiZWw0MDk=" x="683" y="385" w="46" h="25" color="purple" type="labelh" text="RmxpcA==" size="14" background="false" outline="false"/>
+    <control name="dG9nZ2xlMTg=" x="694" y="344" w="30" h="30" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9mbGlweS8y" type="toggle" local_off="true"/>
+    <control name="dG9nZ2xlMTk=" x="657" y="383" w="30" h="30" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9mbGlweC8y" type="toggle" local_off="true"/>
+    <control name="bGFiZWw0MTA=" x="369" y="28" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvMS80" type="labelh" text="eA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MTE=" x="369" y="52" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvMi80" type="labelh" text="eA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MTI=" x="369" y="76" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvMy80" type="labelh" text="eA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MTM=" x="333" y="28" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvMS8z" type="labelh" text="eA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MTQ=" x="333" y="51" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvMi8z" type="labelh" text="eA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MTU=" x="297" y="28" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvMS8y" type="labelh" text="eA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MTY=" x="266" y="28" w="37" h="25" color="red" type="labelh" text="MQ==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MTc=" x="266" y="52" w="37" h="25" color="red" type="labelh" text="Mg==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MTg=" x="266" y="76" w="37" h="25" color="red" type="labelh" text="Mw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MTk=" x="369" y="3" w="37" h="25" color="red" type="labelh" text="NA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MjA=" x="333" y="3" w="37" h="25" color="red" type="labelh" text="Mw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MjE=" x="297" y="3" w="37" h="25" color="red" type="labelh" text="Mg==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MjI=" x="266" y="100" w="37" h="25" color="red" type="labelh" text="NA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MjM=" x="405" y="28" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvMS9X" type="labelh" text="eA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MjQ=" x="405" y="52" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvMi9X" type="labelh" text="eA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MjU=" x="405" y="76" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvMy9X" type="labelh" text="eA==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MjY=" x="405" y="3" w="37" h="25" color="red" type="labelh" text="Vw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0Mjc=" x="405" y="100" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvNC9X" type="labelh" text="eA==" size="14" background="false" outline="false"/>
+    <control name="bXVsdGl0b2dnbGU5" x="11" y="779" w="250" h="50" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9sYXNlcm1vZGU=" type="multitoggle" number_x="5" number_y="1" ex_mode="true" local_off="true"/>
+    <control name="bGFiZWw0Mjg=" x="341" y="829" w="54" h="20" color="purple" type="labelh" text="VXBkYXRl" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0Mjk=" x="108" y="829" w="54" h="20" color="purple" type="labelh" text="TGFzZXJz" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0MzA=" x="13" y="794" w="52" h="20" color="purple" type="labelh" text="Tm9ybWFs" size="12" background="false" outline="false"/>
+    <control name="bGFiZWw0MzE=" x="111" y="794" w="52" h="20" color="purple" type="labelh" text="UG9pbnQ=" size="12" background="false" outline="false"/>
+    <control name="bGFiZWw0MzI=" x="159" y="794" w="52" h="20" color="purple" type="labelh" text="UGFpcg==" size="12" background="false" outline="false"/>
+    <control name="bGFiZWw0MzM=" x="208" y="794" w="52" h="20" color="purple" type="labelh" text="QWxs" size="12" background="false" outline="false"/>
+    <control name="cHVzaDQ4" x="334" y="209" w="68" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9lc3QvMg==" type="push" local_off="true"/>
+    <control name="bGFiZWw0MzQ=" x="339" y="221" w="60" h="20" color="purple" type="labelh" text="RXN0IC0+" size="17" background="false" outline="false"/>
+    <control name="cHVzaDQ5" x="334" y="269" w="68" h="45" color="red" scalef="0.0" scalet="1.0" osc_cs="L2NhbC9lc3QvMQ==" type="push" local_off="true"/>
+    <control name="bGFiZWw0MzU=" x="339" y="282" w="60" h="20" color="purple" type="labelh" text="PC0gRXN0" size="17" background="false" outline="false"/>
+    <control name="bGFiZWw0MzY=" x="654" y="716" w="66" h="25" color="red" osc_cs="L2NhbC9lcnJvci90b3RhbA==" type="labelh" text="NC41Ng==" size="16" background="false" outline="true"/>
+    <control name="bGFiZWw0Mzc=" x="61" y="794" w="52" h="20" color="purple" type="labelh" text="SG9tZQ==" size="12" background="false" outline="false"/>
+    <control name="bGFiZWw0Mzg=" x="378" y="145" w="59" h="23" color="purple" type="labelh" text="QWxpZ24gVw==" size="12" background="false" outline="false"/>
+    <control name="bGFiZWw0NTk=" x="735" y="324" w="25" h="80" color="red" type="labelv" text="QXBwcy9BdWRpbw==" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NjA=" x="735" y="84" w="25" h="80" color="red" type="labelv" text="U2V0dXA=" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NjE=" x="735" y="816" w="25" h="80" color="green" type="labelv" text="Q2FsaWJyYXRl" size="14" background="false" outline="false"/>
+    <control name="bGFiZWw0NjI=" x="735" y="562" w="25" h="80" color="red" type="labelv" text="TmF2aWVy" size="14" background="false" outline="false"/>
+  </tabpage>
+</layout>
