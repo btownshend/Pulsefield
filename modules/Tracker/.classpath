@@ -11,7 +11,7 @@
 	<classpathentry kind="lib" path="lib/promidi/library/promidi.jar" sourcepath="lib/promidi"/>
 	<classpathentry kind="lib" path="lib/oscP5/library/oscP5.jar" sourcepath="lib/oscP5/src">
 		<attributes>
-			<attribute name="javadoc_location" value="file:/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/oscP5/reference/"/>
+			<attribute name="javadoc_location" value="http://www.sojamo.com/libraries/oscP5/reference/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/processing3/gluegen-rt-natives-macosx-universal.jar"/>
@@ -24,11 +24,11 @@
 	<classpathentry kind="lib" path="lib/processing/minim/library/mp3spi1.9.4.jar"/>
 	<classpathentry kind="lib" path="lib/processing/minim/library/jl1.0.jar"/>
 	<classpathentry kind="lib" path="lib/processing3/core.jar" sourcepath="/Users/bst/Dropbox/Processing/processing3 source/core"/>
-	<classpathentry kind="lib" path="lib/Syphon/library/jsyphon.jar" sourcepath="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/src">
+	<classpathentry kind="lib" path="lib/Syphon/library/jsyphon.jar" sourcepath="lib/Syphon/src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/lib/Syphon/library"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Tracker/lib/Syphon/library"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/Syphon/library/Syphon.jar" sourcepath="/Users/bst/Dropbox/Processing/p3sketches/libraries/Syphon/src"/>
+	<classpathentry kind="lib" path="lib/Syphon/library/Syphon.jar" sourcepath="lib/Syphon/src"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
