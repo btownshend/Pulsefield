@@ -180,7 +180,7 @@ int DebugCheck(const char* dstr,int level)
 {
     if (level<=0)
 	return 1;
-    register const char *s, *q;
+    const char *s, *q;
     for (DTable *p = DTable::Root; p; p=p->next) {
 	if (*p->str == 0) {
 	    // Default entry 
