@@ -23,6 +23,9 @@ public class VisualizerTemplate extends Visualizer {
 		// Cleanup called each time this app is deactivated
 	}
 
+	/* (non-Javadoc)
+	 * @see com.pulsefield.tracker.Visualizer#update(processing.core.PApplet, com.pulsefield.tracker.People)
+	 */
 	@Override
 	public void update(PApplet parent, People p) {
 		// Update internal state using the positions/statistics of people in the Pulsefield

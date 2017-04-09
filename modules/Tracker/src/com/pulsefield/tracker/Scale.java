@@ -64,23 +64,26 @@ public class Scale {
 		PApplet.println("");
 	}
 
-	/** Get number of notes in scale
-	 * @return
+	/** 
+	 * Get number of notes in scale
+	 * @return number of notes
 	 */
 	public int length() {
 		return notes.length;
 	}
 	
-	/** Get the MIDI pitch for the i-th note in the scale
-	 * @param i
-	 * @return
+	/** 
+	 * Get the MIDI pitch for the i-th note in the scale
+	 * @param i which note in the scale
+	 * @return midi pitch
 	 */
 	public int get(int i) {
 		return notes[i];
 	}
 	
 	
-	/** Map a value to a MIDI note within scale 
+	/** 
+	 * Map a value to a MIDI note within scale 
 	 * @param val value to map
 	 * @param minval minimum of range
 	 * @param maxval maximum of range

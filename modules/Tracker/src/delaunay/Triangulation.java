@@ -277,6 +277,7 @@ public class Triangulation extends AbstractSet<Triangle> {
 
     /**
      * Main program; used for testing.
+     * @param args argument list
      */
     public static void main (String[] args) {
         Triangle tri =

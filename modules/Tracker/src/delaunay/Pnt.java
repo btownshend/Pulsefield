@@ -82,6 +82,8 @@ public class Pnt {
     /* Pnts as vectors */
 
     /**
+     * gets the given coordinate 
+     * @param i index of coord
      * @return the specified coordinate of this Pnt
      * @throws ArrayIndexOutOfBoundsException for bad coordinate
      */
@@ -310,7 +312,7 @@ public class Pnt {
      *
      * @param simplex an array of Pnts representing a simplex
      * @return an array of signs showing relation between this Pnt and simplex
-     * @throws IllegalArgumentExcpetion if the simplex is degenerate
+     * @throws IllegalArgumentException if the simplex is degenerate
      */
     public int[] relation (Pnt[] simplex) {
         /* In 2D, we compute the cross of this matrix:
@@ -439,6 +441,7 @@ public class Pnt {
 
     /**
      * Main program (used for testing).
+     * @param args argument list
      */
     public static void main (String[] args) {
         Pnt p = new Pnt(1, 2, 3);

@@ -78,7 +78,11 @@ public abstract class Visualizer {
 		drawText(g,textHeight,"Please enter...", center.x,center.y+2.5f*lineSize);
 	}
 	
-	// Clean up graphics context to "default" state
+	/** 
+	 * Cleans up graphics context to default state
+	 * @param t main Tracker object
+	 * @param g graphics context
+	 */
 	public void initializeContext(Tracker t, PGraphics g) { 
 		g.colorMode(PConstants.RGB, 255);
 		g.rectMode(PApplet.CORNER);
@@ -95,6 +99,12 @@ public abstract class Visualizer {
 		//g.textFont(t.createFont("Arial",50f));  // This is a memory leak!
 	}
 	
+	/**
+	 * draws the current frame onto a canvas
+	 * @param t main tracker object
+	 * @param g graphics context
+	 * @param p people in Pulsefield
+	 */
 	public void draw(Tracker t, PGraphics g, People p) {
 		initializeContext(t,g);
 		if (p.pmap.isEmpty())

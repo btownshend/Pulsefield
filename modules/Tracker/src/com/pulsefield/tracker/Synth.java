@@ -121,9 +121,10 @@ abstract public class Synth {
 		return channelmap.get(ch);
 	}
 
-	/** Get the note name (e.g. "C3") for a midi pitch
-	 * @param i
-	 * @return
+	/** 
+	 * Get the note namefor a midi pitch
+	 * @param midiPitch midi pitch number
+	 * @return note name  (e.g. "C3") 
 	 */
 	public static String pitchToName(int midiPitch) {
 		final String keys[]={"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
@@ -132,9 +133,10 @@ abstract public class Synth {
 		return String.format("%s%d", keys[note],octave);
 	}
 	
-	/** Get the midi pitch for a note name (e.g. "C3")
-	 * @param i
-	 * @return
+	/** 
+	 * Get the midi pitch for a note name 
+	 * @param name not name (e.g. "C3")
+	 * @return midi pitch number (0-127)
 	 */
 	public static int nameToPitch(String name) {
 		final String keys[]={"C","C#","Db","D","D#","Eb","E","F","F#","Gb","G","G#","Ab","A","A#","Bb","B","B#","Cb"};

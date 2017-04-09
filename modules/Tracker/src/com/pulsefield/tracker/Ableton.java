@@ -307,9 +307,9 @@ public class Ableton {
 		lasttime=System.currentTimeMillis();
 	}
 
-	// Get tempo in BPM
 	/**
-	 * @return
+	 * Get tempo in BPM
+	 * @return current tempo
 	 */
 	public float getTempo() {
 		return tempo;
@@ -486,8 +486,9 @@ public class Ableton {
 		sendMessage(msg);
 	}
 
-	/** Arm a track for MIDI (and disarm all previously armed tracks)
-	 * @param track 
+	/** 
+	 * Arm a track for MIDI (and disarm all previously armed tracks)
+	 * @param track track to arm
 	 * @param onOff true to arm, false to disarm
 	 */
 	public void setALarm(int track, boolean onOff) {
@@ -497,8 +498,10 @@ public class Ableton {
 		sendMessage(msg);
 	}
 
-	/** Set a MIDI track set
+	/** 
+	 * Set a MIDI track set
 	 * @param name of track set as defined in constructor
+	 * @return the track set
 	 */
 	@SuppressWarnings("unused")
 	public TrackSet setTrackSet(String name) {
@@ -555,8 +558,12 @@ public class Ableton {
 		}
 	}
 	
-	/** Set a control for a track
-	 * 
+	/**
+	 * Set a control for a track
+	 * @param track track number
+	 * @param device device
+	 * @param parameter parameter to set
+	 * @param value value to set
 	 */
 	public void setALControl(int track, int device, int parameter, int value) {
 		OscMessage msg=new OscMessage("/live/device");

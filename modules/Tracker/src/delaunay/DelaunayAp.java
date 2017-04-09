@@ -79,6 +79,7 @@ public class DelaunayAp extends javax.swing.JApplet
 
     /**
      * Main program (used when run as application instead of applet).
+     * @param args argument list
      */
     public static void main (String[] args) {
         DelaunayAp applet = new DelaunayAp();    // Create applet
