@@ -68,7 +68,6 @@ modules/Tracker/build
 modules/Tracker/data/soccer/goal.mp3.asd
 modules/Tracker/hs_err_pid19244.log
 modules/Tracker/java_pid*
-modules/Tracker/lib/Syphon
 modules/Tracker/lib/themidibus
 modules/Tracker/lib/themidibus-*
 modules/Tracker/src/console-broken
