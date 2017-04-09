@@ -96,7 +96,7 @@ public class Tracker extends PApplet {
 		theTracker = this;   // Keep a static copy of the (sole) tracker instance
 
 		configFile="/Users/bst/DropBox/Pulsefield/src/config/urlconfig.txt";   // FIXME: Make this relative to launch directory
-		jconfig=new Config("config.json");
+		jconfig=new Config(pfroot+"/config/tracker-config.json");
 		Config.load(this);
 		minx=Config.getFloat("video", "minx", -5f);
 		maxx=Config.getFloat("video", "maxx", 5f);
