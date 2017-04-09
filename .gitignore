@@ -4,7 +4,6 @@
 *.class
 *.ferec
 *.hold
-*.jnilib
 *.mat
 *.mvi.avi
 *.o
