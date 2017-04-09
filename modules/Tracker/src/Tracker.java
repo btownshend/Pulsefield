@@ -84,7 +84,8 @@ public class Tracker extends PApplet {
 	boolean enableMenu = true;   // True to enable menu
 	boolean enableTitle = true;
 	static Tracker theTracker;
-	
+    static String pfroot;
+    
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
 		size(1280, 720, renderer);
@@ -95,7 +96,13 @@ public class Tracker extends PApplet {
 	public void setup() {
 		theTracker = this;   // Keep a static copy of the (sole) tracker instance
 
-		configFile="/Users/bst/DropBox/Pulsefield/src/config/urlconfig.txt";   // FIXME: Make this relative to launch directory
+		pfroot = System.getenv("PFROOT");
+		if (pfroot==null) {
+			System.err.println("PFROOT environment variable should be set to root of Pulsefield tree");
+			System.exit(1);
+		}
+		System.out.println("PFROOT="+pfroot);
+		configFile=pfroot+"/config/urlconfig.txt";   // FIXME: Make this relative to launch directory
 		jconfig=new Config(pfroot+"/config/tracker-config.json");
 		Config.load(this);
 		minx=Config.getFloat("video", "minx", -5f);
@@ -106,7 +113,8 @@ public class Tracker extends PApplet {
 		try {
 			config=new URLConfig(configFile);
 		} catch (IOException e) {
-			System.err.println("Failed to open config: "+configFile+": "+e.getLocalizedMessage());
+			System.err.println("Failed to open URL config: "+configFile+": "+e.getLocalizedMessage());
+			System.err.println("PFROOT currently set to "+pfroot+".  Is that the root of the Pulsefield repository installation?");
 			System.exit(1);
 		}
 
@@ -244,7 +252,7 @@ public class Tracker extends PApplet {
 		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
 		addVis("Osmos",new VisualizerOsmos(this,synth),true);
-		addVis("VDMX",new VisualizerVDMX(this,"/Users/bst/Dropbox/Pulsefield/VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
+		addVis("VDMX",new VisualizerVDMX(this,Tracker.pfroot+"/../VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
 		addVis("TestPattern",new VisualizerTestPattern(this),false);
 		setapp(vis.length-1);
 	}

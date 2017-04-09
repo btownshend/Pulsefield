@@ -223,7 +223,7 @@ public class VisualizerDDR extends Visualizer {
 		Ableton.getInstance().setTrackSet("DD");
 		if (songs==null) {
 			songs=new ArrayList<Song>();
-			final String rootDir="/Users/bst/Dropbox/Pulsefield/StepMania/Songs/";
+			final String rootDir=Tracker.pfroot+"/../StepMania/Songs/";
 			int clipCntr=0;
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/AXEL F","AXEL F.sm",clipCntr++));
 			songs.add(new Song(rootDir+"stepmaniasong.xf.cz/Beat It","Beat It.sm",clipCntr++));

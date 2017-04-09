@@ -284,7 +284,7 @@ public class Simfile {
 	public static void main(String args[]) {
 		try {
 			Simfile sf = new Simfile();
-			sf.loadSM("/Users/bst/Dropbox/Pulsefield/StepMania/Songs/StepMix 1.0/Impossible Fidelity/","impossible.sm");
+			sf.loadSM(System.getenv("PFROOT")+"/../StepMania/Songs/StepMix 1.0/Impossible Fidelity/","impossible.sm");
 			System.out.println(sf.toString());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
