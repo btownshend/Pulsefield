@@ -805,9 +805,9 @@ public class Tracker extends PApplet {
 
 	public static void main(String args[]) {
 		if (present)
-			PApplet.main(new String[] { "--present","Tracker"});
+			PApplet.main(new String[] { "--present","com.pulsefield.tracker.Tracker"});
 		else
-			PApplet.main(new String[] {"--display=1","Tracker" });
+			PApplet.main(new String[] {"--display=1","com.pulsefield.tracker.Tracker" });
 	}
 
 	/* incoming osc message are forwarded to the oscEvent method. */
