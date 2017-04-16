@@ -167,6 +167,7 @@ public:
 
 	void setNumEchoes(int nechoes);
 	unsigned int getNumEchoes() const { return nechoes; }
+	void setSynchronization(bool isMaster, int phase=0);
 	void setCaptureRSSI(bool on);
 	void setScanFreq(int freq) {
 	    scanFreq=freq;

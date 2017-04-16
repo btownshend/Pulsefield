@@ -47,6 +47,10 @@ SickIO::SickIO(int _id, const char *host, int port) {
 			fprintf(stderr,"Initialize failed! Are you using the correct IP address?\n");
 			exit(1);
 		}
+	if (id==1)
+	    setSynchronization(true);
+	else
+	    setSynchronization(false,180);
 	setNumEchoes(1);
 	setCaptureRSSI(false);
 	scanFreq=50;
@@ -136,6 +140,15 @@ void SickIO::setNumEchoes(int _nechoes) {
 	sick_lms_5xx->SetSickEchoFilter(SickLMS5xx::SICK_LMS_5XX_ECHO_FILTER_FIRST);
     else
 	sick_lms_5xx->SetSickEchoFilter(SickLMS5xx::SICK_LMS_5XX_ECHO_FILTER_ALL_ECHOES);
+}
+
+void SickIO::setSynchronization(bool isMaster, int phase) {
+    if (isMaster) {
+	sick_lms_5xx->SetSickOutput6Mode(SickLMS5xx::SICK_LMS_5XX_OUTPUT_MODE_MASTER_SYNC);
+    } else {
+	sick_lms_5xx->SetSickInput3Mode(SickLMS5xx::SICK_LMS_5XX_INPUT_MODE_SLAVE_SYNC);
+	sick_lms_5xx->SetSickSyncPhase(phase);
+    }
 }
 
 void SickIO::setCaptureRSSI(bool on) {
