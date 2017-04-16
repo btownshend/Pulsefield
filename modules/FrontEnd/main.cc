@@ -12,7 +12,7 @@ static int nsick=1;
 unsigned int MAXRANGE=12000;
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr, "Usage: %s [-B maxrange] [-R | -r recordfile | -p playfile [-L] [-s] [-l] [-x slowfactor] [-F frame1:frameN | -F nframes]  [-m matframes [-M matfile ]] [-P] ] [-V] [[-D debugfile] -d debug]\n",argv[0]);
+    fprintf(stderr, "Usage: %s [-n units] [-B maxrange] [-R | -r recordfile | -p playfile [-L] [-s] [-l] [-x slowfactor] [-F frame1:frameN | -F nframes]  [-m matframes [-M matfile ]] [-P] ] [-V] [[-D debugfile] -d debug]\n",argv[0]);
     fprintf(stderr,"\t-B maxrange\t\tset maximum range in meters\n");
     fprintf(stderr,"\t-R dir\t\trecord into default filename based on current date and time\n");
     fprintf(stderr,"\t-r file\t\trecord into given file\n");
