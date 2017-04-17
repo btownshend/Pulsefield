@@ -593,12 +593,7 @@ int RelMapping::addMatches(std::vector<cv::detail::ImageFeatures> &features,    
 		if (!locked[j])
 		    continue;
 		Point flat1=getDevicePt(0,j);
-		Point flat2;
-		if (isWorld)
-		    flat2=getDevicePt(1,j);
-		else
-		    // Note: world is only on unit2, never on unit1
-		    flat2=getDevicePt(1,j);
+		Point flat2=getDevicePt(1,j);
 		dbg("RelMapping.addMatches",1) << "Adding pair from relMapping of laser " <<pm.src_img_idx << "@" << flat1 << " <->  laser " <<pm.dst_img_idx << "@" << flat2 << std::endl;
 		cv::KeyPoint kp1,kp2;
 		kp1.pt.x=flat1.X();
@@ -896,24 +891,12 @@ Point Calibration::map(Point p, int fromUnit, int toUnit) const {
     if (toUnit<0)
 	toUnit=nunits;	// Map to world 
     std::vector<cv::Point2f> p1, p2, world;
-    Point flat1;
-    if (fromUnit<nunits) {
-	flat1=p;
-    } else
-	flat1=p;
-	
-    p1.push_back(cv::Point2f(flat1.X(),flat1.Y()));
+    p1.push_back(cv::Point2f(p.X(),p.Y()));
 
     cv::perspectiveTransform(p1,world,homographies[fromUnit]);
     cv::perspectiveTransform(world,p2,homographies[toUnit].inv());
 
-    Point flat2=Point(p2[0].x,p2[0].y);
-    Point dev2;
-
-    if (toUnit<nunits) {
-	dev2=flat2;
-    } else
-	dev2=flat2;
+    Point dev2=Point(p2[0].x,p2[0].y);
     
     dbg("Calibration.map",2) << "Mapped " << p << " on unit " << fromUnit << " to " << dev2 << " on  unit " << toUnit << std::endl;
     return dev2;
