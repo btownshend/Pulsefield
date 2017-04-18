@@ -382,8 +382,10 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	if (frame!=lastframe+1 && lastframe!=-1) {
 	    if (lastframe+1 == frame-1)
 		fprintf(stderr,"Input file skips frame %d\n",lastframe+1);
-	    else
+	    else if (lastframe<frame)
 		fprintf(stderr,"Input file skips frames %d-%d\n",lastframe+1,frame-1);
+	    else
+		fprintf(stderr,"Input file jumped backwards from frame %d to %d\n",lastframe,frame);
 	}
 
 	lastframe=frame;
