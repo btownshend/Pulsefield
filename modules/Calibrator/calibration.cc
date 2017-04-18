@@ -6,9 +6,30 @@
 
 class Transform;
 
-static const float WORLDSIZE=30;   // Maximum extents of world (in meters)
+static const float MAXLIDARRANGE=30;   // Maximum range of LIDAR to use (in meters)
+static const float MAXWORLDCOORD=15;   // Maximum world coordinate (in meters) -- use same for negative direction
 
 std::shared_ptr<Calibration> Calibration::theInstance=NULL;   // Singleton
+
+RelMapping::RelMapping(int u1, int u2, UnitType t1, UnitType t2): pt1(PTSPERPAIR), pt2(PTSPERPAIR), locked(PTSPERPAIR) {
+    unit1=u1;
+    unit2=u2;
+    type1=t1;
+    type2=t2;
+    dbg("RelMapping",1) << "Added " << u1 << "(" << t1 << "), " << u2 << "(" << t2 << ")" << std::endl;
+    for (int i=0;i<PTSPERPAIR;i++) {
+	locked[i]=false;
+	if (type1==LIDAR)
+	    pt1[i]=Point(0,2);
+	else
+	    pt1[i]=Point(0,0);
+	if (type2==LIDAR)
+	    pt2[i]=Point(0,2); 
+	else
+	    pt2[i]=Point(0,0);
+    }
+    selected=0;
+}
 
 int RelMapping::send(std::string path, float value) const {
     return Calibration::instance()->send(path,value);
@@ -150,12 +171,21 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
 	}
 	handled=true;
     } else if (tok=="align") {
-	if (selected>=0 && ~locked[selected] && argv[0]->f > 0 && isWorld) {
+	int  side;
+	UnitType type;
+	if (atoi(nexttok)==1) {
+	    type=type1;
+	    side=0;
+	} else {
+	    type=type2;
+	    side=1;
+	}
+	if (selected>=0 && ~locked[selected] && argv[0]->f > 0 && type==LIDAR) {
 	    // Find nearest alignment target to current world cooords and move to it
 	    std::vector<Point> a=Calibration::instance()->getAlignment();
 	    float mindist=1e10;
 	    int closest=-1;
-	    Point dpoint=getDevicePt(1);
+	    Point dpoint=getDevicePt(side);
 	    for (int i=0;i<a.size();i++) {
 		float d=(a[i]-dpoint).norm();
 		dbg("RelMapping.handleOSCMessage",1) << "Distance from " << a[i] << " to " << dpoint << " = " << d << std::endl;
@@ -165,8 +195,8 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
 		}
 	    }
 	    if (closest>=0) {
-		dbg("RelMapping.handleOSCMessage",1) << "Closest of " << a.size() << " alignment points to " << pt2[selected] << " is at " << a[closest] << std::endl; 
-		setDevicePt(a[closest],1);
+		dbg("RelMapping.handleOSCMessage",1) << "Closest of " << a.size() << " alignment points to " << ((side==0)?pt1[selected]:pt2[selected]) << " is at " << a[closest] << std::endl; 
+		setDevicePt(a[closest],side);
 	    } else {
 		dbg("RelMapping.handleOSCMessage",1) << "No alignment point" << std::endl;
 	    }
@@ -185,22 +215,35 @@ static Point projToRel(Point x) {
     return Point(x.X()/(1920/2)-1,x.Y()/(1080/2)-1);
 }
 
-// Get coordinate of pt[i] in device [0,0]-[1919,1079] or world ([-WORLDSIZE,WORLDSIZE],[0,WORLDSIZE])
+// Get coordinate of pt[i] in projector [0,0]-[1919,1079],
+//   or LIDAR ([-MAXLIDARRANGE,MAXLIDARRANGE],[0,MAXLIDARRANGE])
+//   or WORLD  ([-MAXWORLDCOORD,MAXWORLDCOORD],[-MAXWORLDCOORD,MAXWORLDCOORD])
 Point RelMapping::getDevicePt(int i,int which,bool doRound) const {
     Point res;
     if (which==-1)
 	which=selected;
-    if (i==0)
-	res=relToProj(pt1[which]);
-    else if (isWorld) {
-	res=Point(pt2[which].X()*WORLDSIZE,(pt2[which].Y()+1)*WORLDSIZE/2);
+    Point pt;
+    UnitType type;
+    if (i==0) {
+	pt=pt1[which];
+	type=type1;
+    } else {
+	pt=pt2[which];
+	type=type2;
+    }
+    if (type==PROJECTOR) {
+	res=relToProj(pt);
+	if (doRound)
+	    res=Point(std::round(res.X()),std::round(res.Y()));
+    } else if (type==LIDAR)  {
+	res=Point(pt.X()*MAXLIDARRANGE,(pt.Y()+1)*MAXLIDARRANGE/2);
 	if (doRound)
 	    res=Point(std::round(res.X()*100)/100,std::round(res.Y()*100)/100);
-	return res;
-    } else
-	res=relToProj(pt2[which]);
-    if (doRound)
-	res=Point(std::round(res.X()),std::round(res.Y()));
+    } else { /* type==WORLD */
+	res=Point(pt.X()*MAXWORLDCOORD,pt.Y()*MAXWORLDCOORD);
+	if (doRound)
+	    res=Point(std::round(res.X()*100)/100,std::round(res.Y()*100)/100);
+    }
     return res;
 }
        
@@ -210,18 +253,29 @@ void  RelMapping::setDevicePt(Point p, int i,int which)  {
     Point res;
     if (which==-1)
 	which=selected;
+    UnitType type;
     if (i==0)
-	pt1[which]=projToRel(p);
-    else if (isWorld) {
-	pt2[which]=Point(p.X()/WORLDSIZE,p.Y()*2/WORLDSIZE-1);
-    } else
-	pt2[which]=projToRel(p);
+	type=type1;
+    else
+	type=type2;
+    if (type==PROJECTOR)
+	p=projToRel(p);
+    else if (type==LIDAR)
+	p=Point(p.X()/MAXLIDARRANGE,p.Y()*2/MAXLIDARRANGE-1);
+    else /* type==WORLD */
+	p=Point(p.X()/MAXWORLDCOORD,p.Y()/MAXWORLDCOORD);
+    
+    if (i==0)
+	pt1[which]=p;
+    else
+	pt2[which]=p;
 }
        
-Calibration::Calibration(int _nunits, URLConfig&urls): homographies(_nunits+1), statusLines(3), tvecs(_nunits), rvecs(_nunits), poses(_nunits), alignCorners(0), config("settings_proj.json") {
-    nunits = _nunits;
-    dbg("Calibration.Calibration",1) << "Constructing calibration with " << nunits << " units." << std::endl;
-    assert(nunits>0);
+Calibration::Calibration(int _nproj, int nlidar, URLConfig&urls): homographies(_nproj+nlidar+1), statusLines(3), tvecs(_nproj+nlidar), rvecs(_nproj+nlidar), poses(_nproj+nlidar), alignCorners(0), config("settings_proj.json") {
+    nproj = _nproj;
+    nunits = nproj+nlidar;
+    dbg("Calibration.Calibration",1) << "Constructing calibration with " << nproj << " projectors and " << nlidar << " LIDARs." << std::endl;
+    assert(nproj>0);
     for (int i=0;i<homographies.size();i++)
 	homographies[i]=cv::Mat::eye(3, 3, CV_64F);	// Initialize to identity matrix
     for (int i=0;i<poses.size();i++)  {
@@ -244,7 +298,7 @@ Calibration::Calibration(int _nunits, URLConfig&urls): homographies(_nunits+1), 
 
     for (int i=0;i<nunits;i++)
 	for (int j=i+1;j<nunits+1;j++) {
-	    relMappings.push_back(std::shared_ptr<RelMapping>(new RelMapping(i,j,j==nunits)));
+	    relMappings.push_back(std::shared_ptr<RelMapping>(new RelMapping(i,j,i<nproj?PROJECTOR:LIDAR,j<nproj?PROJECTOR:(j<nunits?LIDAR:WORLD))));
 	}
     for (int i=0;i<nunits;i++) {
 	flipX.push_back(false);
@@ -301,6 +355,7 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 		dbg("Calibration",1) << "Selected " << cur[0] << ", " << cur[1] << std::endl;
 		for (int i=0;i<relMappings.size();i++) {
 		    std::shared_ptr<RelMapping> rm=relMappings[i];
+		    dbg("Calibration",1) << "Checking " << rm->getUnit(0) << "," << rm->getUnit(1) << std::endl;
 		    if (rm->getUnit(0)==cur[0] && rm->getUnit(1)==cur[1]) {
 			curMap=rm;
 			dbg("Calibration",1) << "Change curMap to " << curMap->getUnit(0) << "-" << curMap->getUnit(1) << std::endl;
@@ -412,20 +467,26 @@ void RelMapping::sendCnt() const {
     std::string cstr=std::to_string(cnt);
     if (cnt==0)
 	cstr="";
-    if (isWorld)
-	send("/cal/cnt/"+std::to_string(unit1+1)+"/W",cstr);
-    else
-	send("/cal/cnt/"+std::to_string(unit1+1)+"/"+std::to_string(unit2+1),cstr);
+    send("/cal/cnt/"+std::to_string(unit1+1)+"/"+std::to_string(unit2+1),cstr);
 }
 
 void RelMapping::updateUI(bool flipX1,bool flipY1, bool flipX2, bool flipY2) const {
     dbg("RelMapping",1) << "updateUI for " << unit1 << "-" << unit2 << std::endl;
-    send("/cal/sel/val/1",std::to_string(unit1+1));
-    if (isWorld)
-	send("/cal/sel/val/2","W");
+    int nproj=Calibration::instance()->numProj();
+    if (type1==PROJECTOR)
+	send("/cal/sel/val/1","P"+std::to_string(unit1+1));
+    else if (type1==LIDAR)
+	send("/cal/sel/val/1","L"+std::to_string(unit1+1-nproj));
     else
-	send("/cal/sel/val/2",std::to_string(unit2+1));
-    
+	send("/cal/sel/val/1","W");
+
+    if (type2==PROJECTOR)
+	send("/cal/sel/val/2","P"+std::to_string(unit2+1));
+    else if (type2==LIDAR)
+	send("/cal/sel/val/2","L"+std::to_string(unit2+1-nproj));
+    else
+	send("/cal/sel/val/2","W");
+
     send("/cal/lock",locked[selected]?1.0:0.0);
     for (int i=0;i<locked.size();i++)
 	send("/cal/led/"+std::to_string(i+1),locked[i]?1.0:0.0);
@@ -469,7 +530,8 @@ void RelMapping::save(ptree &p) const {
     dbg("RelMapping.save",1) << "Saving relMapping " << unit1 << "-" << unit2 << " to ptree" << std::endl;
     p.put("unit1",unit1);
     p.put("unit2",unit2);
-    p.put("isWorld",isWorld);
+    p.put("type1",type1);
+    p.put("type2",type2);
     p.put("selected",selected);
     ptree pairs;
     for (int i=0;i<pt1.size();i++) {
@@ -485,10 +547,17 @@ void RelMapping::save(ptree &p) const {
 }
 
 void RelMapping::load(ptree &p) {
-    dbg("RelMapping.save",1) << "Loading relMapping from ptree" << std::endl;
-    unit1=p.get("unit1",0);
-    unit2=p.get("unit2",1);
+    dbg("RelMapping.load",1) << "Loading relMapping from ptree" << std::endl;
+    int ldunit1=p.get("unit1",unit1);
+    int ldunit2=p.get("unit2",unit2);
+    if (ldunit1!=unit1 || ldunit2!=unit2) {
+	dbg("RelMapping.load",1) << "Attempt to load mapping(" << ldunit1 << "," << ldunit2 << ") onto mapping (" << unit1 << "," << unit2 << ")" << std::endl;
+	return;
+    }
+    type1=(UnitType)p.get("type1",(int)type1);
+    type2=(UnitType)p.get("type2",(int)type2);
     selected=p.get("selected",selected);
+    dbg("RelMapping.load",1) << "Loaded (" << unit1 << ":" << type1 << "," << unit2 << ":" << type2 << ")" << std::endl;
 
     try {
 	ptree dp=p.get_child("pairs");
@@ -510,6 +579,7 @@ void RelMapping::load(ptree &p) {
 void Calibration::save()  {
     dbg("Calibration.save",1) << "Saving calibration to ptree" << std::endl;
     ptree p;
+    p.put("nproj",nproj);
     p.put("nunits",nunits);
     ptree rm;
     for (unsigned int i=0;i<relMappings.size();i++)  {
@@ -545,6 +615,10 @@ void Calibration::load() {
 	return;
     }
 
+    int ldproj=p.get("nproj",nproj);
+    if (ldproj!=nproj) {
+	dbg("Calibration.load",1) << "Loading file with " << ldproj << " into program setup with " << nproj << " proj." << std::endl;
+    }
     int ldunits=p.get("nunits",nunits);
     if (ldunits!=nunits) {
 	dbg("Calibration.load",1) << "Loading file with " << ldunits << " into program setup with " << nunits << " units." << std::endl;
@@ -782,7 +856,7 @@ int Calibration::recompute() {
 	}
 	dbg("Calibration.recompute",1) << "Computing linkage to laser " << curUnit <<  " with " << bestcnt << " matches." << std::endl;
 	if (bestcnt < 4) {
-	    showStatus("Not enough calibration points to compute homography to "+(curUnit<nunits?"laser "+std::to_string(curUnit+1):"world")+"; only have "+std::to_string(bestcnt)+"/4 points.");
+	    showStatus("Not enough calibration points to compute homography to "+(curUnit<nunits?(curUnit<nproj?"proj "+std::to_string(curUnit+1):"LIDAR "+std::to_string(curUnit-nproj+1)):"world")+"; only have "+std::to_string(bestcnt)+"/4 points.");
 	    resultCode = -1;
 	    homographies[curUnit]=cv::Mat::eye(3, 3, CV_64F);	// Make it a default transform
 	} else {

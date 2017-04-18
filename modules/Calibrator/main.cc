@@ -6,7 +6,8 @@
 void usage(int argc,char *argv[]) {
     fprintf(stderr, "Usage: %s [-P port] [-n nlaser] [[-D filename] -d debug]\n",argv[0]);
     fprintf(stderr,"\t-P port\t\t\tset port to listen on (default: CAL)\n");
-    fprintf(stderr,"\t-n nlaser\t\tnumber of laser devices\n");
+    fprintf(stderr,"\t-n nproj\t\tnumber of projectors\n");
+    fprintf(stderr,"\t-l nlidar\t\tnumber of LIDARs\n");
     fprintf(stderr,"\t-d debug\t\tset debug option (e.g -d4, -dLaser:4)\n");
     fprintf(stderr,"\t-D file\t\tset debug filename (default Debug.out)\n");
     exit(1);
@@ -14,18 +15,22 @@ void usage(int argc,char *argv[]) {
 
 int main(int argc, char *argv[]) {
     int ch;
-    int nproj=2;
+    int nproj=4;
+    int nlidar=2;
     URLConfig urls("config/urlconfig.txt");
     int port=urls.getPort("CAL");
     SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 
-    while ((ch=getopt(argc,argv,"d:n:P:D:s"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:n:l:P:D:s"))!=-1) {
 	switch (ch) {
 	case 'p':
 	    port=atoi(optarg);
 	    break;
 	case 'n':
 	    nproj=atoi(optarg);
+	    break;
+	case 'l':
+	    nlidar=atoi(optarg);
 	    break;
 	case 'd':
 	    SetDebug(optarg);
@@ -44,7 +49,7 @@ int main(int argc, char *argv[]) {
 	usage(argc,argv);
 
     TrackerComm::initialize(urls);
-    Calibration::initialize(nproj,urls);
+    Calibration::initialize(nproj,nlidar,urls);
     Calibration::instance()->load();
     
     dbg("main",1) << "Creating OSCHandler on port " << port << std::endl;
