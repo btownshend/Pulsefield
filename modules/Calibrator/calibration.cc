@@ -537,10 +537,10 @@ void RelMapping::save(ptree &p) const {
     ptree pairs;
     for (int i=0;i<pt1.size();i++) {
 	ptree dp;
-	dp.put("pt1.x",pt1[i].X());
-	dp.put("pt1.y",pt1[i].Y());
-	dp.put("pt2.x",pt2[i].X());
-	dp.put("pt2.y",pt2[i].Y());
+	dp.put("pt1.x",getDevicePt(0,i).X());
+	dp.put("pt1.y",getDevicePt(0,i).Y());
+	dp.put("pt2.x",getDevicePt(1,i).X());
+	dp.put("pt2.y",getDevicePt(1,i).Y());
 	dp.put("locked",locked[i]);
 	pairs.push_back(std::make_pair("",dp));
     }
@@ -567,8 +567,8 @@ void RelMapping::load(ptree &p) {
 	    if (i>=pt1.size())
 		break;
 	    ptree val=v->second;
-	    pt1[i]=Point(val.get<double>("pt1.x",pt1[i].X()),val.get<double>("pt1.y",pt1[i].Y()));
-	    pt2[i]=Point(val.get<double>("pt2.x",pt2[i].X()),val.get<double>("pt2.y",pt2[i].Y()));
+	    setDevicePt(Point(val.get<double>("pt1.x",pt1[i].X()),val.get<double>("pt1.y",pt1[i].Y())),i,0);
+	    setDevicePt(Point(val.get<double>("pt2.x",pt2[i].X()),val.get<double>("pt2.y",pt2[i].Y())),i,1);
 	    locked[i]=val.get<bool>("locked",locked[i]);
 	    i++;
 	}
