@@ -817,20 +817,20 @@ int Calibration::recompute() {
 	    total[pm.src_img_idx]+=n;
 	}
     }
-    // Find best starting image -- has most pairs with some other image and, in case of a tie, has the most total connections
+    // Start from world
     int bestcnt=0;
-    int refLaser=0;
+    int refLaser=nunits;
+
     for (int i=0;i<pairwiseMatches.size();i++) {
 	cv::detail::MatchesInfo pm = pairwiseMatches[i];
-	if (pm.matches.size() >= bestcnt) {
-	    if (pm.matches.size()>bestcnt || total[pm.src_img_idx] > total[refLaser]) {
-		refLaser = pm.src_img_idx;
+	if (pm.src_img_idx == refLaser || pm.dst_img_idx == refLaser) {
+	    if (pm.matches.size()>bestcnt) {
 		bestcnt=pm.matches.size();
 	    }
 	}
     }
     dbg("Calibration.recompute",1) << "Using laser " << refLaser << " as reference with " << bestcnt << " connections to another image and " << total[refLaser] << " total connections." << std::endl;
-    homographies[refLaser]=cv::Mat::eye(3, 3, CV_64F);	// Use first laser as a reference for now
+    homographies[refLaser]=cv::Mat::eye(3, 3, CV_64F);	// Use refLaser as a reference for now
 
     std::vector<bool> found(nunits+1);	// Flag for whether a laser has been calibrated
     found[refLaser]=true;
@@ -841,11 +841,12 @@ int Calibration::recompute() {
 	// Match next unit with found ones
 
 	// Count number of matches from each unit to set of found ones and select mostly highly connected one (lowest unit in case of ties)
-	int bestcnt=-1;
+	int bestcnt=-5;  // Number of overdetermined points (i.e. excess over minimum needed)
 	int curUnit=-1;
 	for (int i=0;i<nunits+1;i++) {
 	    if (!found[i]) {
-		int nmatches=0;
+		int minPoints=(i<nproj)?4:2; 
+		int nmatches=-minPoints;
 		for (int j=0;j<nunits+1;j++)
 		    if (found[j])
 			nmatches+=linkages[i][j];
@@ -855,9 +856,13 @@ int Calibration::recompute() {
 		}
 	    }
 	}
-	dbg("Calibration.recompute",1) << "Computing linkage to laser " << curUnit <<  " with " << bestcnt << " matches." << std::endl;
-	if (bestcnt < 4) {
-	    showStatus("Not enough calibration points to compute homography to "+(curUnit<nunits?(curUnit<nproj?"proj "+std::to_string(curUnit+1):"LIDAR "+std::to_string(curUnit-nproj+1)):"world")+"; only have "+std::to_string(bestcnt)+"/4 points.");
+	int minPoints=(curUnit<nproj)?4:2;   // Need 4 points for homographies to projectors/lasers, 2 to LIDARs
+	bestcnt+=minPoints;   // Change to absolute count of points
+
+	dbg("Calibration.recompute",1) << "Computing linkage to unit " << curUnit <<  " with " << bestcnt << "/" << minPoints << " matches." << std::endl;
+	
+	if (bestcnt < minPoints) {
+	    showStatus("Not enough calibration points to compute homography to "+(curUnit<nunits?(curUnit<nproj?"proj "+std::to_string(curUnit+1):"LIDAR "+std::to_string(curUnit-nproj+1)):"world")+"; only have "+std::to_string(bestcnt)+"/"+std::to_string(minPoints)+" points.");
 	    resultCode = -1;
 	    homographies[curUnit]=cv::Mat::eye(3, 3, CV_64F);	// Make it a default transform
 	} else {
