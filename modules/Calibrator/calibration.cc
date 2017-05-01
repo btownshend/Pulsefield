@@ -703,6 +703,11 @@ std::ostream &flatMat(std::ostream &s, const cv::Mat &m) {
 //    return s;
 //    s << "m.type=" << std::hex <<  m.type() << ",  type&0x18=" << (m.type()&0x18) << std::dec << std::endl;
     
+    if (m.type()==0) {
+	s<< "[]" << std::endl;
+	return s;
+    }
+    
     if ((m.type()&0x7)!=CV_64F && (m.type()&0x7)!=CV_32F) {
 	s << "flatMat: unexpected m.type=" << m.type() << std::endl;
 	s << m << std::endl;
