@@ -210,7 +210,7 @@ void FrontEnd::processFrames() {
 	    }
 	    sendVisMessages(sick[c]->getId(),sick[c]->getFrame(),sick[c]->getAcquired(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
 	    if (recording)
-		recordFrame();
+		recordFrame(c);
 	    // clear valid flag so another frame can be read
 	    sick[c]->clearValid();
 	}
@@ -270,10 +270,9 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 	}
 }
 
-void FrontEnd::recordFrame() {
-    assert(recording && recordFD>=0);
+void FrontEnd::recordFrame(int c) {
+    assert(recording && recordFD>=0 && c>=0 && c<nsick);
     
-    for (int c=0;c<nsick;c++) {
 	struct timeval ts=sick[c]->getAcquired();
 	fprintf(recordFD,"%d %d %ld %d %d %d\n",sick[c]->getId(),sick[c]->getFrame(),ts.tv_sec,ts.tv_usec,nechoes,sick[c]->getNumMeasurements());
 	for (int e=0;e<nechoes;e++) {
@@ -290,7 +289,6 @@ void FrontEnd::recordFrame() {
 		fprintf(recordFD,"%d ",reflect[i]);
 	    fprintf(recordFD,"\n");
 	}
-    }
 }
 
 int FrontEnd::startRecording(const char *filename) {
