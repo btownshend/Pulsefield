@@ -84,15 +84,15 @@ std::vector<Point> findTargets( const std::vector<Point> background, Drawing *dr
 #else
 std::vector<Point> findTargets( const std::vector<Point> background) {
 #endif
-	static const float SEPFACTOR=3.7;		// Points separated by more this times the scan point separation are distinct objects
+	static const float MAXSEP=0.3;		// Ends of target must be clear of other objects for this distance (meters)
 	static const int MINTARGETHITS=6;	// Minimum number of hits for it to be a target
 	static const float MINTARGETWIDTH=0.15;	// Minimum width of target in meters
-	static const float MAXTARGETWIDTH=0.35;	// Maximum width of target in meters
+	static const float MAXTARGETWIDTH=0.40;	// Maximum width of target in meters
 	static const float MAXFITERROR=0.05;	// RMS error between fitted corner and points
 	static const float MAXCORNERERROR=20; // Error in angle of corner in degrees
 	static const float MAXORIENTERROR=180;	// Error in which way corner is aiming in degrees
 	static const float MAXTARGETDIST=8;		// Maximum distance
-	static const float MINTARGETDIST=1;		// Minimum distance
+	static const float MINTARGETDIST=0.3;		// Minimum distance
 	static const float MINSIDELENGTH=0.15;
 
 	float dTheta=0;
@@ -106,24 +106,41 @@ std::vector<Point> findTargets( const std::vector<Point> background) {
 	if (dTheta==0)
 	    dbg("findTargetrs",0) << "all ranges are zero!" << std::endl;
 	dbg("findTargets",4) << "dTheta=" << dTheta << std::endl;
-	float lastRange=background[0].norm();
 	int inTargetCnt=0;
 	std::vector<Point> calCorners;		// Corners of possible alignment targets
-	//dbgn("findTargets",4) << "back=[";
-	//for (int ii=0;ii<background.size();ii++)
-	//dbgn("findTargets",4) << background[ii].X() << "," << background[ii].Y() << ";";
-	//dbgn("findTargets",4) << "]; plot(back(:,1),back(:,2),'o-');" << std::endl;
+	dbg("findTargets",5) << "back=" << background << std::endl;
 
 	for (int i=0;i<background.size();i++) {
-	    float range=background[i].norm();
-	    dbg("findTargets",(i%100==0)?4:10) <<  "i=" << i << ", range=" << range << ", inTargetCnt=" << inTargetCnt << std::endl;
-	    float maxsep=std::min(range,lastRange)*dTheta*SEPFACTOR;	// Maximum distance between points of same object
-	    dbg("findTargets",5) << "maxsep=" << maxsep << std::endl;
-	    if (range==0 || fabs(range-lastRange)>maxsep)  {
-		// At end of an object
+	    if (inTargetCnt==0) {
+		// Check that this segment starts clear of any prior hits
+		bool distinct=true;
+		for (int j=i-1;j>=0;j--) {
+			float d=(background[j]-background[i]).norm();
+			if ( d < MAXSEP) {
+			    dbg("findTargets",5) << "Found prior point " << j << " that is only " << d << " from point " << i << "; not beginning of distinct object" << std::endl;
+			    distinct=false;
+			    break;
+			}
+		    }
+		if (!distinct)
+		    continue;   // Advance to next point to try again
+	    }
+	    inTargetCnt++;
+		
+	    bool atEnd=true;
+	    dbg("findTargets",5) << "Testing if potential hit at " << i-inTargetCnt+1 << ":" << i << " is clear of subsequent objects" << std::endl;
+	    // Check if any subsequent points are close
+	    for (int j=i+1;j<background.size();j++)
+		if ( (background[j]-background[i]).norm() < MAXSEP) {
+		    dbg("findTargets",5) << "Found point " << j << " that is only " << (background[j]-background[i]).norm() << " from point " << i << "; not end of object" << std::endl;
+		    atEnd=false;
+		    break;
+	    }
+	    if (atEnd) {
+		// At end of an object consisting of inTargetCnt points (from point i-inTargetCnt+1 to i )
 		if (inTargetCnt>=MINTARGETHITS) {
 		    // Has enough points
-		    std::vector<Point> tgt(background.begin()+i-inTargetCnt+1,background.begin()+i-1);  // Omit first and last point of object
+		    std::vector<Point> tgt(background.begin()+i-inTargetCnt+2,background.begin()+i);  // Omit first and last point of object
 		    // Check for dimensions
 		    float sz=(tgt.back()-tgt.front()).norm();
 		    
@@ -134,6 +151,7 @@ std::vector<Point> findTargets( const std::vector<Point> background) {
 			dist=corners[1].norm();
 			float side1= (corners[1]-corners[0]).norm();
 			float side2= (corners[2]-corners[1]).norm();
+			dbg("findTargets",5) << "pts=" << tgt << std::endl;
 			
 			if (rms<=MAXFITERROR && ( fabs(cornerAngle-90)<MAXCORNERERROR  || fabs(cornerAngle-270)<MAXCORNERERROR) && fabs(orient)<MAXORIENTERROR 
 			    && dist<=MAXTARGETDIST && dist >= MINTARGETDIST && fmin(side1,side2)>=MINSIDELENGTH) {
@@ -154,16 +172,13 @@ std::vector<Point> findTargets( const std::vector<Point> background) {
 					     << ", RMS=" << rms << ", dist=" << dist << std::endl;
 			    }
 		    } else {
-			dbg("findTargets",4) << "ignoring target with size " << sz << " at scans " <<  i-inTargetCnt << "-" << i-1 << std::endl;
+			dbg("findTargets",4) << "ignoring target with size " << sz << " at scans " <<  i-inTargetCnt+1 << "-" << i << std::endl;
 		    }
 		}  else if (inTargetCnt>2) {
-		    dbg("findTargets",5) << "ignoring target with too few hits at scans " << i-inTargetCnt << "-" << i-1 << std::endl;
+		    dbg("findTargets",5) << "ignoring target with too few hits at scans " << i-inTargetCnt+1 << "-" << i << std::endl;
 		}
-		inTargetCnt=1;  // Reset, since this is a different range
-	    } else {
-		inTargetCnt++;
+		inTargetCnt=0;  // Ready to start a new object
 	    }
-	    lastRange=range;
 	}
 	return calCorners;
 }
