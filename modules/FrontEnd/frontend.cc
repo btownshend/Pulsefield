@@ -247,7 +247,7 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 		if (dests.getPort(i)!=7012)	// TODO: this is a hack to send to laser but nobody else; should be configured more generally!
 		  continue;
 		lo_address addr = lo_address_new(dests.getHost(i), cbuf);
-		lo_send(addr,"/vis/beginframe","i",frame);
+		lo_send(addr,"/vis/beginframe","ii",id,frame);
 		if (sendOnce & RANGE) {
 		    // Send range info
 		    for (int e=0;e<nechoes;e++) {
@@ -265,7 +265,7 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 			lo_blob_free(data);
 		    }
 		}
-		lo_send(addr,"/vis/endframe","i",frame);
+		lo_send(addr,"/vis/endframe","ii",id,frame);
 		lo_address_free(addr);
 	}
 }

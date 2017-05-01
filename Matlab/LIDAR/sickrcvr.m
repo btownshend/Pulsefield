@@ -41,9 +41,10 @@ while true
     if frame~=-1
       fprintf('Missed /vis/endframe messages, skipping to next frame\n');
     end
-    frame=m.data{1};
+    id=m.data{1};
+    frame=m.data{2};
     if args.debug
-      fprintf('New frame %d\n', frame);
+      fprintf('New frame %d for unit %d\n', frame,id);
     end
     filled=false(1,args.nsick);
   elseif frame==-1
@@ -52,8 +53,8 @@ while true
     end
   else
     if strcmp(m.path,'/vis/endframe')
-      if frame ~= m.data{1}
-        fprintf('Got %s for frame %d while reading frame %d\n', m.path, m.data{1}, frame);
+      if id~=m.data{1} || frame ~= m.data{2}
+        fprintf('Got %s for unit %d frame %d while reading unit %d frame %d\n', m.path, m.data{1}, m.data{2}, id, frame);
       end
       if all(filled)
         if args.flush 
