@@ -910,12 +910,13 @@ int Calibration::recompute() {
 		// Find a rigid transform (allows translation, rotation, and uniform scaling
 		// TODO: should only allow translation, rotation, and possibly mirroring
 		homographies[curUnit]=findTranslationRotation(dst,src);
-		if (homographies[curUnit].empty()) {
-		    showStatus("Calibration failed for "+(curUnit<nunits?(curUnit<nproj?"proj "+std::to_string(curUnit+1):"LIDAR "+std::to_string(curUnit-nproj+1)):"world")+" with "+std::to_string(bestcnt)+"/"+std::to_string(minPoints)+" points.");
-		    homographies[curUnit]=cv::Mat::eye(3, 3, CV_64F);	// Make it a default transform
-		}
 	    } else
 		homographies[curUnit]=cv::findHomography(dst,src); // ,CV_RANSAC,.001);
+
+	    if (homographies[curUnit].empty()) {
+		showStatus("Calibration failed for "+(curUnit<nunits?(curUnit<nproj?"proj "+std::to_string(curUnit+1):"LIDAR "+std::to_string(curUnit-nproj+1)):"world")+" with "+std::to_string(bestcnt)+"/"+std::to_string(minPoints)+" points.");
+		homographies[curUnit]=cv::Mat::eye(3, 3, CV_64F);	// Make it a default transform
+	    }
 	}
 	found[curUnit]=true;
 	flatMat(DbgFile(dbgf__,"Calibration.recompute",1) << "Homography for laser " << curUnit << " = \n",homographies[curUnit]) << std::endl;
