@@ -363,10 +363,33 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 		fscanf(fd,"%d ",&reflect[e][i]);
 	}
 	    
+	if (cid>nsick) {
+	    printf("Increasing number of LIDARS from %d to %d\n",nsick,cid);
+	    SickIO **newSick=new SickIO*[cid];
+	    for (int i=0;i<nsick;i++)
+		newSick[i]=sick[i];
+	    for (int i=nsick;i<cid;i++)
+		newSick[i]=new SickIO();
+	    if (sick!=0)
+		delete [] sick;
+
+	    sick=newSick;
+	    for (int i=nsick;i<cid;i++)
+		addSickHandlers(i);	// Add OSC handlers for this new device
+	    nsick=cid;
+	    load();
+	}
+
 	if (lastframe==-1) 
 	    // Initialize file start time for reference
 	    startfile=acquired;
-
+	lastframe= sick[cid-1]->getFrame();
+	    
+	if  (lastframe==frame) {
+	    //fprintf(stderr,"Duplicate frame %d for unit %d\n", frame, cid);
+	    continue;
+	}
+	
 	if (frame1==-1 && frameN!=-1) {
 	    // Just first frameN frames
 	    frame1=frame;
@@ -379,14 +402,13 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 
 	if (frame!=lastframe+1 && lastframe!=-1) {
 	    if (lastframe+1 == frame-1)
-		fprintf(stderr,"Input file skips frame %d\n",lastframe+1);
+		fprintf(stderr,"Input file skips frame %d for unit %d\n",lastframe+1,cid);
 	    else if (lastframe<frame)
-		fprintf(stderr,"Input file skips frames %d-%d\n",lastframe+1,frame-1);
+		fprintf(stderr,"Input file skips frames %d-%d for unit %d\n",lastframe+1,frame-1,cid);
 	    else
-		fprintf(stderr,"Input file jumped backwards from frame %d to %d\n",lastframe,frame);
+		fprintf(stderr,"Input file jumped backwards from frame %d to %d for unit %d\n",lastframe,frame,cid);
 	}
 
-	lastframe=frame;
 	if (!overlayLive) {
 	    while (singleStep && frameStep<=0) {
 		printf("Num frames to step? ");
@@ -422,22 +444,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    assert(!sick[0]->isValid());
 	    sick[0]->unlock();
 	} else {
-	    if (cid>nsick) {
-		printf("Increasing number of LIDARS from %d to %d\n",nsick,cid);
-	        SickIO **newSick=new SickIO*[cid];
-		for (int i=0;i<nsick;i++)
-		    newSick[i]=sick[i];
-		for (int i=nsick;i<cid;i++)
-		    newSick[i]=new SickIO();
-		if (sick!=0)
-		    delete [] sick;
-
-		sick=newSick;
-		for (int i=nsick;i<cid;i++)
-		    addSickHandlers(i);	// Add OSC handlers for this new device
-		nsick=cid;
-		load();
-	    }
 	    sick[cid-1]->lock();
 	    sick[cid-1]->set(cid,frame, acquired,  nmeasure, nechoes, range,reflect);
 	    sick[cid-1]->unlock();
