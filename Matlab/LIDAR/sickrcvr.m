@@ -5,6 +5,7 @@ args=processargs(defaults,varargin);
 
 vis=[];
 frame=-1;
+filled=false(1,args.nsick);
 
 while true
   if args.nowait || args.flush
@@ -37,6 +38,9 @@ while true
     end
     continue;
   end
+  if args.debug
+    fprintf('Got %s\n', m.path);
+  end
   if strcmp(m.path,'/vis/beginframe')
     if frame~=-1
       fprintf('Missed /vis/endframe messages, skipping to next frame\n');
@@ -46,7 +50,6 @@ while true
     if args.debug
       fprintf('New frame %d for unit %d\n', frame,id);
     end
-    filled=false(1,args.nsick);
   elseif frame==-1
     if ~strcmp(m.path,'/ack')
       fprintf('Skipping message %s while looking for /vis/beginframe\n', m.path);
@@ -71,7 +74,7 @@ while true
             havemore=false;
             for i=1:length(peek)
               if strcmp(peek{i}.path,'/vis/endframe')
-                %fprintf('Skipping visframe %d since another /vis/endframe is queued\n', frame);
+                fprintf('Skipping visframe %d since another /vis/endframe is queued\n', frame);
                 havemore=true;
                 break;
               end
@@ -88,7 +91,7 @@ while true
         end
       else
         fprintf('End of frame without having received data from cameras %s, waiting for next frame\n', shortlist(find(~filled)));
-        vis=[];
+        %vis=[];
       end
     elseif strcmp(m.path,'/vis/range')  || strcmp(m.path,'/vis/reflect')
       c=m.data{1};   %  Sensor
