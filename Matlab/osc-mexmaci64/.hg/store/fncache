@@ -1,0 +1,9 @@
+data/src/osc_make.m.i
+data/src/README.txt.i
+data/src/osc_recv.c.i
+data/src/osc_free_server.c.i
+data/src/osc_new_address.c.i
+data/src/osc_send.c.i
+data/.hgignore.i
+data/src/osc_new_server.c.i
+data/src/osc_free_address.c.i
