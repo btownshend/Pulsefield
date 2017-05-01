@@ -47,6 +47,8 @@ private:
 	pthread_mutex_t mutex;
 	pthread_cond_t signal;
 	Background bg;		// Background model
+	std::vector<Point> calTargets;
+	void updateCalTargets();
 public:
 	SickIO(int _id, const char *host, int port);
 	// Constructor to fake the data from a scan
@@ -75,6 +77,7 @@ public:
 		return num_measurements;
 	}
 
+	const std::vector<Point> getCalTargets() const { return calTargets; }
 	const unsigned int* getRange(int echo) const {
 	    return range[echo];
 	}

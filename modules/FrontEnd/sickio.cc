@@ -91,6 +91,7 @@ void SickIO::set(int _id, int _frame, const timeval &_acquired, int _nmeasure, i
 	    reflect[e][i]=_reflect[e][i];
 	}
     dbg("Sickio.set",5) << "Set values for frame " << frame << std::endl;
+    updateCalTargets();
     valid=true;
 }
 
@@ -256,6 +257,8 @@ void SickIO::get() {
 		    range[e][i]=rangetmp[e][i];
 		    reflect[e][i]=reflecttmp[e][i];
 		}
+
+	    updateCalTargets();
 	    valid=true;
 	    pthread_cond_signal(&signal);
 	    unlock();
@@ -291,6 +294,15 @@ void SickIO::unlock()  {
     pthread_mutex_unlock(&mutex);
 }
 
+void SickIO::updateCalTargets() {
+    // Find any calibration targets present
+    std::vector<Point> pts(getNumMeasurements());
+    for (int i=0;i<getNumMeasurements();i++)  {
+	pts[i]=getLocalPoint(i) / UNITSPERM;
+    }
+    dbg("SickIO.update",3) << "Unit " << id << ": Finding targets from " << pts.size() << " ranges." << std::endl;
+    calTargets=findTargets(pts);
+}
 
 void SickIO::sendMessages(const char *host, int port) const {
     dbg("SickIO.sendMessages",2) << "Sending  messages to " << host << ":" << port << std::endl;
@@ -305,14 +317,6 @@ void SickIO::sendMessages(const char *host, int port) const {
 	scanpt=(scanpt+1)%bg.getRange(0).size();
 	bg.sendMessages(addr,scanpt);
     }
-
-    // Find any calibration targets present
-    std::vector<Point> pts(getNumMeasurements());
-    for (int i=0;i<getNumMeasurements();i++)  {
-	pts[i]=getLocalPoint(i) / UNITSPERM;
-    }
-    dbg("SickIO.update",3) << "Unit " << id << ": Finding targets from " << pts.size() << " ranges." << std::endl;
-    std::vector<Point> calTargets=findTargets(pts);
 
     // Send Calibration Targets
     for (int i=0;i<calTargets.size();i++) {
