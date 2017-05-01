@@ -450,6 +450,9 @@ void Calibration::updateTracker() const {
 	cv::Rodrigues(rvecs[i],rotMat);
 	TrackerComm::instance()->sendCameraView(i,rotMat,tvecs[i]);
 	TrackerComm::instance()->sendPose(i,poses[i]);
+	if (i>nproj) {
+	    TrackerComm::instance()->sendLIDARPose(i,poses[i],rvecs[i]);
+	}
 	// Send the homographies last since they trigger updates that need the camera view
 	TrackerComm::instance()->sendScreenToWorld(i, homographies[i]);
 	cv::Mat inv=homographies[i].inv();

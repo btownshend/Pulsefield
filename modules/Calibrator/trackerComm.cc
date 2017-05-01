@@ -18,6 +18,17 @@ TrackerComm::TrackerComm(URLConfig &urls)  {
 	remote = lo_address_new(trackerHost, cbuf);
 	dbg("TrackerComm",1)  << "Set remote to " << loutil_address_get_url(remote) << std::endl;
     }
+    int frontendPort=urls.getPort("FE");
+    const char *frontendHost=urls.getHost("FE");
+    if (frontendPort==-1 || frontendHost==0) {
+	fprintf(stderr,"Unable to locate FE in urlconfig.txt\n");
+	frontend=0;
+    } else {
+	char cbuf[10];
+	sprintf(cbuf,"%d",frontendPort);
+	frontend = lo_address_new(frontendHost, cbuf);
+	dbg("TrackerComm",1)  << "Set frontend to " << loutil_address_get_url(frontend) << std::endl;
+    }
 }
 		       
 TrackerComm::~TrackerComm() {
@@ -87,6 +98,15 @@ void TrackerComm::sendCameraView(int unit, const cv::Mat &rotMat, const cv::Mat 
 void TrackerComm::sendPose(int unit, const cv::Mat &pose) const {
     if (lo_send(remote,"/cal/pose","ifff",unit,pose.at<double>(0,0),pose.at<double>(0,1),pose.at<double>(0,2)) < 0 ) {
 	dbg("TrackerComm.sendPose",1) << "Failed send of /cal/pose to " << loutil_address_get_url(remote) << ": " << lo_address_errstr(remote) << std::endl;
+	return;
+    }
+}
+
+// Send position and orientation of LIDAR
+void TrackerComm::sendLIDARPose(int unit, const cv::Mat &pose, const cv::Mat &rvec) const {
+    dbg("TrackerComm.sendLIDARPose",1) << "pose=" << pose << ", rvec=" << rvec << std::endl;
+    if (lo_send(frontend,"/cal/lidarpose","ifff",unit,pose.at<double>(0,0),pose.at<double>(0,1),rvec.at<double>(0,0)) < 0 ) {
+	dbg("TrackerComm.sendLIDARPose",1) << "Failed send of /cal/lidarpose to " << loutil_address_get_url(frontend) << ": " << lo_address_errstr(frontend) << std::endl;
 	return;
     }
 }

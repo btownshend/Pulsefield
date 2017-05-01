@@ -16,7 +16,7 @@ class Cursor {
 // Class for communication with java Tracker program
 class TrackerComm {
     static TrackerComm *theInstance;   // Singleton
-    lo_address remote;
+    lo_address remote,frontend;
     TrackerComm(URLConfig &urls);
     ~TrackerComm();
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
@@ -44,6 +44,9 @@ class TrackerComm {
     
     // Send position of projector; although this may be redundant with the other information, calculating it is non-trivial
     void sendPose(int unit, const cv::Mat &pose) const;
+
+    // Send position and orientation of LIDAR
+    void sendLIDARPose(int unit, const cv::Mat &pose, const cv::Mat &rvec) const;
     
     // Send projection (perspective map)
     void sendProjection(int unit, const cv::Mat &projection) const;
