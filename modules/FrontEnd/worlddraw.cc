@@ -152,7 +152,24 @@ void World::draw(int nsick, const SickIO * const * sick) const {
 	     // Draw LIDAR position
 	     cairo_move_to(cr,s->getOrigin().X(),s->getOrigin().Y());
 	     cairo_arc(cr,s->getOrigin().X(),s->getOrigin().Y(),300.0f,s->getAngleRad(0)+s->getCoordinateRotationDeg()*M_PI/180+M_PI/2,s->getAngleRad(s->getNumMeasurements()-1)+s->getCoordinateRotationDeg()*M_PI/180+M_PI/2);
+	     cairo_line_to(cr,s->getOrigin().X(),s->getOrigin().Y());
 	     cairo_stroke(cr);
+
+	     // Draw any targets
+	     const std::vector<Point> tgts=s->getCalTargets();
+	     for (int i=0;i<tgts.size();i++) {
+		 Point p=s->localToWorld(tgts[i]*UNITSPERM);
+		 //std::cout << "Unit " << j << " has " << tgts.size() << " cal points " << tgts[i] << " -> " << p << std::endl;
+		 float len=300;
+		 Point v1,v2;
+		 v1.setThetaRange(j*M_PI/2/nsick,len);
+		 v2.setThetaRange(j*M_PI/2/nsick+M_PI/2,len);
+		 cairo_move_to(cr,p.X()+v1.X(), p.Y()+v1.Y());
+		 cairo_line_to(cr,p.X()-v1.X(), p.Y()-v1.Y());
+		 cairo_move_to(cr,p.X()+v2.X(), p.Y()+v2.Y());
+		 cairo_line_to(cr,p.X()-v2.X(), p.Y()-v2.Y());
+		 cairo_stroke(cr);
+	     }
 	 }
      }
 
