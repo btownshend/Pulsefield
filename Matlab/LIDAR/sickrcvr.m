@@ -8,9 +8,9 @@ frame=-1;
 
 while true
   if args.nowait || args.flush
-    m=oscmsgin('MPV',0.0);
+    m=oscmsgin('VIS',0.0);
   else
-    m=oscmsgin('MPV',args.timeout);
+    m=oscmsgin('VIS',args.timeout);
   end
   if isempty(m)
     if args.flush
@@ -67,7 +67,7 @@ while true
           vis.when=max(vis.acquired);
           vis.whenrcvd=now;
           if args.skipstale
-            peek=oscmsgin('MPV',0.0,true);   % Peak at next messages
+            peek=oscmsgin('VIS',0.0,true);   % Peak at next messages
             havemore=false;
             for i=1:length(peek)
               if strcmp(peek{i}.path,'/vis/endframe')
