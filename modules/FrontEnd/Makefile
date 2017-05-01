@@ -44,8 +44,8 @@ frontend: $(CSRCS:.c=.o) $(CXXSRCS:.cc=.o) $(SICKLIB)
 mixtest: mixtest.o gaussianmixture.o dbg.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)  -L$(OPENCVLIBDIR)  $(OPENCVLIBES) 
 
-depend:
-	/opt/local/bin/makedepend -Y -- $(CXXFLAGS) -- $(SRCS)
+depend: $(SRCS)
+	/opt/local/bin/makedepend -Y -- $(CXXFLAGS) -- $^
 
 clean:
 	rm *.o
@@ -1212,6 +1212,7 @@ handlers.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
 handlers.o: /opt/local/include/X11/Xfuncproto.h
 handlers.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
 handlers.o: groups.h
+../../lib/C++Util/dest.o: ../../lib/C++Util/dest.h ../../lib/C++Util/dbg.h
 main.o: frontend.h /opt/local/include/lo/lo.h
 main.o: /opt/local/include/lo/lo_endian.h /opt/local/include/lo/lo_types.h
 main.o: /opt/local/include/lo/lo_osc_types.h
@@ -1769,6 +1770,8 @@ main.o: /opt/local/include/boost/multi_index/detail/duplicates_iterator.hpp
 main.o: /opt/local/include/boost/multi_index/member.hpp
 main.o: /opt/local/include/boost/property_tree/detail/ptree_implementation.hpp
 main.o: ../../lib/C++Util/dbg.h parameters.h
+../../lib/C++Util/urlconfig.o: ../../lib/C++Util/dbg.h
+../../lib/C++Util/urlconfig.o: ../../lib/C++Util/urlconfig.h
 sickio.o: sickio.h
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 sickio.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -1909,6 +1912,8 @@ person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 person.o: ../../lib/C++Util/dbg.h background.h parameters.h normal.h
 person.o: lookuptable.h groups.h
+../../lib/C++Util/dbg.o: ../../lib/C++Util/dbg.h
+../../lib/C++Util/point.o: ../../lib/C++Util/point.h
 worlddraw.o: /opt/local/include/cairo/cairo.h
 worlddraw.o: /opt/local/include/cairo/cairo-version.h
 worlddraw.o: /opt/local/include/cairo/cairo-features.h
@@ -2005,6 +2010,9 @@ kalmanfilter.o: /opt/local/include/opencv2/imgproc.hpp
 kalmanfilter.o: /opt/local/include/opencv2/imgproc/imgproc_c.h
 kalmanfilter.o: /opt/local/include/opencv2/imgproc/types_c.h
 kalmanfilter.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h
+../../lib/C++Util/findtargets.o: ../../lib/C++Util/findtargets.h
+../../lib/C++Util/findtargets.o: ../../lib/C++Util/point.h
+../../lib/C++Util/findtargets.o: ../../lib/C++Util/dbg.h
 configuration.o: configuration.h
 configuration.o: /opt/local/include/boost/property_tree/ptree.hpp
 configuration.o: /opt/local/include/boost/property_tree/ptree_fwd.hpp
