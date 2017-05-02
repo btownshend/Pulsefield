@@ -101,7 +101,7 @@ public:
 	    return coordinateRotation;
 	}
 	void setCoordinateRotationDeg(float deg)  {
-	    coordinateRotation=M_PI/180*int(deg/5)*5;  // Round to avoid tiny changes that throw off calibration
+	    coordinateRotation=M_PI/180*deg;
 	}
 	// Get angle of measurement in radians (local coordinates)
 	float getAngleRad(int measurement) const {  
