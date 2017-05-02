@@ -509,6 +509,19 @@ void RelMapping::updateUI(bool flipX1,bool flipY1, bool flipX2, bool flipY2) con
     send("/cal/xy/2",pt2[selected].X()*(flipX2?-1:1),pt2[selected].Y()*(flipY2?-1:1));
     send("/cal/x/2",getDevicePt(1,-1,true).X());
     send("/cal/y/2",getDevicePt(1,-1,true).Y());
+    if (type1==LIDAR) {
+	int nalign=Calibration::instance()->getAlignment(unit1-nproj).size();
+	send("/cal/tgtfound/1", nalign>0?1.0:0.0);
+    } else {
+	send("/cal/tgtfound/1", 0.0);
+    }
+    if (type2==LIDAR) {
+	int nalign=Calibration::instance()->getAlignment(unit2-nproj).size();
+	send("/cal/tgtfound/2", nalign>0?1.0:0.0);
+    } else {
+	send("/cal/tgtfound/2", 0.0);
+    }
+	 
     std::vector<float> error=((RelMapping *)this)->updateErrors();
     for (int i=0;i<error.size();i++)
 	if (isnan(error[i]))
