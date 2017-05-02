@@ -46,7 +46,7 @@ class TrackerComm {
     void sendPose(int unit, const cv::Mat &pose) const;
 
     // Send position and orientation of LIDAR
-    void sendLIDARPose(int unit, const cv::Mat &pose, const cv::Mat &rvec) const;
+    void sendLIDARPose(int unit, const cv::Mat &homography) const ;
     
     // Send projection (perspective map)
     void sendProjection(int unit, const cv::Mat &projection) const;

@@ -454,7 +454,7 @@ void Calibration::updateTracker() const {
 	TrackerComm::instance()->sendPose(i,poses[i]);
 	if (i>nproj) {
 	    dbg("updateTracker",1) << "tvecs=" << tvecs[i] << ", rotMat=" << rotMat << std::endl;
-	    TrackerComm::instance()->sendLIDARPose(i,poses[i],rvecs[i]);
+	    TrackerComm::instance()->sendLIDARPose(i-nproj,homographies[i]);
 	}
 	// Send the homographies last since they trigger updates that need the camera view
 	TrackerComm::instance()->sendScreenToWorld(i, homographies[i]);

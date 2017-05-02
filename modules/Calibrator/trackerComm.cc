@@ -103,10 +103,24 @@ void TrackerComm::sendPose(int unit, const cv::Mat &pose) const {
 }
 
 // Send position and orientation of LIDAR
-void TrackerComm::sendLIDARPose(int unit, const cv::Mat &pose, const cv::Mat &rvec) const {
-    dbg("TrackerComm.sendLIDARPose",1) << "pose=" << pose << ", rvec=" << rvec << std::endl;
-    if (lo_send(frontend,"/cal/lidarpose","ifff",unit,pose.at<double>(0,0),pose.at<double>(0,1),rvec.at<double>(0,0)) < 0 ) {
-	dbg("TrackerComm.sendLIDARPose",1) << "Failed send of /cal/lidarpose to " << loutil_address_get_url(frontend) << ": " << lo_address_errstr(frontend) << std::endl;
+void TrackerComm::sendLIDARPose(int unit, const cv::Mat &homography) const {
+    // Homography maps from device space to worldspace
+    cv::Mat inv=homography.inv();
+    dbg("TrackerComm.sendLIDARPose",1) << "homography=" << homography << std::endl;
+    dbg("TrackerComm.sendLIDARPose",1) << "inv=" << inv << std::endl;
+    std::string prefix="/pf/sick"+std::to_string(unit)+"/";
+    if (lo_send(frontend,(prefix+"x").c_str(),"f",homography.at<double>(0,2))<0) {
+	dbg("TrackerComm.sendLIDARPose",1) << "Failed send of " << prefix << "x to " << loutil_address_get_url(frontend) << ": " << lo_address_errstr(frontend) << std::endl;
+	return;
+    }
+    if (lo_send(frontend,(prefix+"y").c_str(),"f",homography.at<double>(1,2))<0) {
+	dbg("TrackerComm.sendLIDARPose",1) << "Failed send of " << prefix << "y to " << loutil_address_get_url(frontend) << ": " << lo_address_errstr(frontend) << std::endl;
+	return;
+    }
+    float angle=atan2(homography.at<double>(1,0),homography.at<double>(0,0))*180.0/M_PI;
+    dbg("TrackerComm.sendLIDARPose",1) << "angle=" << angle << std::endl;
+    if (lo_send(frontend,(prefix+"rotation").c_str(),"f",angle)<0) {
+	dbg("TrackerComm.sendLIDARPose",1) << "Failed send of " << prefix << "x to " << loutil_address_get_url(frontend) << ": " << lo_address_errstr(frontend) << std::endl;
 	return;
     }
 }
