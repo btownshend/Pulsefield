@@ -131,17 +131,17 @@ public:
 	void setOrigin(Point p)  {
 	    origin.setX(p.X());
 	    origin.setY(p.Y());
-	    dbg("FrontEnd.setOrigin",1) << "Set origin to " << origin << std::endl;
+	    dbg("FrontEnd.setOrigin",1) << "Unit " << id << ": Set origin to " << origin << std::endl;
 	}
 
 	void setOriginX(float x) {
 	    origin.setX(x);
-	    dbg("FrontEnd.setOriginX",1) << "Set origin to " << origin << std::endl;
+	    dbg("FrontEnd.setOriginX",1) << "Unit " << id << ": Set originX to " << origin << std::endl;
 	}
 
 	void setOriginY(float y) {
 	    origin.setY(y);
-	    dbg("FrontEnd.setOriginY",1) << "Set origin to " << origin << std::endl;
+	    dbg("FrontEnd.setOriginY",1) << "Unit " << id << ":Set originY to " << origin << std::endl;
 	}
 	
 	// Distance between two scan points

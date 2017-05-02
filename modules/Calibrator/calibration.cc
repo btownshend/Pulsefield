@@ -260,6 +260,7 @@ void  RelMapping::setDevicePt(Point p, int which,int i)  {
 	type=type1;
     else
 	type=type2;
+    dbg("RelMapping.setDevicePt",2) << "type=" << type << std::endl;
     if (type==PROJECTOR)
 	p=projToRel(p);
     else if (type==LIDAR)
@@ -452,7 +453,6 @@ void Calibration::updateTracker() const {
 	cv::Rodrigues(rvecs[i],rotMat);
 	TrackerComm::instance()->sendCameraView(i,rotMat,tvecs[i]);
 	TrackerComm::instance()->sendPose(i,poses[i]);
-	    dbg("updateTracker",1) << "tvecs=" << tvecs[i] << ", rotMat=" << rotMat << std::endl;
 	if (i>=nproj) {
 	    TrackerComm::instance()->sendLIDARPose(i-nproj,homographies[i]);
 	}

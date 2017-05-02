@@ -65,7 +65,7 @@ class Calibration {
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
     Calibration(int nproj, int nlidar, URLConfig &urls);   // Only ever called by initialize()
     int recompute();		// Use acquired data to estimate transformations
-    std::vector<cv::Mat> homographies;		// Each maps from laser flat space [-1,1] to world coordinates (which initially are arbitrary) use w=H*f
+    std::vector<cv::Mat> homographies;		// Each maps from device space to world coordinates (which initially are arbitrary) use w=H*d
     void testMappings() const;
     std::vector<std::string> statusLines;		// Status lines to display
     std::vector<cv::Mat> tvecs, rvecs;			// translation, rotation of camera frame as computed by solvePnP:  note that rotation is done before translation
