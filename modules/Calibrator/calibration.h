@@ -70,7 +70,7 @@ class Calibration {
     std::vector<std::string> statusLines;		// Status lines to display
     std::vector<cv::Mat> tvecs, rvecs;			// translation, rotation of camera frame as computed by solvePnP:  note that rotation is done before translation
     std::vector<cv::Mat> poses;				// Position of camera lenses in world space (derived from inverting tvec and rvec)
-    std::vector<Point> alignCorners;			// Alignment target positions in real world
+    std::vector<std::vector<Point>> alignCorners;			// Alignment target positions in real world indexed by LIDAR unit (0..n-1)
     cv::Mat projection;		// Projection matrix for camera (3x3)
     lo_address tosc;
 
@@ -96,8 +96,13 @@ class Calibration {
     LaserMode getLaserMode() const { return laserMode; }		// Get the current mode for laser display
     std::vector<Point> getCalPoints(int unit) const;				// Get the set of calibration points that should be drawn for the given laser
     Point map(Point p, int fromUnit, int toUnit=-1) const;		// Map a point in one unit to another (or to the world)
-    void setAlignment(const std::vector<Point> &c) { alignCorners=c; }
-    std::vector<Point> getAlignment() const { return alignCorners; }
+    void setAlignment(int unit, const std::vector<Point> &c) { 
+	assert(unit<nproj);
+	bool needsUpdate = c.size()!=alignCorners[unit].size();
+	alignCorners[unit]=c;
+	if (needsUpdate) updateUI();
+    }
+    std::vector<Point> getAlignment(int unit) const { assert(unit<nproj); return  alignCorners[unit]; }
 
     int send(std::string path, std::string value) const;
     int send(std::string path, float v1, float v2) const;

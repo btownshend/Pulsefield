@@ -183,7 +183,8 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
 	}
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0 && type==LIDAR) {
 	    // Find nearest alignment target to current world cooords and move to it
-	    std::vector<Point> a=Calibration::instance()->getAlignment();
+	    int nproj=Calibration::instance()->numProj();
+	    std::vector<Point> a=Calibration::instance()->getAlignment(getUnit(side)-nproj);
 	    float mindist=1e10;
 	    int closest=-1;
 	    Point dpoint=getDevicePt(side);
@@ -273,7 +274,7 @@ void  RelMapping::setDevicePt(Point p, int which,int i)  {
 	pt2[i]=p;
 }
        
-Calibration::Calibration(int _nproj, int nlidar, URLConfig&urls): homographies(_nproj+nlidar+1), statusLines(3), tvecs(_nproj+nlidar), rvecs(_nproj+nlidar), poses(_nproj+nlidar), alignCorners(0), config("settings_proj.json") {
+Calibration::Calibration(int _nproj, int nlidar, URLConfig&urls): homographies(_nproj+nlidar+1), statusLines(3), tvecs(_nproj+nlidar), rvecs(_nproj+nlidar), poses(_nproj+nlidar), alignCorners(nlidar), config("settings_proj.json") {
     nproj = _nproj;
     nunits = nproj+nlidar;
     dbg("Calibration.Calibration",1) << "Constructing calibration with " << nproj << " projectors and " << nlidar << " LIDARs." << std::endl;

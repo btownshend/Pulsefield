@@ -164,12 +164,12 @@ void OSCHandler::pfframe(int frame, bool fake) {
 }
 
 void OSCHandler::pfaligncorner(int unit, int corner, int ncorners, float x, float y, float gx, float gy) {
-    std::vector<Point> align = Calibration::instance()->getAlignment();
+    std::vector<Point> align = Calibration::instance()->getAlignment(unit-1);
     dbg("OSCHandler.pfaligncorner",((ncorners==align.size())?3:1)) << "pfaligncorner(" << corner << "," << ncorners << ", " << x << ", " << y << ")" << std::endl;
     align.resize(ncorners);
     if (corner>=0)
 	align[corner]=Point(x,y);
-    Calibration::instance()->setAlignment(align);
+    Calibration::instance()->setAlignment(unit-1,align);
 }
 
 // Called when any of the bounds have been possibly changed
