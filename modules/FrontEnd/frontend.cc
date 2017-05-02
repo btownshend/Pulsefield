@@ -689,7 +689,7 @@ void FrontEnd::load() {
     for (int i=0;i<nsick;i++) {
 	assert(sick && sick[i]);
 	std::string path="sick"+std::to_string(i)+".";
-	sick[i]->setCoordinateRotationDeg(p1.get(path+"rotation",1.0f));
+	sick[i]->setCoordinateRotationDeg(p1.get(path+"rotation",0.0f));
 	sick[i]->setOrigin(Point(p1.get(path+"origin.x",0.0f),p1.get(path+"origin.y",0.0f)));
     }
 }
