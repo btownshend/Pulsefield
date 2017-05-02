@@ -762,7 +762,7 @@ static float computeExtrinsics(std::vector<cv::Point2f> &sensorPts, std::vector<
 	    projection.at<double>(0,0)=std::abs(projection.at<double>(0,0));
 	    projection.at<double>(1,1)=std::abs(projection.at<double>(1,1));
 	    cv::calibrateCamera(objectPoints, imagePoints, cv::Size(1920,1080), projection, distCoeffs, rvec, tvec,CV_CALIB_USE_INTRINSIC_GUESS);
-	    std::cout << "Updated projection matrix: " << projection << std::endl;
+	    dbg("Calibration.recompute",1) << "Updated projection matrix: " << projection << std::endl;
 	} else  {
 	    cv::solvePnP(worldPts,sensorPts,projection,cv::Mat(),rvec,tvec,false,CV_EPNP);
 	}
@@ -772,11 +772,11 @@ static float computeExtrinsics(std::vector<cv::Point2f> &sensorPts, std::vector<
 	float totalErr=0;
 	for (int i=0;i<reconPts.rows;i++) {
 	    float e=norm(reconPts.at<cv::Point2f>(0,i)-ipoints.at<cv::Point2f>(0,i));
-	    std::cout << ipoints.at<cv::Point2f>(0,i) << " -> " << opoints.at<cv::Point3f>(0,i) << " -> " << reconPts.at<cv::Point2f>(i,0) << " e=" << e << std::endl;
+	    dbg("Calibration.recompute",1) << ipoints.at<cv::Point2f>(0,i) << " -> " << opoints.at<cv::Point3f>(0,i) << " -> " << reconPts.at<cv::Point2f>(i,0) << " e=" << e << std::endl;
 	    totalErr+=e;
 	}
 	totalErr /= reconPts.rows;
-	std::cout << "RMS error " << totalErr << " pixels" << std::endl;
+	dbg("Calibration.recompute",1) << "RMS error " << totalErr << " pixels" << std::endl;
 	// Convert to rotation matrix
 	cv::Mat rotMat;
 	cv::Rodrigues(rvec,rotMat);
@@ -785,7 +785,7 @@ static float computeExtrinsics(std::vector<cv::Point2f> &sensorPts, std::vector<
 	// FIXME: Not sure why, but the z-position comes out negative, probably due to the screen being a LH coord system
 	// In any case, negate the z pose
 	pose.at<double>(2,0)=-pose.at<double>(2,0);
-	std::cout << "Final pose = " << pose << std::endl;
+	dbg("Calibration.recompute",1) << "Final pose = " << pose << std::endl;
 	return totalErr;
 }
     
@@ -984,7 +984,7 @@ void Calibration::testMappings() const {
     for (int i=0;i<worldPts.size();i++) {
 	Point devPt=map(worldPts[i],nunits,0);
 	Point finalPt=map(devPt,0,nunits);
-	std::cout << "world: " << worldPts[i] << " -> device: " << devPt << " -> world: " << finalPt << std::endl;
+	dbg("Calibration.testMappings",1) << "world: " << worldPts[i] << " -> device: " << devPt << " -> world: " << finalPt << std::endl;
     }
 }
 
