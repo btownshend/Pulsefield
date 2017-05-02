@@ -374,8 +374,10 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 		delete [] sick;
 
 	    sick=newSick;
+	    removeDefaultHandler();  // To make sure the default is at the end
 	    for (int i=nsick;i<cid;i++)
 		addSickHandlers(i);	// Add OSC handlers for this new device
+	    addDefaultHandler();  // To make sure the default is at the end
 	    nsick=cid;
 	    load();
 	}

@@ -22,6 +22,7 @@ static int generic_handler(const char *path, const char *types, lo_arg **argv,in
 	}
 	fprintf(stdout,"\n");
 	fflush(stdout);
+	dbg("generic_handler",1) << "Unhandled message: " << path << std::endl;
     }
     return 1;
 }
@@ -196,9 +197,17 @@ void FrontEnd::addHandlers() {
 	}
 
 	lo_server_add_method(s,"/pf/save","f",save_handler,this);
+	addDefaultHandler();
+}
+
+void FrontEnd::addDefaultHandler() {
 	/* add method that will match any path and args if they haven't been caught explicitly */
 	lo_server_add_method(s, NULL, NULL, generic_handler, NULL);
+}
 
+void FrontEnd::removeDefaultHandler() {
+	/* add method that will match any path and args if they haven't been caught explicitly */
+    lo_server_del_method(s, NULL, NULL);
 }
 
 void FrontEnd::addSickHandlers(int i) {

@@ -51,6 +51,8 @@ class FrontEnd {
     // OSC Message handling
     void addHandlers();
     void addSickHandlers(int i);
+    void addDefaultHandler();
+    void removeDefaultHandler();
     static bool doQuit;
 
     // Startup messages to OSC
