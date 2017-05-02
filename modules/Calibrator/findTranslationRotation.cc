@@ -33,7 +33,7 @@ cv::Mat findTranslationRotation( const std::vector<cv::Point2f> &src,  const std
 	v.at<double>(1,1)=-v.at<double>(1,1);
 	r=v*u.t();
 	det=determinant(r);
-	assert(det>0);
+	//	assert(det>0);
     }
     // Compute translation
     cv::Mat t=-r*cv::Mat(srcCentroid)+cv::Mat(dstCentroid);
