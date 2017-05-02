@@ -219,17 +219,17 @@ static Point projToRel(Point x) {
 // Get coordinate of pt[i] in projector [0,0]-[1919,1079],
 //   or LIDAR ([-MAXLIDARRANGE,MAXLIDARRANGE],[0,MAXLIDARRANGE])
 //   or WORLD  ([-MAXWORLDCOORD,MAXWORLDCOORD],[-MAXWORLDCOORD,MAXWORLDCOORD])
-Point RelMapping::getDevicePt(int i,int which,bool doRound) const {
+Point RelMapping::getDevicePt(int which,int i,bool doRound) const {
     Point res;
-    if (which==-1)
-	which=selected;
+    if (i==-1)
+	i=selected;
     Point pt;
     UnitType type;
-    if (i==0) {
-	pt=pt1[which];
+    if (which==0) {
+	pt=pt1[i];
 	type=type1;
     } else {
-	pt=pt2[which];
+	pt=pt2[i];
 	type=type2;
     }
     if (type==PROJECTOR) {
@@ -249,13 +249,13 @@ Point RelMapping::getDevicePt(int i,int which,bool doRound) const {
 }
        
 // Set coordinate of pt[i] in device or world
-void  RelMapping::setDevicePt(Point p, int i,int which)  {
-    dbg("RelMapping.setDevicePt",2) <<"setDevicePt(" << p << "," << i << "," << which << ")" << std::endl;
+void  RelMapping::setDevicePt(Point p, int which,int i)  {
+    dbg("RelMapping.setDevicePt",2) << unit1 << "->" <<  unit2 << ": setDevicePt(" << p << "," << which << "," << i << ")" << std::endl;
     Point res;
-    if (which==-1)
-	which=selected;
+    if (i==-1)
+	i=selected;
     UnitType type;
-    if (i==0)
+    if (which==0)
 	type=type1;
     else
 	type=type2;
@@ -266,10 +266,11 @@ void  RelMapping::setDevicePt(Point p, int i,int which)  {
     else /* type==WORLD */
 	p=Point(p.X()/MAXWORLDCOORD,p.Y()/MAXWORLDCOORD);
     
-    if (i==0)
-	pt1[which]=p;
+    dbg("RelMapping.setDevicePt",2) <<"Mapped to " << p << std::endl;
+    if (which==0)
+	pt1[i]=p;
     else
-	pt2[which]=p;
+	pt2[i]=p;
 }
        
 Calibration::Calibration(int _nproj, int nlidar, URLConfig&urls): homographies(_nproj+nlidar+1), statusLines(3), tvecs(_nproj+nlidar), rvecs(_nproj+nlidar), poses(_nproj+nlidar), alignCorners(0), config("settings_proj.json") {
@@ -571,8 +572,8 @@ void RelMapping::load(ptree &p) {
 	    if (i>=pt1.size())
 		break;
 	    ptree val=v->second;
-	    setDevicePt(Point(val.get<double>("pt1.x",pt1[i].X()),val.get<double>("pt1.y",pt1[i].Y())),i,0);
-	    setDevicePt(Point(val.get<double>("pt2.x",pt2[i].X()),val.get<double>("pt2.y",pt2[i].Y())),i,1);
+	    setDevicePt(Point(val.get<double>("pt1.x",pt1[i].X()),val.get<double>("pt1.y",pt1[i].Y())),0,i);
+	    setDevicePt(Point(val.get<double>("pt2.x",pt2[i].X()),val.get<double>("pt2.y",pt2[i].Y())),1,i);
 	    locked[i]=val.get<bool>("locked",locked[i]);
 	    i++;
 	}

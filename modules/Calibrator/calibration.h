@@ -40,8 +40,8 @@ public:
     int addMatches(std::vector<cv::detail::ImageFeatures> &features,    std::vector<cv::detail::MatchesInfo> &pairwiseMatches) const;
     int getUnit(int i) const  { if (i==0) return unit1; else return unit2; }
     void sendCnt() const;  // Send OSC with cnt of locked points to TouchOSC
-    Point getDevicePt(int i,int which=-1,bool doRound=false) const;    // Get coordinate of pt[i] in device or world
-    void setDevicePt(Point p, int i,int which=-1);
+    Point getDevicePt(int witch,int i=-1,bool doRound=false) const;    // Get coordinate of pt[i] in device or world
+    void setDevicePt(Point p, int which,int i=-1);
     std::vector<float> updateErrors();
     std::vector<Point> getCalPoints(int unit,bool selectedOnly) const;
     float getE2Sum() const { return e2sum; }
