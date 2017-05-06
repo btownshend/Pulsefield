@@ -364,7 +364,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	int cid,nechoes,nmeasure,sickframe;   // CID is unit number with 1-origin
 	struct timeval acquired;
 	int nread;
-	if (EOF==(nread=fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&frame,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure))) {
+	if (EOF==(nread=fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&sickframe,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure))) {
 	    printf("EOF on %s\n",filename);
 	    break;
 	}
@@ -414,28 +414,34 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    startfile=acquired;
 	lastframe= sick[cid-1]->getFrame();
 	    
-	if  (lastframe==frame) {
-	    //fprintf(stderr,"Duplicate frame %d for unit %d\n", frame, cid);
+	if  (lastframe==sickframe) {
+	    //fprintf(stderr,"Duplicate frame %d for unit %d\n", sickframe, cid);
 	    continue;
 	}
 	
+	if (frame1!=-1 || frameN!=-1) {
+	    // TODO
+	    std::cerr << "Frame range selection currently broken" << std::endl;
+	    exit(1);
+	}
 	if (frame1==-1 && frameN!=-1) {
 	    // Just first frameN frames
-	    frame1=frame;
-	    frameN+=frame-1;
+	    frame1=sickframe;
+	    frameN+=sickframe-1;
 	}
-	if (frame1!=-1 && frame<frame1)
+	if (frame1!=-1 && sickframe<frame1)
 	    continue;
-	if (frameN!=-1 && frame>frameN)
+	if (frameN!=-1 && sickframe>frameN)
 	    break;
 
-	if (frame!=lastframe+1 && lastframe!=-1) {
-	    if (lastframe+1 == frame-1)
-		fprintf(stderr,"Input file skips frame %d for unit %d\n",lastframe+1,cid);
-	    else if (lastframe<frame)
-		fprintf(stderr,"Input file skips frames %d-%d for unit %d\n",lastframe+1,frame-1,cid);
-	    else
-		fprintf(stderr,"Input file jumped backwards from frame %d to %d for unit %d\n",lastframe,frame,cid);
+	if (sickframe!=lastframe+1 && lastframe!=-1) {
+	    if (lastframe+1 == sickframe-1) {
+		dbg("FrontEnd.playFile",1) << "Input file skips frame " << lastframe+1 << " for unit " << cid << std::endl;
+	    } else if (lastframe<sickframe) {
+		dbg("FrontEnd.playFile",1) << "Input file skips frames " << lastframe+1 << "-" << sickframe-1 << " for unit " << cid << std::endl;
+	    } else {
+		dbg("FrontEnd.playFile",1) << "Input file jumped backwards from frame " << lastframe << "-" << sickframe << " for unit " << cid << std::endl;
+	    }
 	}
 
 	if (!overlayLive) {
@@ -468,13 +474,13 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    sick[0]->lock();
 	    sick[0]->waitForFrame();
 	    assert(sick[0]->isValid());
-	    sick[0]->overlay(cid,frame, acquired,  nmeasure, nechoes, range,reflect);
+	    sick[0]->overlay(cid,sickframe, acquired,  nmeasure, nechoes, range,reflect);
 	    processFrames();
 	    assert(!sick[0]->isValid());
 	    sick[0]->unlock();
 	} else {
 	    sick[cid-1]->lock();
-	    sick[cid-1]->set(cid,frame, acquired,  nmeasure, nechoes, range,reflect);
+	    sick[cid-1]->set(cid,sickframe, acquired,  nmeasure, nechoes, range,reflect);
 	    sick[cid-1]->unlock();
 	    bool allValid=true;
 	    for (int i=0;i<nsick;i++)
@@ -495,9 +501,9 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	nProcTime++;
 	nallProcTime++;
 
-	if (frame%200==0) {
-	    dbg("frontend",1) << "Frame " << frame << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
-	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",frame,totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
+	if (sickframe%200==0) {
+	    dbg("frontend",1) << "Frame " << sickframe << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
+	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",sickframe,totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
 	    nProcTime=0;
 	    maxProcTime=0;
 	    totalProcTime=0;
@@ -507,21 +513,21 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	if (!matfile.empty()) {
 	    snap->append(vis,world);
 	    
-	    if (matframes>0 && frame>=matframes)
+	    if (matframes>0 && sickframe>=matframes)
 		// Do final output below
 		break;
 
-	    if (frame%2000 == 0) {
+	    if (sickframe%2000 == 0) {
 		// Break up the output
 		char tmpfile[1000];
-		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),frame);
+		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),sickframe);
 		snap->save(tmpfile);
 		snap->clear();
 	    }
 	}
 #endif
-	minPerfFrame=std::min(minPerfFrame,frame-1);
-	maxPerfFrame=std::max(maxPerfFrame,frame-1);
+	minPerfFrame=std::min(minPerfFrame,sickframe-1);
+	maxPerfFrame=std::max(maxPerfFrame,sickframe-1);
 	if (world->numPeople() > 0) {
 	    maxPeople=std::max(world->numPeople(),maxPeople);
 	    std::vector<float> framePerf=world->getFramePerformance();
@@ -582,7 +588,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 #ifdef MATLAB
     if (!matfile.empty()) {
 	char tmpfile[1000];
-	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),frame);
+	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),sickframe);
 	snap->save(tmpfile);
 	snap->clear();
     }
