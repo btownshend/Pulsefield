@@ -162,7 +162,8 @@ void FrontEnd::run() {
 		sick[i]->unlock();
 	    }
 	}
-	while (true) {
+	static const int MAXSYNCUPDATES=100;
+	for (int i=0;i<MAXSYNCUPDATES;i++) {
 	    int delta=(sick[1]->getAcquired().tv_sec-sick[0]->getAcquired().tv_sec)*1000000+(sick[1]->getAcquired().tv_usec-sick[0]->getAcquired().tv_usec);
 	    // Want the delta to be nominally 1/(2*FPS), so flush if it is outside range [0, 1/FPS]
 	    int flushFrame;
@@ -179,6 +180,9 @@ void FrontEnd::run() {
 	    sick[flushFrame]->clearValid();
 	    sick[flushFrame]->waitForFrame();
 	    sick[flushFrame]->unlock();
+	    if (i==MAXSYNCUPDATES-1) {
+		std::cerr << "Attempted to sync LIDARs " << i+1 << " times -- giving up." << std::endl;
+	    }
 	}
 	// Lock all sensors
 	for (int i=0;i<nsick;i++)
