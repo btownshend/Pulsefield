@@ -249,11 +249,10 @@ void FrontEnd::processFrames() {
 		starttime=currenttime;
 	    vis->update(sick[i]);
 	    elapsed=(currenttime.tv_sec-starttime.tv_sec)+(currenttime.tv_usec-starttime.tv_usec)*1e-6;
-	    if (frame%2==0)
-		world->draw(nsick,sick);
 	    world->track(*vis,frame,sick[i]->getScanFreq()*nsick,elapsed);
 	    frame++;
 	}
+	world->draw(nsick,sick);
 	sendMessages(elapsed);
 	sendOnce=0;
 	dbg("FrontEnd",2) << "Bounds=[" << world->getMinX() << "," << world->getMaxX() << "," << world->getMinY() << "," << world->getMaxY() << "]" << std::endl;
