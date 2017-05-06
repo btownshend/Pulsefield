@@ -162,6 +162,24 @@ void FrontEnd::run() {
 		sick[i]->unlock();
 	    }
 	}
+	while (true) {
+	    int delta=(sick[1]->getAcquired().tv_sec-sick[0]->getAcquired().tv_sec)*1000000+(sick[1]->getAcquired().tv_usec-sick[0]->getAcquired().tv_usec);
+	    // Want the delta to be nominally 1/(2*FPS), so flush if it is outside range [0, 1/FPS]
+	    int flushFrame;
+	    if (delta<0) 
+		flushFrame=1;
+	    else if (delta > 1000000/(sick[0]->getScanFreq()))
+		flushFrame=0;
+	    else {
+		dbg("FrontEnd.run",1) << "Frame timing difference = " << delta << " usec" << std::endl;
+		break;   // All good
+	    }
+	    dbg("FrontEnd.run",1) << "Frame timing difference = " << delta << " usec;  flushing a frame from unit " << flushFrame << std::endl;
+	    sick[flushFrame]->lock();
+	    sick[flushFrame]->clearValid();
+	    sick[flushFrame]->waitForFrame();
+	    sick[flushFrame]->unlock();
+	}
 	// Lock all sensors
 	for (int i=0;i<nsick;i++)
 		sick[i]->lock();
