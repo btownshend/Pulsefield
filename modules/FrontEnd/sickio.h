@@ -11,29 +11,50 @@
 #include <pthread.h>
 #include <sicklms5xx/SickLMS5xx.hh>
 #include <mat.h>
+#include <queue>
 
 #include "point.h"
 #include "dbg.h"
 #include "background.h"
+
+// A frame of data as received from the LIDAR
+class SickFrame {
+ public:
+    static const int MAXECHOES=5;
+    static const int MAXMEASUREMENTS=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS;
+ public:    
+    int rangeEchoes;
+    unsigned int range[MAXECHOES][MAXMEASUREMENTS];
+    unsigned int reflect[MAXECHOES][MAXMEASUREMENTS];
+    unsigned int devNumber, serialNumber,devStatus,telegramCounter,frame;
+    unsigned int scanTime,transmitTime,digitalInputs,digitalOutputs;
+    float scanFrequency, measurementFrequency;
+    unsigned int encoderFlag, encoderPosition, encoderSpeed;
+    unsigned int outputChannels;
+    unsigned int num_measurements;
+    struct timeval acquired;   // Computer time frame was read from network
+    SickFrame(SickToolbox::SickLMS5xx *sick_lms_5xx=NULL, int nechoes=1, bool captureRSSI=false);
+    
+    // Set values for faking
+    void set(int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]);
+
+    // Overlay frame read from data file onto real-time data
+    void overlay(int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]);
+};
 
 class SickIO {
 public:
 	static const int MAXECHOES=5;
 	static const int MAXMEASUREMENTS=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS;
 private:
+	std::queue<SickFrame> frames;   // Queue of unprocessed frame
+        SickFrame curFrame;  // Current frame
 	int id;
 	SickToolbox::SickLMS5xx *sick_lms_5xx;
-	unsigned int range[MAXECHOES][MAXMEASUREMENTS];
-	unsigned int reflect[MAXECHOES][MAXMEASUREMENTS];
-	unsigned int status;
-	int num_measurements;
-	struct timeval acquired;
-	unsigned int frame;   // Frame number of frame currently stored in range,reflect,x,y,acquired
-	unsigned int frameCntr;  // Increments at each frame time (even if a frame is overwritten)
-	unsigned int overwrittenframes;  // Number of overwritten frames since last message
 	bool valid;
+	struct timeval bootTime;  // Real time equivalent to time 0 on LIDAR
 	pthread_t runThread;
-	int nechoes;
+	int nechoes;   // Number of echoes to retrieve in each frame
 	bool captureRSSI;
 	void get();
 	bool running;
@@ -55,8 +76,6 @@ public:
 	SickIO() {
 	    fake=true;
 	    scanFreq=50;
-	    frame=0;
-	    frameCntr=1;
 	    valid=false;
 	    pthread_mutex_init(&mutex,NULL);
 	    pthread_cond_init(&signal,NULL);
@@ -74,25 +93,33 @@ public:
 	int stop();
 
 	unsigned int getNumMeasurements() const {
-		return num_measurements;
+		return curFrame.num_measurements;
 	}
 
 	const std::vector<Point> getCalTargets() const { return calTargets; }
 	const unsigned int* getRange(int echo) const {
-	    return range[echo];
+	    return curFrame.range[echo];
 	}
 
 	const unsigned int* getReflect(int echo) const {
-	    return reflect[echo];
+	    return curFrame.reflect[echo];
 	}
 
-	const struct timeval& getAcquired() const {
-		return acquired;
+	// Get time of scan
+	struct timeval getAcquired() const {
+	    struct timeval scanTime;
+	    scanTime.tv_sec=bootTime.tv_sec+curFrame.scanTime/1000000;
+	    scanTime.tv_usec=bootTime.tv_usec+curFrame.scanTime%1000000;
+	    if (scanTime.tv_usec > 1000000) {
+		scanTime.tv_usec-=1000000;
+		scanTime.tv_sec++;
+	    }
+	    return scanTime;
 	}
 
 	// Get angle of measurement in degrees (local coordinates)
 	float getAngleDeg(int measurement)  const {
-	    return scanRes*(measurement-(num_measurements-1)/2.0);
+	    return scanRes*(measurement-(curFrame.num_measurements-1)/2.0);
 	}
 	float getCoordinateRotationDeg() const {
 	    return coordinateRotation*180/M_PI;
@@ -109,7 +136,7 @@ public:
 	}
 	Point getLocalPoint(int measurement, int echo=0) const {
 	    Point p;
-	    p.setThetaRange(getAngleRad(measurement), range[echo][measurement]);
+	    p.setThetaRange(getAngleRad(measurement), curFrame.range[echo][measurement]);
 	    return p;
 	}
 
@@ -152,7 +179,7 @@ public:
 	}
 
 	unsigned int getFrame() const {
-		return frame;
+		return curFrame.frame;
 	}
 
 	bool isValid() const {

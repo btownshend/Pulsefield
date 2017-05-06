@@ -31,12 +31,7 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	 * Initialize the Sick LMS 2xx
 	 */
 	id=_id;
-	frame=0;
-	frameCntr=1;
-	overwrittenframes=0;
 	valid=false;
-	num_measurements=0;
-	status=0;
 	fake=false;
 
 	if (!fake)
@@ -77,20 +72,9 @@ SickIO::~SickIO() {
 
 void SickIO::set(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]){
     id=_id;
-    frame=_frame;
-    frameCntr=frame;
-    acquired=_acquired;
-    num_measurements=_nmeasure;
-    nechoes=_nechoes;
-    scanRes=190.0/(num_measurements-1);
-
-    // Copy in data
-    for (int e=0;e<nechoes;e++)
-	for (int i=0;i<num_measurements;i++) {
-	    range[e][i]=_range[e][i];
-	    reflect[e][i]=_reflect[e][i];
-	}
-    dbg("Sickio.set",5) << "Set values for frame " << frame << std::endl;
+    scanRes=190.0/(_nmeasure-1);
+    curFrame.set(_frame,_acquired,_nmeasure,_nechoes,_range,_reflect);
+    dbg("Sickio.set",5) << "Set values for frame " << _frame << std::endl;
     updateCalTargets();
     valid=true;
 }
@@ -98,31 +82,11 @@ void SickIO::set(int _id, int _frame, const timeval &_acquired, int _nmeasure, i
 // Overlay data -- must lock before calling
 void SickIO::overlay(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]) {
     //    id=_id;
-    //    frame=_frame;
-    //    acquired=_acquired;
-    if (num_measurements==0)  {
-	dbg("SickIO.overlay",1) << "Live capture not started" << std::endl;
-	return;
-    }
-    assert(num_measurements==_nmeasure);
-    assert(nechoes==_nechoes);
-    assert(scanRes==190.0/(num_measurements-1));
-
     // Wait until we get some new data
     waitForFrame();
 
-    // Overlay data - take closest range of overlay data and current data
-    int cnt=0;
-    for (int e=0;e<nechoes;e++)
-	for (int i=0;i<num_measurements;i++) {
-	    if (_range[e][i]<range[e][i]-10) {
-		cnt++;
-		range[e][i]=_range[e][i];
-		reflect[e][i]=_reflect[e][i];
-	    }
-	}
-    dbg("SickIO.overlay",4) << "Overlaid " << cnt << " points." << std::endl;
-    // valid is driven by real-time acquisition
+    assert(scanRes==190.0/(_nmeasure-1));
+    curFrame.overlay(_frame,_acquired,_nmeasure,_nechoes,_range,_reflect);
 }
 
 void SickIO::updateScanFreqAndRes() {	
@@ -196,94 +160,83 @@ void SickIO::run() {
 	get();
 }
 
+// Background thread that retrieves frames from device and stores them in a queue
 void SickIO::get() {
-	unsigned int rangetmp[MAXECHOES][MAXMEASUREMENTS];
-	unsigned int reflecttmp[MAXECHOES][MAXMEASUREMENTS];
-	try {
-		//unsigned int range_2_vals[SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
-		//sick_lms_5xx.SetSickScanFreqAndRes(SickLMS5xx::SICK_LMS_5XX_SCAN_FREQ_25,
-		//SickLMS5xx::SICK_LMS_5XX_SCAN_RES_25);
-		//sick_lms_5xx.SetSickScanDataFormat(SickLMS5xx::SICK_LMS_5XX_DIST_DOUBLE_PULSE,
-		//				         SickLMS5xx::SICK_LMS_5XX_REFLECT_NONE);
-		assert(nechoes>=1 && nechoes<=MAXECHOES);
-		if (fake) {
-			num_measurements=190/scanRes+1;
-			for (int i=0;i<(int)num_measurements;i++) {
-				for (int e=0;e<nechoes;e++) {
-					rangetmp[e][i]=i+e*100;
-					reflecttmp[e][i]=100/(e+1);
-				}
-			}
-			status=1;
-			usleep(1000000/scanFreq);
-		} else
-			sick_lms_5xx->GetSickMeasurements(
-				rangetmp[0], (nechoes>=2)?rangetmp[1]:NULL, (nechoes>=3)?rangetmp[2]:NULL, (nechoes>=4)?rangetmp[3]:NULL, (nechoes>=5)?rangetmp[4]:NULL,
-				captureRSSI?reflecttmp[0]:NULL, (captureRSSI&&nechoes>=2)?reflecttmp[1]:NULL, (captureRSSI&&nechoes>=3)?reflecttmp[2]:NULL, (captureRSSI&&nechoes>=4)?reflecttmp[3]:NULL, (captureRSSI&&nechoes>=5)?reflecttmp[4]:NULL,
-				*((unsigned int *)&num_measurements),&status);
-		
+    SickFrame frame(sick_lms_5xx,nechoes,captureRSSI);   // Load from device, blocking if none available yet
+    // Adjust bootTime using last frame acquired such that (bootTime+transmitTime ~ acquired)
+    if (bootTime.tv_sec==0) {
+	// Initialize such that transmitTime is same as acquired Time
+	bootTime=frame.acquired;
+	bootTime.tv_sec-=frame.transmitTime/1000000;
+	bootTime.tv_usec-=frame.transmitTime%1000000;
+	if (bootTime.tv_usec<0) {
+	    bootTime.tv_sec-=1;
+	    bootTime.tv_usec+=1000000;
 	}
-
-	catch(const SickConfigException & sick_exception) {
-		printf("%s\n",sick_exception.what());
+	dbg("SickIO.get",1) << "Initialized bootTime to " << bootTime.tv_sec << "/" << bootTime.tv_usec << std::endl;
+    }
+    // compute acquired-bootTime+transmitTime (in usec)
+    int error=(frame.acquired.tv_sec-bootTime.tv_sec)*1000000+(frame.acquired.tv_usec-bootTime.tv_usec-frame.transmitTime);
+    dbg("SickIO.get",1) << "Unit " << id << " boottime error = " << error << "  usec" << std::endl;
+    if (abs(error) > 100000) {
+	std::cerr << "Excessive reception delay for unit " << id << " of " << error/1000 << "  msec" << std::endl;
+    }
+    if (error < 0) {
+	dbg("SickIO.get",1) << "Unit " << id << " boottime error = " << error << "  usec, snapping boottime" << std::endl;
+	bootTime.tv_sec-=(-error)/1000000;
+	bootTime.tv_usec-=(-error)%1000000;
+        if (bootTime.tv_usec<0) {
+	    bootTime.tv_usec+=1000000;
+	    bootTime.tv_sec--;
 	}
-
-	catch(const SickIOException & sick_exception) {
-		printf("%s\n",sick_exception.what());
+    }
+    if (error>1000) {
+	// More than 1msec delay in receiving message
+	dbg("SickIO.get",1) << "Receipt of frame " << frame.frame << " from unit " << id << " was delayed by " << error/1000 << " msec." << std::endl;
+    }
+    static const int DRIFTCOMP=10;   // Can compensate for drift of up to DRIFTCOMP*FPS usec/sec
+    if (error > DRIFTCOMP) {
+	bootTime.tv_usec-=DRIFTCOMP;
+        if (bootTime.tv_usec<0) {
+	    bootTime.tv_usec+=1000000;
+	    bootTime.tv_sec--;
 	}
+    }
+    lock();
+    frames.push(frame);
+    if (frames.size() >5) {
+	dbg("SickIO.get",1) << "Warning: frames queue now has " << frames.size() << " entries -- flushing " << frames.front().frame <<  std::endl;
+	frames.pop();
+    }
+    pthread_cond_signal(&signal);
 
-	catch(const SickTimeoutException & sick_exception) {
-		printf("%s\n",sick_exception.what());
-	}
-
-	catch(...) {
-		fprintf(stderr,"An Error Occurred!\n");
-		throw;
-	}
-
-	struct timeval acquiredTmp;
-	gettimeofday(&acquiredTmp,0);
-	
-	if (valid) {
-	    overwrittenframes++;
-	    dbg("SickIO.get",5) << "Frame " << frame << " overwritten" << std::endl;
-	} else {
-	    // Copy in new range data, compute x,y values
-	    lock();
-	    acquired=acquiredTmp;
-	    frame=frameCntr;
-	    for (int i=0;i<num_measurements;i++)
-		for (int e=0;e<nechoes;e++) {
-		    range[e][i]=rangetmp[e][i];
-		    reflect[e][i]=reflecttmp[e][i];
-		}
-
-	    updateCalTargets();
-	    valid=true;
-	    pthread_cond_signal(&signal);
-	    unlock();
-	}
-
-	if (frameCntr%1000 == 0 && overwrittenframes>0) {
-	    fprintf(stderr,"Warning: %d of last 1000 frames overwritten before being retrieved\n", overwrittenframes);
-	    dbg("SickIO.get",1) << "Warning: " << overwrittenframes << " of last 1000 frames overwritten before being retrieved" << std::endl;
-	    overwrittenframes=0;
-	}
-	frameCntr++;
-	if (frameCntr%100==0) {
-	    dbg("SickIO.get",1) << "Frame " << frameCntr << ": got " << num_measurements << " measurements, status=" << status << std::endl;
-	} else
-	    dbg("SickIO.get",8) << "Frame " << frameCntr << ": got " << num_measurements << " measurements, status=" << status << std::endl;
-
+    unlock();
 }
+
 
 // Wait until a frame is ready, must be locked before calling
 void SickIO::waitForFrame()  {
-    while (!valid) {
-	dbg("SickIO.waitForFrame",4) << "Waiting for valid" << std::endl;
+    if (valid)
+	return;  // Already a valid frame present
+    while (frames.empty()) {
+	dbg("SickIO.waitForFrame",4) << "Waiting for frames" << std::endl;
 	pthread_cond_wait(&signal,&mutex);
-	dbg("SickIO.waitForFrame",4) << "Cond_wait returned, valid=" << valid << std::endl;
+	dbg("SickIO.waitForFrame",4) << "Cond_wait returned, frames=" << frames.size() << std::endl;
     }
+    // Load next frame from queue into curFrame and do any needed processing
+    int deltaFrames = frames.front().frame-curFrame.frame;
+    if (deltaFrames != 1) {
+	dbg("SickIO.get",1) << "Unit " << id << " jumped by " << deltaFrames << " from frame " << curFrame.frame << " to " << frames.front().frame << std::endl;
+    }
+    
+    // Copy in new range data, compute x,y values
+    curFrame=frames.front();
+    frames.pop();
+    updateCalTargets();
+    valid=true;
+
+    int dLevel=(getFrame()%100==0)?1:8;
+    dbg("SickIO.get",dLevel) << "Frame " << getFrame() << ": got " << curFrame.num_measurements << " measurements" << std::endl;
 }
 
 void SickIO::lock() {
