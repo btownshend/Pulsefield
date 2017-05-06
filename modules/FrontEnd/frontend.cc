@@ -36,7 +36,7 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]): conf
 
     starttime.tv_sec=0;
     starttime.tv_usec=0;
-
+    startframe=0;
     
 	matframes=0;
 	frame = 0;
@@ -210,6 +210,12 @@ void *FrontEnd::processIncoming(void *arg) {
 }
 
 void FrontEnd::processFrames() {
+    // Use unit 0 as reference frame number offset by startframe
+    if (startframe==0) {
+	startframe=sick[0]->getFrame();
+	dbg("FrontEnd.processFrame",1) << "Initialized start frame (unit 0) to " << startframe << std::endl;
+    }
+    frame=(sick[0]->getFrame()-startframe)*nsick;
     dbg("FrontEnd.processFrame",1) << "Processing frame " << frame << std::endl;
 	
 	char dbgstr[100];
@@ -246,6 +252,7 @@ void FrontEnd::processFrames() {
 	    world->track(*vis,frame,sick[i]->getScanFreq(),elapsed);
 	    if (frame%2==0)
 		world->draw(nsick,sick);
+	    frame++;
 	}
 	sendMessages(elapsed);
 	sendOnce=0;
@@ -254,7 +261,6 @@ void FrontEnd::processFrames() {
 	    dbg("FrontEnd",1) << "End of frame " << frame << ", restoring debug levels" << std::endl;
 	    PopDebugSettings();
 	}
-	frame=frame+1;
 }
 
 void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
@@ -356,7 +362,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     int activeFrames=0;
 
     while (true) {
-	int cid,nechoes,nmeasure;   // CID is unit number with 1-origin
+	int cid,nechoes,nmeasure,sickframe;   // CID is unit number with 1-origin
 	struct timeval acquired;
 	int nread;
 	if (EOF==(nread=fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&frame,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure))) {

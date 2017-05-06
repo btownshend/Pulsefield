@@ -32,7 +32,9 @@ class FrontEnd {
 
     // Start time of run (used to set zero reference)
     struct timeval starttime;
-
+    // Global frame offset (from sick[0]->frame)
+    int startframe;
+    
     // Process all frames
     void processFrames();   
     // Send out low-level vis messages for given sick data
