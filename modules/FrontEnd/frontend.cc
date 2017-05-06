@@ -249,9 +249,9 @@ void FrontEnd::processFrames() {
 		starttime=currenttime;
 	    vis->update(sick[i]);
 	    elapsed=(currenttime.tv_sec-starttime.tv_sec)+(currenttime.tv_usec-starttime.tv_usec)*1e-6;
-	    world->track(*vis,frame,sick[i]->getScanFreq(),elapsed);
 	    if (frame%2==0)
 		world->draw(nsick,sick);
+	    world->track(*vis,frame,sick[i]->getScanFreq()*nsick,elapsed);
 	    frame++;
 	}
 	sendMessages(elapsed);
