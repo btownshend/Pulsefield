@@ -317,8 +317,13 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 	dbg("World.track",1) << "lastframe=" << lastframe << ", frame=" << frame << ": setting nsteps=1" << std::endl;
 	nsteps=1;
     }
+    if (nsteps>10) {
+	dbg("World.track",1) << "lastframe=" << lastframe << ", frame=" << frame << ": setting nsteps=1" << std::endl;
+	std::cerr << "Ignoring jump of " << nsteps << " frames" << std::endl;
+	nsteps=1;
+    }
     lastframe=frame;
-
+    
     // Update existing tracks with next prediction
     for (unsigned int i=0;i<people.size();i++)
 	people[i].predict(nsteps,fps);
