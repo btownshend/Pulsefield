@@ -172,10 +172,8 @@ bool FrontEnd::syncLIDARS() {
 	    dbg("FrontEnd.run",2) << "Frame delay of unit " << i << " vs. 0 = " << delta << " usec" << std::endl;
 	    continue;
 	}
-	dbg("FrontEnd.run",1) << "Frame delay of " << delta << " usec;  flushing a frame from unit " << flushFrame << std::endl;
-	sick[flushFrame]->lock();
+	dbg("FrontEnd.run",1) << "Frame delay of " << delta << " usec;  flushing frame " << sick[flushFrame]->getFrame() << " from unit " << flushFrame << std::endl;
 	sick[flushFrame]->clearValid();
-	sick[flushFrame]->unlock();
 	inSync=false;
     }
     return inSync;
@@ -186,21 +184,13 @@ void FrontEnd::run() {
 	// Wait for all sensors to be ready
 	for (int i=0;i<nsick;i++) {
 	    while (!sick[i]->isValid()) {
-		sick[i]->lock();
 		sick[i]->waitForFrame();
-		sick[i]->unlock();
 	    }
 	}
 	if (syncLIDARS()) {
 	    // LIDARs are in sync
-	    // Lock all sensors
-	    for (int i=0;i<nsick;i++)
-		sick[i]->lock();
 	    // Read data from sensors	
 	    processFrames();
-	    // Unlock all sensors
-	    for (int i=0;i<nsick;i++)
-		sick[i]->unlock();
 	}
     }
 }
@@ -445,7 +435,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	
 	struct timeval processStart; gettimeofday(&processStart,0);
 
-	sick[cid-1]->lock();
 	if (overlayLive) {
 	    if (!sick[cid-1]->isValid())
 		sick[cid-1]->waitForFrame();
@@ -454,7 +443,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    sick[cid-1]->pushFrame(f);
 	    sick[cid-1]->waitForFrame();  // Won't block since we just pushed a new frame
 	}
-	sick[cid-1]->unlock();
 
 	bool allValid=true;
 	for (int i=0;i<nsick;i++)
@@ -462,11 +450,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	if (allValid) {
 	    if (syncLIDARS()) {
 		// LIDARs are in sync
-		for (int i=0;i<nsick;i++)
-		    sick[i]->lock();
 		processFrames();
-		for (int i=0;i<nsick;i++)
-		    sick[i]->unlock();
 	    }
 	}
 

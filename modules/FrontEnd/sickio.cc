@@ -208,13 +208,17 @@ void SickIO::pushFrame(const SickFrame &frame) {
 }
 
 
-// Wait until a frame is ready, must be locked before calling
+// Wait until a frame is ready
 void SickIO::waitForFrame()  {
     if (valid)
 	return;  // Already a valid frame present
     while (frames.empty()) {
 	dbg("SickIO.waitForFrame",4) << "Waiting for frames" << std::endl;
-	pthread_cond_wait(&signal,&mutex);
+	lock();  // Need to lock here to not miss a signal
+	if (frames.empty())
+	    // Still empty, but now we have a lock so we won't miss a signal
+	    pthread_cond_wait(&signal,&mutex);
+	unlock();
 	dbg("SickIO.waitForFrame",4) << "Cond_wait returned, frames=" << frames.size() << std::endl;
     }
     // Load next frame from queue into curFrame and do any needed processing
@@ -224,8 +228,11 @@ void SickIO::waitForFrame()  {
     }
     
     // Copy in new range data, compute x,y values
+    lock();
     curFrame=frames.front();
     frames.pop();
+    unlock();
+    
     updateCalTargets();
     valid=true;
 

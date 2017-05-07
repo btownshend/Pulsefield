@@ -227,6 +227,8 @@ public:
 	}
 
 	void waitForFrame();
+
+	// Lock/unlock access to the frames queue
 	void lock();
 	void unlock();
 
