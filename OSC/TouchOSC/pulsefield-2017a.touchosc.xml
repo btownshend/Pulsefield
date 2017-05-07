@@ -122,7 +122,7 @@
     <control name="bGFiZWwzMzA=" x="690" y="21" w="25" h="80" color="red" osc_cs="L3ZpZGVvL2FwcC90aXRsZQ==" type="labelv" text="QXBw" size="14" background="false" outline="false"/>
     <control name="bGFiZWwzMzE=" x="690" y="96" w="25" h="125" color="red" osc_cs="L3ZpZGVvL2FwcC9uYW1l" type="labelv" text="Tm9uZQ==" size="14" background="true" outline="false"/>
     <control name="bGFiZWwzMzI=" x="689" y="379" w="25" h="80" color="red" type="labelv" text="TmF2aWVy" size="14" background="false" outline="false"/>
-    <control name="ZmFkZXIyMQ==" x="628" y="330" w="50" h="200" color="red" scalef="0.0" scalet="0.005" osc_cs="L3ZpZGVvL25hdmllci92aXNjb3NpdHk=" type="faderv" response="absolute" inverted="false" centered="false"/>
+    <control name="ZmFkZXIyMQ==" x="628" y="330" w="50" h="200" color="red" scalef="0.0" scalet="0.0050" osc_cs="L3ZpZGVvL25hdmllci92aXNjb3NpdHk=" type="faderv" response="absolute" inverted="false" centered="false"/>
     <control name="bGFiZWwzMzM=" x="642" y="391" w="20" h="80" color="red" type="labelv" text="VmlzY29zaXR5" size="14" background="false" outline="false"/>
     <control name="bGFiZWwzMzQ=" x="640" y="242" w="25" h="80" color="red" osc_cs="L3ZpZGVvL25hdmllci92aXNjb3NpdHkvdmFsdWU=" type="labelv" text="VmlzY29zaXR5" size="14" background="false" outline="false"/>
     <control name="ZmFkZXIyMg==" x="565" y="329" w="50" h="200" color="red" scalef="-5.0" scalet="5.0" osc_cs="L3ZpZGVvL25hdmllci9kaWZmdXNpb24=" type="faderv" response="absolute" inverted="false" centered="false"/>
@@ -390,5 +390,7 @@
     <control name="bGFiZWw1Nzk=" x="417" y="85" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvNC83" type="labelh" text="eA==" size="14" background="false" outline="false"/>
     <control name="bGFiZWw1ODA=" x="417" y="104" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvNS83" type="labelh" text="eA==" size="14" background="false" outline="false"/>
     <control name="bGFiZWw1ODE=" x="417" y="123" w="37" h="25" color="gray" osc_cs="L2NhbC9jbnQvNi83" type="labelh" text="eA==" size="14" background="false" outline="false"/>
+    <control name="bGVkNDU=" x="394" y="190" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="L2NhbC90Z3Rmb3VuZC8y" type="led"/>
+    <control name="bGVkNDY=" x="311" y="190" w="20" h="20" color="green" scalef="0.0" scalet="1.0" osc_cs="L2NhbC90Z3Rmb3VuZC8x" type="led"/>
   </tabpage>
 </layout>
