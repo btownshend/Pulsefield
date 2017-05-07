@@ -146,7 +146,8 @@ public:
 	}
 
 	// Get time of scan
-	struct timeval getAcquired() const {
+	struct timeval getAbsScanTime() const {
+	    // TODO: Handle wrap-arounds of scanTime
 	    struct timeval scanTime;
 	    scanTime.tv_sec=bootTime.tv_sec+curFrame.scanTime/1000000;
 	    scanTime.tv_usec=bootTime.tv_usec+curFrame.scanTime%1000000;

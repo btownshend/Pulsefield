@@ -157,7 +157,7 @@ bool FrontEnd::syncLIDARS() {
     bool inSync=true;
     for (int i=1;i<nsick;i++) {
 	// Relative to sick[0]
-	int delta=(sick[i]->getAcquired().tv_sec-sick[0]->getAcquired().tv_sec)*1000000+(sick[i]->getAcquired().tv_usec-sick[0]->getAcquired().tv_usec);
+	int delta=(sick[i]->getAbsScanTime().tv_sec-sick[0]->getAbsScanTime().tv_sec)*1000000+(sick[i]->getAbsScanTime().tv_usec-sick[0]->getAbsScanTime().tv_usec);
 	// Want the delta to be nominally 1/(2*FPS), so flush if it is outside range [0, 1/FPS]
 	int flushUnit;
 	if (delta<0) 
@@ -235,13 +235,13 @@ void FrontEnd::processFrames() {
 		range[i]=sick[c]->getRange(i);
 		reflect[i]=sick[c]->getReflect(i);
 	    }
-	    sendVisMessages(sick[c]->getId(),sick[c]->getScanCounter(),sick[c]->getAcquired(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
+	    sendVisMessages(sick[c]->getId(),sick[c]->getScanCounter(),sick[c]->getAbsScanTime(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
 	    // clear valid flag so another frame can be read
 	    sick[c]->clearValid();
 	}
 	double elapsed=0;
 	for (int i=0;i<nsick;i++) {
-	    currenttime=sick[i]->getAcquired();
+	    currenttime=sick[i]->getAbsScanTime();
 	    if (starttime.tv_sec==0)
 		starttime=currenttime;
 	    vis->update(sick[i]);
