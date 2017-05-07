@@ -77,6 +77,13 @@ private:
 	std::vector<Point> calTargets;
 	void updateCalTargets();
 	FILE *recordFD;  // Recording FILE, or NULL if disabled
+
+	void write(FILE *fd) const {
+	    dbg("SickIO.write",2) << "Unit " << id << " writing frame " << curFrame.scanCounter << std::endl;
+	    pthread_mutex_lock(&recordMutex);   /// Make sure only one thread at a time writes a frame
+	    curFrame.write(fd, id);
+	    pthread_mutex_unlock(&recordMutex);
+	}
 public:
 	SickIO(int _id, const char *host, int port);
 	// Constructor to fake the data from a scan
@@ -109,13 +116,6 @@ public:
 
 	void stopRecording() {
 	    recordFD=NULL;
-	}
-	
-	void write(FILE *fd) const {
-	    dbg("SickIO.write",2) << "Unit " << id << " writing frame " << curFrame.frame << std::endl;
-	    pthread_mutex_lock(&recordMutex);   /// Make sure only one thread at a time writes a frame
-	    curFrame.write(fd, id);
-	    pthread_mutex_unlock(&recordMutex);
 	}
 	
 	unsigned int getNumMeasurements() const {
