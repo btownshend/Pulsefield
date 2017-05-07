@@ -356,8 +356,8 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 
 	lastframe= sick[cid-1]->getScanCounter();
 	    
-	if  (lastframe==f.scanCounter) {
-	    fprintf(stderr,"Duplicate scan %d for unit %d\n", f.scanCounter, cid);
+	if  (lastframe==f.getScanCounter()) {
+	    fprintf(stderr,"Duplicate scan %d for unit %d\n", f.getScanCounter(), cid);
 	    continue;
 	}
 	
@@ -368,21 +368,21 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	}
 	if (frame1==-1 && frameN!=-1) {
 	    // Just first frameN frames
-	    frame1=f.scanCounter;
-	    frameN+=f.scanCounter-1;
+	    frame1=f.getScanCounter();
+	    frameN+=f.getScanCounter()-1;
 	}
-	if (frame1!=-1 && f.scanCounter<frame1)
+	if (frame1!=-1 && f.getScanCounter()<frame1)
 	    continue;
-	if (frameN!=-1 && f.scanCounter>frameN)
+	if (frameN!=-1 && f.getScanCounter()>frameN)
 	    break;
 
-	if (f.scanCounter!=lastframe+1 && lastframe!=-1) {
-	    if (lastframe+1 == f.scanCounter-1) {
+	if (f.getScanCounter()!=lastframe+1 && lastframe!=-1) {
+	    if (lastframe+1 == f.getScanCounter()-1) {
 		dbg("FrontEnd.playFile",1) << "Input file skips frame " << lastframe+1 << " for unit " << cid << std::endl;
-	    } else if (lastframe<f.scanCounter) {
-		dbg("FrontEnd.playFile",1) << "Input file skips frames " << lastframe+1 << "-" << f.scanCounter-1 << " for unit " << cid << std::endl;
+	    } else if (lastframe<f.getScanCounter()) {
+		dbg("FrontEnd.playFile",1) << "Input file skips frames " << lastframe+1 << "-" << f.getScanCounter()-1 << " for unit " << cid << std::endl;
 	    } else {
-		dbg("FrontEnd.playFile",1) << "Input file jumped backwards from frame " << lastframe << "-" << f.scanCounter << " for unit " << cid << std::endl;
+		dbg("FrontEnd.playFile",1) << "Input file jumped backwards from frame " << lastframe << "-" << f.getScanCounter() << " for unit " << cid << std::endl;
 	    }
 	}
 
@@ -453,9 +453,9 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	nProcTime++;
 	nallProcTime++;
 
-	if (f.scanCounter%200==0) {
-	    dbg("frontend",1) << "Frame " << f.scanCounter << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
-	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",f.scanCounter,totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
+	if (f.getScanCounter()%200==0) {
+	    dbg("frontend",1) << "Frame " << f.getScanCounter() << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
+	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",f.getScanCounter(),totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
 	    nProcTime=0;
 	    maxProcTime=0;
 	    totalProcTime=0;
@@ -465,21 +465,21 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	if (!matfile.empty()) {
 	    snap->append(vis,world);
 	    
-	    if (matframes>0 && f.scanCounter>=matframes)
+	    if (matframes>0 && f.getScanCounter()>=matframes)
 		// Do final output below
 		break;
 
-	    if (f.scanCounter%2000 == 0) {
+	    if (f.getScanCounter()%2000 == 0) {
 		// Break up the output
 		char tmpfile[1000];
-		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.scanCounter);
+		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.getScanCounter());
 		snap->save(tmpfile);
 		snap->clear();
 	    }
 	}
 #endif
-	minPerfFrame=std::min(minPerfFrame,(int)(f.scanCounter-1));
-	maxPerfFrame=std::max(maxPerfFrame,(int)(f.scanCounter-1));
+	minPerfFrame=std::min(minPerfFrame,(int)(f.getScanCounter()-1));
+	maxPerfFrame=std::max(maxPerfFrame,(int)(f.getScanCounter()-1));
 	if (world->numPeople() > 0) {
 	    maxPeople=std::max(world->numPeople(),maxPeople);
 	    std::vector<float> framePerf=world->getFramePerformance();
@@ -540,7 +540,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 #ifdef MATLAB
     if (!matfile.empty()) {
 	char tmpfile[1000];
-	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.scanCounter);
+	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.getScanCounter());
 	snap->save(tmpfile);
 	snap->clear();
     }

@@ -1,7 +1,11 @@
+#include <map>
 #include "sickio.h"
 
 using namespace SickToolbox;
 
+Wrapper SickFrame::scanCounterWrapper("scanCounter",0xffff);
+Wrapper SickFrame::scanTimeWrapper("scanCounter",0xffffffff);
+				      
 SickFrame::SickFrame() {
     // Will be filled in by read()
 }
@@ -75,7 +79,9 @@ void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int _nechoes, bool c
 	    devStatus=s[3]*256+s[4];
 	    telegramCounter=s[5];
 	    scanCounter=s[6];
+	    scanCounterWraps=scanCounterWrapper.wrap(serialNumber,scanCounter);
 	    scanTime=s[7];   // Time in usec of zero index since power-up (at -14deg zero-index)  -- wraps around after 72 minutes!
+	    scanTimeWraps=scanTimeWrapper.wrap(serialNumber,scanTime);
 	    transmitTime=s[8];
 	    digitalInputs=s[9]*256+s[10];
 	    digitalOutputs=s[11]*256+s[12];
@@ -178,6 +184,9 @@ int SickFrame::read(FILE *fd, int version) {
 	assert(false);
     }
 	
+    scanCounterWraps=scanCounterWrapper.wrap(serialNumber,scanCounter);
+    scanTimeWraps=scanTimeWrapper.wrap(serialNumber,scanTime);
+
     assert(nechoes>=1 && nechoes<=SickIO::MAXECHOES);
     assert(num_measurements>0 && num_measurements<=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS);
 

@@ -78,3 +78,5 @@ experiments/gltest/bin
 experiments/jni/libexamplelibrary.dylib
 
 modules/FrontEnd/typescript
+
+modules/FrontEnd/Debug.out.2

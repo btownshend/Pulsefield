@@ -16,18 +16,27 @@
 #include "point.h"
 #include "dbg.h"
 #include "background.h"
+#include "wrapper.h"
+
 
 // A frame of data as received from the LIDAR
 class SickFrame {
+    static Wrapper scanCounterWrapper;
+    unsigned int scanCounter;
+    int scanCounterWraps;  // Cumulative effect of wrapping scanCounter(adds 1 at each wrap)
+
+    static Wrapper scanTimeWrapper;
+    unsigned int scanTime;
+    int scanTimeWraps;  // Cumulative effect of wrapping scanTime(adds 1 at each wrap)
+
  public:
     static const int MAXECHOES=5;
     static const int MAXMEASUREMENTS=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS;
- public:    
     int nechoes;
     unsigned int range[MAXECHOES][MAXMEASUREMENTS];
     unsigned int reflect[MAXECHOES][MAXMEASUREMENTS];
-    unsigned int devNumber, serialNumber,devStatus,telegramCounter,scanCounter;
-    unsigned int scanTime,transmitTime,digitalInputs,digitalOutputs;
+    unsigned int devNumber, serialNumber,devStatus,telegramCounter;
+    unsigned int transmitTime,digitalInputs,digitalOutputs;
     float scanFrequency, measurementFrequency;
     unsigned int encoderFlag, encoderPosition, encoderSpeed;
     unsigned int outputChannels;
@@ -38,6 +47,7 @@ class SickFrame {
     Point origin;   // Origin in world coordinates
     double coordinateRotation;   // Rotate the [x,y] coordinate system used internally and externally by this many degrees
 
+ public:
     SickFrame();
     void read(SickToolbox::SickLMS5xx *sick_lms_5xx=NULL, int nechoes=1, bool captureRSSI=false);
 
@@ -52,6 +62,23 @@ class SickFrame {
 
     // Overlay frame read from data file onto real-time data
     void overlayFrame(const SickFrame &frame);
+
+
+    // Get absolute scan time by adding boottime to (wrapped) scan times
+    struct timeval getAbsScanTime(const struct timeval &bootTime) const {
+    	    struct timeval result;
+	    result.tv_sec=bootTime.tv_sec+scanTimeWraps*4294+scanTime/1000000;
+	    result.tv_usec=bootTime.tv_usec+scanTimeWraps*967296+scanTime%1000000;
+	    int carry=result.tv_usec/1000000;
+	    result.tv_usec-=1000000*carry;
+	    result.tv_sec+=carry;
+	    return result;
+    }
+
+    // Get scan counter (taking into account any wraps since starting this program)
+    unsigned int getScanCounter() const {
+	return scanCounter + 65536*scanCounterWraps;
+    }
 };
 
 class SickIO {
@@ -144,18 +171,10 @@ public:
 	const unsigned int* getReflect(int echo) const {
 	    return curFrame.reflect[echo];
 	}
-
+	
 	// Get time of scan
 	struct timeval getAbsScanTime() const {
-	    // TODO: Handle wrap-arounds of scanTime
-	    struct timeval scanTime;
-	    scanTime.tv_sec=bootTime.tv_sec+curFrame.scanTime/1000000;
-	    scanTime.tv_usec=bootTime.tv_usec+curFrame.scanTime%1000000;
-	    if (scanTime.tv_usec > 1000000) {
-		scanTime.tv_usec-=1000000;
-		scanTime.tv_sec++;
-	    }
-	    return scanTime;
+	    return curFrame.getAbsScanTime(bootTime);
 	}
 
 	// Get angle of measurement in degrees (local coordinates)
@@ -219,8 +238,9 @@ public:
 	    return (p1-p2).norm();
 	}
 
+	// Get scan counter (taking into account any wraps since starting this program)
 	unsigned int getScanCounter() const {
-		return curFrame.scanCounter;
+	    return curFrame.getScanCounter();
 	}
 
 	bool isValid() const {
