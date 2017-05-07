@@ -321,7 +321,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 
     while (true) {
 	SickFrame f;
-	struct timeval acquired;
+
 	// Read the next frame from fd into f and return the ID of the LIDAR 
 	int cid = f.read(fd,fileVersion);   
 	if (cid<0) {
@@ -349,12 +349,9 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    load();
 	}
 
-	acquired.tv_sec=f.scanTime/1000000;
-	acquired.tv_usec=f.scanTime%1000000;
-
 	if (lastframe==-1)  {
 	    // Initialize file start time for reference
-	    startfile=acquired;
+	    startfile=f.acquired;
 	}
 
 	lastframe= sick[cid-1]->getScanCounter();
@@ -402,13 +399,27 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    } 
 	    frameStep--;
 
-	    struct timeval now;
-	    gettimeofday(&now,0);
+	    if (speedFactor>0) {
+		struct timeval now;
+		gettimeofday(&now,0);
 	
-	    long int waittime=(acquired.tv_sec-startfile.tv_sec-speedFactor*(now.tv_sec-starttime.tv_sec))*1000000+(acquired.tv_usec-startfile.tv_usec-speedFactor*(now.tv_usec-starttime.tv_usec));
-	    if (waittime >1000) {
-		// When doing an overlay, timing is driven by file and data is sampled whenever overlay data is ready, if nothing is valid a frame is skipped
-		usleep(waittime);
+		long int fileElapsed = (f.acquired.tv_sec-startfile.tv_sec)*1000000 + (f.acquired.tv_usec-startfile.tv_usec);
+		long int realElapsed = (now.tv_sec-starttime.tv_sec)*1000000 + (now.tv_usec-starttime.tv_usec);
+		long int waittime=(long int)(speedFactor*fileElapsed-realElapsed);
+		if (waittime < -1000000) {  // Behind by more than 1 second
+		    // Not keeping up;  long and reset starttime
+		    std::cerr << "Not keeping up with real time data, jumping clock by 1sec" << std::endl;
+		    starttime.tv_sec+=1;
+		    waittime+=1000000;
+		}
+		if (waittime > 100000) {  // >0.1sec
+		    std::cerr << "Exessive wait time while playing file: " << waittime << " usec; file elapsed=" << fileElapsed << ", realElapsed=" << realElapsed << std::endl;
+		}
+		// Keep some slack so we don't delay too much and then get behind
+		if (waittime >10000) {
+		    // When doing an overlay, timing is driven by file and data is sampled whenever overlay data is ready, if nothing is valid a frame is skipped
+		    usleep(waittime-10000);
+		}
 	    }
 	} /* else use real-time timing */
 
