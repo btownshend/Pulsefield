@@ -92,6 +92,7 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
 void Background::update(const SickIO &sick, const std::vector<int> &assignments, bool all) {
     setup(sick);
     if (bginit && sick.getScanCounter()>BGINITFRAMES) {  // FIXME: the device scan counter doesn't start at zero
+	dbg("Background.update",1) << "Turning off bginit at SICK " << sick.getId() << " scan " << sick.getScanCounter() << std::endl;
 	bginit=false;
     }
 
