@@ -23,7 +23,7 @@ class SickFrame {
     static const int MAXECHOES=5;
     static const int MAXMEASUREMENTS=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS;
  public:    
-    int rangeEchoes;
+    int nechoes;
     unsigned int range[MAXECHOES][MAXMEASUREMENTS];
     unsigned int reflect[MAXECHOES][MAXMEASUREMENTS];
     unsigned int devNumber, serialNumber,devStatus,telegramCounter,scanCounter;
@@ -34,14 +34,21 @@ class SickFrame {
     unsigned int num_measurements;
     struct timeval acquired;   // Computer time frame was read from network
 
+    // Parameters of sickio itself at time frame was writting to a file
+    Point origin;   // Origin in world coordinates
+    double coordinateRotation;   // Rotate the [x,y] coordinate system used internally and externally by this many degrees
+
     SickFrame();
     void read(SickToolbox::SickLMS5xx *sick_lms_5xx=NULL, int nechoes=1, bool captureRSSI=false);
 
+    // Peek into a file to determine its version
+    static int getFileVersion(FILE *fd);
+    
     // Read a frame from given fd using given format version
     int  read(FILE *fd, int version=1);
 
     // Write a frame to given fd, using unit id as given
-    void write(FILE *fd, int cid,int version=1) const;
+    void write(FILE *fd, int cid,int version=2) const;
 
     // Overlay frame read from data file onto real-time data
     void overlayFrame(const SickFrame &frame);
@@ -69,21 +76,19 @@ private:
 	double coordinateRotation;   // Rotate the [x,y] coordinate system used internally and externally by this many degrees
 	void updateScanFreqAndRes();
 	bool fake;
+
 	// Synchronization
 	pthread_mutex_t mutex;  // Lock for accessing the frames queue;  all other accesses shouldn't have threading issues since there is a single producer and single consumer
-	static pthread_mutex_t recordMutex;  // Shared mutex for keeping output to recording file separated
 	pthread_cond_t signal;
+
 	Background bg;		// Background model
 	std::vector<Point> calTargets;
 	void updateCalTargets();
-	FILE *recordFD;  // Recording FILE, or NULL if disabled
 
-	void write(FILE *fd) const {
-	    dbg("SickIO.write",2) << "Unit " << id << " writing frame " << curFrame.scanCounter << std::endl;
-	    pthread_mutex_lock(&recordMutex);   /// Make sure only one thread at a time writes a frame
-	    curFrame.write(fd, id);
-	    pthread_mutex_unlock(&recordMutex);
-	}
+	// Recording
+	static FILE *recordFD;  // Recording FILE, or NULL if disabled
+	static const int recordVersion = 2;  // File format version to write
+	static pthread_mutex_t recordMutex;  // Shared mutex for keeping output to recording file separated
 public:
 	SickIO(int _id, const char *host, int port);
 	// Constructor to fake the data from a scan
@@ -108,13 +113,22 @@ public:
 	int start();
 	int stop();
 
-	void startRecording(FILE *fd) {
-	    assert(fd!=NULL);
-	    dbg("SickIO.startRecording",1) << "Unit " << id << " recording started." << std::endl;
-	    recordFD=fd;
+	static int startRecording(const char *filename) {
+	    assert(recordFD==NULL);
+	    recordFD = fopen(filename,"w");
+	    if (recordFD == NULL) {
+		fprintf(stderr,"Unable to open recording file %s for writing\n", filename);
+		return -1;
+	    }
+	    printf("Recording into %s\n", filename);
+	    if (recordVersion>1)
+		fprintf(recordFD,"FEREC-%d.0\n",recordVersion);
+	    dbg("SickIO.startRecording",1) << "SICK recording to " << filename << " using format version " << recordVersion << " started." << std::endl;
+	    return 0;
 	}
 
-	void stopRecording() {
+	static void stopRecording() {
+	    (void)fclose(recordFD);
 	    recordFD=NULL;
 	}
 	

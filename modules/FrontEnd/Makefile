@@ -1769,7 +1769,18 @@ main.o: /opt/local/include/boost/multi_index/detail/value_compare.hpp
 main.o: /opt/local/include/boost/multi_index/detail/duplicates_iterator.hpp
 main.o: /opt/local/include/boost/multi_index/member.hpp
 main.o: /opt/local/include/boost/property_tree/detail/ptree_implementation.hpp
-main.o: ../../lib/C++Util/dbg.h parameters.h
+main.o: ../../lib/C++Util/dbg.h parameters.h sickio.h
+main.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
+main.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
+main.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
+main.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBufferMonitor.hh
+main.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
+main.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
+main.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
+main.o: /Applications/MATLAB/extern/include/mat.h
+main.o: /Applications/MATLAB/extern/include/matrix.h
+main.o: /Applications/MATLAB/extern/include/tmwtypes.h
+main.o: ../../lib/C++Util/point.h background.h
 ../../lib/C++Util/urlconfig.o: ../../lib/C++Util/dbg.h
 ../../lib/C++Util/urlconfig.o: ../../lib/C++Util/urlconfig.h
 sickio.o: sickio.h
@@ -1792,6 +1803,25 @@ sickio.o: /opt/local/include/lo/lo_lowlevel.h
 sickio.o: /opt/local/include/lo/lo_serverthread.h
 sickio.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/findtargets.h
 sickio.o: parameters.h
+sickframe.o: sickio.h
+sickframe.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
+sickframe.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
+sickframe.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
+sickframe.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBufferMonitor.hh
+sickframe.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
+sickframe.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
+sickframe.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
+sickframe.o: /Applications/MATLAB/extern/include/mat.h
+sickframe.o: /Applications/MATLAB/extern/include/matrix.h
+sickframe.o: /Applications/MATLAB/extern/include/tmwtypes.h
+sickframe.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h background.h
+sickframe.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
+sickframe.o: /opt/local/include/lo/lo_types.h
+sickframe.o: /opt/local/include/lo/lo_osc_types.h
+sickframe.o: /opt/local/include/lo/lo_errors.h
+sickframe.o: /opt/local/include/lo/lo_lowlevel.h
+sickframe.o: /opt/local/include/lo/lo_serverthread.h
+sickframe.o: /opt/local/include/lo/lo_macros.h
 background.o: background.h /Applications/MATLAB/extern/include/mat.h
 background.o: /Applications/MATLAB/extern/include/matrix.h
 background.o: /Applications/MATLAB/extern/include/tmwtypes.h
@@ -1988,6 +2018,7 @@ kalmanfilter.o: /opt/local/include/opencv2/core/cvdef.h
 kalmanfilter.o: /opt/local/include/opencv2/core/hal/interface.h
 kalmanfilter.o: /opt/local/include/opencv2/core/version.hpp
 kalmanfilter.o: /opt/local/include/opencv2/core/base.hpp
+kalmanfilter.o: /opt/local/include/opencv2/opencv_modules.hpp
 kalmanfilter.o: /opt/local/include/opencv2/core/cvstd.hpp
 kalmanfilter.o: /opt/local/include/opencv2/core/ptr.inl.hpp
 kalmanfilter.o: /opt/local/include/opencv2/core/neon_utils.hpp
@@ -2006,6 +2037,8 @@ kalmanfilter.o: /opt/local/include/opencv2/core/utility.hpp
 kalmanfilter.o: /opt/local/include/opencv2/core/core_c.h
 kalmanfilter.o: /opt/local/include/opencv2/core/types_c.h
 kalmanfilter.o: /opt/local/include/opencv2/core/optim.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/ovx.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/cvdef.h
 kalmanfilter.o: /opt/local/include/opencv2/imgproc.hpp
 kalmanfilter.o: /opt/local/include/opencv2/imgproc/imgproc_c.h
 kalmanfilter.o: /opt/local/include/opencv2/imgproc/types_c.h

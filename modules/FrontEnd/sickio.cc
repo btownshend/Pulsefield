@@ -21,6 +21,7 @@ using namespace SickToolbox;
 using namespace std;
 
 pthread_mutex_t SickIO::recordMutex=PTHREAD_MUTEX_INITIALIZER;  // Shared mutex for keeping output to recording file separated
+FILE *SickIO::recordFD=NULL;
 
 static void *runner(void *t) {
     SetDebug("pthread:SickIO");
@@ -208,8 +209,15 @@ void SickIO::pushFrame(const SickFrame &frame) {
     }
     pthread_cond_signal(&signal);
     unlock();
-    if (recordFD != NULL)
-	frame.write(recordFD,id);
+    if (recordFD != NULL) {
+	pthread_mutex_lock(&recordMutex);   /// Make sure only one thread at a time writes a frame
+	dbg("SickIO.write",2) << "Unit " << id << " writing frame " << frame.scanCounter << std::endl;
+	if (recordVersion>=2)
+	    fprintf(recordFD,"T %d %f %f %f\n",id, origin.X(), origin.Y(), coordinateRotation);
+	frame.write(recordFD, id, recordVersion);
+	dbg("SickIO.write",2) << "Unit " << id << " done writing frame " << frame.scanCounter << std::endl;
+	pthread_mutex_unlock(&recordMutex);
+    }
 }
 
 

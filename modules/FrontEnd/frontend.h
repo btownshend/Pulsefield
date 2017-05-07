@@ -73,8 +73,6 @@ class FrontEnd {
 
     void run();
 
-    int startRecording(const char *filename);
-    void stopRecording();
     int playFile(const char *filename, bool singleStep,float speedFactor=1.0f,bool overlayLive=false,int frame1=-1,int frameN=-1,bool savePerfData=false);
 
     void matsave(const std::string &filename, int frames);

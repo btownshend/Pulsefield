@@ -294,26 +294,6 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 	}
 }
 
-int FrontEnd::startRecording(const char *filename) {
-    assert(recordFD==NULL);
-    recordFD = fopen(filename,"w");
-    if (recordFD == NULL) {
-	fprintf(stderr,"Unable to open recording file %s for writing\n", filename);
-	return -1;
-    }
-    printf("Recording into %s from %d units\n", filename,nsick);
-    for (int i=0;i<nsick;i++)
-	sick[i]->startRecording(recordFD);
-    return 0;
-}
-
-void FrontEnd::stopRecording() {
-    for (int i=0;i<nsick;i++)
-	sick[i]->stopRecording();
-    (void)fclose(recordFD);
-    recordFD=NULL;
-}
-
 int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bool overlayLive,int frame1, int frameN, bool savePerfData) {
     printf("Playing back recording from %s\n", filename);
     FILE *fd=fopen(filename,"r");
@@ -337,10 +317,13 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     int maxPeople=0;
     int activeFrames=0;
 
+    int fileVersion = SickFrame::getFileVersion(fd);
+
     while (true) {
 	SickFrame f;
 	struct timeval acquired;
-	int cid = f.read(fd);   // Read the next frame from fd into f and return the ID of the LIDAR 
+	// Read the next frame from fd into f and return the ID of the LIDAR 
+	int cid = f.read(fd,fileVersion);   
 	if (cid<0) {
 	    printf("EOF on %s\n",filename);
 	    break;
@@ -353,8 +336,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 		newSick[i]=sick[i];
 	    for (int i=nsick;i<cid;i++) {
 		newSick[i]=new SickIO(i+1);
-		if (recordFD!=NULL)
-		    newSick[i]->startRecording(recordFD);
 	    }
 	    if (sick!=0)
 		delete [] sick;

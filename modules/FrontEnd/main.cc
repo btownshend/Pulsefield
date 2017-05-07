@@ -7,6 +7,7 @@
 #include "frontend.h"
 #include "dbg.h"
 #include "parameters.h"
+#include "sickio.h"
 
 static int nsick=1;
 unsigned int MAXRANGE=12000;
@@ -147,7 +148,7 @@ int main(int argc, char *argv[])
 	if (visoutput) 
 	    fe.getStat(FrontEnd::RANGE,0);
 	if (recordFile) {
-	    int rc=fe.startRecording(recordFile);
+	    int rc=SickIO::startRecording(recordFile);
 	    if (rc)
 		exit(1);
 	}
@@ -167,7 +168,7 @@ int main(int argc, char *argv[])
 	fe.getStat(FrontEnd::RANGE,0);
 
     if (recordFile) {
-	int rc=fe.startRecording(recordFile);
+	int rc=SickIO::startRecording(recordFile);
 	if (rc)
 	    exit(1);
     }
@@ -175,7 +176,7 @@ int main(int argc, char *argv[])
     fe.run();   // Run until quit command received
     fprintf(stderr,"%s exitting\n", argv[0]);
     if (recordFile)
-	fe.stopRecording();
+	SickIO::stopRecording();
 
     exit(0);
 }
