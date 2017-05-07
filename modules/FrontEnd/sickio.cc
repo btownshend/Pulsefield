@@ -51,7 +51,7 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	setNumEchoes(1);
 	setCaptureRSSI(false);
 	scanFreq=50;
-	scanRes=1.0/3;
+	scanRes=0.3333;   // Needs to be only 4 decimals to be recognized by DoubleToSickScanRes
 	coordinateRotation=0;
 	origin=Point(0,0);
 	updateScanFreqAndRes();
