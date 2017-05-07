@@ -93,7 +93,6 @@ void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int nechoes, bool ca
 // Returns unit id of frame read
 int SickFrame::read(FILE *fd, int version) {
 	int cid;   // CID is unit number with 1-origin
-	struct timeval acquired;
 	int nread;
 	if (EOF==(nread=fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&frame,&acquired.tv_sec,&acquired.tv_usec,&rangeEchoes,&num_measurements))) {
 	    return -1;
