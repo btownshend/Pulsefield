@@ -306,23 +306,7 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 
 void FrontEnd::recordFrame(int c) {
     assert(recording && recordFD>=0 && c>=0 && c<nsick);
-    
-	struct timeval ts=sick[c]->getAcquired();
-	fprintf(recordFD,"%d %d %ld %d %d %d\n",sick[c]->getId(),sick[c]->getFrame(),ts.tv_sec,ts.tv_usec,nechoes,sick[c]->getNumMeasurements());
-	for (int e=0;e<nechoes;e++) {
-	    const unsigned int *ranges=sick[c]->getRange(e);
-	    fprintf(recordFD,"D%d ",e);
-	    for (unsigned int i=0;i<sick[c]->getNumMeasurements();i++)
-		fprintf(recordFD,"%d ",ranges[i]);
-	    fprintf(recordFD,"\n");
-	}
-	for (int e=0;e<nechoes;e++) {
-	    const unsigned int *reflect=sick[c]->getReflect(e);
-	    fprintf(recordFD,"R%d ",e);
-	    for (unsigned int i=0;i<sick[c]->getNumMeasurements();i++)
-		fprintf(recordFD,"%d ",reflect[i]);
-	    fprintf(recordFD,"\n");
-	}
+    sick[c]->write(recordFD);
 }
 
 int FrontEnd::startRecording(const char *filename) {
@@ -348,9 +332,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	fprintf(stderr,"Unable to open playback file %s for reading\n", filename);
 	return -1;
     }
-    unsigned int range[SickIO::MAXECHOES][SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
-    unsigned int reflect[SickIO::MAXECHOES][SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
-
     struct timeval startfile;
     struct timeval starttime;
     gettimeofday(&starttime,0);
@@ -368,33 +349,12 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     int activeFrames=0;
 
     while (true) {
-	int cid,nechoes,nmeasure,sickframe;   // CID is unit number with 1-origin
+	SickFrame f;
 	struct timeval acquired;
-	int nread;
-	if (EOF==(nread=fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&sickframe,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&nmeasure))) {
+	int cid = f.read(fd);   // Read the next frame from fd into f and return the ID of the LIDAR 
+	if (cid<0) {
 	    printf("EOF on %s\n",filename);
 	    break;
-	}
-	if (nread!=6)  {
-	    std::cerr << "Error scaning input file, read " << nread << " entries when 6 were expected" << std::endl;
-	    return -1;
-	}
-        assert(nechoes>=1 && nechoes<=SickIO::MAXECHOES);
-	assert(nmeasure>0 && nmeasure<=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS);
-
-	for (int e=0;e<nechoes;e++) {
-	    int echo;
-	    fscanf(fd,"D%d ",&echo);
-	    assert(echo>=0 && echo<nechoes);
-	    for (int i=0;i<nmeasure;i++)
-		fscanf(fd,"%d ",&range[e][i]);
-	}
-	for (int e=0;e<nechoes;e++) {
-	    int echo;
-	    fscanf(fd,"R%d ",&echo);
-	    assert(echo>=0 && echo<nechoes);
-	    for (int i=0;i<nmeasure;i++)
-		fscanf(fd,"%d ",&reflect[e][i]);
 	}
 	    
 	if (cid>nsick) {
@@ -403,7 +363,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    for (int i=0;i<nsick;i++)
 		newSick[i]=sick[i];
 	    for (int i=nsick;i<cid;i++)
-		newSick[i]=new SickIO();
+		newSick[i]=new SickIO(i+1);
 	    if (sick!=0)
 		delete [] sick;
 
@@ -416,13 +376,18 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    load();
 	}
 
-	if (lastframe==-1) 
+	acquired.tv_sec=f.scanTime/1000000;
+	acquired.tv_usec=f.scanTime%1000000;
+
+	if (lastframe==-1)  {
 	    // Initialize file start time for reference
 	    startfile=acquired;
+	}
+
 	lastframe= sick[cid-1]->getFrame();
 	    
-	if  (lastframe==sickframe) {
-	    //fprintf(stderr,"Duplicate frame %d for unit %d\n", sickframe, cid);
+	if  (lastframe==f.frame) {
+	    fprintf(stderr,"Duplicate frame %d for unit %d\n", f.frame, cid);
 	    continue;
 	}
 	
@@ -433,21 +398,21 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	}
 	if (frame1==-1 && frameN!=-1) {
 	    // Just first frameN frames
-	    frame1=sickframe;
-	    frameN+=sickframe-1;
+	    frame1=f.frame;
+	    frameN+=f.frame-1;
 	}
-	if (frame1!=-1 && sickframe<frame1)
+	if (frame1!=-1 && f.frame<frame1)
 	    continue;
-	if (frameN!=-1 && sickframe>frameN)
+	if (frameN!=-1 && f.frame>frameN)
 	    break;
 
-	if (sickframe!=lastframe+1 && lastframe!=-1) {
-	    if (lastframe+1 == sickframe-1) {
+	if (f.frame!=lastframe+1 && lastframe!=-1) {
+	    if (lastframe+1 == f.frame-1) {
 		dbg("FrontEnd.playFile",1) << "Input file skips frame " << lastframe+1 << " for unit " << cid << std::endl;
-	    } else if (lastframe<sickframe) {
-		dbg("FrontEnd.playFile",1) << "Input file skips frames " << lastframe+1 << "-" << sickframe-1 << " for unit " << cid << std::endl;
+	    } else if (lastframe<f.frame) {
+		dbg("FrontEnd.playFile",1) << "Input file skips frames " << lastframe+1 << "-" << f.frame-1 << " for unit " << cid << std::endl;
 	    } else {
-		dbg("FrontEnd.playFile",1) << "Input file jumped backwards from frame " << lastframe << "-" << sickframe << " for unit " << cid << std::endl;
+		dbg("FrontEnd.playFile",1) << "Input file jumped backwards from frame " << lastframe << "-" << f.frame << " for unit " << cid << std::endl;
 	    }
 	}
 
@@ -476,23 +441,24 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 
 	
 	struct timeval processStart; gettimeofday(&processStart,0);
+
+	sick[cid-1]->lock();
 	if (overlayLive) {
-	    // TODO: Fix to handle multiple LIDAR
-	    sick[0]->lock();
-	    sick[0]->waitForFrame();
-	    assert(sick[0]->isValid());
-	    sick[0]->overlay(cid,sickframe, acquired,  nmeasure, nechoes, range,reflect);
-	    processFrames();
-	    assert(!sick[0]->isValid());
-	    sick[0]->unlock();
+	    if (!sick[cid-1]->isValid())
+		sick[cid-1]->waitForFrame();
+	    sick[cid-1]->overlayFrame(f);
 	} else {
-	    sick[cid-1]->lock();
-	    sick[cid-1]->set(cid,sickframe, acquired,  nmeasure, nechoes, range,reflect);
-	    sick[cid-1]->unlock();
-	    bool allValid=true;
-	    for (int i=0;i<nsick;i++)
-		allValid&=sick[i]->isValid();
-	    if (allValid) {
+	    sick[cid-1]->pushFrame(f);
+	    sick[cid-1]->waitForFrame();  // Won't block since we just pushed a new frame
+	}
+	sick[cid-1]->unlock();
+
+	bool allValid=true;
+	for (int i=0;i<nsick;i++)
+	    allValid&=sick[i]->isValid();
+	if (allValid) {
+	    if (syncLIDARS()) {
+		// LIDARs are in sync
 		for (int i=0;i<nsick;i++)
 		    sick[i]->lock();
 		processFrames();
@@ -500,6 +466,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 		    sick[i]->unlock();
 	    }
 	}
+
 	struct timeval processDone; gettimeofday(&processDone,0);
 	float procTime=(processDone.tv_sec-processStart.tv_sec)+(processDone.tv_usec-processStart.tv_usec)/1e6;
 	totalProcTime+=procTime;
@@ -508,9 +475,9 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	nProcTime++;
 	nallProcTime++;
 
-	if (sickframe%200==0) {
-	    dbg("frontend",1) << "Frame " << sickframe << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
-	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",sickframe,totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
+	if (f.frame%200==0) {
+	    dbg("frontend",1) << "Frame " << f.frame << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
+	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",f.frame,totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
 	    nProcTime=0;
 	    maxProcTime=0;
 	    totalProcTime=0;
@@ -520,21 +487,21 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	if (!matfile.empty()) {
 	    snap->append(vis,world);
 	    
-	    if (matframes>0 && sickframe>=matframes)
+	    if (matframes>0 && f.frame>=matframes)
 		// Do final output below
 		break;
 
-	    if (sickframe%2000 == 0) {
+	    if (f.frame%2000 == 0) {
 		// Break up the output
 		char tmpfile[1000];
-		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),sickframe);
+		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.frame);
 		snap->save(tmpfile);
 		snap->clear();
 	    }
 	}
 #endif
-	minPerfFrame=std::min(minPerfFrame,sickframe-1);
-	maxPerfFrame=std::max(maxPerfFrame,sickframe-1);
+	minPerfFrame=std::min(minPerfFrame,(int)(f.frame-1));
+	maxPerfFrame=std::max(maxPerfFrame,(int)(f.frame-1));
 	if (world->numPeople() > 0) {
 	    maxPeople=std::max(world->numPeople(),maxPeople);
 	    std::vector<float> framePerf=world->getFramePerformance();
@@ -595,7 +562,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 #ifdef MATLAB
     if (!matfile.empty()) {
 	char tmpfile[1000];
-	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),sickframe);
+	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.frame);
 	snap->save(tmpfile);
 	snap->clear();
     }

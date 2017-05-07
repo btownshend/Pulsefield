@@ -33,13 +33,18 @@ class SickFrame {
     unsigned int outputChannels;
     unsigned int num_measurements;
     struct timeval acquired;   // Computer time frame was read from network
-    SickFrame(SickToolbox::SickLMS5xx *sick_lms_5xx=NULL, int nechoes=1, bool captureRSSI=false);
-    
-    // Set values for faking
-    void set(int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]);
+
+    SickFrame();
+    void read(SickToolbox::SickLMS5xx *sick_lms_5xx=NULL, int nechoes=1, bool captureRSSI=false);
+
+    // Read a frame from given fd using given format version
+    int  read(FILE *fd, int version=1);
+
+    // Write a frame to given fd, using unit id as given
+    void write(FILE *fd, int cid) const;
 
     // Overlay frame read from data file onto real-time data
-    void overlay(int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]);
+    void overlayFrame(const SickFrame &frame);
 };
 
 class SickIO {
@@ -73,7 +78,8 @@ private:
 public:
 	SickIO(int _id, const char *host, int port);
 	// Constructor to fake the data from a scan
-	SickIO() {
+	SickIO(int _id) {
+	    id=_id;
 	    fake=true;
 	    scanFreq=50;
 	    valid=false;
@@ -85,13 +91,17 @@ public:
 	void set(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]);
 
 	// Overlay frame read from data file onto real-time data
-	void overlay(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]);
+	void overlayFrame(const SickFrame &frame);
 	virtual ~SickIO();
 
 	void run();
 	int start();
 	int stop();
 
+	void write(FILE *fd) const {
+	    curFrame.write(fd, id);
+	}
+	
 	unsigned int getNumMeasurements() const {
 		return curFrame.num_measurements;
 	}

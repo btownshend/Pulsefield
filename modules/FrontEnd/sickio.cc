@@ -70,23 +70,11 @@ SickIO::~SickIO() {
 }
 
 
-void SickIO::set(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]){
-    id=_id;
-    scanRes=190.0/(_nmeasure-1);
-    curFrame.set(_frame,_acquired,_nmeasure,_nechoes,_range,_reflect);
-    dbg("Sickio.set",5) << "Set values for frame " << _frame << std::endl;
-    updateCalTargets();
-    valid=true;
-}
-
 // Overlay data -- must lock before calling
-void SickIO::overlay(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]) {
-    //    id=_id;
-    // Wait until we get some new data
-    waitForFrame();
-
-    assert(scanRes==190.0/(_nmeasure-1));
-    curFrame.overlay(_frame,_acquired,_nmeasure,_nechoes,_range,_reflect);
+void SickIO::overlayFrame(const SickFrame &frame) {
+    assert(valid);
+    curFrame.overlayFrame(frame);
+    updateCalTargets();
 }
 
 void SickIO::updateScanFreqAndRes() {	

@@ -2,7 +2,11 @@
 
 using namespace SickToolbox;
 
-SickFrame::SickFrame(SickToolbox::SickLMS5xx *sick_lms_5xx, int nechoes, bool captureRSSI) {
+SickFrame::SickFrame() {
+    // Will be filled in by read()
+}
+
+void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int nechoes, bool captureRSSI) {
     try {
 	//unsigned int range_2_vals[SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
 	//sick_lms_5xx.SetSickScanFreqAndRes(SickLMS5xx::SICK_LMS_5XX_SCAN_FREQ_25,
@@ -85,40 +89,81 @@ SickFrame::SickFrame(SickToolbox::SickLMS5xx *sick_lms_5xx, int nechoes, bool ca
     gettimeofday(&acquired,0);  // Time of acquisition
 }
 
-void SickFrame::set(int _frame, const timeval &_acquired, int _nmeasure, int nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]){
-    frame=_frame;
-    acquired=_acquired;
-    num_measurements=_nmeasure;
-    rangeEchoes=nechoes;
-
-    // Copy in data
-    for (int e=0;e<nechoes;e++)
-	for (int i=0;i<num_measurements;i++) {
-	    range[e][i]=_range[e][i];
-	    reflect[e][i]=_reflect[e][i];
+// Read the next frame from the given file descriptor
+// Returns unit id of frame read
+int SickFrame::read(FILE *fd, int version) {
+	int cid;   // CID is unit number with 1-origin
+	struct timeval acquired;
+	int nread;
+	if (EOF==(nread=fscanf(fd,"%d %d %ld %d %d %d\n",&cid,&frame,&acquired.tv_sec,&acquired.tv_usec,&rangeEchoes,&num_measurements))) {
+	    return -1;
 	}
-    dbg("Sickio.set",5) << "Set values for frame " << frame << std::endl;
+	if (nread!=6)  {
+	    std::cerr << "Error scaning input file, read " << nread << " entries when 6 were expected" << std::endl;
+	    return -1;
+	}
+	scanTime=acquired.tv_sec*1000000+acquired.tv_usec;
+	transmitTime=scanTime+1000;  // Assume 1msec delay in transmitting
+        assert(rangeEchoes>=1 && rangeEchoes<=SickIO::MAXECHOES);
+	assert(num_measurements>0 && num_measurements<=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS);
+
+	for (int e=0;e<rangeEchoes;e++) {
+	    int echo;
+	    nread=fscanf(fd,"D%d ",&echo);
+	    if (nread==EOF) return -1;
+	    assert(echo>=0 && echo<rangeEchoes);
+	    for (int i=0;i<num_measurements;i++) {
+		nread=fscanf(fd,"%d ",&range[e][i]);
+		if (nread==EOF) return -1;
+	    }
+	}
+	for (int e=0;e<rangeEchoes;e++) {
+	    int echo;
+	    nread=fscanf(fd,"R%d ",&echo);
+	    if (nread==EOF) return -1;
+	    assert(echo>=0 && echo<rangeEchoes);
+	    for (int i=0;i<num_measurements;i++) {
+		nread=fscanf(fd,"%d ",&reflect[e][i]);
+		if (nread==EOF) return -1;
+	    }
+	}
+	return cid;
 }
 
-void SickFrame::overlay(int _frame, const timeval &_acquired, int _nmeasure, int nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]) {
-    //    frame=_frame;
-    //    acquired=_acquired;
+void SickFrame::write(FILE *fd, int cid) const {
+	fprintf(fd,"%d %d %d %d %d %d\n",cid,frame,scanTime/1000000,scanTime%1000000,rangeEchoes,num_measurements);
+	for (int e=0;e<rangeEchoes;e++) {
+	    fprintf(fd,"D%d ",e);
+	    for (unsigned int i=0;i<num_measurements;i++)
+		fprintf(fd,"%d ",range[e][i]);
+	    fprintf(fd,"\n");
+	}
+	for (int e=0;e<rangeEchoes;e++) {
+	    fprintf(fd,"R%d ",e);
+	    for (unsigned int i=0;i<num_measurements;i++)
+		fprintf(fd,"%d ",reflect[e][i]);
+	    fprintf(fd,"\n");
+	}
+}
+
+
+void SickFrame::overlayFrame(const SickFrame &frame) {
     if (num_measurements==0)  {
 	dbg("SickIO.overlay",1) << "Live capture not started" << std::endl;
 	return;
     }
-    assert(num_measurements==_nmeasure);
-    assert(nechoes==rangeEchoes);
+    assert(num_measurements==frame.num_measurements);
+    assert(rangeEchoes==frame.rangeEchoes);
 
 
     // Overlay data - take closest range of overlay data and current data
     int cnt=0;
-    for (int e=0;e<nechoes;e++)
+    for (int e=0;e<rangeEchoes;e++)
 	for (int i=0;i<num_measurements;i++) {
-	    if (_range[e][i]<range[e][i]-10) {
+	    if (frame.range[e][i]<range[e][i]-10) {
 		cnt++;
-		range[e][i]=_range[e][i];
-		reflect[e][i]=_reflect[e][i];
+		range[e][i]=frame.range[e][i];
+		reflect[e][i]=frame.reflect[e][i];
 	    }
 	}
     dbg("SickIO.overlay",4) << "Overlaid " << cnt << " points." << std::endl;
