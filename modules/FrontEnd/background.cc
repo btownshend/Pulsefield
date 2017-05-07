@@ -7,7 +7,7 @@
 #include "world.h"
 
 Background::Background() {
-    bginit=true;
+    bginit=BGINITFRAMES;
 }
 
 void Background::setup(const SickIO &sick) {
@@ -22,7 +22,7 @@ void Background::setup(const SickIO &sick) {
 	sigma[i].assign(sick.getNumMeasurements(),MEANBGSIGMA);
 	consecutiveInvisible[i].resize(sick.getNumMeasurements());
     }
-    bginit=true;
+    bginit=BGINITFRAMES;
 }
 
 void Background::swap(int k, int i, int j) {
@@ -91,11 +91,12 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
 
 void Background::update(const SickIO &sick, const std::vector<int> &assignments, bool all) {
     setup(sick);
-    if (bginit && sick.getScanCounter()>BGINITFRAMES) {  // FIXME: the device scan counter doesn't start at zero
-	dbg("Background.update",1) << "Turning off bginit at SICK " << sick.getId() << " scan " << sick.getScanCounter() << std::endl;
-	bginit=false;
+    if (bginit>0) {
+	bginit--;
+	if (bginit==0) {
+	    dbg("Background.update",1) << "Turning off bginit at SICK " << sick.getId() << " scan " << sick.getScanCounter() << std::endl;
+	}
     }
-
     const unsigned int *srange = sick.getRange(0);
    
     // range[0] is for the farthest seen in last BGLONGDISTLIFE frames
