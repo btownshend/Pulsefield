@@ -172,7 +172,7 @@ void SickIO::pushFrame(const SickFrame &frame) {
 	}
 	assert(bootTime.tv_usec < 1000000);
 	assert(bootTime.tv_sec>0);
-	dbg("SickIO.get",1) << "Initialized bootTime to " << bootTime.tv_sec << "/" << bootTime.tv_usec << std::endl;
+	dbg("SickIO.get",1) << "Unit " << id << " initialized bootTime to " << bootTime.tv_sec << "/" << bootTime.tv_usec << std::endl;
     }
     // compute acquired-bootTime+transmitTime (in usec)
     int error=(frame.acquired.tv_sec-bootTime.tv_sec)*1000000+(frame.acquired.tv_usec-bootTime.tv_usec-frame.transmitTime);
