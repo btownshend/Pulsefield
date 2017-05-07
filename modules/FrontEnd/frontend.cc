@@ -191,14 +191,17 @@ void FrontEnd::run() {
 		sick[i]->unlock();
 	    }
 	}
-	// Lock all sensors
-	for (int i=0;i<nsick;i++)
+	if (syncLIDARS()) {
+	    // LIDARs are in sync
+	    // Lock all sensors
+	    for (int i=0;i<nsick;i++)
 		sick[i]->lock();
-	// Read data from sensors	
-	processFrames();
-	// Unlock all sensors
-	for (int i=0;i<nsick;i++)
-	    sick[i]->unlock();
+	    // Read data from sensors	
+	    processFrames();
+	    // Unlock all sensors
+	    for (int i=0;i<nsick;i++)
+		sick[i]->unlock();
+	}
     }
 }
 
