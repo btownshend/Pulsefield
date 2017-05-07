@@ -152,6 +152,35 @@ void FrontEnd::matsave(const std::string &filename, int frames) {
     snap = new Snapshot(arglist);
 }
 
+// Check if LIDARs are frame-shifted from each other; flush a frame from the leader if not
+// Return true if something was flushed
+bool FrontEnd::syncLIDARS() {
+    bool inSync=true;
+    for (int i=1;i<nsick;i++) {
+	// Relative to sick[0]
+	int delta=(sick[i]->getAcquired().tv_sec-sick[0]->getAcquired().tv_sec)*1000000+(sick[i]->getAcquired().tv_usec-sick[0]->getAcquired().tv_usec);
+	// Want the delta to be nominally 1/(2*FPS), so flush if it is outside range [0, 1/FPS]
+	int flushFrame;
+	if (delta<0) 
+	    // Sick[0] should always be first
+	    flushFrame=i;
+	else if (delta > 1000000/(sick[0]->getScanFreq()))
+	    // More than a full frame time late
+	    flushFrame=0;
+	else {
+	    // In the right range
+	    dbg("FrontEnd.run",2) << "Frame delay of unit " << i << " vs. 0 = " << delta << " usec" << std::endl;
+	    continue;
+	}
+	dbg("FrontEnd.run",1) << "Frame delay of " << delta << " usec;  flushing a frame from unit " << flushFrame << std::endl;
+	sick[flushFrame]->lock();
+	sick[flushFrame]->clearValid();
+	sick[flushFrame]->unlock();
+	inSync=false;
+    }
+    return inSync;
+}
+
 void FrontEnd::run() {
     while (!doQuit) {  /* Forever */
 	// Wait for all sensors to be ready
@@ -160,28 +189,6 @@ void FrontEnd::run() {
 		sick[i]->lock();
 		sick[i]->waitForFrame();
 		sick[i]->unlock();
-	    }
-	}
-	static const int MAXSYNCUPDATES=100;
-	for (int i=0;i<MAXSYNCUPDATES;i++) {
-	    int delta=(sick[1]->getAcquired().tv_sec-sick[0]->getAcquired().tv_sec)*1000000+(sick[1]->getAcquired().tv_usec-sick[0]->getAcquired().tv_usec);
-	    // Want the delta to be nominally 1/(2*FPS), so flush if it is outside range [0, 1/FPS]
-	    int flushFrame;
-	    if (delta<0) 
-		flushFrame=1;
-	    else if (delta > 1000000/(sick[0]->getScanFreq()))
-		flushFrame=0;
-	    else {
-		dbg("FrontEnd.run",1) << "Frame timing difference = " << delta << " usec" << std::endl;
-		break;   // All good
-	    }
-	    dbg("FrontEnd.run",1) << "Frame timing difference = " << delta << " usec;  flushing a frame from unit " << flushFrame << std::endl;
-	    sick[flushFrame]->lock();
-	    sick[flushFrame]->clearValid();
-	    sick[flushFrame]->waitForFrame();
-	    sick[flushFrame]->unlock();
-	    if (i==MAXSYNCUPDATES-1) {
-		std::cerr << "Attempted to sync LIDARs " << i+1 << " times -- giving up." << std::endl;
 	    }
 	}
 	// Lock all sensors

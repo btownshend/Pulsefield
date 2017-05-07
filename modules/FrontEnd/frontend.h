@@ -35,6 +35,10 @@ class FrontEnd {
     // Global frame offset (from sick[0]->frame)
     int startframe;
     
+    // Sync multiple LIDARS
+    // Return true if they are in sync
+    bool syncLIDARS();
+    
     // Process all frames
     void processFrames();   
     // Send out low-level vis messages for given sick data
