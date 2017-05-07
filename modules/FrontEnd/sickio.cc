@@ -51,7 +51,7 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	setNumEchoes(1);
 	setCaptureRSSI(false);
 	scanFreq=50;
-	scanRes=0.3333;
+	scanRes=1.0/3;
 	coordinateRotation=0;
 	origin=Point(0,0);
 	updateScanFreqAndRes();

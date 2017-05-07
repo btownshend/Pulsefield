@@ -84,6 +84,7 @@ public:
 	    id=_id;
 	    fake=true;
 	    scanFreq=50;
+	    scanRes=1.0/3;
 	    valid=false;
 	    pthread_mutex_init(&mutex,NULL);
 	    pthread_cond_init(&signal,NULL);
