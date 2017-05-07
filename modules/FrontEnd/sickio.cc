@@ -20,6 +20,8 @@
 using namespace SickToolbox;
 using namespace std;
 
+pthread_mutex_t SickIO::recordMutex=PTHREAD_MUTEX_INITIALIZER;  // Shared mutex for keeping output to recording file separated
+
 static void *runner(void *t) {
     SetDebug("pthread:SickIO");
 	((SickIO*)t)->run();
@@ -203,8 +205,9 @@ void SickIO::pushFrame(const SickFrame &frame) {
 	frames.pop();
     }
     pthread_cond_signal(&signal);
-
     unlock();
+    if (recordFD != NULL)
+	frame.write(recordFD,id);
 }
 
 

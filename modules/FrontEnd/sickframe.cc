@@ -130,20 +130,20 @@ int SickFrame::read(FILE *fd, int version) {
 	return cid;
 }
 
-void SickFrame::write(FILE *fd, int cid) const {
-	fprintf(fd,"%d %d %d %d %d %d\n",cid,frame,scanTime/1000000,scanTime%1000000,rangeEchoes,num_measurements);
-	for (int e=0;e<rangeEchoes;e++) {
-	    fprintf(fd,"D%d ",e);
-	    for (unsigned int i=0;i<num_measurements;i++)
-		fprintf(fd,"%d ",range[e][i]);
-	    fprintf(fd,"\n");
-	}
-	for (int e=0;e<rangeEchoes;e++) {
-	    fprintf(fd,"R%d ",e);
-	    for (unsigned int i=0;i<num_measurements;i++)
-		fprintf(fd,"%d ",reflect[e][i]);
-	    fprintf(fd,"\n");
-	}
+void SickFrame::write(FILE *fd, int cid, int version) const {
+    fprintf(fd,"%d %d %ld %d %d %d\n",cid,frame,acquired.tv_sec,acquired.tv_usec,rangeEchoes,num_measurements);
+    for (int e=0;e<rangeEchoes;e++) {
+	fprintf(fd,"D%d ",e);
+	for (unsigned int i=0;i<num_measurements;i++)
+	    fprintf(fd,"%d ",range[e][i]);
+	fprintf(fd,"\n");
+    }
+    for (int e=0;e<rangeEchoes;e++) {
+	fprintf(fd,"R%d ",e);
+	for (unsigned int i=0;i<num_measurements;i++)
+	    fprintf(fd,"%d ",reflect[e][i]);
+	fprintf(fd,"\n");
+    }
 }
 
 

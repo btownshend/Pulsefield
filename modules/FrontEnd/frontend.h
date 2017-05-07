@@ -43,11 +43,9 @@ class FrontEnd {
     void processFrames();   
     // Send out low-level vis messages for given sick data
     void sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int *ranges[], const unsigned int *reflect[]);
-    void recordFrame(int id);
 
-    bool recording;
     FILE *recordFD;
-
+    
     pthread_t incomingThread;
     static void *processIncoming(void *arg);
     int matframes;

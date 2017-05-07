@@ -50,7 +50,6 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]): conf
 	vis = new Vis();
 	snap=NULL;  // If needed, set in matsave()
 	nechoes=1;
-	recording=false;
 	recordFD=NULL;
 
 	URLConfig urls("config/urlconfig.txt");
@@ -237,8 +236,6 @@ void FrontEnd::processFrames() {
 		reflect[i]=sick[c]->getReflect(i);
 	    }
 	    sendVisMessages(sick[c]->getId(),sick[c]->getFrame(),sick[c]->getAcquired(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
-	    if (recording)
-		recordFrame(c);
 	    // clear valid flag so another frame can be read
 	    sick[c]->clearValid();
 	}
@@ -297,25 +294,24 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 	}
 }
 
-void FrontEnd::recordFrame(int c) {
-    assert(recording && recordFD>=0 && c>=0 && c<nsick);
-    sick[c]->write(recordFD);
-}
-
 int FrontEnd::startRecording(const char *filename) {
+    assert(recordFD==NULL);
     recordFD = fopen(filename,"w");
     if (recordFD == NULL) {
 	fprintf(stderr,"Unable to open recording file %s for writing\n", filename);
 	return -1;
     }
-    printf("Recording into %s\n", filename);
-    recording=true;
+    printf("Recording into %s from %d units\n", filename,nsick);
+    for (int i=0;i<nsick;i++)
+	sick[i]->startRecording(recordFD);
     return 0;
 }
 
 void FrontEnd::stopRecording() {
+    for (int i=0;i<nsick;i++)
+	sick[i]->stopRecording();
     (void)fclose(recordFD);
-    recording=false;
+    recordFD=NULL;
 }
 
 int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bool overlayLive,int frame1, int frameN, bool savePerfData) {
@@ -355,8 +351,11 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    SickIO **newSick=new SickIO*[cid];
 	    for (int i=0;i<nsick;i++)
 		newSick[i]=sick[i];
-	    for (int i=nsick;i<cid;i++)
+	    for (int i=nsick;i<cid;i++) {
 		newSick[i]=new SickIO(i+1);
+		if (recordFD!=NULL)
+		    newSick[i]->startRecording(recordFD);
+	    }
 	    if (sick!=0)
 		delete [] sick;
 

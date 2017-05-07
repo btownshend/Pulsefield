@@ -41,7 +41,7 @@ class SickFrame {
     int  read(FILE *fd, int version=1);
 
     // Write a frame to given fd, using unit id as given
-    void write(FILE *fd, int cid) const;
+    void write(FILE *fd, int cid,int version=1) const;
 
     // Overlay frame read from data file onto real-time data
     void overlayFrame(const SickFrame &frame);
@@ -70,11 +70,13 @@ private:
 	void updateScanFreqAndRes();
 	bool fake;
 	// Synchronization
-	pthread_mutex_t mutex;
+	pthread_mutex_t mutex;  // Lock for accessing the frames queue;  all other accesses shouldn't have threading issues since there is a single producer and single consumer
+	static pthread_mutex_t recordMutex;  // Shared mutex for keeping output to recording file separated
 	pthread_cond_t signal;
 	Background bg;		// Background model
 	std::vector<Point> calTargets;
 	void updateCalTargets();
+	FILE *recordFD;  // Recording FILE, or NULL if disabled
 public:
 	SickIO(int _id, const char *host, int port);
 	// Constructor to fake the data from a scan
@@ -98,8 +100,21 @@ public:
 	int start();
 	int stop();
 
+	void startRecording(FILE *fd) {
+	    assert(fd!=NULL);
+	    dbg("SickIO.startRecording",1) << "Unit " << id << " recording started." << std::endl;
+	    recordFD=fd;
+	}
+
+	void stopRecording() {
+	    recordFD=NULL;
+	}
+	
 	void write(FILE *fd) const {
+	    dbg("SickIO.write",2) << "Unit " << id << " writing frame " << curFrame.frame << std::endl;
+	    pthread_mutex_lock(&recordMutex);   /// Make sure only one thread at a time writes a frame
 	    curFrame.write(fd, id);
+	    pthread_mutex_unlock(&recordMutex);
 	}
 	
 	unsigned int getNumMeasurements() const {
