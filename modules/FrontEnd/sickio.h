@@ -227,6 +227,7 @@ public:
 	void setCaptureRSSI(bool on);
 	void setScanFreq(int freq) {
 	    scanFreq=freq;
+	    dbg("SickIO.setScanRes",1) << "Set scan frequency to " << scanFreq << " Hz" << std::endl;
 	    updateScanFreqAndRes();
 	}
 	int getScanFreq() const {
@@ -235,6 +236,7 @@ public:
 	// Set scan resolution in degrees
 	void setScanRes(double res) {
 	    scanRes=res;
+	    dbg("SickIO.setScanRes",1) << "Set scan resolution to " << res << " degrees" << std::endl;
 	    updateScanFreqAndRes();
 	}
 	// Get scan resolution in degrees

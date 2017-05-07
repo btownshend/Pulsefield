@@ -72,7 +72,7 @@ SickIO::~SickIO() {
 }
 
 
-// Overlay data -- must lock before calling
+// Overlay given frame over current frame keeping nearest points
 void SickIO::overlayFrame(const SickFrame &frame) {
     assert(valid);
     curFrame.overlayFrame(frame);
@@ -169,6 +169,8 @@ void SickIO::pushFrame(const SickFrame &frame) {
 	    bootTime.tv_sec-=1;
 	    bootTime.tv_usec+=1000000;
 	}
+	assert(bootTime.tv_usec < 1000000);
+	assert(bootTime.tv_sec>0);
 	dbg("SickIO.get",1) << "Initialized bootTime to " << bootTime.tv_sec << "/" << bootTime.tv_usec << std::endl;
     }
     // compute acquired-bootTime+transmitTime (in usec)
@@ -178,13 +180,13 @@ void SickIO::pushFrame(const SickFrame &frame) {
 	std::cerr << "Excessive reception delay for unit " << id << " of " << error/1000 << "  msec" << std::endl;
     }
     if (error < 0) {
-	dbg("SickIO.get",1) << "Unit " << id << " boottime error = " << error << "  usec, snapping boottime" << std::endl;
 	bootTime.tv_sec-=(-error)/1000000;
 	bootTime.tv_usec-=(-error)%1000000;
         if (bootTime.tv_usec<0) {
 	    bootTime.tv_usec+=1000000;
 	    bootTime.tv_sec--;
 	}
+	dbg("SickIO.get",1) << "Unit " << id << " boottime error = " << error << "  usec, snapping boottime to " << bootTime.tv_sec << "/" << bootTime.tv_usec  << std::endl;
     }
     if (error>1000) {
 	// More than 1msec delay in receiving message
@@ -216,6 +218,7 @@ void SickIO::waitForFrame()  {
     if (valid)
 	return;  // Already a valid frame present
     while (frames.empty()) {
+	assert(!fake);   // Should never end up here when faking
 	dbg("SickIO.waitForFrame",4) << "Waiting for frames" << std::endl;
 	lock();  // Need to lock here to not miss a signal
 	if (frames.empty())

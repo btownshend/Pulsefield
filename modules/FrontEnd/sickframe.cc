@@ -50,7 +50,7 @@ void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int nechoes, bool ca
 	    devStatus=s[3]*256+s[4];
 	    telegramCounter=s[5];
 	    frame=s[6];
-	    scanTime=s[7];   // Time in usec of zero index since power-up (at -14deg zero-index)
+	    scanTime=s[7];   // Time in usec of zero index since power-up (at -14deg zero-index)  -- wraps around after 72 minutes!
 	    transmitTime=s[8];
 	    digitalInputs=s[9]*256+s[10];
 	    digitalOutputs=s[11]*256+s[12];
