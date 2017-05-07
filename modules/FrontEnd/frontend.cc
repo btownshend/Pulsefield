@@ -284,7 +284,7 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 		lo_send(addr,"/vis/beginframe","ii",id,frame);
 		if (sendOnce & RANGE) {
 		    // Send range info
-		    for (int e=0;e<nechoes;e++) {
+		    for (int e=0;e<necho;e++) {
 			lo_blob data = lo_blob_new(nmeasure*sizeof(*ranges[e]),ranges[e]);
 			dbg("FrontEnd.sendVisMessages",6) << "Sending RANGE(" << id << "," << e << ") (N=" << nmeasure << ") to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 			lo_send(addr, "/vis/range","iiiiiib",id,frame,acquired.tv_sec, acquired.tv_usec, e, nmeasure, data);
