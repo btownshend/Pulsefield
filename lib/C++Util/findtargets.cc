@@ -104,7 +104,7 @@ std::vector<Point> findTargets( const std::vector<Point> background) {
 	    }
 	}
 	if (dTheta==0)
-	    dbg("findTargetrs",0) << "all ranges are zero!" << std::endl;
+	    dbg("findTargets",0) << "all ranges are zero!" << std::endl;
 	dbg("findTargets",4) << "dTheta=" << dTheta << std::endl;
 	int inTargetCnt=0;
 	std::vector<Point> calCorners;		// Corners of possible alignment targets
