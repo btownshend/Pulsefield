@@ -190,7 +190,7 @@ void SickIO::pushFrame(const SickFrame &frame) {
     }
     if (error>1000) {
 	// More than 1msec delay in receiving message
-	dbg("SickIO.get",1) << "Receipt of frame " << frame.frame << " from unit " << id << " was delayed by " << error/1000 << " msec." << std::endl;
+	dbg("SickIO.get",1) << "Receipt of frame " << frame.scanCounter << " from unit " << id << " was delayed by " << error/1000 << " msec." << std::endl;
     }
     static const int DRIFTCOMP=10;   // Can compensate for drift of up to DRIFTCOMP*FPS usec/sec
     if (error > DRIFTCOMP) {
@@ -203,7 +203,7 @@ void SickIO::pushFrame(const SickFrame &frame) {
     lock();
     frames.push(frame);
     if (frames.size() >5) {
-	dbg("SickIO.get",1) << "Warning: frames queue now has " << frames.size() << " entries -- flushing " << frames.front().frame <<  std::endl;
+	dbg("SickIO.get",1) << "Warning: frames queue now has " << frames.size() << " entries -- flushing " << frames.front().scanCounter <<  std::endl;
 	frames.pop();
     }
     pthread_cond_signal(&signal);
@@ -228,9 +228,9 @@ void SickIO::waitForFrame()  {
 	dbg("SickIO.waitForFrame",4) << "Cond_wait returned, frames=" << frames.size() << std::endl;
     }
     // Load next frame from queue into curFrame and do any needed processing
-    int deltaFrames = frames.front().frame-curFrame.frame;
+    int deltaFrames = frames.front().scanCounter-curFrame.scanCounter;
     if (deltaFrames != 1) {
-	dbg("SickIO.get",1) << "Unit " << id << " jumped by " << deltaFrames << " from frame " << curFrame.frame << " to " << frames.front().frame << std::endl;
+	dbg("SickIO.get",1) << "Unit " << id << " jumped by " << deltaFrames << " from scan  " << curFrame.scanCounter << " to " << frames.front().scanCounter << std::endl;
     }
     
     // Copy in new range data, compute x,y values
@@ -242,8 +242,8 @@ void SickIO::waitForFrame()  {
     updateCalTargets();
     valid=true;
 
-    int dLevel=(getFrame()%100==0)?1:8;
-    dbg("SickIO.get",dLevel) << "Frame " << getFrame() << ": got " << curFrame.num_measurements << " measurements" << std::endl;
+    int dLevel=(getScanCounter()%100==0)?1:8;
+    dbg("SickIO.get",dLevel) << "Scan " << getScanCounter() << ": got " << curFrame.num_measurements << " measurements" << std::endl;
 }
 
 void SickIO::lock() {

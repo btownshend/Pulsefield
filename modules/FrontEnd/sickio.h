@@ -26,7 +26,7 @@ class SickFrame {
     int rangeEchoes;
     unsigned int range[MAXECHOES][MAXMEASUREMENTS];
     unsigned int reflect[MAXECHOES][MAXMEASUREMENTS];
-    unsigned int devNumber, serialNumber,devStatus,telegramCounter,frame;
+    unsigned int devNumber, serialNumber,devStatus,telegramCounter,scanCounter;
     unsigned int scanTime,transmitTime,digitalInputs,digitalOutputs;
     float scanFrequency, measurementFrequency;
     unsigned int encoderFlag, encoderPosition, encoderSpeed;
@@ -204,8 +204,8 @@ public:
 	    return (p1-p2).norm();
 	}
 
-	unsigned int getFrame() const {
-		return curFrame.frame;
+	unsigned int getScanCounter() const {
+		return curFrame.scanCounter;
 	}
 
 	bool isValid() const {

@@ -91,8 +91,9 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
 
 void Background::update(const SickIO &sick, const std::vector<int> &assignments, bool all) {
     setup(sick);
-    if (bginit && sick.getFrame()>BGINITFRAMES)
+    if (bginit && sick.getScanCounter()>BGINITFRAMES) {  // FIXME: the device scan counter doesn't start at zero
 	bginit=false;
+    }
 
     const unsigned int *srange = sick.getRange(0);
    
@@ -158,7 +159,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    if (freq[k][i]>0)
 		maxInv+=std::min(MAXBGINVISIBLE,(int)(3.0f/freq[k][i]));
 	    if (consecutiveInvisible[k][i]>maxInv) {
-		dbg("Background.update",2) << "Frame " << sick.getFrame() << ": background " << k << " at scan " << i << " with range=" << range[k][i] << ", freq=" << freq[k][i] << " has not been seen for " << consecutiveInvisible[k][i] << " frames (>" << maxInv << ") removing it." << std::endl;
+		dbg("Background.update",2) << "Scan " << sick.getScanCounter() << ": background " << k << " at scan " << i << " with range=" << range[k][i] << ", freq=" << freq[k][i] << " has not been seen for " << consecutiveInvisible[k][i] << " frames (>" << maxInv << ") removing it." << std::endl;
 		freq[k][i]=0;
 		range[k][i]=0;
 		consecutiveInvisible[k][i]=0;
@@ -175,7 +176,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	for (int k=NRANGES-1;k>1;k--)
 	    if  (freq[k][i] > freq[k-1][i]) {
 		// freq[1] should always be > freq[2]
-		dbg("Background.update",2) << "Frame " << sick.getFrame() << ": promoting background at scan " << i << " with range=" << range[k][i] << ", freq=" << freq[k][i] << " to level " << k-1 << "; range[0]=" << range[0][i]  << std::endl;
+		dbg("Background.update",2) << "Scan " << sick.getScanCounter() << ": promoting background at scan " << i << " with range=" << range[k][i] << ", freq=" << freq[k][i] << " to level " << k-1 << "; range[0]=" << range[0][i]  << std::endl;
 		swap(i,k,k-1);
 		dodump=true;
 	    } 

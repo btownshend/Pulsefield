@@ -159,20 +159,20 @@ bool FrontEnd::syncLIDARS() {
 	// Relative to sick[0]
 	int delta=(sick[i]->getAcquired().tv_sec-sick[0]->getAcquired().tv_sec)*1000000+(sick[i]->getAcquired().tv_usec-sick[0]->getAcquired().tv_usec);
 	// Want the delta to be nominally 1/(2*FPS), so flush if it is outside range [0, 1/FPS]
-	int flushFrame;
+	int flushUnit;
 	if (delta<0) 
 	    // Sick[0] should always be first
-	    flushFrame=i;
+	    flushUnit=i;
 	else if (delta > 1000000/(sick[0]->getScanFreq()))
-	    // More than a full frame time late
-	    flushFrame=0;
+	    // More than a full scan time late
+	    flushUnit=0;
 	else {
 	    // In the right range
 	    dbg("FrontEnd.run",2) << "Frame delay of unit " << i << " vs. 0 = " << delta << " usec" << std::endl;
 	    continue;
 	}
-	dbg("FrontEnd.run",1) << "Frame delay of " << delta << " usec;  flushing frame " << sick[flushFrame]->getFrame() << " from unit " << flushFrame << std::endl;
-	sick[flushFrame]->clearValid();
+	dbg("FrontEnd.run",1) << "Frame delay of " << delta << " usec;  flushing scan " << sick[flushUnit]->getScanCounter() << " from unit " << flushUnit << std::endl;
+	sick[flushUnit]->clearValid();
 	inSync=false;
     }
     return inSync;
@@ -211,10 +211,10 @@ void *FrontEnd::processIncoming(void *arg) {
 void FrontEnd::processFrames() {
     // Use unit 0 as reference frame number offset by startframe
     if (startframe==0) {
-	startframe=sick[0]->getFrame();
+	startframe=sick[0]->getScanCounter();
 	dbg("FrontEnd.processFrame",1) << "Initialized start frame (unit 0) to " << startframe << std::endl;
     }
-    frame=(sick[0]->getFrame()-startframe)*nsick;
+    frame=(sick[0]->getScanCounter()-startframe)*nsick;
     dbg("FrontEnd.processFrame",1) << "Processing frame " << frame << std::endl;
 	
 	char dbgstr[100];
@@ -235,7 +235,7 @@ void FrontEnd::processFrames() {
 		range[i]=sick[c]->getRange(i);
 		reflect[i]=sick[c]->getReflect(i);
 	    }
-	    sendVisMessages(sick[c]->getId(),sick[c]->getFrame(),sick[c]->getAcquired(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
+	    sendVisMessages(sick[c]->getId(),sick[c]->getScanCounter(),sick[c]->getAcquired(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
 	    // clear valid flag so another frame can be read
 	    sick[c]->clearValid();
 	}
@@ -376,10 +376,10 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    startfile=acquired;
 	}
 
-	lastframe= sick[cid-1]->getFrame();
+	lastframe= sick[cid-1]->getScanCounter();
 	    
-	if  (lastframe==f.frame) {
-	    fprintf(stderr,"Duplicate frame %d for unit %d\n", f.frame, cid);
+	if  (lastframe==f.scanCounter) {
+	    fprintf(stderr,"Duplicate scan %d for unit %d\n", f.scanCounter, cid);
 	    continue;
 	}
 	
@@ -390,21 +390,21 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	}
 	if (frame1==-1 && frameN!=-1) {
 	    // Just first frameN frames
-	    frame1=f.frame;
-	    frameN+=f.frame-1;
+	    frame1=f.scanCounter;
+	    frameN+=f.scanCounter-1;
 	}
-	if (frame1!=-1 && f.frame<frame1)
+	if (frame1!=-1 && f.scanCounter<frame1)
 	    continue;
-	if (frameN!=-1 && f.frame>frameN)
+	if (frameN!=-1 && f.scanCounter>frameN)
 	    break;
 
-	if (f.frame!=lastframe+1 && lastframe!=-1) {
-	    if (lastframe+1 == f.frame-1) {
+	if (f.scanCounter!=lastframe+1 && lastframe!=-1) {
+	    if (lastframe+1 == f.scanCounter-1) {
 		dbg("FrontEnd.playFile",1) << "Input file skips frame " << lastframe+1 << " for unit " << cid << std::endl;
-	    } else if (lastframe<f.frame) {
-		dbg("FrontEnd.playFile",1) << "Input file skips frames " << lastframe+1 << "-" << f.frame-1 << " for unit " << cid << std::endl;
+	    } else if (lastframe<f.scanCounter) {
+		dbg("FrontEnd.playFile",1) << "Input file skips frames " << lastframe+1 << "-" << f.scanCounter-1 << " for unit " << cid << std::endl;
 	    } else {
-		dbg("FrontEnd.playFile",1) << "Input file jumped backwards from frame " << lastframe << "-" << f.frame << " for unit " << cid << std::endl;
+		dbg("FrontEnd.playFile",1) << "Input file jumped backwards from frame " << lastframe << "-" << f.scanCounter << " for unit " << cid << std::endl;
 	    }
 	}
 
@@ -461,9 +461,9 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	nProcTime++;
 	nallProcTime++;
 
-	if (f.frame%200==0) {
-	    dbg("frontend",1) << "Frame " << f.frame << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
-	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",f.frame,totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
+	if (f.scanCounter%200==0) {
+	    dbg("frontend",1) << "Frame " << f.scanCounter << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
+	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",f.scanCounter,totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
 	    nProcTime=0;
 	    maxProcTime=0;
 	    totalProcTime=0;
@@ -473,21 +473,21 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	if (!matfile.empty()) {
 	    snap->append(vis,world);
 	    
-	    if (matframes>0 && f.frame>=matframes)
+	    if (matframes>0 && f.scanCounter>=matframes)
 		// Do final output below
 		break;
 
-	    if (f.frame%2000 == 0) {
+	    if (f.scanCounter%2000 == 0) {
 		// Break up the output
 		char tmpfile[1000];
-		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.frame);
+		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.scanCounter);
 		snap->save(tmpfile);
 		snap->clear();
 	    }
 	}
 #endif
-	minPerfFrame=std::min(minPerfFrame,(int)(f.frame-1));
-	maxPerfFrame=std::max(maxPerfFrame,(int)(f.frame-1));
+	minPerfFrame=std::min(minPerfFrame,(int)(f.scanCounter-1));
+	maxPerfFrame=std::max(maxPerfFrame,(int)(f.scanCounter-1));
 	if (world->numPeople() > 0) {
 	    maxPeople=std::max(world->numPeople(),maxPeople);
 	    std::vector<float> framePerf=world->getFramePerformance();
@@ -548,7 +548,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 #ifdef MATLAB
     if (!matfile.empty()) {
 	char tmpfile[1000];
-	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.frame);
+	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.scanCounter);
 	snap->save(tmpfile);
 	snap->clear();
     }

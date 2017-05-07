@@ -356,8 +356,8 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		if (assignments[j]==(int)p) {
 		    // Redo assignments to which leg based on observertion
 		    Point sickpt=vis.getSick()->getWorldPoint(j);
-		    float l1=people[p].getObsLike(sickpt,0,vis.getSick()->getFrame());
-		    float l2=people[p].getObsLike(sickpt,1,vis.getSick()->getFrame());
+		    float l1=people[p].getObsLike(sickpt,0,vis.getSick()->getScanCounter());
+		    float l2=people[p].getObsLike(sickpt,1,vis.getSick()->getScanCounter());
 		    ldiff.push_back(l1-l2);
 		    fs[0].push_back(j);
 		}
@@ -427,7 +427,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		    for (int leg=0;leg<2;leg++) {
 			for (unsigned int i=0;i<fs[f].size();i++) {
 			    Point sickpt=vis.getSick()->getWorldPoint(fs[f][i]);
-			    float like = people[p].getObsLike(sickpt,leg,vis.getSick()->getFrame());
+			    float like = people[p].getObsLike(sickpt,leg,vis.getSick()->getScanCounter());
 			    if (leg==f)
 				swaplike+=like;
 			    else

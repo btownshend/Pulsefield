@@ -14,11 +14,11 @@ mxArray *Vis::convertToMX() const {
     mxArray *vis = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
     mxArray *pFrame = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(pFrame) = sick->getFrame();
+    *mxGetPr(pFrame) = sick->getScanCounter();
     mxSetField(vis,0,"frame",pFrame);
 
     mxArray *pCframe = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(pCframe) = sick->getFrame();
+    *mxGetPr(pCframe) = sick->getScanCounter();
     mxSetField(vis,0,"cframe",pCframe);
 
     mxArray *pNmeasure = mxCreateDoubleMatrix(1,1,mxREAL);
