@@ -150,7 +150,13 @@ void SickIO::run() {
 
 // Background thread that retrieves frames from device and stores them in a queue
 void SickIO::get() {
-    SickFrame frame(sick_lms_5xx,nechoes,captureRSSI);   // Load from device, blocking if none available yet
+    SickFrame frame;
+    frame.read(sick_lms_5xx,nechoes,captureRSSI);   // Load from device, blocking if none available yet
+    pushFrame(frame);
+}
+
+// Push a frame onto the queue of incoming frames
+void SickIO::pushFrame(const SickFrame &frame) {
     // Adjust bootTime using last frame acquired such that (bootTime+transmitTime ~ acquired)
     if (bootTime.tv_sec==0) {
 	// Initialize such that transmitTime is same as acquired Time

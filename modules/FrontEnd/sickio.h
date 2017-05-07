@@ -87,8 +87,8 @@ public:
 	    pthread_cond_init(&signal,NULL);
 	    coordinateRotation=0;
 	}
-	// Set values for faking
-	void set(int _id, int _frame, const timeval &_acquired, int _nmeasure, int _nechoes, unsigned int _range[][MAXMEASUREMENTS], unsigned int _reflect[][MAXMEASUREMENTS]);
+	// Push a frame onto queue of frames to be processed
+	void pushFrame(const SickFrame &frame);
 
 	// Overlay frame read from data file onto real-time data
 	void overlayFrame(const SickFrame &frame);
