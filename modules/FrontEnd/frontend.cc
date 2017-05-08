@@ -495,6 +495,8 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	FILE *perfFD=fopen(perfFilename,"a");
 	if (perfFD == NULL) {
 	    fprintf(stderr,"Unable to open performance file %s for appending\n", perfFilename);
+	} else if (allperf.size()==0) {
+	    fprintf(stderr,"No performance data to write (no people?)\n");
 	} else {
 	    std::cout << "Writing performance data to " << perfFilename << std::endl;
 	    // Get current time
