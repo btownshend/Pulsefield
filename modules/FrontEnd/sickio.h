@@ -176,6 +176,9 @@ public:
 	struct timeval getAbsScanTime() const {
 	    return curFrame.getAbsScanTime(bootTime);
 	}
+	// Get age of frame in usec
+	int getAge(const SickFrame &frame) const;
+	int getAge() const { return getAge(curFrame); }
 
 	// Get angle of measurement in degrees (local coordinates)
 	float getAngleDeg(int measurement)  const {

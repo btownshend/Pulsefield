@@ -263,6 +263,14 @@ void SickIO::unlock()  {
     pthread_mutex_unlock(&mutex);
 }
 
+// Get age of frame in usec
+int SickIO::getAge(const SickFrame &f) const {
+    struct timeval scanTime = getAbsScanTime(f);
+    int age=(f.acquired.tv_sec-scanTime.tv_sec)*1000000+(f.acquired.tv_usec-scanTime.tv_usec);
+    return age;
+}
+	
+
 void SickIO::updateCalTargets() {
     // Find any calibration targets present
     std::vector<Point> pts(getNumMeasurements());
