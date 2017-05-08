@@ -163,9 +163,10 @@ void SickIO::pushFrame(const SickFrame &frame) {
     // Adjust bootTime using last frame acquired such that bootTime+scanTime ~ acquired
     if (bootTime.tv_sec==0) {
 	// Initialize such that transmitTime is same as acquired Time
+	struct timeval relScanTime=frame.getAbsScanTime(bootTime);   // bootTime=0, so this is relative
 	bootTime=frame.acquired;
-	bootTime.tv_sec-=frame.transmitTime/1000000;
-	bootTime.tv_usec-=frame.transmitTime%1000000;
+	bootTime.tv_sec-=relScanTime.tv_sec;
+	bootTime.tv_usec-=relScanTime.tv_usec;
 	if (bootTime.tv_usec<0) {
 	    bootTime.tv_sec-=1;
 	    bootTime.tv_usec+=1000000;
@@ -175,11 +176,9 @@ void SickIO::pushFrame(const SickFrame &frame) {
 	dbg("SickIO.get",1) << "Unit " << id << " initialized bootTime to " << bootTime.tv_sec << "/" << bootTime.tv_usec << std::endl;
     }
 
-    int error=(frame.acquired.tv_sec-bootTime.tv_sec)*1000000+(frame.acquired.tv_usec-bootTime.tv_usec-frame.transmitTime);
-    if (abs(error) > 100000) {
-	std::cerr << "Excessive reception delay for unit " << id << " of " << error/1000 << "  msec" << std::endl;
-    }
     // compute acquired-absScanTime
+    struct timeval absScanTime = frame.getAbsScanTime(bootTime);
+    int error=(frame.acquired.tv_sec-absScanTime.tv_sec)*1000000+(frame.acquired.tv_usec-absScanTime.tv_usec);
     dbg("SickIO.get",2) << "Unit " << id << " scan " << frame.getScanCounter() << " received  " << error << "  usec after scan started." << std::endl;
     if (error < 0) {
 	bootTime.tv_sec-=(-error)/1000000;
@@ -190,13 +189,16 @@ void SickIO::pushFrame(const SickFrame &frame) {
 	}
 	dbg("SickIO.get",1) << "Unit " << id << " boottime error = " << error << "  usec, snapping boottime to " << bootTime.tv_sec << "/" << bootTime.tv_usec  << std::endl;
     }
-    if (error>1000) {
-	// More than 1msec delay in receiving message
+    if (error>=5000) {
+	// More than 5msec delay in receiving message
 	dbg("SickIO.get",1) << "Receipt of frame " << frame.getScanCounter() << " from unit " << id << " was delayed by " << error/1000 << " msec." << std::endl;
+	if (error > 100000)
+	    std::cerr << "Excessive reception delay for unit " << id << " of " << error/1000 << "  msec" << std::endl;
     }
+
     static const int DRIFTCOMP=10;   // Can compensate for drift of up to DRIFTCOMP*FPS usec/sec
     if (error > DRIFTCOMP) {
-	bootTime.tv_usec-=DRIFTCOMP;
+	bootTime.tv_usec+=DRIFTCOMP;
         if (bootTime.tv_usec<0) {
 	    bootTime.tv_usec+=1000000;
 	    bootTime.tv_sec--;
