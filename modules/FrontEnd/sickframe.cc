@@ -96,7 +96,7 @@ void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int _nechoes, bool c
 	    } else {
 		outputChannels=s[17];
 	    }
-	    dbg("SickFrame.SickFrame",1) << "Unit " << serialNumber << " read scan " << scanCounter << std::endl;
+	    dbg("SickFrame.SickFrame",2) << "Unit " << serialNumber << " read scan " << scanCounter << std::endl;
 	}
     }
 
@@ -156,7 +156,7 @@ int SickFrame::read(FILE *fd, int version) {
 	    return -1;
 	}
 	origin.setX(originX); origin.setY(originY);
-	dbg("SickFrame.read",1) << "id=" << id << ", origin=[" << origin << "], crot=" << coordinateRotation << std::endl;
+	dbg("SickFrame.read",3) << "id=" << id << ", origin=[" << origin << "], crot=" << coordinateRotation << std::endl;
 	if (EOF==(nread=fscanf(fd,"P %d %d %ld %d %d %d ",&cid,&scanCounter,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&num_measurements))) {
 	    return -1;
 	}

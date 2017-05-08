@@ -215,7 +215,7 @@ void FrontEnd::processFrames() {
 	dbg("FrontEnd.processFrame",1) << "Initialized start frame (unit 0) to " << startframe << std::endl;
     }
     frame=(sick[0]->getScanCounter()-startframe)*nsick;
-    dbg("FrontEnd.processFrame",1) << "Processing frame " << frame << std::endl;
+    dbg("FrontEnd.processFrames",2) << "Processing frame " << frame << std::endl;
 	
 	char dbgstr[100];
 	sprintf(dbgstr,"Frame.%d",frame);
