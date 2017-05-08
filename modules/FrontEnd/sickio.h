@@ -173,9 +173,11 @@ public:
 	}
 	
 	// Get time of scan
-	struct timeval getAbsScanTime() const {
-	    return curFrame.getAbsScanTime(bootTime);
+	struct timeval getAbsScanTime(const SickFrame &f) const {
+	    return f.getAbsScanTime(bootTime);
 	}
+	struct timeval getAbsScanTime() const { return getAbsScanTime(curFrame); }
+
 	// Get age of frame in usec
 	int getAge(const SickFrame &frame) const;
 	int getAge() const { return getAge(curFrame); }
