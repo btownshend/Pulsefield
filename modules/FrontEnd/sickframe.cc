@@ -1,4 +1,5 @@
 #include <map>
+#include <string.h>
 #include "sickio.h"
 
 using namespace SickToolbox;
@@ -120,16 +121,32 @@ void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int _nechoes, bool c
     gettimeofday(&acquired,0);  // Time of acquisition
 }
 
+char *SickFrame::readLine(FILE *fd) const {
+    static const int MAXLINE=10000;
+    static char line[MAXLINE];
+    do {
+	if (fgets(line,MAXLINE,fd) ==NULL) {
+	    std::cerr <<  "EOF" << std::endl;
+	    return NULL;
+	}
+	dbg("SickFrame.readLine",5) << "Got: " << line << std::flush;
+	if (line[0]=='#')
+	    std::cout << "Comment: " << line << std::flush;
+    } while (line[0]=='#');
+    return line;
+}
+
 // Read the next frame from the given file descriptor
 // Returns unit id of frame read
 int SickFrame::read(FILE *fd, int version) {
     int cid;   // CID is unit number with 1-origin
     int nread;
+    char *line;
 
     if (version==1) {
-	if (EOF==(nread=fscanf(fd,"%d %d %ld %d %d %d ",&cid,&scanCounter,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&num_measurements))) {
+	if ((line=readLine(fd)) == NULL)
 	    return -1;
-	}
+	nread=sscanf(line,"%d %d %ld %d %d %d ",&cid,&scanCounter,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&num_measurements);
 	if (nread!=6)  {
 	    std::cerr << "Error scanning input file, read " << nread << " entries when 6 were expected" << std::endl;
 	    return -1;
@@ -147,34 +164,25 @@ int SickFrame::read(FILE *fd, int version) {
     } else if (version==2) {
 	int id;
 	float originX, originY;
-
+	
 	// Read origin, rotation and store in frame (not in sickio)  (but currently ignored since current settings apply to loaded file)
-	if (EOF==(nread=fscanf(fd,"T %d %f %f %lf ",&id, &originX, &originY, &coordinateRotation)))
+	if ((line=readLine(fd)) == NULL)
 	    return -1;
+	nread=sscanf(line,"T %d %f %f %lf ",&id, &originX, &originY, &coordinateRotation);
 	if (nread!=4)  {
 	    std::cerr << "Error scanning input file, read " << nread << " entries when 4 were expected" << std::endl;
 	    return -1;
 	}
 	origin.setX(originX); origin.setY(originY);
 	dbg("SickFrame.read",3) << "id=" << id << ", origin=[" << origin << "], crot=" << coordinateRotation << std::endl;
-	if (EOF==(nread=fscanf(fd,"P %d %d %ld %d %d %d ",&cid,&scanCounter,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&num_measurements))) {
-	    return -1;
-	}
-	if (nread!=6)  {
-	    std::cerr << "Error scanning input file, read " << nread << " entries when 6 were expected" << std::endl;
-	    return -1;
-	}
-	if (EOF==(nread=fscanf(fd,"%d %d %d %d %d %d %d %d ",&devNumber,&serialNumber,&devStatus,&telegramCounter,&scanTime,& transmitTime,&digitalInputs,&digitalOutputs)))
-	    return -1;
-	if (nread!=8)  {
-	    std::cerr << "Error scanning input file, read " << nread << " entries when 8 were expected" << std::endl;
-	    return -1;
-	}
 	int tmp1, tmp2;
-	if (EOF==(nread=fscanf(fd,"%d %d ",&tmp1,&tmp2)))
+	if ((line=readLine(fd)) == NULL)
 	    return -1;
-	if (nread!=2)  {
-	    std::cerr << "Error scanning input file, read " << nread << " entries when 2 were expected" << std::endl;
+	nread=sscanf(line,"P %d %d %ld %d %d %d %d %d %d %d %d %d %d %d %d %d",&cid,&scanCounter,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&num_measurements,
+		     &devNumber,&serialNumber,&devStatus,&telegramCounter,&scanTime,& transmitTime,&digitalInputs,&digitalOutputs,
+		     &tmp1, &tmp2);
+	if (nread!=16)  {
+	    std::cerr << "Error scanning input file, read " << nread << " entries when 6 were expected" << std::endl;
 	    return -1;
 	}
 	scanFrequency=tmp1/100.0;
@@ -192,22 +200,26 @@ int SickFrame::read(FILE *fd, int version) {
 
     for (int e=0;e<nechoes;e++) {
 	int echo;
-	nread=fscanf(fd,"D%d ",&echo);
-	if (nread==EOF) return -1;
+	if ((line=readLine(fd)) == NULL)
+	    return -1;
+	nread=sscanf(strtok(line," "),"D%d ",&echo);
+	if (nread!=1) return -1;
 	assert(echo>=0 && echo<nechoes);
 	for (int i=0;i<num_measurements;i++) {
-	    nread=fscanf(fd,"%d ",&range[e][i]);
-	    if (nread==EOF) return -1;
+	    nread=sscanf(strtok(NULL," "),"%d ",&range[e][i]);
+	    if (nread!=1) return -1;
 	}
     }
     for (int e=0;e<nechoes;e++) {
 	int echo;
-	nread=fscanf(fd,"R%d ",&echo);
-	if (nread==EOF) return -1;
+	if ((line=readLine(fd)) == NULL)
+	    return -1;
+	nread=sscanf(strtok(line," "),"R%d ",&echo);
+	if (nread!=1) return -1;
 	assert(echo>=0 && echo<nechoes);
 	for (int i=0;i<num_measurements;i++) {
-	    nread=fscanf(fd,"%d ",&reflect[e][i]);
-	    if (nread==EOF) return -1;
+	    nread=sscanf(strtok(NULL," "),"%d ",&reflect[e][i]);
+	    if (nread!=1) return -1;
 	}
     }
     return cid;

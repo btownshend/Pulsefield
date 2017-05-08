@@ -29,6 +29,7 @@ class SickFrame {
     unsigned int scanTime;
     int scanTimeWraps;  // Cumulative effect of wrapping scanTime(adds 1 at each wrap)
 
+    char *readLine(FILE *f) const;
  public:
     static const int MAXECHOES=5;
     static const int MAXMEASUREMENTS=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS;
