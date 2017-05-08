@@ -244,6 +244,7 @@ void FrontEnd::processFrames() {
 	    currenttime=sick[i]->getAbsScanTime();
 	    if (starttime.tv_sec==0)
 		starttime=currenttime;
+	    dbg("FrontEnd.processFrames",2) << "Processing unit " << i << " scan " << sick[i]->getScanCounter() << " with age " << sick[i]->getAge()/1000.0f << " msec" << std::endl;
 	    vis->update(sick[i]);
 	    elapsed=(currenttime.tv_sec-starttime.tv_sec)+(currenttime.tv_usec-starttime.tv_usec)*1e-6;
 	    world->track(*vis,frame,sick[i]->getScanFreq()*nsick,elapsed);

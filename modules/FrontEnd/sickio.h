@@ -92,7 +92,7 @@ private:
 	int id;
 	SickToolbox::SickLMS5xx *sick_lms_5xx;
 	bool valid;
-	struct timeval bootTime;  // Real time equivalent to time 0 on LIDAR
+	struct timeval bootTime;  // Real time equivalent to time 0 on LIDAR (for getAbsScanTime())
 	pthread_t runThread;
 	int nechoes;   // Number of echoes to retrieve in each frame
 	bool captureRSSI;

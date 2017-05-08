@@ -160,7 +160,7 @@ void SickIO::get() {
 
 // Push a frame onto the queue of incoming frames
 void SickIO::pushFrame(const SickFrame &frame) {
-    // Adjust bootTime using last frame acquired such that (bootTime+transmitTime ~ acquired)
+    // Adjust bootTime using last frame acquired such that bootTime+scanTime ~ acquired
     if (bootTime.tv_sec==0) {
 	// Initialize such that transmitTime is same as acquired Time
 	bootTime=frame.acquired;
@@ -175,12 +175,12 @@ void SickIO::pushFrame(const SickFrame &frame) {
 	dbg("SickIO.get",1) << "Unit " << id << " initialized bootTime to " << bootTime.tv_sec << "/" << bootTime.tv_usec << std::endl;
     }
 
-    // compute acquired-bootTime+transmitTime (in usec)
     int error=(frame.acquired.tv_sec-bootTime.tv_sec)*1000000+(frame.acquired.tv_usec-bootTime.tv_usec-frame.transmitTime);
-    dbg("SickIO.get",1) << "Unit " << id << " boottime error = " << error << "  usec" << std::endl;
     if (abs(error) > 100000) {
 	std::cerr << "Excessive reception delay for unit " << id << " of " << error/1000 << "  msec" << std::endl;
     }
+    // compute acquired-absScanTime
+    dbg("SickIO.get",2) << "Unit " << id << " scan " << frame.getScanCounter() << " received  " << error << "  usec after scan started." << std::endl;
     if (error < 0) {
 	bootTime.tv_sec-=(-error)/1000000;
 	bootTime.tv_usec-=(-error)%1000000;
@@ -210,7 +210,7 @@ void SickIO::pushFrame(const SickFrame &frame) {
 	frames.pop();
     }
     if (frames.size() >5) {
-	dbg("SickIO.get",1) << "Warning: frames queue now has " << frames.size() << " entries -- flushing " << frames.front().getScanCounter() <<  std::endl;
+	dbg("SickIO.get",1) << "Warning: frames queue for unit " << id << " now has " << frames.size() << " entries -- flushing " << frames.front().getScanCounter() <<  std::endl;
 	frames.pop();
     }
     pthread_cond_signal(&signal);
