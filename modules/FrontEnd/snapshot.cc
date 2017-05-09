@@ -15,8 +15,8 @@ void Snapshot::clear() {
 }
 
 #ifdef MATLAB
-void Snapshot::append(const Vis *v, const World *t) {
-    vis.push_back(v->convertToMX());
+void Snapshot::append(int frame,const Vis *v, const World *t) {
+    vis.push_back(v->convertToMX(frame));
     bg.push_back(v->getSick()->getBackground().convertToMX());
     world.push_back(t->convertToMX());
 }

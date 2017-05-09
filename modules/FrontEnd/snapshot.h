@@ -19,7 +19,8 @@ class Snapshot {
     std::vector<std::string> arglist;
 public:
     Snapshot(const std::vector<std::string> &arglist);
-    void append(const Vis *vis, const World *world);
+    void append(int frame, const Vis *vis, const World *world);
     void save(const char *filename) const;
     void clear();
+    int size() { return vis.size(); }
 };

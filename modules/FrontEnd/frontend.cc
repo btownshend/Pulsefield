@@ -250,6 +250,10 @@ void FrontEnd::processFrames() {
 	    world->track(*vis,frame,sick[i]->getScanFreq()*nsick,elapsed);
 	    frame++;
 	}
+#ifdef MATLAB
+	if (!matfile.empty() && (matframes==0 || frame<matframes))
+	    snap->append(frame,vis,world);
+#endif
 	world->draw(nsick,sick);
 	sendMessages(elapsed);
 	sendOnce=0;
@@ -460,16 +464,14 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 
 #ifdef MATLAB
 	if (!matfile.empty()) {
-	    snap->append(vis,world);
-	    
-	    if (matframes>0 && f.getScanCounter()>=matframes)
+	    if (matframes>0 && frame>=matframes)
 		// Do final output below
 		break;
 
-	    if (f.getScanCounter()%2000 == 0) {
+	    if (snap->size() >= 2000) {
 		// Break up the output
 		char tmpfile[1000];
-		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.getScanCounter());
+		sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),frame);
 		snap->save(tmpfile);
 		snap->clear();
 	    }
@@ -539,7 +541,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 #ifdef MATLAB
     if (!matfile.empty()) {
 	char tmpfile[1000];
-	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),f.getScanCounter());
+	sprintf(tmpfile,"%s-%d.mat",matfile.c_str(),frame);
 	snap->save(tmpfile);
 	snap->clear();
     }

@@ -16,7 +16,7 @@ public:
     void update(const SickIO *sick);
 
     // Convert to an mxArray
-    mxArray *convertToMX() const;
+    mxArray *convertToMX(int frame) const;
 
     const SickIO *getSick() const { return sick; }
 };

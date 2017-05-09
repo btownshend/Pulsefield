@@ -9,12 +9,12 @@ void Vis::update(const SickIO *s) {
 }
 
 #ifdef MATLAB
-mxArray *Vis::convertToMX() const {
     const char *fieldnames[]={"cframe","nmeasure","range","angle","frame","acquired"};
+mxArray *Vis::convertToMX(int frame) const {
     mxArray *vis = mxCreateStructMatrix(1,1,sizeof(fieldnames)/sizeof(fieldnames[0]),fieldnames);
 
     mxArray *pFrame = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(pFrame) = sick->getScanCounter();
+    *mxGetPr(pFrame) = frame;
     mxSetField(vis,0,"frame",pFrame);
 
     mxArray *pCframe = mxCreateDoubleMatrix(1,1,mxREAL);
