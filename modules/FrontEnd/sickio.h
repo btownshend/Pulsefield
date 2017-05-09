@@ -81,6 +81,10 @@ class SickFrame {
     unsigned int getScanCounter() const {
 	return scanCounter + 65536*scanCounterWraps;
     }
+
+    unsigned int getNumEchoes() const {
+	return nechoes;
+    }
 };
 
 class SickIO {
@@ -96,7 +100,7 @@ private:
 	bool valid;
 	struct timeval bootTime;  // Real time equivalent to time 0 on LIDAR (for getAbsScanTime())
 	pthread_t runThread;
-	int nechoes;   // Number of echoes to retrieve in each frame
+	int captureEchoes;   // Number of echoes to retrieve in each frame
 	bool captureRSSI;
 	void get();
 	bool running;
@@ -266,8 +270,11 @@ public:
 		return id;
 	}
 
-	void setNumEchoes(int nechoes);
-	unsigned int getNumEchoes() const { return nechoes; }
+	// Set number of echoes to capture on each frame
+	void setCaptureNumEchoes(int nechoes);
+
+	// Get the number of echoes in the current frame (not necessarily the same as the number set for future frames)
+	unsigned int getNumEchoes() const { return curFrame.getNumEchoes(); }
 	void setSynchronization(bool isMaster, int phase=0);
 	void setCaptureRSSI(bool on);
 	void setScanFreq(int freq) {

@@ -49,7 +49,7 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	    setSynchronization(true);
 	else
 	    setSynchronization(false,180);
-	setNumEchoes(1);
+	setCaptureNumEchoes(1);
 	setCaptureRSSI(false);
 	scanFreq=50;
 	scanRes=0.3333;   // Needs to be only 4 decimals to be recognized by DoubleToSickScanRes
@@ -87,12 +87,12 @@ void SickIO::updateScanFreqAndRes() {
 	    sick_lms_5xx->SetSickScanFreqAndRes(sick_lms_5xx->IntToSickScanFreq(scanFreq),sick_lms_5xx->DoubleToSickScanRes(scanRes));
 }
 
-void SickIO::setNumEchoes(int _nechoes) {
-    assert(_nechoes>=1 && _nechoes<=MAXECHOES);
-    nechoes=_nechoes;
+void SickIO::setCaptureNumEchoes(int n) {
+    assert(n>=1 && n<=MAXECHOES);
+    captureEchoes=n;
     if (fake)
 	return;
-    if (nechoes==1)
+    if (captureEchoes==1)
 	sick_lms_5xx->SetSickEchoFilter(SickLMS5xx::SICK_LMS_5XX_ECHO_FILTER_FIRST);
     else
 	sick_lms_5xx->SetSickEchoFilter(SickLMS5xx::SICK_LMS_5XX_ECHO_FILTER_ALL_ECHOES);
@@ -154,7 +154,7 @@ void SickIO::run() {
 // Background thread that retrieves frames from device and stores them in a queue
 void SickIO::get() {
     SickFrame frame;
-    frame.read(sick_lms_5xx,nechoes,captureRSSI);   // Load from device, blocking if none available yet
+    frame.read(sick_lms_5xx,captureEchoes,captureRSSI);   // Load from device, blocking if none available yet
     pushFrame(frame);
 }
 
