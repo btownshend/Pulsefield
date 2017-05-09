@@ -53,14 +53,16 @@ public:
 	assert(hits.size()>=2);
 	int jump=0;   // Jump is after this index
 	float jumpSize=(hits[jump]-hits[jump+1]).norm();
+	dbg("World.makeAssignments",3) << "Trying to split target into 2.  hits.size()=" << hits.size() << ", initial jumpSize=" << jumpSize << std::endl;
 	for (int i=1;i<hits.size()-1;i++) {
 	    float jtmp=(hits[i]-hits[i+1]).norm();
 	    if (jtmp>jumpSize) {
 		jump=i;
 		jumpSize=jtmp;
+		dbg("World.makeAssignments",4) << "Possible split at " << jump << " with size " << jumpSize << std::endl;
 	    }
 	}
-	dbg("World.makeAssignments",3) << "Split target into 2 at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << std::endl;
+	dbg("World.makeAssignments",3) << "Split target into 2 at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << ", jumpSize=" << jumpSize << std::endl;
 	Target result;
 	for (int i=jump+1;i<hits.size();i++)
 	    result.append(scans[i],hits[i]);
@@ -121,6 +123,7 @@ public:
 		for (int k=j+1;k<hits.size();k++)
 		    depth=std::max(depth,hits[j].norm()-std::max(hits[i].norm(),hits[k].norm()));
 	    }
+	dbg("World.getMaximaDepth",3) << "depth=" << depth << std::endl;
 	return depth;
     }
     
@@ -141,7 +144,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 
     for (unsigned int f=0;f<sick->getNumMeasurements();f++) {
 	if (bglike[f]>bglikethresh) {
-	    //dbg("World.makeAssignments",8) << "Assigned scan " << f << " with range " << range[f] << " to background with bglike= " << bglike[f] << std::endl;
+	    dbg("World.makeAssignments",8) << "Assigned scan " << f << " with range " << range[f] << " to background with bglike= " << bglike[f] << std::endl;
 	    assignments[f]=-1;
 	    nbg++;
 	    continue;  // Probably background

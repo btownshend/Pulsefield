@@ -208,7 +208,7 @@ void SickIO::pushFrame(const SickFrame &frame) {
     frames.push(frame);
     while (frames.size()>1 && getAge(frames.front())>STALEAGE) {
 	dbg("SickIO.get",1) << "Discarding stale scan " << frames.front().getScanCounter() << " from unit " << id << " with age " << getAge(frames.front()) << std::endl;
-	dbg("SickIO.get",1) << "scan Time = " << frames.front().getAbsScanTime(bootTime).tv_sec << "/" << frames.front().getAbsScanTime(bootTime).tv_usec << std::endl;
+	dbg("SickIO.get",3) << "scan Time = " << frames.front().getAbsScanTime(bootTime).tv_sec << "/" << frames.front().getAbsScanTime(bootTime).tv_usec << std::endl;
 	frames.pop();
     }
     if (frames.size() >5) {

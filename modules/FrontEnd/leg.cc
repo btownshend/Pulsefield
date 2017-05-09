@@ -161,6 +161,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 
     // Find the rays that will hit this box
     // Use LIDAR local coordinates since we'll be mapping this to particular scans
+    dbg("Leg.update",3) << "Box: " << vis.getSick()->worldToLocal(minval) << " - " << vis.getSick()->worldToLocal(maxval) << std::endl;
     float theta[4];
     theta[0]=vis.getSick()->worldToLocal(Point(maxval.X(),minval.Y())).getTheta();
     theta[1]=vis.getSick()->worldToLocal(Point(maxval.X(),maxval.Y())).getTheta();
@@ -174,6 +175,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	else if (theta[k]<theta[0]-M_PI)
 	    theta[k]+=2*M_PI;
     }
+    dbg("Leg.update",3) << "Theta = [" << theta[0] << ", "<< theta[1] << ", "<< theta[2] << ", "<< theta[3] << "]" << std::endl;
     
     float mintheta=std::min(std::min(theta[0],theta[1]),std::min(theta[2],theta[3]));
     float maxtheta=std::max(std::max(theta[0],theta[1]),std::max(theta[2],theta[3]));
@@ -303,7 +305,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    sum=sum+pt*prob;
 	    tprob+=prob;
 	    nsum++;
-	    //dbg("Leg.updateMLE",3) << "prob=" << prob << ", like=" << like[ix*likeny+iy] << ", pt=" << pt << ", sum=" << sum << std::endl;
+	    dbg("Leg.updateMLE",3) << "prob=" << prob << ", like=" << like[ix*likeny+iy] << ", pt=" << pt << ", sum=" << sum << std::endl;
 	}
     }
     assert(tprob>0);  // Since MLE was found, there must be some point that works

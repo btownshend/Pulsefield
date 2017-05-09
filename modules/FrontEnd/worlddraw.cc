@@ -94,9 +94,9 @@ void World::draw(int nsick, const SickIO * const * sick) const {
     if (surface==NULL)
 	return;
     
-     dbg("World.draw",2) << "locking mutex" << std::endl;
+    //dbg("World.draw",2) << "locking mutex" << std::endl;
      pthread_mutex_lock(&((World *)this)->displayMutex);
-     dbg("World.draw",2) << "got mutex lock" << std::endl;
+     //dbg("World.draw",2) << "got mutex lock" << std::endl;
 
     cairo_surface_flush(surface);
     int width=cairo_xlib_surface_get_width(surface);
@@ -240,6 +240,6 @@ void World::draw(int nsick, const SickIO * const * sick) const {
      cairo_paint(cr);
      cairo_destroy(cr);
      XFlush(dpy);
-     dbg("World.draw",2) << "Unlocking mutex" << std::endl;
+     //dbg("World.draw",2) << "Unlocking mutex" << std::endl;
      pthread_mutex_unlock(&((World *)this)->displayMutex);
 }

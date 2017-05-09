@@ -253,9 +253,9 @@ void FrontEnd::processFrames() {
 	world->draw(nsick,sick);
 	sendMessages(elapsed);
 	sendOnce=0;
-	dbg("FrontEnd",2) << "Bounds=[" << world->getMinX() << "," << world->getMaxX() << "," << world->getMinY() << "," << world->getMaxY() << "]" << std::endl;
+	dbg("FrontEnd.processFrames",4) << "Bounds=[" << world->getMinX() << "," << world->getMaxX() << "," << world->getMinY() << "," << world->getMaxY() << "]" << std::endl;
 	if (tmpDebug) {
-	    dbg("FrontEnd",1) << "End of frame " << frame << ", restoring debug levels" << std::endl;
+	    dbg("FrontEnd.processFrames",1) << "End of frame " << frame << ", restoring debug levels" << std::endl;
 	    PopDebugSettings();
 	}
 }

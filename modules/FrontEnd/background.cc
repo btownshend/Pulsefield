@@ -49,9 +49,10 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
     std::vector<float> result(sick.getNumMeasurements(),0.0);
     const unsigned int *srange = sick.getRange(0);
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
-	if (!world.inRange(sick.getWorldPoint(i)) || srange[i]<MINRANGE)
+	if (!world.inRange(sick.getWorldPoint(i)) || srange[i]<MINRANGE) {
+	    dbg("Background.like",10) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is outside world or too close" << std::endl;
 	    result[i]=1.0;
-	else {
+	} else {
 	    // Compute result
 	    result[i]=0.0;
 	    for (int k=0;k<NRANGES-1;k++) {
@@ -70,10 +71,10 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
 		// Check if it is between this and adjacent background
 		if (i>0 && ((srange[i]>range[0][i]) != (srange[i]>range[0][i-1]))) {
 		    result[i]+=(1-result[i])*freq[0][i]*freq[0][i-1]*INTERPSCANBGWEIGHT/fabs(range[0][i-1]-range[0][i]);
-		    //		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i-1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
+		    		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i-1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
 		}
 		if (i+1<sick.getNumMeasurements() && ((srange[i]>range[0][i]) != (srange[i]>range[0][i+1]))) {
-		    //		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0)  <<std::fixed <<  srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i+1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
+		    		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0)  <<std::fixed <<  srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i+1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
 		    result[i]+=(1-result[i])*freq[0][i]*freq[0][i+1]*INTERPSCANBGWEIGHT/fabs(range[0][i]-range[0][i+1]);
 		}
 	    }
