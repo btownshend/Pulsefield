@@ -209,6 +209,7 @@ void *FrontEnd::processIncoming(void *arg) {
 
 void FrontEnd::processFrames() {
     dbg("FrontEnd.processFrames",2) << "Processing frames " << frame << "-" << frame+nsick-1 << std::endl;
+    for (int c=0;c<nsick;c++) {
 	char dbgstr[100];
 	sprintf(dbgstr,"Frame.%d",frame);
 	bool tmpDebug=false;
@@ -220,31 +221,27 @@ void FrontEnd::processFrames() {
 	}
 
 	sendOnce |= sendAlways;
-	for (int c=0;c<nsick;c++) {
-	    const unsigned int *range[SickIO::MAXECHOES];
-	    const unsigned int *reflect[SickIO::MAXECHOES];
-	    for (unsigned int i=0;i<sick[c]->getNumEchoes();i++) {
-		range[i]=sick[c]->getRange(i);
-		reflect[i]=sick[c]->getReflect(i);
-	    }
-	    sendVisMessages(sick[c]->getId(),sick[c]->getScanCounter(),sick[c]->getAbsScanTime(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
-	    // clear valid flag so another frame can be read
-	    sick[c]->clearValid();
+	const unsigned int *range[SickIO::MAXECHOES];
+	const unsigned int *reflect[SickIO::MAXECHOES];
+	for (unsigned int i=0;i<sick[c]->getNumEchoes();i++) {
+	    range[i]=sick[c]->getRange(i);
+	    reflect[i]=sick[c]->getReflect(i);
 	}
+	sendVisMessages(sick[c]->getId(),sick[c]->getScanCounter(),sick[c]->getAbsScanTime(), sick[c]->getNumMeasurements(), sick[c]->getNumEchoes(), range, reflect);
 	double elapsed=0;
-	for (int i=0;i<nsick;i++) {
-	    currenttime=sick[i]->getAbsScanTime();
-	    if (starttime.tv_sec==0)
-		starttime=currenttime;
-	    dbg("FrontEnd.processFrames",2) << "Processing unit " << i << " scan " << sick[i]->getScanCounter() << " with age " << sick[i]->getAge()/1000.0f << " msec" << std::endl;
-	    vis->update(sick[i]);
-	    elapsed=(currenttime.tv_sec-starttime.tv_sec)+(currenttime.tv_usec-starttime.tv_usec)*1e-6;
-	    world->track(*vis,frame,sick[i]->getScanFreq()*nsick,elapsed);
-	}
+	currenttime=sick[c]->getAbsScanTime();
+	if (starttime.tv_sec==0)
+	    starttime=currenttime;
+	dbg("FrontEnd.processFrames",2) << "Processing unit " << sick[c]->getId()  << " scan " << sick[c]->getScanCounter() << " with age " << sick[c]->getAge()/1000.0f << " msec" << std::endl;
+	vis->update(sick[c]);
+	elapsed=(currenttime.tv_sec-starttime.tv_sec)+(currenttime.tv_usec-starttime.tv_usec)*1e-6;
+	world->track(*vis,frame,sick[c]->getScanFreq()*nsick,elapsed);
 #ifdef MATLAB
 	if (!matfile.empty() && (matframes==0 || frame<matframes))
 	    snap->append(frame,vis,world);
 #endif
+	// clear valid flag so another frame can be read
+	sick[c]->clearValid();
 	world->draw(nsick,sick);
 	sendMessages(elapsed);
 	sendOnce=0;
