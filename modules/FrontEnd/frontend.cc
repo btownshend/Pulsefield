@@ -364,21 +364,6 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    continue;
 	}
 	
-	if (frame1!=-1 || frameN!=-1) {
-	    // TODO
-	    std::cerr << "Frame range selection currently broken" << std::endl;
-	    exit(1);
-	}
-	if (frame1==-1 && frameN!=-1) {
-	    // Just first frameN frames
-	    frame1=f.getScanCounter();
-	    frameN+=f.getScanCounter()-1;
-	}
-	if (frame1!=-1 && f.getScanCounter()<frame1)
-	    continue;
-	if (frameN!=-1 && f.getScanCounter()>frameN)
-	    break;
-
 	if (f.getScanCounter()!=lastframe+1 && lastframe!=-1) {
 	    if (lastframe+1 == f.getScanCounter()-1) {
 		dbg("FrontEnd.playFile",1) << "Input file skips frame " << lastframe+1 << " for unit " << cid << std::endl;
@@ -444,6 +429,15 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	if (allValid) {
 	    if (syncLIDARS()) {
 		// LIDARs are in sync
+		if (frame1==-1 && frameN!=-1) {
+		    // Just first frameN frames
+		    frame1=sick[0]->getScanCounter();
+		    frameN+=frame1-1;
+		}
+		if (frame1!=-1 && sick[0]->getScanCounter()<frame1)
+		    continue;
+		if (frameN!=-1 && sick[0]->getScanCounter()>frameN)
+		    break;
 		processFrames();
 	    }
 	}
