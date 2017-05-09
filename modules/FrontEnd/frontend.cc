@@ -319,10 +319,9 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     int activeFrames=0;
 
     int fileVersion = SickFrame::getFileVersion(fd);
+    SickFrame f;
 
     while (true) {
-	SickFrame f;
-
 	// Read the next frame from fd into f and return the ID of the LIDAR 
 	int cid = f.read(fd,fileVersion);   
 	if (cid<0) {

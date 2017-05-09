@@ -76,6 +76,7 @@ class SickFrame {
 	    return result;
     }
 
+    struct timeval getAquisitionTime() const { return acquired; }
     // Get scan counter (taking into account any wraps since starting this program)
     unsigned int getScanCounter() const {
 	return scanCounter + 65536*scanCounterWraps;
@@ -179,6 +180,8 @@ public:
 	    return f.getAbsScanTime(bootTime);
 	}
 	struct timeval getAbsScanTime() const { return getAbsScanTime(curFrame); }
+	// Get acquisition time
+	struct timeval getAcquisitionTime() const { return curFrame.getAquisitionTime(); }
 
 	// Get age of frame in usec
 	int getAge(const SickFrame &frame) const;

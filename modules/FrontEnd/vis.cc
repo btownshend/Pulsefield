@@ -25,10 +25,10 @@ mxArray *Vis::convertToMX() const {
     *mxGetPr(pNmeasure) = sick->getNumMeasurements();
     mxSetField(vis,0,"nmeasure",pNmeasure);
 
-    mxArray *pabsscantime = mxCreateDoubleMatrix(1,1,mxREAL);
-    struct timeval absscantime=sick->getAbsScanTime();
-    *mxGetPr(pabsscantime) = (absscantime.tv_sec + absscantime.tv_usec/1e6)/86400.0 + 719529;
-    mxSetField(vis,0,"absscantime",pabsscantime);
+    mxArray *pacquired = mxCreateDoubleMatrix(1,1,mxREAL);
+    struct timeval acquired=sick->getAcquisitionTime();
+    *mxGetPr(pacquired) = (acquired.tv_sec + acquired.tv_usec/1e6)/86400.0 + 719529;
+    mxSetField(vis,0,"acquired",pacquired);
 
     const mwSize dims[3]={sick->getNumEchoes(),1,sick->getNumMeasurements()};
     mxArray *pRange = mxCreateNumericArray(3,dims,mxDOUBLE_CLASS,mxREAL);
