@@ -206,7 +206,9 @@ int SickFrame::read(FILE *fd, int version) {
 	if (nread!=1) return -1;
 	assert(echo>=0 && echo<nechoes);
 	for (int i=0;i<num_measurements;i++) {
-	    nread=sscanf(strtok(NULL," "),"%d ",&range[e][i]);
+	    char *p=strtok(NULL," ");
+	    if (p==NULL) return -1;
+	    nread=sscanf(p,"%d ",&range[e][i]);
 	    if (nread!=1) return -1;
 	}
     }
@@ -218,7 +220,9 @@ int SickFrame::read(FILE *fd, int version) {
 	if (nread!=1) return -1;
 	assert(echo>=0 && echo<nechoes);
 	for (int i=0;i<num_measurements;i++) {
-	    nread=sscanf(strtok(NULL," "),"%d ",&reflect[e][i]);
+	    char *p=strtok(NULL," ");
+	    if (p==NULL) return -1;
+	    nread=sscanf(p,"%d ",&reflect[e][i]);
 	    if (nread!=1) return -1;
 	}
     }
