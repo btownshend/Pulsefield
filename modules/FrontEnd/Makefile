@@ -40,6 +40,8 @@ all: frontend
 
 frontend: $(CSRCS:.c=.o) $(CXXSRCS:.cc=.o) $(SICKLIB)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)
+	install_name_tool -change @rpath/libmx.dylib $(MATLABLIBDIR)/libmx.dylib $@
+	install_name_tool -change @rpath/libmat.dylib $(MATLABLIBDIR)/libmat.dylib $@
 
 mixtest: mixtest.o gaussianmixture.o dbg.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBES)  -L$(OPENCVLIBDIR)  $(OPENCVLIBES) 
