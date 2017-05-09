@@ -36,7 +36,6 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]): conf
 
     starttime.tv_sec=0;
     starttime.tv_usec=0;
-    startframe=0;
     
 	matframes=0;
 	frame = 0;
@@ -209,14 +208,7 @@ void *FrontEnd::processIncoming(void *arg) {
 }
 
 void FrontEnd::processFrames() {
-    // Use unit 0 as reference frame number offset by startframe
-    if (startframe==0) {
-	startframe=sick[0]->getScanCounter();
-	dbg("FrontEnd.processFrame",1) << "Initialized start frame (unit 0) to " << startframe << std::endl;
-    }
-    frame=(sick[0]->getScanCounter()-startframe);
-    dbg("FrontEnd.processFrames",2) << "Processing frame " << frame << std::endl;
-	
+    dbg("FrontEnd.processFrames",2) << "Processing frames " << frame << "-" << frame+nsick-1 << std::endl;
 	char dbgstr[100];
 	sprintf(dbgstr,"Frame.%d",frame);
 	bool tmpDebug=false;
@@ -248,7 +240,6 @@ void FrontEnd::processFrames() {
 	    vis->update(sick[i]);
 	    elapsed=(currenttime.tv_sec-starttime.tv_sec)+(currenttime.tv_usec-starttime.tv_usec)*1e-6;
 	    world->track(*vis,frame,sick[i]->getScanFreq()*nsick,elapsed);
-	    frame++;
 	}
 #ifdef MATLAB
 	if (!matfile.empty() && (matframes==0 || frame<matframes))
@@ -262,6 +253,8 @@ void FrontEnd::processFrames() {
 	    dbg("FrontEnd.processFrames",1) << "End of frame " << frame << ", restoring debug levels" << std::endl;
 	    PopDebugSettings();
 	}
+	frame++;
+    }
 }
 
 void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
@@ -627,12 +620,14 @@ void FrontEnd::sendMessages(double elapsed) {
 	    sendSetupMessages(dests.getHost(i),dests.getPort(i));
     }
 
-    if (frame%2 == 0) {
+    static int lastFrame=0;
+    if (frame != lastFrame) {
 	// Downsample to 25 fps
 	world->sendMessages(dests,elapsed);
 	for (int j=0;j<nsick;j++)
 	    for (int i=0;i<dests.size();i++)
 		sick[j]->sendMessages(dests.getHost(i),dests.getPort(i));
+	lastFrame=frame;
     }
 }
 

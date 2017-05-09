@@ -32,8 +32,6 @@ class FrontEnd {
 
     // Start time of run (used to set zero reference)
     struct timeval starttime;
-    // Global frame offset (from sick[0]->frame)
-    int startframe;
     
     // Sync multiple LIDARS
     // Return true if they are in sync
