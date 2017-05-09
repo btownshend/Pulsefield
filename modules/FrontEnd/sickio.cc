@@ -51,11 +51,11 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	    setSynchronization(false,180);
 	setCaptureNumEchoes(1);
 	setCaptureRSSI(false);
-	scanFreq=50;
-	scanRes=0.3333;   // Needs to be only 4 decimals to be recognized by DoubleToSickScanRes
+	captureScanFreq=50;
+	captureScanRes=0.3333;   // Needs to be only 4 decimals to be recognized by DoubleToSickScanRes
+	updateScanFreqAndRes();
 	coordinateRotation=0;
 	origin=Point(0,0);
-	updateScanFreqAndRes();
 	running=false;
 	pthread_mutex_init(&mutex,NULL);
 	pthread_cond_init(&signal,NULL);
@@ -81,10 +81,10 @@ void SickIO::overlayFrame(const SickFrame &frame) {
 }
 
 void SickIO::updateScanFreqAndRes() {	
-    dbg("SickIO.updateScanFreqAndRes",1) << "Updating device to scanFreq=" << scanFreq << "(" << sick_lms_5xx->IntToSickScanFreq(scanFreq) << "), scanRes="
-					 << scanRes << "(" << sick_lms_5xx->DoubleToSickScanRes(scanRes) << ")" << std::endl;
+    dbg("SickIO.updateScanFreqAndRes",1) << "Updating device to scanFreq=" << captureScanFreq << "(" << sick_lms_5xx->IntToSickScanFreq(captureScanFreq) << "), scanRes="
+					 << captureScanRes << "(" << sick_lms_5xx->DoubleToSickScanRes(captureScanRes) << ")" << std::endl;
     if (!fake)
-	    sick_lms_5xx->SetSickScanFreqAndRes(sick_lms_5xx->IntToSickScanFreq(scanFreq),sick_lms_5xx->DoubleToSickScanRes(scanRes));
+	    sick_lms_5xx->SetSickScanFreqAndRes(sick_lms_5xx->IntToSickScanFreq(captureScanFreq),sick_lms_5xx->DoubleToSickScanRes(captureScanRes));
 }
 
 void SickIO::setCaptureNumEchoes(int n) {

@@ -104,8 +104,8 @@ private:
 	bool captureRSSI;
 	void get();
 	bool running;
-	int scanFreq;
-	double scanRes;
+	int captureScanFreq;
+	double captureScanRes;
 	Point origin;   // Origin in world coordinates
 	double coordinateRotation;   // Rotate the [x,y] coordinate system used internally and externally by this many degrees
 	void updateScanFreqAndRes();
@@ -129,8 +129,8 @@ public:
 	SickIO(int _id) {
 	    id=_id;
 	    fake=true;
-	    scanFreq=50;
-	    scanRes=0.3333;
+	    captureScanFreq=50;
+	    captureScanRes=0.3333;
 	    valid=false;
 	    pthread_mutex_init(&mutex,NULL);
 	    pthread_cond_init(&signal,NULL);
@@ -193,7 +193,7 @@ public:
 
 	// Get angle of measurement in degrees (local coordinates)
 	float getAngleDeg(int measurement)  const {
-	    return scanRes*(measurement-(curFrame.num_measurements-1)/2.0);
+	    return getScanRes()*(measurement-(curFrame.num_measurements-1)/2.0);
 	}
 	float getCoordinateRotationDeg() const {
 	    return coordinateRotation*180/M_PI;
@@ -277,23 +277,39 @@ public:
 	unsigned int getNumEchoes() const { return curFrame.getNumEchoes(); }
 	void setSynchronization(bool isMaster, int phase=0);
 	void setCaptureRSSI(bool on);
-	void setScanFreq(int freq) {
-	    scanFreq=freq;
-	    dbg("SickIO.setScanRes",1) << "Set scan frequency to " << scanFreq << " Hz" << std::endl;
+	void setCaptureScanFreq(int freq) {
+	    if (freq!=25 && freq!=35 && freq!=50 && freq!=75 && freq!=100) {
+		std::cerr << "Illegal scan frequency: " << freq << std::endl;
+		exit(1);
+	    }
+	    captureScanFreq=freq;
+	    dbg("SickIO.setScanRes",1) << "Set scan frequency to " << captureScanFreq << " Hz" << std::endl;
 	    updateScanFreqAndRes();
 	}
 	int getScanFreq() const {
-	    return scanFreq;
+	    return curFrame.scanFrequency;
 	}
 	// Set scan resolution in degrees
-	void setScanRes(double res) {
-	    scanRes=res;
-	    dbg("SickIO.setScanRes",1) << "Set scan resolution to " << res << " degrees" << std::endl;
+	void setCaptureScanRes(double res) {
+	    int n=int(190.0/res+1);
+	    switch (n) {
+	    case 571:
+		captureScanRes=0.3333;
+		break;
+	    case 381:
+		captureScanRes=0.5;
+		break;
+	    default:
+		std::cerr << "Illegal scanres: " << res << " (would be " << n << " measurements/scan)" << std:: endl;
+		exit(1);
+	    }
+	    dbg("SickIO.setCaptureScanRes",1) << "Set scan resolution to " << captureScanRes << " degrees" << std::endl;
 	    updateScanFreqAndRes();
 	}
 	// Get scan resolution in degrees
 	float getScanRes() const {
-	    return scanRes;
+	    // Update scanRes
+	    return (curFrame.num_measurements-1)/190.0;
 	}
 
 	void waitForFrame();

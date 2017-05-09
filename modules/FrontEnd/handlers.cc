@@ -74,7 +74,7 @@ static int setFPS_handler(const char *path, const char *types, lo_arg **argv, in
 void FrontEnd::setFPS(int fps) {
     dbg("FrontEnd.setFPS",1) << "Setting all sensors to " << fps << " FPS" << std::endl;
 	for (int i=0;i<nsick;i++)
-		sick[i]->setScanFreq(fps);
+		sick[i]->setCaptureScanFreq(fps);
 }
 
 int FrontEnd::getFPS() const {
@@ -92,7 +92,7 @@ void FrontEnd::setRes(int sickid, const char *res) {
 		return;
 	}
 	double dres=atof(res);
-	sick[sickid]->setScanRes(dres);
+	sick[sickid]->setCaptureScanRes(dres);
 }
 
 static int setEchoes_handler(const char *path, const char *types, lo_arg **argv, int argc,lo_message msg, void *user_data) {    ((FrontEnd *)user_data)->setEchoes(argv[0]->i); return 0; }
