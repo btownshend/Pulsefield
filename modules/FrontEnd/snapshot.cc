@@ -52,6 +52,6 @@ void Snapshot::save(const char *filename) const {
     if (matClose(pmat) != 0) 
 	fprintf(stderr,"Error closing MATLAB output file %s\n", filename);
 
-    mxDestroyArray(snap);
+    //    mxDestroyArray(snap);   // Gives an error about freeing unallocated -- perhaps matClose releases it?
 }
 #endif
