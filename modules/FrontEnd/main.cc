@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 	}
 	// Now playback file through it
 	do {
-	    int rc=fe.playFile(playFile,singlestep,speedFactor,overlayLive,frame1,frameN,savePerfData);
+	    int rc=fe.playFile(playFile,singlestep,speedFactor,overlayLive,frame1,frameN,savePerfData,nsick);
 	    savePerfData=false;   // Only save it once if looping
 	    if (rc)
 		exit(1);

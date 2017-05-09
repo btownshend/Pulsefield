@@ -295,7 +295,7 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 	}
 }
 
-int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bool overlayLive,int frame1, int frameN, bool savePerfData) {
+int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bool overlayLive,int frame1, int frameN, bool savePerfData, int maxsick) {
     printf("Playing back recording from %s\n", filename);
     FILE *fd=fopen(filename,"r");
     if (fd == NULL) {
@@ -330,6 +330,9 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	}
 	    
 	if (cid>nsick) {
+	    if (maxsick>0 && cid>maxsick)
+		// Only use part of the data
+		continue;
 	    printf("Increasing number of LIDARS from %d to %d\n",nsick,cid);
 	    SickIO **newSick=new SickIO*[cid];
 	    for (int i=0;i<nsick;i++)

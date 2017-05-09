@@ -73,7 +73,7 @@ class FrontEnd {
 
     void run();
 
-    int playFile(const char *filename, bool singleStep,float speedFactor=1.0f,bool overlayLive=false,int frame1=-1,int frameN=-1,bool savePerfData=false);
+    int playFile(const char *filename, bool singleStep,float speedFactor=1.0f,bool overlayLive=false,int frame1=-1,int frameN=-1,bool savePerfData=false, int maxsick=-1);
 
     void matsave(const std::string &filename, int frames);
 
