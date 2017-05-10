@@ -126,16 +126,7 @@ private:
 public:
 	SickIO(int _id, const char *host, int port);
 	// Constructor to fake the data from a scan
-	SickIO(int _id) {
-	    id=_id;
-	    fake=true;
-	    captureScanFreq=50;
-	    captureScanRes=0.3333;
-	    valid=false;
-	    pthread_mutex_init(&mutex,NULL);
-	    pthread_cond_init(&signal,NULL);
-	    coordinateRotation=0;
-	}
+	SickIO(int _id);
 	// Push a frame onto queue of frames to be processed
 	void pushFrame(const SickFrame &frame);
 

@@ -61,6 +61,20 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	pthread_cond_init(&signal,NULL);
 }
 
+SickIO::SickIO(int _id) {
+    id=_id;
+    fake=true;
+    captureScanFreq=50;
+    captureScanRes=0.3333;
+    updateScanFreqAndRes();
+    coordinateRotation=0;
+    origin=Point(0,0);
+    valid=false;
+    pthread_mutex_init(&mutex,NULL);
+    pthread_cond_init(&signal,NULL);
+    coordinateRotation=0;
+}
+
 SickIO::~SickIO() {
 	if (fake)
 		return;
