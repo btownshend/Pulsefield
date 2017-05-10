@@ -299,8 +299,8 @@ public:
 	}
 	// Get scan resolution in degrees
 	float getScanRes() const {
-	    // Update scanRes
-	    return (curFrame.num_measurements-1)/190.0;
+	    // get current frame's scanRes
+	    return 190.0/(curFrame.num_measurements-1);
 	}
 
 	void waitForFrame();
