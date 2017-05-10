@@ -20,48 +20,49 @@ class Point {
     float Y() const { return y; }
     void setX(float _x) { x=_x; }
     void setY(float _y) { y=_y; }
-    float getRange() const { return sqrt(x*x+y*y); }
+    float getRange() const { return sqrt(X()*X()+Y()*Y()); }
     // Theta is angle from [0,1] CCW
     float getTheta() const {
-	float th=atan2(y,x)-M_PI/2;
+	float th=atan2(Y(),X())-M_PI/2;
 	if (th<-M_PI)
 	    th+=2*M_PI;
 	return th;
     }
     void setThetaRange(float theta, float range) {
-	x=cos(theta+M_PI/2)*range; 
-	y=sin(theta+M_PI/2)*range;
+	setX(cos(theta+M_PI/2)*range); 
+	setY(sin(theta+M_PI/2)*range);
     }
     Point rot90() const {
-	return Point(-y,x); 
+	return Point(-Y(),X()); 
     }
     Point flipY() const {
-	return Point(x,-y);
+	return Point(X(),-Y());
     }
     Point flipX() const {
-	return Point(-x,y);
+	return Point(-X(),Y());
     }
+    // Rotate a point CCW arond origin  (x,0)-> (x-,0+) with +ve rotation
     Point rotate(float radians) const { 
-	return Point(x*cos(radians)-y*sin(radians),x*sin(radians)+y*cos(radians));
+	return Point(X()*cos(radians)-Y()*sin(radians),X()*sin(radians)+Y()*cos(radians));
     }
     Point rotateDegrees(float degrees) const { 
 	return rotate(degrees*M_PI/180);
     }
-    Point operator-(const Point &p2) const { return Point(x-p2.X(),y-p2.Y()); }
-    Point operator+(const Point &p2) const { return Point(x+p2.X(),y+p2.Y()); }
-    Point operator/(float s) const { return Point(x/s,y/s); }
-    Point operator*(float s) const { return Point(x*s,y*s); }
+    Point operator-(const Point &p2) const { return Point(X()-p2.X(),Y()-p2.Y()); }
+    Point operator+(const Point &p2) const { return Point(X()+p2.X(),Y()+p2.Y()); }
+    Point operator/(float s) const { return Point(X()/s,Y()/s); }
+    Point operator*(float s) const { return Point(X()*s,Y()*s); }
     friend Point operator*(float s,Point p);
-    Point operator-(float s) const { return Point(x-s,y-s); }
-    Point operator-() const { return Point(-x,-y); }
-    Point operator+(float s) const { return Point(x+s,y+s); }
+    Point operator-(float s) const { return Point(X()-s,Y()-s); }
+    Point operator-() const { return Point(-X(),-Y()); }
+    Point operator+(float s) const { return Point(X()+s,Y()+s); }
     float norm() const { return getRange(); }
-    float dot(const Point &p2) const { return p2.X()*x+p2.Y()*y; }
+    float dot(const Point &p2) const { return p2.X()*X()+p2.Y()*Y(); }
     friend std::ostream& operator<<(std::ostream &s, const Point &p);
     friend std::istream& operator>>(std::istream &s,  Point &p);
-    Point min(const Point &p2) const { return Point(std::min(x,p2.X()),std::min(y,p2.Y())); }
-    Point max(const Point &p2) const { return Point(std::max(x,p2.X()),std::max(y,p2.Y())); }
-    bool operator==(const Point &p2) const { return x==p2.X() && y==p2.Y(); }
+    Point min(const Point &p2) const { return Point(std::min(X(),p2.X()),std::min(Y(),p2.Y())); }
+    Point max(const Point &p2) const { return Point(std::max(X(),p2.X()),std::max(Y(),p2.Y())); }
+    bool operator==(const Point &p2) const { return X()==p2.X() && Y()==p2.Y(); }
     bool isNan() const { return isnan(x) || isnan(y); }
 };
 

@@ -4,7 +4,7 @@
 #include "point.h"
 
 std::ostream& operator<<(std::ostream &s, const Point &p) {
-    s << "(" << p.x << "," << p.y << ")";
+    s << "(" << p.X() << "," << p.Y() << ")";
     return s;
 }
 
@@ -19,7 +19,9 @@ std::istream& operator>>(std::istream &s,  Point &p) {
 	return s;
     }
 
-    s>>p.x;
+    float nx;
+    s>>nx;
+    p.setX(nx);
     do {
 	s.get(comma);
     } while (isspace(comma) && s.good());
@@ -28,7 +30,9 @@ std::istream& operator>>(std::istream &s,  Point &p) {
 	s.setstate(std::ios::failbit);
 	return s;
     }
-    s>>p.y;
+    float ny;
+    s>>ny;
+    p.setY(ny);
     do {
 	s.get(rparen);
     } while(isspace(rparen) && s.good());
@@ -37,6 +41,7 @@ std::istream& operator>>(std::istream &s,  Point &p) {
 	s.setstate(std::ios::failbit);
 	return s;
     }
+    
     return s;
 }
 
