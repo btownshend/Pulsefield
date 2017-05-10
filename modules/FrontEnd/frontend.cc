@@ -444,12 +444,14 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	nProcTime++;
 	nallProcTime++;
 
-	if (f.getScanCounter()%200==0) {
+	static int lastStatsFrame=0;
+	if (frame-lastStatsFrame >=200) {
 	    dbg("frontend",1) << "Frame " << f.getScanCounter() << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
 	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",f.getScanCounter(),totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
 	    nProcTime=0;
 	    maxProcTime=0;
 	    totalProcTime=0;
+	    lastStatsFrame=frame;
 	}
 
 #ifdef MATLAB
