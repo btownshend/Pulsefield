@@ -152,43 +152,34 @@ void FrontEnd::matsave(const std::string &filename, int frames) {
 
 // Check if LIDARs are frame-shifted from each other; flush a frame from the leader if not
 // Return true if something was flushed
-bool FrontEnd::syncLIDARS() {
-    bool inSync=true;
-    for (int i=1;i<nsick;i++) {
-	// Relative to sick[0]
-	int delta=(sick[i]->getAbsScanTime().tv_sec-sick[0]->getAbsScanTime().tv_sec)*1000000+(sick[i]->getAbsScanTime().tv_usec-sick[0]->getAbsScanTime().tv_usec);
-	// Want the delta to be nominally 1/(2*FPS), so flush if it is outside range [0, 1/FPS]
-	int flushUnit;
-	if (delta<0) 
-	    // Sick[0] should always be first
-	    flushUnit=i;
-	else if (delta > 1000000/(sick[0]->getScanFreq()))
-	    // More than a full scan time late
-	    flushUnit=0;
-	else {
-	    // In the right range
-	    dbg("FrontEnd.run",2) << "Frame delay of unit " << i << " vs. 0 = " << delta << " usec" << std::endl;
-	    continue;
-	}
-	dbg("FrontEnd.run",1) << "Frame delay of " << delta << " usec;  flushing scan " << sick[flushUnit]->getScanCounter() << " from unit " << flushUnit << std::endl;
-	sick[flushUnit]->clearValid();
-	inSync=false;
+bool FrontEnd::syncLIDAR(int i) {
+    // Relative to currenttime (last abs scan time processed)
+    if (currenttime.tv_sec==0)
+	return true;
+    int delta=(sick[i]->getAbsScanTime().tv_sec-currenttime.tv_sec)*1000000+(sick[i]->getAbsScanTime().tv_usec-currenttime.tv_usec);
+    if (delta<0)  {
+	dbg("FrontEnd.run",1) << "Scan is prior to current time by " << delta << " usec;  flushing scan " << sick[i]->getScanCounter() << " from unit " << i << std::endl;
+	sick[i]->clearValid();
+	return false;
     }
-    return inSync;
+    return true;
 }
 
 void FrontEnd::run() {
     while (!doQuit) {  /* Forever */
-	// Wait for all sensors to be ready
 	for (int i=0;i<nsick;i++) {
-	    while (!sick[i]->isValid()) {
+	    while (true) {
+		// Wait for next sensor to be valid
+		if  (!sick[i]->isValid())
 		sick[i]->waitForFrame();
+		// Check if its timing is ok
+		if (syncLIDAR(i))
+		    // LIDARs are in sync
+		    break;
+		// else get next frame without processing current one
 	    }
-	}
-	if (syncLIDARS()) {
-	    // LIDARs are in sync
 	    // Read data from sensors	
-	    processFrames();
+	    processFrames(i);
 	}
     }
 }
@@ -207,9 +198,9 @@ void *FrontEnd::processIncoming(void *arg) {
     return NULL;
 }
 
-void FrontEnd::processFrames() {
-    dbg("FrontEnd.processFrames",2) << "Processing frames " << frame << "-" << frame+nsick-1 << std::endl;
-    for (int c=0;c<nsick;c++) {
+void FrontEnd::processFrames(int c) {
+    int delta=(sick[c]->getAbsScanTime().tv_sec-currenttime.tv_sec)*1000000+(sick[c]->getAbsScanTime().tv_usec-currenttime.tv_usec);
+    dbg("FrontEnd.processFrames",2) << "Processing frame " << frame << " using scan " << sick[c]->getScanCounter() << "  from unit " << c+1 << " with delta of " << delta << " usec" << std::endl;
 	char dbgstr[100];
 	sprintf(dbgstr,"Frame.%d",frame);
 	bool tmpDebug=false;
@@ -240,8 +231,6 @@ void FrontEnd::processFrames() {
 	if (!matfile.empty() && (matframes==0 || frame<matframes))
 	    snap->append(frame,vis,world);
 #endif
-	// clear valid flag so another frame can be read
-	sick[c]->clearValid();
 	world->draw(nsick,sick);
 	sendMessages(elapsed);
 	sendOnce=0;
@@ -251,7 +240,8 @@ void FrontEnd::processFrames() {
 	    PopDebugSettings();
 	}
 	frame++;
-    }
+    // clear valid flag so another frame can be read
+    sick[c]->clearValid();
 }
 
 void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
@@ -417,24 +407,15 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    sick[cid-1]->waitForFrame();  // Won't block since we just pushed a new frame
 	}
 
-	bool allValid=true;
-	for (int i=0;i<nsick;i++)
-	    allValid&=sick[i]->isValid();
-	if (allValid) {
-	    if (syncLIDARS()) {
-		// LIDARs are in sync
-		if (frame1==-1 && frameN!=-1) {
-		    // Just first frameN frames
-		    frame1=sick[0]->getScanCounter();
-		    frameN+=frame1-1;
-		}
-		if (frame1!=-1 && sick[0]->getScanCounter()<frame1)
-		    continue;
-		if (frameN!=-1 && sick[0]->getScanCounter()>frameN)
-		    break;
-		processFrames();
-	    }
-	}
+	// Check if its timing is ok
+	if (syncLIDAR(cid-1)) {
+	    // LIDARs are in sync
+	    if (frame1!=-1 && frame<frame1)
+		continue;
+	    if (frameN!=-1 && frame>frameN)
+		break;
+	    processFrames(cid-1);
+	}  // else, skip this scan
 
 	struct timeval processDone; gettimeofday(&processDone,0);
 	float procTime=(processDone.tv_sec-processStart.tv_sec)+(processDone.tv_usec-processStart.tv_usec)/1e6;

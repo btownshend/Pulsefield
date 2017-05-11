@@ -33,12 +33,12 @@ class FrontEnd {
     // Start time of run (used to set zero reference)
     struct timeval starttime;
     
-    // Sync multiple LIDARS
-    // Return true if they are in sync
-    bool syncLIDARS();
+    // Sync LIDAR by checking if its scanTime is out-of-order
+    // Return true if it is in sync
+    bool syncLIDAR(int unit);
     
     // Process all frames
-    void processFrames();   
+    void processFrames(int unit);   
     // Send out low-level vis messages for given sick data
     void sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int *ranges[], const unsigned int *reflect[]);
 
