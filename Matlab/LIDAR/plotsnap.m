@@ -39,7 +39,11 @@ end
 clf;
 hold on;
 
-xy=range2xy(vis.angle,vis.range);
+if isfield(vis,'world')
+  xy=vis.world;
+else
+  xy=range2xy(vis.angle,vis.range);
+end
 
 colors=get(gca,'ColorOrder');
 isbg=tracker.assignments(:,1)==-1;
