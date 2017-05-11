@@ -108,7 +108,7 @@ classdef Background < handle
         for i=1:3
           subplot(3,3,i);
           sel=bg.freq(i,:)>minfreq;
-          xy=range2xy(bg.angle(sel),bg.range(i,sel));
+          xy=range2xy(bg.angle(sel),bg.range(i,sel));   % FIXME -- doesn't take into account orientation of LIDAR
           plot(xy(:,1),xy(:,2),['.',col(i)]);
           hold on;
           title(sprintf('bg%d - N>%.3f = %d',i,minfreq,sum(sel)));
