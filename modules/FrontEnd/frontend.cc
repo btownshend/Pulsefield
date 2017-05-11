@@ -410,10 +410,14 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	// Check if its timing is ok
 	if (syncLIDAR(cid-1)) {
 	    // LIDARs are in sync
-	    if (frame1!=-1 && frame<frame1)
-		continue;
 	    if (frameN!=-1 && frame>frameN)
+		// Past last frame
 		break;
+	    if (frame1!=-1 && frame<frame1) {
+		// Skip this frame
+		frame++;
+		continue;   // go to next iteration without saving performance info or matlab snapshots
+	    }
 	    processFrames(cid-1);
 	}  // else, skip this scan
 
