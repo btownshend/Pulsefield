@@ -71,7 +71,7 @@ public:
     void addToGroup(std::shared_ptr<Group> g);
     void unGroup();
     bool isGrouped() const { return group!=nullptr; }
-    float getObsLike(const Point &pt, int leg, int frame) const;   // Get likelihood of an observed echo at pt hitting leg given current model
+    float getObsLike(const Point &pt, int leg, const Vis &vis) const;   // Get likelihood of an observed echo at pt hitting leg given current model
     // Send /pf/ OSC messages
     void sendMessages(lo_address &addr, int frame, double now) const;
     // Return performance metric for current frame

@@ -110,10 +110,11 @@ void Person::predict(int nstep, float fps) {
 }
 
 // Get likelihood of an observed echo at pt hitting leg given current model
-float Person::getObsLike(const Point &pt, int leg, int frame) const {
-    return legs[leg].getObsLike(pt,frame,legStats);
+float Person::getObsLike(const Point &pt, int leg, const Vis &vis) const {
+    return legs[leg].getObsLike(pt,vis,legStats);
 }
 
+// Setup grid for searching for person given that scan points fs[0] and fs[1] are assigned to the two legs
 void Person::setupGrid(const Vis &vis, const std::vector<int> fs[2]) {
     // Bound search by prior position + 2*sigma(position) + legdiam/2
     float margin;
@@ -127,8 +128,10 @@ void Person::setupGrid(const Vis &vis, const std::vector<int> fs[2]) {
     for (int i=0;i<2;i++)
 	for (int j=0;j<fs[i].size();j++)  {
 	    Point pt=vis.getSick()->getWorldPoint(fs[i][j]);
+	    Point lpt=vis.getSick()->getLocalPoint(fs[i][j]);
 	    // Compute expected target center for this point
-	    Point phit=pt+pt/pt.norm()*legStats.getDiam()/2;
+	    Point lphit=lpt+lpt/lpt.norm()*legStats.getDiam()/2;
+	    Point phit=vis.getSick()->localToWorld(lphit);
 	    // Adjust point back to person-centered space from leg-centered space
 	    if (i==0)
 		pt=pt+legSepVector/2;

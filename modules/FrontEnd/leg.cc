@@ -131,7 +131,7 @@ Point Leg::getPriorPosition(int n) const {
 }
 
 // Get likelihood of an observed echo at pt hitting leg given current model
-float Leg::getObsLike(const Point &pt, int frame,const LegStats &ls) const {
+float Leg::getObsLike(const Point &pt, const Vis &vis,const LegStats &ls) const {
     float dpt=(pt-position).norm();
     float sigma=sqrt(pow(ls.getDiamSigma()/2,2.0)+posvar);  // hack: use positition sigma inflated by leg diam variance
     // float like=normlike(dpt, ls.getDiam()/2,sigma);
@@ -139,7 +139,7 @@ float Leg::getObsLike(const Point &pt, int frame,const LegStats &ls) const {
     Point diamOffset=delta/delta.norm()*ls.getDiam()/2;
     float like=normlike(delta.X(),diamOffset.X(),sigma)+normlike(delta.Y(),diamOffset.Y(),sigma);
     // And check the likelihood that the echo is in front of the true leg position
-    float frontlike=log(1-normcdf(pt.norm(),position.norm(),sqrt(posvar)));
+    float frontlike=log(1-normcdf((pt-vis.getSick()->getOrigin()).norm(),(position-vis.getSick()->getOrigin()).norm(),sqrt(posvar)));  
     dbg("Leg.getObsLike",20) << "pt=" << pt << ", leg=" << position << ", pt-leg=" << (pt-position) << ", diam=" << ls.getDiam() << ", dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", frontlike=" << frontlike << std::endl;
     like+=frontlike;
     like=std::max((float)log(RANDOMPTPROB),like);
@@ -230,9 +230,13 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 
 	    // Likelihood with respect to unobstructed paths (leg can't be in these paths)
 	    float dclr=1e10;
-	    for (unsigned int k=0;k<clearsel.size();k++)
-		// TODO: Fix for translated LIDAR
-		dclr=std::min(dclr,segment2pt(Point(0,0),vis.getSick()->getWorldPoint(clearsel[k]),pt));
+	    for (unsigned int k=0;k<clearsel.size();k++) {
+		Point p1=vis.getSick()->localToWorld(Point(0,0));
+		Point p2=vis.getSick()->getWorldPoint(clearsel[k]);
+		float dist=segment2pt(p1,p2,pt);
+		dclr=std::min(dclr,dist);
+		dbg("Leg.update",20) << "p1=" << p1 << ", p2=" << p2 << ", dist[" << k << "] = " << dclr << std::endl;
+	    }
 	    float clearlike=log(normcdf(log(dclr*2),LOGDIAMMU,LOGDIAMSIGMA));
 
 	    // Likelihood with respect to positive hits

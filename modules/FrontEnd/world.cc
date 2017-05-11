@@ -22,10 +22,11 @@ World::World(float maxRange): groups(GROUPDIST,UNGROUPDIST) {
 // Class for managing targets based on lidar scan before assigning them to people
 class Target {
     std::vector<int> scans;
-    std::vector<Point> hits;
+    std::vector<Point> hits;   // Initially in LIDAR local coordinates, then converted to WORLD
+    bool isLocal;
     bool assigned;
 public:
-    Target() { assigned=false; }
+    Target() { assigned=false; isLocal=True; }
 
     // Get maximum distance to given point
     float getDist(Point p) const { 
@@ -38,13 +39,16 @@ public:
     Point lastHit() const { return hits.back(); }
     int lastScan() const { return scans.back(); }
     // Get estimate of center of target
-    Point getCenter() const {
+    Point getCenter(const SickIO *sick) const {
 	Point sum(0,0);
 	for (int i=0;i<hits.size();i++)
 	    sum=sum+hits[i];
 	Point mid=sum/hits.size();  // Mean of points
 	float offset=INITLEGDIAM/2*(M_PI/4);   // Shift away from sensor by mean dist one would be in front of a circle of given diameter
+	assert(!isLocal);
+	mid=sick->worldToLocal(mid);   // Convert to sensor local coordinates
 	Point center=mid*(1+offset/mid.norm());
+	center=sick->localToWorld(mid);  // Then back to world
 	return center;
     }
     float getWidth() const { return (hits.front()-hits.back()).norm(); }
@@ -97,6 +101,13 @@ public:
 	scans=std::vector<int>(scans.begin(),scans.begin()+jump+1);
 	return result;
     }
+    void convertLocalToWorld(const SickIO *sick) {
+	assert(isLocal);
+	isLocal=false;
+	for (int i=0;i<hits.size();i++)
+	    hits[i]=sick->localToWorld(hits[i]);
+    }
+
     void setAssignments(std::vector<int> &assignments, std::vector<unsigned int> &legassigned, int assignedPerson, int assignedLeg)  {
 	for (int i=0;i<scans.size();i++) {
 	    assignments[scans[i]]=assignedPerson;
@@ -153,7 +164,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	bool assigned=false;
 	for (int i=targets.size()-1;i>=0;i--) {
 	    // Check if we can add this point to an existing target
-	    if ((sick->getWorldPoint(f)-targets[i].lastHit()).norm()<=MAXLEGDIAM)  {
+	    if ((sick->getLocalPoint(f)-targets[i].lastHit()).norm()<=MAXLEGDIAM)  {
 		// Check if all intervening scans have a shorter range (i.e. we jumping over a near obstruction)
 		bool canmerge=true;
 		for (int j=targets[i].lastScan()+1;j<f;j++) {
@@ -167,7 +178,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 		}
 		if (!canmerge)
 		    break;
-		targets.back().append(f,sick->getWorldPoint(f));
+		targets.back().append(f,sick->getLocalPoint(f));
 		nassigned++;
 		assigned=true;
 		dbg("World.makeAssignments",4) << "Assigned scan " << f << " with range " << range[f] << " to target " << i << std::endl;
@@ -177,7 +188,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	if (!assigned)  {
 	    // Not a match to current target, add a new one
 	    Target t;
-	    t.append(f,sick->getWorldPoint(f));
+	    t.append(f,sick->getLocalPoint(f));
 	    targets.push_back(t);
 	    dbg("World.makeAssignments",4) << "Assigned scan " << f << "with range " << range[f] << " to new target " << targets.size()-1 << std::endl;
 	    nassigned++;
@@ -192,6 +203,10 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	    targets.push_back(targets[i].split());
 	}
     }
+
+    // Convert targets from local (LIDAR) space to world
+    for (int i=0;i<targets.size();i++)
+	targets[i].convertLocalToWorld(sick);
 
     // Now match targets with people, legs
 
@@ -210,7 +225,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	    if (targets[t].isAssigned())
 		continue;
 	    assert(targets[t].size()>0);
-	    Point center=targets[t].getCenter();
+	    Point center=targets[t].getCenter(sick);
 	    for ( int i=0;i<people.size();i++) {
 		for (int leg=0;leg<2;leg++) {
 		    if (legAssigned[leg][i] != -1)
@@ -233,9 +248,9 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 		int otherTarget=legAssigned[1-assignedLeg][assignedPerson];
 		if (otherTarget != -1) {
 		    // This is the second leg assigned, check if the assignment should be swapped
-		    float currentd2 = pow((targets[assignedTarget].getCenter()-people[assignedPerson].getLeg(assignedLeg).getPosition()).norm(),2.0)+
-			pow((targets[otherTarget].getCenter()-people[assignedPerson].getLeg(1-assignedLeg).getPosition()).norm(),2.0);
-		    float swapd2 = pow((targets[otherTarget].getCenter()-people[assignedPerson].getLeg(assignedLeg).getPosition()).norm(),2.0)+pow((targets[assignedTarget].getCenter()-people[assignedPerson].getLeg(1-assignedLeg).getPosition()).norm(),2.0);
+		    float currentd2 = pow((targets[assignedTarget].getCenter(sick)-people[assignedPerson].getLeg(assignedLeg).getPosition()).norm(),2.0)+
+			pow((targets[otherTarget].getCenter(sick)-people[assignedPerson].getLeg(1-assignedLeg).getPosition()).norm(),2.0);
+		    float swapd2 = pow((targets[otherTarget].getCenter(sick)-people[assignedPerson].getLeg(assignedLeg).getPosition()).norm(),2.0)+pow((targets[assignedTarget].getCenter(sick)-people[assignedPerson].getLeg(1-assignedLeg).getPosition()).norm(),2.0);
 		    if (swapd2<currentd2) {
 			dbg("World.makeAssignments",1) << "Swapping target assignments: P" << people[assignedPerson].getID() << "." << assignedLeg << " now gets target " << otherTarget << ", since sqd-dist with swap= " << swapd2 << " < " <<  currentd2 << std::endl;
 			targets[assignedTarget].setAssignments(assignments, legassigned, assignedPerson, 1-assignedLeg);
@@ -289,7 +304,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	    for (int t2=0;t2<targets.size();t2++) {
 		if (targets[t2].isAssigned() || targets[t2].size()<2)
 		    continue;
-		float dist=(targets[t1].getCenter()-targets[t2].getCenter()).norm();
+		float dist=(targets[t1].getCenter(sick)-targets[t2].getCenter(sick)).norm();
 		dbg("World.track",4) << "Unassigned targets " << t1 << " and " << t2 << " are separated by " << dist << std::endl;
 		if (dist>=MINLEGSEP && dist <= MAXLEGSEP && fabs(dist-MEANLEGSEP)<fabs(bestsep-MEANLEGSEP) ) {
 		    bestsep=dist;
@@ -301,8 +316,8 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	}
 	if (bestsep<=MAXLEGSEP) {
 	    dbg("World.track",1) << "Creating an initial track using targets " << bestindices[0] << "," << bestindices[1] << " with separation " << bestsep << std::endl;
-	    Point l1=targets[bestindices[0]].getCenter();
-	    Point l2=targets[bestindices[1]].getCenter();
+	    Point l1=targets[bestindices[0]].getCenter(sick);
+	    Point l2=targets[bestindices[1]].getCenter(sick);
 	    people.add(l1,l2);
 	    targets[bestindices[0]].setAssignments(assignments,legassigned,people.size()-1,0);
 	    targets[bestindices[1]].setAssignments(assignments,legassigned,people.size()-1,1);
@@ -359,8 +374,8 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		if (assignments[j]==(int)p) {
 		    // Redo assignments to which leg based on observertion
 		    Point sickpt=vis.getSick()->getWorldPoint(j);
-		    float l1=people[p].getObsLike(sickpt,0,vis.getSick()->getScanCounter());
-		    float l2=people[p].getObsLike(sickpt,1,vis.getSick()->getScanCounter());
+		    float l1=people[p].getObsLike(sickpt,0,vis);
+		    float l2=people[p].getObsLike(sickpt,1,vis);
 		    ldiff.push_back(l1-l2);
 		    fs[0].push_back(j);
 		}
@@ -430,7 +445,7 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		    for (int leg=0;leg<2;leg++) {
 			for (unsigned int i=0;i<fs[f].size();i++) {
 			    Point sickpt=vis.getSick()->getWorldPoint(fs[f][i]);
-			    float like = people[p].getObsLike(sickpt,leg,vis.getSick()->getScanCounter());
+			    float like = people[p].getObsLike(sickpt,leg,vis);
 			    if (leg==f)
 				swaplike+=like;
 			    else

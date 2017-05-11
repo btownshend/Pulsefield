@@ -30,7 +30,7 @@ class Leg {
     Leg();
     Leg(const Point &pos);
     friend std::ostream &operator<<(std::ostream &s, const Leg &l);
-    float getObsLike(const Point &pt, int frame,const LegStats &ls) const;
+    float getObsLike(const Point &pt, const Vis &vis,const LegStats &ls) const;
     Point getPosition() const { return position; }
     void savePriorPositions();
     // Get prior position from n frames ago (n>0)
