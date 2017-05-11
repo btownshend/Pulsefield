@@ -160,7 +160,7 @@ int SickFrame::read(FILE *fd, int version) {
 	digitalInputs=0;
 	digitalOutputs=0;
 	scanFrequency=50.0;
-	measurementFrequency=scanFrequency*360*3;
+	measurementFrequency=scanFrequency*(num_measurements-1)*360/190;  // Assume scan angle is 190 degrees
     } else if (version==2) {
 	int id;
 	float originX, originY;
