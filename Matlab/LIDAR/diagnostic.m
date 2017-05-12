@@ -85,6 +85,7 @@ for i=1:length(ids)
   posvar=nan(length(snap),2);
   legvel=nan(length(snap),2,2);
   vel=nan(length(snap),2);
+  diam=nan(length(snap),1);
   vis=false(length(snap),2);
   scanpts=nan(length(snap),2);
   nsteps=nan(length(snap),2);   % Number of prediction frames since last fix
@@ -97,6 +98,7 @@ for i=1:length(ids)
       vel(j,:)=snap(j).tracker.tracks(sel).velocity;
       legvel(j,:,:)=snap(j).tracker.tracks(sel).legvelocity;
       leftness(j,:)=snap(j).tracker.tracks(sel).leftness;
+      diam(j)=snap(j).tracker.tracks(sel).legdiam;
       if isprop(snap(j).tracker.tracks(sel),'scanpts')
         vis(j,1)=~isempty(snap(j).tracker.tracks(sel).scanpts{1});
         vis(j,2)=~isempty(snap(j).tracker.tracks(sel).scanpts{2});
@@ -270,6 +272,11 @@ for i=1:length(ids)
       plot(frame,squeeze(sqrt(sep(:,:,1).^2+sep(:,:,2).^2)),[color1,'-']);
       xlabel('Frame');
       title('Leg Sep');
+    elseif strcmp(args.other(oth),'legdiam')
+      plot(frame,diam,[color1,'-']);
+      xlabel('Frame');
+      ylabel('Diameter');
+      title('Leg Diam');
     end
   end
 end
