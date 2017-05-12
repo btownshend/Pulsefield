@@ -13,7 +13,7 @@ LegStats::LegStats() {
     leftness=0.0;
     facing=0.0;
     facingSEM=FACINGSEM;
-    updateDiam=false;
+    updateDiam=true;
     updateSep=false;
     if (!updateDiam) {
 	dbg("LegStats",1) << "Not updating leg diameters" << std::endl;

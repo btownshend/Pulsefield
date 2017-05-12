@@ -38,7 +38,7 @@ Leg::Leg(const Point &pt) {
     const int nweights=50;
     predictWeights.resize(nweights);
 
-    const int strideFrames=61;   // Number of frames for a complete stride
+    const int strideFrames=61;   // Number of frames for a complete stride  FIXME: This depends on the frame rate (and # of LIDAR)
 
     // Initial weight is best predictor of a sine wave offset by 1/strideFrames of a cycle
     predictWeights[0]=cos(2*M_PI/strideFrames);
@@ -391,6 +391,17 @@ void Leg::updateVisibility(const std::vector<float> &bglike) {
 }
 
 void Leg::updateDiameterEstimates(const Vis &vis, LegStats &ls) const {
+    // Update diameter by looking at direction of position-predictedPosition; if it is away from the current LIDAR, then the current diameter is too large
+    // and the corrected diameter would be diam+dot(position-LIDAR,position-predictedPosition)*2
+    Point scanDirection=position-vis.getSick()->getOrigin();
+    scanDirection=scanDirection/scanDirection.norm();
+    float scanError=scanDirection.dot(predictedPosition-position);
+    float diamEstimate = ls.getDiam()+scanError;
+    diamEstimate=std::max(std::min(diamEstimate,MAXLEGDIAM),MINLEGDIAM);
+    ls.updateDiameter(diamEstimate, LEGDIAMSIGMA);
+    dbg("Leg.updateDiameterEstimates",3) << "Unit " << vis.getSick()->getId() << ", scan error=" << scanError << " ->  diamestimate=" << diamEstimate << " -> diam=" << ls.getDiam() << std::endl;
+    return;
+    
     // Update diameter estimate if we have a contiguous set of hits of adequate length
     if (scanpts.size() >= 5 && (scanpts[scanpts.size()-1]-scanpts[0])==(int)(scanpts.size()-1)) {
 	dbg("Leg.updateDiameterEstimates",3) << "Updating leg diameter using " << scanpts.size() << " scan points" << std::endl;

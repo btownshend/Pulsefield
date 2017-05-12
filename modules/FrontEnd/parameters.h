@@ -51,6 +51,7 @@ static const float STATIONARYVELOCITY=20;	// If speed is less than this (in mm/s
 // ******** Leg statistics 
 static const float INITLEGDIAM=200;	// Initial diameter of legs
 static const float MAXLEGDIAM=300;	// Maximum diameter of legs
+static const float MINLEGDIAM=50;		// Minimum diameter of legs
 static const float LEGDIAMSIGMA=50;		// Sigma for leg diameter
 static const float MEANLEGSEP=350; 	// Mean leg separation
 static const float MINLEGSEP=100;
