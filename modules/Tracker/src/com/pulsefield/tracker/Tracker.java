@@ -404,7 +404,7 @@ public class Tracker extends PApplet {
 				x10,x11,x12,x13,
 				x20,x21,x22,x23,
 				0,0,0,1);
-		PApplet.println("setcamerview("+proj+":");
+		PApplet.println("setcameraview("+proj+":");
 		mat.print();
 		projectors[proj].setCameraView(mat);
 	}

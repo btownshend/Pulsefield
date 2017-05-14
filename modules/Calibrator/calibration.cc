@@ -427,6 +427,7 @@ void Calibration::updateUI() const {
 	e2sum+=relMappings[i]->getE2Sum();
 	e2cnt+=relMappings[i]->getE2Cnt();
     }
+    dbg("Calibration.updateUI",3) << "total error="  << sqrt(e2sum/e2cnt) << std::endl;
     send("/cal/error/total",std::round(sqrt(e2sum/e2cnt)*1000)/1000);
     for (int i=0;i<statusLines.size();i++)
 	send("/cal/status/"+std::to_string(i+1),statusLines[i]);
@@ -974,6 +975,7 @@ int Calibration::recompute() {
 	dbg("Calibration.recompute",1) << "Laser " << k << " at [" << poses[k].at<double>(0,0) << "," << poses[k].at<double>(1,0) << "," << poses[k].at<double>(2,0) << "]" << std::endl;
     }
     
+#if 0
     // Push mappings to transforms.cc
     for (int i=0;i<nunits;i++) {
 	cv::Mat inv=homographies[i].inv();
@@ -983,6 +985,8 @@ int Calibration::recompute() {
 	// Last column of poses is translation -- origin is negative of the translation
 	// Lasers::instance()->getLaser(i)->getTransform().setOrigin(Point(poses[i].at<double>(0,3),-poses[i].at<double>(1,3)));
     }
+#endif
+    
     testMappings();
 
     // Evaluate matches
