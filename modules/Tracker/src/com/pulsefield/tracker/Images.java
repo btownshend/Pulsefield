@@ -27,7 +27,10 @@ public class Images {
 		}
 		imgs=new ArrayList<PImage>();
 		for (int i=0;i<allfiles.length;i++) {
-			PApplet.println("Loading image from "+allfiles[i].getAbsolutePath());
+			if (allfiles[i].getName().equals(".DS_Store"))
+				// Ignore these
+				continue;
+			PApplet.println("Loading image from "+allfiles[i].getAbsolutePath()+" ("+allfiles[i].getName()+")");
 			PImage img=Tracker.theTracker.loadImage(allfiles[i].getAbsolutePath());
 			if (img==null) {
 				PApplet.println("Failed load of "+allfiles[i].getAbsolutePath());
