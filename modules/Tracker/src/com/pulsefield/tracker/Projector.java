@@ -28,6 +28,7 @@ public class Projector {
 		this.id=id;
 		params=ProjectorParameters.eh320ust();
 		server=new SyphonServer(parent, "P"+id);
+		pos=new PVector(0,0);
 		if (debug>5) {
 			PApplet.println("P"+id+" parent matrix:");
 			parent.printMatrix();
