@@ -446,21 +446,22 @@ void Calibration::updateTracker() const {
 
 
     for (int i=0;i<poses.size();i++) {
-	TrackerComm::instance()->sendProjection(i,projection);
+	if (i<nproj) {
+	    TrackerComm::instance()->sendProjection(i,projection);
 
-	// Convert to rotation matrix
-	cv::Mat rotMat;
-	cv::Rodrigues(rvecs[i],rotMat);
-	TrackerComm::instance()->sendCameraView(i,rotMat,tvecs[i]);
-	TrackerComm::instance()->sendPose(i,poses[i]);
-	if (i>=nproj) {
+	    // Convert to rotation matrix
+	    cv::Mat rotMat;
+	    cv::Rodrigues(rvecs[i],rotMat);
+	    TrackerComm::instance()->sendCameraView(i,rotMat,tvecs[i]);
+	    TrackerComm::instance()->sendPose(i,poses[i]);
+	    // Send the homographies last since they trigger updates that need the camera view
+	    TrackerComm::instance()->sendScreenToWorld(i, homographies[i]);
+	    cv::Mat inv=homographies[i].inv();
+	    inv=inv/inv.at<double>(2,2);
+	    TrackerComm::instance()->sendWorldToScreen(i, inv);
+	} else {
 	    TrackerComm::instance()->sendLIDARPose(i-nproj,homographies[i]);
 	}
-	// Send the homographies last since they trigger updates that need the camera view
-	TrackerComm::instance()->sendScreenToWorld(i, homographies[i]);
-	cv::Mat inv=homographies[i].inv();
-	inv=inv/inv.at<double>(2,2);
-	TrackerComm::instance()->sendWorldToScreen(i, inv);
     }
     for (int i=0;i<relMappings.size();i++)
 	relMappings[i]->updateTracker();
@@ -948,7 +949,7 @@ int Calibration::recompute() {
     }
     
     // Compute origins
-    for (int k=0;k<nunits;k++) {
+    for (int k=0;k<nproj;k++) {
 	std::vector<cv::Point2f> src;
 	std::vector<cv::Point3f> dst;
 	for (int j=0;j<pairwiseMatches.size();j++) {
