@@ -143,8 +143,8 @@ class Goal {
 		g.noFill();
 		
 		outline=g.createShape();
-		outline.noFill();
 		outline.beginShape();
+		outline.noFill();
 		outline.vertex(pos.x-depth/2*aim.x+width/2*aim.y, pos.y-depth/2*aim.y-width/2*aim.x);
 		outline.vertex(pos.x+depth/2*aim.x+width/2*aim.y, pos.y+depth/2*aim.y-width/2*aim.x);
 		outline.vertex(pos.x+depth/2*aim.x-width/2*aim.y, pos.y+depth/2*aim.y+width/2*aim.x);
@@ -171,7 +171,7 @@ class Goal {
 	// return true if this counts as a goal
 	boolean collisionDetect(Ball b) {
 		if (outline==null) {
-			PApplet.println("no outline");
+			//PApplet.println("no outline");
 			return false;
 		}
 			
