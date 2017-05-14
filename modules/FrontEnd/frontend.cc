@@ -350,11 +350,11 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	
 	if (f.getScanCounter()!=lastframe+1 && lastframe!=-1) {
 	    if (lastframe+1 == f.getScanCounter()-1) {
-		dbg("FrontEnd.playFile",1) << "Input file skips frame " << lastframe+1 << " for unit " << cid << std::endl;
+		dbg("FrontEnd.playFile",1) << "Input file skips scan " << lastframe+1 << " for unit " << cid << std::endl;
 	    } else if (lastframe<f.getScanCounter()) {
-		dbg("FrontEnd.playFile",1) << "Input file skips frames " << lastframe+1 << "-" << f.getScanCounter()-1 << " for unit " << cid << std::endl;
+		dbg("FrontEnd.playFile",1) << "Input file skips scans " << lastframe+1 << "-" << f.getScanCounter()-1 << " for unit " << cid << std::endl;
 	    } else {
-		dbg("FrontEnd.playFile",1) << "Input file jumped backwards from frame " << lastframe << "-" << f.getScanCounter() << " for unit " << cid << std::endl;
+		dbg("FrontEnd.playFile",1) << "Input file jumped backwards from scan " << lastframe << " to " << f.getScanCounter() << " for unit " << cid << std::endl;
 	    }
 	}
 
