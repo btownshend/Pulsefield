@@ -953,6 +953,7 @@ int Calibration::recompute() {
     for (int k=0;k<nproj;k++) {
 	std::vector<cv::Point2f> src;
 	std::vector<cv::Point3f> dst;
+#ifdef OLDWAY
 	for (int j=0;j<pairwiseMatches.size();j++) {
 	    cv::detail::MatchesInfo pm = pairwiseMatches[j];
 	    if (/*pm.src_img_idx==k && */pm.dst_img_idx==nunits) {  // Correspondence with world
@@ -967,6 +968,28 @@ int Calibration::recompute() {
 		}
 	    }
 	}
+#else
+	// Use any point observed in any match as a potential source point  (under the assumption that those were relevant points)
+	for (int j=0;j<pairwiseMatches.size();j++) {
+	    cv::detail::MatchesInfo pm = pairwiseMatches[j];
+	    if (pm.src_img_idx==k) {
+		for (int i=0;i<pm.matches.size();i++) {
+		    cv::Point2f srcpt=features[pm.src_img_idx].keypoints[pm.matches[i].trainIdx].pt;
+		    src.push_back(srcpt);
+		}
+	    } else if (pm.dst_img_idx==k) {
+		for (int i=0;i<pm.matches.size();i++) {
+		    cv::Point2f srcpt=features[pm.dst_img_idx].keypoints[pm.matches[i].trainIdx].pt;
+		    src.push_back(srcpt);
+		}
+	    }
+	}
+	for (int i=0;i<src.size();i++) {
+	    Point mappedPt=map(Point(src[i].x,src[i].y),k,nunits);
+	    dst.push_back(cv::Point3f(mappedPt.X(),mappedPt.Y(),0.0));
+	    dbg("Calibration.recompute",2) << "src pt on unit " << k << " =" << src[i] << ", world=" << mappedPt<< std::endl;
+	}
+#endif 
 	if (src.size()<3) {
 	    dbg("Calibration.recompute",0) << "Not enough correspondences between unit " << k << " and world to calculate positions (have " << src.size() << ")" << std::endl;
 	    continue;
