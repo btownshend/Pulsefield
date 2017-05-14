@@ -27,6 +27,7 @@ public class Tracker extends PApplet {
 	private static boolean autocycle = false;
 	private static boolean starting = true;   // Disable bad OSC messages before setup
 	private static boolean genFrameMsgs = false;
+	private static int numProjectors = 4;
 	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
 	private int tick=0;
@@ -196,9 +197,9 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setminy", "/video/miny");
 		oscP5.plug(this, "setmaxy", "/video/maxy");
 		unhandled = new HashMap<String,Boolean>();
-		projectors=new Projector[2];
-		projectors[0] = new Projector(this,1,1920,1080);
-		projectors[1] = new Projector(this,2,1920,1080);
+		projectors=new Projector[numProjectors];
+		for (int i=0;i<numProjectors;i++)
+			projectors[i] = new Projector(this,i+1,1920,1080);
 
 		mask=new PGraphicsOpenGL[projectors.length];
 		resetcoords();
@@ -617,9 +618,8 @@ public class Tracker extends PApplet {
 		}
 		if (useMasks)
 			buildMasks(canvas);
-		projectors[0].render(canvas,useMasks?mask[0]:null,drawBounds);
-		projectors[1].render(canvas,useMasks?mask[1]:null,drawBounds);
-
+		for (int i=0;i<projectors.length;i++)
+			projectors[i].render(canvas,useMasks?mask[i]:null,drawBounds);
 
 		imageMode(CENTER);
 		// Canvas is RH, so need to flip it back to draw on main window (which is LH)
@@ -650,16 +650,17 @@ public class Tracker extends PApplet {
 			// Use top-left, top-right corners for projector images
 			float pfrac = 0.25f;  // Use this much of the height of the window for projs
 			float pheight=this.height*pfrac;
-			float pwidth=pheight*projectors[0].pcanvas.width/projectors[0].pcanvas.height;  // preserve aspect
 			stroke(255,0,0);
 			strokeWeight(2);
-			rect(0, 0, pwidth, pheight);
 			imageMode(CORNER);
-			image(projectors[0].pcanvas, 1, 1, pwidth-2, pheight-2);
-			
-			pwidth=pheight*projectors[1].pcanvas.width/projectors[1].pcanvas.height; 
-			rect(width-pwidth, 0, pwidth, pheight);
-			image(projectors[1].pcanvas, width-pwidth+1, 1f, pwidth-2, pheight-2);
+			assert(projectors.length<=4);
+			for (int i=0;i<projectors.length;i++) {
+				float pwidth=pheight*projectors[i].pcanvas.width/projectors[i].pcanvas.height; 
+				float x=(i%2==0)?0:width-pwidth;
+				float y=(i<2)?0:height-pheight;
+				rect(x, y, pwidth, pheight);
+				image(projectors[i].pcanvas, x+1, y+1f, pwidth-2, pheight-2);
+			}
 		}
 		//SyphonTest.draw(this);
 		Config.saveIfModified(this);   // Save if modified
