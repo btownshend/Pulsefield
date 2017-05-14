@@ -6,18 +6,12 @@
 #include "dbg.h"
 
 LegStats::LegStats() {
-    diam=INITLEGDIAM;
-    diamSigma=LEGDIAMSIGMA;
     sep=MEANLEGSEP;
     sepSigma=LEGSEPSIGMA;
     leftness=0.0;
     facing=0.0;
     facingSEM=FACINGSEM;
-    updateDiam=true;
     updateSep=false;
-    if (!updateDiam) {
-	dbg("LegStats",1) << "Not updating leg diameters" << std::endl;
-    }
     if (!updateSep) {
 	dbg("LegStats",1) << "Not updating leg seps" << std::endl;
     }
@@ -25,7 +19,6 @@ LegStats::LegStats() {
 
 std::ostream &operator<<(std::ostream &s, const LegStats &ls) {
     s << std::fixed << std::setprecision(0)
-      << "diam:  " << ls.diam
       << ",sep: " << ls.sep
       << std::setprecision(3);
     return s;
@@ -74,11 +67,4 @@ void LegStats::update(const Person &p) {
     }
 }
 
-void LegStats::updateDiameter(float newDiam, float newDiamSEM) {
-    if (updateDiam) {
-	// TODO: track diamSigma
-	diam = diam*(1-1/LEGDIAMTC) + newDiam/LEGDIAMTC;
-	dbg("LegStats.updateDiameter",3) << "newDiam=" << newDiam << ", updated diam=" << diam << ", sigma=" << diamSigma << std::endl;
-    }
-}
 

@@ -194,7 +194,7 @@ void World::draw(int nsick, const SickIO * const * sick) const {
 		 else
 		     cairo_set_source_rgb (cr, 0.0, 0.0, 1.0);
 		 cairo_new_sub_path(cr);
-		 cairo_arc(cr,leg.X(), leg.Y(),people[j].getLegStats().getDiam()/2.0,0.0,2*M_PI);
+		 cairo_arc(cr,leg.X(), leg.Y(),people[j].getLeg(i).getDiam()/2.0,0.0,2*M_PI);
 		 cairo_close_path(cr);
 		 cairo_stroke(cr);
 	     }

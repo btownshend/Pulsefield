@@ -130,7 +130,7 @@ void Person::setupGrid(const Vis &vis, const std::vector<int> fs[2]) {
 	    Point pt=vis.getSick()->getWorldPoint(fs[i][j]);
 	    Point lpt=vis.getSick()->getLocalPoint(fs[i][j]);
 	    // Compute expected target center for this point
-	    Point lphit=lpt+lpt/lpt.norm()*legStats.getDiam()/2;
+	    Point lphit=lpt+lpt/lpt.norm()*legs[i].getDiam()/2;
 	    Point phit=vis.getSick()->localToWorld(lphit);
 	    // Adjust point back to person-centered space from leg-centered space
 	    if (i==0)
@@ -144,8 +144,9 @@ void Person::setupGrid(const Vis &vis, const std::vector<int> fs[2]) {
 	}
 
     // Increase search by legdiam/2 to make sure entire PDF is contained
-    minval=minval-legStats.getDiam()/2;
-    maxval=maxval+legStats.getDiam()/2;
+    float maxDiam=std::max(legs[0].getDiam(),legs[1].getDiam());
+    minval=minval-maxDiam/2;
+    maxval=maxval+maxDiam/2;
 
     // Initial estimate of grid size
     float step=10;
@@ -164,7 +165,7 @@ void Person::setupGrid(const Vis &vis, const std::vector<int> fs[2]) {
     likenx=(int)((maxval.X()-minval.X())/step+1.5);
     likeny=(int)((maxval.Y()-minval.Y())/step+1.5);
     dbg("Person.setupGrid",4) << "Search box = " << minval << " : " << maxval << std::endl;
-    dbg("Person.setupGrid",4) << "Search over a " << likenx << " x " << likeny << " grid, diam=" << legStats.getDiam() << " +/-" << LEGDIAMSIGMA << std::endl;
+    dbg("Person.setupGrid",4) << "Search over a " << likenx << " x " << likeny << " grid, diam=" << legs[0].getDiam() << ", " << legs[1].getDiam() << " +/-" << LEGDIAMSIGMA << std::endl;
     dbg("Person.setupGrid",4) << "Legsepvector=" << legSepVector << std::endl;
     legs[0].setupGrid(likenx, likeny, minval-legSepVector/2, maxval-legSepVector/2);
     legs[1].setupGrid(likenx, likeny, minval+legSepVector/2, maxval+legSepVector/2);
@@ -302,7 +303,7 @@ void Person::analyzeLikelihoods() {
 	Point vec;
 	sepvec=sepvec*maxLegSep/legsep;
     }
-    float minLegSep=std::max(MINLEGSEP,std::max(legStats.getSep()-legStats.getSepSigma(),legStats.getDiam()));
+    float minLegSep=std::max(MINLEGSEP,std::max(legStats.getSep()-legStats.getSepSigma(),(legs[0].getDiam()+legs[1].getDiam())/2));
     if (legsep<minLegSep) {
 	dbg("Person.predict",2) << "legs are " << legsep << " apart (< " << minLegSep << "), moving apart" << std::endl;
 	sepvec=sepvec*minLegSep/legsep;
@@ -358,7 +359,7 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	legs[0].position=legs[0].position+vec*(legs[0].posvar/(legs[0].posvar+legs[1].posvar));
 	legs[1].position=legs[1].position-vec*(legs[1].posvar/(legs[0].posvar+legs[1].posvar));
     }
-    float minLegSep=std::max(MINLEGSEP,legStats.getDiam());
+    float minLegSep=std::max(MINLEGSEP,(legs[0].getDiam()+legs[1].getDiam())/2);
     if (legsep<minLegSep) {
 	dbg("Person.predict",1) << "legs are " << legsep << " apart (< " << minLegSep << "), moving apart" << std::endl;
 	Point vec;
@@ -412,10 +413,11 @@ void Person::sendMessages(lo_address &addr, int frame, double now) const {
 	groupid = group->getID();
 	groupsize = group->size();
     }
+    float avgDiam=(legs[0].getDiam()+legs[1].getDiam())/2;
     if (lo_send(addr, "/pf/update","ififfffffiii",frame,now,id,
 		position.X()/UNITSPERM,position.Y()/UNITSPERM,
 		velocity.X()/UNITSPERM,velocity.Y()/UNITSPERM,
-		(legStats.getSep()+legStats.getDiam())/UNITSPERM,legStats.getDiam()/UNITSPERM,
+		(legStats.getSep()+avgDiam)/UNITSPERM,avgDiam/UNITSPERM,
 		groupid,groupsize,
 		channel) < 0) {
 	std::cerr << "Failed send of /pf/update to " << lo_address_get_url(addr) << std::endl;
@@ -427,7 +429,7 @@ void Person::sendMessages(lo_address &addr, int frame, double now) const {
 		velocity.norm()/UNITSPERM,0.0f,
 		velocity.getTheta()*180.0/M_PI,0.0f,
 		legStats.getFacing()*180.0/M_PI,legStats.getFacingSEM()*180.0/M_PI,
-		legStats.getDiam()/UNITSPERM,legStats.getDiamSigma()/UNITSPERM,
+		avgDiam/UNITSPERM,(legs[0].getDiamSigma()+legs[1].getDiamSigma())/2/UNITSPERM,
 		legStats.getSep()/UNITSPERM,legStats.getSepSigma()/UNITSPERM,
 		legStats.getLeftness(),
 		consecutiveInvisibleCount) < 0)
@@ -594,7 +596,7 @@ void Person::addToMX(mxArray *people, int index) const {
     mxSetField(people,index,"leftness",pLeftness);
 
     mxArray *pLegdiam = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(pLegdiam) = legStats.getDiam()/UNITSPERM;
+    *mxGetPr(pLegdiam) = legs[0].getDiam()/UNITSPERM;  // FIXME: Send both legs
     mxSetField(people,index,"legdiam",pLegdiam);
 
     mxArray *pAge = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);

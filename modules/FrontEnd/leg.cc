@@ -20,6 +20,12 @@ Leg::Leg(const Point &pt) {
     predictedPosition=pt;
     posvar=INITIALPOSITIONVAR;
     prevposvar=posvar;
+    diam=INITLEGDIAM;
+    diamSigma=LEGDIAMSIGMA;
+    updateDiam=true;
+    if (!updateDiam) {
+	dbg("Leg",1) << "Not updating leg diameters" << std::endl;
+    }
     consecutiveInvisibleCount=0;
     velocity=Point(0,0);
 
@@ -75,6 +81,7 @@ std::ostream &operator<<(std::ostream &s, const Leg &l) {
     s << std::fixed << std::setprecision(0)
       << "pos: " << l.position << "+/-" << sqrt(l.posvar)
       << ", vel: " << l.velocity
+      << ", diam:  " << l.diam
       << ", maxlike=" << l.maxlike
       << std::setprecision(3);
     return s;
@@ -133,14 +140,14 @@ Point Leg::getPriorPosition(int n) const {
 // Get likelihood of an observed echo at pt hitting leg given current model
 float Leg::getObsLike(const Point &pt, const Vis &vis,const LegStats &ls) const {
     float dpt=(pt-position).norm();
-    float sigma=sqrt(pow(ls.getDiamSigma()/2,2.0)+posvar);  // hack: use positition sigma inflated by leg diam variance
-    // float like=normlike(dpt, ls.getDiam()/2,sigma);
+    float sigma=sqrt(pow(getDiamSigma()/2,2.0)+posvar);  // hack: use positition sigma inflated by leg diam variance
+    // float like=normlike(dpt, getDiam()/2,sigma);
     Point delta=pt-position;
-    Point diamOffset=delta/delta.norm()*ls.getDiam()/2;
+    Point diamOffset=delta/delta.norm()*getDiam()/2;
     float like=normlike(delta.X(),diamOffset.X(),sigma)+normlike(delta.Y(),diamOffset.Y(),sigma);
     // And check the likelihood that the echo is in front of the true leg position
     float frontlike=log(1-normcdf((pt-vis.getSick()->getOrigin()).norm(),(position-vis.getSick()->getOrigin()).norm(),sqrt(posvar)));  
-    dbg("Leg.getObsLike",20) << "pt=" << pt << ", leg=" << position << ", pt-leg=" << (pt-position) << ", diam=" << ls.getDiam() << ", dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", frontlike=" << frontlike << std::endl;
+    dbg("Leg.getObsLike",20) << "pt=" << pt << ", leg=" << position << ", pt-leg=" << (pt-position) << ", diam=" << getDiam() << ", dpt=" << dpt << ", sigma=" << sigma << ", like=" << like << ", frontlike=" << frontlike << std::endl;
     like+=frontlike;
     like=std::max((float)log(RANDOMPTPROB),like);
     assert(std::isfinite(like));
@@ -152,8 +159,8 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     scanpts=fs;
 
     // Assume legdiam is log-normal (i.e. log(legdiam) ~ N(LOGDIAMMU,LOGDIAMSIGMA)
-    const float LOGDIAMMU=log(ls.getDiam());
-    const float LOGDIAMSIGMA=log(1+ls.getDiamSigma()/ls.getDiam());
+    const float LOGDIAMMU=log(getDiam());
+    const float LOGDIAMSIGMA=log(1+getDiamSigma()/getDiam());
 
     dbg("Leg.update",5) << "prior: " << *this << std::endl;
     dbg("Leg.update",5) << " fs=" << fs << std::endl;
@@ -245,7 +252,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    for (unsigned int k=0;k<fs.size();k++) {
 		float dpt=(vis.getSick()->getWorldPoint(fs[k])-pt).norm();
 		// Scale it so it is a density per meter in the area of the mean
-		float obslike=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA)*(UNITSPERM/ls.getDiam()));
+		float obslike=log(normpdf(log(dpt*2),LOGDIAMMU,LOGDIAMSIGMA)*(UNITSPERM/getDiam()));
 		// Take the most likely of the observation being background or this target 
 		glike+=std::max(bglike[fs[k]],obslike);
 		bgsum+=bglike[fs[k]];
@@ -390,16 +397,16 @@ void Leg::updateVisibility(const std::vector<float> &bglike) {
     consecutiveInvisibleCount++;
 }
 
-void Leg::updateDiameterEstimates(const Vis &vis, LegStats &ls) const {
+void Leg::updateDiameterEstimates(const Vis &vis, LegStats &ls)  {
     // Update diameter by looking at direction of position-predictedPosition; if it is away from the current LIDAR, then the current diameter is too large
     // and the corrected diameter would be diam+dot(position-LIDAR,position-predictedPosition)*2
     Point scanDirection=position-vis.getSick()->getOrigin();
     scanDirection=scanDirection/scanDirection.norm();
     float scanError=scanDirection.dot(predictedPosition-position);
-    float diamEstimate = ls.getDiam()+scanError;
+    float diamEstimate = getDiam()+scanError;
     diamEstimate=std::max(std::min(diamEstimate,MAXLEGDIAM),MINLEGDIAM);
-    ls.updateDiameter(diamEstimate, LEGDIAMSIGMA);
-    dbg("Leg.updateDiameterEstimates",3) << "Unit " << vis.getSick()->getId() << ", scan error=" << scanError << " ->  diamestimate=" << diamEstimate << " -> diam=" << ls.getDiam() << std::endl;
+    updateDiameter(diamEstimate, LEGDIAMSIGMA);
+    dbg("Leg.updateDiameterEstimates",3) << "Unit " << vis.getSick()->getId() << ", scan error=" << scanError << " ->  diamestimate=" << diamEstimate << " -> diam=" << getDiam() << std::endl;
     return;
     
     // Update diameter estimate if we have a contiguous set of hits of adequate length
@@ -408,17 +415,17 @@ void Leg::updateDiameterEstimates(const Vis &vis, LegStats &ls) const {
 	// check that the leg is clearly in the foreground
 	const unsigned int *srange=vis.getSick()->getRange(0);
 	unsigned int firstScan=scanpts[0];
-	if (firstScan>0 && srange[firstScan-1]<srange[firstScan]+4*ls.getDiam()) {
-	    dbg("Leg.updateDiameterEstimates",3) << "Left edge too close to background: " << srange[firstScan-1] << "<" << srange[firstScan]+4*ls.getDiam() << std::endl;
+	if (firstScan>0 && srange[firstScan-1]<srange[firstScan]+4*getDiam()) {
+	    dbg("Leg.updateDiameterEstimates",3) << "Left edge too close to background: " << srange[firstScan-1] << "<" << srange[firstScan]+4*getDiam() << std::endl;
 	    return;
 	}
 	unsigned int lastScan=scanpts[scanpts.size()-1];
-	if (lastScan<vis.getSick()->getNumMeasurements()-1 && srange[lastScan+1]<srange[lastScan]+4*ls.getDiam()) {
-	    dbg("Leg.updateDiameterEstimates",3) << "Right edge too close to background: " << srange[lastScan+1] << "<" << srange[lastScan]+4*ls.getDiam() <<  std::endl;
+	if (lastScan<vis.getSick()->getNumMeasurements()-1 && srange[lastScan+1]<srange[lastScan]+4*getDiam()) {
+	    dbg("Leg.updateDiameterEstimates",3) << "Right edge too close to background: " << srange[lastScan+1] << "<" << srange[lastScan]+4*getDiam() <<  std::endl;
 	    return;
 	}
 	float diamEstimate = (vis.getSick()->getWorldPoint(lastScan)-vis.getSick()->getWorldPoint(firstScan)).norm();
-	ls.updateDiameter(diamEstimate,diamEstimate/scanpts.size());   // TODO- improve estimate
+	updateDiameter(diamEstimate,diamEstimate/scanpts.size());   // TODO- improve estimate
     }
 }
 
@@ -432,3 +439,10 @@ void Leg::sendMessages(lo_address &addr, int frame, int id, int legnum) const {
 	std::cerr << "Failed send of /pf/leg to " << lo_address_get_url(addr) << std::endl;
 }
 
+void Leg::updateDiameter(float newDiam, float newDiamSEM) {
+    if (updateDiam) {
+	// TODO: track diamSigma
+	diam = diam*(1-1/LEGDIAMTC) + newDiam/LEGDIAMTC;
+	dbg("LegStats.updateDiameter",3) << "newDiam=" << newDiam << ", updated diam=" << diam << ", sigma=" << diamSigma << std::endl;
+    }
+}

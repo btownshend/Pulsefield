@@ -14,6 +14,9 @@ class Leg {
     Point predictedPosition;  // Current predicted position before incorporating measurements
     float posvar;
     float prevposvar;
+    float diam,diamSigma;
+    bool updateDiam;	// True to update diameter
+
     std::vector<Point> priorPositions;	// Last n priorPositions (interpolated if we advanced multiple steps)
     Point velocity;	// Velocity for publishing to OSC; not for kinematics
     std::vector<int> scanpts;
@@ -26,6 +29,7 @@ class Leg {
     void init(const Point &pt);
     // Weights for predicting next delta
     std::vector<float> predictWeights;   // interleaved:   this leg[-1],otherleg[-1],thisleg[-2],...
+    void updateDiameter(float newDiam, float newDiamSEM);
  public:
     Leg();
     Leg(const Point &pos);
@@ -42,9 +46,11 @@ class Leg {
     void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, const LegStats &ls, const Leg *otherLeg=0);
     void updateVisibility(const std::vector<float> &bglike);
     void updateVelocity(int nstep, float fps,Point otherLegVelocity);
-    void updateDiameterEstimates(const Vis &vis, LegStats &ls) const;   // Update given legstats diameter if possible
+    void updateDiameterEstimates(const Vis &vis, LegStats &ls);   // Update  diameter if possible
     void sendMessages(lo_address &addr, int frame, int id, int legnum) const;
     bool isVisible() const { return consecutiveInvisibleCount==0; }
     void setupGrid(int _likenx, int _likeny, Point _minval, Point _maxval) { likenx=_likenx; likeny=_likeny; minval=_minval; maxval=_maxval; }
     float getFramePerformance() const { return pow((position-predictedPosition).norm(),2.0); }
+    float getDiam() const { return diam; }
+    float getDiamSigma() const { return diamSigma; }
 };
