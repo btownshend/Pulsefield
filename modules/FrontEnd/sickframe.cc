@@ -58,17 +58,22 @@ void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int _nechoes, bool c
 	} else  {
 	    const int NSTATUS=20;
 	    unsigned int s[NSTATUS];
+	    for (int i=0;i<nechoes;i++) {
+		range[i].resize(num_measurements);
+		if (captureRSSI)
+		    reflect[i].resize(num_measurements);
+	    }
 	    sick_lms_5xx->GetSickMeasurements(
-					      range[0],
-					      (nechoes>=2)?range[1]:NULL,
-					      (nechoes>=3)?range[2]:NULL,
-					      (nechoes>=4)?range[3]:NULL,
-					      (nechoes>=5)?range[4]:NULL,
-					      captureRSSI?reflect[0]:NULL,
-					      (captureRSSI&&nechoes>=2)?reflect[1]:NULL,
-					      (captureRSSI&&nechoes>=3)?reflect[2]:NULL,
-					      (captureRSSI&&nechoes>=4)?reflect[3]:NULL,
-					      (captureRSSI&&nechoes>=5)?reflect[4]:NULL,
+					      range[0].data(),
+					      (nechoes>=2)?range[1].data():NULL,
+					      (nechoes>=3)?range[2].data():NULL,
+					      (nechoes>=4)?range[3].data():NULL,
+					      (nechoes>=5)?range[4].data():NULL,
+					      captureRSSI?reflect[0].data():NULL,
+					      (captureRSSI&&nechoes>=2)?reflect[1].data():NULL,
+					      (captureRSSI&&nechoes>=3)?reflect[2].data():NULL,
+					      (captureRSSI&&nechoes>=4)?reflect[3].data():NULL,
+					      (captureRSSI&&nechoes>=5)?reflect[4].data():NULL,
 					      num_measurements,
 					      &s[0],NSTATUS);
 	    //std::cout << "status=";
@@ -205,10 +210,13 @@ int SickFrame::read(FILE *fd, int version) {
 	nread=sscanf(strtok(line," "),"D%d ",&echo);
 	if (nread!=1) return -1;
 	assert(echo>=0 && echo<nechoes);
+	range[e].resize(num_measurements);
 	for (int i=0;i<num_measurements;i++) {
 	    char *p=strtok(NULL," ");
 	    if (p==NULL) return -1;
-	    nread=sscanf(p,"%d ",&range[e][i]);
+	    unsigned int x;
+	    nread=sscanf(p,"%d ",&x);
+	    range[e][i]=x;
 	    if (nread!=1) return -1;
 	}
     }
@@ -219,6 +227,7 @@ int SickFrame::read(FILE *fd, int version) {
 	nread=sscanf(strtok(line," "),"R%d ",&echo);
 	if (nread!=1) return -1;
 	assert(echo>=0 && echo<nechoes);
+	reflect[e].resize(num_measurements);
 	for (int i=0;i<num_measurements;i++) {
 	    char *p=strtok(NULL," ");
 	    if (p==NULL) return -1;

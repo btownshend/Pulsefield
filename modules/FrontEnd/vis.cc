@@ -44,8 +44,9 @@ mxArray *Vis::convertToMX(int frame) const {
     assert(pRange!=NULL);
     double *data=mxGetPr(pRange);
     for (unsigned int j=0;j<sick->getNumEchoes();j++) {
-	const unsigned int *range=sick->getRange(j);
-	for (unsigned int i=0;i<sick->getNumMeasurements();i++)
+	const std::vector<unsigned int> range = sick->getRange(j);
+	assert(range.size()==sick->getNumMeasurements());
+	for (unsigned int i=0;i<range.size();i++)
 	    *data++=range[i]/UNITSPERM;
     }
     mxSetField(vis,0,"range",pRange);

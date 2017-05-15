@@ -138,8 +138,8 @@ void World::draw(int nsick, const SickIO * const * sick) const {
 	     cairo_set_source_rgb (cr, (j==0)?1.0:0.0,(j==1)?1.0:0.0,(j==2)?1.0:0.0);
 	     const SickIO *s = sick[j];
 
-	     const unsigned int *range = s->getRange(0);
-	     for (unsigned int i=0;i<s->getNumMeasurements();i++) {
+	     const std::vector<unsigned int> range = s->getRange(0);
+	     for (unsigned int i=0;i<range.size();i++) {
 		 Point p1,p2;
 		 float theta=s->getAngleRad(i);
 		 float effDivergence=DIVERGENCE+EXITDIAMETER/range[i];

@@ -413,7 +413,7 @@ void Leg::updateDiameterEstimates(const Vis &vis, LegStats &ls)  {
     if (scanpts.size() >= 5 && (scanpts[scanpts.size()-1]-scanpts[0])==(int)(scanpts.size()-1)) {
 	dbg("Leg.updateDiameterEstimates",3) << "Updating leg diameter using " << scanpts.size() << " scan points" << std::endl;
 	// check that the leg is clearly in the foreground
-	const unsigned int *srange=vis.getSick()->getRange(0);
+	const std::vector<unsigned int> srange = vis.getSick()->getRange(0);
 	unsigned int firstScan=scanpts[0];
 	if (firstScan>0 && srange[firstScan-1]<srange[firstScan]+4*getDiam()) {
 	    dbg("Leg.updateDiameterEstimates",3) << "Left edge too close to background: " << srange[firstScan-1] << "<" << srange[firstScan]+4*getDiam() << std::endl;

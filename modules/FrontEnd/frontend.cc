@@ -212,8 +212,8 @@ void FrontEnd::processFrames(int c) {
 	}
 
 	sendOnce |= sendAlways;
-	const unsigned int *range[SickIO::MAXECHOES];
-	const unsigned int *reflect[SickIO::MAXECHOES];
+	std::vector<unsigned int> range[SickIO::MAXECHOES];
+	std::vector<unsigned int> reflect[SickIO::MAXECHOES];
 	for (unsigned int i=0;i<sick[c]->getNumEchoes();i++) {
 	    range[i]=sick[c]->getRange(i);
 	    reflect[i]=sick[c]->getReflect(i);
@@ -244,7 +244,7 @@ void FrontEnd::processFrames(int c) {
     sick[c]->clearValid();
 }
 
-void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int **ranges, const unsigned int **reflect) {
+void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, std::vector<unsigned int> ranges[], std::vector<unsigned int> reflect[]) {
     if (! (sendOnce & (RANGE|REFLECT)))
 	return;
     dbg("FrontEnd.sendVisMessages",5) << "sendOnce=0x" << std::setbase(16) << sendOnce << std::setbase(10)  << ", ndest=" << dests.size() << std::endl;
@@ -260,7 +260,7 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 		if (sendOnce & RANGE) {
 		    // Send range info
 		    for (int e=0;e<necho;e++) {
-			lo_blob data = lo_blob_new(nmeasure*sizeof(*ranges[e]),ranges[e]);
+			lo_blob data = lo_blob_new(nmeasure*sizeof(*ranges[e].data()),ranges[e].data());
 			dbg("FrontEnd.sendVisMessages",6) << "Sending RANGE(" << id << "," << e << ") (N=" << nmeasure << ") to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 			lo_send(addr, "/vis/range","iiiiiib",id,frame,acquired.tv_sec, acquired.tv_usec, e, nmeasure, data);
 			lo_blob_free(data);
@@ -268,7 +268,7 @@ void FrontEnd::sendVisMessages(int id, unsigned int frame, const struct timeval 
 		}
 		if (sendOnce & REFLECT) {
 		    for (int e=0;e<nechoes;e++) {
-			lo_blob data = lo_blob_new(nmeasure*sizeof(*reflect[e]),reflect[e]);
+			lo_blob data = lo_blob_new(nmeasure*sizeof(*reflect[e].data()),reflect[e].data());
 			dbg("FrontEnd.sendVisMessages",6) << "Sending REFLECT(" << id << "," << e << ") (N=" << nmeasure << ") to " << dests.getHost(i) << ":" << dests.getPort(i) << std::endl;
 			lo_send(addr, "/vis/reflect","iiiiiib",id,frame,acquired.tv_sec, acquired.tv_usec, e, nmeasure, data);
 			lo_blob_free(data);

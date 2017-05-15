@@ -40,7 +40,7 @@ class FrontEnd {
     // Process all frames
     void processFrames(int unit);   
     // Send out low-level vis messages for given sick data
-    void sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, const unsigned int *ranges[], const unsigned int *reflect[]);
+    void sendVisMessages(int id, unsigned int frame, const struct timeval &acquired, int nmeasure, int necho, std::vector<unsigned int> ranges[], std::vector<unsigned int> reflect[]);
 
     FILE *recordFD;
     

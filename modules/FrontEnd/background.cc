@@ -47,7 +47,7 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
     const SickIO &sick=*vis.getSick();
     ((Background *)this)->setup(sick);
     std::vector<float> result(sick.getNumMeasurements(),0.0);
-    const unsigned int *srange = sick.getRange(0);
+    const std::vector<unsigned int> srange = sick.getRange(0);
     for (unsigned int i=0;i<sick.getNumMeasurements();i++) {
 	if (!world.inRange(sick.getWorldPoint(i)) || srange[i]<MINRANGE) {
 	    dbg("Background.like",10) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is outside world or too close" << std::endl;
@@ -98,7 +98,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    dbg("Background.update",1) << "Turning off bginit at SICK " << sick.getId() << " scan " << sick.getScanCounter() << std::endl;
 	}
     }
-    const unsigned int *srange = sick.getRange(0);
+    const std::vector<unsigned int> srange = sick.getRange(0);
    
     // range[0] is for the farthest seen in last BGLONGDISTLIFE frames
     // range[1] is the most frequent seen, other than range[0], with exponential decay using UPDATETC

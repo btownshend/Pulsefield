@@ -34,8 +34,8 @@ class SickFrame {
     static const int MAXECHOES=5;
     static const int MAXMEASUREMENTS=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS;
     int nechoes;
-    unsigned int range[MAXECHOES][MAXMEASUREMENTS];
-    unsigned int reflect[MAXECHOES][MAXMEASUREMENTS];
+    std::vector<unsigned int> range[MAXECHOES];
+    std::vector<unsigned int> reflect[MAXECHOES];
     unsigned int devNumber, serialNumber,devStatus,telegramCounter;
     unsigned int transmitTime,digitalInputs,digitalOutputs;
     float scanFrequency, measurementFrequency;
@@ -162,11 +162,11 @@ public:
 	}
 
 	const std::vector<Point> getCalTargets() const { return calTargets; }
-	const unsigned int* getRange(int echo) const {
+	const std::vector<unsigned int> getRange(int echo) const {
 	    return curFrame.range[echo];
 	}
 
-	const unsigned int* getReflect(int echo) const {
+	const std::vector<unsigned int> getReflect(int echo) const {
 	    return curFrame.reflect[echo];
 	}
 	

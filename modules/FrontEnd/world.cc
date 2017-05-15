@@ -143,7 +143,7 @@ public:
 void World::makeAssignments(const Vis &vis, float entrylike) {
     dbg("World.makeAssignments",3) << "makeAssignments(entrylike= " << entrylike << ")" << std::endl;
     const SickIO *sick=vis.getSick();
-    const unsigned int *range=sick->getRange(0);
+    const std::vector<unsigned int> range = sick->getRange(0);
     // Build a list of targets that group together the hits
     std::vector<Target> targets;
     int nassigned=0;
@@ -153,7 +153,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
     legassigned.assign(sick->getNumMeasurements(),0);
     float bglikethresh=log(0.5*UNITSPERM);
 
-    for (unsigned int f=0;f<sick->getNumMeasurements();f++) {
+    for (unsigned int f=0;f<range.size();f++) {
 	if (bglike[f]>bglikethresh) {
 	    dbg("World.makeAssignments",8) << "Assigned scan " << f << " with range " << range[f] << " to background with bglike= " << bglike[f] << std::endl;
 	    assignments[f]=-1;

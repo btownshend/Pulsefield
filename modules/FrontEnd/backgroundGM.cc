@@ -12,7 +12,7 @@ std::vector<float> Background::like(const SickIO &sick) const {
     ((Background *)this)->sizeCheck(sick.getNumMeasurements());
 
     std::vector<float> result(sick.getNumMeasurements());
-    const unsigned int *srange = sick.getRange(0);
+    const std::vector<unsigned int> srange = sick.getRange(0);
     for (unsigned int i=0;i<sick.getNumMeasurements();i++)
 	result[i]=mixtures[i].like(srange[i]);
     return result;
@@ -30,7 +30,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments)
     sizeCheck(sick.getNumMeasurements());
     assert(assignments.size()==mixtures.size());
     scanRes=sick.getScanRes();
-    const unsigned int *srange = sick.getRange(0);
+    const std::vector<unsigned int> srange = sick.getRange(0);
     for (int i=0;i<mixtures.size();i++) {
 	if (assignments[i]==-1)
 	    mixtures[i].add(srange[i]);
