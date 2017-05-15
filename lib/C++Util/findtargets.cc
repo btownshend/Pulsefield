@@ -86,14 +86,17 @@ std::vector<Point> findTargets( const std::vector<Point> background) {
 #endif
 	static const float MAXSEP=0.3;		// Ends of target must be clear of other objects for this distance (meters)
 	static const int MINTARGETHITS=6;	// Minimum number of hits for it to be a target
-	static const float MINTARGETWIDTH=0.15;	// Minimum width of target in meters
-	static const float MAXTARGETWIDTH=0.40;	// Maximum width of target in meters
-	static const float MAXFITERROR=0.05;	// RMS error between fitted corner and points
-	static const float MAXCORNERERROR=20; // Error in angle of corner in degrees
+	static const float MINTARGETWIDTH=0.335;	// Minimum width of target cross-section in meters
+	static const float MAXTARGETWIDTH=0.553+.05;	// Maximum width of target in meters
+	static const float MAXFITERROR=0.01;	// RMS error between fitted corner and points
+	static const float CORNERANGLE=109.3;   // Angle of corner in degrees
+	static const float MAXCORNERERROR=4; // Error in angle of corner in degrees
 	static const float MAXORIENTERROR=180;	// Error in which way corner is aiming in degrees
-	static const float MAXTARGETDIST=8;		// Maximum distance
-	static const float MINTARGETDIST=0.3;		// Minimum distance
-	static const float MINSIDELENGTH=0.15;
+	static const float MAXTARGETDIST=10;		// Maximum distance
+	static const float MINTARGETDIST=0.2;		// Minimum distance
+	static const float SIDELENGTH=0.315;
+	static const float SIDEERROR=.05;
+	static const float THICKNESS=0.0078;    // Distance from inner corner to outer corner
 
 	float dTheta=0;
 	for (int i=0;i<background.size()-1;i++) {
@@ -153,8 +156,8 @@ std::vector<Point> findTargets( const std::vector<Point> background) {
 			float side2= (corners[2]-corners[1]).norm();
 			dbg("findTargets",5) << "pts=" << tgt << std::endl;
 			
-			if (rms<=MAXFITERROR && ( fabs(cornerAngle-90)<MAXCORNERERROR  || fabs(cornerAngle-270)<MAXCORNERERROR) && fabs(orient)<MAXORIENTERROR 
-			    && dist<=MAXTARGETDIST && dist >= MINTARGETDIST && fmin(side1,side2)>=MINSIDELENGTH) {
+			if (rms<=MAXFITERROR && ( fabs(cornerAngle-CORNERANGLE)<MAXCORNERERROR  || fabs(cornerAngle-(360-CORNERANGLE))<MAXCORNERERROR) && fabs(orient)<MAXORIENTERROR 
+			    && dist<=MAXTARGETDIST && dist >= MINTARGETDIST && fabs(side1-SIDELENGTH)<=SIDEERROR && fabs(side2-SIDELENGTH)<=SIDEERROR) {
 			    dbg("findTargets",3) << "alignment pattern accepted at scans " << i-inTargetCnt << "-" << i-1 << " at {" << corners[0] << ", " <<  corners[1] << ", " << corners[2] << "} with edge lengths  " 
 						 << side1<< ", " << side2 << ", angle=" << cornerAngle << ", orient=" << orient 
 						 << ", RMS=" << rms << ", dist=" << dist << std::endl;
@@ -165,7 +168,13 @@ std::vector<Point> findTargets( const std::vector<Point> background) {
 			    // Draw a circle around target
 			    //			    globalDrawing.drawCircle(corners[1],0.02,bgColor);
 #endif
-			    calCorners.push_back(corners[1]);
+			    if (cornerAngle>180) {
+				Point offset=corners[1]/corners[1].norm()*THICKNESS;
+				dbg("findTargets",3) << "Offsetting by " << offset << std::endl;
+				calCorners.push_back(corners[1]+offset);
+			    } else {
+				calCorners.push_back(corners[1]);
+			    }
 			} else {
 			    dbg("findTargets",4) << "alignment pattern rejected at scans " << i-inTargetCnt << "-" << i-1 << " at {" << corners[0] << ", " <<  corners[1] << ", " << corners[2] << "} with edge lengths  " 
 					     << side1 << ", " << side2 << ", angle=" << cornerAngle << ", orient=" << orient 
