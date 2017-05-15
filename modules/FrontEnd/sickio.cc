@@ -55,6 +55,7 @@ SickIO::SickIO(int _id, const char *host, int port) {
 	captureScanRes=0.3333;   // Needs to be only 4 decimals to be recognized by DoubleToSickScanRes
 	updateScanFreqAndRes();
 	coordinateRotation=0;
+	bootTime.tv_usec=0; bootTime.tv_sec=0;
 	origin=Point(0,0);
 	running=false;
 	pthread_mutex_init(&mutex,NULL);
@@ -73,6 +74,7 @@ SickIO::SickIO(int _id) {
     pthread_mutex_init(&mutex,NULL);
     pthread_cond_init(&signal,NULL);
     coordinateRotation=0;
+    bootTime.tv_usec=0; bootTime.tv_sec=0;
 }
 
 SickIO::~SickIO() {
