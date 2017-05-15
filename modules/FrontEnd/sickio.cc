@@ -299,7 +299,17 @@ void SickIO::updateCalTargets() {
 	pts[i]=getLocalPoint(i) / UNITSPERM;
     }
     dbg("SickIO.update",3) << "Unit " << id << ": Finding targets from " << pts.size() << " ranges." << std::endl;
-    calTargets=findTargets(pts);
+    std::vector<Point> newCalTargets=findTargets(pts);
+    // Refine use prior ones
+    for (int i=0;i<newCalTargets.size();i++)
+	for (int j=0;j<calTargets.size();j++) {
+	    if ( (calTargets[j]-newCalTargets[i]).norm() < 0.01) { // Within 1 cm
+		dbg("SickIO.updateCalTargets",1) << "Unit " << id << ": Smoothing " << newCalTargets[j] << " using prior target " << calTargets[j] << std::endl;
+		static const float OLDWEIGHT=0.95;
+		newCalTargets[i] = newCalTargets[i]*(1-OLDWEIGHT) + calTargets[j]*OLDWEIGHT;
+	    }
+	}
+    calTargets=newCalTargets;
 }
 
 void SickIO::sendMessages(const char *host, int port) const {
