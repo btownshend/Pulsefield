@@ -132,6 +132,8 @@ void World::draw(int nsick, const SickIO * const * sick) const {
      if  (drawRange && nsick>0) {
 	 // Draw current range
 	 cairo_set_line_width(cr,1*pixel);
+	 std::vector<Point> worldTgts;   // World coords of all targets drawn
+     
 	 for (int j=0;j<nsick;j++) {
 	     cairo_set_source_rgb (cr, (j==0)?1.0:0.0,(j==1)?1.0:0.0,(j==2)?1.0:0.0);
 	     const SickIO *s = sick[j];
@@ -169,7 +171,31 @@ void World::draw(int nsick, const SickIO * const * sick) const {
 		 cairo_move_to(cr,p.X()+v2.X(), p.Y()+v2.Y());
 		 cairo_line_to(cr,p.X()-v2.X(), p.Y()-v2.Y());
 		 cairo_stroke(cr);
+		 worldTgts.push_back(p);
 	     }
+	 }
+	 if (worldTgts.size()>=2) {
+	     // Draw yellow line indicating alignment error and direction
+	     for (int i=0;i<worldTgts.size();i++)
+		 for (int j=i+1;j<worldTgts.size();j++) {
+		     Point delta=(worldTgts[i]-worldTgts[j]);
+		     if (delta.norm()<100) {
+			 cairo_set_source_rgb(cr,1.0,1.0,0.0);
+			 cairo_move_to(cr,worldTgts[i].X(),worldTgts[i].Y());
+			 cairo_line_to(cr,worldTgts[i].X()+delta.X()*50,worldTgts[i].Y()+delta.Y()*50);
+			 cairo_stroke(cr);
+		     }
+		     /*
+		     cairo_save(cr);
+		     cairo_translate(cr,(worldTgts[i].X()+worldTgts[j].X())/2,(worldTgts[i].Y()+worldTgts[j].Y())/2);
+		     cairo_scale(cr,pixel,-pixel);
+		     cairo_set_font_size (cr, 20);
+		     std::ostringstream msg;
+		     msg << std::setprecision(0)  << std::fixed  << delta.X() << "," << delta.Y();
+		     cairo_show_text (cr, msg.str().c_str());
+		     cairo_restore(cr);
+		     */
+		 }
 	 }
      }
 
