@@ -290,7 +290,7 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
     struct timeval starttime;
     gettimeofday(&starttime,0);
     int frameStep=0;
-    int lastframe=-1;
+    int lastscan=-1;
     float maxProcTime=0;
     float totalProcTime=0;
     float totalallProcTime=0;
@@ -336,25 +336,25 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 	    load();
 	}
 
-	if (lastframe==-1)  {
+	if (lastscan==-1)  {
 	    // Initialize file start time for reference
 	    startfile=f.acquired;
 	}
 
-	lastframe= sick[cid-1]->getScanCounter();
+	lastscan= sick[cid-1]->getScanCounter();
 	    
-	if  (lastframe==f.getScanCounter()) {
+	if  (lastscan==f.getScanCounter()) {
 	    fprintf(stderr,"Duplicate scan %d for unit %d\n", f.getScanCounter(), cid);
 	    continue;
 	}
 	
-	if (f.getScanCounter()!=lastframe+1 && lastframe!=-1) {
-	    if (lastframe+1 == f.getScanCounter()-1) {
-		dbg("FrontEnd.playFile",1) << "Input file skips scan " << lastframe+1 << " for unit " << cid << std::endl;
-	    } else if (lastframe<f.getScanCounter()) {
-		dbg("FrontEnd.playFile",1) << "Input file skips scans " << lastframe+1 << "-" << f.getScanCounter()-1 << " for unit " << cid << std::endl;
+	if (f.getScanCounter()!=lastscan+1 && lastscan!=-1) {
+	    if (lastscan+1 == f.getScanCounter()-1) {
+		dbg("FrontEnd.playFile",1) << "Input file skips scan " << lastscan+1 << " for unit " << cid << std::endl;
+	    } else if (lastscan<f.getScanCounter()) {
+		dbg("FrontEnd.playFile",1) << "Input file skips scans " << lastscan+1 << "-" << f.getScanCounter()-1 << " for unit " << cid << std::endl;
 	    } else {
-		dbg("FrontEnd.playFile",1) << "Input file jumped backwards from scan " << lastframe << " to " << f.getScanCounter() << " for unit " << cid << std::endl;
+		dbg("FrontEnd.playFile",1) << "Input file jumped backwards from scan " << lastscan << " to " << f.getScanCounter() << " for unit " << cid << std::endl;
 	    }
 	}
 
@@ -431,8 +431,8 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 
 	static int lastStatsFrame=0;
 	if (frame-lastStatsFrame >=200) {
-	    dbg("frontend",1) << "Frame " << f.getScanCounter() << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
-	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",f.getScanCounter(),totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
+	    dbg("frontend",1) << "Frame " << frame << ": mean frame processing time= " <<  totalProcTime/nProcTime << ", max=" << maxProcTime << ", max FPS=" << nProcTime/totalProcTime << std::endl;
+	    printf("Playing frame %d with mean processing time=%.1f ms (%.0f FPS), max=%.1f ms\n",frame,totalProcTime/nProcTime*1000,nProcTime/totalProcTime,maxProcTime*1000);
 	    nProcTime=0;
 	    maxProcTime=0;
 	    totalProcTime=0;

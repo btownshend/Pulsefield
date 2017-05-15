@@ -205,7 +205,7 @@ void SickIO::pushFrame(const SickFrame &frame) {
     }
     if (error>=5000) {
 	// More than 5msec delay in receiving message
-	dbg("SickIO.get",1) << "Receipt of frame " << frame.getScanCounter() << " from unit " << id << " was delayed by " << error/1000 << " msec." << std::endl;
+	dbg("SickIO.get",1) << "Receipt of scan " << frame.getScanCounter() << " from unit " << id << " was delayed by " << error/1000 << " msec." << std::endl;
 	if (error > 100000)
 	    std::cerr << "Excessive reception delay for unit " << id << " of " << error/1000 << "  msec" << std::endl;
     }
@@ -226,18 +226,18 @@ void SickIO::pushFrame(const SickFrame &frame) {
 	frames.pop();
     }
     if (frames.size() >5) {
-	dbg("SickIO.get",1) << "Warning: frames queue for unit " << id << " now has " << frames.size() << " entries -- flushing " << frames.front().getScanCounter() <<  std::endl;
+	dbg("SickIO.get",1) << "Warning: scan queue for unit " << id << " now has " << frames.size() << " entries -- flushing " << frames.front().getScanCounter() <<  std::endl;
 	frames.pop();
     }
     pthread_cond_signal(&signal);
     unlock();
     if (recordFD != NULL) {
 	pthread_mutex_lock(&recordMutex);   /// Make sure only one thread at a time writes a frame
-	dbg("SickIO.write",2) << "Unit " << id << " writing frame " << frame.getScanCounter() << std::endl;
+	dbg("SickIO.write",2) << "Unit " << id << " writing scan " << frame.getScanCounter() << std::endl;
 	if (recordVersion>=2)
 	    fprintf(recordFD,"T %d %f %f %f\n",id, origin.X(), origin.Y(), coordinateRotation);
 	frame.write(recordFD, id, recordVersion);
-	dbg("SickIO.write",2) << "Unit " << id << " done writing frame " << frame.getScanCounter() << std::endl;
+	dbg("SickIO.write",2) << "Unit " << id << " done writing scan " << frame.getScanCounter() << std::endl;
 	pthread_mutex_unlock(&recordMutex);
     }
 }
@@ -249,13 +249,13 @@ void SickIO::waitForFrame()  {
 	return;  // Already a valid frame present
     while (frames.empty()) {
 	assert(!fake);   // Should never end up here when faking
-	dbg("SickIO.waitForFrame",4) << "Waiting for frames" << std::endl;
+	dbg("SickIO.waitForFrame",4) << "Waiting for next scan" << std::endl;
 	lock();  // Need to lock here to not miss a signal
 	if (frames.empty())
 	    // Still empty, but now we have a lock so we won't miss a signal
 	    pthread_cond_wait(&signal,&mutex);
 	unlock();
-	dbg("SickIO.waitForFrame",4) << "Cond_wait returned, frames=" << frames.size() << std::endl;
+	dbg("SickIO.waitForFrame",4) << "Cond_wait returned, have " << frames.size() << " scans" << std::endl;
     }
     // Load next frame from queue into curFrame and do any needed processing
     int deltaFrames = frames.front().getScanCounter()-curFrame.getScanCounter();
