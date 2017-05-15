@@ -58,8 +58,9 @@ Person::~Person() {
 }
 
 bool Person::isDead() const {
-    float visibility = totalVisibleCount*1.0/age;
-    bool result = (age<AGETHRESHOLD && visibility<MINVISIBILITY) || (consecutiveInvisibleCount >= INVISIBLEFORTOOLONG);
+    //float visibility = totalVisibleCount*1.0/age;
+    bool result = consecutiveInvisibleCount >= ((age<AGETHRESHOLD)?INITIALMAXINVISIBLE:INVISIBLEFORTOOLONG);
+    //    bool result = (age<AGETHRESHOLD && visibility<MINVISIBILITY) || (consecutiveInvisibleCount >= INVISIBLEFORTOOLONG);
     if (result) {
 	dbg("Person.isDead",2) << " Person has expired life: " << *this << std::endl;
     }
@@ -79,6 +80,7 @@ std::ostream &operator<<(std::ostream &s, const Person &p) {
       << std::setprecision(2)
       << ", vel: " << p.velocity
       << ", age: " << p.age
+      << ", tvis: " << p.totalVisibleCount
       << std::setprecision(3);
     if (p.consecutiveInvisibleCount > 0)
 	s << ",invis:" << p.consecutiveInvisibleCount;

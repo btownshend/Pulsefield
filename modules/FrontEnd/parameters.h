@@ -65,9 +65,9 @@ static const float LEGDIAMTC=10; 	// Time constant for updating  estimate of leg
 static const float LEFTNESSTC=100;	// time constant for updating leftness
 
 // ******** Deleting tracks
+static const int INITIALMAXINVISIBLE=3;	// Number of frames of invisible before deleting (before AGETHRESHOLD reached)
 static const int INVISIBLEFORTOOLONG=50;	// Number of frames of invisible before deleting
 static const int AGETHRESHOLD=20;	// Age before considered reliable    
-static const float MINVISIBILITY=0.9;	// Minimum visibility to maintain new tracks (before ageThreshold reached)
 
 // ******* Entry Statistics
 static const float ENTRYRATE=1.0; 	// Entries per minute
