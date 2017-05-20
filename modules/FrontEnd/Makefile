@@ -625,7 +625,7 @@ frontend.o: /Applications/MATLAB/extern/include/mat.h
 frontend.o: /Applications/MATLAB/extern/include/matrix.h
 frontend.o: /Applications/MATLAB/extern/include/tmwtypes.h
 frontend.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h background.h
-frontend.o: world.h /opt/local/include/cairo/cairo-xlib.h
+frontend.o: wrapper.h world.h /opt/local/include/cairo/cairo-xlib.h
 frontend.o: /opt/local/include/cairo/cairo.h
 frontend.o: /opt/local/include/cairo/cairo-version.h
 frontend.o: /opt/local/include/cairo/cairo-features.h
@@ -1205,7 +1205,8 @@ handlers.o: /Applications/MATLAB/extern/include/mat.h
 handlers.o: /Applications/MATLAB/extern/include/matrix.h
 handlers.o: /Applications/MATLAB/extern/include/tmwtypes.h
 handlers.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h background.h
-handlers.o: parameters.h world.h /opt/local/include/cairo/cairo-xlib.h
+handlers.o: wrapper.h parameters.h world.h
+handlers.o: /opt/local/include/cairo/cairo-xlib.h
 handlers.o: /opt/local/include/cairo/cairo.h
 handlers.o: /opt/local/include/cairo/cairo-version.h
 handlers.o: /opt/local/include/cairo/cairo-features.h
@@ -1782,7 +1783,7 @@ main.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 main.o: /Applications/MATLAB/extern/include/mat.h
 main.o: /Applications/MATLAB/extern/include/matrix.h
 main.o: /Applications/MATLAB/extern/include/tmwtypes.h
-main.o: ../../lib/C++Util/point.h background.h
+main.o: ../../lib/C++Util/point.h background.h wrapper.h
 ../../lib/C++Util/urlconfig.o: ../../lib/C++Util/dbg.h
 ../../lib/C++Util/urlconfig.o: ../../lib/C++Util/urlconfig.h
 sickio.o: sickio.h
@@ -1803,8 +1804,8 @@ sickio.o: /opt/local/include/lo/lo_osc_types.h
 sickio.o: /opt/local/include/lo/lo_errors.h
 sickio.o: /opt/local/include/lo/lo_lowlevel.h
 sickio.o: /opt/local/include/lo/lo_serverthread.h
-sickio.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/findtargets.h
-sickio.o: parameters.h
+sickio.o: /opt/local/include/lo/lo_macros.h wrapper.h
+sickio.o: ../../lib/C++Util/findtargets.h parameters.h
 sickframe.o: sickio.h
 sickframe.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 sickframe.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -1823,7 +1824,7 @@ sickframe.o: /opt/local/include/lo/lo_osc_types.h
 sickframe.o: /opt/local/include/lo/lo_errors.h
 sickframe.o: /opt/local/include/lo/lo_lowlevel.h
 sickframe.o: /opt/local/include/lo/lo_serverthread.h
-sickframe.o: /opt/local/include/lo/lo_macros.h
+sickframe.o: /opt/local/include/lo/lo_macros.h wrapper.h
 background.o: background.h /Applications/MATLAB/extern/include/mat.h
 background.o: /Applications/MATLAB/extern/include/matrix.h
 background.o: /Applications/MATLAB/extern/include/tmwtypes.h
@@ -1842,7 +1843,7 @@ background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5x
 background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-background.o: ../../lib/C++Util/point.h world.h
+background.o: ../../lib/C++Util/point.h wrapper.h world.h
 background.o: /opt/local/include/cairo/cairo-xlib.h
 background.o: /opt/local/include/cairo/cairo.h
 background.o: /opt/local/include/cairo/cairo-version.h
@@ -1878,7 +1879,7 @@ world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuff
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-world.o: ../../lib/C++Util/dbg.h parameters.h
+world.o: ../../lib/C++Util/dbg.h wrapper.h parameters.h
 snapshot.o: sickio.h
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -1897,7 +1898,7 @@ snapshot.o: /opt/local/include/lo/lo_osc_types.h
 snapshot.o: /opt/local/include/lo/lo_errors.h
 snapshot.o: /opt/local/include/lo/lo_lowlevel.h
 snapshot.o: /opt/local/include/lo/lo_serverthread.h
-snapshot.o: /opt/local/include/lo/lo_macros.h world.h
+snapshot.o: /opt/local/include/lo/lo_macros.h wrapper.h world.h
 snapshot.o: /opt/local/include/cairo/cairo-xlib.h
 snapshot.o: /opt/local/include/cairo/cairo.h
 snapshot.o: /opt/local/include/cairo/cairo-version.h
@@ -1923,7 +1924,7 @@ vis.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 vis.o: /opt/local/include/lo/lo_types.h /opt/local/include/lo/lo_osc_types.h
 vis.o: /opt/local/include/lo/lo_errors.h /opt/local/include/lo/lo_lowlevel.h
 vis.o: /opt/local/include/lo/lo_serverthread.h
-vis.o: /opt/local/include/lo/lo_macros.h parameters.h
+vis.o: /opt/local/include/lo/lo_macros.h wrapper.h parameters.h
 person.o: person.h /Applications/MATLAB/extern/include/mat.h
 person.o: /Applications/MATLAB/extern/include/matrix.h
 person.o: /Applications/MATLAB/extern/include/tmwtypes.h
@@ -1942,8 +1943,8 @@ person.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuf
 person.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 person.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-person.o: ../../lib/C++Util/dbg.h background.h parameters.h normal.h
-person.o: lookuptable.h groups.h
+person.o: ../../lib/C++Util/dbg.h background.h wrapper.h parameters.h
+person.o: normal.h lookuptable.h groups.h
 ../../lib/C++Util/dbg.o: ../../lib/C++Util/dbg.h
 ../../lib/C++Util/point.o: ../../lib/C++Util/point.h
 worlddraw.o: /opt/local/include/cairo/cairo.h
@@ -1973,6 +1974,7 @@ worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
+worlddraw.o: wrapper.h
 lookuptable.o: lookuptable.h normal.h parameters.h ../../lib/C++Util/dbg.h
 leg.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 leg.o: /opt/local/include/lo/lo_types.h /opt/local/include/lo/lo_osc_types.h
@@ -1990,7 +1992,7 @@ leg.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 leg.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 leg.o: /Applications/MATLAB/extern/include/mat.h
 leg.o: /Applications/MATLAB/extern/include/matrix.h
-leg.o: /Applications/MATLAB/extern/include/tmwtypes.h background.h
+leg.o: /Applications/MATLAB/extern/include/tmwtypes.h background.h wrapper.h
 leg.o: lookuptable.h
 legstats.o: person.h /Applications/MATLAB/extern/include/mat.h
 legstats.o: /Applications/MATLAB/extern/include/matrix.h
