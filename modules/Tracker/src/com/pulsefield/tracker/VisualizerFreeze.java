@@ -38,6 +38,8 @@ class Molecule {
 		this.img=img;
 		this.radius=radius;
 		mass=1f;
+		angle=0;
+		angularVelocity=(float) (0.2f*(Math.random()-0.5f));
 		allMolecules.add(this);
 		//PApplet.println("Created marble at "+location+" with velocity "+vel+" and mass "+mass);
 		isAlive=true;
@@ -65,6 +67,7 @@ class Molecule {
 			velocity.normalize().mult(MAXSPEED);
 		}
 		location.add(PVector.mult(velocity,1/Tracker.theTracker.frameRate));
+		angle= (float)((angle+angularVelocity)%(2*Math.PI));
 		float radius=getRadius();
 		// Out of bounds, bounce back
 		if (location.x-radius > Tracker.maxx && velocity.x>0)
@@ -80,7 +83,11 @@ class Molecule {
 		float r=getRadius();
 		//g.ellipse(location.x, location.y, r*2, r*2);
 		g.imageMode(PConstants.CENTER);
-		g.image(img,location.x,location.y,r*2,r*2);
+		g.pushMatrix();
+		g.translate(location.x, location.y);
+		g.rotate(angle);
+		g.image(img,0,0,r*2,r*2);
+		g.popMatrix();
 	}
 	static Molecule create(PVector pos, PVector vel, float radius)  {
 		if (imgs==null)
