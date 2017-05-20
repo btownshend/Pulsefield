@@ -4,8 +4,6 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PImage;
-import processing.core.PMatrix;
-import processing.core.PMatrix2D;
 import processing.core.PVector;
 
 class Molecule {
@@ -25,6 +23,8 @@ class Molecule {
 	boolean isAlive;
 	float mass;
 	float tgtSpeed;   // Target speed (temperature)
+	float angle;
+	float angularVelocity;
 	
 	private static Images imgs=null;
 	private static HashSet<Molecule> allMolecules = new HashSet<Molecule>();
