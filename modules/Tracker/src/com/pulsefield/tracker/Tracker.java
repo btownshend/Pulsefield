@@ -254,6 +254,7 @@ public class Tracker extends PApplet {
 		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
 		addVis("Osmos",new VisualizerOsmos(this,synth),true);
+		addVis("Freeze",new VisualizerFreeze(this,synth),true);
 		addVis("VDMX",new VisualizerVDMX(this,Tracker.pfroot+"/../VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
 		addVis("TestPattern",new VisualizerTestPattern(this),false);
 		setapp(vis.length-1);
