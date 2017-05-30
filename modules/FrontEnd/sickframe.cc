@@ -174,16 +174,18 @@ int SickFrame::read(FILE *fd, int version) {
 	// Read origin, rotation and store in frame (not in sickio)  (but currently ignored since current settings apply to loaded file)
 	if ((line=readLine(fd)) == NULL)
 	    return -1;
-	nread=sscanf(line,"T %d %f %f %lf ",&id, &originX, &originY, &coordinateRotation);
-	if (nread!=4)  {
-	    std::cerr << "Error scanning input file, read " << nread << " entries when 4 were expected" << std::endl;
-	    return -1;
+	if (line[0]=='T') {
+	    nread=sscanf(line,"T %d %f %f %lf ",&id, &originX, &originY, &coordinateRotation);
+	    if (nread!=4)  {
+		std::cerr << "Error scanning input file, read " << nread << " entries when 4 were expected" << std::endl;
+		return -1;
+	    }
+	    origin.setX(originX); origin.setY(originY);
+	    dbg("SickFrame.read",3) << "id=" << id << ", origin=[" << origin << "], crot=" << coordinateRotation << std::endl;
+	    if ((line=readLine(fd)) == NULL)
+		return -1;
 	}
-	origin.setX(originX); origin.setY(originY);
-	dbg("SickFrame.read",3) << "id=" << id << ", origin=[" << origin << "], crot=" << coordinateRotation << std::endl;
 	int tmp1, tmp2;
-	if ((line=readLine(fd)) == NULL)
-	    return -1;
 	nread=sscanf(line,"P %d %d %ld %d %d %d %d %d %d %d %d %d %d %d %d %d",&cid,&scanCounter,&acquired.tv_sec,&acquired.tv_usec,&nechoes,&num_measurements,
 		     &devNumber,&serialNumber,&devStatus,&telegramCounter,&scanTime,& transmitTime,&digitalInputs,&digitalOutputs,
 		     &tmp1, &tmp2);
