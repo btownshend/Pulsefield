@@ -33,6 +33,7 @@ class SickFrame {
  public:
     static const int MAXECHOES=5;
     static const int MAXMEASUREMENTS=SickToolbox::SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS;
+    int version;
     int nechoes;
     std::vector<unsigned int> range[MAXECHOES];
     std::vector<unsigned int> reflect[MAXECHOES];
@@ -194,6 +195,9 @@ public:
 	}
 	void setCoordinateRotationDeg(float deg)  {
 	    coordinateRotation=M_PI/180*deg;
+	}
+	void setCoordinateRotationRad(float rad)  {
+	    coordinateRotation=rad;
 	}
 	// Get angle of measurement in radians (local coordinates)
 	float getAngleRad(int measurement) const {  

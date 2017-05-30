@@ -148,6 +148,7 @@ int SickFrame::read(FILE *fd, int version) {
     int nread;
     char *line;
 
+    this->version=version;
     if (version==1) {
 	if ((line=readLine(fd)) == NULL)
 	    return -1;

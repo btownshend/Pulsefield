@@ -403,6 +403,17 @@ int FrontEnd::playFile(const char *filename,bool singleStep,float speedFactor,bo
 		sick[cid-1]->waitForFrame();
 	    sick[cid-1]->overlayFrame(f);
 	} else {
+	    if (f.version>=2) {
+		// Change sick origin, rotation to match values from frame
+		if (!(sick[cid-1]->getOrigin() == f.origin)) {
+		    std::cout << "Moving origin of unit " << cid << " from " << sick[cid-1]->getOrigin() << " to " << f.origin << std::endl;
+		    sick[cid-1]->setOrigin(f.origin);
+		}
+		if (fabs(sick[cid-1]->getCoordinateRotationRad() -f.coordinateRotation)>1e-4) {
+		    std::cout << "Moving rotation of unit " << cid << " from " << sick[cid-1]->getCoordinateRotationRad() << " to " << f.coordinateRotation << " rad" << std::endl;
+		    sick[cid-1]->setCoordinateRotationRad(f.coordinateRotation);
+		}
+	    }
 	    sick[cid-1]->pushFrame(f);
 	    sick[cid-1]->waitForFrame();  // Won't block since we just pushed a new frame
 	}
