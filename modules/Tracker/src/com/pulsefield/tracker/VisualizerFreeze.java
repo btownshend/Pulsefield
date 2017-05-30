@@ -8,11 +8,7 @@ import processing.core.PVector;
 
 class Molecule {
 	private static final float G=0.02f;   // Gravitational constant
-	private static final float INITRADIUS=0.1f;
-	private static final float BONDLENGTH=2*INITRADIUS;
-	private static final float MAXEFFECTDIST=BONDLENGTH*10;   // Maximum distance for which we compute interactions
-	private static final float CREATERATE=0.5f;  // Average number created per frame
-	private static final float CREATESPEED=0.02f;  // Create speed in m/s
+	private static final float BONDLENGTH=0.2f;
 	private static final float MAXSPEED=2f;   // Max speed in m/s
 	private static final float DAMPING=0.9f;
 	
@@ -27,35 +23,37 @@ class Molecule {
 	float angularVelocity;
 	
 	private static Images imgs=null;
-	private static HashSet<Molecule> allMolecules = new HashSet<Molecule>();
 	
-	Molecule(PVector pos, PVector vel, PImage img, float radius) {
+	Molecule(PVector pos, PVector vel, float radius) {
 		velocity=new PVector();
 		velocity.x=vel.x; velocity.y=vel.y;
 		location=new PVector();
 		location.x=pos.x; location.y=pos.y;
-		assert(img!=null);
-		this.img=img;
+		if (imgs==null)
+			imgs=new Images("freeze/molecules");
+		img=imgs.getRandom();
 		this.radius=radius;
 		mass=1f;
 		angle=0;
 		angularVelocity=(float) (0.2f*(Math.random()-0.5f));
-		allMolecules.add(this);
 		//PApplet.println("Created marble at "+location+" with velocity "+vel+" and mass "+mass);
 		isAlive=true;
 	}
+	
 	public void destroy() {
 		//PApplet.println("Destroy marble at "+location);
-		allMolecules.remove(this);
 		isAlive=false;
 	}
+	
 	public float getRadius() {
 		return radius;
 		//return (float) Math.pow(mass/DENSITY,1/2f);
 	}
+	
 	public PVector getMomentum() {
 		return PVector.mult(velocity, mass);
 	}
+	
 	public void update() {
 		// Damping
 		float curspeed=velocity.mag();
@@ -79,6 +77,7 @@ class Molecule {
 		if (location.y+radius < Tracker.miny && velocity.y<0)
 			destroy(); //velocity.y=-velocity.y;
 	}
+	
 	public void draw(PGraphics g) {
 		float r=getRadius();
 		//g.ellipse(location.x, location.y, r*2, r*2);
@@ -89,13 +88,68 @@ class Molecule {
 		g.image(img,0,0,r*2,r*2);
 		g.popMatrix();
 	}
-	static Molecule create(PVector pos, PVector vel, float radius)  {
-		if (imgs==null)
-			imgs=new Images("freeze/molecules");
-		return new Molecule(pos,vel,imgs.getRandom(),radius);
+
+	// Get force between two Molecules at given separation
+	// Positive force is attractive
+	public float getForce(float sep) {
+		float force=(float)(G/(sep*sep)*(1-Math.pow(BONDLENGTH/sep,1f)));
+		return force;
 	}
+
+	public void interact(Molecule b2) {
+		PVector sep=PVector.sub(b2.location, location);
+		float dist=sep.mag();
+		float force=getForce(dist);  // positive force is attractive
+		PVector accel = PVector.mult(sep, mass*force/dist);
+		//PApplet.println("sep="+sep+", dist="+dist+", force="+force+", vel="+b1.velocity+", accel="+accel);
+		velocity.add(PVector.mult(accel,1/Tracker.theTracker.frameRate));
+	}
+}
+
+class Strut extends Molecule {
+	float length;
+	
+	Strut(PVector pos, PVector vel, float radius) {
+		super(pos,vel,radius);
+		length=0.1f;
+	}
+	
+	public void draw(PGraphics g) {
+		//g.ellipse(location.x, location.y, r*2, r*2);
+		g.imageMode(PConstants.CENTER);
+		g.pushMatrix();
+		g.translate(location.x, location.y);
+		g.rotate(angle);
+		g.stroke(0xffff0000);
+		g.line(-length/2, 0f, length/2, 0f);
+		g.popMatrix();
+	}
+}
+
+class MoleculeFactory {
+	private static final float INITRADIUS=0.1f;
+	private static final float CREATERATE=0.5f;  // Average number created per frame
+	private static final float CREATESPEED=0.02f;  // Create speed in m/s
+	private static HashSet<Molecule> allMolecules = new HashSet<Molecule>();
+	private String moleculeType;
+	
+	MoleculeFactory(String molType) {
+		moleculeType = molType;
+	}
+	public Molecule create(PVector pos, PVector vel, float radius)  {
+		Molecule o=null;
+		if (moleculeType.equalsIgnoreCase("MOLECULE"))
+			o=new Molecule(pos,vel,radius);
+		else if (moleculeType.equalsIgnoreCase("STRUT"))
+			o=new Strut(pos,vel,radius);
+		else 
+			assert(false);
+		allMolecules.add(o);
+		return o;
+	}
+	
 	// Create a new Molecule somewhere on wall
-	static Molecule createOnWall() {
+	public Molecule createOnWall() {
 		float pos=(float)(Math.random()*(Tracker.getFloorSize().x+Tracker.getFloorSize().y)*2);
 		PVector loc=new PVector(0,0);
 		float radius=INITRADIUS;
@@ -116,20 +170,13 @@ class Molecule {
 		PVector vel=PVector.mult(PVector.random2D(),CREATESPEED);
 		return create(loc,vel,radius);
 	}
-	static void destroyAll() {
-		Object all[]=allMolecules.toArray();
-		for (Object o: all) {
-			Molecule b=(Molecule)o;
-			b.destroy();
+	
+	public void updateAll(People allpos, Effects effects) {
+		// Remove dead molecules
+		for (Molecule o: allMolecules) {
+			if (!o.isAlive)
+				allMolecules.remove(this);
 		}
-	}
-	// Get force between two Molecules at given separation
-	// Positive force is attractive
-	static float getForce(float sep) {
-		float force=(float)(G/(sep*sep)*(1-Math.pow(BONDLENGTH/sep,1f)));
-		return force;
-	}
-	static void updateAll(People allpos, Effects effects) {
 		// Create new Molecules
 		for (int i=0;i<CREATERATE;i++) {
 			if (i+1<CREATERATE || Math.random()<CREATERATE-i)
@@ -153,20 +200,20 @@ class Molecule {
 					continue;
 				if (b1==b2)
 					continue;
-				PVector sep=PVector.sub(b2.location, b1.location);
-				float dist=sep.mag();
-				if (dist > MAXEFFECTDIST)
-					continue;
-				float force=getForce(dist);  // positive force is attractive
-				PVector accel = PVector.mult(sep, b1.mass*force/dist);
-				//PApplet.println("sep="+sep+", dist="+dist+", force="+force+", vel="+b1.velocity+", accel="+accel);
-				b1.velocity.add(PVector.mult(accel,1/Tracker.theTracker.frameRate));
+				b1.interact(b2);   // Modify b1 based on interaction with b2
 			}
 		}
 	}
-	static void drawAll(PGraphics g) {
+	public void drawAll(PGraphics g) {
 		for (Molecule b: allMolecules) {
 			b.draw(g);
+		}
+	}
+	public void destroyAll() {
+		Object all[]=allMolecules.toArray();
+		for (Object o: all) {
+			Molecule b=(Molecule)o;
+			b.destroy();
 		}
 	}
 }
@@ -174,12 +221,12 @@ class Molecule {
 // Osmos visualizer
 public class VisualizerFreeze extends Visualizer {
 	long startTime;
-	Images MoleculeImages;
 	Effects effects;
+	MoleculeFactory mFactory;
 
 	VisualizerFreeze(PApplet parent, Synth synth) {
 		super();
-		MoleculeImages=new Images("freeze/Molecules");
+		mFactory=new MoleculeFactory("Strut");
 		effects=new Effects(synth,123);
 		effects.add("COLLIDE",52,55);
 		effects.add("SPLIT",40,42);
@@ -187,7 +234,7 @@ public class VisualizerFreeze extends Visualizer {
 	
 	public void update(PApplet parent, People allpos) {		
 		// Update internal state of the Molecules
-		Molecule.updateAll(allpos, effects);
+		mFactory.updateAll(allpos, effects);
 	}
 
 
@@ -197,7 +244,7 @@ public class VisualizerFreeze extends Visualizer {
 	}
 
 	public void stop() {
-		Molecule.destroyAll();
+		mFactory.destroyAll();
 		super.stop();
 		PApplet.println("Stopping Freeze at "+System.currentTimeMillis());
 	}
@@ -222,7 +269,7 @@ public class VisualizerFreeze extends Visualizer {
 		g.tint(255);  // Causes slow fade if <255
 		g.image(buffer,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,g.width/Tracker.getPixelsPerMeter(),g.height/Tracker.getPixelsPerMeter());
 		
-		Molecule.drawAll(g);
+		mFactory.drawAll(g);
 	}
 
 	// Get the temperature at the given position in Kelvin
