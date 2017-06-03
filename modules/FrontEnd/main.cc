@@ -8,6 +8,7 @@
 #include "dbg.h"
 #include "parameters.h"
 #include "sickio.h"
+#include "leg.h"
 
 static int nsick=1;
 unsigned int MAXRANGE=12000;
@@ -130,6 +131,8 @@ int main(int argc, char *argv[])
 	usage(argc,argv);
 
     dbg("main",1) << "Comment: " << comments << std::endl;
+
+    Leg::setup(50.0,nsick);   // FIXME: Assumes 50Hz scan freq
 
     if (playFile) {
 	// Create a front end with no sensors so it doesn't access any devices

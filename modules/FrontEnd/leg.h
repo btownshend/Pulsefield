@@ -28,18 +28,20 @@ class Leg {
     Point minval, maxval;
     void init(const Point &pt);
     // Weights for predicting next delta
-    std::vector<float> predictWeights;   // interleaved:   this leg[-1],otherleg[-1],thisleg[-2],...
+    static std::vector<float> samePredictWeights, otherPredictWeights;
     void updateDiameter(float newDiam, float newDiamSEM);
  public:
     Leg();
     Leg(const Point &pos);
+    static void setup(float fps, int nlidar);   // Setup stride
+    
     friend std::ostream &operator<<(std::ostream &s, const Leg &l);
     float getObsLike(const Point &pt, const Vis &vis,const LegStats &ls) const;
     Point getPosition() const { return position; }
     void savePriorPositions();
     // Get prior position from n frames ago (n>0)
     Point getPriorPosition(int n) const;
-    // Get delta from n frames ago (n>0)
+    // Get delta from n frames ago
     Point getPriorDelta(int n) const;
     Point getVelocity() const { return velocity; }
     void predict(const Leg &otherLeg);
