@@ -86,7 +86,7 @@ Leg::Leg(const Point &pt) {
     prevposvar=posvar;
     diam=INITLEGDIAM;
     diamSigma=LEGDIAMSIGMA;
-    updateDiam=true;
+    updateDiam=false;
     if (!updateDiam) {
 	dbg("Leg",1) << "Not updating leg diameters" << std::endl;
     }
