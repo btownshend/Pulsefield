@@ -37,6 +37,8 @@ public:
     }
     void append(int scan,Point pos) { scans.push_back(scan); hits.push_back(pos); }
     Point lastHit() const { return hits.back(); }
+    const std::vector<int> &getScans() const { return scans; } 
+    int firstScan() const { return scans[0]; }
     int lastScan() const { return scans.back(); }
     // Get estimate of center of target
     Point getCenter(const SickIO *sick) const {
@@ -52,21 +54,47 @@ public:
 	return center;
     }
     float getWidth() const { return (hits.front()-hits.back()).norm(); }
-    // Split target at largest jump
-    Target split() {
+    // Split target at largest jump leaving current target with width <= maxWidth
+    Target split(float maxWidth) {
 	assert(hits.size()>=2);
-	int jump=0;   // Jump is after this index
-	float jumpSize=(hits[jump]-hits[jump+1]).norm();
-	dbg("World.makeAssignments",3) << "Trying to split target into 2.  hits.size()=" << hits.size() << ", initial jumpSize=" << jumpSize << std::endl;
-	for (int i=1;i<hits.size()-1;i++) {
+	// First, try to split such that both pieces are <= maxWidth
+
+	int jump=-1;   // Jump is after this index  (split in half if nothing better)
+	float jumpSize=0;
+	dbg("World.makeAssignments",3) << "Trying to split target into 2.  hits.size()=" << hits.size() << jumpSize << std::endl;
+	for (int i=0;i<hits.size()-1;i++) {
+	    if ((hits.back()-hits[i+1]).norm() > maxWidth)
+		continue;
+	    if ((hits.front()-hits[i]).norm() > maxWidth) {
+		dbg("World.makeAssignments",4) << "Finishing split attempt at " << i << " with width > " << maxWidth << std::endl;
+		break;
+	    }
 	    float jtmp=(hits[i]-hits[i+1]).norm();
 	    if (jtmp>jumpSize) {
 		jump=i;
 		jumpSize=jtmp;
-		dbg("World.makeAssignments",4) << "Possible split at " << jump << " with size " << jumpSize << std::endl;
+		dbg("World.makeAssignments",4) << "Possible split at " << jump << " with jump of " << jumpSize << std::endl;
 	    }
 	}
-	dbg("World.makeAssignments",3) << "Split target into 2 at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << ", jumpSize=" << jumpSize << std::endl;
+	if (jump==-1) {
+	    dbg("World.makeAssignments",3) << "No solution with both parts < " << maxWidth << std::endl;
+	    // Only ensure that first part is < maxWidth, 2nd part will get split again
+	    jump=0;
+	    jumpSize=(hits[jump]-hits[jump+1]).norm();
+	    for (int i=0;i<hits.size()-1;i++) {
+		if ((hits.front()-hits[i]).norm() > maxWidth) {
+		    dbg("World.makeAssignments",4) << "Finishing split attempt at " << i << " with width > " << maxWidth << std::endl;
+		    break;
+		}
+		float jtmp=(hits[i]-hits[i+1]).norm();
+		if (jtmp>jumpSize) {
+		    jump=i;
+		    jumpSize=jtmp;
+		    dbg("World.makeAssignments",4) << "Possible split at " << jump << " with size " << jumpSize << std::endl;
+		}
+	    }
+	}
+	dbg("World.makeAssignments",3) << "Split target into 2 at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << ", jumpSize=" << jumpSize << ", widths=" << (hits.front()-hits[jump]).norm() << ", " << (hits.back()-hits[jump+1]).norm() << std::endl;
 	Target result;
 	for (int i=jump+1;i<hits.size();i++)
 	    result.append(scans[i],hits[i]);
@@ -200,7 +228,8 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	if (targets[i].getMaximaDepth() >= TARGETMAXIMADEPTH)
 	    targets.push_back(targets[i].splitLocalMaxima());
 	if (targets[i].getWidth() > MAXLEGDIAM) {
-	    targets.push_back(targets[i].split());
+	    dbg("World.makeAssignments",3) << "Target at " <<  targets[i].firstScan() << "-" << targets[i].lastScan() << " has total width of " << targets[i].getWidth() << " > " << MAXLEGDIAM << ": splitting" << std::endl;
+	    targets.push_back(targets[i].split(MAXLEGDIAM));
 	}
     }
 
