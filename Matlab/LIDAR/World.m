@@ -91,8 +91,10 @@ classdef World < handle
           plot(obj.bglike,'k');
           plot(obj.entrylike,'m');
           hold on;
-          plot(obj.like(:,it,1),'r');
-          plot(obj.like(:,it,2),'g');
+          if ~isempty(obj.like)
+            plot(obj.like(:,it,1),'r');
+            plot(obj.like(:,it,2),'g');
+          end
           title(sprintf('ID %d',obj.tracks(it).id));
           c=axis;
           axis([c(1),c(2),-1,30]);
