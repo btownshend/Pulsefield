@@ -73,7 +73,8 @@ static const int AGETHRESHOLD=20;	// Age before considered reliable
 // ******* Entry Statistics
 static const float ENTRYRATE=1.0; 	// Entries per minute
 static const int MINCREATEHITS=5;	// Need this number of scan targets to create a new track
-
+static const float MINNEWPERSONSEP=500;  // New people will only be created if at least this distance from any existing person
+    
 // ******** Grouping
 static const float GROUPDIST=500;		// Distance to form a group
 static const float UNGROUPDIST=1000;	// Distance to break a group

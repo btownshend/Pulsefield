@@ -349,12 +349,24 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	    }
 	}
 	if (bestsep<=MAXLEGSEP) {
-	    dbg("World.track",1) << "Creating an initial track using targets " << bestindices[0] << "," << bestindices[1] << " with separation " << bestsep << std::endl;
-	    Point l1=targets[bestindices[0]].getCenter(sick);
-	    Point l2=targets[bestindices[1]].getCenter(sick);
-	    people.add(l1,l2);
-	    targets[bestindices[0]].setAssignments(assignments,legassigned,people.size()-1,0);
-	    targets[bestindices[1]].setAssignments(assignments,legassigned,people.size()-1,1);
+	    dbg("World.track",1) << "Potential new initial track using targets " << bestindices[0] << "," << bestindices[1] << " with separation " << bestsep << std::endl;
+	    // Check if these are too close to an existing person
+	    float mindist=1e10;
+	    for (int t1=0;t1<targets.size();t1++) {
+		for (int k=0;k<2;k++)
+		    if (targets[t1].isAssigned())
+			mindist=std::min(mindist,(targets[bestindices[k]].getCenter(sick)-targets[t1].getCenter(sick)).norm());
+	    }
+	    if (mindist<MINNEWPERSONSEP) {
+		dbg("World.track",1) << "New track too close to existing target (dist=" << mindist << ")" << std::endl;
+	    } else {
+		dbg("World.track",1) << "New track is at least " << mindist << " from all existing tracks" << std::endl;
+		Point l1=targets[bestindices[0]].getCenter(sick);
+		Point l2=targets[bestindices[1]].getCenter(sick);
+		people.add(l1,l2);
+		targets[bestindices[0]].setAssignments(assignments,legassigned,people.size()-1,0);
+		targets[bestindices[1]].setAssignments(assignments,legassigned,people.size()-1,1);
+	    }
 	} else {
 	    dbg("World.track",2) << "Not creating a track - no pair appropriately spaced" << std::endl;
 	}
