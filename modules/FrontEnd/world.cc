@@ -471,16 +471,21 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		}
 		if (fs[f].size()>0 && fs[1-f].size()==0) {
 		    // Still one empty, look for a large range jump
+		    int jumppos=-1;   // Split from 0..jumppos-1, jumppos:end
+		    float biggest=INITLEGDIAM/2;   // Don't use any jumps less than this
 		    for (unsigned int i=1;i<fs[f].size();i++) { 
 			float rjump=(vis.getSick()->getWorldPoint(fs[f][i])-vis.getSick()->getWorldPoint(fs[f][i-1])).norm();
-			if (rjump>INITLEGDIAM/2) {
-			    for (unsigned int j=i;j<fs[f].size();j++)
-				fs[1-f].push_back(fs[f][j]);
-			    fs[f].resize(i);
-			    dbg("World.track",2) << "Splitting preliminary assignment for ID " << people[p].getID() << " at a range jump of " << rjump << " into " << fs[0] << ", " << fs[1] << std::endl;
-			    split=true;
-			    break;
+			if (rjump>biggest) {
+			    jumppos=i;
+			    biggest=rjump;
 			}
+		    }
+		    if (jumppos>=0) {
+			for (unsigned int j=jumppos;j<fs[f].size();j++)
+			    fs[1-f].push_back(fs[f][j]);
+			fs[f].resize(jumppos);
+			dbg("World.track",2) << "Splitting preliminary assignment for ID " << people[p].getID() << " at a range jump of " << biggest << " into " << fs[0] << ", " << fs[1] << std::endl;
+			split=true;
 		    }
 		}
 	    }

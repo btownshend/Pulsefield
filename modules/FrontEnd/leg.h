@@ -45,6 +45,7 @@ class Leg {
     Point getPriorDelta(int n) const;
     Point getVelocity() const { return velocity; }
     void predict(const Leg &otherLeg);
+    void setScanPts(const std::vector<int> fs) { scanpts=fs; }
     void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs, const LegStats &ls, const Leg *otherLeg=0);
     void updateVisibility(const std::vector<float> &bglike);
     void updateVelocity(int nstep, float fps,Point otherLegVelocity);
