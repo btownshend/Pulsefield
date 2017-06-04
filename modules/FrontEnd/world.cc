@@ -103,17 +103,8 @@ public:
 	return result;
     }
     // Split target at local maxima
-    Target splitLocalMaxima() {
+    Target splitLocalMaxima(int maxima) {
 	assert(hits.size()>=2);
-	int maxima=1; // Maxima at this point
-	float depth=hits[maxima].norm() - std::max(hits[maxima-1].norm(),hits[maxima+1].norm());
-	for (int i=1;i<hits.size()-1;i++) {
-	    float tmpdepth=hits[i].norm() - std::max(hits[i-1].norm(),hits[i+1].norm());
-	    if (tmpdepth>depth) {
-		maxima=i;
-		depth=tmpdepth;
-	    }
-	}
 	int jump;
 	// Check which side should get maxima
 	if (hits[maxima-1].norm() < hits[maxima+1].norm())
@@ -121,7 +112,7 @@ public:
 	else
 	    jump=maxima;
 
-	dbg("World.makeAssignments",3) << "Split target into 2 at local maxima with depth " << depth << " at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << std::endl;
+	dbg("World.makeAssignments",3) << "Split target into 2 at local maxima at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << std::endl;
 	Target result;
 	for (int i=jump+1;i<hits.size();i++)
 	    result.append(scans[i],hits[i]);
@@ -153,16 +144,26 @@ public:
 	return result;
     }
     // Check if target would have a local maximum of size >= minsize if pt is added
-    float getMaximaDepth() const {
+    float getMaximaDepth(int &maxPos) const {
+	// Find the combination of 3 points where the middle is behind the furthest of the others by as much as possible -> depth
+	if (hits.size() < 3)
+	    return 0;
 	float depth=0;
 	for (int i=0;i<hits.size();i++)
 	    for (int j=i+1;j<hits.size();j++) {
 		if (hits[j].norm()<depth+hits[i].norm())
 		    continue;
-		for (int k=j+1;k<hits.size();k++)
-		    depth=std::max(depth,hits[j].norm()-std::max(hits[i].norm(),hits[k].norm()));
+		for (int k=j+1;k<hits.size();k++) {
+		    float dnew=hits[j].norm()-std::max(hits[i].norm(),hits[k].norm());
+		    if (dnew>depth) {
+			depth=dnew;
+			maxPos=j;
+		    }
+		}
 	    }
-	dbg("World.getMaximaDepth",3) << "depth=" << depth << std::endl;
+	dbg("World.getMaximaDepth",3) << "depth=" << depth << " at " << maxPos << std::endl;
+	// Note: this is not the same as taking the farthest point as the split, since that may not be the best local maxima!
+	
 	return depth;
     }
     
@@ -225,8 +226,12 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
     dbg("World.makeAssignments",3) << "Assigned " << nassigned << " hits to " << targets.size() << " targets." << std::endl;
     // Split targets that are too wide
     for (int i=0;i<targets.size();i++) {
-	if (targets[i].getMaximaDepth() >= TARGETMAXIMADEPTH)
-	    targets.push_back(targets[i].splitLocalMaxima());
+	int maxPos;
+	float maxDepth=targets[i].getMaximaDepth(maxPos);
+	if (maxDepth  >= TARGETMAXIMADEPTH) {
+	    dbg("World.makeAssignments",3) << "Target at " <<  targets[i].firstScan() << "-" << targets[i].lastScan() << " has maxima depth of " << maxDepth << " > =" << TARGETMAXIMADEPTH << ": splitting" << std::endl;
+	    targets.push_back(targets[i].splitLocalMaxima(maxPos));
+	}
 	if (targets[i].getWidth() > MAXLEGDIAM) {
 	    dbg("World.makeAssignments",3) << "Target at " <<  targets[i].firstScan() << "-" << targets[i].lastScan() << " has total width of " << targets[i].getWidth() << " > " << MAXLEGDIAM << ": splitting" << std::endl;
 	    targets.push_back(targets[i].split(MAXLEGDIAM));
