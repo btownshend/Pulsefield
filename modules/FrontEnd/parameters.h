@@ -28,6 +28,7 @@ static const float MAXBGSIGMA=50;   // Maximum sigma for a background
 static const float MINBGFREQ=0.05;	// Minimum frequency of a background to call it such unilaterally
 static const int BGINITFRAMES=50*5;		// Background intiialization for this many frames
 static const int UPDATETC=50*60;		// Background update freq (after initial averaging)
+static const float FARTHRESHOLD=500;     // If new range is more than this much more than bg[0], then do a quick shift
 static const int FARUPDATETC=50*1;		// Background update for points farther than primary background
 static const int BGLONGDISTLIFE=50*10;		// If  the most distant
 static const int MAXBGINVISIBLE=50*2;		// If a normal background hasn't been seen in this many frames remove it

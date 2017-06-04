@@ -139,7 +139,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    if (!bginit)
 		sigma[bestk][i]=std::min((double)MAXBGSIGMA,sqrt(sigma[bestk][i]*sigma[bestk][i]*(1-1.0f/tc)+(srange[i]-range[bestk][i])*(srange[i]-oldrange)*1.0f/tc));
 	    consecutiveInvisible[bestk][i]=0;
-	} else if (srange[i]>range[0][i]) {
+	} else if (srange[i]>range[0][i]+FARTHRESHOLD) {
 	    // New long distance point, update range[0] faster
 	    dbg("Background.update",2) << "Farthest background at scan " << i << " moved from " << range[0][i] << " to " << srange[i] << std::endl;
 	    float oldrange=range[0][i];
