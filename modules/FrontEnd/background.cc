@@ -173,7 +173,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	}
 
 	// Swap ordering if needed
-	if (range[0][i] < range[1][i])
+	if (range[0][i] < range[1][i] && freq[1][i]>0.01)
 	    // range[0] is always farthest
 	    swap(i,0,1);
 
