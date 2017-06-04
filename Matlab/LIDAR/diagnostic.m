@@ -47,18 +47,23 @@ subplot(235);
 for i=1:length(ids)
   idpresent=arrayfun(@(z) ismember(ids(i),arrayfun(@(y) y.id, z.tracker.tracks)), snap);
   % Only present if there was also a measurement 
+  trackedBy=nan(1,length(idpresent));
   for k=1:length(idpresent)
     if idpresent(k) 
-      idpresent(k)=~isempty(snap(k).tracker.tracks(arrayfun(@(y) y.id, snap(k).tracker.tracks)==ids(i)).position);
+      trackIndex=find(arrayfun(@(y) y.id, snap(k).tracker.tracks)==ids(i));
+      idpresent(k)=~isempty(snap(k).tracker.tracks(trackIndex).position);
+      % Determine which LIDAR was tracking
+      trackedBy(k)=snap(k).tracker.tracks(trackIndex).trackedBy;
     end
   end
   idtmp=nan(1,length(snap));
   idtmp(idpresent)=ids(i);
   color1=colors(mod(ids(i)-1,length(colors))+1);
   if ismember(ids(i),args.trackid) || isempty(args.trackid)
-    plot(frame,idtmp,[color1,'-']);
+    % Show ID number + LIDARtracking/10
+    plot(frame,idtmp+trackedBy/10,[color1,'-']);
   else
-    plot(frame,idtmp,[color1,':']);
+    plot(frame,idtmp+trackedBy/10,[color1,':']);
   end
   hold on;
 end

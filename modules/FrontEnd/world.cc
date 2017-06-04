@@ -629,7 +629,7 @@ mxArray *World::convertToMX() const {
     *data++=maxy;
     mxSetField(world,0,"bounds",pBounds);
 
-    const char *pfieldnames[]={"id","position","legs","predictedlegs","prevlegs","legvelocity","scanpts","persposvar","posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
+    const char *pfieldnames[]={"id","position","legs","predictedlegs","prevlegs","legvelocity","scanpts","persposvar","posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount","trackedBy"};
     mxArray *pPeople;
     if ((pPeople = mxCreateStructMatrix(1,people.size(),sizeof(pfieldnames)/sizeof(pfieldnames[0]),pfieldnames)) == NULL) {
 	fprintf(stderr,"Unable to create people matrix of size (1,%d)\n",people.size());

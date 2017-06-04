@@ -25,6 +25,10 @@ class Person {
     float posvar;
     Point velocity;
 
+    // Information on what LIDAR is tracking and how many scanpts
+    int trackedBy;
+    int trackedPoints;
+    
     // Grouping
     std::shared_ptr<Group> group;   // Current group or null if ungrouped
 
