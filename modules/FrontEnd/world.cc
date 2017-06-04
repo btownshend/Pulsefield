@@ -237,6 +237,9 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	    targets.push_back(targets[i].split(MAXLEGDIAM));
 	}
     }
+    for (int i=0;i<targets.size();i++) {
+	dbg("World.makeAssignments",4) << "Target " << i << ": " << targets[i].getScans() << std:: endl;
+    }
 
     // Convert targets from local (LIDAR) space to world
     for (int i=0;i<targets.size();i++)
@@ -276,6 +279,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	}
 	if (closest<MAXASSIGNMENTDIST) {
 	    dbg("World.makeAssignments",3) << "Assigning; closest person to  target " << assignedTarget << " is P" << people[assignedPerson].getID() << "." << assignedLeg << " with distance " << closest << std::endl;
+	    dbg("World.makeAssignments",3) << "Scans: " << targets[assignedTarget].getScans() << std::endl;
 	    targets[assignedTarget].setAssignments(assignments, legassigned, assignedPerson, assignedLeg);
 	    legAssigned[assignedLeg][assignedPerson]=assignedTarget;  // Mark it as already assigned
 	    if (!REASSIGNPOINTS) {
@@ -290,7 +294,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 			targets[assignedTarget].setAssignments(assignments, legassigned, assignedPerson, 1-assignedLeg);
 			targets[otherTarget].setAssignments(assignments, legassigned, assignedPerson, assignedLeg);
 		    } else {
-			dbg("World.makeAssignments",3) << "Not swapping target assignments: P" << people[assignedPerson].getID() << "." << assignedLeg << " now gets target " << otherTarget << ", since sqd-dist with swap= " << swapd2 << " >  " <<  currentd2 << std::endl;
+			dbg("World.makeAssignments",3) << "Not swapping target assignments: P" << people[assignedPerson].getID() << "." << assignedLeg << " to " << otherTarget << ", since sqd-dist with swap= " << swapd2 << " >  " <<  currentd2 << std::endl;
 		    }
 		}
 	    }
