@@ -46,7 +46,7 @@ static const float MAXPOSITIONVAR=300*300;  // Never let the position variance g
 static const float MAXLEGSPEED=4000;	// Maximum speed of a leg in mm/s
 static const float VELUPDATETC=10;	// Velocity update time constant in frames (tested with runtests.sh for 5,10,25,50 -- 10 was best, slightly)
 static const float MINLIKEFORUPDATES=-60;	  // Minimum likelihood of a target to use the current observations to update it (if its too low, then we get underflows of accumulating the total prob)
-static const float STATIONARYVELOCITY=20;	// If speed is less than this (in mm/s), then stabilize position
+static const float STATIONARYVELOCITY=-99; // Disabled, was 20;	// If speed is less than this (in mm/s), then stabilize position
 
 // ******** Leg statistics 
 static const float INITLEGDIAM=200;	// Initial diameter of legs

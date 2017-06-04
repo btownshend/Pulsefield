@@ -366,6 +366,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	dbg("Leg.update",3) << "Speed = " << velocity.norm() << " mm/frame, stabilizing position" << std::endl;
 	Point delta=newposition-position;
 	position=position+delta/10;
+	// TODO: Should keep it in area of likelihood grid that is still possible...
     } else {
 	dbg("Leg.update",3) << "Speed = " << velocity.norm() << " mm/frame, not stabilizing position" << std::endl;
 	position=newposition;
