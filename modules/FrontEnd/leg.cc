@@ -165,8 +165,12 @@ Point Leg::getPriorDelta(int n) const {
 
 Point Leg::getPriorPosition(int n) const {
     assert(n>0);
-    if (n  > priorPositions.size())
-	return Point(0,0);
+    if (n  > priorPositions.size()) {
+	if (priorPositions.size() > 0)
+	    return priorPositions[0];   // Return first point recorded
+	else
+	    return Point(0,0);
+    }
     return priorPositions[priorPositions.size()-n];
 }
 
@@ -186,6 +190,7 @@ float Leg::getObsLike(const Point &pt, const Vis &vis,const LegStats &ls) const 
     assert(std::isfinite(like));
     return like;
 }
+
 
 void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs,const LegStats &ls, const Leg *otherLeg) {
     // Copy in scanpts
