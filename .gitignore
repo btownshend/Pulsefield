@@ -78,3 +78,4 @@ modules/Calibrator/calibrator
 experiments/gltest/bin
 experiments/jni/libexamplelibrary.dylib
 modules/FrontEnd/typescript
+Matlab/scratch
