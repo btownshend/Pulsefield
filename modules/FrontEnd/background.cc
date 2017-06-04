@@ -57,7 +57,8 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
 	    result[i]=0.0;
 	    for (int k=0;k<NRANGES-1;k++) {
 		// This is a background pixel if it matches the ranges of this scan's background, or is farther than maximum background
-		if (srange[i]>range[k][i] && k==0)
+		if (srange[i]>range[k][i]-2*sigma[k][i] && k==0)
+		    // If more than the far background (-2sigma), then certain this is background
 		    result[i]=1.0;
 		else 
 		    result[i]+=(1-result[i])*freq[k][i]*normpdf(srange[i],range[k][i],sigma[k][i]); 
