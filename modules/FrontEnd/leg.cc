@@ -16,8 +16,9 @@
 static const bool USEMLE=false;  // True to use MLE from likelihood grid; otherwise use mean
 // New predicted position is weighted sum of prior positions from current and other leg
 // sum(same)+sum(other) should equal 1.0 (or would result in a net drift towards/away from origin
-std::vector<float> Leg::samePredictWeights;   // weight prior positions to predict from current leg
-std::vector<float> Leg::otherPredictWeights;   // from other leg
+    // From results of optimization using optpredict.m
+std::vector<float> Leg::samePredictWeights;
+std::vector<float> Leg::otherPredictWeights;
 
 void Leg::setup(float fps, int nlidar) {
     static const float stridePeriod=1.22;   // Stride period in seconds
@@ -27,11 +28,10 @@ void Leg::setup(float fps, int nlidar) {
     // Simple zero-order hold
     //samePredictWeights.resize(1);
     //samePredictWeights[0]=1.0;
-    // From results of optimization using optpredict.m
-    samePredictWeights.resize(2);
-    samePredictWeights[0]=0.02;
-    samePredictWeights[1]=1-samePredictWeights[0];
-    
+    float same[]={0.7561,0.3262,0.0190,-0.0110,-0.0025,0.0006,0.0066,-0.0408,0.0072,-0.0718};   // weight prior positions to predict from current leg
+    float other[]={0.0376,0.0006,0.0045,-0.0001,0.0038,-0.0052,0.0038,0.0005,-0.0229,-0.0124};   // from other leg
+    samePredictWeights.assign(same,same+sizeof(same)/sizeof(same[0]));
+    otherPredictWeights.assign(other,other+sizeof(other)/sizeof(other[0]));
     return;
 #if 0    
     const float crossLIDARWeight=0.0f;   // How much to weigh data from other LIDARs
