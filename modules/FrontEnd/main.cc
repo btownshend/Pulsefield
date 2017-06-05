@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 	if (visoutput) 
 	    fe.getStat(FrontEnd::RANGE,0);
 	if (recordFile) {
-	    int rc=SickIO::startRecording(recordFile);
+	    int rc=SickIO::startRecording(recordFile,comments);
 	    if (rc)
 		exit(1);
 	}
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 	fe.getStat(FrontEnd::RANGE,0);
 
     if (recordFile) {
-	int rc=SickIO::startRecording(recordFile);
+	int rc=SickIO::startRecording(recordFile,comments);
 	if (rc)
 	    exit(1);
     }

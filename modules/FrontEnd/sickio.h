@@ -139,7 +139,7 @@ public:
 	int start();
 	int stop();
 
-	static int startRecording(const char *filename) {
+	static int startRecording(const char *filename, const std::string &comments) {
 	    assert(recordFD==NULL);
 	    recordFD = fopen(filename,"w");
 	    if (recordFD == NULL) {
@@ -149,6 +149,7 @@ public:
 	    printf("Recording into %s\n", filename);
 	    if (recordVersion>1)
 		fprintf(recordFD,"FEREC-%d.0\n",recordVersion);
+	    fprintf(recordFD,"# %s\n",comments.c_str());   // FIXME: Should check comments for embedded newlines
 	    dbg("SickIO.startRecording",1) << "SICK recording to " << filename << " using format version " << recordVersion << " started." << std::endl;
 	    return 0;
 	}
