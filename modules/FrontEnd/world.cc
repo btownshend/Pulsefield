@@ -479,6 +479,8 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		    float biggest=INITLEGDIAM/2;   // Don't use any jumps less than this
 		    for (unsigned int i=1;i<fs[f].size();i++) { 
 			float rjump=(vis.getSick()->getWorldPoint(fs[f][i])-vis.getSick()->getWorldPoint(fs[f][i-1])).norm();
+			if (i==1 || i==fs[f].size()-1)
+			    rjump/=2;  // Down weight a jump with only 1 point there
 			if (rjump>biggest) {
 			    jumppos=i;
 			    biggest=rjump;
