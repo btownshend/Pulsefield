@@ -36,7 +36,8 @@ int SickFrame::getFileVersion(FILE *fd) {
     return version;
 }
 
-void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int _nechoes, bool captureRSSI) {
+void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int _nechoes, bool captureRSSI, int nMeasure) {
+    num_measurements=nMeasure;
     try {
 	//unsigned int range_2_vals[SickLMS5xx::SICK_LMS_5XX_MAX_NUM_MEASUREMENTS];
 	//sick_lms_5xx.SetSickScanFreqAndRes(SickLMS5xx::SICK_LMS_5XX_SCAN_FREQ_25,
@@ -47,9 +48,10 @@ void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int _nechoes, bool c
 	assert(nechoes>=1 && nechoes<=MAXECHOES);
 	if (sick_lms_5xx == NULL) {
 	    // Fake a measurement
-	    num_measurements=571;
 	    for (int i=0;i<(int)num_measurements;i++) {
 		for (int e=0;e<nechoes;e++) {
+		    range[e].resize(num_measurements);
+		    reflect[e].resize(num_measurements);
 		    range[e][i]=i+e*100;
 		    reflect[e][i]=100/(e+1);
 		}
@@ -59,6 +61,7 @@ void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int _nechoes, bool c
 	    const int NSTATUS=20;
 	    unsigned int s[NSTATUS];
 	    for (int i=0;i<nechoes;i++) {
+		dbg("SickFrame",1) << "Resizing range to " << num_measurements << std::endl;
 		range[i].resize(num_measurements);
 		if (captureRSSI)
 		    reflect[i].resize(num_measurements);
@@ -223,8 +226,13 @@ int SickFrame::read(FILE *fd, int version) {
 	    if (nread!=1) return -1;
 	}
     }
+ 
     for (int e=0;e<nechoes;e++) {
 	int echo;
+	char nextchar=getc(fd);
+	ungetc(nextchar,fd);
+	if (nextchar!='R')
+	    break;
 	if ((line=readLine(fd)) == NULL)
 	    return -1;
 	nread=sscanf(strtok(line," "),"R%d ",&echo);
@@ -255,16 +263,22 @@ void SickFrame::write(FILE *fd, int cid, int version) const {
     }
 	
     for (int e=0;e<nechoes;e++) {
-	fprintf(fd,"D%d ",e);
-	for (unsigned int i=0;i<num_measurements;i++)
-	    fprintf(fd,"%d ",range[e][i]);
-	fprintf(fd,"\n");
+	if (range[e].size() > 0) {
+	    assert(range[e].size()==num_measurements);
+	    fprintf(fd,"D%d ",e);
+	    for (unsigned int i=0;i<range[e].size();i++)
+		fprintf(fd,"%d ",range[e][i]);
+	    fprintf(fd,"\n");
+	}
     }
     for (int e=0;e<nechoes;e++) {
-	fprintf(fd,"R%d ",e);
-	for (unsigned int i=0;i<num_measurements;i++)
-	    fprintf(fd,"%d ",reflect[e][i]);
-	fprintf(fd,"\n");
+	if (reflect[e].size() > 0) {
+	    assert(reflect[e].size()==num_measurements);
+	    fprintf(fd,"R%d ",e);
+	    for (unsigned int i=0;i<reflect[e].size();i++)
+		fprintf(fd,"%d ",reflect[e][i]);
+	    fprintf(fd,"\n");
+	}
     }
 }
 

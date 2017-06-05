@@ -170,7 +170,8 @@ void SickIO::run() {
 // Background thread that retrieves frames from device and stores them in a queue
 void SickIO::get() {
     SickFrame frame;
-    frame.read(sick_lms_5xx,captureEchoes,captureRSSI);   // Load from device, blocking if none available yet
+    int nMeasure = (int)(190/captureScanRes+1+0.5);
+    frame.read(sick_lms_5xx,captureEchoes,captureRSSI,nMeasure);   // Load from device, blocking if none available yet
     pushFrame(frame);
 }
 

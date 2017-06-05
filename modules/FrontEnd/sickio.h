@@ -51,7 +51,7 @@ class SickFrame {
 
  public:
     SickFrame();
-    void read(SickToolbox::SickLMS5xx *sick_lms_5xx=NULL, int nechoes=1, bool captureRSSI=false);
+    void read(SickToolbox::SickLMS5xx *sick_lms_5xx=NULL, int nechoes=1, bool captureRSSI=false, int nMeasure=571);
 
     // Peek into a file to determine its version
     static int getFileVersion(FILE *fd);
