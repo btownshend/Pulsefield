@@ -27,7 +27,7 @@ class Person {
 
     // Information on what LIDAR is tracking and how many scanpts
     int trackedBy;
-    int trackedPoints;
+    int trackedPoints[2];
     
     // Grouping
     std::shared_ptr<Group> group;   // Current group or null if ungrouped
