@@ -1,9 +1,7 @@
 package com.pulsefield.tracker;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 
 import processing.core.PApplet;
 import processing.core.PConstants;

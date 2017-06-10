@@ -114,12 +114,12 @@ class VisualizerNavier extends Visualizer {
 		if (buffer==null) {
 			buffer = new PImage(g.width/downSample, g.height/downSample);
 		}
-		if (p.pmap.isEmpty() && false) {
-			g.background(0, 0, 0);  
-			g.colorMode(PConstants.RGB, 255);
-			drawWelcome(t,g);
-			return;
-		}
+//		if (p.pmap.isEmpty()) {
+//			g.background(0, 0, 0);  
+//			g.colorMode(PConstants.RGB, 255);
+//			drawWelcome(t,g);
+//			return;
+//		}
 
 		double dt = 1 / t.frameRate;
 		long t1 = System.nanoTime();

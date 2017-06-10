@@ -24,6 +24,7 @@ class Drum {
 		PVector pos=new PVector((float)(center.x+radius*Math.cos(angle)),(float)(center.y+radius*Math.sin(angle)));
 		noteSpots.add(new NoteSpot(Synth.nameToPitch(note),127,1000,pos,sz));
 	}
+	@SuppressWarnings("unused")
 	void draw(PGraphics g) {
 		g.pushStyle();
 		g.imageMode(PConstants.CENTER);
