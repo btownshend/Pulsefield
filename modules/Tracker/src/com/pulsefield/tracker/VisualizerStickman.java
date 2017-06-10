@@ -84,7 +84,7 @@ class Stickman {
 		//TOP=10*(float)Math.sin(Tracker.theTracker.frameCount/20.0*2*Math.PI); 
      
 		float signalLevel=Math.abs(Tracker.theTracker.fourier.left[20]);
-		PApplet.println("signal="+signalLevel);
+		//PApplet.println("signal="+signalLevel);
 		TOP= signalLevel*200;
 		
 		// Accomodate any hand holds
@@ -145,7 +145,7 @@ class Stickman {
 			RELBOW=-(float)elbow;
 			RHAND=-(float)hand;
 		}
-		PApplet.println("delta="+delta,", r="+r+", hand="+hand+", diff="+diff+", theta="+theta+", elbow="+elbow);
+		//PApplet.println("delta="+delta,", r="+r+", hand="+hand+", diff="+diff+", theta="+theta+", elbow="+elbow);
 		return hand==0;
 	}
 	
