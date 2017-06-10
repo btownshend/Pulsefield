@@ -17,11 +17,6 @@
 	<classpathentry kind="lib" path="lib/processing3/gluegen-rt.jar"/>
 	<classpathentry kind="lib" path="lib/processing3/jogl-all-natives-macosx-universal.jar"/>
 	<classpathentry kind="lib" path="lib/processing3/jogl-all.jar"/>
-	<classpathentry kind="lib" path="lib/processing/minim/library/minim.jar"/>
-	<classpathentry kind="lib" path="lib/processing/minim/library/jsminim.jar"/>
-	<classpathentry kind="lib" path="lib/processing/minim/library/tritonus_share.jar"/>
-	<classpathentry kind="lib" path="lib/processing/minim/library/mp3spi1.9.4.jar"/>
-	<classpathentry kind="lib" path="lib/processing/minim/library/jl1.0.jar"/>
 	<classpathentry kind="lib" path="lib/processing3/core.jar" sourcepath="/Users/bst/Dropbox/Processing/processing3 source/core"/>
 	<classpathentry kind="lib" path="lib/Syphon/library/jsyphon.jar" sourcepath="lib/Syphon/src">
 		<attributes>
@@ -29,5 +24,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/Syphon/library/Syphon.jar" sourcepath="lib/Syphon/src"/>
+	<classpathentry kind="lib" path="lib/minim/library/jl1.0.jar"/>
+	<classpathentry kind="lib" path="lib/minim/library/jsminim.jar"/>
+	<classpathentry kind="lib" path="lib/minim/library/minim.jar"/>
+	<classpathentry kind="lib" path="lib/minim/library/mp3spi1.9.4.jar"/>
+	<classpathentry kind="lib" path="lib/minim/library/tritonus_share.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
