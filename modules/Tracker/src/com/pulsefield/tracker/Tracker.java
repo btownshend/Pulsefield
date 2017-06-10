@@ -258,6 +258,7 @@ public class Tracker extends PApplet {
 		addVis("VDMX",new VisualizerVDMX(this,Tracker.pfroot+"/../VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
 		addVis("Measure",new VisualizerMeasure(this),true);
 		addVis("Stickman",new VisualizerStickman(this,synth),true);
+		addVis("Hunter", new VisualizerHunter(this),true);
 		addVis("TestPattern",new VisualizerTestPattern(this),false);
 		setapp(vis.length-1);
 	}
