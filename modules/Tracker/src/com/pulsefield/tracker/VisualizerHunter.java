@@ -216,9 +216,10 @@ public class VisualizerHunter extends Visualizer {
 		
 		// Add new players if needed.
 		for (int id: allpos.pmap.keySet()) {
-			if (!players.containsKey(id))
+			if (!players.containsKey(id)) {
 				PApplet.println("Adding ID "+id);
 				players.put(id,new Hunter(allpos.pmap.get(id)));
+			}
 		}
 		
 		// Remove players that left if needed.
