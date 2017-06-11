@@ -94,6 +94,7 @@ class Hunter {
 	 * Mark ourselves as deleted if we are gone.
 	 */
 	void destroy() {
+		PApplet.println("Destroying hunder id "+me.id);
 		deleted = true;
 	}
 	
@@ -114,7 +115,8 @@ class Hunter {
 		}
 		else {
 			// If target left the field, we reset our target.
-			if (this.target.deleted) {
+			if (this.target != null && this.target.deleted) {
+				PApplet.println("Target "+this.target.me.id+" was deleted - clearing");
 				this.target = null;
 			}
 			// If not target, we try and get one.
@@ -130,6 +132,7 @@ class Hunter {
 					this.target = null;
 					this.timetogether = 0;
 					exploding = true;
+					PApplet.println("Exploding "+me.id);
 				}
 			}
 			// If not, we reset our tagging progress.
