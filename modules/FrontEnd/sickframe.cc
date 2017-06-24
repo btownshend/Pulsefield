@@ -61,7 +61,7 @@ void SickFrame::read(SickToolbox::SickLMS5xx *sick_lms_5xx, int _nechoes, bool c
 	    const int NSTATUS=20;
 	    unsigned int s[NSTATUS];
 	    for (int i=0;i<nechoes;i++) {
-		dbg("SickFrame",1) << "Resizing range to " << num_measurements << std::endl;
+		//dbg("SickFrame",1) << "Resizing range to " << num_measurements << std::endl;
 		range[i].resize(num_measurements);
 		if (captureRSSI)
 		    reflect[i].resize(num_measurements);
