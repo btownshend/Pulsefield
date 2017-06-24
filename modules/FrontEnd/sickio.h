@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <assert.h>
 #include <math.h>
 #include <pthread.h>
 #include <sicklms5xx/SickLMS5xx.hh>
