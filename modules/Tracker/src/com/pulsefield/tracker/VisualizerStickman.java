@@ -181,11 +181,12 @@ class Stickman {
 		// Remove any (reciprocal) hand-holding
 		for (int i=0;i<partner.length;i++) {
 			if (partner[i]!=null) {
-				for (int j=0;i<partner[j].partner.length;j++) {
+				for (int j=0;j<partner[i].partner.length;j++) {
 					if (partner[i].partner[j]!=null && partner[i].partner[j]==this)
 						partner[i].partner[j]=null;
 				}
 			}
+			partner[i]=null;
 		}
 	}
 	
