@@ -14,7 +14,9 @@
 #include "sickio.h"
 #include "findtargets.h"
 #include "parameters.h"
+#ifdef MATLAB
 #include "mat.h"
+#endif
 #include "dbg.h"
 
 using namespace SickToolbox;

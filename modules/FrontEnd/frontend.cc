@@ -18,7 +18,9 @@
 #include "parameters.h"
 
 // MATLAB I/O
+#ifdef MATLAB
 #include "mat.h"
+#endif
 
 int debug=1;
 

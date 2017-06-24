@@ -10,7 +10,10 @@
 #include <math.h>
 #include <pthread.h>
 #include <sicklms5xx/SickLMS5xx.hh>
+#ifdef MATLAB
 #include <mat.h>
+#endif
+
 #include <queue>
 
 #include "point.h"
