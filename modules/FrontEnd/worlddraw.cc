@@ -229,7 +229,7 @@ void World::draw(int nsick, const SickIO * const * sick) const {
      }
 
      // Draw background
-     bool drawBG=true;
+     bool drawBG=false;
      if (drawBG) {
 	 for (int j=0;j<nsick;j++) {
 	     cairo_set_line_width(cr,1*pixel);
