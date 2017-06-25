@@ -165,13 +165,17 @@ class TrackSet {
 
 class ControlValues {
 	PVector pos;
-	int ccx, ccy, ccdx, ccdy, ccspeed;
+	int ccx, ccy, ccdx, ccdy, ccspeed, ccazimuth;
 	boolean moving;
 
 	ControlValues(PVector pos) {
 		this.pos=pos;
 		this.ccx=-1;
 		this.ccy=-1;
+		this.ccdx=-1;
+		this.ccdy=-1;
+		this.ccspeed=-1;
+		this.ccazimuth=-1;
 	}
 }
 
@@ -592,6 +596,12 @@ public class Ableton {
 			int ccdx=(int)(p.getVelocityInMeters().x*32+64); ccdx=(ccdx<0)? 0:(ccdx>127?127:ccdx);
 			int ccdy=(int)(p.getVelocityInMeters().y*32+64);ccdy=(ccdy<0)? 0:(ccdy>127?127:ccdy);
 			int ccspeed=(int)(p.getVelocityInMeters().mag()*64);ccspeed=(ccspeed<0)? 0:(ccspeed>127?127:ccspeed);
+			// Aziumuth - goes CCW from LIDAR 1
+			// speaker 1 (which is also LIDAR 1) is 0, 2 is 90, 3 (& LIDAR2) is 180, 4 is 270
+			double az= p.getNormalizedPosition().heading()*180/Math.PI+90+360;
+			while (az>360)
+				az-=360;
+			int ccazimuth=(int)(127.0/360 * az);
 			//System.out.println("OLD="+c.ccx+","+c.ccy+", new="+ccx+","+ccy);
 
 			int track=trackSet.getTrack(p.channel);
@@ -605,11 +615,16 @@ public class Ableton {
 				setALControl(track, 0, 4, ccdy);
 			if (ccspeed!=c.ccspeed)
 				setALControl(track, 0, 5, ccspeed);
+			if (ccazimuth!=c.ccazimuth) {
+				setALControl(track, 0, 6, ccazimuth);
+				//System.out.println("az="+az);
+			}
 			c.ccx=ccx;
 			c.ccy=ccy;
 			c.ccdx=ccdx;
 			c.ccdy=ccdy;
 			c.ccspeed=ccspeed;
+			c.ccazimuth=ccazimuth;
 			c.pos=p.getNormalizedPosition();
 			curpos.put(p.id, c);
 		}
