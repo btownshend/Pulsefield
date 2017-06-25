@@ -25,9 +25,9 @@ class Hunter {
 
 	/*** General params. ***/
 	// Radius of a player.
-	final float RADIUS=(float)(0.69/2/Math.PI);
+	final float RADIUS=(float)(0.69/2/Math.PI)*2;
 	// Length of arrow pointing to current target.
-	final float ARROWLEN=0.2f;
+	final float ARROWLEN=0.2f*4;
 	
 	/*** Tag params. ***/
 	// Number of updates that a person needs to be next to another to tag them.
@@ -42,7 +42,7 @@ class Hunter {
 	// Number of updates that an explosion will take place for upon tagging.
 	final float TIMEFOREXPLOSION = 10.f;
 	// Size of explosion upon tagging.
-	final float EXPLOSIONSIZE = 0.5f;
+	final float EXPLOSIONSIZE = 0.5f*4;
 
 	
 	public Hunter(Person p) {
@@ -197,7 +197,7 @@ class Hunter {
 		}
 		
 		// Our own score.
-		Visualizer.drawText(g, 0.10f, "" + this.score, mypos.x + RADIUS / 2, mypos.y + RADIUS / 3);
+		Visualizer.drawText(g, 0.30f, "" + this.score, mypos.x + RADIUS / 2, mypos.y + RADIUS / 3);
 	}
 }
 
