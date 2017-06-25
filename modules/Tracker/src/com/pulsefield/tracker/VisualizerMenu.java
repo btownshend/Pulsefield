@@ -20,7 +20,7 @@ public class VisualizerMenu extends Visualizer {
 	PImage menuImage;
 	
 	/** How many menu items to display at once (includes "next page" item). */
-	static final int ITEMS_PER_SCREENFUL = 20;
+	static final int ITEMS_PER_SCREENFUL = 25;
 	
 	/** Minimum distance from item to person/other item when initializing (in meters). */
 	static final float MIN_DISTANCE = 1.0f;
