@@ -302,6 +302,12 @@ public class VisualizerStickman extends Visualizer {
 		effects.add("SPLIT",40,42);
 	}
 	
+	@Override
+	public void start() {
+		super.start();
+		Ableton.getInstance().setTrackSet("Stickman");
+	}
+	
 	public void update(PApplet parent, People allpos) {		
 		// Update internal state of the Marbles
 		for (int id: allpos.pmap.keySet()) {
