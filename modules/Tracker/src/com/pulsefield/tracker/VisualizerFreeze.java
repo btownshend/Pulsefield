@@ -252,6 +252,7 @@ public class VisualizerFreeze extends Visualizer {
 	@Override
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g,p);
+		if (false) {
 		g.loadPixels();
 		PImage buffer=null;
 		int downSample=4;
@@ -268,7 +269,7 @@ public class VisualizerFreeze extends Visualizer {
 		g.imageMode(PConstants.CENTER);
 		g.tint(255);  // Causes slow fade if <255
 		g.image(buffer,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,g.width/Tracker.getPixelsPerMeter(),g.height/Tracker.getPixelsPerMeter());
-		
+		}
 		mFactory.drawAll(g);
 	}
 
