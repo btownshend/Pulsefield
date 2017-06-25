@@ -242,6 +242,11 @@ public class Ableton {
 		addSong("Whack","Whack",125,1,120,0,124,new int[]{7,8,9,10});
 		addSong("Bowie","Bowie",126,1,120,0,124,new int[]{});
 		addSong("DNA","DNA",123,1,120,0,124,new int[]{0,1,2,3,4,5,6});
+		addSong("Stickman","Stickman",128,1,120,0,124,new int[]{15,16,17});   // TODO
+		addSong("Hunter","Hunter",128,1,120,0,124,new int[]{18,19,20});   // TODO
+		addSong("Freeze","Freeze",128,1,120,0,124,new int[]{18,19,20});   // TODO
+
+
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
 		// Clear track info
