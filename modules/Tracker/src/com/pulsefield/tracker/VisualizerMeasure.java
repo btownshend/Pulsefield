@@ -102,11 +102,11 @@ class Measure {
 	
 }
 
-public class VisualizerMeasure extends Visualizer {
+public class VisualizerMeasure extends VisualizerGrid {
 	Measure measure;
 
 	VisualizerMeasure(PApplet parent) {
-		super();
+		super(parent);
 		measure=new Measure(new PVector(0f,0f));
 	}
 	
@@ -118,16 +118,12 @@ public class VisualizerMeasure extends Visualizer {
 	}
 	
 	public void update(PApplet parent, People p) {
+		super.update(parent,p);
 		measure.update(p);
 	}
 	
 	public void draw(Tracker t, PGraphics g, People p) {
-		if (p.pmap.isEmpty()) {
-			super.draw(t, g, p);
-			return;
-		}
 		super.draw(t, g, p);
-		g.background(0);
 		// g.shapeMode(PApplet.CENTER);
 		measure.draw(g, p);
 	}
