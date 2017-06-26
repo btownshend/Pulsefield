@@ -137,7 +137,7 @@ public class VisualizerGrid extends VisualizerPS {
 			//PApplet.println("grid "+cell+", id="+id+" "+gridColors.get(cell));
 			g.fill(127,0,0,127);
 			g.strokeWeight(.05f);
-			g.stroke(127,0,0);
+			g.stroke(255,0,0);
 			PVector gcenter=new PVector(gposx[cell],gposy[cell]);
 			PVector tl = Tracker.normalizedToFloor(PVector.sub(gcenter, gridOffset));
 			PVector br = Tracker.normalizedToFloor(PVector.add(gcenter, gridOffset));
