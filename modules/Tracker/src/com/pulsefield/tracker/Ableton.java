@@ -154,10 +154,13 @@ class TrackSet {
 
 	int getMIDIChannel(int channel) {
 		//System.out.println("getMIDIChannel("+channel+")->"+(channel%numTracks));
+		assert(numTracks>0);
 		return channel%numTracks;
 	}
 	int getTrack(int channel) {
 		//System.out.println("getTrack("+channel+")->"+((channel%numTracks)+firstTrack));
+		assert(firstTrack>=0);
+		assert(numTracks>0);
 		return (channel%numTracks)+firstTrack;
 	}
 }
@@ -187,7 +190,7 @@ public class Ableton {
 	HashMap<Integer,Track> tracks;
 	HashMap<String,TrackSet> tracksets;
 	TrackSet trackSet;
-	HashMap<Integer,ControlValues> lastpos;
+	HashMap<Integer,ControlValues> lastpos;  // Map from track number to current control values
 	float tempo;
 	float meter[] = new float[2];
 	int playstate = -1;
