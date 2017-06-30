@@ -137,8 +137,8 @@ class TrackSet {
 	String name;
 	int firstTrack;
 	int numTracks;
-	int bgTrack;
-	int bgClips[];
+	int bgTrack;  // Track number to use for background audio
+	int bgClips[];  // Array of clip numbers to use from bg track, or null to use any up to the last non-empty clip
 	float tempo;
 	boolean armed;
 	
@@ -554,7 +554,7 @@ public class Ableton {
 			Track t=getTrack(trackSet.bgTrack);
 			if (t==null)
 				PApplet.println("Track "+trackSet.bgTrack+" not found.");
-			else {
+			else if (trackSet.bgClips != null) {
 				int nclips=trackSet.bgClips.length;
 				if (nclips<1)
 					PApplet.println("startBgTrack: Track "+trackSet.bgTrack+" has no clips");
@@ -563,6 +563,12 @@ public class Ableton {
 					PApplet.println("Playing bg clip "+bgClip+" (of "+nclips+")");
 					playClip(trackSet.bgTrack,bgClip);
 				}
+			} else {
+				// Use any clip on the bg track
+				int nclips=t.numClips();
+				bgClip=(int)(Math.random()*nclips);
+				PApplet.println("Playing bg clip "+bgClip+" (of "+nclips+")");
+				playClip(trackSet.bgTrack,bgClip);
 			}
 		}
 	}
