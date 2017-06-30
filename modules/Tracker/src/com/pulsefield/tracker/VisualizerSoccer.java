@@ -201,7 +201,7 @@ class Goal {
 						// Through the goal line
 						PApplet.println("Goal! dot(aim,vel) = ",PVector.dot(dir, b.velocity));
 						scoreDelay=true;
-						b.impactSound(3);
+						b.impactSound(3+((int)(Math.random()*5f)));
 						return true;
 					}
 				}
@@ -219,7 +219,7 @@ public class VisualizerSoccer extends VisualizerDot {
 	Ball ball;
 	Goal goals[];
 	int score[];
-	boolean goalsAtEnds = true;
+	boolean goalsAtEnds = false;
 	
 	VisualizerSoccer(PApplet parent) {
 		super(parent);
@@ -274,25 +274,53 @@ public class VisualizerSoccer extends VisualizerDot {
 		if (p.pmap.isEmpty())
 			return;
 		
+		// Draw field lines
+		g.stroke(255,255,255);
+		g.noFill();
+		g.line(Tracker.getFloorCenter().x,Tracker.miny, Tracker.getFloorCenter().x, Tracker.maxy);
+		float szScale=Tracker.getFloorSize().x / 100;   // Scale based on a 100m field
+		g.ellipseMode(PConstants.CENTER);
+		g.ellipse(Tracker.getFloorCenter().x, Tracker.getFloorCenter().y, szScale*18.3f, szScale*18.3f);
+		g.beginShape();
+		g.vertex(Tracker.minx, Tracker.getFloorCenter().y-szScale*(16.5f+7.32f/2));
+		g.vertex(Tracker.minx+16.5f*szScale, Tracker.getFloorCenter().y-szScale*(16.5f+7.32f/2));
+		g.vertex(Tracker.minx+16.5f*szScale, Tracker.getFloorCenter().y+szScale*(16.5f+7.32f/2));
+		g.vertex(Tracker.minx, Tracker.getFloorCenter().y+szScale*(16.5f+7.32f/2));
+		g.endShape(PConstants.OPEN);
+		float ang=0.9259f;
+		g.arc(Tracker.minx+11f*szScale, Tracker.getFloorCenter().y,szScale*18.3f,szScale*18.3f,-ang,ang);
+		
+		g.ellipse(Tracker.getFloorCenter().x, Tracker.getFloorCenter().y, szScale*18.3f, szScale*18.3f);
+		g.beginShape();
+		g.vertex(Tracker.maxx, Tracker.getFloorCenter().y-szScale*(16.5f+7.32f/2));
+		g.vertex(Tracker.maxx-16.5f*szScale, Tracker.getFloorCenter().y-szScale*(16.5f+7.32f/2));
+		g.vertex(Tracker.maxx-16.5f*szScale, Tracker.getFloorCenter().y+szScale*(16.5f+7.32f/2));
+		g.vertex(Tracker.maxx, Tracker.getFloorCenter().y+szScale*(16.5f+7.32f/2));
+		g.endShape(PConstants.OPEN);
+		g.arc(Tracker.maxx-11f*szScale, Tracker.getFloorCenter().y,szScale*18.3f,szScale*18.3f,(float)Math.PI-ang,(float)Math.PI+ang);
+
+		float goalWidth=18.32f*szScale;
+		float goalDepth=5.5f*szScale;
 		if (goalsAtEnds) {
 			goals[0].setpos(new PVector(Tracker.getFloorCenter().x+1.0f,Tracker.getFloorCenter().y+Tracker.getFloorSize().y*0.5f-0.5f),
 					new PVector(0f,1.0f),
-					1.0f,0.25f);
+					goalWidth,goalDepth);
 			goals[1].setpos(new PVector(Tracker.getFloorCenter().x-1.0f,Tracker.getFloorCenter().y-Tracker.getFloorSize().y*0.5f+0.5f),
 					new PVector(0f,-1.0f),
-					1.0f,0.25f);
+					goalWidth,goalDepth);
 		} else {
 			goals[0].setpos(new PVector(Tracker.getFloorCenter().x+Tracker.getFloorSize().x*0.5f-0.25f,Tracker.getFloorCenter().y),
 					new PVector(1.0f,0f),
-					1.0f,0.25f);
+					goalWidth,goalDepth);
 			goals[1].setpos(new PVector(Tracker.getFloorCenter().x-Tracker.getFloorSize().x*0.5f+0.25f,Tracker.getFloorCenter().y),
-					new PVector(0f,1.0f),
-					1.0f,0.25f);
+					new PVector(-1.0f,0f),
+					goalWidth,goalDepth);
 		}
 		
 		for (Goal goal: goals)
 			if (goal != null)
 				goal.draw(g);
+		
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		g.fill(70);
 		for (int i=0;i<score.length;i++) {
