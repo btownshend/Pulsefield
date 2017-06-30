@@ -193,7 +193,7 @@ public class Ableton {
 	int playstate = -1;
 	int bgClip = -1;   // Currently playing bg clip
 	
-	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips,int bgTrack, int bgClips[]) {
+	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int bgTrack, int bgClips[]) {
 		tracksets.put(id,new TrackSet(name,firstTrack,numTracks,tempo,bgTrack, bgClips));
 		for (int i=0;i<numTracks;i++) {
 			Track t=getTrack(i+firstTrack);
@@ -202,8 +202,8 @@ public class Ableton {
 	}
 	
 	
-	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips) {
-		addSong(id,name,firstTrack,numTracks,tempo,nclips,-1, null);
+	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo) {
+		addSong(id,name,firstTrack,numTracks,tempo,-1, null);
 	}
 	
 	Ableton(OscP5 oscP5, NetAddress ALaddr) {
