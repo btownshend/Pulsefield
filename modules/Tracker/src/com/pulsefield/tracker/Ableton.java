@@ -215,37 +215,37 @@ public class Ableton {
 		tempo=120;
 		tracksets=new HashMap<String,TrackSet>();
 		// Note that the track and clip numbers here are 1 lower than they show in AL (since the OSC interface is 0-based)
-		addSong("QU","Quetzal",1,6,120,60);
-		addSong("PR","Pring",8,8,108,60);
-		addSong("OL","Oluminum",17,7,93,60);
-		addSong("EP","Episarch",25,5,93,60);
-		addSong("NG","New Gamelan",31,9,120,60);
-		addSong("MB","Music Box",41,6,111,60);
-		addSong("GA","Garage Revisited",50,6,120,60);
-		addSong("FO","Forski",57,8,72,60);
-		addSong("FI","Firebell",66,7,108,60);
-		addSong("DB","Deep Blue",74,8,100,60);
-		addSong("AN","Animals",84,4,120,60);
-		addSong("MV","Movies",89,1,120,60);
-		addSong("DD","DDR",91,1,120,60);
-		addSong("Harp", "Harp",92,1,120,0);
-		addSong("Guitar", "Guitar",93,1,120,0);
-		addSong("Pads", "Pads",95,4,120,0);
-		addSong("Tron", "Tron",99,1,120,0);
-		addSong("Poly","Poly",101,3,120,0);
-		addSong("Navier", "Navier",105,4,120,0);
-		addSong("SteelPan","Steel Pan",109,1,120,0);
-		addSong("Cows","Cows",111,1,120,0,124,new int[]{12,13,14});
-		addSong("Soccer","Soccer",112,1,120,0,124,new int[]{11});
-		addSong("PB","Polybius",114,9,130,13);
-		addSong("Osmos","Osmos",123,1,120,0,124,new int[]{0,1,2,3,4,5,6});
-		addSong("Whack","Whack",125,1,120,0,124,new int[]{7,8,9,10});
-		addSong("Bowie","Bowie",126,1,120,0,124,new int[]{});
-		addSong("DNA","DNA",123,1,120,0,124,new int[]{0,1,2,3,4,5,6});
-		addSong("Stickman","Stickman",128,1,120,0,124,new int[]{15,16,17});   // TODO
-		addSong("Hunter","Hunter",128,1,120,0,124,new int[]{18,19,20});   // TODO
-		addSong("Freeze","Freeze",128,1,120,0,124,new int[]{18,19,20});   // TODO
-
+		// Format:  id, name, firstTrack, numTracks, tempo, bgTrack, bgClips[]
+		addSong("QU","Quetzal",1,6,120);
+		addSong("PR","Pring",8,8,108);
+		addSong("OL","Oluminum",17,7,93);
+		addSong("EP","Episarch",25,5,93);
+		addSong("NG","New Gamelan",31,9,120);
+		addSong("MB","Music Box",41,6,111);
+		addSong("GA","Garage Revisited",50,6,120);
+		addSong("FO","Forski",57,8,72);
+		addSong("FI","Firebell",66,7,108);
+		addSong("DB","Deep Blue",74,8,100);
+		addSong("PB","Polybius",85,9,130);
+		addSong("AN","Animals",94,4,120);
+		addSong("MV","Movies",99,1,120);
+		addSong("DD","DDR",101,1,120);
+		addSong("Harp", "Harp",102,1,120);
+		addSong("Guitar", "Guitar",103,1,120);
+		addSong("Pads", "Pads",105,4,120);
+		addSong("Tron", "Tron",109,1,120);
+		addSong("Poly","Poly",111,3,120);
+		addSong("Navier", "Navier",115,4,120);
+		addSong("SteelPan","Steel Pan",119,1,120);
+		addSong("Cows","Cows",		120,1,120,121,null);
+		addSong("Soccer","Soccer",	122,1,120,123,null);
+		addSong("Osmos","Osmos",	124,1,120,125,null);
+		addSong("DNA","DNA",		 -1,0,120,125,null);
+		addSong("Whack","Whack",	127,1,120);
+		addSong("Bowie","Bowie",	128,1,120);
+		addSong("Stickman","Stickman",-1,0,120,128,null);   
+		addSong("Hunter","Hunter",	-1,0,120,129,null);  
+		addSong("Freeze","Freeze",	-1,0,120,130,null);   // TODO
 
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
