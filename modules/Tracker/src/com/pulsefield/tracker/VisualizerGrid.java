@@ -145,7 +145,7 @@ public class VisualizerGrid extends VisualizerPS {
 			g.fill(255);
 			TrackSet ts=Ableton.getInstance().trackSet;
 			Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
-			if (track.numClips()!=-1) {
+			if (track.numClips()>0) {
 				Clip clip=track.getClip(cell%track.numClips());
 				drawText(g,0.16f,track.getName()+"-"+clip.getName()+" P"+id,gcenter.x,gcenter.y,gridOffset.x,gridOffset.y);
 			}
