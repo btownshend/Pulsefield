@@ -36,7 +36,7 @@ public class Tracker extends PApplet {
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
 	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
-	static float lidarminy=0f, lidarmaxy=5f, lidarminx=-5f, lidarmaxx=5f, lidarRotation=0f; // Bounds of tracking
+	static float lidarminy=-5f, lidarmaxy=5f, lidarminx=-5f, lidarmaxx=5f, lidarRotation=0f; // Bounds of tracking
 	static float miny, maxy, minx, maxx; // Bound of video display (in LIDAR coordinates - meters)
 	static Visualizer vis[] = new Visualizer[0];
 	VisualizerGrid visAbleton;
