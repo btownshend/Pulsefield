@@ -600,7 +600,13 @@ public class Ableton {
 		HashMap<Integer,ControlValues> curpos=new HashMap<Integer,ControlValues>();
 
 		for (Person p: allpos.pmap.values()) {	
-			ControlValues c=lastpos.get(p.id);
+			int track=trackSet.getTrack(p.channel);
+			if (curpos.containsKey(track)) {
+				// Already have someone controlling this track; skip
+				//System.out.println("Ignoring person "+p.id+" of track "+track+" since someone else is controlling it");
+				continue;
+			}
+			ControlValues c=lastpos.get(track);
 			if (c==null) {
 				c=new ControlValues(p.getNormalizedPosition());
 			}
@@ -618,7 +624,6 @@ public class Ableton {
 			int ccazimuth=(int)(127.0/360 * az);
 			//System.out.println("OLD="+c.ccx+","+c.ccy+", new="+ccx+","+ccy);
 
-			int track=trackSet.getTrack(p.channel);
 			if (ccx!=c.ccx)
 				setALControl(track, 0, 1, ccx);
 			if (ccy!=c.ccy)
@@ -640,7 +645,7 @@ public class Ableton {
 			c.ccspeed=ccspeed;
 			c.ccazimuth=ccazimuth;
 			c.pos=p.getNormalizedPosition();
-			curpos.put(p.id, c);
+			curpos.put(track, c);
 		}
 		lastpos=curpos;
 	}
