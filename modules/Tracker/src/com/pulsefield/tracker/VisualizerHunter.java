@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -21,7 +22,7 @@ class Hunter {
 	boolean exploding = false; // If I am exploding (True if I just tagged someone).
 	Integer score = 0; // Number of people I have tagged.
 	boolean deleted = false; // Whether I still exist.
-	
+
 
 	/*** General params. ***/
 	// Radius of a player.
@@ -43,6 +44,8 @@ class Hunter {
 	final float TIMEFOREXPLOSION = 10.f;
 	// Size of explosion upon tagging.
 	final float EXPLOSIONSIZE = 0.5f*4;
+
+    private final static Logger logger = Logger.getLogger(Hunter.class.getName());
 
 	
 	public Hunter(Person p) {
@@ -66,7 +69,7 @@ class Hunter {
 				// Don't want to pick myself or someone who is targeting me or someone who is too close.
 				if(otherId != me.id && (other.target == null || other.target.me.id != me.id) && !isCloseTo(STARTTHRESH, other)) { 
 					target = players.get(otherId);
-					PApplet.println("Linked ID "+ me.id + " to ID " + otherId);
+					logger.fine("Linked ID "+ me.id + " to ID " + otherId);
 					break;
 				}
 			}
@@ -94,7 +97,7 @@ class Hunter {
 	 * Mark ourselves as deleted if we are gone.
 	 */
 	void destroy() {
-		PApplet.println("Destroying hunder id "+me.id);
+		logger.fine("Destroying hunter id "+me.id);
 		deleted = true;
 	}
 	
@@ -116,7 +119,7 @@ class Hunter {
 		else {
 			// If target left the field, we reset our target.
 			if (this.target != null && this.target.deleted) {
-				PApplet.println("Target "+this.target.me.id+" was deleted - clearing");
+				logger.fine("Target "+this.target.me.id+" was deleted - clearing");
 				this.target = null;
 			}
 			// If not target, we try and get one.
@@ -132,7 +135,7 @@ class Hunter {
 					this.target = null;
 					this.timetogether = 0;
 					exploding = true;
-					PApplet.println("Exploding "+me.id);
+					logger.fine("Exploding "+me.id);
 				}
 			}
 			// If not, we reset our tagging progress.
@@ -217,7 +220,7 @@ public class VisualizerHunter extends Visualizer {
 		// Add new players if needed.
 		for (int id: allpos.pmap.keySet()) {
 			if (!players.containsKey(id)) {
-				PApplet.println("Adding ID "+id);
+				logger.fine("Adding ID "+id);
 				players.put(id,new Hunter(allpos.pmap.get(id)));
 			}
 		}
@@ -226,7 +229,7 @@ public class VisualizerHunter extends Visualizer {
 		for (Iterator<Integer> iter = players.keySet().iterator();iter.hasNext();) {
 			int id=iter.next().intValue();
 			if (!allpos.pmap.containsKey(id)) {
-				PApplet.println("Removing ID "+id);
+				logger.fine("Removing ID "+id);
 				players.get(id).destroy();
 				iter.remove();
 			}

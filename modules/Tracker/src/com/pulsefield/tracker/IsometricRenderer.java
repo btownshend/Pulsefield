@@ -1,6 +1,8 @@
 package com.pulsefield.tracker;
 
 
+import java.util.logging.Logger;
+
 import processing.core.PApplet;
 import processing.core.PGraphics;
 
@@ -9,6 +11,7 @@ import processing.core.PGraphics;
 // ( http://www.openprocessing.org/visuals/?visualID=5671 )
 
 public class IsometricRenderer extends Renderer {
+	private final static Logger logger = Logger.getLogger(IsometricRenderer.class.getName());
 
   int r = 9;
   float squeeze = .5f;
@@ -24,7 +27,7 @@ public class IsometricRenderer extends Renderer {
     d = Math.min(parent.width, parent.height) / r / 5;
     val = new float[n];
     // Offscreen P2D renderer (fastest)
-	PApplet.println("Creating render with size "+parent.width+"x"+parent.height);
+	logger.config("Creating render with size "+parent.width+"x"+parent.height);
 	// There are black lines on the render when P3D is used for tracker??
     pg = parent.createGraphics(parent.width, parent.height);
     pg.noSmooth();
@@ -85,7 +88,6 @@ public class IsometricRenderer extends Renderer {
 
           // pg.hint(DISABLE_DEPTH_TEST);
           int color=(int)(y*10.0/d);
-//          PApplet.println("color="+color);
           if (color>100)
         	  color=100;
           pg.fill (color,25,100); 

@@ -56,7 +56,7 @@ public class VisualizerMenu extends Visualizer {
 			if(PVector.sub(location, hotSpot).mag() < hotSpotRadius) {
 				selectingPerson=p.id;
 				selectedCount+=1;
-				PApplet.println("Person hit hot spot: "+selectingPerson);
+				logger.fine("Person hit hot spot: "+selectingPerson);
 				return selectedCount>=HOTSPOTCOUNT;
 			}
 		}
@@ -88,7 +88,7 @@ public class VisualizerMenu extends Visualizer {
 	private HashSet<Integer> getNextVisualizerIndexSet() {
 		HashSet<Integer> results = new HashSet<Integer>();
 		while(true) {
-			PApplet.println("getNextSet: "+nextVisualizerIndex+": "+Tracker.vis[nextVisualizerIndex].selectable);
+			logger.fine("getNextSet: "+nextVisualizerIndex+": "+Tracker.vis[nextVisualizerIndex].selectable);
 			if (Tracker.vis[nextVisualizerIndex].selectable)
 				results.add(nextVisualizerIndex);
 			nextVisualizerIndex++;
@@ -103,7 +103,7 @@ public class VisualizerMenu extends Visualizer {
 				break;
 			}
 		}
-		PApplet.println("Result="+results);
+		logger.fine("Result="+results);
 		return results;
 	}
 	
@@ -150,10 +150,10 @@ public class VisualizerMenu extends Visualizer {
 				nattempts-=1;
 			}
 			if (nattempts==0) {
-				PApplet.println("Unable to find a location for "+index);
+				logger.warning("Unable to find a location for "+index);
 			}
 		}
-		PApplet.println("Found all positions");
+		logger.fine("Found all positions");
 	}
 	
 	@Override
@@ -165,12 +165,12 @@ public class VisualizerMenu extends Visualizer {
 		
 		if (!p.pmap.containsKey(selectingPerson)) {
 			// Person has left
-			PApplet.println("Selecting person "+selectingPerson+" has left (pmap contains "+p.pmap.size()+" people)");
+			logger.fine("Selecting person "+selectingPerson+" has left (pmap contains "+p.pmap.size()+" people)");
 			((Tracker)parent).setapp(3);
 		}
 		Person ps=p.pmap.get(selectingPerson);
 		if (ps==null) {
-			PApplet.println("Selecting person "+selectingPerson+" not found");
+			logger.fine("Selecting person "+selectingPerson+" not found");
 			return;
 		}
 		for(Leg leg : ps.legs) {
@@ -210,7 +210,7 @@ public class VisualizerMenu extends Visualizer {
 		int c=ps.getcolor();
 		g.fill(c,255);
 		g.stroke(c,255);
-//		PApplet.println("Drawing cursor with scaling="+scale);
+//		logger.fine("Drawing cursor with scaling="+scale);
 		// cursor seems shifted
 		g.shapeMode(PConstants.CENTER);
 		Visualizer.drawShape(g, cursor,ps.getOriginInMeters().x, ps.getOriginInMeters().y,cursor.width*scale,cursor.height*scale);
@@ -225,7 +225,7 @@ public class VisualizerMenu extends Visualizer {
 			laser.shapeBegin(item.name);
 			laser.svgfile("app"+item.name+".svg",item.position.x, item.position.y, SELECTION_DISTANCE*1.6f,0.0f);
 			laser.circle(item.position.x, item.position.y, SELECTION_DISTANCE);
-//			PApplet.println("Circle at "+item.position)
+//			logger.fine("Circle at "+item.position)
 			laser.shapeEnd(item.name);
 		}
 		laser.bgEnd();

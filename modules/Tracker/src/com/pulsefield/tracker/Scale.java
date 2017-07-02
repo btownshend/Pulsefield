@@ -1,4 +1,6 @@
 package com.pulsefield.tracker;
+import java.util.logging.Logger;
+
 import processing.core.PApplet;
 
 class ScaleType {
@@ -28,6 +30,7 @@ public class Scale {
 	ScaleType stype;
 	String key;
 	int notes[];  // Midi notes for center octave of scale
+    private final static Logger logger = Logger.getLogger(Scale.class.getName());
 
 	/** Create a new scale
 	 * @param scaleName name of scale (e.g. "Major")
@@ -36,9 +39,10 @@ public class Scale {
 	public Scale(String scaleName,String keyname) {
 		final String keys[]={"C","C#","Db","D","D#","Eb","E","F","F#","Gb","G","G#","Ab","A","A#","Bb","B","B#","Cb"};
 		final int keyv[]={60,61,61,62,63,63,64,65,66,66,67,68,68,69,70,70,71,72,72};
+
 		ScaleType scale=ScaleType.find(scaleName);
 		if (scale==null) {
-			PApplet.println("No such scale type: "+scaleName);
+			logger.warning("No such scale type: "+scaleName);
 			assert(false);
 		}
 		int[] scpitches=scale.pattern;
@@ -47,7 +51,7 @@ public class Scale {
 			if (keys[i].equalsIgnoreCase(keyname))
 				kpos=i;
 		if (kpos == -1) {
-			PApplet.println("Unknown key: "+keyname);
+			logger.warning("Unknown key: "+keyname);
 			kpos=1;
 		}
 		int firstnote=keyv[kpos];
@@ -59,9 +63,7 @@ public class Scale {
 		int offset=(notes[notes.length/2]-60)/12*12;
 		for (int i=0;i<notes.length;i++) {
 			notes[i]-=offset;
-			PApplet.print(" "+notes[i]);
 		}
-		PApplet.println("");
 	}
 
 	/** 

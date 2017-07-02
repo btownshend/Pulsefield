@@ -3,6 +3,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 import oscP5.OscMessage;
 import processing.core.PApplet;
@@ -36,6 +37,7 @@ abstract public class Synth {
 	protected Timer timer;
 	protected HashMap<Integer,HashMap<Integer,NoteOff>> playing;
 	protected HashMap<Integer,MidiProgram> channelmap;
+    private final static Logger logger = Logger.getLogger(Synth.class.getName());
 
 	public Synth() {
 		super();
@@ -69,7 +71,7 @@ abstract public class Synth {
 			playing.get(track).get(pitch).cancel();
 		// Check again in case there was a race
 		if (playing.get(track).get(pitch)!=null) {
-			//System.out.println("Already playing note "+pitch+" on channel "+channel+", removing pending note-off");
+			//logger.warning("Already playing note "+pitch+" on channel "+channel+", removing pending note-off");
 			playing.get(track).get(pitch).cancel();
 		} else {
 			play(pitch,velocity,track);
@@ -82,14 +84,14 @@ abstract public class Synth {
 			playing.get(track).put(pitch, noteOff);
 			timer.schedule(noteOff, delay);
 		}
-		//System.out.println("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to track "+track+" for channel "+channel);
+		//logger.fine("Sent note "+pitch+", vel="+velocity+" , duration="+delay+"ms to track "+track+" for channel "+channel);
 	}
 
 	// Stop all currently playing notes
 	public void endallnotes() {
 		for (Map.Entry<Integer,HashMap<Integer,NoteOff>> t: playing.entrySet()) {
 			for (Map.Entry<Integer, NoteOff> n: t.getValue().entrySet()) {
-				PApplet.println("Endallnotes: track "+t.getKey()+", pitch "+n.getKey());
+				logger.fine("Endallnotes: track "+t.getKey()+", pitch "+n.getKey());
 				play(n.getKey(),0,t.getKey());
 			}
 		}
@@ -97,14 +99,14 @@ abstract public class Synth {
 	
 	public void endnote(int track, int pitch, int velocity) {
 		if (playing.get(track).get(pitch)==null)
-			System.out.println("Received endnote for note that isn't playing; channel="+track+", pitch="+pitch);
+			logger.warning("Received endnote for note that isn't playing; channel="+track+", pitch="+pitch);
 		play(pitch,0,track);
 		playing.get(track).remove(pitch);
-		//System.out.println("Sent note off "+pitch+", vel="+velocity+" , to channel "+channel+", now have "+playing.get(channel).size()+" notes playing on this channel");
+		//logger.fine("Sent note off "+pitch+", vel="+velocity+" , to channel "+channel+", now have "+playing.get(channel).size()+" notes playing on this channel");
 	}
 
 	public boolean handleMessage(OscMessage msg) {
-		//PApplet.println("Synth message: "+msg.toString());
+		//logger.fine("Synth message: "+msg.toString());
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
 		if (components.length==3 && components[1].equals("midi") && components[2].equals("pgm")) {
@@ -151,7 +153,7 @@ abstract public class Synth {
 			if (name.equals(keys[i]))
 				return keyv[i]+(octave-5)*12;
 		}
-		PApplet.println("Unable to parse note name: "+name);
+		logger.warning("Unable to parse note name: "+name);
 		return -1;
 	}
 }

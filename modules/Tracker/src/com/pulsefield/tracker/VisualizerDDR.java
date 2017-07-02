@@ -3,6 +3,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import oscP5.OscMessage;
 import processing.core.PApplet;
@@ -40,7 +41,7 @@ class Dancer {
 		float angle=offset.heading();
 		float dist=offset.mag();
 		int quad=(int)Math.round(angle/(Math.PI/2));
-//		PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
+//		logger.fine("Video: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
 		if (dist >= MINMOVEDIST)
 			return (quad+4)%4;
 		return -1;
@@ -65,13 +66,14 @@ class Song {
 	int clipNumber;
 	int track;
 	Simfile sf;
-	
+    private final static Logger logger = Logger.getLogger(Song.class.getName());
+
 	Song(String sfdir, String sfname, int clipNumber)  {
 		this.sfdir=sfdir;
 		this.sfname=sfname;
 		this.clipNumber=clipNumber;
 		track=Ableton.getInstance().trackSet.firstTrack;
-		PApplet.println("DDR: Adding song "+sfname+" at track "+track+", clip "+clipNumber);
+		logger.fine("DDR: Adding song "+sfname+" at track "+track+", clip "+clipNumber);
 		sf=null;
 	}
 	
@@ -121,17 +123,17 @@ public class VisualizerDDR extends Visualizer {
 	}
 
 	public void handleMessage(OscMessage msg) {
-		PApplet.println("DDR message: "+msg.toString());
+		logger.fine("DDR message: "+msg.toString());
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
 		
 		if (components.length<3 || !components[2].equals("ddr")) 
-			PApplet.println("DDR: Expected /video/ddr messages, got "+msg.toString());
+			logger.warning("DDR: Expected /video/ddr messages, got "+msg.toString());
 		else if (components.length==4 && components[3].equals("songnum")) {
 			if (songs!=null)
 				chooseSong((int)(msg.get(0).floatValue()*songs.size()));
 		} else 
-			PApplet.println("Unknown DDR Message: "+msg.toString());
+			logger.warning("Unknown DDR Message: "+msg.toString());
 	}
 	
 	/* Randomly choose a song */
@@ -147,8 +149,8 @@ public class VisualizerDDR extends Visualizer {
 			Ableton.getInstance().stopClip(cursong.track,cursong.clipNumber);
 		cursong=songs.get(songIndex);
 		pattern=cursong.getSimfile().findClosestDifficulty(targetDifficulty);
-		PApplet.println("Chose song "+songIndex+" with pattern "+pattern+", difficulty="+cursong.getSimfile().notes.get(pattern).difficultyMeter);
-		PApplet.println(cursong.getSimfile().toString());
+		logger.info("Chose song "+songIndex+" with pattern "+pattern+", difficulty="+cursong.getSimfile().notes.get(pattern).difficultyMeter);
+		logger.fine(cursong.getSimfile().toString());
 		OscMessage msg=new OscMessage("/video/ddr/song");
 		msg.add(cursong.sf.getTag("TITLE"));
 		TouchOSC.getInstance().sendMessage(msg);
@@ -173,13 +175,13 @@ public class VisualizerDDR extends Visualizer {
 				dancers.put(id,new Dancer(allpos.get(id).getOriginInMeters()));
 			PVector currentpos=allpos.get(id).getOriginInMeters();
 			dancers.get(id).update(currentpos);
-			//PApplet.println("Dancer "+id+" moved to "+currentpos.toString());
+			//logger.fine("Dancer "+id+" moved to "+currentpos.toString());
 		}
 		// Remove dancers for which we no longer have a position (exitted)
 		for (Iterator<Integer> iter = dancers.keySet().iterator();iter.hasNext();) {
 			int id=iter.next().intValue();
 			if (!allpos.pmap.containsKey(id)) {
-				PApplet.println("Removing ID "+id);
+				logger.fine("Removing ID "+id);
 				iter.remove();
 			}
 		}
@@ -197,12 +199,12 @@ public class VisualizerDDR extends Visualizer {
 		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, lastClipPosition, clip.position);
 		lastClipPosition=clip.position;
 		for (NoteData n: notes) {
-			PApplet.println("At clip time "+clip.position+", note timestamp "+n.timestamp+", notes="+n.notes);
+			logger.fine("At clip time "+clip.position+", note timestamp "+n.timestamp+", notes="+n.notes);
 			for (int i=0;i<n.notes.length()&&i<4;i++) {
 				if (n.notes.charAt(i) != '0') {
 					for (int id: dancers.keySet()) {
 						Dancer d=dancers.get(id);
-//						PApplet.println("Dancer "+id+" has aim "+d.getAim());
+//						logger.fine("Dancer "+id+" has aim "+d.getAim());
 						if (d.getAim() == AIMS[i]) {
 							d.setHit(true);
 							d.setHitIconNumber((int)(Math.random()*hitIcons.length));
@@ -220,7 +222,7 @@ public class VisualizerDDR extends Visualizer {
 	public void start() {
 		super.start();
 		startTime=System.currentTimeMillis();
-		PApplet.println("Starting DDR at "+startTime);
+		logger.info("Starting DDR at "+startTime);
 		Ableton.getInstance().setTrackSet("DD");
 		if (songs==null) {
 			songs=new ArrayList<Song>();
@@ -266,7 +268,7 @@ public class VisualizerDDR extends Visualizer {
 
 	public void stop() {
 		super.stop();
-		PApplet.println("Stopping DDR at "+System.currentTimeMillis());
+		logger.info("Stopping DDR at "+System.currentTimeMillis());
 		if (cursong!=null) {
 			Ableton.getInstance().stopClip(cursong.track,cursong.clipNumber);
 			cursong=null;
@@ -281,7 +283,7 @@ public class VisualizerDDR extends Visualizer {
 
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 		if (clip==null) {
-			PApplet.println("DDR.draw: Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
+			logger.warning("DDR.draw: Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
 			return;
 		}
 		PVector center=Tracker.getFloorCenter();
@@ -301,13 +303,13 @@ public class VisualizerDDR extends Visualizer {
 
 		//drawScores(g,p);
 		drawPF(g,p);
-//			PApplet.println("Clip at "+clip.position);
+//			logger.fine("Clip at "+clip.position);
 			drawTicker(g,clip.position);
 		float songdur=cursong.getSimfile().getduration(pattern);
 		if ((clip.state==1 && clip.position>1) || clip.position>songdur) {
 			delayCounter+=1;
 			if (delayCounter>150) {
-				PApplet.println("Song duration "+songdur+" ended; clip Position="+clip.position+", songdur="+songdur+", state="+clip.state);
+				logger.info("Song duration "+songdur+" ended; clip Position="+clip.position+", songdur="+songdur+", state="+clip.state);
 				chooseSong();
 				for (int id: dancers.keySet()) {
 					Dancer d=dancers.get(id);
@@ -343,7 +345,7 @@ public class VisualizerDDR extends Visualizer {
 			Dancer d=dancers.get(id);
 			Person p=allpos.get(id);
 			if (p==null) {
-				PApplet.println("drawPF: Person "+id+" not found");
+				logger.warning("drawPF: Person "+id+" not found");
 				continue;
 			}
 			int quad=d.getAim();
@@ -369,7 +371,7 @@ public class VisualizerDDR extends Visualizer {
 			drawText(g,sh,""+d.score,0,-sh/10);
 			g.popMatrix();
 			
-			//PApplet.println("Video: ID="+id+", current="+d.current+", quad="+quad);
+			//logger.fine("Video: ID="+id+", current="+d.current+", quad="+quad);
 			if (quad>=0) {
 				g.rotate((float)(quad*Math.PI/2+Math.PI));
 				g.translate(-ARROWDIST, 0);
@@ -428,18 +430,18 @@ public class VisualizerDDR extends Visualizer {
 		PVector center=Tracker.getFloorCenter();
 		
 		if (cursong==null) {
-			PApplet.println("cursong=null");
+			logger.fine("cursong=null");
 			return;
 		}
 		float songdur=cursong.getSimfile().getduration(pattern);
 		if (now>songdur) {
-			PApplet.println("Song duration "+songdur+" ended");
+			logger.fine("Song duration "+songdur+" ended");
 //			((Tracker)parent).setapp(4);
 		}
 	
 
 		ArrayList<NoteData> notes=cursong.getSimfile().getNotes(pattern, now-HISTORY, now-HISTORY+DURATION);
-//		PApplet.println("Have "+notes.size()+" notes.");
+//		logger.fine("Have "+notes.size()+" notes.");
 		//parent.ellipse(wsize.x/2,wsize.y/2,100,100);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		g.tint(255);
@@ -451,11 +453,11 @@ public class VisualizerDDR extends Visualizer {
 			final float angles[]={0f,-(float)(Math.PI/2),-(float)(3*Math.PI/2),-(float)Math.PI};
 			float rel=(n.timestamp-(now-HISTORY))/DURATION;
 			float ypos=(rel-0.5f)*(sz.y-tickerTopMargin)+(center.y+tickerTopMargin/2);
-			//PApplet.println("At "+n.timestamp+", rel="+rel+", notes="+n.notes+", y="+ypos+",sz.y="+sz.y+",center.y="+center.y);
+			//logger.fine("At "+n.timestamp+", rel="+rel+", notes="+n.notes+", y="+ypos+",sz.y="+sz.y+",center.y="+center.y);
 			for (int i=0;i<n.notes.length()&&i<4;i++) {
 				if (n.notes.charAt(i) != '0') {
 					float xpos=center.x-tickerWidth/2+(i+0.5f)*tickerWidth/n.notes.length();
-					//PApplet.println("x="+xpos+", text="+n.notes.substring(i,i+1));
+					//logger.fine("x="+xpos+", text="+n.notes.substring(i,i+1));
 					//parent.text(n.notes.substring(i,i+1),xpos,ypos);
 					g.pushMatrix();
 					g.translate(xpos,ypos);
@@ -483,10 +485,10 @@ public class VisualizerDDR extends Visualizer {
 			return;
 		Clip clip=Ableton.getInstance().getClip(cursong.track, cursong.clipNumber);
 		if (clip!=null) {
-//			PApplet.println("Clip at "+clip.position);
+//			logger.fine("Clip at "+clip.position);
 			drawLaserTicker(parent,clip.position);
 		} else 
-			PApplet.println("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
+			logger.warning("Ableton clip is null (track="+cursong.track+", clip="+cursong.clipNumber+")");
 	}
 
 	public void drawLaserPF(PApplet parent, People allpos) {
@@ -497,7 +499,7 @@ public class VisualizerDDR extends Visualizer {
 			Dancer d=dancers.get(id);
 
 			int quad=d.getAim();
-			//PApplet.println("Laser: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
+			//logger.fine("Laser: ID="+id+", current="+d.current+", quad="+quad+", dist="+dist);
 			if (d.isHit())
 				laser.svgfile("ddrhit"+(d.getHitIconNumber()+1)+".svg",0,-0.5f,0.5f,0f);
 			else if (quad>=0)
@@ -532,7 +534,7 @@ public class VisualizerDDR extends Visualizer {
 		for (NoteData n: notes) {
 			laser.shapeBegin("Note"+n.measure);
 			float ypos=Tracker.miny+(n.timestamp-(now-HISTORY))/DURATION*(Tracker.maxy-Tracker.miny);
-			//PApplet.println("At "+n.timestamp+", notes="+n.notes+", y="+ypos);
+			//logger.fine("At "+n.timestamp+", notes="+n.notes+", y="+ypos);
 			for (int i=0;i<n.notes.length()&&i<4;i++) {
 				if (n.notes.charAt(i) != '0') {
 					float xpos=(Tracker.minx+Tracker.maxx)/2.0f - ((((float)i)/(n.notes.length()-1))-0.5f)*TICKERWIDTH;

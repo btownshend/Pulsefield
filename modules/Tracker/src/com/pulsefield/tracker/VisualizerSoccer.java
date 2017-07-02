@@ -1,4 +1,6 @@
 package com.pulsefield.tracker;
+import java.util.logging.Logger;
+
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -15,7 +17,8 @@ class Ball {
 	final float mass=0.430f;			// Mass of ball in kg (FIFA says 410-450g )
 	final float radius=(float)(0.69/2/Math.PI);			// Radius of ball in meters (FIFA say 68-70cm in circumference )
 	PShape ballShape;
-	
+    private final static Logger logger = Logger.getLogger(Ball.class.getName());
+
 	public Ball(PVector position, PVector velocity) {
 		this.position=position;
 		this.velocity=velocity;
@@ -26,7 +29,7 @@ class Ball {
 		if (ballShape==null)
 			ballShape=g.loadShape(Tracker.SVGDIRECTORY+"Soccerball.svg");
 
-		//PApplet.println("Ball at "+position.x+","+position.y);
+		//logger.fine("Ball at "+position.x+","+position.y);
 		g.shapeMode(PConstants.CENTER);
 		Visualizer.drawShape(g, ballShape,position.x, position.y,radius*2,radius*2);
 	}
@@ -40,26 +43,26 @@ class Ball {
 		float elapsed=1.0f/parent.frameRate;
 		position.add(PVector.mult(velocity,elapsed));
 		if (position.x+radius>Tracker.maxx && velocity.x>0) {
-			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
+			logger.fine("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
 			velocity.x*=-restitution;
 			position.x=2*(Tracker.maxx-radius)-position.x;
 			impactSound(0);
 		}
 		if (position.x-radius<Tracker.minx && velocity.x<0) {
-			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
+			logger.fine("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
 			velocity.x*=-restitution;
 			position.x=2*(Tracker.minx+radius)-position.x;
 			impactSound(0);
 		}
 		if (position.y+radius>Tracker.maxy && velocity.y>0 ) {
-			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
-			PApplet.println("Position.y="+position.y+", radius="+radius+", maxy="+Tracker.maxy);
+			logger.fine("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
+			logger.fine("Position.y="+position.y+", radius="+radius+", maxy="+Tracker.maxy);
 			velocity.y*=-restitution;
 			position.y=2*(Tracker.maxy-radius)-position.y;
 			impactSound(0);
 		}
 		if (position.y-radius<Tracker.miny && velocity.y<0) {
-			PApplet.println("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
+			logger.fine("Bounce off wall: position="+position+", bounds="+Tracker.minx+","+Tracker.miny+","+Tracker.maxx+","+Tracker.maxy);
 			velocity.y*=-restitution;
 			position.y=2*(Tracker.miny+radius)-position.y;
 			impactSound(0);
@@ -68,14 +71,14 @@ class Ball {
 		PVector toMiddle=PVector.sub(new PVector((Tracker.maxx+Tracker.minx)/2,(Tracker.miny+Tracker.maxy)/2),position);
 		if (toMiddle.mag() > 0)
 			velocity.add(PVector.mult(toMiddle, midaccel*elapsed/position.mag()));
-//		PApplet.println("New ball position="+position+", velocity="+velocity+", inCollision="+inCollision);
+//		logger.fine("New ball position="+position+", velocity="+velocity+", inCollision="+inCollision);
 	}
 	
 	public void impactSound(int k) {
 		TrackSet ts=Ableton.getInstance().trackSet;
 		int track=ts.firstTrack;
 		int nclips=Ableton.getInstance().getTrack(track).numClips();
-		PApplet.println("Track="+track+", nclips="+nclips);
+		logger.fine("Track="+track+", nclips="+nclips);
 		if (nclips!=-1)
 			Ableton.getInstance().playClip(track,k%nclips);
 	}
@@ -88,13 +91,13 @@ class Ball {
 			float sep=PVector.dist(leg.getOriginInMeters(),position);
 			float minSep=leg.getDiameterInMeters()/2+radius;
 			if (sep<minSep) { // && PVector.dot(velocity, leg.getVelocityInMeters())<=0) {
-				PApplet.println("Ball at "+position+" with velocity="+velocity+" collided with leg at "+leg.getOriginInMeters()+", velocity="+leg.getVelocityInMeters()+", minsep="+minSep);
+				logger.fine("Ball at "+position+" with velocity="+velocity+" collided with leg at "+leg.getOriginInMeters()+", velocity="+leg.getVelocityInMeters()+", minsep="+minSep);
 				// Perform a kick in the ball-not-moving frame of reference
 				// Calculate a kick velocity
 				PVector kickvelocity=PVector.mult(PVector.sub(leg.getVelocityInMeters(),velocity),leg.getMassInKg()/(leg.getMassInKg()+mass)*(1+restitution));
 				// And add the kickvelocity to its current velocity (ie switch back to work frame of reference)
 				velocity.add(kickvelocity);
-				PApplet.println("New ball velocity="+velocity);
+				logger.fine("New ball velocity="+velocity);
 				// And make sure the ball stays outside the leg
 				PVector shiftDir=new PVector(velocity.x,velocity.y);
 				shiftDir.setMag(minSep-sep);
@@ -111,7 +114,8 @@ class Goal {
 	PImage img;
 	PShape outline;
 	boolean scoreDelay=false;  // True immediately after a goal
-	
+    private final static Logger logger = Logger.getLogger(Goal.class.getName());
+
 	Goal() {
 		this.img=Tracker.theTracker.loadImage("soccer/goal.jpg");
 		// Vector pointing into goal
@@ -133,7 +137,7 @@ class Goal {
 		g.tint(255);
 		g.imageMode(PConstants.CENTER);
 		g.image(img,0f,0f,depth,width);
-		//PApplet.println("Drawing image at "+pos+"; width="+width+", depth="+depth);
+		//logger.fine("Drawing image at "+pos+"; width="+width+", depth="+depth);
 		g.popMatrix();
 		
 		if (scoreDelay)
@@ -171,7 +175,7 @@ class Goal {
 	// return true if this counts as a goal
 	boolean collisionDetect(Ball b) {
 		if (outline==null) {
-			//PApplet.println("no outline");
+			//logger.fine("no outline");
 			return false;
 		}
 			
@@ -187,19 +191,19 @@ class Goal {
 				// Check if its getting closer
 				if (dist2<dist) {
 					boolean frontSide=PVector.dot(dir, b.velocity)>0;
-					PApplet.println("ball at "+b.position+" hit goal line "+i+" between "+p1+" and "+p2);
-					PApplet.println("dist="+dist+", dist2="+dist+", frontside="+frontSide);
+					logger.fine("ball at "+b.position+" hit goal line "+i+" between "+p1+" and "+p2);
+					logger.fine("dist="+dist+", dist2="+dist+", frontside="+frontSide);
 					// Resolve velocity into parallel and perp components
 					PVector parallel=PVector.sub(p2,p1);
 					parallel.normalize();
 					parallel.mult(b.velocity.dot(parallel));
 					PVector perp=PVector.sub(b.velocity, parallel);
-					PApplet.println("vel="+b.velocity+"="+parallel+"(para) + "+perp);
+					logger.fine("vel="+b.velocity+"="+parallel+"(para) + "+perp);
 					b.velocity = PVector.sub(parallel,perp);  // Bounce
 					b.impactSound(2);
 					if (i==1 && !scoreDelay && frontSide) {
 						// Through the goal line
-						PApplet.println("Goal! dot(aim,vel) = ",PVector.dot(dir, b.velocity));
+						logger.info("Goal! dot(aim,vel) = "+PVector.dot(dir, b.velocity));
 						scoreDelay=true;
 						b.impactSound(3+((int)(Math.random()*5f)));
 						return true;

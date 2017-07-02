@@ -2,6 +2,7 @@ package com.pulsefield.tracker;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -31,7 +32,8 @@ class Nucleotide {
 	char label;
 	PVector location;
 	PVector velocity;
-	
+    private final static Logger logger = Logger.getLogger(Nucleotide.class.getName());
+
 	Nucleotide(PVector pos, PVector vel, char label, Nucleotide prior) {
 		location=new PVector(pos.x, pos.y);
 		velocity=new PVector(vel.x, vel.y);
@@ -40,7 +42,7 @@ class Nucleotide {
 		this.next=null;
 		if (prior!=null)
 			prior.next=this;
-		PApplet.println("Create nucleotide "+label+" at "+pos+" with velocity "+vel);
+		logger.fine("Create nucleotide "+label+" at "+pos+" with velocity "+vel);
 	}
 
 	int strandLength() {
@@ -63,7 +65,7 @@ class Nucleotide {
 		PVector acc=PVector.mult(force,  strength/Tracker.theTracker.frameRate);
 		velocity.add(acc);
 //		if (acc.mag()>0.01f) 
-//			PApplet.println("Added "+acc+" to velocity of nucleotide at "+location);
+//			logger.fine("Added "+acc+" to velocity of nucleotide at "+location);
 	}
 	
 	// Get the last nucleotide of this chain (the 3' one)
@@ -92,7 +94,7 @@ class Nucleotide {
 			cn=cn.next;
 		}
 		if (len>3)
-			PApplet.println("Helix length ="+len+" at "+location);
+			logger.fine("Helix length ="+len+" at "+location);
 		return len;
 	}
 	
@@ -123,14 +125,14 @@ class Nucleotide {
 			PVector avgVel=PVector.add(v1, v2).div(2f);
 			velocity.sub(v1); velocity.add(PVector.div(avgVel,1f));
 			n.velocity.sub(v2); velocity.add(PVector.div(avgVel,1f));
-			//PApplet.println("Overlap of "+location+" with "+n.location+": v1="+v1+", v2="+v2+", avg="+avgVel);
+			//logger.fine("Overlap of "+location+" with "+n.location+": v1="+v1+", v2="+v2+", avg="+avgVel);
 			if (next==null && n.prior==null) {
 				// Check if they are already on the same strand (to avoid circularization)
 				if (n.getEnd() == this)
-					PApplet.println("Contact between strand ends at "+location+" and "+n.location);	
+					logger.fine("Contact between strand ends at "+location+" and "+n.location);	
 				else {
 					// Ligate them
-					PApplet.println("Ligating strands at "+location+" and "+n.location);
+					logger.fine("Ligating strands at "+location+" and "+n.location);
 					next=n;
 					n.prior=this;
 				}
@@ -150,16 +152,16 @@ class Nucleotide {
 				// Correct pairing
 				if ((bp==null || dist<PVector.sub(bp.location, location).mag()) && (n.bp==null || dist<PVector.sub(n.bp.location, n.location).mag())) {
 					if (bp!=null) {
-						//PApplet.println("Replaced base-pair between "+label+"@"+location+" and "+bp.label+"@"+bp.location+" with dist "+PVector.sub(bp.location, location).mag());
+						//logger.fine("Replaced base-pair between "+label+"@"+location+" and "+bp.label+"@"+bp.location+" with dist "+PVector.sub(bp.location, location).mag());
 						bp.bp=null;
 					}
 					if (n.bp!=null) {
-						//PApplet.println("Replaced base-pair between "+n.label+"@"+location+" and "+n.bp.label+"@"+bp.location+" with dist "+PVector.sub(n.bp.location, n.location).mag());
+						//logger.fine("Replaced base-pair between "+n.label+"@"+location+" and "+n.bp.label+"@"+bp.location+" with dist "+PVector.sub(n.bp.location, n.location).mag());
 						n.bp.bp=null;
 					}
 					bp=n;
 					n.bp=this;
-					//PApplet.println("Formed new base-pair between "+label+"@"+location+" and "+n.label+"@"+n.location+" with dist "+dist);
+					//logger.fine("Formed new base-pair between "+label+"@"+location+" and "+n.label+"@"+n.location+" with dist "+dist);
 				}
 			}
 		}
@@ -169,13 +171,13 @@ class Nucleotide {
 		if (bp!=null) {
 			float bpdist=PVector.sub(bp.location, location).mag();
 			if (bpdist>HBONDMAX*helixLength()) {
-				//PApplet.println("Broke base-pair between "+label+"@"+location+" and "+bp.label+"@"+bp.location+" with dist "+PVector.sub(bp.location, location).mag());
+				//logger.fine("Broke base-pair between "+label+"@"+location+" and "+bp.label+"@"+bp.location+" with dist "+PVector.sub(bp.location, location).mag());
 				bp.bp=null;
 				bp=null;
 			}
 			// Check if hydrogen bonds are mediating a splinted ligation
 			if (bp!=null && prior==null && bp.next!=null && bp.next.bp!=null && bp.next.bp.next==null) {
-				PApplet.println("Splinted Ligation");
+				logger.fine("Splinted Ligation");
 				prior=bp.next.bp;
 				prior.next=this;
 			}
@@ -186,7 +188,7 @@ class Nucleotide {
 
 		// Add random noise
 		velocity.add(PVector.mult(PVector.random2D(),NOISE/Tracker.theTracker.frameRate));
-		//PApplet.println(label+": v="+velocity);
+		//logger.fine(label+": v="+velocity);
 		location.add(PVector.mult(velocity,1/Tracker.theTracker.frameRate));
 		// Out of bounds, bounce back
 		if (location.x+RADIUS > Tracker.maxx && velocity.x>0)
@@ -202,7 +204,7 @@ class Nucleotide {
 		if (next!=null) {
 			float sep=PVector.sub(location, next.location).mag();
 			if (sep>SPINEBREAKDIST) {
-				PApplet.println("Breaking spine between "+location+" and "+next.location);
+				logger.fine("Breaking spine between "+location+" and "+next.location);
 				next.prior=null;
 				new Strand(next);
 				next=null;
@@ -212,7 +214,7 @@ class Nucleotide {
 	}
 	
 	public void draw(PGraphics g) {
-//		PApplet.println("Draw nuc "+label+" at "+location);
+//		logger.fine("Draw nuc "+label+" at "+location);
 		g.pushStyle();
 		int color=0;
 		switch (label) {
@@ -260,10 +262,11 @@ class Strand {
 	boolean isAlive;
 	private static HashSet<Strand> allStrands = new HashSet<Strand>();
 	Nucleotide nucs;   // Nucleotides in 5'->3' order
-	
+    private final static Logger logger = Logger.getLogger(Strand.class.getName());
+
 	Strand(PVector pos, PVector vel, String seq) {
 		allStrands.add(this);
-		//PApplet.println("Created Strand at "+location+" with velocity "+vel+" and mass "+mass);
+		//logger.fine("Created Strand at "+location+" with velocity "+vel+" and mass "+mass);
 		isAlive=true;
 		PVector spine=new PVector(Nucleotide.SPINESEP*(seq.length()-1),0);
 		spine.rotate((float)(Math.random()*Math.PI*2));  // Random orientation
@@ -292,7 +295,7 @@ class Strand {
 	}
 	
 	public void destroy() {
-		//PApplet.println("Destroy Strand at "+location);
+		//logger.fine("Destroy Strand at "+location);
 		allStrands.remove(this);
 		isAlive=false;
 	}
@@ -305,11 +308,11 @@ class Strand {
 		// Check if this strand has been ligated onto the end of another one
 		if (nucs.prior != null) {
 			if (this instanceof PlayerStrand) {
-				PApplet.println("Found a player strand pointing to a ligated chain, breaking it");
+				logger.fine("Found a player strand pointing to a ligated chain, breaking it");
 				nucs.prior.next=null;
 				nucs.prior=null;
 			} else {
-				PApplet.println("Found a strand pointing to a ligated chain, destroying it");
+				logger.fine("Found a strand pointing to a ligated chain, destroying it");
 				e.play("LIGATE", 127, 1000);
 				destroy();
 				return;
@@ -443,13 +446,13 @@ public class VisualizerDNA extends VisualizerDot {
 				strands.put(id,new PlayerStrand(allpos.get(id),allpos.get(id).getOriginInMeters(),allpos.get(id).getVelocityInMeters()));
 			PVector currentpos=allpos.get(id).getOriginInMeters();
 			strands.get(id).updatePosition(currentpos);
-			//PApplet.println("Strand "+id+" moved to "+currentpos.toString());
+			//logger.fine("Strand "+id+" moved to "+currentpos.toString());
 		}
 		// Remove Strands for which we no longer have a position (exitted)
 		for (Iterator<Integer> iter = strands.keySet().iterator();iter.hasNext();) {
 			int id=iter.next().intValue();
 			if (!allpos.pmap.containsKey(id)) {
-				PApplet.println("Removing ID "+id);
+				logger.fine("Removing ID "+id);
 				strands.get(id).destroy();
 				iter.remove();
 			}
@@ -470,7 +473,7 @@ public class VisualizerDNA extends VisualizerDot {
 	public void stop() {
 		Strand.destroyAll();
 		super.stop();
-		PApplet.println("Stopping DNA at "+System.currentTimeMillis());
+		logger.info("Stopping DNA at "+System.currentTimeMillis());
 	}
 
 	@Override

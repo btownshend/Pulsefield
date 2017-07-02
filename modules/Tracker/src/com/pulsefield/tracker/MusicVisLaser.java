@@ -61,7 +61,7 @@ public class MusicVisLaser {
 			}
 			maxmag=Math.max(maxmag,mag);
 		}
-//		PApplet.println("Max line="+maxmag);
+//		logger.fine("Max line="+maxmag);
 	}
 	private void drawPolygon(PApplet parent, int id) {
 		Laser laser=Laser.getInstance();

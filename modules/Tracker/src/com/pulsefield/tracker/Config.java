@@ -1,5 +1,6 @@
 package com.pulsefield.tracker;
 import java.util.Date;
+import java.util.logging.Logger;
 
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
@@ -11,6 +12,8 @@ public class Config {
 	private static String configFileName;
 	private static JSONObject data;
 	private static boolean modified;
+    private final static Logger logger = Logger.getLogger(Config.class.getName());
+
 
 	public Config(String fname) {
 		configFileName=fname;
@@ -21,13 +24,13 @@ public class Config {
 		try {
 			data=parent.loadJSONObject(configFileName);
 			if (data==null) {
-				PApplet.println("Failed load of config from "+configFileName);
+				logger.severe("Failed load of config from "+configFileName);
 				data=new JSONObject();
 			} else {
-				PApplet.println("Loaded config from "+configFileName);
+				logger.config("Loaded config from "+configFileName);
 			}
 		} catch (Exception e) {
-			PApplet.println("Exception during load of config from "+configFileName+": "+e.getMessage());
+			logger.severe("Exception during load of config from "+configFileName+": "+e.getMessage());
 			data=new JSONObject();
 		}
 	}
@@ -41,12 +44,12 @@ public class Config {
 		data.setString("dateSaved", (new Date()).toString());
 		parent.saveJSONObject(data, configFileName);
 		modified=false;
-		PApplet.println("Saved config to "+configFileName);
+		logger.config("Saved config to "+configFileName);
 	}
 
 	private static JSONObject get(String group) {
 		if (! data.hasKey(group)){
-			PApplet.println("JSON file doesn't contain "+group);
+			logger.info("JSON file doesn't contain "+group);
 			data.setJSONObject(group, new JSONObject());
 		}
 		return data.getJSONObject(group);
@@ -55,7 +58,7 @@ public class Config {
 	public static float getFloat(String group, String param, float defVal) {
 		JSONObject grp=get(group);
 		if (! grp.hasKey(param)){
-			PApplet.println("JSON file doesn't contain "+group+"/"+param);
+			logger.info("JSON file doesn't contain "+group+"/"+param);
 			return defVal;
 		}
 		return data.getJSONObject(group).getFloat(param);
@@ -70,7 +73,7 @@ public class Config {
 	public static int getInt(String group, String param, int defVal) {
 		JSONObject grp=get(group);
 		if (! grp.hasKey(param)){
-			PApplet.println("JSON file doesn't contain "+group+"/"+param);
+			logger.info("JSON file doesn't contain "+group+"/"+param);
 			return defVal;
 		}
 		return data.getJSONObject(group).getInt(param);
@@ -107,12 +110,12 @@ public class Config {
 	public static PMatrix3D getMat(String group, String param, PMatrix3D defMat) {
 		JSONObject grp=get(group);
 		if (! grp.hasKey(param)) {
-			PApplet.println("JSON file doesn't contain "+group+"/"+param);
+			logger.info("JSON file doesn't contain "+group+"/"+param);
 			return defMat;
 		}
 		JSONArray m=grp.getJSONArray(param);
 		if (m.size() != 16) {
-			PApplet.println("Bad size for "+group+"/"+param+": "+m.size());
+			logger.warning("Bad size for "+group+"/"+param+": "+m.size());
 			return defMat;
 		}
 		return new PMatrix3D(m.getFloat(0),m.getFloat(1),m.getFloat(2),m.getFloat(3),
@@ -124,12 +127,12 @@ public class Config {
 	
 	public static void setVec(String group, String param, PVector vec) {
 		if (vec==null) {
-			PApplet.println("setVec("+group+","+param+",null");
+			logger.fine("setVec("+group+","+param+",null");
 			return;
 		}
 		JSONObject grp=get(group);
 		if (grp==null) {
-			PApplet.println("setVec: group "+group+" not found");
+			logger.info("setVec: group "+group+" not found");
 			return;
 		}
 		JSONArray array=new JSONArray();
@@ -144,12 +147,12 @@ public class Config {
 	public static PVector getVec(String group, String param, PVector defVec) {
 		JSONObject grp=get(group);
 		if (! grp.hasKey(param)){
-			PApplet.println("JSON file doesn't contain "+group+"/"+param);
+			logger.info("JSON file doesn't contain "+group+"/"+param);
 			return defVec;
 		}
 		JSONArray m=grp.getJSONArray(param);
 		if (m.size() != 3) {
-			PApplet.println("Bad size for "+group+"/"+param+": "+m.size());
+			logger.warning("Bad size for "+group+"/"+param+": "+m.size());
 			return defVec;
 		}
 		return new PVector(m.getFloat(0),m.getFloat(1),m.getFloat(2));

@@ -1,5 +1,7 @@
 package com.pulsefield.tracker;
 import java.util.HashSet;
+import java.util.logging.Logger;
+
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -21,7 +23,8 @@ class Molecule {
 	float tgtSpeed;   // Target speed (temperature)
 	float angle;
 	float angularVelocity;
-	
+    private final static Logger logger = Logger.getLogger(Molecule.class.getName());
+
 	private static Images imgs=null;
 	
 	Molecule(PVector pos, PVector vel, float radius) {
@@ -36,12 +39,12 @@ class Molecule {
 		mass=1f;
 		angle=0;
 		angularVelocity=(float) (0.2f*(Math.random()-0.5f));
-		//PApplet.println("Created marble at "+location+" with velocity "+vel+" and mass "+mass);
+		//logger.fine("Created marble at "+location+" with velocity "+vel+" and mass "+mass);
 		isAlive=true;
 	}
 	
 	public void destroy() {
-		//PApplet.println("Destroy marble at "+location);
+		//logger.fine("Destroy marble at "+location);
 		isAlive=false;
 	}
 	
@@ -61,7 +64,7 @@ class Molecule {
 		velocity.normalize().mult(newspeed);
 		//velocity.add(PVector.mult(velocity, -DAMPING/Tracker.theTracker.frameRate));
 		if (velocity.mag() > MAXSPEED) {
-			PApplet.println("Clipping speed from "+velocity.mag());
+			logger.fine("Clipping speed from "+velocity.mag());
 			velocity.normalize().mult(MAXSPEED);
 		}
 		location.add(PVector.mult(velocity,1/Tracker.theTracker.frameRate));
@@ -101,7 +104,7 @@ class Molecule {
 		float dist=sep.mag();
 		float force=getForce(dist);  // positive force is attractive
 		PVector accel = PVector.mult(sep, mass*force/dist);
-		//PApplet.println("sep="+sep+", dist="+dist+", force="+force+", vel="+b1.velocity+", accel="+accel);
+		//logger.fine("sep="+sep+", dist="+dist+", force="+force+", vel="+b1.velocity+", accel="+accel);
 		velocity.add(PVector.mult(accel,1/Tracker.theTracker.frameRate));
 	}
 }
@@ -246,7 +249,7 @@ public class VisualizerFreeze extends Visualizer {
 	public void stop() {
 		mFactory.destroyAll();
 		super.stop();
-		PApplet.println("Stopping Freeze at "+System.currentTimeMillis());
+		logger.info("Stopping Freeze at "+System.currentTimeMillis());
 	}
 
 	@Override

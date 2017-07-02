@@ -1,4 +1,6 @@
 package com.pulsefield.tracker;
+import java.util.logging.Logger;
+
 import netP5.NetAddress;
 import oscP5.OscMessage;
 import oscP5.OscP5;
@@ -11,9 +13,10 @@ public class Laser {
 	NetAddress addr;
 	static Laser theLaser;
 	int inShapeDepth;  // Nesting depth in shapes
-	
+    private final static Logger logger = Logger.getLogger(Laser.class.getName());
+
 	Laser(OscP5 oscP5, NetAddress addr) {
-		PApplet.println("Laser destination set to "+addr);
+		logger.config("Laser destination set to "+addr);
 		this.oscP5=oscP5;
 		this.addr=addr;
 		theLaser=this;
@@ -21,7 +24,7 @@ public class Laser {
 	}
 
 	public void sendMessage(OscMessage msg) {
-	//	PApplet.println("Laser send: "+msg.toString());
+	//	logger.fine("Laser send: "+msg.toString());
 		oscP5.send(msg,addr);
 	}
 
@@ -53,7 +56,7 @@ public class Laser {
 			OscMessage msg = new OscMessage("/laser/shape/begin").add(id);
 			sendMessage(msg);
 		} else {
-			PApplet.println("Nested shape to depth of "+inShapeDepth);
+			logger.fine("Nested shape to depth of "+inShapeDepth);
 		}
 	}
 	public void shapeEnd(String id) {
@@ -62,7 +65,7 @@ public class Laser {
 			OscMessage msg = new OscMessage("/laser/shape/end").add(id);
 			sendMessage(msg);
 		} else {
-			PApplet.println("After shapeEnd, still have "+inShapeDepth+" shapes depths");
+			logger.warning("After shapeEnd, still have "+inShapeDepth+" shapes depths");
 		}
 	}
 	public void setFlag(String flag, float value) {

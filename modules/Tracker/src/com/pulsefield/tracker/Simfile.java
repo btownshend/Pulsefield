@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.logging.Logger;
 
 import processing.core.PApplet;
 import processing.core.PGraphics;
@@ -32,6 +33,7 @@ class Notes  {
 	int difficultyMeter;
 	float radarValues[];
 	ArrayList<NoteData> notes;
+    private final static Logger logger = Logger.getLogger(Notes.class.getName());
 
 	Notes(String type, String desc, String difficultyClass, String difficultyMeter, String radarValues, String noteData) {
 		this.type=type;
@@ -40,7 +42,7 @@ class Notes  {
 		this.difficultyMeter=Integer.parseInt(difficultyMeter);
 		String rv[]=radarValues.split(",");
 		if (rv.length != 5)
-			System.err.println("Bad radarValues (expected 5, found "+rv.length+"): "+radarValues);
+			logger.warning("Bad radarValues (expected 5, found "+rv.length+"): "+radarValues);
 		this.radarValues = new float[rv.length];
 		for (int i=0;i<rv.length;i++)
 			this.radarValues[i]=Float.parseFloat(rv[i]);
@@ -60,7 +62,7 @@ class Notes  {
 				} else {
 					String n2=oneMove(n);
 					notes.add(new NoteData(measure,noteNum,nsplit.length,n2));
-					System.out.println("Added <"+n+"/"+n2+"> -> "+notes.get(notes.size()-1));
+					logger.fine("Added <"+n+"/"+n2+"> -> "+notes.get(notes.size()-1));
 					noteNum++;
 				}
 			}
@@ -150,7 +152,8 @@ public class Simfile {
 	HashMap<String,String> tags;
 	ArrayList<Notes> notes;
 	ArrayList<BPM> bpms;
-	
+    private final static Logger logger = Logger.getLogger(Simfile.class.getName());
+
 	Simfile() {
 		tags=new HashMap<String,String>();
 		notes=new ArrayList<Notes>();
@@ -167,7 +170,6 @@ public class Simfile {
 			//first use a Scanner to get each line
 			while ( scanner.hasNext() ){
 				String token = scanner.next();
-				//System.out.println("Got token: <"+token+">");
 				token=token.replaceAll("//.*[\r\n]", "");
 				String parts[] = token.split(":");
 				String label=parts[0].trim();
@@ -177,15 +179,15 @@ public class Simfile {
 					String value="";
 					if (parts.length == 2)
 						value=parts[1].trim();
-					System.out.println("<"+label+"> = <"+value+">");
+					logger.fine("<"+label+"> = <"+value+">");
 					if (label.startsWith("#"))
 						tags.put(label.substring(1),value);
 					else
-						System.err.println("Missing # on tag name: "+token);
+						logger.warning("Missing # on tag name: "+token);
 				} else if (parts.length==7 && label.equals("#NOTES")) {
 					notes.add(new Notes(parts[1].trim(),parts[2].trim(),parts[3].trim(),parts[4].trim(),parts[5].trim(),parts[6].trim()));
 				} else {
-					System.err.println("Token has unexpected number of elements ("+parts.length+") : "+token);
+					logger.warning("Token has unexpected number of elements ("+parts.length+") : "+token);
 				}
 			}
 		}
@@ -203,13 +205,13 @@ public class Simfile {
 		bpms.clear();
 		String bpmString = getTag("BPMS");
 		if (bpmString.isEmpty()) {
-			System.err.println("Missing BPM tag, assuming 120bpm");
+			logger.warning("Missing BPM tag, assuming 120bpm");
 			bpms.add(new BPM(0f,120f));
 		} else {
 			for (String s: bpmString.split(",")) {
 				String comps[]=s.split("=");
 				if (comps.length!=2) {
-					System.err.println("Bad BPM string: "+s);
+					logger.warning("Bad BPM string: "+s);
 				} else {
 					bpms.add(new BPM(Float.parseFloat(comps[0]),Float.parseFloat(comps[1])));
 				}
@@ -218,7 +220,7 @@ public class Simfile {
 		String offsetTag = getTag("OFFSET");
 		float offset=0f;
 		if (offsetTag==null)
-			System.err.println("No offset tag, assuming offset of zero");
+			logger.warning("No offset tag, assuming offset of zero");
 		else
 			offset=Float.parseFloat(offsetTag);
 		
@@ -262,7 +264,7 @@ public class Simfile {
 			}
 
 		}
-		PApplet.println("Best match to difficulty "+difficulty+" is pattern "+best+" with difficulty "+notes.get(best).difficultyMeter);
+		logger.fine("Best match to difficulty "+difficulty+" is pattern "+best+" with difficulty "+notes.get(best).difficultyMeter);
 		return best;
 	}
 	
@@ -286,10 +288,10 @@ public class Simfile {
 		try {
 			Simfile sf = new Simfile();
 			sf.loadSM(System.getenv("PFROOT")+"/../StepMania/Songs/StepMix 1.0/Impossible Fidelity/","impossible.sm");
-			System.out.println(sf.toString());
+			logger.config(sf.toString());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-			System.err.println("File not found");
+			logger.warning("File not found");
 		}
 	}
 

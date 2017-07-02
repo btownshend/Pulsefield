@@ -51,7 +51,7 @@ public class RadarRenderer extends Renderer {
       float w2 = sz.x * aura, h2 = sz.y * aura;
       
       float signalLevel=Math.abs(fourier.left[20]);
-      //PApplet.println("signal="+signalLevel);
+      //logger.fine("signal="+signalLevel);
       // smoke effect
       if(tracker.frameCount % delay == 0 ) {
     	  PVector smokeShift=new PVector(tracker.random(-signalLevel,signalLevel),tracker.random(-signalLevel,signalLevel));

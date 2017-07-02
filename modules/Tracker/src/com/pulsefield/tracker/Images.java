@@ -3,6 +3,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -10,19 +11,20 @@ import processing.core.PImage;
 public class Images {
 	List <PImage> imgs;
 	Random rgen= new Random();
-	
+    private final static Logger logger = Logger.getLogger(Images.class.getName());
+
 	public Images(String folder) {
 		// Retrieve a random image from the given folder within data
 		File d=new File("data/"+folder);
 		if (!d.isDirectory()) 
 			d=new File(folder);
 		if (!d.isDirectory()) {
-			PApplet.println(d.getAbsolutePath()+" does not exist or is not a directory.");
+			logger.warning(d.getAbsolutePath()+" does not exist or is not a directory.");
 			assert(false);
 		}
 		File allfiles[]=d.listFiles();
 		if (allfiles==null || allfiles.length<1) {
-			PApplet.println("No files found in "+d.getAbsolutePath());
+			logger.warning("No files found in "+d.getAbsolutePath());
 			assert(false);
 		}
 		imgs=new ArrayList<PImage>();
@@ -30,10 +32,10 @@ public class Images {
 			if (allfiles[i].getName().equals(".DS_Store"))
 				// Ignore these
 				continue;
-			PApplet.println("Loading image from "+allfiles[i].getAbsolutePath()+" ("+allfiles[i].getName()+")");
+			logger.info("Loading image from "+allfiles[i].getAbsolutePath()+" ("+allfiles[i].getName()+")");
 			PImage img=Tracker.theTracker.loadImage(allfiles[i].getAbsolutePath());
 			if (img==null) {
-				PApplet.println("Failed load of "+allfiles[i].getAbsolutePath());
+				logger.warning("Failed load of "+allfiles[i].getAbsolutePath());
 			} else {
 				imgs.add(img);
 			}
@@ -43,7 +45,7 @@ public class Images {
 	
 	public PImage getRandom() {
 		int choose=rgen.nextInt(imgs.size());
-		//PApplet.println("getRandom -> "+choose+"/"+imgs.size());
+		//logger.fine("getRandom -> "+choose+"/"+imgs.size());
 		return imgs.get(choose);
 	}
 	

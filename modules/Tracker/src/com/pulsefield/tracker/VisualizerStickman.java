@@ -82,7 +82,7 @@ class Stickman {
 		//TOP=10*(float)Math.sin(Tracker.theTracker.frameCount/20.0*2*Math.PI); 
      
 		float signalLevel=Math.abs(Tracker.theTracker.fourier.left[20]);
-		//PApplet.println("signal="+signalLevel);
+		//logger.fine("signal="+signalLevel);
 		TOP= signalLevel*200;
 		
 		// Accomodate any hand holds
@@ -143,7 +143,7 @@ class Stickman {
 			RELBOW=-(float)elbow;
 			RHAND=-(float)hand;
 		}
-		//PApplet.println("delta="+delta,", r="+r+", hand="+hand+", diff="+diff+", theta="+theta+", elbow="+elbow);
+		//logger.fine("delta="+delta,", r="+r+", hand="+hand+", diff="+diff+", theta="+theta+", elbow="+elbow);
 		return hand==0;
 	}
 	
@@ -314,13 +314,13 @@ public class VisualizerStickman extends Visualizer {
 			if (!sticks.containsKey(id))
 				sticks.put(id,new Stickman(2.0f,id));
 			sticks.get(id).updatePosition(allpos.get(id));
-			//PApplet.println("Marble "+id+" moved to "+currentpos.toString());
+			//logger.fine("Marble "+id+" moved to "+currentpos.toString());
 		}
 		// Remove Marbles for which we no longer have a position (exitted)
 		for (Iterator<Integer> iter = sticks.keySet().iterator();iter.hasNext();) {
 			int id=iter.next().intValue();
 			if (!allpos.pmap.containsKey(id)) {
-				PApplet.println("Removing ID "+id);
+				logger.fine("Removing ID "+id);
 				sticks.get(id).destroy();
 				iter.remove();
 			}

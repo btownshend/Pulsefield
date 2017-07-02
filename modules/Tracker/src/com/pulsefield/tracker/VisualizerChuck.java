@@ -1,6 +1,7 @@
 package com.pulsefield.tracker;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import oscP5.OscMessage;
 import processing.core.PApplet;
@@ -127,6 +128,7 @@ class Generator extends Fiducial {
 	};
 
 	static final int NUMGENTYPES=genTypes.length;
+    private final static Logger logger = Logger.getLogger(Generator.class.getName());
 
 	GeneratorType genType;
 	ArrayList<Controller> children;
@@ -146,7 +148,7 @@ class Generator extends Fiducial {
 		OscMessage msg = new OscMessage("/chuck/del");
 		msg.add(id);
 		Tracker.sendOSC("CK",msg);
-		PApplet.println("Stopped generator ID "+id);
+		logger.fine("Stopped generator ID "+id);
 		while (children.size()>0)
 			children.get(0).disconnect();
 	}
@@ -180,6 +182,8 @@ class Controller extends Fiducial {
 	Generator parent;
 	CCPair cc;   // Controller numbers to use for (dir,dist), -1 to ignore
 	float cc1val, cc2val;
+    private final static Logger logger = Logger.getLogger(Controller.class.getName());
+
 
 	Controller(Person ps) {
 		super(ps);
@@ -249,7 +253,7 @@ class Controller extends Fiducial {
 
 	void connect(Generator parent) {
 		if (parent.children.size() >= parent.genType.cclist.length) {
-			PApplet.println("Not connecting additional controller to "+parent.id+", which already has "+parent.children.size()+" controllers");
+			logger.fine("Not connecting additional controller to "+parent.id+", which already has "+parent.children.size()+" controllers");
 			return;
 		}
 		this.parent=parent;
@@ -257,27 +261,27 @@ class Controller extends Fiducial {
 		int newcc;
 		while (true) {
 			newcc = (new java.util.Random()).nextInt(parent.genType.cclist.length);
-			PApplet.println("Trying newcc="+newcc+": "+parent.genType.cclist[newcc].cc1+","+parent.genType.cclist[newcc].cc2);
+			logger.fine("Trying newcc="+newcc+": "+parent.genType.cclist[newcc].cc1+","+parent.genType.cclist[newcc].cc2);
 			boolean inuse=false;
 			for (int i=0;i<parent.children.size();i++) {
-				PApplet.println("parent.children["+i+"] = "+parent.children.get(i).cc.cc1+","+parent.children.get(i).cc.cc2);
+				logger.fine("parent.children["+i+"] = "+parent.children.get(i).cc.cc1+","+parent.children.get(i).cc.cc2);
 				if (parent.children.get(i).cc == parent.genType.cclist[newcc]) {
-					PApplet.println("inuse");
+					logger.fine("inuse");
 					inuse=true;
 					break;
 				}
 			}
-			PApplet.println("newcc="+newcc+" inuse:"+inuse);
+			logger.fine("newcc="+newcc+" inuse:"+inuse);
 			if (!inuse)
 				break;
 		}
 		this.cc=parent.genType.cclist[newcc];
 		parent.children.add(this);
-		PApplet.println("Connect controller "+id+" to generator "+parent.id+" on controllers "+this.cc.cc1+","+this.cc.cc2);
+		logger.fine("Connect controller "+id+" to generator "+parent.id+" on controllers "+this.cc.cc1+","+this.cc.cc2);
 	}
 
 	void disconnect() {
-		PApplet.println("Disconnect controller "+id+" from generator "+parent.id);
+		logger.fine("Disconnect controller "+id+" from generator "+parent.id);
 		// Remove from parent list
 		parent.children.remove(this);
 		parent=null;
@@ -289,6 +293,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 	static final float DISTBREAK=0.5f;   // Distance to break connections (in screen normalized coordinates)
 	static final float DISTCREATE=0.2f;  // Distance to create connections 
 	private static final long serialVersionUID = -1131006311643745996L;
+    private final static Logger logger = Logger.getLogger(Fiducials.class.getName());
 
 	Fiducials() {
 		super();
@@ -296,7 +301,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 
 	void removeAll() {
 		for (Fiducial f: values()) {
-			PApplet.println("removeall: removing id "+f.id);
+			logger.fine("removeall: removing id "+f.id);
 			f.stop();
 		}
 		super.clear();
@@ -350,7 +355,7 @@ class Fiducials extends HashMap<Integer,Fiducial> {
 					for (Fiducial f2: values()) {
 						if (f2 instanceof Generator) {
 							float dist=PVector.dist(c.getNormalizedPosition(), f2.getNormalizedPosition());
-							//PApplet.println("Distance from "+f.id+" to "+f2.id+" = "+dist);
+							//logger.fine("Distance from "+f.id+" to "+f2.id+" = "+dist);
 							if (dist<mindist) {
 								mindist=dist;
 								newparent=(Generator)f2;
@@ -414,7 +419,7 @@ public class VisualizerChuck extends Visualizer {
 			done=true;
 			for (int id: fiducials.keySet()) {
 				if (!allpos.pmap.containsKey(id)) {
-					PApplet.println("Removing ID "+id);
+					logger.fine("Removing ID "+id);
 					fiducials.remove(id);
 					done=false;
 					break;  // Avoid concurrent modification problem

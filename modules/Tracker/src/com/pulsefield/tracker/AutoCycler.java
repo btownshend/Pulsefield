@@ -1,6 +1,7 @@
 package com.pulsefield.tracker;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 class ModeMap {
 	String mode;
@@ -33,6 +34,7 @@ class Setup {
 public class AutoCycler {
 	ArrayList<Setup> day,night;
 	HashMap<String,String> sound,led,video;
+    private final static Logger logger = Logger.getLogger(AutoCycler.class.getName());
 
 	float daytotal, nighttotal;
 	int curpick;
@@ -118,7 +120,7 @@ public class AutoCycler {
 			curpick=(curpick+1)%setup.size();
 			curSetup=setup.get(curpick);
 		}
-		System.out.println("Autocycled "+(daytime?"day":"night")+" to "+curSetup.toString());
+		logger.info("Autocycled "+(daytime?"day":"night")+" to "+curSetup.toString());
 		Tracker.sendOSC("MPO",video.get(curSetup.videomode),1);
 		Tracker.sendOSC("MPO",sound.get(curSetup.soundappmode),1);
 		Tracker.sendOSC("MPO",led.get(curSetup.ledmode),1);

@@ -33,11 +33,11 @@ class Marble {
 		assert(img!=null);
 		this.img=img;
 		allMarbles.add(this);
-		//PApplet.println("Created marble at "+location+" with velocity "+vel+" and mass "+mass);
+		//logger.fine("Created marble at "+location+" with velocity "+vel+" and mass "+mass);
 		isAlive=true;
 	}
 	public void destroy() {
-		//PApplet.println("Destroy marble at "+location);
+		//logger.fine("Destroy marble at "+location);
 		allMarbles.remove(this);
 		isAlive=false;
 	}
@@ -106,7 +106,7 @@ class Marble {
 				float minsep=b1.getRadius()+b2.getRadius();
 				if (sep.mag() <= minsep && b1.mass<b2.mass && b1.isAlive) {
 					// Contact
-					//PApplet.println("Contact at "+b1.location+" - "+b2.location);
+					//logger.fine("Contact at "+b1.location+" - "+b2.location);
 					if (b1 instanceof PlayerMarble && b2 instanceof PlayerMarble && b2.mass>MAXMASS*0.95f & b1.mass<PlayerMarble.MINMASS*1.1) {
 						// Small - big interaction -- reverse it!
 						b1.mass=(b1.mass+b2.mass)/2;
@@ -118,7 +118,7 @@ class Marble {
 							b1.mass-=xfr;
 							b2.mass+=xfr;
 							b2.velocity=PVector.add(PVector.mult(b2.velocity,(b2.mass-xfr)/b2.mass), PVector.mult(b1.velocity, xfr/b2.mass));
-							//PApplet.println("Xfr "+xfr+", new masses: "+b1.mass+", "+b2.mass);
+							//logger.fine("Xfr "+xfr+", new masses: "+b1.mass+", "+b2.mass);
 							if (b1.mass==0)
 								b1.destroy();
 							else if (b1 instanceof PlayerMarble && b2 instanceof PlayerMarble) {
@@ -135,7 +135,7 @@ class Marble {
 						sep.normalize();
 						PVector m1=PVector.mult(sep,-movedist*b2.mass/(b1.mass+b2.mass));
 						PVector m2=PVector.mult(sep,movedist*b1.mass/(b1.mass+b2.mass));
-						//PApplet.println("Separate: sep="+sep+", minsep="+minsep+", movedist="+movedist,", m1="+m1+", m2="+m2);
+						//logger.fine("Separate: sep="+sep+", minsep="+minsep+", movedist="+movedist,", m1="+m1+", m2="+m2);
 						b2.location.add(m2);
 						b1.location.add(m1);
 					}
@@ -229,13 +229,13 @@ public class VisualizerOsmos extends Visualizer {
 				marbles.put(id,new PlayerMarble(allpos.get(id),allpos.get(id).getOriginInMeters(),allpos.get(id).getVelocityInMeters(),marbleImages.getRandom()));
 			PVector currentpos=allpos.get(id).getOriginInMeters();
 			marbles.get(id).updatePosition(currentpos);
-			//PApplet.println("Marble "+id+" moved to "+currentpos.toString());
+			//logger.fine("Marble "+id+" moved to "+currentpos.toString());
 		}
 		// Remove Marbles for which we no longer have a position (exitted)
 		for (Iterator<Integer> iter = marbles.keySet().iterator();iter.hasNext();) {
 			int id=iter.next().intValue();
 			if (!allpos.pmap.containsKey(id)) {
-				PApplet.println("Removing ID "+id);
+				logger.fine("Removing ID "+id);
 				marbles.get(id).destroy();
 				iter.remove();
 			}
@@ -253,7 +253,7 @@ public class VisualizerOsmos extends Visualizer {
 	public void stop() {
 		Marble.destroyAll();
 		super.stop();
-		PApplet.println("Stopping Osmos at "+System.currentTimeMillis());
+		logger.fine("Stopping Osmos at "+System.currentTimeMillis());
 	}
 
 	@Override

@@ -25,7 +25,7 @@ public class VisualizerPS extends Visualizer {
 			Person pos=p.pmap.get(id);
 			ParticleSystem ps=systems.get(id);
 			if (ps==null) {
-				PApplet.println("Added new particle system for ID "+id);
+				logger.fine("Added new particle system for ID "+id);
 				ps=new ParticleSystem(img);
 				systems.put(id,ps);
 			}
@@ -35,7 +35,7 @@ public class VisualizerPS extends Visualizer {
 				for (ParticleSystem ps2: systems.values()) {
 					// if (ps!=ps2) 
 					//ps.attractor(ps2.origin, attractionForce);
-//					PApplet.println("Pushing PS "+ps2+" from "+pos.getNormalizedPosition()+" with vel="+pos.getNormalizedVelocity());
+//					logger.fine("Pushing PS "+ps2+" from "+pos.getNormalizedPosition()+" with vel="+pos.getNormalizedVelocity());
 					ps2.push(pos.getNormalizedPosition(), PVector.div(pos.getNormalizedVelocity(),parent.frameRate));   // Convert velocity into normalized units/frame
 				}
 
@@ -50,13 +50,13 @@ public class VisualizerPS extends Visualizer {
 
 			int id = me.getKey();
 			if (ps.dead()) {
-				PApplet.println("ID "+id+" is dead.");
+				logger.fine("ID "+id+" is dead.");
 				toRemove=id;
 			}
 		}
 		if (toRemove!=-1) {
 			systems.remove(toRemove);
-			PApplet.println("Removed system for ID "+toRemove);
+			logger.fine("Removed system for ID "+toRemove);
 		}
 	}
 

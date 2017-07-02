@@ -30,19 +30,19 @@ public class VisualizerMinim extends VisualizerGrid {
 
 	@Override
 	public void start() {
-		PApplet.println("Minim.start");
+		logger.info("Minim.start");
 		super.start();
 		// Other initialization when this app becomes active
 		select=(select+1)%visuals.length;
 		visuals[select].start();
-		PApplet.println("Starting visual: "+visuals[select].name());
+		logger.info("Starting visual: "+visuals[select].name());
 		Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
 	}
 
 	@Override
 	public void stop() {
-		PApplet.println("Minim.stop");
+		logger.info("Minim.stop");
 		super.stop();
 		visuals[select].stop();
 	}
@@ -50,7 +50,7 @@ public class VisualizerMinim extends VisualizerGrid {
 	@Override
 	public void update(PApplet parent, People p) {
 		super.update(parent,p);
-//		PApplet.println("Minim.update: minim="+minim+", num people="+p.pmap.size());
+//		logger.fine("Minim.update: minim="+minim+", num people="+p.pmap.size());
 		visuals[select].update(parent);
 	}
 

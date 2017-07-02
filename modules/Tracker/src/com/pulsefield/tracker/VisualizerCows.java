@@ -1,4 +1,6 @@
 package com.pulsefield.tracker;
+import java.util.logging.Logger;
+
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -15,7 +17,8 @@ class Apple {
 	static final float speed=0.04f;  // Meters/frame
 	static final float maxHitDist=0.4f; // Meters
 	static final float appleRadius=0.3f;  // Meters
-	
+    private final static Logger logger = Logger.getLogger(Apple.class.getName());
+
 	Apple(PVector pos) { position=pos; }
 	
 	void drawLaser() {
@@ -27,7 +30,7 @@ class Apple {
 //			appleShape=g.loadShape(Tracker.SVGDIRECTORY+"apple.svg");
 		if (appleImage==null)
 			appleImage=Tracker.theTracker.loadImage("cows/49728.gif");
-//		PApplet.println("Drawing apple shape at "+p);
+//		logger.fine("Drawing apple shape at "+p);
 //		g.shapeMode(PConstants.CENTER);
 //		Visualizer.drawShape(g, appleShape,position.x, position.y,appleRadius*2, appleRadius*2);
 		g.pushMatrix();
@@ -86,11 +89,11 @@ class Apple {
 			if (d<maxHitDist) {
 				hit=true;
 				ps.userData=(ps.userData+maxsize)/2;
-				PApplet.println("Person "+ps.id+" has size "+ps.userData);
+				logger.fine("Person "+ps.id+" has size "+ps.userData);
 				TrackSet ts=Ableton.getInstance().trackSet;
 				int track=ps.id%(ts.numTracks)+ts.firstTrack;
 				int nclips=Ableton.getInstance().getTrack(track).numClips();
-				PApplet.println("Track="+track+", nclips="+nclips);
+				logger.fine("Track="+track+", nclips="+nclips);
 				if (nclips!=-1) {
 					Ableton.getInstance().playClip(track,nextClip);
 					nextClip=(nextClip+1)%nclips;
@@ -102,7 +105,7 @@ class Apple {
 			}
 			ps.userData=Math.max(0.0f, Math.min(1.0f, ps.userData));
 		}
-//		PApplet.println("apple position="+position+", hit="+hit);
+//		logger.fine("apple position="+position+", hit="+hit);
 		if (hit) {
 			entrySide=(int)(Math.random()*4);
 			switch (entrySide) {
@@ -180,7 +183,7 @@ public class VisualizerCows extends VisualizerIcon {
 			} else {
 				PShape icon=iconShapes[ps.id%iconShapes.length];
 				//icon.translate(-icon.width/2, -icon.height/2);
-				//			PApplet.println("Display shape "+icon+" with native size "+icon.width+","+icon.height);
+				//			logger.fine("Display shape "+icon+" with native size "+icon.width+","+icon.height);
 				float scale=Math.min(sz/icon.width,sz/icon.height);
 				Visualizer.drawShape(g, icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y-icon.height*scale/2,icon.width*scale,icon.height*scale);
 				//icon.resetMatrix();

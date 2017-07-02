@@ -29,14 +29,14 @@ public class VisualizerSyphon extends Visualizer {
 	public SyphonClient initClient(String appName,String serverName) {
 		SyphonClient client=new SyphonClient(Tracker.theTracker,appName,serverName);
 		if (client==null) {
-			PApplet.println("Unable to connect to syphon server ("+appName+", "+serverName+")");
-			PApplet.println("Available servers:");
+			logger.warning("Unable to connect to syphon server ("+appName+", "+serverName+")");
+			logger.warning("Available servers:");
 			HashMap<String, String>[] servers = SyphonClient.listServers();
 			for (HashMap<String, String> s: servers) {
-				PApplet.println(s.get("AppName")+": "+s.get("ServerName"));
+				logger.warning(s.get("AppName")+": "+s.get("ServerName"));
 			}
 		} else
-			PApplet.println("Initialized syphon client ("+appName+", "+serverName+")");
+			logger.config("Initialized syphon client ("+appName+", "+serverName+")");
 		return client;
 	}
 	
@@ -58,35 +58,35 @@ public class VisualizerSyphon extends Visualizer {
 		assert (client!=null);
 		if (!client.active()) {
 			if (wasActive)
-				PApplet.println("Syphon client ("+appName+","+serverName+") not active.");
+				logger.warning("Syphon client ("+appName+","+serverName+") not active.");
 			super.draw(t, g, p);
 			wasActive=false;
 		} else if (client.newFrame()) {
 			if (!wasActive)
-				PApplet.println("Syphon client ("+appName+","+serverName+") now active -- new frame.");
+				logger.fine("Syphon client ("+appName+","+serverName+") now active -- new frame.");
 			super.draw(t, g, p);
 			g.pushMatrix();  // Save the matrix
 	    	g.endDraw();     // Calling getGraphics opens a new beginDraw/closeDraw pair which invalidates g's
 	    	float oldWidth=(canvas!=null)?canvas.width:0;
 	    	float oldHeight=(canvas!=null)?canvas.height:0;
 	    	if (!client.active()) {  // Can have a race here -- client may have become inactive while drawing above
-	    		PApplet.println("Client deactivated");
+	    		logger.fine("Client deactivated");
 	    		return;
 	    	}
 	    	canvas=client.getGraphics(canvas);
 	    	if (canvas.format!=PConstants.ARGB) {
-	    		PApplet.println("Changing canvas format from "+canvas.format+" to "+PConstants.ARGB);				
+	    		logger.info("Changing canvas format from "+canvas.format+" to "+PConstants.ARGB);				
 	    		canvas.format=PConstants.ARGB;
 	    	}
 
 			if (captureNextFrame) {
 				String filename=new String("/tmp/canvas.tif");
-				PApplet.println("Saved frame in "+filename);
+				logger.info("Saved frame in "+filename);
 				canvas.save(filename);
 				captureNextFrame=false;
 			}
 			if (!wasActive || canvas.width!=oldWidth || canvas.height!=oldHeight)
-				PApplet.println("Syphon canvas size now "+canvas.width+"x"+canvas.height+"; target size="+g.width+"x"+g.height);
+				logger.info("Syphon canvas size now "+canvas.width+"x"+canvas.height+"; target size="+g.width+"x"+g.height);
 			g.beginDraw();  // beginDraw resets the matrix
 			g.popMatrix();  // restore it
 			initializeContext(t,g);
@@ -99,7 +99,7 @@ public class VisualizerSyphon extends Visualizer {
 //						int c=canvas.pixels[x+canvas.width*y];
 //						PApplet.print("("+x+","+y+")="+PApplet.hex(c)+" ");
 //					}
-//				PApplet.println("");
+//				logger.fine("");
 //				//canvas.updatePixels();
 //			}
 			drawImage(g,canvas,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,

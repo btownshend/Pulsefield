@@ -5,6 +5,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Logger;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -32,7 +33,8 @@ public class GUI extends JFrame {
 	private JLabel lblFps;
 	private JCheckBox drawBorders;
 	private JCheckBox enableMenu;
-	
+    private final static Logger logger = Logger.getLogger(GUI.class.getName());
+
 	public static void start() {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -67,7 +69,7 @@ public class GUI extends JFrame {
 		drawBounds.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Tracker.theTracker.drawBounds=drawBounds.isSelected();
-				PApplet.println("drawBounds="+drawBounds.toString());
+				logger.info("drawBounds="+drawBounds.toString());
 			}
 		});
 		GridBagConstraints gbc_drawBounds = new GridBagConstraints();
@@ -89,7 +91,7 @@ public class GUI extends JFrame {
 		drawBorders.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Tracker.theTracker.drawBorders=drawBorders.isSelected();
-				PApplet.println("drawBorders="+drawBorders.toString());
+				logger.info("drawBorders="+drawBorders.toString());
 			}
 		});
 		GridBagConstraints gbc_drawBorders = new GridBagConstraints();
@@ -185,15 +187,15 @@ public class GUI extends JFrame {
 	}
 	
 	void update() {
-		PApplet.println("update called");
+		logger.fine("update called");
 		if (!initialized) {
-			PApplet.println("update when not initialized");
+			logger.warning("update when not initialized");
 			return;
 		}
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					PApplet.println("update run");
+					logger.fine("update run");
 					drawMasks.setSelected(Tracker.theTracker.drawMasks);
 					drawBounds.setSelected(Tracker.theTracker.drawBounds);
 					drawBorders.setSelected(Tracker.theTracker.drawBorders);

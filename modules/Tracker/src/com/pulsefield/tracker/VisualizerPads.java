@@ -26,7 +26,7 @@ public class VisualizerPads extends VisualizerPS {
 		super.update(parent,allpos);
 		Ableton.getInstance().updateMacros(allpos);
 		for (Person pos: allpos.pmap.values()) {
-			//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
+			//logger.fine("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
 			if (pos.isMoving())
 				synth.play(pos.id,pos.channel+35,127,480,pos.channel);
 		}
