@@ -28,6 +28,7 @@ class Effects {
 		if (!pitchMap.containsKey(effect))
 			pitchMap.put(effect,new ArrayList<Integer>());
 		pitchMap.get(effect).add(pitch);
+		logger.info("Added effect <"+effect+"> at pitch "+pitch);
 	}
 	void add(String effect, int pitch1, int pitch2) {
 		for (int i=pitch1;i<=pitch2;i++)
@@ -54,5 +55,7 @@ class Effects {
 		// DNA
 		defaultEffects.add("BREAK","C1");
 		defaultEffects.add("LIGATE","C1");
+		// Hunter
+		defaultEffects.add("SHOTGUN", "C#1");
 	}
 }
