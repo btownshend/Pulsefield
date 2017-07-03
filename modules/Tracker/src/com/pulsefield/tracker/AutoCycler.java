@@ -121,9 +121,6 @@ public class AutoCycler {
 			curSetup=setup.get(curpick);
 		}
 		logger.info("Autocycled "+(daytime?"day":"night")+" to "+curSetup.toString());
-		Tracker.sendOSC("MPO",video.get(curSetup.videomode),1);
-		Tracker.sendOSC("MPO",sound.get(curSetup.soundappmode),1);
-		Tracker.sendOSC("MPO",led.get(curSetup.ledmode),1);
 	}
 
 }

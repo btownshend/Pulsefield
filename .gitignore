@@ -89,3 +89,5 @@ modules/OSC/dumpOSC/dumpOSC
 modules/OSC/replayOSC/replayOSC
 
 modules/OSC/sendOSC/sendOSC
+
+*.lck

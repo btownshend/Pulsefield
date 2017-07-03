@@ -50,7 +50,7 @@ public class Tracker extends PApplet {
 	VisualizerSyphon visSyphonOF;
 	
 	int currentvis=-1;
-	static NetAddress TO, OF, MPO, AL, MAX, CK, VD;
+	static NetAddress TO, OF, AL, MAX, CK, VD;
 	People people, mousePeople;
 	Ableton ableton;
 	boolean useMAX;
@@ -141,7 +141,6 @@ public class Tracker extends PApplet {
 
 		TO = new NetAddress(config.getHost("TO"), config.getPort("TO"));
 		OF = new NetAddress(config.getHost("OF"), config.getPort("OF"));
-		MPO = new NetAddress(config.getHost("MPO"), config.getPort("MPO"));
 		AL = new NetAddress(config.getHost("AL"), config.getPort("AL"));
 		CK = new NetAddress(config.getHost("CK"), config.getPort("CK"));
 		VD = new NetAddress(config.getHost("VD"), config.getPort("VD"));
@@ -295,7 +294,7 @@ public class Tracker extends PApplet {
 		OscMessage msg = new OscMessage("/ack");
 		//logger.fine("Got ping "+code);
 		msg.add(code);
-		oscP5.send(msg,MPO);
+		//		oscP5.send(msg,MPO);
 	}
 
 	public void setborders(float onoff) {
@@ -439,8 +438,6 @@ public class Tracker extends PApplet {
 			oscP5.send(msg,AL);
 		else if (dest.equals("TO"))
 			oscP5.send(msg,TO);
-		else if (dest.equals("MPO"))
-			oscP5.send(msg,MPO);
 		else if (dest.equals("CK"))
 			oscP5.send(msg,CK);
 		else if (dest.equals("Laser"))

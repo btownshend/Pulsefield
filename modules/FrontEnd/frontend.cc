@@ -90,8 +90,8 @@ FrontEnd::FrontEnd(int _nsick,float maxRange,int argc, const char *argv[]): conf
 	printf("Started server on port %d\n", serverPort);
 
 	/* Start sending data to hardwired OSC destinations */
-	//	const char *targets[]={"VD","LASER"};
-	const char *targets[]={ "VIS","VD","COND","LAN","REC","COND2","VIS2","LASER"};
+	const char *targets[]={"VD","CAL","REC"};
+	//const char *targets[]={ "VIS","VD","COND","LAN","REC","COND2","VIS2","LASER"};
 	for (unsigned int i=0;i<sizeof(targets)/sizeof(targets[0]);i++) {
 	    int clientPort=urls.getPort(targets[i]);
 	    const char *clientHost=urls.getHost(targets[i]);

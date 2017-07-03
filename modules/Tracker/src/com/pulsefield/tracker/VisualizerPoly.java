@@ -65,7 +65,7 @@ class PolyState {
 			logger.fine("ID "+pos.id+" is in group ("+pos.groupid+","+pos.groupsize+"), changing to GM instrument "+newInstrument);
 			OscMessage msg=new OscMessage("/midi/setpgm/"+pos.channel);
 			msg.add(newInstrument);
-			Tracker.sendOSC("MPO",msg);
+			//			Tracker.sendOSC("MPO",msg);
 			lastGrouping=beat;
 		}
 	}
