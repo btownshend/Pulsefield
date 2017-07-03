@@ -313,6 +313,12 @@ public class Ableton {
 			setTrackName(msg.get(0).intValue(),msg.get(1).stringValue(),msg.get(2).intValue());
 		else if (components.length==4 && components[2].equals("device") && components[3].equals("param"))
 			deviceParam(msg.get(0).intValue(),msg.get(1).intValue(),msg.get(2).intValue(),msg.get(3).floatValue(),msg.get(4).stringValue());
+		else if (components.length==3 && components[2].equals("track"))
+			; // Ignored
+		else if (components.length==3 && components[2].equals("scene"))
+			; // Ignored
+		else if (components.length==4 && components[2].equals("clip") && components[3].equals("warping"))
+			; // Ignored
 		else 
 			logger.warning("Unknown Ableton Message: "+msg.toString());
 	}
