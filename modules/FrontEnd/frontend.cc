@@ -153,16 +153,20 @@ void FrontEnd::matsave(const std::string &filename, int frames) {
 }
 
 // Check if LIDARs are frame-shifted from each other; flush a frame from the leader if not
-// Return true if something was flushed
+// Return false if something was flushed
 bool FrontEnd::syncLIDAR(int i) {
     // Relative to currenttime (last abs scan time processed)
     if (currenttime.tv_sec==0)
 	return true;
     int delta=(sick[i]->getAbsScanTime().tv_sec-currenttime.tv_sec)*1000000+(sick[i]->getAbsScanTime().tv_usec-currenttime.tv_usec);
-    if (delta<0)  {
-	dbg("FrontEnd.run",1) << "Scan is prior to current time by " << delta << " usec;  flushing scan " << sick[i]->getScanCounter() << " from unit " << i << std::endl;
-	sick[i]->clearValid();
-	return false;
+	if (delta/1e6<-1) {
+		dbg("FrontEnd.run",1) << "Scan is prior to current time by " << delta/1e6 << " sec; assuming this is a looped playback and resetting current time" << std::endl;
+		fprintf(stdout,"Resetting time by %.1f sec (looping playback)\n",delta/1e6);
+		currenttime=sick[i]->getAbsScanTime();
+	} else if (delta<0)  {
+		dbg("FrontEnd.run",1) << "Scan is prior to current time by " << delta << " usec;  flushing scan " << sick[i]->getScanCounter() << " from unit " << i << std::endl;
+		sick[i]->clearValid();
+		return false;
     }
     return true;
 }
