@@ -81,3 +81,11 @@ modules/FrontEnd/typescript
 Matlab/scratch
 
 modules/Tracker/tracker.log
+
+modules/OSC/recordOSC/recordOSC
+
+modules/OSC/dumpOSC/dumpOSC
+
+modules/OSC/replayOSC/replayOSC
+
+modules/OSC/sendOSC/sendOSC
