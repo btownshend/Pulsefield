@@ -18,6 +18,7 @@ public class VisualizerGrid extends VisualizerPS {
 	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","AN","PB"};
 	int song=0;
 	PVector titlePos = new PVector(0,0);
+	protected boolean drawGrid = true;
 	
 	VisualizerGrid(PApplet parent) {
 		super(parent);
@@ -129,25 +130,27 @@ public class VisualizerGrid extends VisualizerPS {
 		super.draw(t, g, p);
 		if (p.pmap.isEmpty())
 			return;
-		g.textAlign(PConstants.CENTER,PConstants.CENTER);
-		PVector gridOffset=new PVector(gridwidth/2, gridheight/2);
-		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
-			int id=entry.getKey();
-			int cell=entry.getValue();
-			//logger.fine("grid "+cell+", id="+id+" "+gridColors.get(cell));
-			g.fill(127,0,0,127);
-			g.strokeWeight(.05f);
-			g.stroke(255,0,0);
-			PVector gcenter=new PVector(gposx[cell],gposy[cell]);
-			PVector tl = Tracker.normalizedToFloor(PVector.sub(gcenter, gridOffset));
-			PVector br = Tracker.normalizedToFloor(PVector.add(gcenter, gridOffset));
-			g.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
-			g.fill(255);
-			TrackSet ts=Ableton.getInstance().trackSet;
-			Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
-			if (track.numClips()>0) {
-				Clip clip=track.getClip(cell%track.numClips());
-				drawText(g,0.16f,track.getName()+"-"+clip.getName()+" P"+id,gcenter.x,gcenter.y,gridOffset.x,gridOffset.y);
+		if (drawGrid) {
+			g.textAlign(PConstants.CENTER,PConstants.CENTER);
+			PVector gridOffset=new PVector(gridwidth/2, gridheight/2);
+			for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
+				int id=entry.getKey();
+				int cell=entry.getValue();
+				//logger.fine("grid "+cell+", id="+id+" "+gridColors.get(cell));
+				g.fill(127,0,0,127);
+				g.strokeWeight(.05f);
+				g.stroke(255,0,0);
+				PVector gcenter=new PVector(gposx[cell],gposy[cell]);
+				PVector tl = Tracker.normalizedToFloor(PVector.sub(gcenter, gridOffset));
+				PVector br = Tracker.normalizedToFloor(PVector.add(gcenter, gridOffset));
+				g.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
+				g.fill(255);
+				TrackSet ts=Ableton.getInstance().trackSet;
+				Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
+				if (track.numClips()>0) {
+					Clip clip=track.getClip(cell%track.numClips());
+					drawText(g,0.16f,track.getName()+"-"+clip.getName()+" P"+id,gcenter.x,gcenter.y,gridOffset.x,gridOffset.y);
+				}
 			}
 		}
 		g.fill(127);
