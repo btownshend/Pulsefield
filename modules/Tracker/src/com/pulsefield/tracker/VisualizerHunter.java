@@ -107,7 +107,7 @@ class Hunter {
 	 * 
 	 * @param players Other players playing.
 	 */
-	void update(HashMap<Integer, Hunter> players) {
+	void update(HashMap<Integer, Hunter> players, Effects effects) {
 		// If we are exploding that is all we do.
 		if (exploding) {
 			timeexploding += 1;
@@ -136,6 +136,7 @@ class Hunter {
 					this.timetogether = 0;
 					exploding = true;
 					logger.fine("Exploding "+me.id);
+					effects.play("SHOTGUN", 127, 1000);
 				}
 			}
 			// If not, we reset our tagging progress.
@@ -207,12 +208,18 @@ class Hunter {
 public class VisualizerHunter extends Visualizer {
 	// List of current players.
 	HashMap<Integer, Hunter> players = new HashMap<Integer, Hunter>();
+	Effects effects;
 	
-	
-	VisualizerHunter(PApplet parent) {
+	VisualizerHunter(PApplet parent, Synth synth) {
 		super();
+		effects=Effects.defaultEffects;
 	}
 
+	@Override
+	public void start() {
+		super.start();
+		Ableton.getInstance().setTrackSet("Hunter");
+	}
 
 	@Override
 	public void update(PApplet parent, People allpos) {		
@@ -239,7 +246,7 @@ public class VisualizerHunter extends Visualizer {
 		List<Map.Entry<Integer,Hunter>> list = new ArrayList<Map.Entry<Integer,Hunter>>(players.entrySet());
 		Collections.shuffle(list);
 		for (Map.Entry<Integer, Hunter> entry: list) {
-			entry.getValue().update(players);
+			entry.getValue().update(players, effects);
 		}
 	}
 
