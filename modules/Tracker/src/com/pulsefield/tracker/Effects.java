@@ -11,7 +11,7 @@ class Effects {
 	int track;
 	HashMap<String,ArrayList<Integer>> pitchMap;
 	static public Effects defaultEffects=null;
-	static int DEFAULTEFFECTSTRACK=127;
+	static int DEFAULTEFFECTSTRACK=132;
     private final static Logger logger = Logger.getLogger(Effects.class.getName());
 
 	Effects(Synth synth, int track) {

@@ -91,3 +91,5 @@ modules/OSC/replayOSC/replayOSC
 modules/OSC/sendOSC/sendOSC
 
 *.lck
+
+modules/Tracker/tracker.log.1

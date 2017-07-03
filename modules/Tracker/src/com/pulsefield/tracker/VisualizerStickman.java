@@ -297,9 +297,7 @@ public class VisualizerStickman extends Visualizer {
 	VisualizerStickman(PApplet parent, Synth synth) {
 		super();
 		sticks = new HashMap<Integer, Stickman>();
-		effects=new Effects(synth,123);
-		effects.add("COLLIDE",52,55);
-		effects.add("SPLIT",40,42);
+		this.effects=Effects.defaultEffects;
 	}
 	
 	@Override

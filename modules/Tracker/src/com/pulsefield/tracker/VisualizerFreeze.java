@@ -221,7 +221,7 @@ class MoleculeFactory {
 	}
 }
 
-// Osmos visualizer
+// Freeze visualizer
 public class VisualizerFreeze extends Visualizer {
 	long startTime;
 	Effects effects;
@@ -230,9 +230,7 @@ public class VisualizerFreeze extends Visualizer {
 	VisualizerFreeze(PApplet parent, Synth synth) {
 		super();
 		mFactory=new MoleculeFactory("Strut");
-		effects=new Effects(synth,123);
-		effects.add("COLLIDE",52,55);
-		effects.add("SPLIT",40,42);
+		effects=Effects.defaultEffects;
 	}
 	
 	public void update(PApplet parent, People allpos) {		

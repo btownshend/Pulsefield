@@ -217,7 +217,7 @@ public class VisualizerOsmos extends Visualizer {
 		super();
 		marbles = new HashMap<Integer, PlayerMarble>();
 		marbleImages=new Images("osmos/marbles");
-		effects=new Effects(synth,123);
+		effects=new Effects(synth,124);
 		effects.add("COLLIDE",52,55);
 		effects.add("SPLIT",40,42);
 	}
