@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import processing.core.PApplet;
 import processing.core.PImage;
+import gifAnimation.*;
 
 public class Images {
 	List <PImage> imgs;
@@ -33,7 +33,13 @@ public class Images {
 				// Ignore these
 				continue;
 			logger.info("Loading image from "+allfiles[i].getAbsolutePath()+" ("+allfiles[i].getName()+")");
-			PImage img=Tracker.theTracker.loadImage(allfiles[i].getAbsolutePath());
+			PImage img;
+			if (allfiles[i].getName().endsWith(".gif")) {
+				 Gif gimg=new Gif(Tracker.theTracker,allfiles[i].getAbsolutePath());
+				 gimg.play();
+				 img=gimg;
+			} else
+				 img=Tracker.theTracker.loadImage(allfiles[i].getAbsolutePath());
 			if (img==null) {
 				logger.warning("Failed load of "+allfiles[i].getAbsolutePath());
 			} else {
