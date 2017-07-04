@@ -3,6 +3,7 @@
 package com.pulsefield.tracker;
 
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -11,23 +12,17 @@ import processing.core.PVector;
 
 class Measure {
 	PVector position;
+    protected final static Logger logger = Logger.getLogger(Measure.class.getName());
 
 	Measure(PVector pos) { 
 		position=pos;
-	}
-	
-	void drawLaser() {
-		// TODO: Update for Measure.
-		Laser laser=Laser.getInstance();
-		laser.svgfile("apple.svg",position.x,position.y,0.5f,0f);
 	}
 	
 	void draw(PGraphics g, People p) {
 		g.imageMode(PConstants.CENTER);
 		g.translate(position.x, position.y);
 		g.beginDraw();
-		g.colorMode(PGraphics.ARGB);
-		g.stroke(0xffeeee33);
+		g.colorMode(PGraphics.RGB);
 		
 		// Create a copy of the people list; we'll walk the full list and for each element
 		// we'll walk the copy; removing the covered person from the copy in each 
@@ -39,6 +34,11 @@ class Measure {
 				// Don't interact with one's self.
 				if (ps.id == ps2.id) continue;
 						
+				int c1=ps.getcolor();
+				int c2=ps2.getcolor();
+				int newcolor=(((c1>>>1)&0x7f7f7f) + ((c2>>>1)&0x7f7f7f)) | 0xff000000; // Combined color
+				logger.info("c1="+PApplet.hex(c1)+", c2="+PApplet.hex(c2)+", newcolor="+PApplet.hex(newcolor));
+				g.stroke(newcolor);
 				// Draw the line between the two persons.
 				g.line(ps.getOriginInMeters().x,  ps.getOriginInMeters().y,
 						ps2.getOriginInMeters().x,  ps2.getOriginInMeters().y);
@@ -70,11 +70,11 @@ class Measure {
 					g.rotate((float) ((angle) + Math.PI / 2));
 
 					g.textAlign(PGraphics.CENTER, PGraphics.CENTER);
-					g.textSize((float) 0.1);
+					g.textSize((float) 0.15);
 
 					// Create a slight black border around the text by drawing
 					// it black with an offset.
-					g.fill(0xff000000); // Full opacity; black.
+					g.fill(0xffffffff); // Full opacity; black.
 					float gap = 0.01f;
 					String tFormat = "%.02f";
 					g.text(String.format(tFormat, distance) + "m", gap, gap);
@@ -107,14 +107,14 @@ public class VisualizerMeasure extends VisualizerGrid {
 
 	VisualizerMeasure(PApplet parent) {
 		super(parent);
+		drawGrid=false;
 		measure=new Measure(new PVector(0f,0f));
 	}
 	
 	@Override
 	public void start() {
 		super.start();
-		// TODO(erisod): Setup Ableton for Measure Visualizer sounds.
-		Ableton.getInstance().setTrackSet("Measure");
+		// trackSet taken care of in Grid.start()
 	}
 	
 	public void update(PApplet parent, People p) {
@@ -126,15 +126,5 @@ public class VisualizerMeasure extends VisualizerGrid {
 		super.draw(t, g, p);
 		// g.shapeMode(PApplet.CENTER);
 		measure.draw(g, p);
-	}
-	
-	public void drawLaser(PApplet parent, People p) {
-		Laser laser=Laser.getInstance();
-		laser.bgBegin();
-		// Draw falling measure
-		laser.shapeBegin("measure");
-		measure.drawLaser();
-		laser.shapeEnd("measure");
-		laser.bgEnd();
 	}
 }
