@@ -17,8 +17,8 @@ import processing.core.PVector;
 class Hunter {
 	Hunter target;  // Targeted person.
 	Person me; // My person.
-	float timetogether = 0; // Consecutive time I have spent next to my target.	
-	float timeexploding = 0.f; // Time I have been exploding for.
+	float timetogether = 0; // Consecutive time I have spent next to my target.	(sec)
+	float timeexploding = 0.f; // Time I have been exploding for. (sec)
 	boolean exploding = false; // If I am exploding (True if I just tagged someone).
 	Integer score = 0; // Number of people I have tagged.
 	boolean deleted = false; // Whether I still exist.
@@ -28,22 +28,23 @@ class Hunter {
 	// Radius of a player.
 	final float RADIUS=(float)(0.69/2/Math.PI)*2;
 	// Length of arrow pointing to current target.
-	final float ARROWLEN=0.2f*4;
+	final float ARROWLEN=0.8f;
+	final float ARROWHEADLEN=0.1f;
 	
 	/*** Tag params. ***/
-	// Number of updates that a person needs to be next to another to tag them.
-	final float TIMETOTAG = 20.f;
-	// Distance threshold at which a player is considered to be tagging another.
-	final float TAGTHRESH=2 * RADIUS + ARROWLEN;
-	// Distance threshold a player needs to be from another to have them be started as a target.
+	// Number of seconds that a person needs to be next to another to tag them.
+	final float TIMETOTAG=1.0f;
+	// Distance threshold at which a player is considered to be tagging another. (meters)
+	final float TAGTHRESH=0.6f;
+	// Distance threshold a player needs to be from another to have them be started as a target. (meters)
 	final float STARTTHRESH=TAGTHRESH + 0.1f;
 	
 	
 	/*** Explosion params. ***/
-	// Number of updates that an explosion will take place for upon tagging.
-	final float TIMEFOREXPLOSION = 10.f;
-	// Size of explosion upon tagging.
-	final float EXPLOSIONSIZE = 0.5f*4;
+	// Number of seconds that an explosion will take place for upon tagging.
+	final float TIMEFOREXPLOSION = 2f;
+	// Radius of explosion upon tagging (in meters)
+	final float EXPLOSIONSIZE = 3f;
 
     private final static Logger logger = Logger.getLogger(Hunter.class.getName());
 
@@ -110,7 +111,7 @@ class Hunter {
 	void update(HashMap<Integer, Hunter> players, Effects effects) {
 		// If we are exploding that is all we do.
 		if (exploding) {
-			timeexploding += 1;
+			timeexploding += 1.0f/Tracker.theTracker.frameRate;
 			if (timeexploding > TIMEFOREXPLOSION) {
 				timeexploding = 0;
 				exploding = false;
@@ -128,7 +129,7 @@ class Hunter {
 			}
 			// If we are close we start tagging them.
 			if (isCloseTo(TAGTHRESH, this.target)) {
-				timetogether += 1;
+				timetogether += 1f/Tracker.theTracker.frameRate;
 				// If we are close to someone for long enough we explode!
 				if (this.timetogether > TIMETOTAG) {
 					this.score += 1;
@@ -164,15 +165,20 @@ class Hunter {
 		
 		// Draw explosion if needed.
 		if (exploding) {
+			g.pushStyle();
+			g.strokeWeight(0.05f);
 			g.stroke(255, 0, 0, 255);
 			
-			for (int angle=0; angle < 360; angle+=20) {
-				float rad = radians(1.f * angle);
-				PVector direction = PVector.fromAngle(rad);
-				PVector diff = PVector.mult(direction,  RADIUS + (timeexploding / TIMEFOREXPLOSION) * EXPLOSIONSIZE);
-				PVector diff2 = PVector.mult(direction, RADIUS + ((timeexploding + 0.5f) / TIMEFOREXPLOSION) * EXPLOSIONSIZE);
+			for (int i=0; i<50;i++) {
+				float angle=(float)(Math.random()*Math.PI*2);
+				float dist=(float)(RADIUS + Math.random()*(timeexploding / TIMEFOREXPLOSION) * EXPLOSIONSIZE);
+				float dist2=dist+0.2f;
+				PVector direction = PVector.fromAngle(angle);
+				PVector diff = PVector.mult(direction,  dist);
+				PVector diff2 = PVector.mult(direction, dist2);
 				g.line(mypos.x + diff.x, mypos.y + diff.y, mypos.x + diff2.x, mypos.y + diff2.y);
 			}
+			g.popStyle();
 		}
 		
 		// Our own circle.
@@ -181,6 +187,7 @@ class Hunter {
 		// Our tagging progress.
 		g.pushStyle(); {
 			g.stroke(255, 0, 0, 255);
+			g.strokeWeight(0.1f);
 			g.arc(mypos.x, mypos.y, RADIUS*2, RADIUS*2, radians(-90), radians(-90 + 360.f * (timetogether / TIMETOTAG)));
 			g.popStyle();
 		}
@@ -191,17 +198,22 @@ class Hunter {
 			PVector uv = PVector.sub(otherpos,mypos);
 			float distance = uv.mag();
 			uv.normalize();
-		
-			
-			PVector diff = PVector.mult(uv, Math.min(ARROWLEN + RADIUS, distance - RADIUS));
-			PVector diff2 = PVector.mult(uv, RADIUS);
 			if (distance >= 2 * RADIUS) {
+				PVector diff = PVector.mult(uv, Math.min(ARROWLEN + RADIUS, distance - RADIUS));
+				PVector diff2 = PVector.mult(uv, RADIUS);
+
 				g.line(mypos.x + diff.x, mypos.y + diff.y, mypos.x + diff2.x, mypos.y + diff2.y);
+				PVector arrow=PVector.mult(uv,ARROWHEADLEN);
+				arrow.rotate((float)Math.PI*135/180);
+				g.line(mypos.x + diff.x, mypos.y + diff.y, mypos.x + diff.x+ arrow.x, mypos.y + diff.y + arrow.y);
+				arrow.rotate((float)Math.PI/2);
+				g.line(mypos.x + diff.x, mypos.y + diff.y, mypos.x + diff.x+ arrow.x, mypos.y + diff.y + arrow.y);
 			}
 		}
 		
 		// Our own score.
-		Visualizer.drawText(g, 0.30f, "" + this.score, mypos.x + RADIUS / 2, mypos.y + RADIUS / 3);
+		g.textAlign(PConstants.CENTER,PConstants.CENTER);
+		Visualizer.drawText(g, 0.30f, "" + this.score, mypos.x, mypos.y -0.05f);
 	}
 }
 
