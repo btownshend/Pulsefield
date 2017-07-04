@@ -572,7 +572,9 @@ public class Tracker extends PApplet {
 		//		translate((width-height)/2f,0);
 
 		canvas.pushStyle();
+		canvas.pushMatrix();
 		vis[currentvis].draw(this, canvas,people);
+		canvas.popMatrix();
 		canvas.popStyle();
 		if (enableTitle) {
 			canvas.pushStyle();
