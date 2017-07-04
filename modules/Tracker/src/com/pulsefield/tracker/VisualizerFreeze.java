@@ -109,6 +109,29 @@ class Molecule {
 	}
 }
 
+class Butterfly extends Molecule {
+	private static Images imgs=null;
+	
+	Butterfly(PVector pos, PVector vel, float radius) {
+		super(pos,vel,radius);
+		if (imgs==null)
+			imgs=new Images("freeze/butterflies");
+		img=imgs.getRandom();
+		angularVelocity=0;
+		angle=(float)Math.atan2(vel.x,-vel.y);
+	}
+	public void draw(PGraphics g) {
+		float r=getRadius();
+		//g.ellipse(location.x, location.y, r*2, r*2);
+		g.imageMode(PConstants.CENTER);
+		g.pushMatrix();
+		g.translate(location.x, location.y);
+		g.rotate(angle);
+		g.image(img,0,0,r*2,r*2);
+		g.popMatrix();
+	}
+}
+
 class Strut extends Molecule {
 	float length;
 	
@@ -135,6 +158,7 @@ class MoleculeFactory {
 	private static final float CREATESPEED=0.02f;  // Create speed in m/s
 	private static HashSet<Molecule> allMolecules = new HashSet<Molecule>();
 	private String moleculeType;
+	static String[] moleculeTypes={"MOLECULE","STRUT","BUTTERFLY"};
 	
 	MoleculeFactory(String molType) {
 		moleculeType = molType;
@@ -145,6 +169,8 @@ class MoleculeFactory {
 			o=new Molecule(pos,vel,radius);
 		else if (moleculeType.equalsIgnoreCase("STRUT"))
 			o=new Strut(pos,vel,radius);
+		else if (moleculeType.equalsIgnoreCase("BUTTERFLY"))
+			o=new Butterfly(pos,vel,radius);
 		else 
 			assert(false);
 		allMolecules.add(o);
@@ -229,7 +255,6 @@ public class VisualizerFreeze extends Visualizer {
 
 	VisualizerFreeze(PApplet parent, Synth synth) {
 		super();
-		mFactory=new MoleculeFactory("Strut");
 		effects=Effects.defaultEffects;
 	}
 	
@@ -241,6 +266,9 @@ public class VisualizerFreeze extends Visualizer {
 
 	public void start() {
 		super.start();
+		String mType=MoleculeFactory.moleculeTypes[(int)(Math.random()*MoleculeFactory.moleculeTypes.length)];
+		logger.info("Starting Freeze with molecule type "+mType);
+		mFactory=new MoleculeFactory(mType);
 		Ableton.getInstance().setTrackSet("Freeze");
 	}
 
