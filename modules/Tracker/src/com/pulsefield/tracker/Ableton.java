@@ -127,7 +127,7 @@ class Track {
 	int numClips() {
 		if (highestSeenUsedClip+1<lowestSeenEmptyClip) {
 			// Don't yet know how many clips there are
-			logger.warning("Ableton:numClips() - haven't determined number of clips yet");
+			logger.warning("Ableton:numClips() - haven't determined number of clips yet for track "+this.name+"("+this.trackNum+")");
 			clipInfoRequest();
 			return -1;
 		}
@@ -247,8 +247,8 @@ public class Ableton {
 		addSong("Soccer","Soccer",	122,1,120,123,null);
 		addSong("Osmos","Osmos",	124,1,120,125,null);
 		addSong("DNA","DNA",		 -1,0,120,125,null);
-		addSong("Whack","Whack",	127,1,120);
-		addSong("Bowie","Bowie",	128,1,120);
+		addSong("Whack","Whack",	126,1,120);
+		addSong("Bowie","Bowie",	127,1,120);
 		addSong("Stickman","Stickman",-1,0,120,128,null);   
 		addSong("Hunter","Hunter",	-1,0,120,129,null);  
 		addSong("Freeze","Freeze",	-1,0,120,130,null);   // TODO
@@ -454,8 +454,13 @@ public class Ableton {
 			logger.warning("Unable to get track "+track);
 			return;
 		}
-		if ((t.trackNum<trackSet.firstTrack || t.trackNum>=trackSet.firstTrack+trackSet.numTracks) && trackSet.bgTrack!=t.trackNum) {
-			logger.warning("Got clip position message for track "+t.getName()+"("+t.trackNum+","+track+"), but current trackSet, "+trackSet.name+" is for tracks "+trackSet.firstTrack+"-"+(trackSet.firstTrack+trackSet.numTracks-1));
+		if (trackSet==null) {
+			logger.info("Got clip position message for track "+t.getName()+"("+t.trackNum+","+track+"), but current trackSet is null; stopping clip");
+			stopClip(track,clip);
+		}
+		else if ((t.trackNum<trackSet.firstTrack || t.trackNum>=trackSet.firstTrack+trackSet.numTracks) && trackSet.bgTrack!=t.trackNum) {
+			// TODO: this can happen when a background track is playing -- should keep track of that...
+			logger.info("Got clip position message for track "+t.getName()+"("+t.trackNum+","+track+"), but current trackSet, "+trackSet.name+" is for tracks "+trackSet.firstTrack+"-"+(trackSet.firstTrack+trackSet.numTracks-1)+" and bg track is "+trackSet.bgTrack+"; stopping clip");
 			stopClip(track,clip);
 		}
 		Clip c=t.getClip(clip);
