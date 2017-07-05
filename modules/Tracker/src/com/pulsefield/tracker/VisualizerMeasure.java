@@ -21,7 +21,6 @@ class Measure {
 	void draw(PGraphics g, People p) {
 		g.imageMode(PConstants.CENTER);
 		g.translate(position.x, position.y);
-		g.beginDraw();
 		g.colorMode(PGraphics.RGB);
 		
 		// Create a copy of the people list; we'll walk the full list and for each element
@@ -93,8 +92,7 @@ class Measure {
 			// TODO: Double check this is working as expected.
 			peopleCopy.remove(ps);
 		}
-		
-		g.endDraw();
+
 	}
 	
 	void update(People p) {
