@@ -37,7 +37,7 @@ class Measure {
 				int c1=ps.getcolor();
 				int c2=ps2.getcolor();
 				int newcolor=(((c1>>>1)&0x7f7f7f) + ((c2>>>1)&0x7f7f7f)) | 0xff000000; // Combined color
-				logger.info("c1="+PApplet.hex(c1)+", c2="+PApplet.hex(c2)+", newcolor="+PApplet.hex(newcolor));
+				//logger.info("c1="+PApplet.hex(c1)+", c2="+PApplet.hex(c2)+", newcolor="+PApplet.hex(newcolor));
 				g.stroke(newcolor);
 				// Draw the line between the two persons.
 				g.line(ps.getOriginInMeters().x,  ps.getOriginInMeters().y,
