@@ -6,7 +6,6 @@ import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import oscP5.OscMessage;
-import processing.core.PApplet;
 
 class MidiProgram {
 	int instrument;

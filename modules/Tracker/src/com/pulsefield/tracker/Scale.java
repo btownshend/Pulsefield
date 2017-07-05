@@ -1,8 +1,6 @@
 package com.pulsefield.tracker;
 import java.util.logging.Logger;
 
-import processing.core.PApplet;
-
 class ScaleType {
 	static final ScaleType scales[]={new ScaleType("Major",new int[]{0, 2, 4, 5, 7, 9, 11})};
 

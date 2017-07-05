@@ -3,8 +3,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import processing.core.PApplet;
-
 // Effects using a midi map
 class Effects {
 	Synth synth;

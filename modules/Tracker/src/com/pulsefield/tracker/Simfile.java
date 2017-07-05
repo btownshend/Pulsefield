@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PImage;
 

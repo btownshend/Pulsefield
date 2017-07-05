@@ -17,8 +17,6 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-import processing.core.PApplet;
-
 @SuppressWarnings("serial")
 public class GUI extends JFrame {
 	public static GUI theGUI;

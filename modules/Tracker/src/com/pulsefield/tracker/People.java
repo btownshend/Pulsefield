@@ -2,7 +2,6 @@ package com.pulsefield.tracker;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import processing.core.PApplet;
 import processing.core.PVector;
 
 

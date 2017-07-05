@@ -14,7 +14,8 @@ import processing.core.PVector;
 public class Leg {
 	private PVector position;
 	private PVector velocity;
-    private final static Logger logger = Logger.getLogger(Leg.class.getName());
+    @SuppressWarnings("unused")
+	private final static Logger logger = Logger.getLogger(Leg.class.getName());
 
 	Leg(PVector position) { this.position=new PVector(position.x,position.y); }
 	

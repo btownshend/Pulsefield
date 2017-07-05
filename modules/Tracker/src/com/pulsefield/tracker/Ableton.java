@@ -1,12 +1,10 @@
 package com.pulsefield.tracker;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
 import netP5.NetAddress;
 import oscP5.OscMessage;
 import oscP5.OscP5;
-import processing.core.PApplet;
 import processing.core.PVector;
 
 class Clip {

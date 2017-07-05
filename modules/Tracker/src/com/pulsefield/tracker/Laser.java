@@ -4,7 +4,6 @@ import java.util.logging.Logger;
 import netP5.NetAddress;
 import oscP5.OscMessage;
 import oscP5.OscP5;
-import processing.core.PApplet;
 
 
 
