@@ -418,9 +418,10 @@ public class Tracker extends PApplet {
 	}
 
 	private String vispos(int i) {
+		final int numrows=7;
 		int row=i/5;
 		int col=i-row*5;
-		return ""+(5-row)+"/"+(col+1);
+		return ""+(numrows-row)+"/"+(col+1);
 	}
 	
 	public void vsetapp(OscMessage msg) {
@@ -829,7 +830,7 @@ public class Tracker extends PApplet {
 		if (present)
 			PApplet.main(new String[] { "--present","com.pulsefield.tracker.Tracker"});
 		else
-			PApplet.main(new String[] {"--display=1","com.pulsefield.tracker.Tracker" });
+			PApplet.main(new String[] {"--display=2","com.pulsefield.tracker.Tracker" });
 	}
 
 	/* incoming osc message are forwarded to the oscEvent method. */
