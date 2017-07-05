@@ -1,4 +1,5 @@
 package com.pulsefield.tracker;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
@@ -17,7 +18,9 @@ class Clip {
 	private String name;
 	int trackNum;
 	int clipNum;
-	
+	int timesPlayed;
+    private final static Logger logger = Logger.getLogger(Clip.class.getName());
+
 	Clip(int trackNum, int clipNum) {
 		this.position=0f;
 		this.length=0f;
@@ -27,6 +30,7 @@ class Clip {
 		this.trackNum=trackNum;
 		this.clipNum=clipNum;
 		this.name=null;
+		this.timesPlayed=0;
 	}
 	String getName() {
 		if (name!=null)
@@ -42,6 +46,10 @@ class Clip {
 	}
 	void setName(String name) {
 		this.name=name;
+	}
+	void incrementPlays() {
+		timesPlayed++;
+		logger.info("Clip "+trackNum+"."+clipNum+" ("+name+") has been played "+timesPlayed+" times.");
 	}
 }
 
@@ -378,9 +386,10 @@ public class Ableton {
 		else if (state==3)
 			t.triggered=c;
 
-		if (state==1 && clip==bgClip && oldState!=1) {  // For some reasons, get 1->1 messages when starting
+		if (state==1 && clip==bgClip && oldState!=1 && oldState!=-1) {  // For some reasons, get 1->1 messages when starting
 			bgClip=-1;
-			startBgTrack();   // Start a new bg track
+			if (trackSet!=null)
+				startBgTrack();   // Start a new bg track
 		}
 		
 		OscMessage msg = new OscMessage("/grid/table/"+(t.songTrack+1)+"/track");
@@ -503,6 +512,7 @@ public class Ableton {
 		msg.add(clip);
 		sendMessage(msg);
 		sendMessage(new OscMessage("/live/clip/info").add(track).add(clip));  // Ask for clip info
+		getClip(track,clip).incrementPlays();
 	}
 
 	public void stopClip(int track, int clip) {
@@ -566,25 +576,41 @@ public class Ableton {
 	}
 	
 	public void startBgTrack() {
+		if (trackSet==null) {
+			logger.warning("Attempt to start bg track when trackset is null");
+		}
 		if (trackSet.bgTrack!=-1) {
 			logger.info("Starting bg track "+trackSet.bgTrack);
 			Track t=getTrack(trackSet.bgTrack);
-			if (t==null)
+			int[] clipChoices;
+			if (t==null) {
 				logger.warning("Track "+trackSet.bgTrack+" not found.");
-			else if (trackSet.bgClips != null) {
-				int nclips=trackSet.bgClips.length;
-				if (nclips<1)
-					logger.warning("startBgTrack: Track "+trackSet.bgTrack+" has no clips");
-				else {
-					bgClip=trackSet.bgClips[(int)(Math.random()*nclips)];
-					logger.info("Playing bg clip "+bgClip+" (of "+nclips+")");
-					playClip(trackSet.bgTrack,bgClip);
-				}
+				return;
+			} else if (trackSet.bgClips != null) {
+				clipChoices=trackSet.bgClips;
+			} else if (t.numClips() < 0) {
+				logger.warning("Num clips is not known -- starting first clip as bg");
+				clipChoices=new int[1];
+				clipChoices[0]=0;
 			} else {
 				// Use any clip on the bg track
-				int nclips=t.numClips();
-				bgClip=(int)(Math.random()*nclips);
-				logger.info("Playing bg clip "+bgClip+" (of "+nclips+")");
+				clipChoices=new int[t.numClips()];
+				for (int i=0;i<t.numClips();i++)
+					clipChoices[i]=i;
+			}
+			if (clipChoices.length<1)
+				logger.warning("startBgTrack: Track "+trackSet.bgTrack+" has no clips");
+			else {
+				int minPlays=getClip(trackSet.bgTrack,clipChoices[0]).timesPlayed;
+				bgClip=clipChoices[0];
+				for (int i=1;i<clipChoices.length;i++) {
+					int nPlays=getClip(trackSet.bgTrack,clipChoices[i]).timesPlayed;
+					if (nPlays<minPlays) {
+						minPlays=nPlays;
+						bgClip=clipChoices[i];
+					}
+				}
+				logger.info("Playing bg clip "+bgClip+" that has been played "+minPlays+" times (of "+clipChoices.length+" total clips)");
 				playClip(trackSet.bgTrack,bgClip);
 			}
 		}
