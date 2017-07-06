@@ -17,9 +17,9 @@
 	<key>Label</key>
 	<string>com.tc.calibrator</string>
 	<key>Program</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/Calibrator/calibrator</string>
+	<string>/Users/bst/Dropbox/Pulsefield/src/modules/Calibrator/calibrator</string>
 	<key>WorkingDirectory</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/Calibrator</string>
+	<string>/Users/bst/Dropbox/Pulsefield/src/modules/Calibrator</string>
 	<key>StandardOutPath</key>
 	<string>/Users/bst/Desktop/PF_LOGS/calibration_stdout.log</string>
 	<key>StandardErrorPath</key>
