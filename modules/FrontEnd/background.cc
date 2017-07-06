@@ -57,7 +57,8 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
 	    result[i]=0.0;
 	    for (int k=0;k<NRANGES-1;k++) {
 		// This is a background pixel if it matches the ranges of this scan's background, or is farther than maximum background
-		if (srange[i]>range[k][i] && k==0)
+		if (srange[i]>range[k][i]-2*sigma[k][i] && k==0)
+		    // If more than the far background (-2sigma), then certain this is background
 		    result[i]=1.0;
 		else 
 		    result[i]+=(1-result[i])*freq[k][i]*normpdf(srange[i],range[k][i],sigma[k][i]); 
@@ -138,7 +139,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    if (!bginit)
 		sigma[bestk][i]=std::min((double)MAXBGSIGMA,sqrt(sigma[bestk][i]*sigma[bestk][i]*(1-1.0f/tc)+(srange[i]-range[bestk][i])*(srange[i]-oldrange)*1.0f/tc));
 	    consecutiveInvisible[bestk][i]=0;
-	} else if (srange[i]>range[0][i]) {
+	} else if (srange[i]>range[0][i]+FARTHRESHOLD) {
 	    // New long distance point, update range[0] faster
 	    dbg("Background.update",2) << "Farthest background at scan " << i << " moved from " << range[0][i] << " to " << srange[i] << std::endl;
 	    float oldrange=range[0][i];
@@ -172,7 +173,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	}
 
 	// Swap ordering if needed
-	if (range[0][i] < range[1][i])
+	if (range[0][i] < range[1][i] && freq[1][i]>0.01)
 	    // range[0] is always farthest
 	    swap(i,0,1);
 

@@ -7,10 +7,14 @@
 
 #pragma once
 
+#include <assert.h>
 #include <math.h>
 #include <pthread.h>
 #include <sicklms5xx/SickLMS5xx.hh>
+#ifdef MATLAB
 #include <mat.h>
+#endif
+
 #include <queue>
 
 #include "point.h"
@@ -51,7 +55,7 @@ class SickFrame {
 
  public:
     SickFrame();
-    void read(SickToolbox::SickLMS5xx *sick_lms_5xx=NULL, int nechoes=1, bool captureRSSI=false);
+    void read(SickToolbox::SickLMS5xx *sick_lms_5xx=NULL, int nechoes=1, bool captureRSSI=false, int nMeasure=571);
 
     // Peek into a file to determine its version
     static int getFileVersion(FILE *fd);
@@ -139,7 +143,7 @@ public:
 	int start();
 	int stop();
 
-	static int startRecording(const char *filename) {
+	static int startRecording(const char *filename, const std::string &comments) {
 	    assert(recordFD==NULL);
 	    recordFD = fopen(filename,"w");
 	    if (recordFD == NULL) {
@@ -149,6 +153,7 @@ public:
 	    printf("Recording into %s\n", filename);
 	    if (recordVersion>1)
 		fprintf(recordFD,"FEREC-%d.0\n",recordVersion);
+	    fprintf(recordFD,"# %s\n",comments.c_str());   // FIXME: Should check comments for embedded newlines
 	    dbg("SickIO.startRecording",1) << "SICK recording to " << filename << " using format version " << recordVersion << " started." << std::endl;
 	    return 0;
 	}

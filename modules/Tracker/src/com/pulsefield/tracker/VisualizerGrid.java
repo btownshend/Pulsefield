@@ -18,6 +18,7 @@ public class VisualizerGrid extends VisualizerPS {
 	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","AN","PB"};
 	int song=0;
 	PVector titlePos = new PVector(0,0);
+	protected boolean drawGrid = true;
 	
 	VisualizerGrid(PApplet parent) {
 		super(parent);
@@ -33,7 +34,7 @@ public class VisualizerGrid extends VisualizerPS {
 		int nrow=(int)(sz.y/gridSpacing+0.5);
 		int ncol=(int)(sz.x/gridSpacing+0.5);
 		ncell=nrow*ncol;
-		PApplet.println("Grid has "+nrow+" rows over "+(Tracker.maxy-Tracker.miny)+" meters and "+ncol+" columns over "+(Tracker.maxx-Tracker.minx)+" meters");
+		logger.info("Grid has "+nrow+" rows over "+(Tracker.maxy-Tracker.miny)+" meters and "+ncol+" columns over "+(Tracker.maxx-Tracker.minx)+" meters");
 		gposx=new float[ncell];
 		gposy=new float[ncell];
 		for (int r=0;r<nrow;r++) {
@@ -54,7 +55,7 @@ public class VisualizerGrid extends VisualizerPS {
 		song=(song+1)%songs.length;
 		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);
 		setupGrid();
-		PApplet.println("Starting grid with song "+song+": "+ts.name);
+		logger.info("Starting grid with song "+song+": "+ts.name);
 	}
 	public void stop() {
 		super.stop();
@@ -64,9 +65,9 @@ public class VisualizerGrid extends VisualizerPS {
 	public void songIncr(float set) {
 		if (set>0)
 			song=(song+1)%songs.length;
-		PApplet.println("Song="+song);
+		logger.fine("Song="+song);
 		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);
-		PApplet.println("Starting grid with song "+song+": "+ts.name);
+		logger.info("Starting grid with song "+song+": "+ts.name);
 	}
 
 
@@ -78,7 +79,7 @@ public class VisualizerGrid extends VisualizerPS {
 		titlePos.y=Tracker.miny+0.24f+0.1f;
 	//	HashMap<Integer,Integer> newAssignments=new HashMap<Integer,Integer>();
 		for (Person pos: allpos.pmap.values()) {
-			//PApplet.println("ID "+pos.id+" pos="+pos.origin);
+			//logger.fine("ID "+pos.id+" pos="+pos.origin);
 			// Find closest grid position
 			// Check for song advance
 			if (PVector.sub(titlePos, pos.getOriginInMeters()).mag() < 0.3f) {
@@ -93,7 +94,7 @@ public class VisualizerGrid extends VisualizerPS {
 				current=assignments.get(pos.id);
 				closest=current;
 				mindist=(Math.pow(gposx[closest]-pos.getNormalizedPosition().x,2)+Math.pow(gposy[closest]-pos.getNormalizedPosition().y,2))*0.8;  // Make it appear a little closer to create hysteresis
-				//PApplet.println("Had existing grid "+closest+" at distance "+Math.sqrt(mindist));	
+				//logger.fine("Had existing grid "+closest+" at distance "+Math.sqrt(mindist));	
 			}
 			for (int i=0;i<ncell;i++) {
 				double dist2=Math.pow(gposx[i]-pos.getNormalizedPosition().x,2)+Math.pow(gposy[i]-pos.getNormalizedPosition().y,2);
@@ -102,7 +103,7 @@ public class VisualizerGrid extends VisualizerPS {
 					closest=i;
 				}
 			}
-			//PApplet.println("ID "+pos.id+" closest to grid ("+gposx[closest]+","+gposy[closest]+"), position "+closest+" at a distance of "+Math.sqrt(mindist));
+			//logger.fine("ID "+pos.id+" closest to grid ("+gposx[closest]+","+gposy[closest]+"), position "+closest+" at a distance of "+Math.sqrt(mindist));
 			if (current!=closest) {
 				TrackSet ts=Ableton.getInstance().trackSet;
 				int track=pos.id%(ts.numTracks)+ts.firstTrack;
@@ -119,7 +120,7 @@ public class VisualizerGrid extends VisualizerPS {
 		while (i.hasNext()) {
 			int id=i.next().getKey();
 			if (!allpos.pmap.containsKey(id)) {
-				PApplet.println("update: no update info for assignment for id "+id);
+				logger.fine("update: no update info for assignment for id "+id);
 				i.remove();
 			}
 		}
@@ -129,25 +130,27 @@ public class VisualizerGrid extends VisualizerPS {
 		super.draw(t, g, p);
 		if (p.pmap.isEmpty())
 			return;
-		g.textAlign(PConstants.CENTER,PConstants.CENTER);
-		PVector gridOffset=new PVector(gridwidth/2, gridheight/2);
-		for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
-			int id=entry.getKey();
-			int cell=entry.getValue();
-			//PApplet.println("grid "+cell+", id="+id+" "+gridColors.get(cell));
-			g.fill(127,0,0,127);
-			g.strokeWeight(.05f);
-			g.stroke(127,0,0);
-			PVector gcenter=new PVector(gposx[cell],gposy[cell]);
-			PVector tl = Tracker.normalizedToFloor(PVector.sub(gcenter, gridOffset));
-			PVector br = Tracker.normalizedToFloor(PVector.add(gcenter, gridOffset));
-			g.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
-			g.fill(255);
-			TrackSet ts=Ableton.getInstance().trackSet;
-			Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
-			if (track.numClips()!=-1) {
-				Clip clip=track.getClip(cell%track.numClips());
-				drawText(g,0.16f,track.getName()+"-"+clip.getName()+" P"+id,gcenter.x,gcenter.y,gridOffset.x,gridOffset.y);
+		if (drawGrid) {
+			g.textAlign(PConstants.CENTER,PConstants.CENTER);
+			PVector gridOffset=new PVector(gridwidth/2, gridheight/2);
+			for (Map.Entry<Integer,Integer> entry: assignments. entrySet()) {
+				int id=entry.getKey();
+				int cell=entry.getValue();
+				//logger.fine("grid "+cell+", id="+id+" "+gridColors.get(cell));
+				g.fill(127,0,0,127);
+				g.strokeWeight(.05f);
+				g.stroke(255,0,0);
+				PVector gcenter=new PVector(gposx[cell],gposy[cell]);
+				PVector tl = Tracker.normalizedToFloor(PVector.sub(gcenter, gridOffset));
+				PVector br = Tracker.normalizedToFloor(PVector.add(gcenter, gridOffset));
+				g.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
+				g.fill(255);
+				TrackSet ts=Ableton.getInstance().trackSet;
+				Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
+				if (track.numClips()>0) {
+					Clip clip=track.getClip(cell%track.numClips());
+					drawText(g,0.16f,track.getName()+"-"+clip.getName()+" P"+id,gcenter.x,gcenter.y,gridOffset.x,gridOffset.y);
+				}
 			}
 		}
 		g.fill(127);
@@ -165,7 +168,7 @@ public class VisualizerGrid extends VisualizerPS {
 			PVector gcenter=new PVector(gposx[cell],gposy[cell]);
 			PVector tl = Tracker.normalizedToFloor(PVector.sub(gcenter, gridOffset));
 			PVector br = Tracker.normalizedToFloor(PVector.add(gcenter, gridOffset));
-			//PApplet.println("Drawing rect "+tl+" to "+br);
+			//logger.fine("Drawing rect "+tl+" to "+br);
 			laser.shapeBegin("gridcell"+cell);
 			laser.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
 			laser.shapeEnd("gridcell"+cell);
@@ -178,7 +181,7 @@ public class VisualizerGrid extends VisualizerPS {
 	}
 
 	public void handleMessage(OscMessage theOscMessage) {
-		//PApplet.println("Ableton message: "+theOscMessage.toString());
+		//logger.fine("Ableton message: "+theOscMessage.toString());
 		boolean handled=false;
 		String pattern=theOscMessage.addrPattern();
 		String components[]=pattern.split("/");
@@ -186,12 +189,12 @@ public class VisualizerGrid extends VisualizerPS {
 		if (components[1].equals("grid") && components[2].equals("cell")) {
 			int cell=Integer.parseInt(components[3])-1;  // Cell is 1-60; change to 0
 			if(cell<0 || cell>=60) {
-				PApplet.println("Bad grid cell: "+cell);
+				logger.warning("Bad grid cell: "+cell);
 				cell=0;
 			}
 			if (components.length == 4) {
 				String value=theOscMessage.get(0).stringValue();
-				//PApplet.println("cell "+cell+" = "+value);
+				//logger.fine("cell "+cell+" = "+value);
 				if (value.isEmpty()) {
 					assignments.remove(cell);
 					gridColors.remove(cell);

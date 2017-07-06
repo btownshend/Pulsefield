@@ -1,4 +1,6 @@
 package com.pulsefield.tracker;
+import java.util.logging.Logger;
+
 import codeanticode.syphon.SyphonServer;
 import oscP5.OscMessage;
 import processing.core.PApplet;
@@ -21,6 +23,7 @@ public class Projector {
 	PMatrix3D w2s=new PMatrix3D();
 	PMatrix3D s2w=new PMatrix3D();
 	PVector bounds[];
+    private final static Logger logger = Logger.getLogger(Projector.class.getName());
 
 
 	public Projector(PApplet parent, int id, int width, int height) {
@@ -30,7 +33,7 @@ public class Projector {
 		server=new SyphonServer(parent, "P"+id);
 		pos=new PVector(0,0);
 		if (debug>5) {
-			PApplet.println("P"+id+" parent matrix:");
+			logger.fine("P"+id+" parent matrix:");
 			parent.printMatrix();
 			parent.printCamera();
 		}
@@ -67,11 +70,11 @@ public class Projector {
 		} else if (components.length==4 && components[3].equals("save")) {
 			saveSettings();
 		} else 
-			PApplet.println("Unknown projector Message: "+msg.toString());
+			logger.warning("Unknown projector Message: "+msg.toString());
 	}
 
 	public void saveSettings() {
-		PApplet.println("Projector.saveSettings("+id+")");
+		logger.config("Projector.saveSettings("+id+")");
 		Config.setVec("proj"+id, "pos", pos);
 		Config.setMat("proj"+id,"s2w",s2w);
 		Config.setMat("proj"+id,"w2s",w2s);
@@ -80,7 +83,7 @@ public class Projector {
 	}
 
 	public void loadSettings() {
-		PApplet.println("Projector.loadSettings("+id+")");
+		logger.config("Projector.loadSettings("+id+")");
 		setPosition(Config.getVec("proj"+id,"pos",pos));
 		setCameraView(Config.getMat("proj"+id,"camview",camview));
 		params.setProjection(Config.getMat("proj"+id, "projection", params.projMatrix));
@@ -135,7 +138,7 @@ public class Projector {
 					continue;
 				if (c[i].proj+1==id) {
 					final float CURSORLEN=50f;
-					//PApplet.println("Cursor "+i+"/"+c.length+" for proj "+c[i].proj+" @ "+c[i].pos.x+", "+c[i].pos.y);
+					//logger.fine("Cursor "+i+"/"+c.length+" for proj "+c[i].proj+" @ "+c[i].pos.x+", "+c[i].pos.y);
 					//ttest(c[i].pos.x,c[i].pos.y,c[i].pos.z);
 					pcanvas.ellipse(c[i].pos.x, c[i].pos.y, CURSORLEN/2, CURSORLEN/2);
 					pcanvas.line(c[i].pos.x-CURSORLEN,c[i].pos.y,c[i].pos.x+CURSORLEN,c[i].pos.y);
@@ -150,7 +153,7 @@ public class Projector {
 	}
 
 	private void ttest(float x, float y, float z) {
-		PApplet.println("["+x+","+y+","+z+"]->["+pcanvas.screenX(x,y,z)+","+pcanvas.screenY(x,y,z)+","+pcanvas.screenZ(x,y,z)+"]; expect "+world2screen(new PVector(x,y,z)));
+		logger.fine("["+x+","+y+","+z+"]->["+pcanvas.screenX(x,y,z)+","+pcanvas.screenY(x,y,z)+","+pcanvas.screenZ(x,y,z)+"]; expect "+world2screen(new PVector(x,y,z)));
 	}
 
 	public PVector screen2world(PVector s) {

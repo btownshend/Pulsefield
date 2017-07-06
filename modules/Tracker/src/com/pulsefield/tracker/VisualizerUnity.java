@@ -12,7 +12,7 @@ public class VisualizerUnity extends VisualizerSyphon {
 		super(parent,appName,"Main Camera");
 		this.app=new File(appPath);
 		if (!app.exists()) {
-			PApplet.println("Unity application: "+app.getAbsolutePath()+" does not exist.");
+			logger.warning("Unity application: "+app.getAbsolutePath()+" does not exist.");
 			assert(false);
 		}
 	}
@@ -23,12 +23,12 @@ public class VisualizerUnity extends VisualizerSyphon {
 		String cmd="open -W "+app.getAbsolutePath();  // Make the open wait for the subprocess so we know when it truly exits
 		try {
 			// Launch the app
-			PApplet.println("Launching Unity app with: '"+cmd+"'");
+			logger.info("Launching Unity app with: '"+cmd+"'");
 			pid=Runtime.getRuntime().exec(cmd);
-			PApplet.println("pid="+pid.toString()+", isAlive="+pid.isAlive());
+			logger.info("pid="+pid.toString()+", isAlive="+pid.isAlive());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			PApplet.println("Unable to launch Unity app: "+app.getAbsolutePath());
+			logger.warning("Unable to launch Unity app: "+app.getAbsolutePath());
 			e.printStackTrace();
 		}
 	}
@@ -39,7 +39,7 @@ public class VisualizerUnity extends VisualizerSyphon {
 		
 		// Kill the app
 		if (pid.isAlive()) {
-			PApplet.println("Killing process "+app.getAbsolutePath());
+			logger.info("Killing process "+app.getAbsolutePath());
 			pid.destroyForcibly();
 		}
 		pid=null;
@@ -51,7 +51,7 @@ public class VisualizerUnity extends VisualizerSyphon {
 		// Update internal state
 		super.update(parent, p);
 		if (!pid.isAlive()) {
-			PApplet.println("subprocess exitted; status="+pid.exitValue());
+			logger.info("subprocess exitted; status="+pid.exitValue());
 			((Tracker)parent).cycle();
 		}
 	}

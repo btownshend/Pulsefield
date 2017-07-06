@@ -7,7 +7,10 @@
 
 #pragma once
 #include <vector>
+#ifdef MATLAB
 #include <mat.h>
+#endif
+
 #include "lo/lo.h"
 
 class Vis;
@@ -37,7 +40,9 @@ public:
     // Return probability of each scan pixel being part of background (fixed structures not to be considered targets)
     std::vector<float> like(const Vis &vis, const World &world) const;
     void update(const SickIO &sick, const std::vector<int> &assignments, bool all=false);
+#ifdef MATLAB
     mxArray *convertToMX() const;
+#endif
     const std::vector<float> &getRange(int i) const { return range[i]; }
     const std::vector<float> &getFreq(int i) const { return freq[i]; }
     const std::vector<float> &getSigma(int i) const { return sigma[i]; }

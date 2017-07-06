@@ -47,12 +47,12 @@ public class Person {
 		final int colors[] = {0xffffffff, 0xff00ff00, 0xff0000ff, 0xffFFFF00, 0xffFF00FF, 0xff00ffff};
 		
 		int col=colors[(id-1)%colors.length];
-		//PApplet.println("Color="+String.format("%x", col));
+		//logger.fine("Color="+String.format("%x", col));
 		return col;
 	}
 
 	void move(PVector newpos, PVector newvel, int groupid, int groupsize, float elapsed) {
-//		PApplet.println("Set ID "+id+" to pos="+newpos+", vel="+newvel);
+//		logger.fine("Set ID "+id+" to pos="+newpos+", vel="+newvel);
 		position=new PVector(newpos.x,newpos.y);
 		velocity=new PVector(newvel.x,newvel.y);
 		this.groupid=groupid;

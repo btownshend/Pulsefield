@@ -27,7 +27,7 @@ public class VisualizerProximity extends VisualizerPS {
 		super.start();
 		song=(song+1)%songs.length;
 		ts=Ableton.getInstance().setTrackSet(songs[song]);
-		PApplet.println("Starting proximity with song "+song+": "+ts.name);
+		logger.info("Starting proximity with song "+song+": "+ts.name);
 		Laser.getInstance().setFlag("body",1.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
 	}
@@ -40,9 +40,9 @@ public class VisualizerProximity extends VisualizerPS {
 	public void songIncr(float set) {
 		if (set>0)
 			song=(song+1)%songs.length;
-		PApplet.println("Song="+song);
+		logger.fine("Song="+song);
 		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);
-		PApplet.println("Starting grid with song "+song+": "+ts.name);
+		logger.fine("Starting grid with song "+song+": "+ts.name);
 	}
 
 	public int clipNumber(int nclips,int id1, int id2) {
@@ -86,10 +86,10 @@ public class VisualizerProximity extends VisualizerPS {
 					closest=id2;
 				}
 			}
-			//PApplet.println("ID "+id1+" closest to id "+closest+" at a distance of "+Math.sqrt(mindist));
+			//logger.fine("ID "+id1+" closest to id "+closest+" at a distance of "+Math.sqrt(mindist));
 
 			if (current!=closest) {
-				PApplet.println("ID "+closest+" now closer to id "+id1+" instead of "+current+" at a distance of "+Math.sqrt(mindist));
+				logger.fine("ID "+closest+" now closer to id "+id1+" instead of "+current+" at a distance of "+Math.sqrt(mindist));
 
 				int track=id1%(ts.numTracks)+ts.firstTrack;
 //				if (current!=-1)
@@ -107,7 +107,7 @@ public class VisualizerProximity extends VisualizerPS {
 		while (i.hasNext()) {
 			int id=i.next().getKey();
 			if (!allpos.pmap.containsKey(id)) {
-				PApplet.println("update: no update info for assignment for id "+id);
+				logger.fine("update: no update info for assignment for id "+id);
 				i.remove();
 			}
 		}
@@ -134,13 +134,13 @@ public class VisualizerProximity extends VisualizerPS {
 			int id1=entry.getKey();
 			int id2=entry.getValue();
 			if (id2!=-1) {
-				//PApplet.println("grid "+cell+", id="+id+" "+gridColors.get(cell));
+				//logger.fine("grid "+cell+", id="+id+" "+gridColors.get(cell));
 				g.pushStyle();
 				g.fill(127,0,0,127);
 				g.strokeWeight(0.01f);
 				g.colorMode(PConstants.HSB);
 				int color=(id1*34813747+id2*23873)&0xff;
-				//PApplet.println("id1="+id1+", id2="+id2+" -> color="+color);
+				//logger.fine("id1="+id1+", id2="+id2+" -> color="+color);
 				g.stroke(color,255,255);
 				randomline(g, p.get(id1).legs[0].getOriginInMeters(), p.get(id2).legs[0].getOriginInMeters(),.2f);
 				randomline(g, p.get(id1).legs[0].getOriginInMeters(), p.get(id2).legs[1].getOriginInMeters(),.2f);
@@ -167,7 +167,7 @@ public class VisualizerProximity extends VisualizerPS {
 			laser.shapeBegin("prox:"+id1+"-"+id2);
 			PVector p1 = Tracker.normalizedToFloor(p.get(id1).getNormalizedPosition());
 			PVector p2 = Tracker.normalizedToFloor(p.get(id2).getNormalizedPosition());
-//			PApplet.println("Drawing line "+p1+" to "+p2);
+//			logger.fine("Drawing line "+p1+" to "+p2);
 			laser.line(p1.x,p1.y,p2.x,p2.y);
 			laser.shapeEnd("prox:"+id1+"-"+id2);
 		}

@@ -19,22 +19,22 @@ public class VisualizerVDMX extends VisualizerSyphon {
 	public void start() {
 		super.start();  // Start the syphon client, etc
 		if (!app.exists()) {
-			PApplet.println("VDMX application: "+app.getAbsolutePath()+" does not exist.");
+			logger.warning("VDMX application: "+app.getAbsolutePath()+" does not exist.");
 			return;
 		}
 		if (!proj.exists()) {
-			PApplet.println("VDMX project: "+proj.getAbsolutePath()+" does not exist.");		
+			logger.warning("VDMX project: "+proj.getAbsolutePath()+" does not exist.");		
 			return;
 		}
 		String cmd="open -W -a "+app.getAbsolutePath()+" \""+proj.getAbsolutePath()+"\"";  // Make the open wait for the subprocess so we know when it truly exits
 		try {
 			// Launch the app
-			PApplet.println("Launching VDMX app with: '"+cmd+"'");
+			logger.info("Launching VDMX app with: '"+cmd+"'");
 			pid=Runtime.getRuntime().exec(cmd);
-			PApplet.println("pid="+pid.toString()+", isAlive="+pid.isAlive());
+			logger.info("pid="+pid.toString()+", isAlive="+pid.isAlive());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			PApplet.println("Unable to launch VDMX app: "+app.getAbsolutePath());
+       		        logger.warning("Unable to launch VDMX app: "+app.getAbsolutePath());
 			e.printStackTrace();
 		}
 	}
@@ -45,7 +45,7 @@ public class VisualizerVDMX extends VisualizerSyphon {
 		
 		// Kill the app
 		if (pid!=null && pid.isAlive()) {
-			PApplet.println("Killing process "+app.getAbsolutePath());
+			logger.info("Killing process "+app.getAbsolutePath());
 			pid.destroyForcibly();
 		}
 		pid=null;
@@ -58,7 +58,7 @@ public class VisualizerVDMX extends VisualizerSyphon {
 		super.update(parent, p);
 		if (pid==null || !pid.isAlive()) {
 			if (pid!=null)
-				PApplet.println("subprocess exitted; status="+pid.exitValue());
+				logger.info("subprocess exitted; status="+pid.exitValue());
 			((Tracker)parent).cycle();
 		}
 	}

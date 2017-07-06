@@ -8,6 +8,7 @@
 #include "dbg.h"
 #include "parameters.h"
 #include "sickio.h"
+#include "leg.h"
 
 static int nsick=1;
 unsigned int MAXRANGE=12000;
@@ -131,6 +132,8 @@ int main(int argc, char *argv[])
 
     dbg("main",1) << "Comment: " << comments << std::endl;
 
+    Leg::setup(50.0,nsick);   // FIXME: Assumes 50Hz scan freq
+
     if (playFile) {
 	// Create a front end with no sensors so it doesn't access any devices
 	FrontEnd fe(overlayLive?nsick:0,maxRange,argc,(const char **)argv);
@@ -148,7 +151,7 @@ int main(int argc, char *argv[])
 	if (visoutput) 
 	    fe.getStat(FrontEnd::RANGE,0);
 	if (recordFile) {
-	    int rc=SickIO::startRecording(recordFile);
+	    int rc=SickIO::startRecording(recordFile,comments);
 	    if (rc)
 		exit(1);
 	}
@@ -168,7 +171,7 @@ int main(int argc, char *argv[])
 	fe.getStat(FrontEnd::RANGE,0);
 
     if (recordFile) {
-	int rc=SickIO::startRecording(recordFile);
+	int rc=SickIO::startRecording(recordFile,comments);
 	if (rc)
 	    exit(1);
     }

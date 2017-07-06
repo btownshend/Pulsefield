@@ -37,6 +37,8 @@ public:
     }
     void append(int scan,Point pos) { scans.push_back(scan); hits.push_back(pos); }
     Point lastHit() const { return hits.back(); }
+    const std::vector<int> &getScans() const { return scans; } 
+    int firstScan() const { return scans[0]; }
     int lastScan() const { return scans.back(); }
     // Get estimate of center of target
     Point getCenter(const SickIO *sick) const {
@@ -52,21 +54,47 @@ public:
 	return center;
     }
     float getWidth() const { return (hits.front()-hits.back()).norm(); }
-    // Split target at largest jump
-    Target split() {
+    // Split target at largest jump leaving current target with width <= maxWidth
+    Target split(float maxWidth) {
 	assert(hits.size()>=2);
-	int jump=0;   // Jump is after this index
-	float jumpSize=(hits[jump]-hits[jump+1]).norm();
-	dbg("World.makeAssignments",3) << "Trying to split target into 2.  hits.size()=" << hits.size() << ", initial jumpSize=" << jumpSize << std::endl;
-	for (int i=1;i<hits.size()-1;i++) {
+	// First, try to split such that both pieces are <= maxWidth
+
+	int jump=-1;   // Jump is after this index  (split in half if nothing better)
+	float jumpSize=0;
+	dbg("World.makeAssignments",3) << "Trying to split target into 2.  hits.size()=" << hits.size() << jumpSize << std::endl;
+	for (int i=0;i<hits.size()-1;i++) {
+	    if ((hits.back()-hits[i+1]).norm() > maxWidth)
+		continue;
+	    if ((hits.front()-hits[i]).norm() > maxWidth) {
+		dbg("World.makeAssignments",4) << "Finishing split attempt at " << i << " with width > " << maxWidth << std::endl;
+		break;
+	    }
 	    float jtmp=(hits[i]-hits[i+1]).norm();
 	    if (jtmp>jumpSize) {
 		jump=i;
 		jumpSize=jtmp;
-		dbg("World.makeAssignments",4) << "Possible split at " << jump << " with size " << jumpSize << std::endl;
+		dbg("World.makeAssignments",4) << "Possible split at " << jump << " with jump of " << jumpSize << std::endl;
 	    }
 	}
-	dbg("World.makeAssignments",3) << "Split target into 2 at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << ", jumpSize=" << jumpSize << std::endl;
+	if (jump==-1) {
+	    dbg("World.makeAssignments",3) << "No solution with both parts < " << maxWidth << std::endl;
+	    // Only ensure that first part is < maxWidth, 2nd part will get split again
+	    jump=0;
+	    jumpSize=(hits[jump]-hits[jump+1]).norm();
+	    for (int i=0;i<hits.size()-1;i++) {
+		if ((hits.front()-hits[i]).norm() > maxWidth) {
+		    dbg("World.makeAssignments",4) << "Finishing split attempt at " << i << " with width > " << maxWidth << std::endl;
+		    break;
+		}
+		float jtmp=(hits[i]-hits[i+1]).norm();
+		if (jtmp>jumpSize) {
+		    jump=i;
+		    jumpSize=jtmp;
+		    dbg("World.makeAssignments",4) << "Possible split at " << jump << " with size " << jumpSize << std::endl;
+		}
+	    }
+	}
+	dbg("World.makeAssignments",3) << "Split target into 2 at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << ", jumpSize=" << jumpSize << ", widths=" << (hits.front()-hits[jump]).norm() << ", " << (hits.back()-hits[jump+1]).norm() << std::endl;
 	Target result;
 	for (int i=jump+1;i<hits.size();i++)
 	    result.append(scans[i],hits[i]);
@@ -75,17 +103,8 @@ public:
 	return result;
     }
     // Split target at local maxima
-    Target splitLocalMaxima() {
+    Target splitLocalMaxima(int maxima) {
 	assert(hits.size()>=2);
-	int maxima=1; // Maxima at this point
-	float depth=hits[maxima].norm() - std::max(hits[maxima-1].norm(),hits[maxima+1].norm());
-	for (int i=1;i<hits.size()-1;i++) {
-	    float tmpdepth=hits[i].norm() - std::max(hits[i-1].norm(),hits[i+1].norm());
-	    if (tmpdepth>depth) {
-		maxima=i;
-		depth=tmpdepth;
-	    }
-	}
 	int jump;
 	// Check which side should get maxima
 	if (hits[maxima-1].norm() < hits[maxima+1].norm())
@@ -93,7 +112,7 @@ public:
 	else
 	    jump=maxima;
 
-	dbg("World.makeAssignments",3) << "Split target into 2 at local maxima with depth " << depth << " at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << std::endl;
+	dbg("World.makeAssignments",3) << "Split target into 2 at local maxima at " << scans[0] << "-" << scans[jump] << " and " << scans[jump+1] << "-" << scans.back() << std::endl;
 	Target result;
 	for (int i=jump+1;i<hits.size();i++)
 	    result.append(scans[i],hits[i]);
@@ -125,16 +144,26 @@ public:
 	return result;
     }
     // Check if target would have a local maximum of size >= minsize if pt is added
-    float getMaximaDepth() const {
+    float getMaximaDepth(int &maxPos) const {
+	// Find the combination of 3 points where the middle is behind the furthest of the others by as much as possible -> depth
+	if (hits.size() < 3)
+	    return 0;
 	float depth=0;
 	for (int i=0;i<hits.size();i++)
 	    for (int j=i+1;j<hits.size();j++) {
 		if (hits[j].norm()<depth+hits[i].norm())
 		    continue;
-		for (int k=j+1;k<hits.size();k++)
-		    depth=std::max(depth,hits[j].norm()-std::max(hits[i].norm(),hits[k].norm()));
+		for (int k=j+1;k<hits.size();k++) {
+		    float dnew=hits[j].norm()-std::max(hits[i].norm(),hits[k].norm());
+		    if (dnew>depth) {
+			depth=dnew;
+			maxPos=j;
+		    }
+		}
 	    }
-	dbg("World.getMaximaDepth",3) << "depth=" << depth << std::endl;
+	dbg("World.getMaximaDepth",3) << "depth=" << depth << " at " << maxPos << std::endl;
+	// Note: this is not the same as taking the farthest point as the split, since that may not be the best local maxima!
+	
 	return depth;
     }
     
@@ -197,11 +226,19 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
     dbg("World.makeAssignments",3) << "Assigned " << nassigned << " hits to " << targets.size() << " targets." << std::endl;
     // Split targets that are too wide
     for (int i=0;i<targets.size();i++) {
-	if (targets[i].getMaximaDepth() >= TARGETMAXIMADEPTH)
-	    targets.push_back(targets[i].splitLocalMaxima());
-	if (targets[i].getWidth() > MAXLEGDIAM) {
-	    targets.push_back(targets[i].split());
+	int maxPos;
+	float maxDepth=targets[i].getMaximaDepth(maxPos);
+	if (maxDepth  >= TARGETMAXIMADEPTH) {
+	    dbg("World.makeAssignments",3) << "Target at " <<  targets[i].firstScan() << "-" << targets[i].lastScan() << " has maxima depth of " << maxDepth << " > =" << TARGETMAXIMADEPTH << ": splitting" << std::endl;
+	    targets.push_back(targets[i].splitLocalMaxima(maxPos));
 	}
+	if (targets[i].getWidth() > MAXLEGDIAM) {
+	    dbg("World.makeAssignments",3) << "Target at " <<  targets[i].firstScan() << "-" << targets[i].lastScan() << " has total width of " << targets[i].getWidth() << " > " << MAXLEGDIAM << ": splitting" << std::endl;
+	    targets.push_back(targets[i].split(MAXLEGDIAM));
+	}
+    }
+    for (int i=0;i<targets.size();i++) {
+	dbg("World.makeAssignments",4) << "Target " << i << ": " << targets[i].getScans() << std:: endl;
     }
 
     // Convert targets from local (LIDAR) space to world
@@ -242,6 +279,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	}
 	if (closest<MAXASSIGNMENTDIST) {
 	    dbg("World.makeAssignments",3) << "Assigning; closest person to  target " << assignedTarget << " is P" << people[assignedPerson].getID() << "." << assignedLeg << " with distance " << closest << std::endl;
+	    dbg("World.makeAssignments",3) << "Scans: " << targets[assignedTarget].getScans() << std::endl;
 	    targets[assignedTarget].setAssignments(assignments, legassigned, assignedPerson, assignedLeg);
 	    legAssigned[assignedLeg][assignedPerson]=assignedTarget;  // Mark it as already assigned
 	    if (!REASSIGNPOINTS) {
@@ -256,7 +294,7 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 			targets[assignedTarget].setAssignments(assignments, legassigned, assignedPerson, 1-assignedLeg);
 			targets[otherTarget].setAssignments(assignments, legassigned, assignedPerson, assignedLeg);
 		    } else {
-			dbg("World.makeAssignments",3) << "Not swapping target assignments: P" << people[assignedPerson].getID() << "." << assignedLeg << " now gets target " << otherTarget << ", since sqd-dist with swap= " << swapd2 << " >  " <<  currentd2 << std::endl;
+			dbg("World.makeAssignments",3) << "Not swapping target assignments: P" << people[assignedPerson].getID() << "." << assignedLeg << " to " << otherTarget << ", since sqd-dist with swap= " << swapd2 << " >  " <<  currentd2 << std::endl;
 		    }
 		}
 	    }
@@ -315,12 +353,24 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	    }
 	}
 	if (bestsep<=MAXLEGSEP) {
-	    dbg("World.track",1) << "Creating an initial track using targets " << bestindices[0] << "," << bestindices[1] << " with separation " << bestsep << std::endl;
-	    Point l1=targets[bestindices[0]].getCenter(sick);
-	    Point l2=targets[bestindices[1]].getCenter(sick);
-	    people.add(l1,l2);
-	    targets[bestindices[0]].setAssignments(assignments,legassigned,people.size()-1,0);
-	    targets[bestindices[1]].setAssignments(assignments,legassigned,people.size()-1,1);
+	    dbg("World.track",1) << "Potential new initial track using targets " << bestindices[0] << "," << bestindices[1] << " with separation " << bestsep << std::endl;
+	    // Check if these are too close to an existing person
+	    float mindist=1e10;
+	    for (int t1=0;t1<targets.size();t1++) {
+		for (int k=0;k<2;k++)
+		    if (targets[t1].isAssigned())
+			mindist=std::min(mindist,(targets[bestindices[k]].getCenter(sick)-targets[t1].getCenter(sick)).norm());
+	    }
+	    if (mindist<MINNEWPERSONSEP) {
+		dbg("World.track",1) << "New track too close to existing target (dist=" << mindist << ")" << std::endl;
+	    } else {
+		dbg("World.track",1) << "New track is at least " << mindist << " from all existing tracks" << std::endl;
+		Point l1=targets[bestindices[0]].getCenter(sick);
+		Point l2=targets[bestindices[1]].getCenter(sick);
+		people.add(l1,l2);
+		targets[bestindices[0]].setAssignments(assignments,legassigned,people.size()-1,0);
+		targets[bestindices[1]].setAssignments(assignments,legassigned,people.size()-1,1);
+	    }
 	} else {
 	    dbg("World.track",2) << "Not creating a track - no pair appropriately spaced" << std::endl;
 	}
@@ -363,6 +413,8 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 	
 
     // Implement assignment
+    struct timeval processStart; gettimeofday(&processStart,0);
+
     for (unsigned int p=0;p<people.size();p++) {
 
 	// Build list of points assigned to this person
@@ -425,16 +477,23 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		}
 		if (fs[f].size()>0 && fs[1-f].size()==0) {
 		    // Still one empty, look for a large range jump
+		    int jumppos=-1;   // Split from 0..jumppos-1, jumppos:end
+		    float biggest=INITLEGDIAM/2;   // Don't use any jumps less than this
 		    for (unsigned int i=1;i<fs[f].size();i++) { 
 			float rjump=(vis.getSick()->getWorldPoint(fs[f][i])-vis.getSick()->getWorldPoint(fs[f][i-1])).norm();
-			if (rjump>INITLEGDIAM/2) {
-			    for (unsigned int j=i;j<fs[f].size();j++)
-				fs[1-f].push_back(fs[f][j]);
-			    fs[f].resize(i);
-			    dbg("World.track",2) << "Splitting preliminary assignment for ID " << people[p].getID() << " at a range jump of " << rjump << " into " << fs[0] << ", " << fs[1] << std::endl;
-			    split=true;
-			    break;
+			if (i==1 || i==fs[f].size()-1)
+			    rjump/=2;  // Down weight a jump with only 1 point there
+			if (rjump>biggest) {
+			    jumppos=i;
+			    biggest=rjump;
 			}
+		    }
+		    if (jumppos>=0) {
+			for (unsigned int j=jumppos;j<fs[f].size();j++)
+			    fs[1-f].push_back(fs[f][j]);
+			fs[f].resize(jumppos);
+			dbg("World.track",2) << "Splitting preliminary assignment for ID " << people[p].getID() << " at a range jump of " << biggest << " into " << fs[0] << ", " << fs[1] << std::endl;
+			split=true;
 		    }
 		}
 	    }
@@ -480,6 +539,14 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 	    dbg("World.track",2)  << people[i] << std::endl;
     }
 
+    struct timeval processDone; gettimeofday(&processDone,0);
+    float procTime=(processDone.tv_sec-processStart.tv_sec)*1e6+(processDone.tv_usec-processStart.tv_usec);
+    dbg("World.processing",1)  << "Processed " << people.size() << " people in " << procTime << " usec" << std::endl;
+    static float totalProcTime;
+    static int totalPeople;
+    totalProcTime+=procTime;
+    totalPeople+=people.size();
+    dbg("World.processing",1)  << "Average = " << totalProcTime/totalPeople << std::endl;
 }
         
 void World::sendMessages(Destinations &dests, double elapsed) {
@@ -629,7 +696,7 @@ mxArray *World::convertToMX() const {
     *data++=maxy;
     mxSetField(world,0,"bounds",pBounds);
 
-    const char *pfieldnames[]={"id","position","legs","predictedlegs","prevlegs","legvelocity","scanpts","persposvar","posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
+    const char *pfieldnames[]={"id","position","legs","predictedlegs","prevlegs","legvelocity","scanpts","persposvar","posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount","trackedBy"};
     mxArray *pPeople;
     if ((pPeople = mxCreateStructMatrix(1,people.size(),sizeof(pfieldnames)/sizeof(pfieldnames[0]),pfieldnames)) == NULL) {
 	fprintf(stderr,"Unable to create people matrix of size (1,%d)\n",people.size());

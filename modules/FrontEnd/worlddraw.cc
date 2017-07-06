@@ -212,23 +212,24 @@ void World::draw(int nsick, const SickIO * const * sick) const {
      // Draw people
      cairo_set_line_width(cr,2*pixel);
      for (int j=0;j<people.size();j++) {
-	 if (people[j].getAge() >= AGETHRESHOLD) {
-	     for (int i=0;i<2;i++) {
-		 const Point &leg=people[j].getLeg(i).getPosition();
-		 if (i==0)
-		     cairo_set_source_rgb (cr, 0.0, 1.0, 0.0);
-		 else
-		     cairo_set_source_rgb (cr, 0.0, 0.0, 1.0);
-		 cairo_new_sub_path(cr);
-		 cairo_arc(cr,leg.X(), leg.Y(),people[j].getLeg(i).getDiam()/2.0,0.0,2*M_PI);
-		 cairo_close_path(cr);
-		 cairo_stroke(cr);
-	     }
+	 float intensity=1.0;
+	 if (people[j].getAge() < AGETHRESHOLD)
+	     intensity=0.3;
+	 for (int i=0;i<2;i++) {
+	     const Point &leg=people[j].getLeg(i).getPosition();
+	     if (i==0)
+		 cairo_set_source_rgb (cr, 0.0, intensity, 0.0);
+	     else
+		 cairo_set_source_rgb (cr, 0.0, 0.0, intensity);
+	     cairo_new_sub_path(cr);
+	     cairo_arc(cr,leg.X(), leg.Y(),people[j].getLeg(i).getDiam()/2.0,0.0,2*M_PI);
+	     cairo_close_path(cr);
+	     cairo_stroke(cr);
 	 }
      }
 
      // Draw background
-     bool drawBG=true;
+     bool drawBG=false;
      if (drawBG) {
 	 for (int j=0;j<nsick;j++) {
 	     cairo_set_line_width(cr,1*pixel);

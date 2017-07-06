@@ -47,18 +47,25 @@ subplot(235);
 for i=1:length(ids)
   idpresent=arrayfun(@(z) ismember(ids(i),arrayfun(@(y) y.id, z.tracker.tracks)), snap);
   % Only present if there was also a measurement 
+  trackedBy=ones(1,length(idpresent));
   for k=1:length(idpresent)
     if idpresent(k) 
-      idpresent(k)=~isempty(snap(k).tracker.tracks(arrayfun(@(y) y.id, snap(k).tracker.tracks)==ids(i)).position);
+      trackIndex=find(arrayfun(@(y) y.id, snap(k).tracker.tracks)==ids(i));
+      idpresent(k)=~isempty(snap(k).tracker.tracks(trackIndex).position);
+      % Determine which LIDAR was tracking
+      if isfield(snap(k).tracker.tracks,'trackedBy')
+        trackedBy(k)=snap(k).tracker.tracks(trackIndex).trackedBy;
+      end
     end
   end
   idtmp=nan(1,length(snap));
   idtmp(idpresent)=ids(i);
   color1=colors(mod(ids(i)-1,length(colors))+1);
   if ismember(ids(i),args.trackid) || isempty(args.trackid)
-    plot(frame,idtmp,[color1,'-']);
+    % Show ID number + LIDARtracking/10
+    plot(frame,idtmp+trackedBy/10,[color1,'-']);
   else
-    plot(frame,idtmp,[color1,':']);
+    plot(frame,idtmp+trackedBy/10,[color1,':']);
   end
   hold on;
 end
@@ -89,6 +96,7 @@ for i=1:length(ids)
   vis=false(length(snap),2);
   scanpts=nan(length(snap),2);
   nsteps=nan(length(snap),2);   % Number of prediction frames since last fix
+  activeLIDAR=true(length(snap),1);   % Active LIDAR?
   for j=1:length(snap)
     sel=arrayfun(@(z) z.id, snap(j).tracker.tracks)==id;
     if sum(sel)>0
@@ -99,6 +107,9 @@ for i=1:length(ids)
       legvel(j,:,:)=snap(j).tracker.tracks(sel).legvelocity;
       leftness(j,:)=snap(j).tracker.tracks(sel).leftness;
       diam(j)=snap(j).tracker.tracks(sel).legdiam;
+      if isfield(snap(j).vis,'unit')
+        activeLIDAR(j)=snap(j).tracker.tracks(sel).trackedBy==snap(j).vis.unit;
+      end
       if isprop(snap(j).tracker.tracks(sel),'scanpts')
         vis(j,1)=~isempty(snap(j).tracker.tracks(sel).scanpts{1});
         vis(j,2)=~isempty(snap(j).tracker.tracks(sel).scanpts{2});
@@ -147,8 +158,8 @@ for i=1:length(ids)
     end
   end
   % Visible points
-  plot(loc(vis(:,1),1,1),frame(vis(:,1)),[color1,'.'],'MarkerSize',10);
-  plot(loc(vis(:,2),2,1),frame(vis(:,2)),[color2,'.'],'MarkerSize',10);
+  plot(loc(vis(:,1)&activeLIDAR,1,1),frame(vis(:,1)&activeLIDAR),[color1,'.'],'MarkerSize',10);
+  plot(loc(vis(:,2)&activeLIDAR,2,1),frame(vis(:,2)&activeLIDAR),[color2,'.'],'MarkerSize',10);
   cx=axis;
   cx(1:2)=c(1:2);
   axis(cx);
@@ -166,8 +177,8 @@ for i=1:length(ids)
       plot(frame(ii)+[0.2,0.2],loc(ii,2,2)+sqrt(posvar(ii,2))*[-1,1],[color2,':']);
     end
   end
-  plot(frame(vis(:,1)),loc(vis(:,1),1,2),[color1,'.'],'MarkerSize',10);
-  plot(frame(vis(:,2)),loc(vis(:,2),2,2),[color2,'.'],'MarkerSize',10);
+  plot(frame(vis(:,1)&activeLIDAR),loc(vis(:,1)&activeLIDAR,1,2),[color1,'.'],'MarkerSize',10);
+  plot(frame(vis(:,2)&activeLIDAR),loc(vis(:,2)&activeLIDAR,2,2),[color2,'.'],'MarkerSize',10);
   cy=axis;
   cy(3:4)=c(3:4);
   axis(cy);
@@ -250,6 +261,8 @@ for i=1:length(ids)
       plot(frame,scanpts(:,1),[color1,'-']);
       hold on;
       plot(frame,scanpts(:,2),[color2,'-']);
+      plot(frame(activeLIDAR),scanpts(activeLIDAR,1),[color1,'.'],'MarkerSize',10);
+      plot(frame(activeLIDAR),scanpts(activeLIDAR,2),[color2,'.'],'MarkerSize',10);
       xlabel('Frame');
       ylabel('Number of scan pts');
       title('Scan pts');

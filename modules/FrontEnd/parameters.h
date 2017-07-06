@@ -26,8 +26,9 @@ static const float EXITDIAMETER=13.6;
 static const float MEANBGSIGMA=10;   // Initial sigma for a new background
 static const float MAXBGSIGMA=50;   // Maximum sigma for a background
 static const float MINBGFREQ=0.05;	// Minimum frequency of a background to call it such unilaterally
-static const int BGINITFRAMES=50*5;		// Background intiialization for this many frames
+static const int BGINITFRAMES=50*1;		// Background intiialization for this many frames
 static const int UPDATETC=50*60;		// Background update freq (after initial averaging)
+static const float FARTHRESHOLD=500;     // If new range is more than this much more than bg[0], then do a quick shift
 static const int FARUPDATETC=50*1;		// Background update for points farther than primary background
 static const int BGLONGDISTLIFE=50*10;		// If  the most distant
 static const int MAXBGINVISIBLE=50*2;		// If a normal background hasn't been seen in this many frames remove it
@@ -46,7 +47,7 @@ static const float MAXPOSITIONVAR=300*300;  // Never let the position variance g
 static const float MAXLEGSPEED=4000;	// Maximum speed of a leg in mm/s
 static const float VELUPDATETC=10;	// Velocity update time constant in frames (tested with runtests.sh for 5,10,25,50 -- 10 was best, slightly)
 static const float MINLIKEFORUPDATES=-60;	  // Minimum likelihood of a target to use the current observations to update it (if its too low, then we get underflows of accumulating the total prob)
-static const float STATIONARYVELOCITY=20;	// If speed is less than this (in mm/s), then stabilize position
+static const float STATIONARYVELOCITY=-99; // Disabled, was 20;	// If speed is less than this (in mm/s), then stabilize position
 
 // ******** Leg statistics 
 static const float INITLEGDIAM=200;	// Initial diameter of legs
@@ -72,7 +73,8 @@ static const int AGETHRESHOLD=20;	// Age before considered reliable
 // ******* Entry Statistics
 static const float ENTRYRATE=1.0; 	// Entries per minute
 static const int MINCREATEHITS=5;	// Need this number of scan targets to create a new track
-
+static const float MINNEWPERSONSEP=500;  // New people will only be created if at least this distance from any existing person
+    
 // ******** Grouping
 static const float GROUPDIST=500;		// Distance to form a group
 static const float UNGROUPDIST=1000;	// Distance to break a group

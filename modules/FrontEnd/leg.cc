@@ -14,6 +14,70 @@
 #include "lookuptable.h"
 
 static const bool USEMLE=false;  // True to use MLE from likelihood grid; otherwise use mean
+// New predicted position is weighted sum of prior positions from current and other leg
+// sum(same)+sum(other) should equal 1.0 (or would result in a net drift towards/away from origin
+    // From results of optimization using optpredict.m
+std::vector<float> Leg::samePredictWeights;
+std::vector<float> Leg::otherPredictWeights;
+
+void Leg::setup(float fps, int nlidar) {
+    static const float stridePeriod=1.22;   // Stride period in seconds
+    const int strideFrames=(int)(stridePeriod*fps*nlidar+0.5);   // Number of frames for a complete stride
+    dbg("Leg.setup",1) << "Setting strideFrame to " << strideFrames << std::endl;
+
+    // Simple zero-order hold
+    //samePredictWeights.resize(1);
+    //samePredictWeights[0]=1.0;
+    float same[]={0.7561,0.3262,0.0190,-0.0110,-0.0025,0.0006,0.0066,-0.0408,0.0072,-0.0718};   // weight prior positions to predict from current leg
+    float other[]={0.0376,0.0006,0.0045,-0.0001,0.0038,-0.0052,0.0038,0.0005,-0.0229,-0.0124};   // from other leg
+    samePredictWeights.assign(same,same+sizeof(same)/sizeof(same[0]));
+    otherPredictWeights.assign(other,other+sizeof(other)/sizeof(other[0]));
+    return;
+#if 0    
+    const float crossLIDARWeight=0.0f;   // How much to weigh data from other LIDARs
+    const int nweights=50;
+    predictWeights.resize(nweights);
+
+    // Initial weight is best predictor of a sine wave offset by 1/strideFrames of a cycle
+
+    predictWeights[0]=cos(2*M_PI/strideFrames);
+    predictWeights[1]=sin(2*M_PI/strideFrames);
+    const float totalDamping=0.9864;
+    // damp things so legs reach equal predicted velocity in 1/4 stride
+    const float sameDamping=pow(2.0,-1.0f/(strideFrames/4))*totalDamping;
+    dbg("Leg.setup",1) << "Damping = " << totalDamping << ", " << sameDamping << std::endl;
+    for (int i=2;i<nweights;i+=2) {
+	predictWeights[i]=predictWeights[i-2]*sameDamping;
+	predictWeights[i+1]=(predictWeights[i-2]+predictWeights[i-1])*totalDamping-predictWeights[i];
+	if (predictWeights[i+1]>predictWeights[i]) {
+	    predictWeights[i]=(predictWeights[i]+predictWeights[i+1])/2;
+	    predictWeights[i+1]=predictWeights[i];
+	}
+    }
+#endif
+
+    // Make sum of all weights add up to 1.0
+    float sumS=0,sumO=0;
+    for (int i=0;i<samePredictWeights.size();i++)
+	sumS+=samePredictWeights[i];
+    for (int i=0;i<otherPredictWeights.size();i++)
+	sumO+=otherPredictWeights[i];
+    dbg("Leg.setup",1) << "sum=" << sumS << "+" << sumO << "=" << sumS+sumO << std::endl;
+
+    // Parameters can be tested using optimalveldamping2.m 
+    dbg("Leg.setup",1) << "samePredictWeights=[";
+    for (int i=0;i<samePredictWeights.size();i++) {
+	samePredictWeights[i]/=(sumO+sumS);
+	dbgn("Leg.setup",1) << samePredictWeights[i];
+    }
+    dbgn("Leg.setup",1) << "]" << std::endl;
+    dbg("Leg.setup",1) << "otherPredictWeights=[";
+    for (int i=0;i<otherPredictWeights.size();i++) {
+	samePredictWeights[i]/=(sumO+sumS);
+	dbgn("Leg.setup",1) << otherPredictWeights[i];
+    }
+    dbgn("Leg.setup",1) << "]" << std::endl;
+}
 
 Leg::Leg(const Point &pt) {
     position=pt;
@@ -22,7 +86,7 @@ Leg::Leg(const Point &pt) {
     prevposvar=posvar;
     diam=INITLEGDIAM;
     diamSigma=LEGDIAMSIGMA;
-    updateDiam=true;
+    updateDiam=false;
     if (!updateDiam) {
 	dbg("Leg",1) << "Not updating leg diameters" << std::endl;
     }
@@ -37,39 +101,6 @@ Leg::Leg(const Point &pt) {
     minval=Point(nan(""),nan(""));
     maxval=Point(nan(""),nan(""));
 
-    //static const float weights[]={0.8234,0.0699,0.8303,0.0862,0.7780,0.1283,.7262,.1585,.6818,.1866,.6289,.2169};  // Need scaling by nweight/2 
-    //static const int nweights=sizeof(weights)/sizeof(weights[0]);
-    //predictWeights.assign(weights,weights+nweights);
-
-    const int nweights=50;
-    predictWeights.resize(nweights);
-
-    const int strideFrames=61;   // Number of frames for a complete stride  FIXME: This depends on the frame rate (and # of LIDAR)
-
-    // Initial weight is best predictor of a sine wave offset by 1/strideFrames of a cycle
-    predictWeights[0]=cos(2*M_PI/strideFrames);
-    predictWeights[1]=sin(2*M_PI/strideFrames);
-    const float totalDamping=0.9864;
-    // damp things so legs reach equal predicted velocity in 1/4 stride
-    const float sameDamping=pow(2.0,-1.0f/(strideFrames/4))*totalDamping;
-    const float desiredTotal=0.85;
-    float sum=predictWeights[0]+predictWeights[1];
-    for (int i=2;i<nweights;i+=2) {
-	predictWeights[i]=predictWeights[i-2]*sameDamping;
-	predictWeights[i+1]=(predictWeights[i-2]+predictWeights[i-1])*totalDamping-predictWeights[i];
-	if (predictWeights[i+1]>predictWeights[i]) {
-	    predictWeights[i]=(predictWeights[i]+predictWeights[i+1])/2;
-	    predictWeights[i+1]=predictWeights[i];
-	}
-	sum+=predictWeights[i]+predictWeights[i+1];
-    }
-    dbg("Leg.Leg",1) << "Damping = " << totalDamping << ", " << sameDamping << "  Weights=[";
-    for (int i=0;i<nweights;i+=2) {
-	predictWeights[i] *= desiredTotal/sum;
-	predictWeights[i+1] *= desiredTotal/sum;
-	dbgn("Leg.Leg",1) << "(" << predictWeights[i]*(nweights/2) << "," << predictWeights[i+1]*(nweights/2) << ") ";
-    }
-    dbgn("Leg.Leg",1) << "]" << std::endl;
 }
 
 // Empty constructor used to initialize array, gets overwritten using above ctor subsequently
@@ -88,20 +119,22 @@ std::ostream &operator<<(std::ostream &s, const Leg &l) {
 }
 
 // Predict next leg position from current one
-// Parameters from optimalveldamping2.m
+// Use last known position from same LIDAR + weighted sum of prior changes in position (so opposite leg absolute position is ignored)
+// Need to handle number of LIDAR used (prior positions are from different LIDAR)
 void Leg::predict(const Leg &otherLeg) {
-    Point newDelta(0,0);
+    Point newPosition(0,0);
     float rmse;
-    for (int i=0;i<predictWeights.size();i+=2)
-	newDelta=newDelta+predictWeights[i]*getPriorDelta(i/2+1);
-    for (int i=1;i<predictWeights.size();i+=2)
-	newDelta=newDelta+predictWeights[i]*otherLeg.getPriorDelta((i+1)/2);
+    for (int i=0;i<samePredictWeights.size();i++)
+	newPosition=newPosition+samePredictWeights[i]*getPriorPosition(i+1);
+    for (int i=0;i<otherPredictWeights.size();i++)
+	newPosition=newPosition+otherPredictWeights[i]*otherLeg.getPriorPosition(i+1);
     //    rmse=newDelta.norm()*0.16+10;
+    Point newDelta=newPosition-getPriorPosition(1);
     rmse=newDelta.norm()*0.08+7;
 
     dbg("Leg.predict",5) << "newDelta=" << newDelta << ", rmse=" << rmse << std::endl;
 
-    position=position+newDelta;
+    position=newPosition;
     prevposvar=posvar;
     posvar=std::min(posvar+rmse*rmse,MAXPOSITIONVAR);
     predictedPosition=position;   // Save this before applying measurements for subsequent analyses
@@ -132,8 +165,12 @@ Point Leg::getPriorDelta(int n) const {
 
 Point Leg::getPriorPosition(int n) const {
     assert(n>0);
-    if (n  > priorPositions.size())
-	return Point(0,0);
+    if (n  > priorPositions.size()) {
+	if (priorPositions.size() > 0)
+	    return priorPositions[0];   // Return first point recorded
+	else
+	    return Point(0,0);
+    }
     return priorPositions[priorPositions.size()-n];
 }
 
@@ -153,6 +190,7 @@ float Leg::getObsLike(const Point &pt, const Vis &vis,const LegStats &ls) const 
     assert(std::isfinite(like));
     return like;
 }
+
 
 void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs,const LegStats &ls, const Leg *otherLeg) {
     // Copy in scanpts
@@ -186,7 +224,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     
     float mintheta=std::min(std::min(theta[0],theta[1]),std::min(theta[2],theta[3]));
     float maxtheta=std::max(std::max(theta[0],theta[1]),std::max(theta[2],theta[3]));
-    std::vector<int> clearsel;
+    std::vector<Point> clearsel;
     dbg("Leg.update",3) << "Clear paths for " << mintheta*180/M_PI << ":" << maxtheta*180/M_PI <<  " degrees:   ";
     for (unsigned int i=0;i<vis.getSick()->getNumMeasurements();i++) {
 	float angle=vis.getSick()->getAngleRad(i);
@@ -196,7 +234,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	else if (angle<theta[0]-M_PI)
 	    angle+=2*M_PI;
 	if (angle>=mintheta && angle<=maxtheta) {
-	    clearsel.push_back(i);
+	    clearsel.push_back(vis.getSick()->getWorldPoint(i));
 	    dbgn("Leg.update",3) << i << ",";
 	}
     }
@@ -222,6 +260,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
     float apriorisigma=sqrt(posvar+SENSORSIGMA*SENSORSIGMA);
     float stepx=(maxval.X()-minval.X())/(likenx-1);
     float stepy=(maxval.Y()-minval.Y())/(likeny-1);
+    Point p1=vis.getSick()->localToWorld(Point(0,0));
     for (int ix=0;ix<likenx;ix++) {
 	float x=minval.X()+ix*stepx;
 	for (int iy=0;iy<likeny;iy++) {
@@ -238,8 +277,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	    // Likelihood with respect to unobstructed paths (leg can't be in these paths)
 	    float dclr=1e10;
 	    for (unsigned int k=0;k<clearsel.size();k++) {
-		Point p1=vis.getSick()->localToWorld(Point(0,0));
-		Point p2=vis.getSick()->getWorldPoint(clearsel[k]);
+		Point p2=clearsel[k];
 		float dist=segment2pt(p1,p2,pt);
 		dclr=std::min(dclr,dist);
 		dbg("Leg.update",20) << "p1=" << p1 << ", p2=" << p2 << ", dist[" << k << "] = " << dclr << std::endl;
@@ -333,6 +371,7 @@ void Leg::update(const Vis &vis, const std::vector<float> &bglike, const std::ve
 	dbg("Leg.update",3) << "Speed = " << velocity.norm() << " mm/frame, stabilizing position" << std::endl;
 	Point delta=newposition-position;
 	position=position+delta/10;
+	// TODO: Should keep it in area of likelihood grid that is still possible...
     } else {
 	dbg("Leg.update",3) << "Speed = " << velocity.norm() << " mm/frame, not stabilizing position" << std::endl;
 	position=newposition;

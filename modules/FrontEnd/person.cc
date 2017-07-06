@@ -40,6 +40,10 @@ Person::Person(int _id, int _channel, const Point &leg1, const Point &leg2) {
     legs[0]=Leg(leg1);
     legs[1]=Leg(leg2);
 
+    trackedBy=1;
+    trackedPoints[0]=0;
+    trackedPoints[1]=0;
+    
     channel=_channel;
 
     position=(leg1+leg2)/2;
@@ -93,10 +97,10 @@ void Person::predict(int nstep, float fps) {
 
     for (int step=0;step<nstep;step++) {
 	for (int i=0;i<2;i++) 
-	    legs[i].predict(legs[1-i]);
+	    legs[i].savePriorPositions();
 
 	for (int i=0;i<2;i++) 
-	    legs[i].savePriorPositions();
+	    legs[i].predict(legs[1-i]);
     }
 
 
@@ -318,6 +322,24 @@ void Person::analyzeLikelihoods() {
 }
 
 void Person::update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs[2], int nstep,float fps) {
+    // Only use a single LIDAR for updates at any one time
+    // If this is not the LIDAR we were previously using, check if we have more hits and perhaps switch to this one
+    if (trackedBy != vis.getSick()->getId()) {
+	// Not us, but see how we're doing compared to the current one
+	int minpts=std::min(5,trackedPoints[0]+trackedPoints[1]);   // Need to have at least this for each leg to switch
+	if ((trackedPoints[0]<2 || trackedPoints[1]<2) && fs[0].size()>=minpts && fs[1].size()>=minpts) {
+	    trackedBy=vis.getSick()->getId();
+	    dbg("Person.update",1) << "Switching to LIDAR " << trackedBy << " to track person " << id  << "(" << fs[0].size() << ", " << fs[1].size() << " is better than (" << trackedPoints[0] << ", " << trackedPoints[1]  << ") scanpts)" << std::endl;
+	} else {
+	    // Set the scanPts in the legs though
+	    legs[0].setScanPts(fs[0]);
+	    legs[1].setScanPts(fs[1]);
+	    return;
+	}
+    }
+    trackedPoints[0]=fs[0].size();
+    trackedPoints[1]=fs[1].size();
+    
     // May eed to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods (or swapped of this)
     setupGrid(vis,fs);
     // Process the leg with the most hits first
@@ -453,7 +475,8 @@ void Person::unGroup() {
 
 #ifdef MATLAB
 void Person::addToMX(mxArray *people, int index) const {
-    // const char *fieldnames[]={"id","position","legs","predictedlegs","prevlegs","legvelocity","scanpts","persposvar", "posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount"};
+    // Fields are defined in world.cc
+    // const char *fieldnames[]={"id","position","legs","predictedlegs","prevlegs","legvelocity","scanpts","persposvar", "posvar","prevposvar","velocity","legdiam","leftness","maxlike","like","minval","maxval","age","consecutiveInvisibleCount","totalVisibleCount","trackedBy"};
     // Note: for multidimensional arrays, first index changes most rapidly in accessing matlab data
     mxArray *pId = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);
     *(int *)mxGetPr(pId) = id;
@@ -612,6 +635,10 @@ void Person::addToMX(mxArray *people, int index) const {
     mxArray *pTotalVisibleCount = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);
     *(int *)mxGetPr(pTotalVisibleCount) = totalVisibleCount;
     mxSetField(people,index,"totalVisibleCount",pTotalVisibleCount);
+
+    mxArray *pTrackedBy = mxCreateNumericMatrix(1,1,mxUINT32_CLASS,mxREAL);
+    *(int *)mxGetPr(pTrackedBy) = trackedBy;
+    mxSetField(people,index,"trackedBy",pTrackedBy);
 }
 #endif
 

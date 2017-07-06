@@ -2,16 +2,20 @@
 #include "world.h"
 #include "snapshot.h"
 #include "vis.h"
+#ifdef MATLAB
 #include <mat.h>
+#endif
 
 Snapshot::Snapshot(const std::vector<std::string> &arglist) {
     this->arglist=arglist;
 }
 
 void Snapshot::clear() {
+#ifdef MATLAB
     vis.clear();
     bg.clear();
     world.clear();
+#endif
 }
 
 #ifdef MATLAB

@@ -1,5 +1,6 @@
 package com.pulsefield.tracker;
 import java.awt.Color;
+import java.util.logging.Logger;
 
 import codeanticode.syphon.SyphonClient;
 import oscP5.OscMessage;
@@ -22,7 +23,8 @@ class NavierOFSettings {
 	boolean multiColor, rainbow, border;
 	PVector flamePosition, flameVelocity, gravity;
 	boolean modified;  // True of any settings changed, but not written
-	
+    private final static Logger logger = Logger.getLogger(NavierOFSettings.class.getName());
+
 	NavierOFSettings(int _index) {
 		index=_index;
 		loadPreset();
@@ -65,7 +67,7 @@ class NavierOFSettings {
 	public void savePreset() {
 		String group="navier"+index;
 
-		PApplet.println("Saving presets for Navier "+index);
+		logger.config("Saving presets for Navier "+index);
 		Config.setFloat(group,"ambient",ambient);
 		Config.setFloat(group,"smokeBuoyancy",smokeBuoyancy);
 		Config.setFloat(group,"smokeWeight",smokeWeight);
@@ -132,7 +134,7 @@ class NavierOFSettings {
 	}
 
 	public void handleMessage(OscMessage msg) {
-		//PApplet.println("Navier message: "+msg.toString());
+		//logger.fine("Navier message: "+msg.toString());
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
 
@@ -199,7 +201,7 @@ class NavierOFSettings {
 			else if (components[4].equals("enable"))
 				smokeEnable=msg.get(0).floatValue()>0.5f;
 			else
-				PApplet.println("Unknown NavierOF Message: "+msg.toString());
+				logger.warning("Unknown NavierOF Message: "+msg.toString());
 		} else if (components.length==4 && components[3].equals("savepreset") ) {
 			if (msg.get(0).floatValue() > 0.5f)
 				savePreset();
@@ -209,11 +211,11 @@ class NavierOFSettings {
 				loadPreset();
 			return;
 		} else {
-			PApplet.println("Unknown NavierOF Message: "+msg.toString());
+			logger.warning("Unknown NavierOF Message: "+msg.toString());
 			return;
 		}
-		PApplet.println("dissipation="+dissipation+", velocityDissipation="+velocityDissipation+", gravity="+gravity);
-		PApplet.println("flame at "+flamePosition+", vel="+flameVelocity+"enable="+flameEnable+", temp="+flameTemperature+", radius="+flameRadius+",den="+flameDensity);
+		logger.fine("dissipation="+dissipation+", velocityDissipation="+velocityDissipation+", gravity="+gravity);
+		logger.fine("flame at "+flamePosition+", vel="+flameVelocity+"enable="+flameEnable+", temp="+flameTemperature+", radius="+flameRadius+",den="+flameDensity);
 		modified=true;
 		setTO();
 	}
@@ -366,12 +368,12 @@ class NavierOFSettings {
 		}
 
 		public void handleMessage(OscMessage msg) {
-			PApplet.println("Navier message: "+msg.toString());
+			logger.fine("Navier message: "+msg.toString());
 			String pattern=msg.addrPattern();
 			String components[]=pattern.split("/");
 
 			if (components.length<3 || !components[2].equals("navierOF")) {
-				PApplet.println("Navier: Expected /video/navierOF messages, got "+msg.toString());
+				logger.warning("Navier: Expected /video/navierOF messages, got "+msg.toString());
 			} else if (components.length==4 && components[3].equals("capture")  && msg.get(0).floatValue()>0.5f) {
 				settings[currentSettings].setOF("capture","/tmp/ofcapt");  // Capture a snapshot on both sides of syphon
 				captureNextFrame=true;
@@ -379,7 +381,7 @@ class NavierOFSettings {
 				int newSetting=8-Integer.valueOf(components[4]);
 				if (newSetting>=0 && newSetting <settings.length && msg.get(0).floatValue()>0.5f)
 					currentSettings=newSetting;
-				PApplet.println("using settings "+currentSettings);
+				logger.fine("using settings "+currentSettings);
 			} else if (components.length==4 && components[3].equals("quit") ) {
 				settings[currentSettings].setOF("quit",1);  // Make OF implementation exit
 			} else if (components.length==4 && components[3].equals("clear") ) {
@@ -389,7 +391,7 @@ class NavierOFSettings {
 			} else if (components.length==6 && components[3].equals("texselect") ) {
 				if (msg.get(0).floatValue()>0.5f)
 					syphonTexture=Integer.valueOf(components[5])-1;
-				PApplet.println("syphon texture="+syphonTexture);
+				logger.fine("syphon texture="+syphonTexture);
 			} else if (currentSettings>0)  // Not defaults
 				settings[currentSettings].handleMessage(msg);
 			settings[currentSettings].setTO();
@@ -399,8 +401,8 @@ class NavierOFSettings {
 
 		public void stats() {
 			long elapsed=System.nanoTime()-statsLast;
-			PApplet.println("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
-			PApplet.println("U=",statsU1*100f/elapsed,", ",statsU2*100f/elapsed,", ",statsU3*100f/elapsed,", ",statsU4*100f/elapsed);
+			logger.fine("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
+			logger.fine("U="+(statsU1*100f/elapsed)+", "+(statsU2*100f/elapsed)+", "+(statsU3*100f/elapsed)+", "+(statsU4*100f/elapsed));
 			statsLast = System.nanoTime();
 			statsTick=0;
 			statsStep=0;
@@ -424,7 +426,7 @@ class NavierOFSettings {
 			msg.add(radius);
 			msg.add(temp);
 			msg.add(dens);
-			//PApplet.println("red="+(red/255.0)+", green="+(green/255.0)+", blue="+(blue/255.0));
+			//logger.fine("red="+(red/255.0)+", green="+(green/255.0)+", blue="+(blue/255.0));
 			OFOSC.getInstance().sendMessage(msg);
 		}
 
@@ -435,7 +437,7 @@ class NavierOFSettings {
 			msg.add(green/255.0f);
 			msg.add(blue/255.0f);
 
-			//PApplet.println("red="+(red/255.0)+", green="+(green/255.0)+", blue="+(blue/255.0));
+			//logger.fine("red="+(red/255.0)+", green="+(green/255.0)+", blue="+(blue/255.0));
 			OFOSC.getInstance().sendMessage(msg);
 		}
 		void updateForces() {
@@ -450,7 +452,7 @@ class NavierOFSettings {
 			client=clients[syphonTexture];
 			assert(client!=null);
 			for (Person pos: p.pmap.values()) {
-				//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
+				//logger.fine("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
 				if (pos.isMoving())
 					synth.play(pos.id,pos.channel+35,127,480,pos.channel);
 			}
@@ -461,7 +463,7 @@ class NavierOFSettings {
 				nheight=canvas.height;
 			}
 			for (Person pos: p.pmap.values()) {
-				//PApplet.println("update("+p.channel+"), enabled="+p.enabled);
+				//logger.fine("update("+p.channel+"), enabled="+p.enabled);
 				for (int l=0;l<pos.legs.length;l++) {
 					Leg leg = pos.legs[l];
 					int cellX = (int)( (-leg.getNormalizedPosition().x+1)*nwidth / 2);
@@ -478,13 +480,13 @@ class NavierOFSettings {
 						float colorPeriod=20;   // Cycle through all colors in this many seconds
 						float hue=(float)(pos.id*110+l*20+128*Math.sin(2*Math.PI*parent.frameCount/30/colorPeriod))/255f;
 //						if (l==0 && parent.frameCount%10==0)
-//							PApplet.println("frame="+parent.frameCount+", id="+pos.id+", hue="+hue+", cell="+cellX+","+cellY);
+//							logger.fine("frame="+parent.frameCount+", id="+pos.id+", hue="+hue+", cell="+cellX+","+cellY);
 						c=Color.HSBtoRGB(hue,settings[currentSettings].saturation,settings[currentSettings].brightness);
 					} else
 						// No change
 						c=Color.HSBtoRGB(((pos.id*110+l*20)&0xff)/255.0f,settings[currentSettings].saturation,settings[currentSettings].brightness);
 				
-					//PApplet.println("Leg "+l+": Cell="+cellX+","+cellY+", vel="+dx+","+dy+ ", radius="+radius+", color="+PApplet.hex(c));
+					//logger.fine("Leg "+l+": Cell="+cellX+","+cellY+", vel="+dx+","+dy+ ", radius="+radius+", color="+PApplet.hex(c));
 					dx = (Math.abs(dx) > settings[currentSettings].limitVelocity) ? Math.signum(dx) * settings[currentSettings].limitVelocity : dx;
 					dy = (Math.abs(dy) > settings[currentSettings].limitVelocity) ? Math.signum(dy) * settings[currentSettings].limitVelocity : dy;
 					dx *= settings[currentSettings].velScale;
@@ -530,7 +532,7 @@ class NavierOFSettings {
 				int newWidth=(int)(g.width*canvasScale);
 				int newHeight=(int)(g.height*canvasScale);
 				if (canvas.width!=newWidth || canvas.height!=newHeight) {
-					PApplet.println("Resetting OF size from "+canvas.width+","+canvas.height+" to "+newWidth+","+newHeight);
+					logger.info("Resetting OF size from "+canvas.width+","+canvas.height+" to "+newWidth+","+newHeight);
 					OscMessage set = new OscMessage("/navier/setsize");
 					set.add(newWidth);
 					set.add(newHeight);

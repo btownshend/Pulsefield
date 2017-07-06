@@ -8,7 +8,8 @@ defaults=struct('frame',[],...
                 'width',1280,...
                 'height',720,...
                 'crop',false,...
-                'debug',false...
+                'debug',false,...
+                'sync',false...
                 );
 args=processargs(defaults,varargin);
 
@@ -24,9 +25,13 @@ vidObj = VideoWriter(args.filename);
 vidObj.FrameRate=args.fps;
 open(vidObj);
 
-srcfps=(snap(end).vis.frame-snap(1).vis.frame)/((snap(end).vis.acquired-snap(1).vis.acquired)*24*3600);
-incr=srcfps/args.fps;
-fprintf('Source FPS=%f, target=%f, advancing by %f frames/video frame\n', srcfps, args.fps, incr);
+if args.sync
+  srcfps=(snap(end).vis.frame-snap(1).vis.frame)/((snap(end).vis.acquired-snap(1).vis.acquired)*24*3600);
+  incr=srcfps/args.fps;
+  fprintf('Source FPS=%f, target=%f, advancing by %f frames/video frame\n', srcfps, args.fps, incr);
+else
+  incr=1;
+end
 for f=args.frame(1):incr:args.frame(2)
   plotsnap(snap,'frame',round(f),'maxrange',args.maxrange,'crop',args.crop,'setfig',false,'showhits',false);
   axis normal

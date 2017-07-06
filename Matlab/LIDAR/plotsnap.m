@@ -3,13 +3,18 @@ function plotsnap(snap,varargin)
 params=getparams();
 defaults=struct('frame',[],...
                 'setfig',true,...
-                'maxrange',params.maxrange,...
+                'bounds',[],...
                 'showhits',true,...
+                'maxrange',3,...
                 'crop',true,...
                 'debug',false...
                 );
 args=processargs(defaults,varargin);
 
+if ~isempty(args.maxrange) && isempty(args.bounds)
+  args.bounds=[-args.maxrange args.maxrange -args.maxrange args.maxrange];
+end
+  
 frames=arrayfun(@(z) z.vis.frame, snap);
 
 if ~isempty(args.frame)
@@ -58,6 +63,7 @@ for i=1:length(tracker.tracks)
   % plot(t.updatedLoc(1),t.updatedLoc(2),['+',color]);
   plot(t.position(1),t.position(2),'x','Color',color);
   plot(t.legs(:,1),t.legs(:,2),'o','Color',color);
+  plot(t.prevlegs(:,1),t.prevlegs(:,2),'+','Color',color);
   if args.showhits
     plot(xy(t.scanpts{1},1),xy(t.scanpts{1},2),'<','Color',color);
     plot(xy(t.scanpts{2},1),xy(t.scanpts{2},2),'>','Color',color);
@@ -91,29 +97,32 @@ vxy=[];
 divergence=0.0047;
 for i=1:length(vis.angle)
   if (bg.freq(1,i)<0.01) || abs(vis.range(i)-bg.range(1,i))>0.1
-    vxy(end+1,:)=range2xy(vis.angle(i)-divergence,vis.range(i));
-    vxy(end+1,:)=range2xy(vis.angle(i)+divergence,vis.range(i));
+    vxy(end+1,:)=range2xy(vis.angle(i)-divergence+vis.rotation*pi/180,vis.range(i))+vis.origin;
+    vxy(end+1,:)=range2xy(vis.angle(i)+divergence+vis.rotation*pi/180,vis.range(i))+vis.origin;
     vxy(end+1,:)=nan;
   end
   if (bg.freq(1,i)>0.01)
-    bxy(end+1,:)=range2xy(bg.angle(i)-divergence,bg.range(1,i));
-    bxy(end+1,:)=range2xy(bg.angle(i)+divergence,bg.range(1,i));
+    bxy(end+1,:)=range2xy(bg.angle(i)-divergence+vis.rotation*pi/180,bg.range(1,i))+vis.origin;
+    bxy(end+1,:)=range2xy(bg.angle(i)+divergence+vis.rotation*pi/180,bg.range(1,i))+vis.origin;
     bxy(end+1,:)=nan;
   end
 end
 plot(vxy(:,1),vxy(:,2),'g');
 plot(bxy(:,1),bxy(:,2),'k');
 
+% Plot the LIDAR position
+plot(snap.vis.origin(1),snap.vis.origin(2),'mx','MarkerSize',20);
+
 axis image;
 xyt=xy(~isbg,:);
 
 if args.crop
-  ctr=(floor(c([1,3]))+ceil(c([2,4])))/2;
+  ctr=(c([1,3])+c([2,4]))/2;
   sz=max(ceil(2*c([2,4]))-floor(2*c([1,3])))/2;
   newc=[ctr(1)-sz/2,ctr(1)+sz/2,ctr(2)-sz/2,ctr(2)+sz/2];
   axis(newc);  % Zoom to ROI
 else
-  axis([-args.maxrange,args.maxrange,-1,args.maxrange]);
+  axis(args.bounds);
 end
 
 % Plot info along the left
@@ -126,7 +135,7 @@ skip=(c(4)-c(3))/30;
 h=text(lmargin,lastline,sprintf('%s',datestr(snap.vis.acquired-7/24,'yyyy-mm-dd HH:MM:SS.FFF')));
 set(h,'FontSize',14);
 lastline=lastline+skip;
-h=text(lmargin,lastline,sprintf('Frame: %d',snap.vis.frame));
+h=text(lmargin,lastline,sprintf('Frame: %d Unit: %d',snap.vis.frame, snap.vis.unit));
 set(h,'FontSize',18);
 lastline=lastline+skip;
 

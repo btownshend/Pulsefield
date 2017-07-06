@@ -1,5 +1,7 @@
 package com.pulsefield.tracker;
 import java.util.HashSet;
+import java.util.logging.Logger;
+
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -21,7 +23,8 @@ class Molecule {
 	float tgtSpeed;   // Target speed (temperature)
 	float angle;
 	float angularVelocity;
-	
+    private final static Logger logger = Logger.getLogger(Molecule.class.getName());
+
 	private static Images imgs=null;
 	
 	Molecule(PVector pos, PVector vel, float radius) {
@@ -36,12 +39,12 @@ class Molecule {
 		mass=1f;
 		angle=0;
 		angularVelocity=(float) (0.2f*(Math.random()-0.5f));
-		//PApplet.println("Created marble at "+location+" with velocity "+vel+" and mass "+mass);
+		//logger.fine("Created marble at "+location+" with velocity "+vel+" and mass "+mass);
 		isAlive=true;
 	}
 	
 	public void destroy() {
-		//PApplet.println("Destroy marble at "+location);
+		//logger.fine("Destroy marble at "+location);
 		isAlive=false;
 	}
 	
@@ -61,7 +64,7 @@ class Molecule {
 		velocity.normalize().mult(newspeed);
 		//velocity.add(PVector.mult(velocity, -DAMPING/Tracker.theTracker.frameRate));
 		if (velocity.mag() > MAXSPEED) {
-			PApplet.println("Clipping speed from "+velocity.mag());
+			logger.fine("Clipping speed from "+velocity.mag());
 			velocity.normalize().mult(MAXSPEED);
 		}
 		location.add(PVector.mult(velocity,1/Tracker.theTracker.frameRate));
@@ -101,8 +104,31 @@ class Molecule {
 		float dist=sep.mag();
 		float force=getForce(dist);  // positive force is attractive
 		PVector accel = PVector.mult(sep, mass*force/dist);
-		//PApplet.println("sep="+sep+", dist="+dist+", force="+force+", vel="+b1.velocity+", accel="+accel);
+		//logger.fine("sep="+sep+", dist="+dist+", force="+force+", vel="+b1.velocity+", accel="+accel);
 		velocity.add(PVector.mult(accel,1/Tracker.theTracker.frameRate));
+	}
+}
+
+class Butterfly extends Molecule {
+	private static Images imgs=null;
+	
+	Butterfly(PVector pos, PVector vel, float radius) {
+		super(pos,vel,radius);
+		if (imgs==null)
+			imgs=new Images("freeze/butterflies");
+		img=imgs.getRandom();
+		angularVelocity=0;
+		angle=(float)Math.atan2(vel.x,-vel.y);
+	}
+	public void draw(PGraphics g) {
+		float r=getRadius();
+		//g.ellipse(location.x, location.y, r*2, r*2);
+		g.imageMode(PConstants.CENTER);
+		g.pushMatrix();
+		g.translate(location.x, location.y);
+		g.rotate(angle);
+		g.image(img,0,0,r*2,r*2);
+		g.popMatrix();
 	}
 }
 
@@ -132,6 +158,7 @@ class MoleculeFactory {
 	private static final float CREATESPEED=0.02f;  // Create speed in m/s
 	private static HashSet<Molecule> allMolecules = new HashSet<Molecule>();
 	private String moleculeType;
+	static String[] moleculeTypes={"MOLECULE","STRUT","BUTTERFLY"};
 	
 	MoleculeFactory(String molType) {
 		moleculeType = molType;
@@ -142,6 +169,8 @@ class MoleculeFactory {
 			o=new Molecule(pos,vel,radius);
 		else if (moleculeType.equalsIgnoreCase("STRUT"))
 			o=new Strut(pos,vel,radius);
+		else if (moleculeType.equalsIgnoreCase("BUTTERFLY"))
+			o=new Butterfly(pos,vel,radius);
 		else 
 			assert(false);
 		allMolecules.add(o);
@@ -218,7 +247,7 @@ class MoleculeFactory {
 	}
 }
 
-// Osmos visualizer
+// Freeze visualizer
 public class VisualizerFreeze extends Visualizer {
 	long startTime;
 	Effects effects;
@@ -226,10 +255,7 @@ public class VisualizerFreeze extends Visualizer {
 
 	VisualizerFreeze(PApplet parent, Synth synth) {
 		super();
-		mFactory=new MoleculeFactory("Strut");
-		effects=new Effects(synth,123);
-		effects.add("COLLIDE",52,55);
-		effects.add("SPLIT",40,42);
+		effects=Effects.defaultEffects;
 	}
 	
 	public void update(PApplet parent, People allpos) {		
@@ -240,18 +266,22 @@ public class VisualizerFreeze extends Visualizer {
 
 	public void start() {
 		super.start();
+		String mType=MoleculeFactory.moleculeTypes[(int)(Math.random()*MoleculeFactory.moleculeTypes.length)];
+		logger.info("Starting Freeze with molecule type "+mType);
+		mFactory=new MoleculeFactory(mType);
 		Ableton.getInstance().setTrackSet("Freeze");
 	}
 
 	public void stop() {
 		mFactory.destroyAll();
 		super.stop();
-		PApplet.println("Stopping Freeze at "+System.currentTimeMillis());
+		logger.info("Stopping Freeze at "+System.currentTimeMillis());
 	}
 
 	@Override
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g,p);
+		if (false) {
 		g.loadPixels();
 		PImage buffer=null;
 		int downSample=4;
@@ -268,7 +298,7 @@ public class VisualizerFreeze extends Visualizer {
 		g.imageMode(PConstants.CENTER);
 		g.tint(255);  // Causes slow fade if <255
 		g.image(buffer,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,g.width/Tracker.getPixelsPerMeter(),g.height/Tracker.getPixelsPerMeter());
-		
+		}
 		mFactory.drawAll(g);
 	}
 

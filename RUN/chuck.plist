@@ -19,10 +19,10 @@
 	<key>ProgramArguments</key>
 	<array>
 	  <string>/bin/sh</string>
-	  <string>/Users/bst/Dropbox/Pulsefield/src/Chuck/RUN</string>
+	  <string>/Users/bst/Dropbox/Pulsefield/src/modules/Chuck/RUN</string>
 	</array>
 	<key>WorkingDirectory</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/Chuck</string>
+	<string>/Users/bst/Dropbox/Pulsefield/src/modules/Chuck</string>
 	<key>StandardOutPath</key>
 	<string>/Users/bst/Desktop/PF_LOGS/chuck_stdout.log</string>
 	<key>StandardErrorPath</key>

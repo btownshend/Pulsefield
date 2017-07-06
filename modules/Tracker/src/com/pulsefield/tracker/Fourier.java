@@ -1,4 +1,6 @@
 package com.pulsefield.tracker;
+import java.util.logging.Logger;
+
 import ddf.minim.AudioListener;
 //  class for FFT visualization
 import ddf.minim.AudioSource;
@@ -29,13 +31,14 @@ public class Fourier extends AudioRenderer {
 	float[] leftFFT;
 	float[] rightFFT;
 	float[] monoFFT;
-	
+    private final static Logger logger = Logger.getLogger(Fourier.class.getName());
+
 	Fourier(PApplet parent) {
 		super(parent);
 		AudioSource source=minim.getLineIn();
 		float gain = (float) .125;
 		fft = new FFT(source.bufferSize(), source.sampleRate());
-		PApplet.println("FFT buffer size="+source.bufferSize()+", SR="+source.sampleRate());
+		logger.config("FFT buffer size="+source.bufferSize()+", SR="+source.sampleRate());
 		maxFFT =  source.sampleRate() / source.bufferSize() * gain;
 		fft.window(FFT.HAMMING);
 	}
@@ -48,7 +51,7 @@ public class Fourier extends AudioRenderer {
 			int sampsPerOctave=(bands+totalOctaves-1)/totalOctaves;
 			int baseFreq=(int)(fft.getBandWidth()*sampsPerOctave*totalOctaves/bands);
 			fft.logAverages(baseFreq,sampsPerOctave);
-//			PApplet.println("bands="+bands+", specSize="+fft.specSize()+", totalOct="+totalOctaves+",sampsPerOct="+sampsPerOctave+",baseFreq="+baseFreq+", navg="+fft.avgSize());
+//			logger.fine("bands="+bands+", specSize="+fft.specSize()+", totalOct="+totalOctaves+",sampsPerOct="+sampsPerOctave+",baseFreq="+baseFreq+", navg="+fft.avgSize());
 			fft.forward(left);
 			for(int i = 0; i < bands; i++) { leftFFT[i] = fft.getAvg(i);   monoFFT[i]=leftFFT[i]; }
 			if(right != null) {

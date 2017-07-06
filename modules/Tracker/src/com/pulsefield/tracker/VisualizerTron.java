@@ -140,11 +140,11 @@ public class VisualizerTron extends Visualizer {
 					} else
 						delta=fwd?1:-1;  // Opposite signs at ends
 					
-					//PApplet.println("delta="+delta+"("+grid[p].nextgrid+"-"+grid[p].prevgrid+") @"+p);
+					//logger.fine("delta="+delta+"("+grid[p].nextgrid+"-"+grid[p].prevgrid+") @"+p);
 					if (delta!=2 && delta!=-2 && delta!=gridHeight*2 && delta!=-gridHeight*2) {
 						// Corner
 						pg.pitch+=(delta>0)?1:-1;
-						//PApplet.println("ID "+id+": "+pg.pitch);
+						//logger.fine("ID "+id+": "+pg.pitch);
 						if (positions.get(id)!=null)
 							synth.play(id, pg.pitch, 127, (int)(notedur*480*2), positions.get(id).channel);
 					}
@@ -180,16 +180,16 @@ public class VisualizerTron extends Visualizer {
 					while (oldgpos!=gpos) {
 						// Move 1 grid step at a time, always manhattan type move (no diagonals)
 						int stepgpos=findstep(oldgpos,gpos);
-						//PApplet.println("findstep("+oldgpos+","+gpos+") -> "+stepgpos);
+						//logger.fine("findstep("+oldgpos+","+gpos+") -> "+stepgpos);
 						GridData g=grid[stepgpos];
 						if (g.id==-1 || g.exploding>0) {
-							//PApplet.println("Set grid "+gdisp(stepgpos)+" to "+id+" prev="+gdisp(oldgpos));
+							//logger.fine("Set grid "+gdisp(stepgpos)+" to "+id+" prev="+gdisp(oldgpos));
 							grid[stepgpos].set(id,oldgpos);
 							grid[oldgpos].nextgrid=stepgpos;
 							currentgrid.put(id, stepgpos);
 						} else {
 							// Collision, clear out this ID
-							PApplet.println("Collision of ID "+id+" with "+g.id+" at pos="+gdisp(stepgpos)+", prev="+gdisp(g.prevgrid));						
+							logger.fine("Collision of ID "+id+" with "+g.id+" at pos="+gdisp(stepgpos)+", prev="+gdisp(g.prevgrid));						
 							explode(id);
 							currentgrid.put(id,-1);
 							break;
@@ -203,14 +203,14 @@ public class VisualizerTron extends Visualizer {
 				playgrid.put(id,new Cursor(gpos,true,scale.map2note(id%scale.length(), 0, scale.length()-1, 0, 1)));
 			} else {
 				// On top of someone
-				//PApplet.println("ID "+id+" is on top of "+grid[gpos].id);
+				//logger.fine("ID "+id+" is on top of "+grid[gpos].id);
 				currentgrid.put(id,-1);
 			}
 		}
 		for (Iterator<Integer> iter = currentgrid.keySet().iterator();iter.hasNext();) {
 			int id=iter.next().intValue();
 			if (!positions.pmap.containsKey(id)) {
-				PApplet.println("Removing ID "+id);
+				logger.fine("Removing ID "+id);
 				playgrid.remove(id);
 				clear(id);
 				iter.remove();
@@ -228,7 +228,7 @@ public class VisualizerTron extends Visualizer {
 				if (gid!=-1) {
 					if (p.get(gid)== null) {
 						// Person deleted
-						PApplet.println("draw: missing person in grid: id= "+gid);
+						logger.fine("draw: missing person in grid: id= "+gid);
 						grid[i*gridHeight+j].id=-1;
 						continue;
 					}
@@ -282,7 +282,7 @@ public class VisualizerTron extends Visualizer {
 				if (gid!=-1) {
 					if (p.get(gid)== null) {
 						// Person deleted
-						PApplet.println("draw: missing person in grid: id= "+gid);
+						logger.fine("draw: missing person in grid: id= "+gid);
 						grid[i*gridHeight+j].id=-1;
 						continue;
 					}
@@ -296,7 +296,7 @@ public class VisualizerTron extends Visualizer {
 						float w = (c2.x-c1.x)*(explosionFrames-g.exploding)/explosionFrames;
 						float h = (c2.y-c1.y)*(explosionFrames-g.exploding)/explosionFrames;
 						float disp=(Tracker.maxx-Tracker.minx)*g.exploding/explosionFrames;
-//						PApplet.println("exploding="+g.exploding+", w="+w+", h="+h+", disp="+disp);
+//						logger.fine("exploding="+g.exploding+", w="+w+", h="+h+", disp="+disp);
 						laser.rect(c1.x,c1.y+disp,w,h);
 						laser.rect(c1.x,c1.y-disp,w,h);
 						laser.rect(c1.x+disp,c1.y,w,h);
@@ -304,7 +304,7 @@ public class VisualizerTron extends Visualizer {
 					} else {
 						float inset=0.1f;
 //						if (currentgrid.containsKey(gid) /*&& currentgrid.get(gid)==i*gridHeight+j*/) {
-//							PApplet.println("c1="+c1+", c2="+c2);
+//							logger.fine("c1="+c1+", c2="+c2);
 							laser.rect(c1.x,c1.y,c2.x-c1.x,c2.y-c1.y);
 //						}
 						if (playgrid.get(g.id).grid == i*gridHeight+j) {

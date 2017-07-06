@@ -1,6 +1,7 @@
 % Find optimal velocity damping predictor
-function fit=optimalveldamping2(csnap,nlag,ndelay,noise)
+function fit=optimalveldamping2(csnap,nlag,ndelay,noise,onlyopp)
   if nargin<4
+    % Use 3mm of noise to improve robustness
     noise=0;
   end
   if nargin<3
@@ -11,6 +12,36 @@ function fit=optimalveldamping2(csnap,nlag,ndelay,noise)
     % Number of previous values to use for predictor
     nlag=4
   end
+  if nargin<5
+    onlyopp=false;
+  end
+  defwts=[0.903537,0.0933976
+ 0.851002,0.132375
+ 0.801521,0.168482
+ 0.754917,0.201894
+ 0.711023,0.232775
+ 0.669681,0.261281
+ 0.630743,0.287558
+ 0.594069,0.311743
+ 0.559528,0.333966
+ 0.526994,0.354348
+ 0.496353,0.373003
+ 0.467493,0.39004
+ 0.440311,0.405559
+ 0.417183,0.417183
+ 0.411509,0.411509
+ 0.405913,0.405913
+ 0.400393,0.400393
+ 0.394947,0.394947
+ 0.389576,0.389576
+ 0.384278,0.384278
+ 0.379052,0.379052
+ 0.373896,0.373896
+ 0.368811,0.368811
+ 0.363796,0.363796
+ 0.358848,0.358848]';
+  defwts=defwts(:);
+  defwts=defwts/(length(defwts)/2);
   fps=50;
   p=nan(0,2,2);
   v=nan(0,2,2);
@@ -28,12 +59,13 @@ function fit=optimalveldamping2(csnap,nlag,ndelay,noise)
   minscanpts=2;
   p(s(:,1)<minscanpts,1,:)=nan;
   p(s(:,2)<minscanpts,2,:)=nan;
-  % Take only x delta movement
+  % Take only delta movement (so empty predictor is actually a zero-order hold)
   x=diff(p,1);
+
   if noise~=0
     fprintf('Adding %.1f mm of noise to data\n',noise);
   end
-  xn=x+randn(size(x))*noise/1000;   % 3mm of noise to improve robustness
+  xn=x+randn(size(x))*noise/1000;   % Add noise to data
                                     % Take x velocity
                                     %x=v(:,:,1)';
   frame=frame(2:end);
@@ -43,8 +75,12 @@ function fit=optimalveldamping2(csnap,nlag,ndelay,noise)
     % Try numerical fit
     fprintf('\nNLAG=%d NDELAY=%d\n',lag,ndelay);
     if lag>0
-      fit(lag)=0;  % Add another dimension
-      fit=fminsearch(@(z) prederror(z,ndelay,x,xn), fit,options);
+      fit=zeros(1,lag);  % Add another dimension
+      fit=fminsearch(@(z) prederror(z,ndelay,x,xn,onlyopp), fit,options);
+      if onlyopp
+        tmp=[]; tmp(2:2:length(fit)*2)=fit;
+        fit=tmp;
+      end
       fprintf('FIT fit=[%s]; sum(fit)=%.4f\n', sprintf('%.4f ',fit),sum(fit));
     end
 
@@ -61,25 +97,37 @@ function fit=optimalveldamping2(csnap,nlag,ndelay,noise)
     fprintf('RMS residual after looking back %d samples (including other leg interleaved): %.2f mm; 99-th percentile=%.2f\n', length(fit), sqrt(nanmean(error(:).^2))*1000,prctile(abs(error(:)),95)*1000);
   end
 
+  % Use default weights to predict
+  defpred=predictor(defwts(ndelay:end),ndelay,x);
+  deferr=defpred-x;
+  fprintf('RMS residual using defwts: %.2f mm; 99-th percentile=%.2f\n', sqrt(nanmean(deferr(:).^2))*1000,prctile(abs(deferr(:)),95)*1000);
+  
   %   Compare the predicted signal to the original signal
   zoh=0*x;
   zoherror=zoh-x;
 
+  % Just plot the x-coordinates 
   setfig('XPredError');clf;
-  subplot(311);
+  subplot(411);
   plot(frame,squeeze(zoherror(:,1,1))*1000);
-  xlabel('Frame'); ylabel('X-Position (mm)'); grid;
+  xlabel('Frame'); ylabel('X-Position Error (mm)'); grid;
   title(sprintf('Using zero-order hold (RMSE=%.2f)',sqrt(nanmean(zoherror(:).^2))*1000));
   c=axis;
 
-  subplot(312);
+  subplot(412);
   plot(frame,squeeze(error(:,1,1))*1000);
-  xlabel('Frame'); ylabel('X-Position (mm)'); grid;
+  xlabel('Frame'); ylabel('X-Position Error (mm)'); grid;
   title(sprintf('Using %d-order predictor (RMSE=%.2f)',nlag,sqrt(nanmean(error(:).^2))*1000));
+  axis(c);
+
+  subplot(413);
+  plot(frame,squeeze(deferr(:,1,1))*1000);
+  xlabel('Frame'); ylabel('X-Position Error (mm)'); grid;
+  title(sprintf('Using %d-order default predictor (RMSE=%.2f)',length(defwts),sqrt(nanmean(deferr(:).^2))*1000));
   axis(c);
   suptitle('Delta position - Estimate - Leg 1, X-Coord');
 
-  subplot(313);
+  subplot(414);
   plot(abs(xpred(:))*1000,abs(error(:))*1000,'.');
   xlabel('Predicted delta');
   ylabel('Error');
@@ -87,6 +135,15 @@ function fit=optimalveldamping2(csnap,nlag,ndelay,noise)
   emodel=polyfit(abs(xpred(sel))*1000,abs(error(sel))*1000,1)
   fprintf('RMSE=%.2f*|pred| + %.2f mm (each axis independent)\n', emodel);
 
+  setfig('Fit');clf;
+  if mod(length(fit),2)
+    fit(end+1)=nan;
+  end
+  bar(ndelay+(0:length(fit)/2-1),reshape(fit,2,[])');
+  xlabel('prior');
+  ylabel('Weight of prior deltaxs');
+  title('Final fit');
+  
   % Circular variance
   predmag=sqrt(xpred(:,:,1).^2+xpred(:,:,2).^2);
   errmag=sqrt(error(:,:,1).^2+error(:,:,2).^2);
@@ -113,7 +170,12 @@ function pred=predictor(m,ndelay,x)
   end
 end
 
-function e=prederror(m,ndelay,x,xn)
+function e=prederror(m,ndelay,x,xn,onlyopp)
+  if onlyopp
+    mo=[];
+    mo(2:2:length(m)*2)=m;
+    m=mo;
+  end
   pred=predictor(m,ndelay,xn);
   diff=x-pred;
   diff(1:ceil(length(m)/2),:,:)=nan;

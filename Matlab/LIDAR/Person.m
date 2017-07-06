@@ -23,6 +23,7 @@ classdef Person < handle
     age;
     consecutiveInvisibleCount;
     totalVisibleCount;
+    trackedBy;
     debug;
   end
   

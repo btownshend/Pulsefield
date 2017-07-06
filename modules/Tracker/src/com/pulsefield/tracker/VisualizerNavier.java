@@ -60,12 +60,12 @@ class VisualizerNavier extends Visualizer {
 
 
 	public void handleMessage(OscMessage msg) {
-		PApplet.println("Navier message: "+msg.toString());
+		logger.fine("Navier message: "+msg.toString());
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
 		
 		if (components.length<3 || !components[2].equals("navier")) 
-			PApplet.println("Navier: Expected /video/navier messages, got "+msg.toString());
+			logger.warning("Navier: Expected /video/navier messages, got "+msg.toString());
 		else if (components.length==4 && components[3].equals("viscosity")) {
 			visc=msg.get(0).floatValue();
 		} else if (components.length==4 && components[3].equals("diffusion")) {
@@ -73,8 +73,8 @@ class VisualizerNavier extends Visualizer {
 		} else if (components.length==4 && components[3].equals("scale")) {
 			scale=msg.get(0).floatValue();
 		} else 
-			PApplet.println("Unknown Navier Message: "+msg.toString());
-		PApplet.println("visc="+visc+", diff="+diff+", scale="+scale);
+			logger.warning("Unknown Navier Message: "+msg.toString());
+		logger.fine("visc="+visc+", diff="+diff+", scale="+scale);
 		setTO();
 	}
 
@@ -96,8 +96,8 @@ class VisualizerNavier extends Visualizer {
 	
 	public void stats() {
 		long elapsed=System.nanoTime()-statsLast;
-		PApplet.println("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
-		PApplet.println("U=",statsU1*100f/elapsed,", ",statsU2*100f/elapsed,", ",statsU3*100f/elapsed,", ",statsU4*100f/elapsed);
+		logger.fine("Total="+elapsed/1e6+"msec , Tick="+statsTick*100f/elapsed+"%, Step="+statsStep*100f/elapsed+"%, Update="+statsUpdate*100f/elapsed+"%");
+		logger.fine("U="+(statsU1*100f/elapsed)+", "+(statsU2*100f/elapsed)+", "+(statsU3*100f/elapsed)+", "+(statsU4*100f/elapsed));
 		statsLast = System.nanoTime();
 		statsTick=0;
 		statsStep=0;
@@ -114,12 +114,12 @@ class VisualizerNavier extends Visualizer {
 		if (buffer==null) {
 			buffer = new PImage(g.width/downSample, g.height/downSample);
 		}
-		if (p.pmap.isEmpty() && false) {
-			g.background(0, 0, 0);  
-			g.colorMode(PConstants.RGB, 255);
-			drawWelcome(t,g);
-			return;
-		}
+//		if (p.pmap.isEmpty()) {
+//			g.background(0, 0, 0);  
+//			g.colorMode(PConstants.RGB, 255);
+//			drawWelcome(t,g);
+//			return;
+//		}
 
 		double dt = 1 / t.frameRate;
 		long t1 = System.nanoTime();
@@ -146,10 +146,10 @@ class VisualizerNavier extends Visualizer {
 			g.ellipse(ps.getOriginInMeters().x,ps.getOriginInMeters().y, ps.getLegSeparationInMeters(), ps.getLegSeparationInMeters());
 			for (int leg=0;leg<2;leg++) {
 				int c=(ps.id*17+leg*127)&0xff;
-				//PApplet.println("leg "+leg+", c="+c);
+				//logger.fine("leg "+leg+", c="+c);
 				g.fill(c,255,255);
 				g.stroke(c,255,255);
-				//PApplet.println("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
+				//logger.fine("groupsize="+ps.groupsize+" ellipse at "+ps.origin.toString());
 
 				//float sz=.3f;
 				//if (ps.groupsize > 1)
@@ -165,21 +165,21 @@ class VisualizerNavier extends Visualizer {
 	public void update(PApplet parent, People p) {
 		Ableton.getInstance().updateMacros(p);
 		for (Person pos: p.pmap.values()) {
-			//PApplet.println("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
+			//logger.fine("ID "+pos.id+" avgspeed="+pos.avgspeed.mag());
 			if (pos.isMoving())
 				synth.play(pos.id,pos.channel+35,127,480,pos.channel);
 		}
 		long t1=System.nanoTime();
 		int n = NavierStokesSolver.N;
 		for (Person pos: p.pmap.values()) {
-			//PApplet.println("update("+p.channel+"), enabled="+p.enabled);
+			//logger.fine("update("+p.channel+"), enabled="+p.enabled);
 			int cellX = (int)( (pos.getNormalizedPosition().x+1)*n / 2);
 			cellX=Math.max(0,Math.min(cellX,n));
 			int cellY = (int) ((pos.getNormalizedPosition().y+1)*n/ 2);
 			cellY=Math.max(0,Math.min(cellY,n));
 			double dx=pos.getVelocityInMeters().x/parent.frameRate*10;
 			double dy=pos.getVelocityInMeters().y/parent.frameRate*10;
-			//PApplet.println("Cell="+cellX+","+cellY+", dx="+dx+", dy="+dy);
+			//logger.fine("Cell="+cellX+","+cellY+", dx="+dx+", dy="+dy);
 
 			dx = (Math.abs(dx) > limitVelocity) ? Math.signum(dx) * limitVelocity : dx;
 			dy = (Math.abs(dy) > limitVelocity) ? Math.signum(dy) * limitVelocity : dy;
@@ -219,7 +219,7 @@ class VisualizerNavier extends Visualizer {
 		g.imageMode(PConstants.CENTER);
 		g.tint(255);  // Causes slow fade if <255
 		long t4=System.nanoTime();
-//		PApplet.println("floor center="+Tracker.getFloorCenter()+", size="+Tracker.getFloorSize());
+//		logger.fine("floor center="+Tracker.getFloorCenter()+", size="+Tracker.getFloorSize());
 		g.image(buffer,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,g.width/Tracker.getPixelsPerMeter(),g.height/Tracker.getPixelsPerMeter());
 		long t5=System.nanoTime();
 		statsU1+=(t2-t1);
@@ -258,7 +258,7 @@ class VisualizerNavier extends Visualizer {
 //					(float) u), lerpColor(parent, parent.pixels[indexBottomLeft], 
 //							parent.pixels[indexBottomRight], (float) u), (float) v);
 //			if (lc!=color) {
-//				PApplet.println(String.format("old way=0x%x,  new way=0x%x\n", lc, color));
+//				logger.fine(String.format("old way=0x%x,  new way=0x%x\n", lc, color));
 //			}
 //		} 
 //		catch (Exception e) {
