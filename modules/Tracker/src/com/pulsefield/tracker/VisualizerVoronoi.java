@@ -2,6 +2,7 @@ package com.pulsefield.tracker;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 
 import delaunay.Pnt;
 import delaunay.Triangle;
@@ -15,6 +16,9 @@ class Voice {
 	int id;
 	PVector mainline[];  // Line for this note
 	boolean playing;
+    private final static Logger logger = Logger.getLogger(Voice.class.getName());
+
+   
 	Voice(int id) { 
 		this.id=id; 
 		mainline=new PVector[2];
@@ -22,16 +26,16 @@ class Voice {
 	}
 	void play(Scale scale, Synth synth, int duration, int channel) {
 		if (mainline[0]==null || mainline[1]==null) {
-			PApplet.println("Voice.Play: ID "+id+" has no vornoi line");
+			logger.warning("Voice.Play: ID "+id+" has no vornoi line");
 			return;
 		}
 		PVector diff=new PVector(mainline[0].x,mainline[0].y);
 		diff.sub(mainline[1]);
 		float mag=diff.mag();
-//		PApplet.println("Mag="+mag); // Mag can be from 0 to 2*sqrt(2)
+//		logger.fine("Mag="+mag); // Mag can be from 0 to 2*sqrt(2)
 		mag=(mag>1.0)?1.0f:mag;
 		int pitch=scale.map2note(1.0f-mag, 0f, 1.0f, 0, 3);
-//		PApplet.println("Pitch="+pitch);
+//		logger.fine("Pitch="+pitch);
 		int velocity=127;
 		synth.play(id, pitch, velocity, duration, channel);
 	}
@@ -65,8 +69,8 @@ class Voice {
 					mainline[i]=PVector.lerp(mainline[1-i],mainline[i],(mainline[1-i].y+maxval)/(mainline[1-i].y-mainline[i].y));	
 			}
 		}
-		//PApplet.println("p1="+p1+"->"+mainline[0]);
-		//PApplet.println("p2="+p2+"->"+mainline[1]);
+		//logger.fine("p1="+p1+"->"+mainline[0]);
+		//logger.fine("p2="+p2+"->"+mainline[1]);
 		this.mainline=mainline;
 		return true;
 	}
@@ -96,12 +100,12 @@ public class VisualizerVoronoi extends VisualizerPS {
 		curVoice=null;
 		dt=new Triangulation(initialTriangle);
 		this.scale=scale;
-		PApplet.println("VisualizerVoronoi() done");
+		logger.fine("VisualizerVoronoi() done");
 	}
 
 	@Override
 	public void start() {
-		PApplet.println("Voronoi::Start");
+		logger.info("Voronoi::Start");
 		super.start();
 		Laser.getInstance().setFlag("body",1.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
@@ -110,7 +114,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 	@Override
 	public void stop() {
-		PApplet.println("Voronoi::Stop");
+		logger.info("Voronoi::Stop");
 		super.stop();
 	}
 
@@ -163,7 +167,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 				curVoice=newvoice;
 				Person pos=allpos.get(curVoice.id);
 				if (pos==null) {
-					PApplet.println("Delete voice for ID "+curVoice.id);
+					logger.fine("Delete voice for ID "+curVoice.id);
 					voices.remove(curVoice);
 					curVoice=null;
 				} else {

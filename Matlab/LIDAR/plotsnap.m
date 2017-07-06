@@ -3,13 +3,18 @@ function plotsnap(snap,varargin)
 params=getparams();
 defaults=struct('frame',[],...
                 'setfig',true,...
-                'maxrange',params.maxrange,...
+                'bounds',[],...
                 'showhits',true,...
+                'maxrange',3,...
                 'crop',true,...
                 'debug',false...
                 );
 args=processargs(defaults,varargin);
 
+if ~isempty(args.maxrange) && isempty(args.bounds)
+  args.bounds=[-args.maxrange args.maxrange -args.maxrange args.maxrange];
+end
+  
 frames=arrayfun(@(z) z.vis.frame, snap);
 
 if ~isempty(args.frame)
@@ -117,7 +122,7 @@ if args.crop
   newc=[ctr(1)-sz/2,ctr(1)+sz/2,ctr(2)-sz/2,ctr(2)+sz/2];
   axis(newc);  % Zoom to ROI
 else
-  axis([-args.maxrange,args.maxrange,-1,args.maxrange]);
+  axis(args.bounds);
 end
 
 % Plot info along the left

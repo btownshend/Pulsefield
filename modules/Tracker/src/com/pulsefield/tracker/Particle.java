@@ -23,7 +23,7 @@ class Particle {
 		this.img=img;
 		//float kscale=0.5f;
 		//this.color=((int)((color&0xff)*kscale)) | ((int)(((color>>8)&0xff)*kscale)<<8) | ((int)(((color>>16)&0xff)*kscale)<<16) | 0xff000000;
-		//PApplet.println("color = "+Integer.toHexString(color)+" -> "+Integer.toHexString(this.color));
+		//logger.fine("color = "+Integer.toHexString(color)+" -> "+Integer.toHexString(this.color));
 		this.color=color;
 		acceleration = new PVector(0f, -0.03f/300);
 		velocity = new PVector((float)rng.nextGaussian()*0.3f/300+v.x, (float)rng.nextGaussian()*0.3f/300 + v.y);

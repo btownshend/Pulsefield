@@ -50,8 +50,9 @@ public:
     void track( const Vis &vis, int frame, float fps,double elapsed);
     void deleteLostPeople();
     void sendMessages(Destinations &dests, double elapsed);
+#ifdef MATLAB
     mxArray *convertToMX() const;
-
+#endif
     // Drawing routines
     void draw(int nsick=0, const SickIO * const*sick=NULL) const;
 

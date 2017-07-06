@@ -1,6 +1,7 @@
 package com.pulsefield.tracker;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -25,7 +26,8 @@ class Mole {
 	static final float MAXSPEED=1f/100;   // Maximum speed in meters/tick
 	static final float maxHitDist=0.4f; // Meters
 	float radius=0.3f;  // Meters
-	
+    private final static Logger logger = Logger.getLogger(Mole.class.getName());
+
 	Mole(Images m,Images w) { 
 		this.moleImages=m;
 		this.whackedImages=w;
@@ -80,16 +82,16 @@ class Mole {
 			if (d<maxHitDist) {
 				explodeCounter=explodeFrames;
 				ps.userData+=1;
-				PApplet.println("Person "+ps.id+" hit, score: "+ps.userData);
+				logger.fine("Person "+ps.id+" hit, score: "+ps.userData);
 				TrackSet ts=Ableton.getInstance().trackSet;
 				if (ts==null)
-					PApplet.println("No track for whack");
+					logger.warning("No track for whack");
 				else {
 					int track=ps.id%(ts.numTracks)+ts.firstTrack;
 					int nclips=Ableton.getInstance().getTrack(track).numClips();
 					if (nclips!=-1) {
 						int clip=(int)(Math.random()*nclips);
-						PApplet.println("Track="+track+", nclips="+nclips+", clip="+clip);
+						logger.fine("Track="+track+", nclips="+nclips+", clip="+clip);
 						Ableton.getInstance().playClip(track,clip);
 					}
 					e.play(whackEffect, 127, 1000);

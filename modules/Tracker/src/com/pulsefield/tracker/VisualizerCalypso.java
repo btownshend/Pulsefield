@@ -24,6 +24,7 @@ class Drum {
 		PVector pos=new PVector((float)(center.x+radius*Math.cos(angle)),(float)(center.y+radius*Math.sin(angle)));
 		noteSpots.add(new NoteSpot(Synth.nameToPitch(note),127,1000,pos,sz));
 	}
+	@SuppressWarnings("unused")
 	void draw(PGraphics g) {
 		g.pushStyle();
 		g.imageMode(PConstants.CENTER);
@@ -133,11 +134,11 @@ public class VisualizerCalypso extends Visualizer {
 					for (int i=0;i<ps.legs.length;i++) {
 						Leg leg=ps.legs[i];
 						if (noteSpot.hitTest(leg.getOriginInMeters())) {
-							//PApplet.println("Hit note "+noteSpot.pitch+", oldPitch="+oldPitch[i]);
+							//logger.fine("Hit note "+noteSpot.pitch+", oldPitch="+oldPitch[i]);
 							newPitch[i]=noteSpot.pitch;
 							if (oldPitch[i]!=noteSpot.pitch) {
 								// New pitch, trigger it
-								PApplet.println("Play note "+noteSpot.pitch+", vel="+noteSpot.velocity+", dur="+noteSpot.duration);
+								logger.fine("Play note "+noteSpot.pitch+", vel="+noteSpot.velocity+", dur="+noteSpot.duration);
 								synth.play(ps.id, noteSpot.pitch, noteSpot.velocity, noteSpot.duration, ps.channel);
 								noteSpot.setActive((int)(noteSpot.duration*parent.frameRate/1000));
 							}

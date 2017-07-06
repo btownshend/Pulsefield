@@ -21,6 +21,8 @@ public:
     // Return likelihood of each scan pixel being part of background (fixed structures not to be considered targets)
     std::vector<float> like(const SickIO &sick) const;
     void update(const SickIO &sick, const std::vector<int> &assignments);
+#ifdef MATLAB
     mxArray *convertToMX() const;
+#endif
 };
 

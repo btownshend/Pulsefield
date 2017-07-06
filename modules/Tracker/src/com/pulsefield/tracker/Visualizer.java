@@ -1,4 +1,6 @@
 package com.pulsefield.tracker;
+import java.util.logging.Logger;
+
 import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -8,6 +10,8 @@ import processing.core.PShape;
 import processing.core.PVector;
 
 public abstract class Visualizer {
+    protected final static Logger logger = Logger.getLogger(Visualizer.class.getName());
+
 	String name;
 	boolean selectable;
 	
@@ -150,8 +154,8 @@ public abstract class Visualizer {
 		g.line(Tracker.minx+strokeWeight/2, Tracker.miny+strokeWeight/2, Tracker.maxx-strokeWeight/2, Tracker.miny+strokeWeight/2);
 		g.line(Tracker.maxx-strokeWeight/2, Tracker.maxy-strokeWeight/2, Tracker.minx+strokeWeight/2, Tracker.maxy-strokeWeight/2);
 		g.line(Tracker.maxx-strokeWeight/2, Tracker.maxy-strokeWeight/2, Tracker.maxx-strokeWeight/2, Tracker.miny+strokeWeight/2);
-		g.ellipseMode(PConstants.CENTER);
-		g.ellipse(0f,0f,0.1f,0.1f);
+		//g.ellipseMode(PConstants.CENTER);
+		//g.ellipse(0f,0f,0.1f,0.1f);
 		
 		// Draw lidar borders too
 		g.stroke(0xff00ffff,alpha);
@@ -164,7 +168,7 @@ public abstract class Visualizer {
 	}
 
 	public void handleMessage(OscMessage theOscMessage) {
-		PApplet.println("Unhandled OSC Message: "+theOscMessage.toString());
+		logger.warning("Unhandled OSC Message: "+theOscMessage.toString());
 	}
 
 	
@@ -186,15 +190,15 @@ public abstract class Visualizer {
 			result[last++]=new PVector((float) (offset+Math.PI),0f*amp);
 		}
 		// Transform points to fall on p1-p2 line
-//		PApplet.println("vibratingPath("+p1+","+p2+","+mode+","+freq+","+amplitude+","+time+"):");
+//		logger.fine("vibratingPath("+p1+","+p2+","+mode+","+freq+","+amplitude+","+time+"):");
 		PVector dir=PVector.sub(p2,p1); dir=PVector.div(dir, dir.mag());
 		for (int i=0;i<npoints;i++) {
-//			PApplet.print(result[i].x+","+result[i].y+",   ");
+//			logger.fine(result[i].x+","+result[i].y+",   ");
 			float d=(float) (result[i].x/(Math.PI*mode))*PVector.dist(p1,p2);
 			float y=result[i].y;
 			result[i].x=d*dir.x+y*dir.y+p1.x;
 			result[i].y=d*dir.y+y*dir.x+p1.y;
-//			PApplet.println(result[i].x+","+result[i].y);
+//			logger.fine(result[i].x+","+result[i].y);
 		}
 		return result;
 	}

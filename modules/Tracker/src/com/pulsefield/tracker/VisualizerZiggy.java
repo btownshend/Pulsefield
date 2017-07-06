@@ -40,9 +40,9 @@ public class VisualizerZiggy extends VisualizerWhack {
 		
 		g.tint(200);
 		g.imageMode(PConstants.CENTER);
-		float glength=Tracker.getFloorSize().x; // Length of guitar in meters
+		//float glength=Tracker.getFloorSize().x; // Length of guitar in meters
 		//float gheight=glength*guitar.height/guitar.width*2;
-		float gheight=Tracker.getFloorSize().y*playadust.height/playadust.width;
+		//float gheight=Tracker.getFloorSize().y*playadust.height/playadust.width;
 		g.pushMatrix();
 		g.translate(Tracker.getFloorCenter().x, Tracker.getFloorCenter().y);
 		g.scale(-1,1);

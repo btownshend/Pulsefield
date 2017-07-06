@@ -8,7 +8,10 @@
 #pragma once
 
 #include <ostream>
+#ifdef MATLAB
 #include <mat.h>
+#endif
+
 #include "lo/lo.h"
 #include "point.h"
 #include "legstats.h"
@@ -27,7 +30,7 @@ class Person {
 
     // Information on what LIDAR is tracking and how many scanpts
     int trackedBy;
-    int trackedPoints;
+    int trackedPoints[2];
     
     // Grouping
     std::shared_ptr<Group> group;   // Current group or null if ungrouped
@@ -60,7 +63,9 @@ public:
     ~Person();
     void predict(int nstep, float fps);
     void update(const Vis &vis, const std::vector<float> &bglike, const std::vector<int> fs[2], int nstep,float fps);
+#ifdef MATLAB
     void addToMX(mxArray *people, int index) const;
+#endif
     friend std::ostream &operator<<(std::ostream &s, const Person &p);
     bool isDead() const;
     int getID() const { return id; }

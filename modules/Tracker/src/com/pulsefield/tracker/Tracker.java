@@ -1,8 +1,11 @@
 package com.pulsefield.tracker;
 import java.awt.Color;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import codeanticode.syphon.SyphonServer;
 import netP5.NetAddress;
@@ -16,7 +19,6 @@ import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
 import processing.opengl.PJOGL;
-
 
 public class Tracker extends PApplet {
 	/**
@@ -36,7 +38,7 @@ public class Tracker extends PApplet {
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
 	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
-	static float lidarminy=0f, lidarmaxy=5f, lidarminx=-5f, lidarmaxx=5f, lidarRotation=0f; // Bounds of tracking
+	static float lidarminy=-5f, lidarmaxy=5f, lidarminx=-5f, lidarmaxx=5f, lidarRotation=0f; // Bounds of tracking
 	static float miny, maxy, minx, maxx; // Bound of video display (in LIDAR coordinates - meters)
 	static Visualizer vis[] = new Visualizer[0];
 	VisualizerGrid visAbleton;
@@ -48,7 +50,7 @@ public class Tracker extends PApplet {
 	VisualizerSyphon visSyphonOF;
 	
 	int currentvis=-1;
-	static NetAddress TO, OF, MPO, AL, MAX, CK, VD;
+	static NetAddress TO, OF, AL, MAX, CK, VD;
 	People people, mousePeople;
 	Ableton ableton;
 	boolean useMAX;
@@ -87,6 +89,8 @@ public class Tracker extends PApplet {
 	boolean enableTitle = true;
 	static Tracker theTracker;
     static String pfroot;
+    private final static Logger logger = Logger.getLogger(Tracker.class.getName());
+
     
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -96,14 +100,15 @@ public class Tracker extends PApplet {
 	}
 
 	public void setup() {
+		logger.entering(this.getClass().getName(), "setup");
 		theTracker = this;   // Keep a static copy of the (sole) tracker instance
 
 		pfroot = System.getenv("PFROOT");
 		if (pfroot==null) {
-			System.err.println("PFROOT environment variable should be set to root of Pulsefield tree");
+			logger.severe("PFROOT environment variable should be set to root of Pulsefield tree");
 			System.exit(1);
 		}
-		System.out.println("PFROOT="+pfroot);
+		logger.config("PFROOT="+pfroot);
 		configFile=pfroot+"/config/urlconfig.txt";   // FIXME: Make this relative to launch directory
 		jconfig=new Config(pfroot+"/config/tracker-config.json");
 		Config.load(this);
@@ -115,8 +120,8 @@ public class Tracker extends PApplet {
 		try {
 			config=new URLConfig(configFile);
 		} catch (IOException e) {
-			System.err.println("Failed to open URL config: "+configFile+": "+e.getLocalizedMessage());
-			System.err.println("PFROOT currently set to "+pfroot+".  Is that the root of the Pulsefield repository installation?");
+			logger.severe("Failed to open URL config: "+configFile+": "+e.getLocalizedMessage());
+			logger.severe("PFROOT currently set to "+pfroot+".  Is that the root of the Pulsefield repository installation?");
 			System.exit(1);
 		}
 
@@ -136,13 +141,12 @@ public class Tracker extends PApplet {
 
 		TO = new NetAddress(config.getHost("TO"), config.getPort("TO"));
 		OF = new NetAddress(config.getHost("OF"), config.getPort("OF"));
-		MPO = new NetAddress(config.getHost("MPO"), config.getPort("MPO"));
 		AL = new NetAddress(config.getHost("AL"), config.getPort("AL"));
 		CK = new NetAddress(config.getHost("CK"), config.getPort("CK"));
 		VD = new NetAddress(config.getHost("VD"), config.getPort("VD"));
-		PApplet.println("Sending to mayself at "+VD.address()+":"+VD.port());
-		PApplet.println("Sending chuck commands to "+config.getHost("CK")+":"+config.getPort("CK"));
-		PApplet.println("AL at "+config.getHost("AL")+":"+config.getPort("AL"));
+		logger.config("Sending to myself at "+VD.address()+":"+VD.port());
+		logger.config("Sending chuck commands to "+config.getHost("CK")+":"+config.getPort("CK"));
+		logger.config("AL at "+config.getHost("AL")+":"+config.getPort("AL"));
 		MAX = new NetAddress(config.getHost("MAX"), config.getPort("MAX"));
 		touchOSC = new TouchOSC(oscP5, TO);
 		oFOSC = new OFOSC(oscP5,OF);
@@ -204,7 +208,7 @@ public class Tracker extends PApplet {
 		mask=new PGraphicsOpenGL[projectors.length];
 		resetcoords();
 
-		PApplet.println("settings() complete");
+		logger.fine("settings() complete");
 	}
 	
 	private void makeCanvases() {
@@ -213,7 +217,7 @@ public class Tracker extends PApplet {
 		int CANVASWIDTH=(int)(sc*(maxx-minx));
 		int CANVASHEIGHT=(int)(sc*(maxy-miny));
 		if (canvas==null || canvas.width!=CANVASWIDTH || canvas.height!=CANVASHEIGHT) {
-			PApplet.println("Making new canvas: "+CANVASWIDTH+"x"+CANVASHEIGHT);
+			logger.config("Making new canvas: "+CANVASWIDTH+"x"+CANVASHEIGHT);
 			canvas = (PGraphicsOpenGL) createGraphics(CANVASWIDTH, CANVASHEIGHT, renderer);
 			float mscale=8;	// How much smaller to make the masks
 			for (int i=0;i<mask.length;i++) {
@@ -256,6 +260,9 @@ public class Tracker extends PApplet {
 		addVis("Osmos",new VisualizerOsmos(this,synth),true);
 		addVis("Freeze",new VisualizerFreeze(this,synth),true);
 		addVis("VDMX",new VisualizerVDMX(this,Tracker.pfroot+"/../VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
+		addVis("Measure",new VisualizerMeasure(this),true);
+		addVis("Stickman",new VisualizerStickman(this,synth),true);
+		addVis("Hunter", new VisualizerHunter(this,synth),true);
 		addVis("TestPattern",new VisualizerTestPattern(this),false);
 		setapp(vis.length-1);
 	}
@@ -270,11 +277,11 @@ public class Tracker extends PApplet {
 		v.setSelectable(selectable);
 		// Set pos, selectable
 		vis[tvis.length]=v;
-		PApplet.println("Created "+name);
+		logger.fine("Created "+name);
 	}
 	
 	public void tempo(float t) {
-		PApplet.println("tempo("+t+")");
+		logger.fine("tempo("+t+")");
 		MasterClock.settempo(t);
 		Ableton.getInstance().setALTempo(t);
 	}
@@ -285,14 +292,14 @@ public class Tracker extends PApplet {
 	
 	public void ping(int code) {
 		OscMessage msg = new OscMessage("/ack");
-		//PApplet.println("Got ping "+code);
+		//logger.fine("Got ping "+code);
 		msg.add(code);
-		oscP5.send(msg,MPO);
+		//		oscP5.send(msg,MPO);
 	}
 
 	public void setborders(float onoff) {
 		OscMessage msg = new OscMessage("/video/borders");
-		PApplet.println("Got /video/borders,"+onoff);
+		logger.info("Got /video/borders,"+onoff);
 		msg.add(onoff);
 		oscP5.send(msg,TO);
 		drawBorders=onoff!=0f;
@@ -301,7 +308,7 @@ public class Tracker extends PApplet {
 	
 	public void setbounds(float onoff) {
 		OscMessage msg = new OscMessage("/video/bounds");
-		PApplet.println("Got /video/bounds,"+onoff);
+		logger.info("Got /video/bounds,"+onoff);
 		msg.add(onoff);
 		oscP5.send(msg,TO);
 		drawBounds=onoff!=0f;
@@ -310,7 +317,7 @@ public class Tracker extends PApplet {
 	
 	public void menuenable(float onoff) {
 		OscMessage msg = new OscMessage("/video/menu");
-		PApplet.println("Got /video/menu,"+onoff);
+		logger.info("Got /video/menu,"+onoff);
 		msg.add(onoff);
 		oscP5.send(msg,TO);
 		enableMenu=onoff!=0f;
@@ -343,11 +350,11 @@ public class Tracker extends PApplet {
 	}
 	
 	public void setcursor(int cursor, int ncursor, int proj, float x, float y) {
-		PApplet.println("setcursor("+proj+","+cursor+","+ncursor+","+x+","+y+")");
+		logger.fine("setcursor("+proj+","+cursor+","+ncursor+","+x+","+y+")");
 		if (ncursor==0)
 			cursors=null;
 		else if (cursors==null || cursors.length != ncursor) {
-			PApplet.println("setcursor: resizing to "+ncursor);
+			logger.fine("setcursor: resizing to "+ncursor);
 			cursors=new ProjCursor[ncursor];
 		}
 		if (ncursor>0) {
@@ -357,9 +364,9 @@ public class Tracker extends PApplet {
 	}
 	
 	public void setscreen2world(int proj, float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21, float x22) {
-		PApplet.println("setscreen2world("+proj+","+x00+","+x01+"...)");
+		logger.entering("Tracker","setscreen2world",""+proj+","+x00+","+x01+"...)");
 		if (proj<0 || proj>=projectors.length) {
-			PApplet.println("setscreen2world: Bad projector number: "+proj);
+			logger.warning("setscreen2world: Bad projector number: "+proj);
 			return;
 		}
 		PMatrix3D mat=new PMatrix3D();
@@ -371,9 +378,9 @@ public class Tracker extends PApplet {
 	}
 	
 	public void setworld2screen(int proj, float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21, float x22) {
-		PApplet.println("setworld2screen("+proj+","+x00+","+x01+"...)");
+		logger.finer("setworld2screen("+proj+","+x00+","+x01+"...)");
 		if (proj<0 || proj>=projectors.length) {
-			PApplet.println("setworld2screen: Bad projector number: "+proj);
+			logger.warning("setworld2screen: Bad projector number: "+proj);
 			return;
 		}
 		PMatrix3D mat=new PMatrix3D();
@@ -388,14 +395,14 @@ public class Tracker extends PApplet {
 		PMatrix2D mat=new PMatrix2D();
 		mat.set(x00,x01,x02,
 				x10,x11,x12);
-		PApplet.println("setprojection("+proj+":");
+		logger.finer("setprojection("+proj+":");
 		mat.print();
 		projectors[proj].setProjection(mat);
 	}
 	
 	public void setpose(int proj, float x, float y, float z) {
 		PVector vec=new PVector(x,y,z);
-		PApplet.println("setpose("+proj+","+vec+")");
+		logger.finer("setpose("+proj+","+vec+")");
 		projectors[proj].setPosition(vec);
 	}
 
@@ -405,15 +412,16 @@ public class Tracker extends PApplet {
 				x10,x11,x12,x13,
 				x20,x21,x22,x23,
 				0,0,0,1);
-		PApplet.println("setcameraview("+proj+":");
+		logger.finer("setcameraview("+proj+":");
 		mat.print();
 		projectors[proj].setCameraView(mat);
 	}
 
 	private String vispos(int i) {
+		final int numrows=7;
 		int row=i/5;
 		int col=i-row*5;
-		return ""+(5-row)+"/"+(col+1);
+		return ""+(numrows-row)+"/"+(col+1);
 	}
 	
 	public void vsetapp(OscMessage msg) {
@@ -423,7 +431,7 @@ public class Tracker extends PApplet {
 				return;
 			}		
 		}
-		println("Bad vsetup message: "+msg);
+		logger.warning("Bad vsetup message: "+msg);
 	}
 
 	public static void sendOSC(String dest, OscMessage msg) {
@@ -431,8 +439,6 @@ public class Tracker extends PApplet {
 			oscP5.send(msg,AL);
 		else if (dest.equals("TO"))
 			oscP5.send(msg,TO);
-		else if (dest.equals("MPO"))
-			oscP5.send(msg,MPO);
 		else if (dest.equals("CK"))
 			oscP5.send(msg,CK);
 		else if (dest.equals("Laser"))
@@ -440,7 +446,7 @@ public class Tracker extends PApplet {
 		else if (dest.equals("VD"))
 			oscP5.send(msg,VD);
 		else
-			System.err.println("sendOSC: Bad destination: "+dest);
+			logger.severe("sendOSC: Bad destination: "+dest);
 	}
 
 	public static void sendOSC(String dest, String path, int data) {
@@ -482,13 +488,13 @@ public class Tracker extends PApplet {
 				OscMessage msg = new OscMessage("/video/app/buttons/"+vispos(k));
 				msg.add(0);
 				sendOSC("TO",msg);
-				//PApplet.println("Sent "+msg.toString());
+				//logger.fine("Sent "+msg.toString());
 			}
 
 		if (currentvis!=-1)
 			vis[currentvis].stop();
 		currentvis=appNum;
-		println("Switching to app "+currentvis+": "+vis[currentvis].name);
+		logger.info("Switching to app "+currentvis+": "+vis[currentvis].name);
 		vis[currentvis].setName(vis[currentvis].name);
 		// Turn on block for current app
 		OscMessage msg = new OscMessage("/video/app/buttons/"+vispos(currentvis));
@@ -509,7 +515,7 @@ public class Tracker extends PApplet {
 			// Setup visualizers at first draw
 			addVisualizers();
 			GUI.start();
-			PApplet.println("Finished initialization");
+			logger.config("Finished initialization");
 			starting = false;
 		}
 		tick++;
@@ -553,7 +559,7 @@ public class Tracker extends PApplet {
 			p.sep=0.3f;
 			p.groupid=p.id;
 			p.groupsize=1;
-//			PApplet.println("Moved mouse ID "+mouseID+" to "+mousePos+" with velocity "+p.getVelocityInMeters());
+//			logger.fine("Moved mouse ID "+mouseID+" to "+mousePos+" with velocity "+p.getVelocityInMeters());
 		} else {
 			mouseVel.set(0f,0f);
 		}
@@ -567,7 +573,9 @@ public class Tracker extends PApplet {
 		//		translate((width-height)/2f,0);
 
 		canvas.pushStyle();
+		canvas.pushMatrix();
 		vis[currentvis].draw(this, canvas,people);
+		canvas.popMatrix();
 		canvas.popStyle();
 		if (enableTitle) {
 			canvas.pushStyle();
@@ -594,7 +602,7 @@ public class Tracker extends PApplet {
 //				for (int j=0;j<projectors[i].bounds.length;j++) {
 //					PVector p=projectors[i].bounds[j];
 //					canvas.vertex(p.x,p.y);
-//					//PApplet.println("vertex("+projectors[i].bounds[j]+") -> "+canvas.screenX(p.x,p.y)+","+canvas.screenY(p.x, p.y));
+//					//logger.fine("vertex("+projectors[i].bounds[j]+") -> "+canvas.screenX(p.x,p.y)+","+canvas.screenY(p.x, p.y));
 //				}
 //				canvas.endShape(CLOSE);
 //			}
@@ -604,14 +612,14 @@ public class Tracker extends PApplet {
 		canvas.endDraw();
 		// Syphon setup, requires OpenGL renderer (not FX2D?)
 		if (useSyphon && server==null) {
-			PApplet.println("Creating new syphon server...");
+			logger.config("Creating new syphon server...");
 			try {
 				server = new SyphonServer(this, "Tracker");
 			} catch (Exception e) {
 				e.printStackTrace();
 				exit();
 			}
-			PApplet.println("Done creating new syphon server");
+			logger.config("Done creating new syphon server");
 		}
 		
 		if (server != null) {
@@ -635,7 +643,7 @@ public class Tracker extends PApplet {
 		if (drawMasks) {
 			// Draw masks on screen
 			float maskScale=mask[0].width/(width/4f);
-//			PApplet.println("maskscale="+maskScale);
+//			logger.fine("maskscale="+maskScale);
 			float h=mask[0].height/maskScale;
 			float w=mask[0].width/maskScale;
 			imageMode(CORNER);
@@ -666,7 +674,7 @@ public class Tracker extends PApplet {
 		//SyphonTest.draw(this);
 		Config.saveIfModified(this);   // Save if modified
 		} catch (Exception e) {
-			PApplet.println("exception in draw(): "+e.getMessage());
+			logger.severe("exception in draw(): "+e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -693,7 +701,7 @@ public class Tracker extends PApplet {
 			for (int j=0;j<projectors[i].bounds.length;j++) {
 				PVector p=projectors[i].bounds[j];
 				mask[i].vertex(p.x,p.y);
-				//PApplet.println("vertex("+projectors[i].bounds[j]+") -> "+canvas.screenX(p.x,p.y)+","+canvas.screenY(p.x, p.y));
+				//logger.fine("vertex("+projectors[i].bounds[j]+") -> "+canvas.screenX(p.x,p.y)+","+canvas.screenY(p.x, p.y));
 			}
 			mask[i].endShape(CLOSE);
 
@@ -749,7 +757,7 @@ public class Tracker extends PApplet {
 			maskcnt[pselect[i]]+=1;
 		}
 			
-		//PApplet.println("Mask has projector 0: "+maskcnt[0]+", 1: "+maskcnt[1]+", None: "+maskcnt[2]);
+		//logger.fine("Mask has projector 0: "+maskcnt[0]+", 1: "+maskcnt[1]+", None: "+maskcnt[2]);
 		// Now bring those back to the masks
 		int fullon=0xffffffff;
 		int fulloff=0xff000000;
@@ -787,7 +795,7 @@ public class Tracker extends PApplet {
 	
 	@Override
 	public void keyPressed() {
-		PApplet.println("Mouse key: "+key);
+		logger.info("Mouse key: "+key);
 		if (key=='C' || key=='c') {
 			mouseID=90;
 			mousePeople.pmap.clear();
@@ -796,7 +804,7 @@ public class Tracker extends PApplet {
 			mouseID=90+key-'1';
 		else if (key=='x'||key=='X') {
 			// Current ID exits
-			PApplet.println("Mouse ID "+mouseID+" exitting.");
+			logger.info("Mouse ID "+mouseID+" exitting.");
 			mousePeople.pmap.remove(mouseID);
 			clearMice();
 		} else if (key=='a' || key=='A') {
@@ -805,17 +813,30 @@ public class Tracker extends PApplet {
 		}
 	}
 
+	private static void setupLogging() throws SecurityException, IOException {
+		// Setup logging
+		LogManager.getLogManager().readConfiguration(new FileInputStream("logging.properties"));
+	}
+	
 	public static void main(String args[]) {
+		try {
+			setupLogging();
+		} catch (SecurityException | IOException e) {
+			// TODO Auto-generated catch block
+			PApplet.println("Unable to initialize logging");
+			e.printStackTrace();
+			System.exit(1);
+		}
 		if (present)
 			PApplet.main(new String[] { "--present","com.pulsefield.tracker.Tracker"});
 		else
-			PApplet.main(new String[] {"--display=1","com.pulsefield.tracker.Tracker" });
+			PApplet.main(new String[] {"--display=2","com.pulsefield.tracker.Tracker" });
 	}
 
 	/* incoming osc message are forwarded to the oscEvent method. */
 	synchronized public void oscEvent(OscMessage theOscMessage) {
 		try {
-		//PApplet.println("Got message:"+theOscMessage.toString());
+		//logger.fine("Got message:"+theOscMessage.toString());
 		if (starting)
 			return;
 		if (theOscMessage.isPlugged() == true) 
@@ -830,13 +851,13 @@ public class Tracker extends PApplet {
 		} else if (theOscMessage.addrPattern().startsWith("/proj")) {
 			String pattern=theOscMessage.addrPattern();
 			String components[]=pattern.split("/");
-			PApplet.println("num comp="+components.length+", comp2="+components[2]);
+			logger.fine("num comp="+components.length+", comp2="+components[2]);
 			if (components.length>=3) {
 				int pnum=Integer.parseInt(components[2]);
 				if (pnum>=1 && pnum<=projectors.length)
 					projectors[pnum-1].handleMessage(theOscMessage);
 				else
-					PApplet.println("Bad projector number: "+pnum);
+					logger.warning("Bad projector number: "+pnum);
 			}
 		} else if (theOscMessage.addrPattern().startsWith("/video/navierOF")) {
 			visNavierOF.handleMessage(theOscMessage);
@@ -847,16 +868,16 @@ public class Tracker extends PApplet {
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
 			synth.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/pf/set")) {
-			// PApplet.println("Unhandled set message: "+theOscMessage.addrPattern());
+			// logger.warning("Unhandled set message: "+theOscMessage.addrPattern());
 		} else if (theOscMessage.addrPattern().startsWith("/vis/")) {
-			// PApplet.println("Unhandled vis message: "+theOscMessage.addrPattern());
+			// logger.warning("Unhandled vis message: "+theOscMessage.addrPattern());
 		} else if (!unhandled.containsKey(theOscMessage.addrPattern())) {
-			PApplet.print("Received an unhandled OSC message: ");
+			logger.warning("Received an unhandled OSC message: ");
 			theOscMessage.print();
 			unhandled.put(theOscMessage.addrPattern(),true);		
 		}  /* print the address pattern and the typetag of the received OscMessage */
 		} catch (Exception e) {
-			PApplet.println("oscEvent exception: "+e.getMessage()+"("+e.toString()+")");
+			logger.severe("oscEvent exception: "+e.getMessage()+"("+e.toString()+")");
 			e.printStackTrace();
 		}
 	}
@@ -881,7 +902,7 @@ public class Tracker extends PApplet {
 		else
 			result.set(result.x*2.0f/sz.x,result.y*2.0f/sz.y);
 	
-//		PApplet.println("Mapped ("+raw+") to ("+result);
+//		logger.fine("Mapped ("+raw+") to ("+result);
 		return result;
 	}
 	
@@ -975,16 +996,17 @@ public class Tracker extends PApplet {
 	}
 	
 	synchronized public void pfstarted() {
-		PApplet.println("PF started");
+		logger.entering(this.toString(), "pfstarted");
+		logger.info("PF started");
 	}
 
 	synchronized public void pfstopped() {
-		PApplet.println("PF stopped");
+		logger.info("PF stopped");
 		people.clear();
 	}
 
 	void pfframe(int frame) {
-		//PApplet.println("Got frame "+frame);
+		//logger.fine("Got frame "+frame);
 
 		lastFrameReceived=frame;
 	}
@@ -1007,7 +1029,7 @@ public class Tracker extends PApplet {
 		float elapsed=0.0f;
 		for (int id: mousePeople.pmap.keySet()) {
 			Person p=mousePeople.get(id);
-//			PApplet.println("Sending data for mouse person "+p.id);
+//			logger.fine("Sending data for mouse person "+p.id);
 			// Do some rudimentary grouping
 			p.groupid=p.id;
 			p.groupsize=1;
@@ -1018,7 +1040,7 @@ public class Tracker extends PApplet {
 					if (dist<0.5f) {
 						p.groupid=Math.min(id,id2);
 						p.groupsize++;
-//						PApplet.println("Mouse "+id+" and "+id2+" grouped with distance "+dist);
+//						logger.fine("Mouse "+id+" and "+id2+" grouped with distance "+dist);
 					}
 				}
 			}
@@ -1093,28 +1115,21 @@ public class Tracker extends PApplet {
 	
 	synchronized public void pfupdate(int sampnum, float elapsed, int id, float xpos, float ypos, float xvelocity, float yvelocity, float majoraxis, float minoraxis, int groupid, int groupsize, int channel) {
 		/*	if (channel!=99) {
-			PApplet.print("update: ");
-			PApplet.print("samp="+sampnum);
-			PApplet.print(",elapsed="+elapsed);
-			PApplet.print(",id="+id);
-			PApplet.print(",pos=("+xpos+","+ypos+")");
-			PApplet.print(",vel=("+xvelocity+","+yvelocity+")");
-			PApplet.print(",axislength=("+majoraxis+","+minoraxis+")");
-			PApplet.println(",channel="+channel);
+			logger.fine("update:  samp="+sampnum+",elapsed="+elapsed+",id="+id+",pos=("+xpos+","+ypos+")"+",vel=("+xvelocity+","+yvelocity+")"+",axislength=("+majoraxis+","+minoraxis+")"+",channel="+channel);
 		} */
 		// NOTE: Need to map xvelocity,yvelocity before using them!
 
 //		if (xpos<Tracker.lidarminx-1) {
-//			PApplet.println("Got xpos ("+xpos+") less than lidarminx ("+Tracker.lidarminx+")");
+//			logger.fine("Got xpos ("+xpos+") less than lidarminx ("+Tracker.lidarminx+")");
 //		}
 //		if (xpos>Tracker.lidarmaxx+1) {
-//			PApplet.println("Got xpos ("+xpos+") greater than lidarmaxx ("+Tracker.lidarmaxx+")");
+//			logger.warning("Got xpos ("+xpos+") greater than lidarmaxx ("+Tracker.lidarmaxx+")");
 //		}
 //		if (ypos<Tracker.lidarminy-1) {
-//			PApplet.println("Got ypos ("+ypos+") less than lidarminy ("+Tracker.lidarminy+")");
+//			logger.warning("Got ypos ("+ypos+") less than lidarminy ("+Tracker.lidarminy+")");
 //		}
 //		if (ypos>Tracker.lidarmaxy+1) {
-//			PApplet.println("Got ypos ("+ypos+") greater than lidarmaxy ("+Tracker.lidarmaxy+"),");
+//			logger.warning("Got ypos ("+ypos+") greater than lidarmaxy ("+Tracker.lidarmaxy+"),");
 //		}
 
 		people.getOrCreate(id,channel).move(new PVector(xpos, ypos), new PVector(xvelocity, yvelocity), groupid, groupsize, elapsed);
@@ -1174,10 +1189,10 @@ public class Tracker extends PApplet {
 	}
 
 	public void pfaligncorner(int cornerNumber, int numCorners, float x, float y) {
-		//PApplet.println("Corner "+cornerNumber+"/"+numCorners+" at "+x+", "+y);
+		//logger.fine("Corner "+cornerNumber+"/"+numCorners+" at "+x+", "+y);
 
 		if (alignCorners.length!=numCorners) {
-			//PApplet.println("Resize alignCorners from "+alignCorners.length+" to "+numCorners);
+			//logger.fine("Resize alignCorners from "+alignCorners.length+" to "+numCorners);
 			alignCorners=new PVector[numCorners];
 		}
 		if (cornerNumber >= 0)
@@ -1201,7 +1216,7 @@ public class Tracker extends PApplet {
 		// pfbackground sends in range [-95,95]
 		lidar[scanPt]=new PVector(-currRange*sin(angle*PI/180),currRange*cos(angle*PI/180));
 		lidarbg[scanPt]=new PVector(-backRange*sin(angle*PI/180),backRange*cos(angle*PI/180));
-		//PApplet.println("background("+scanPt,", "+nrange+", "+angle+", "+backRange+", "+currRange+") -> "+lidar[scanPt]);
+		//logger.fine("background("+scanPt,", "+nrange+", "+angle+", "+backRange+", "+currRange+") -> "+lidar[scanPt]);
 	}
 	
 	public void cycle() {
@@ -1212,12 +1227,12 @@ public class Tracker extends PApplet {
 		setapp(newvis);
 //		Calendar cal=Calendar.getInstance();
 //		int hour=cal.get(Calendar.HOUR_OF_DAY);
-//		PApplet.println("Autocycling hour = "+hour);
+//		logger.fine("Autocycling hour = "+hour);
 //		cycler.change(hour>=7 && hour <= 19);
 	}
 	
 	synchronized public void pfsetnpeople(int n) {
-		PApplet.println("/pf/set/npeople: now have "+n+" people, size="+people.pmap.size());
+		logger.fine("/pf/set/npeople: now have "+n+" people, size="+people.pmap.size());
 		if (n==0)
 			setapp(currentvis);   // Cause a reset
 		if (n==0 && people.pmap.size()>0)
@@ -1230,7 +1245,7 @@ public class Tracker extends PApplet {
 	}
 
 	synchronized public void pfexit(int sampnum, float elapsed, int id) {
-		PApplet.println("exit: sampnum="+sampnum+", elapsed="+elapsed+", id="+id);
+		logger.fine("exit: sampnum="+sampnum+", elapsed="+elapsed+", id="+id);
 		people.exit(id);
 		if (people.pmap.size()==0)
 			if (autocycle)
@@ -1241,20 +1256,20 @@ public class Tracker extends PApplet {
 
 	synchronized public void pfentry(int sampnum, float elapsed, int id, int channel) {
 		add(id,channel);
-		PApplet.println("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel+", color="+people.get(id).getcolor());
+		logger.fine("entry: sampnum="+sampnum+", elapsed="+elapsed+", id="+id+", channel="+channel+", color="+people.get(id).getcolor());
 	}
 
 	public void noteOn(int channel, int pitch, int velocity) {
-		System.out.println("Got note on: channel="+channel+", pitch="+pitch+", velocity="+velocity);
+		logger.fine("Got note on: channel="+channel+", pitch="+pitch+", velocity="+velocity);
 	}
 
 	public void noteOff(int channel, int pitch, int velocity) {
-		System.out.println("Got note off: channel="+channel+", pitch="+pitch+", velocity="+velocity);
+		logger.fine("Got note off: channel="+channel+", pitch="+pitch+", velocity="+velocity);
 	}
 
 	void controllerChange(int channel, int number, int value) {
 		// Receive a controllerChange
-		System.out.println("Got CC: channel="+channel+", CC="+number+", value="+value);
+		logger.fine("Got CC: channel="+channel+", CC="+number+", value="+value);
 	}
 
 	public boolean inBounds(PVector location) {

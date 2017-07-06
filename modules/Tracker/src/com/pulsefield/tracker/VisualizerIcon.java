@@ -22,7 +22,7 @@ public class VisualizerIcon extends Visualizer {
 		for (int i=0;i<iconShapes.length;i++) {
 			iconShapes[i]=parent.loadShape(Tracker.SVGDIRECTORY+icons[i]);
 			assert(iconShapes[i]!=null);
-			PApplet.println("Loaded "+icons[i]+" with "+iconShapes[i].getChildCount()+" children, size "+iconShapes[i].width+"x"+iconShapes[i].height);
+			logger.config("Loaded "+icons[i]+" with "+iconShapes[i].getChildCount()+" children, size "+iconShapes[i].width+"x"+iconShapes[i].height);
 		}
 	}
 
@@ -64,7 +64,7 @@ public class VisualizerIcon extends Visualizer {
 			} else {
 				PShape icon=iconShapes[ps.id%iconShapes.length];
 				//icon.translate(-icon.width/2, -icon.height/2);
-				//			PApplet.println("Display shape "+icon+" with native size "+icon.width+","+icon.height);
+				//			logger.fine("Display shape "+icon+" with native size "+icon.width+","+icon.height);
 				float scale=Math.min(sz/icon.width,sz/icon.height);
 				Visualizer.drawShape(g, icon,ps.getOriginInMeters().x, ps.getOriginInMeters().y,icon.width*scale,icon.height*scale);
 				//icon.resetMatrix();

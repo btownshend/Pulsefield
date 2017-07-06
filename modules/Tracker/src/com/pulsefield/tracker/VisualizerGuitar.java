@@ -1,5 +1,6 @@
 package com.pulsefield.tracker;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -23,7 +24,8 @@ class GString {
 	int color;
 	int fret;
 	int velocity;
-	
+    private final static Logger logger = Logger.getLogger(GString.class.getName());
+
 	GString(int fretpitch) {
 		this.fretpitch=fretpitch;
 		vibrating=false;
@@ -42,11 +44,11 @@ class GString {
 		for (i=0;i<frets.length;i++)
 			if (p.getNormalizedPosition().x<frets[i])
 				break;
-		//PApplet.println("x="+p.origin.x+", i="+i);
+		//logger.fine("x="+p.origin.x+", i="+i);
 		if (i==0 || i>=frets.length)
 			return;
 		fret=i-1;
-		//PApplet.println("Fret="+fret);
+		//logger.fine("Fret="+fret);
 		vibrating=true;
 		this.color=color;
 		strikeTime=System.currentTimeMillis();
@@ -54,7 +56,7 @@ class GString {
 		if (velocity>127)
 			velocity=127;
 		this.velocity=velocity;
-		PApplet.println("Strike ("+p.getNormalizedPosition().x+","+p.getNormalizedPosition().y+") Vel="+velocity+", Color="+color);
+		logger.fine("Strike ("+p.getNormalizedPosition().x+","+p.getNormalizedPosition().y+") Vel="+velocity+", Color="+color);
 		synth.play(p.id, fretpitch+fret, velocity, vibrateTime, p.channel);
 	}
 
@@ -145,7 +147,7 @@ public class VisualizerGuitar extends VisualizerPS {
 	
 	public void drawLaser(PApplet parent, People p) {
 		super.drawLaser(parent,p);
-		//PApplet.println("Guitar drawLaser");
+		//logger.fine("Guitar drawLaser");
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();
 
@@ -200,7 +202,7 @@ public class VisualizerGuitar extends VisualizerPS {
 				Person p=allpos.pmap.get(id);
 				PVector lastp=lastpos.get(id);
 				if (lastp!=null) {
-					//PApplet.println("y="+lastp.y+" -> "+p.origin.y);
+					//logger.fine("y="+lastp.y+" -> "+p.origin.y);
 					for (int i=0;i<strings.length;i++) {
 						GString s=strings[i];
 						if ( (p.getNormalizedPosition().y > s.position) != (lastp.y >s.position) ) {

@@ -41,7 +41,8 @@ Person::Person(int _id, int _channel, const Point &leg1, const Point &leg2) {
     legs[1]=Leg(leg2);
 
     trackedBy=1;
-    trackedPoints=0;
+    trackedPoints[0]=0;
+    trackedPoints[1]=0;
     
     channel=_channel;
 
@@ -325,9 +326,10 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
     // If this is not the LIDAR we were previously using, check if we have more hits and perhaps switch to this one
     if (trackedBy != vis.getSick()->getId()) {
 	// Not us, but see how we're doing compared to the current one
-	if (trackedPoints<3 && fs[0].size()>trackedPoints && fs[1].size()>trackedPoints) {
+	int minpts=std::min(5,trackedPoints[0]+trackedPoints[1]);   // Need to have at least this for each leg to switch
+	if ((trackedPoints[0]<2 || trackedPoints[1]<2) && fs[0].size()>=minpts && fs[1].size()>=minpts) {
 	    trackedBy=vis.getSick()->getId();
-	    dbg("Person.update",1) << "Switching to LIDAR " << trackedBy << " to track person " << id  << "(" << fs[0].size() << ", " << fs[1].size() << " is better than " << trackedPoints << " scanpts)" << std::endl;
+	    dbg("Person.update",1) << "Switching to LIDAR " << trackedBy << " to track person " << id  << "(" << fs[0].size() << ", " << fs[1].size() << " is better than (" << trackedPoints[0] << ", " << trackedPoints[1]  << ") scanpts)" << std::endl;
 	} else {
 	    // Set the scanPts in the legs though
 	    legs[0].setScanPts(fs[0]);
@@ -335,7 +337,8 @@ void Person::update(const Vis &vis, const std::vector<float> &bglike, const std:
 	    return;
 	}
     }
-    trackedPoints=fs[0].size()+fs[1].size();
+    trackedPoints[0]=fs[0].size();
+    trackedPoints[1]=fs[1].size();
     
     // May eed to run 3 passes, leg0,leg1(which by now includes separation likelihoods),and then leg0 again since it was updated during the 2nd iteration due to separation likelihoods (or swapped of this)
     setupGrid(vis,fs);

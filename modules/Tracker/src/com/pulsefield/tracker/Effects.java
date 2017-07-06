@@ -1,8 +1,7 @@
 package com.pulsefield.tracker;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import processing.core.PApplet;
+import java.util.logging.Logger;
 
 // Effects using a midi map
 class Effects {
@@ -10,8 +9,9 @@ class Effects {
 	int track;
 	HashMap<String,ArrayList<Integer>> pitchMap;
 	static public Effects defaultEffects=null;
-	static int DEFAULTEFFECTSTRACK=127;
-	
+	static int DEFAULTEFFECTSTRACK=132;
+    private final static Logger logger = Logger.getLogger(Effects.class.getName());
+
 	Effects(Synth synth, int track) {
 		this.synth=synth;
 		this.track=track;		
@@ -26,6 +26,7 @@ class Effects {
 		if (!pitchMap.containsKey(effect))
 			pitchMap.put(effect,new ArrayList<Integer>());
 		pitchMap.get(effect).add(pitch);
+		logger.info("Added effect <"+effect+"> at pitch "+pitch);
 	}
 	void add(String effect, int pitch1, int pitch2) {
 		for (int i=pitch1;i<=pitch2;i++)
@@ -33,13 +34,13 @@ class Effects {
 	}
 	public void play(String effect, int velocity, int duration) {
 		if (!pitchMap.containsKey(effect)) {
-			PApplet.println("No pitchMap entry for effect: "+effect);
+			logger.warning("No pitchMap entry for effect: "+effect);
 			return;
 		}
 		ArrayList<Integer> pitches=pitchMap.get(effect);
 		int id=(int)(Math.random()*pitches.size());
 		int pitch=pitches.get(id%pitches.size());
-		PApplet.println("Effect ("+effect+"):  id: "+id+", pitch: "+pitch+", velocity: "+velocity+", track: "+track);
+		logger.info("Effect ("+effect+"):  id: "+id+", pitch: "+pitch+", velocity: "+velocity+", track: "+track);
 		synth.playOnTrack(track, pitch, velocity, duration);
 	}
 	
@@ -52,5 +53,7 @@ class Effects {
 		// DNA
 		defaultEffects.add("BREAK","C1");
 		defaultEffects.add("LIGATE","C1");
+		// Hunter
+		defaultEffects.add("SHOTGUN", "C#1");
 	}
 }

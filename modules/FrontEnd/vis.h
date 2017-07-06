@@ -15,8 +15,9 @@ public:
     Vis();
     void update(const SickIO *sick);
 
+#ifdef MATLAB
     // Convert to an mxArray
     mxArray *convertToMX(int frame) const;
-
+#endif
     const SickIO *getSick() const { return sick; }
 };

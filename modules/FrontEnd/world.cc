@@ -413,6 +413,8 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 	
 
     // Implement assignment
+    struct timeval processStart; gettimeofday(&processStart,0);
+
     for (unsigned int p=0;p<people.size();p++) {
 
 	// Build list of points assigned to this person
@@ -479,6 +481,8 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 		    float biggest=INITLEGDIAM/2;   // Don't use any jumps less than this
 		    for (unsigned int i=1;i<fs[f].size();i++) { 
 			float rjump=(vis.getSick()->getWorldPoint(fs[f][i])-vis.getSick()->getWorldPoint(fs[f][i-1])).norm();
+			if (i==1 || i==fs[f].size()-1)
+			    rjump/=2;  // Down weight a jump with only 1 point there
 			if (rjump>biggest) {
 			    jumppos=i;
 			    biggest=rjump;
@@ -535,6 +539,14 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 	    dbg("World.track",2)  << people[i] << std::endl;
     }
 
+    struct timeval processDone; gettimeofday(&processDone,0);
+    float procTime=(processDone.tv_sec-processStart.tv_sec)*1e6+(processDone.tv_usec-processStart.tv_usec);
+    dbg("World.processing",1)  << "Processed " << people.size() << " people in " << procTime << " usec" << std::endl;
+    static float totalProcTime;
+    static int totalPeople;
+    totalProcTime+=procTime;
+    totalPeople+=people.size();
+    dbg("World.processing",1)  << "Average = " << totalProcTime/totalPeople << std::endl;
 }
         
 void World::sendMessages(Destinations &dests, double elapsed) {

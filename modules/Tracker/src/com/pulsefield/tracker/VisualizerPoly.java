@@ -1,6 +1,7 @@
 package com.pulsefield.tracker;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import oscP5.OscMessage;
 import processing.core.PApplet;
@@ -21,6 +22,7 @@ class PolyState {
 	float lastbeat;
 	int curnote;
 	float lastGrouping;
+    private final static Logger logger = Logger.getLogger(PolyState.class.getName());
 
 	
 	PolyState(Person pos, float noteDuration, int color) {
@@ -33,7 +35,7 @@ class PolyState {
 
 	void update(float beat, int totalBeats, Scale scale, Synth synth, int channel) {
 		if (playing && startBeat+noteDuration <= beat) {
-			//PApplet.println("Stopped channel "+pos.channel+" at beat "+beat);
+			//logger.fine("Stopped channel "+pos.channel+" at beat "+beat);
 			playing=false;
 		}
 		// Compute radius in aspect-preserved normalized coords (scaled by longest dimension to maintain aspect ratio)
@@ -49,7 +51,7 @@ class PolyState {
 				// Play note
 				int pitch=(int)((pos.getNormalizedPosition(true).heading()+Math.PI)/(2*Math.PI)*46+35);
 
-				PApplet.println("Play note "+pitch+" on channel "+channel+" from beat "+beat+" to "+(startBeat+noteDuration));
+				logger.fine("Play note "+pitch+" on channel "+channel+" from beat "+beat+" to "+(startBeat+noteDuration));
 				// Send MIDI
 				synth.play(pos.id, pitch, 127, (int)(noteDuration*480), channel);
 			}
@@ -60,10 +62,10 @@ class PolyState {
 		if (pos.groupsize>1 && beat-lastGrouping>2) {
 			isDrummer=(Math.random() <DRUMMERPROB);
 			int newInstrument=(int)(Math.random()*127+1);
-			PApplet.println("ID "+pos.id+" is in group ("+pos.groupid+","+pos.groupsize+"), changing to GM instrument "+newInstrument);
+			logger.fine("ID "+pos.id+" is in group ("+pos.groupid+","+pos.groupsize+"), changing to GM instrument "+newInstrument);
 			OscMessage msg=new OscMessage("/midi/setpgm/"+pos.channel);
 			msg.add(newInstrument);
-			Tracker.sendOSC("MPO",msg);
+			//			Tracker.sendOSC("MPO",msg);
 			lastGrouping=beat;
 		}
 	}
@@ -162,7 +164,7 @@ public class VisualizerPoly extends Visualizer {
 		Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
 		this.channel=(this.channel+1)%Ableton.getInstance().trackSet.numTracks;
-		PApplet.println("Poly playing on channel "+channel);
+		logger.fine("Poly playing on channel "+channel);
 	}
 
 	@Override
@@ -176,7 +178,7 @@ public class VisualizerPoly extends Visualizer {
 
 		// Update current radius of all players
 		float beat=MasterClock.getBeat();
-		//PApplet.println("Beat "+beat);
+		//logger.fine("Beat "+beat);
 		for (int id: allpos.pmap.keySet()) {
 			PolyState ps=poly.get(id);
 			if (ps==null) {
@@ -190,7 +192,7 @@ public class VisualizerPoly extends Visualizer {
 		for (Iterator<Integer> iter = poly.keySet().iterator();iter.hasNext();) {
 			int id=iter.next().intValue();
 			if (!allpos.pmap.containsKey(id)) {
-				PApplet.println("Removing ID "+id);
+				logger.fine("Removing ID "+id);
 				iter.remove();
 			}
 		}
@@ -229,7 +231,7 @@ public class VisualizerPoly extends Visualizer {
 		super.drawLaser(parent,p);
 		PVector center=new PVector((Tracker.minx+Tracker.maxx)/2, (Tracker.miny+Tracker.maxy)/2);
 		float maxRadius=Math.min(Tracker.maxx-Tracker.minx,Tracker.maxy-Tracker.miny)/2;
-		//PApplet.println("Poly drawLaser center="+center+", radius="+maxRadius);
+		//logger.fine("Poly drawLaser center="+center+", radius="+maxRadius);
 		Laser laser=Laser.getInstance();
 		laser.bgBegin();
 

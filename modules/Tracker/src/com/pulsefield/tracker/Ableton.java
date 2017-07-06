@@ -1,10 +1,10 @@
 package com.pulsefield.tracker;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import netP5.NetAddress;
 import oscP5.OscMessage;
 import oscP5.OscP5;
-import processing.core.PApplet;
 import processing.core.PVector;
 
 class Clip {
@@ -16,7 +16,9 @@ class Clip {
 	private String name;
 	int trackNum;
 	int clipNum;
-	
+	int timesPlayed;
+    private final static Logger logger = Logger.getLogger(Clip.class.getName());
+
 	Clip(int trackNum, int clipNum) {
 		this.position=0f;
 		this.length=0f;
@@ -26,6 +28,7 @@ class Clip {
 		this.trackNum=trackNum;
 		this.clipNum=clipNum;
 		this.name=null;
+		this.timesPlayed=0;
 	}
 	String getName() {
 		if (name!=null)
@@ -42,6 +45,10 @@ class Clip {
 	void setName(String name) {
 		this.name=name;
 	}
+	void incrementPlays() {
+		timesPlayed++;
+		logger.info("Clip "+trackNum+"."+clipNum+" ("+name+") has been played "+timesPlayed+" times.");
+	}
 }
 
 class Track {
@@ -55,7 +62,8 @@ class Track {
 	int trackNum;
 	int lowestSeenEmptyClip, highestSeenUsedClip;
 	int infoRequestsPending;  // Incremented when we request clip info, zeroed when we get a reply
-	
+    private final static Logger logger = Logger.getLogger(Track.class.getName());
+
 	Track(int trackNum) {
 		clips=new HashMap<Integer,Clip>();
 		this.name=null;
@@ -98,7 +106,7 @@ class Track {
 	void setEmptyClip(int clip) {
 		infoRequestsPending=0;
 		if (clip<lowestSeenEmptyClip) {
-//			PApplet.println("Decreasing lowest empty clip number from "+lowestSeenEmptyClip+" to "+clip);
+//			logger.fine("Decreasing lowest empty clip number from "+lowestSeenEmptyClip+" to "+clip);
 			lowestSeenEmptyClip=clip;
 		}
 		clipInfoRequest();
@@ -106,26 +114,26 @@ class Track {
 	void setOccupiedClip(int clip) {
 		infoRequestsPending=0;
 		if (clip>highestSeenUsedClip) {
-//			PApplet.println("Increasing highest seen clip number from "+highestSeenUsedClip+" to "+clip);
+//			logger.fine("Increasing highest seen clip number from "+highestSeenUsedClip+" to "+clip);
 			highestSeenUsedClip=clip;
 		}
 		clipInfoRequest();
 	}
 	void clipInfoRequest() {
 		if (highestSeenUsedClip+1<lowestSeenEmptyClip) {
-//			PApplet.println("Track "+trackNum+" has between "+(highestSeenUsedClip+1)+" and "+lowestSeenEmptyClip+" clips.");
+//			logger.fine("Track "+trackNum+" has between "+(highestSeenUsedClip+1)+" and "+lowestSeenEmptyClip+" clips.");
 			int checkClip=(int)(highestSeenUsedClip+lowestSeenEmptyClip)/2;
 			Ableton.getInstance().sendMessage(new OscMessage("/live/clip/info").add(trackNum).add(checkClip));
 			
 			infoRequestsPending++;
 			if (infoRequestsPending%100==0)
-				PApplet.println("Ableton not responding to clip info requests -- have "+infoRequestsPending+" requests pending");
+				logger.warning("Ableton not responding to clip info requests -- have "+infoRequestsPending+" requests pending");
 		}
 	}
 	int numClips() {
 		if (highestSeenUsedClip+1<lowestSeenEmptyClip) {
 			// Don't yet know how many clips there are
-			PApplet.println("Ableton:numClips() - haven't determined number of clips yet");
+			logger.warning("Ableton:numClips() - haven't determined number of clips yet for track "+this.name+"("+this.trackNum+")");
 			clipInfoRequest();
 			return -1;
 		}
@@ -137,8 +145,8 @@ class TrackSet {
 	String name;
 	int firstTrack;
 	int numTracks;
-	int bgTrack;
-	int bgClips[];
+	int bgTrack;  // Track number to use for background audio
+	int bgClips[];  // Array of clip numbers to use from bg track, or null to use any up to the last non-empty clip
 	float tempo;
 	boolean armed;
 	
@@ -153,11 +161,14 @@ class TrackSet {
 	}
 
 	int getMIDIChannel(int channel) {
-		//System.out.println("getMIDIChannel("+channel+")->"+(channel%numTracks));
+		//logger.fine("getMIDIChannel("+channel+")->"+(channel%numTracks));
+		assert(numTracks>0);
 		return channel%numTracks;
 	}
 	int getTrack(int channel) {
-		//System.out.println("getTrack("+channel+")->"+((channel%numTracks)+firstTrack));
+		//logger.fine("getTrack("+channel+")->"+((channel%numTracks)+firstTrack));
+		assert(firstTrack>=0);
+		assert(numTracks>0);
 		return (channel%numTracks)+firstTrack;
 	}
 }
@@ -165,13 +176,17 @@ class TrackSet {
 
 class ControlValues {
 	PVector pos;
-	int ccx, ccy, ccdx, ccdy, ccspeed;
+	int ccx, ccy, ccdx, ccdy, ccspeed, ccazimuth;
 	boolean moving;
 
 	ControlValues(PVector pos) {
 		this.pos=pos;
 		this.ccx=-1;
 		this.ccy=-1;
+		this.ccdx=-1;
+		this.ccdy=-1;
+		this.ccspeed=-1;
+		this.ccazimuth=-1;
 	}
 }
 
@@ -183,13 +198,14 @@ public class Ableton {
 	HashMap<Integer,Track> tracks;
 	HashMap<String,TrackSet> tracksets;
 	TrackSet trackSet;
-	HashMap<Integer,ControlValues> lastpos;
+	HashMap<Integer,ControlValues> lastpos;  // Map from track number to current control values
 	float tempo;
 	float meter[] = new float[2];
 	int playstate = -1;
 	int bgClip = -1;   // Currently playing bg clip
-	
-	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips,int bgTrack, int bgClips[]) {
+    private final static Logger logger = Logger.getLogger(Ableton.class.getName());
+
+	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int bgTrack, int bgClips[]) {
 		tracksets.put(id,new TrackSet(name,firstTrack,numTracks,tempo,bgTrack, bgClips));
 		for (int i=0;i<numTracks;i++) {
 			Track t=getTrack(i+firstTrack);
@@ -198,8 +214,8 @@ public class Ableton {
 	}
 	
 	
-	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo, int nclips) {
-		addSong(id,name,firstTrack,numTracks,tempo,nclips,-1, null);
+	public void addSong(String id, String name, int firstTrack, int numTracks, float tempo) {
+		addSong(id,name,firstTrack,numTracks,tempo,-1, null);
 	}
 	
 	Ableton(OscP5 oscP5, NetAddress ALaddr) {
@@ -211,33 +227,38 @@ public class Ableton {
 		tempo=120;
 		tracksets=new HashMap<String,TrackSet>();
 		// Note that the track and clip numbers here are 1 lower than they show in AL (since the OSC interface is 0-based)
-		addSong("QU","Quetzal",1,6,120,60);
-		addSong("PR","Pring",8,8,108,60);
-		addSong("OL","Oluminum",17,7,93,60);
-		addSong("EP","Episarch",25,5,93,60);
-		addSong("NG","New Gamelan",31,9,120,60);
-		addSong("MB","Music Box",41,6,111,60);
-		addSong("GA","Garage Revisited",50,6,120,60);
-		addSong("FO","Forski",57,8,72,60);
-		addSong("FI","Firebell",66,7,108,60);
-		addSong("DB","Deep Blue",74,8,100,60);
-		addSong("AN","Animals",84,4,120,60);
-		addSong("MV","Movies",89,1,120,60);
-		addSong("DD","DDR",91,1,120,60);
-		addSong("Harp", "Harp",92,1,120,0);
-		addSong("Guitar", "Guitar",93,1,120,0);
-		addSong("Pads", "Pads",95,4,120,0);
-		addSong("Tron", "Tron",99,1,120,0);
-		addSong("Poly","Poly",101,3,120,0);
-		addSong("Navier", "Navier",105,4,120,0);
-		addSong("SteelPan","Steel Pan",109,1,120,0);
-		addSong("Cows","Cows",111,1,120,0,124,new int[]{12,13,14});
-		addSong("Soccer","Soccer",112,1,120,0,124,new int[]{11});
-		addSong("PB","Polybius",114,9,130,13);
-		addSong("Osmos","Osmos",123,1,120,0,124,new int[]{0,1,2,3,4,5,6});
-		addSong("Whack","Whack",125,1,120,0,124,new int[]{7,8,9,10});
-		addSong("Bowie","Bowie",126,1,120,0,124,new int[]{});
-		addSong("DNA","DNA",123,1,120,0,124,new int[]{0,1,2,3,4,5,6});
+		// Format:  id, name, firstTrack, numTracks, tempo, bgTrack, bgClips[]
+		addSong("QU","Quetzal",1,6,120);
+		addSong("PR","Pring",8,8,108);
+		addSong("OL","Oluminum",17,7,93);
+		addSong("EP","Episarch",25,5,93);
+		addSong("NG","New Gamelan",31,9,120);
+		addSong("MB","Music Box",41,6,111);
+		addSong("GA","Garage Revisited",50,6,120);
+		addSong("FO","Forski",57,8,72);
+		addSong("FI","Firebell",66,7,108);
+		addSong("DB","Deep Blue",74,8,100);
+		addSong("PB","Polybius",85,9,130);
+		addSong("AN","Animals",94,4,120);
+		addSong("MV","Movies",99,1,120);
+		addSong("DD","DDR",101,1,120);
+		addSong("Harp", "Harp",102,1,120);
+		addSong("Guitar", "Guitar",103,1,120);
+		addSong("Pads", "Pads",105,4,120);
+		addSong("Tron", "Tron",109,1,120);
+		addSong("Poly","Poly",111,3,120);
+		addSong("Navier", "Navier",115,4,120);
+		addSong("SteelPan","Steel Pan",119,1,120);
+		addSong("Cows","Cows",		120,1,120,121,null);
+		addSong("Soccer","Soccer",	122,1,120,123,null);
+		addSong("Osmos","Osmos",	124,1,120,125,null);
+		addSong("DNA","DNA",		 -1,0,120,125,null);
+		addSong("Whack","Whack",	126,1,120);
+		addSong("Bowie","Bowie",	127,1,120);
+		addSong("Stickman","Stickman",-1,0,120,128,null);   
+		addSong("Hunter","Hunter",	-1,0,120,129,null);  
+		addSong("Freeze","Freeze",	-1,0,120,130,null);   // TODO
+
 		lastpos=new HashMap<Integer,ControlValues>();
 		trackSet=null;
 		// Clear track info
@@ -245,7 +266,7 @@ public class Ableton {
 			String fields[]={"scene","clip","track","pos"};
 			for (String field: fields) {
 				String path="/grid/table/"+(songtrack+1)+"/"+field;
-//				PApplet.println("Clearing "+path);
+//				logger.fine("Clearing "+path);
 				OscMessage msg = new OscMessage(path);
 				msg.add("-");
 				TouchOSC.getInstance().sendMessage(msg);
@@ -254,33 +275,33 @@ public class Ableton {
 	}
 
 	public void sendMessage(OscMessage msg) {
-		//System.out.println("AL<-"+msg.addrPattern());
+		//logger.fine("AL<-"+msg.addrPattern());
 		oscP5.send(msg,AL);
 	}
 
 	public void handleMessage(OscMessage msg) {
-		//PApplet.println("Ableton message: "+msg.toString());
+		//logger.fine("Ableton message: "+msg.toString());
 		String pattern=msg.addrPattern();
 		String components[]=pattern.split("/");
 		if (components[1].equals("remix")) {
 			if (components.length==3 && components[2].equals("error"))
-				PApplet.println("Got error from remix: "+msg.get(0).stringValue());
+				logger.warning("Got error from remix: "+msg.get(0).stringValue());
 			else
-				PApplet.println("Unknown remix message: "+msg.toString());
+				logger.warning("Unknown remix message: "+msg.toString());
 		} else if (!components[1].equals("live")) 
-			PApplet.println("Ableton: Expected /live messages, got "+msg.toString());
+			logger.warning("Ableton: Expected /live messages, got "+msg.toString());
 		else if (components.length==3 && components[2].equals("beat")) {
 			int b=msg.get(0).intValue();
 			beat(b);
 		} else if (components.length==3 && components[2].equals("tempo")) {
 			tempo=msg.get(0).floatValue();	
-			PApplet.println("tempo from AL = "+tempo);
+			logger.fine("tempo from AL = "+tempo);
 			TouchOSC.getInstance().sendMessage(new OscMessage("/tempo").add(tempo));
-			PApplet.println("sent to TO");
+			logger.fine("sent to TO");
 			MasterClock.settempo(tempo);
 		} else if (components.length==3 && components[2].equals("play")) {
 			playstate=msg.get(0).intValue();	
-			PApplet.println("Play state changed to "+playstate);
+			logger.info("Play state changed to "+playstate);
 		} else if (components.length==4 && components[2].equals("master") && components[3].equals("meter"))
 			setMeter(msg.get(0).intValue(),msg.get(1).floatValue());
 		else if (components.length==4 && components[2].equals("track") && components[3].equals("meter"))
@@ -298,12 +319,18 @@ public class Ableton {
 			setTrackName(msg.get(0).intValue(),msg.get(1).stringValue(),msg.get(2).intValue());
 		else if (components.length==4 && components[2].equals("device") && components[3].equals("param"))
 			deviceParam(msg.get(0).intValue(),msg.get(1).intValue(),msg.get(2).intValue(),msg.get(3).floatValue(),msg.get(4).stringValue());
+		else if (components.length==3 && components[2].equals("track"))
+			; // Ignored
+		else if (components.length==3 && components[2].equals("scene"))
+			; // Ignored
+		else if (components.length==4 && components[2].equals("clip") && components[3].equals("warping"))
+			; // Ignored
 		else 
-			PApplet.println("Unknown Ableton Message: "+msg.toString());
+			logger.warning("Unknown Ableton Message: "+msg.toString());
 	}
 
 	public void beat(float b) {
-		//PApplet.println("Got beat "+b+" after "+(System.currentTimeMillis()-lasttime));
+		//logger.fine("Got beat "+b+" after "+(System.currentTimeMillis()-lasttime));
 		lasttime=System.currentTimeMillis();
 	}
 
@@ -328,7 +355,7 @@ public class Ableton {
 		sendMessage(new OscMessage("/live/stop"));
 	}
 	void deviceParam(int track, int device, int parameter, float value, String name) {
-		//PApplet.println("Track "+track+" device "+device+" parameter "+parameter+"("+name+"): "+value);
+		//logger.fine("Track "+track+" device "+device+" parameter "+parameter+"("+name+"): "+value);
 	}
 	/** Handle Ableton clip info message
 	 * @param track Track number
@@ -338,13 +365,13 @@ public class Ableton {
 	void setClipInfo(int track, int clip, int state) {
 		Track t=getTrack(track);
 		if (state==0) {
-//			PApplet.println("Track "+track+" clip "+clip+" is empty.");
+//			logger.warning("Track "+track+" clip "+clip+" is empty.");
 			t.setEmptyClip(clip);
 			return;
 		}
 		t.setOccupiedClip(clip);
 		Clip c = t.getClip(clip);
-		PApplet.println("Track "+track+" ("+t.getName()+") clip "+clip+" state changed from "+c.state+" to "+state);
+		logger.info("Track "+track+" ("+t.getName()+") clip "+clip+" state changed from "+c.state+" to "+state);
 		int oldState=c.state;
 		c.state = state;
 		if (c==t.playing)
@@ -357,9 +384,10 @@ public class Ableton {
 		else if (state==3)
 			t.triggered=c;
 
-		if (state==1 && clip==bgClip && oldState!=1) {  // For some reasons, get 1->1 messages when starting
+		if (state==1 && clip==bgClip && oldState!=1 && oldState!=-1) {  // For some reasons, get 1->1 messages when starting
 			bgClip=-1;
-			startBgTrack();   // Start a new bg track
+			if (trackSet!=null)
+				startBgTrack();   // Start a new bg track
 		}
 		
 		OscMessage msg = new OscMessage("/grid/table/"+(t.songTrack+1)+"/track");
@@ -387,14 +415,14 @@ public class Ableton {
 	}
 
 	void setClipName(int track, int clip, String name, int color) {
-		PApplet.println("Track:"+track+" clip:"+clip+" name:"+name+" color:"+String.format("0x%x",color));
+		logger.fine("Track:"+track+" clip:"+clip+" name:"+name+" color:"+String.format("0x%x",color));
 		Track t=getTrack(track);
 		Clip c=t.getClip(clip);
 		c.setName(name);
 	}
 	
 	void setTrackName(int track, String name, int color) {
-		PApplet.println("Track:"+track+" name:"+name+" color:"+String.format("0x%x",color));
+		logger.fine("Track:"+track+" name:"+name+" color:"+String.format("0x%x",color));
 		Track t=getTrack(track);
 		t.setName(name);
 	}
@@ -406,7 +434,7 @@ public class Ableton {
 			msg.add(value);
 			TouchOSC.getInstance().sendMessage(msg);
 		} else
-			PApplet.println("Bad meter L/R"+lr);
+			logger.warning("Bad meter L/R"+lr);
 	}
 
 	Track getTrack(int track) {
@@ -423,18 +451,23 @@ public class Ableton {
 		if (lr==0 || lr==1)
 			getTrack(track).meter[lr]=value;
 		else
-			PApplet.println("Bad meter L/R"+lr);
+			logger.warning("Bad meter L/R"+lr);
 	}
 
 	public void setClipPosition(int track, int clip, float position, float length, float loop_start, float loop_end) {
-		//PApplet.println("clipposition("+track+","+clip+") = "+position+"/"+length);
+		//logger.fine("clipposition("+track+","+clip+") = "+position+"/"+length);
 		Track t=getTrack(track);
 		if (t==null) {
-			PApplet.println("Unable to get track "+track);
+			logger.warning("Unable to get track "+track);
 			return;
 		}
-		if ((t.trackNum<trackSet.firstTrack || t.trackNum>=trackSet.firstTrack+trackSet.numTracks) && trackSet.bgTrack!=t.trackNum) {
-			PApplet.println("Got clip position message for track "+t.getName()+"("+t.trackNum+","+track+"), but current trackSet, "+trackSet.name+" is for tracks "+trackSet.firstTrack+"-"+(trackSet.firstTrack+trackSet.numTracks-1));
+		if (trackSet==null) {
+			logger.info("Got clip position message for track "+t.getName()+"("+t.trackNum+","+track+"), but current trackSet is null; stopping clip");
+			stopClip(track,clip);
+		}
+		else if ((t.trackNum<trackSet.firstTrack || t.trackNum>=trackSet.firstTrack+trackSet.numTracks) && trackSet.bgTrack!=t.trackNum) {
+			// TODO: this can happen when a background track is playing -- should keep track of that...
+			logger.info("Got clip position message for track "+t.getName()+"("+t.trackNum+","+track+"), but current trackSet, "+trackSet.name+" is for tracks "+trackSet.firstTrack+"-"+(trackSet.firstTrack+trackSet.numTracks-1)+" and bg track is "+trackSet.bgTrack+"; stopping clip");
 			stopClip(track,clip);
 		}
 		Clip c=t.getClip(clip);
@@ -460,7 +493,7 @@ public class Ableton {
 	public Clip getClip(int track, int clip) {
 		Track t=tracks.get(track);
 		if (t==null) {
-			PApplet.println("getClip: track "+track+" not found");
+			logger.warning("getClip: track "+track+" not found");
 			return null;
 		}
 		return t.getClip(clip);
@@ -471,12 +504,13 @@ public class Ableton {
 	}
 
 	public void playClip(int track, int clip) {
-		PApplet.println("playClip("+track+","+clip+")");
+		logger.fine("playClip("+track+","+clip+")");
 		OscMessage msg=new OscMessage("/live/play/clip");
 		msg.add(track);
 		msg.add(clip);
 		sendMessage(msg);
 		sendMessage(new OscMessage("/live/clip/info").add(track).add(clip));  // Ask for clip info
+		getClip(track,clip).incrementPlays();
 	}
 
 	public void stopClip(int track, int clip) {
@@ -505,12 +539,12 @@ public class Ableton {
 	 */
 	@SuppressWarnings("unused")
 	public TrackSet setTrackSet(String name) {
-		PApplet.println("Setting Ableton track set to "+name);
+		logger.info("Setting Ableton track set to "+name);
 		TrackSet ts = null;
 		if (name!=null) {
 			ts=tracksets.get(name);
 			if (ts==null) {
-				System.err.println("No track set called: "+name);
+				logger.warning("No track set called: "+name);
 			}
 		}
 		// No longer need to arm/disarm since we're sending OSC notes directly to the tracks
@@ -540,20 +574,42 @@ public class Ableton {
 	}
 	
 	public void startBgTrack() {
+		if (trackSet==null) {
+			logger.warning("Attempt to start bg track when trackset is null");
+		}
 		if (trackSet.bgTrack!=-1) {
-			PApplet.println("Starting bg track "+trackSet.bgTrack);
+			logger.info("Starting bg track "+trackSet.bgTrack);
 			Track t=getTrack(trackSet.bgTrack);
-			if (t==null)
-				PApplet.println("Track "+trackSet.bgTrack+" not found.");
+			int[] clipChoices;
+			if (t==null) {
+				logger.warning("Track "+trackSet.bgTrack+" not found.");
+				return;
+			} else if (trackSet.bgClips != null) {
+				clipChoices=trackSet.bgClips;
+			} else if (t.numClips() < 0) {
+				logger.warning("Num clips is not known -- starting first clip as bg");
+				clipChoices=new int[1];
+				clipChoices[0]=0;
+			} else {
+				// Use any clip on the bg track
+				clipChoices=new int[t.numClips()];
+				for (int i=0;i<t.numClips();i++)
+					clipChoices[i]=i;
+			}
+			if (clipChoices.length<1)
+				logger.warning("startBgTrack: Track "+trackSet.bgTrack+" has no clips");
 			else {
-				int nclips=trackSet.bgClips.length;
-				if (nclips<1)
-					PApplet.println("startBgTrack: Track "+trackSet.bgTrack+" has no clips");
-				else {
-					bgClip=trackSet.bgClips[(int)(Math.random()*nclips)];
-					PApplet.println("Playing bg clip "+bgClip+" (of "+nclips+")");
-					playClip(trackSet.bgTrack,bgClip);
+				int minPlays=getClip(trackSet.bgTrack,clipChoices[0]).timesPlayed;
+				bgClip=clipChoices[0];
+				for (int i=1;i<clipChoices.length;i++) {
+					int nPlays=getClip(trackSet.bgTrack,clipChoices[i]).timesPlayed;
+					if (nPlays<minPlays) {
+						minPlays=nPlays;
+						bgClip=clipChoices[i];
+					}
 				}
+				logger.info("Playing bg clip "+bgClip+" that has been played "+minPlays+" times (of "+clipChoices.length+" total clips)");
+				playClip(trackSet.bgTrack,bgClip);
 			}
 		}
 	}
@@ -572,7 +628,7 @@ public class Ableton {
 		msg.add(parameter);
 		msg.add(value);
 		sendMessage(msg);
-		//System.out.println("/live/device track="+track+", dev="+device+", param="+parameter+", value="+value);
+		//logger.fine("/live/device track="+track+", dev="+device+", param="+parameter+", value="+value);
 	}
 
 	public void updateMacros(People allpos) {
@@ -582,7 +638,13 @@ public class Ableton {
 		HashMap<Integer,ControlValues> curpos=new HashMap<Integer,ControlValues>();
 
 		for (Person p: allpos.pmap.values()) {	
-			ControlValues c=lastpos.get(p.id);
+			int track=trackSet.getTrack(p.channel);
+			if (curpos.containsKey(track)) {
+				// Already have someone controlling this track; skip
+				//logger.fine("Ignoring person "+p.id+" of track "+track+" since someone else is controlling it");
+				continue;
+			}
+			ControlValues c=lastpos.get(track);
 			if (c==null) {
 				c=new ControlValues(p.getNormalizedPosition());
 			}
@@ -592,9 +654,14 @@ public class Ableton {
 			int ccdx=(int)(p.getVelocityInMeters().x*32+64); ccdx=(ccdx<0)? 0:(ccdx>127?127:ccdx);
 			int ccdy=(int)(p.getVelocityInMeters().y*32+64);ccdy=(ccdy<0)? 0:(ccdy>127?127:ccdy);
 			int ccspeed=(int)(p.getVelocityInMeters().mag()*64);ccspeed=(ccspeed<0)? 0:(ccspeed>127?127:ccspeed);
-			//System.out.println("OLD="+c.ccx+","+c.ccy+", new="+ccx+","+ccy);
+			// Aziumuth - goes CCW from LIDAR 1
+			// speaker 1 (which is also LIDAR 1) is 0, 2 is 90, 3 (& LIDAR2) is 180, 4 is 270
+			double az= p.getNormalizedPosition().heading()*180/Math.PI+90+360;
+			while (az>360)
+				az-=360;
+			int ccazimuth=(int)(127.0/360 * az);
+			//logger.fine("OLD="+c.ccx+","+c.ccy+", new="+ccx+","+ccy);
 
-			int track=trackSet.getTrack(p.channel);
 			if (ccx!=c.ccx)
 				setALControl(track, 0, 1, ccx);
 			if (ccy!=c.ccy)
@@ -605,13 +672,18 @@ public class Ableton {
 				setALControl(track, 0, 4, ccdy);
 			if (ccspeed!=c.ccspeed)
 				setALControl(track, 0, 5, ccspeed);
+			if (ccazimuth!=c.ccazimuth) {
+				setALControl(track, 0, 6, ccazimuth);
+				//logger.fine("az="+az);
+			}
 			c.ccx=ccx;
 			c.ccy=ccy;
 			c.ccdx=ccdx;
 			c.ccdy=ccdy;
 			c.ccspeed=ccspeed;
+			c.ccazimuth=ccazimuth;
 			c.pos=p.getNormalizedPosition();
-			curpos.put(p.id, c);
+			curpos.put(track, c);
 		}
 		lastpos=curpos;
 	}
