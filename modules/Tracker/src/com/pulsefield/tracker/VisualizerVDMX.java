@@ -11,7 +11,7 @@ public class VisualizerVDMX extends VisualizerSyphon {
 	Process pid;
 	
 	VisualizerVDMX(PApplet parent, String projPath) {
-		super(parent,appName,"VideoOut");
+		super(parent,appName,"Main Output");
 		proj = new File(projPath);
 	}
 
@@ -26,7 +26,7 @@ public class VisualizerVDMX extends VisualizerSyphon {
 			logger.warning("VDMX project: "+proj.getAbsolutePath()+" does not exist.");		
 			return;
 		}
-		String cmd="open -W -a "+app.getAbsolutePath()+" \""+proj.getAbsolutePath()+"\"";  // Make the open wait for the subprocess so we know when it truly exits
+		String cmd="/usr/bin/open -W -a "+app.getAbsolutePath()+" \""+proj.getAbsolutePath()+"\"";  // Make the open wait for the subprocess so we know when it truly exits
 		try {
 			// Launch the app
 			logger.info("Launching VDMX app with: '"+cmd+"'");
@@ -59,7 +59,7 @@ public class VisualizerVDMX extends VisualizerSyphon {
 		if (pid==null || !pid.isAlive()) {
 			if (pid!=null)
 				logger.info("subprocess exitted; status="+pid.exitValue());
-			((Tracker)parent).cycle();
+			//((Tracker)parent).cycle();
 		}
 	}
 
