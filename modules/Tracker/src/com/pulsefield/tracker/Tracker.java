@@ -261,6 +261,7 @@ public class Tracker extends PApplet {
 		addVis("Freeze",new VisualizerFreeze(this,synth),true);
 		addVis("VDMX",new VisualizerVDMX(this,Tracker.pfroot+"/../VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
 		addVis("Measure",new VisualizerMeasure(this),true);
+		addVis("Life", new VisualizerLife(this),true);
 		addVis("Stickman",new VisualizerStickman(this,synth),true);
 		addVis("Hunter", new VisualizerHunter(this,synth),true);
 		addVis("TestPattern",new VisualizerTestPattern(this),false);
@@ -830,7 +831,7 @@ public class Tracker extends PApplet {
 		if (present)
 			PApplet.main(new String[] { "--present","com.pulsefield.tracker.Tracker"});
 		else
-			PApplet.main(new String[] {"--display=2","com.pulsefield.tracker.Tracker" });
+			PApplet.main(new String[] {"--display=3","com.pulsefield.tracker.Tracker" });
 	}
 
 	/* incoming osc message are forwarded to the oscEvent method. */

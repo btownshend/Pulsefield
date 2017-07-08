@@ -93,3 +93,9 @@ modules/OSC/sendOSC/sendOSC
 *.lck
 
 modules/Tracker/tracker.log.1
+
+modules/Tracker/crash.log
+
+modules/Tracker/tracker-crash-while-adjusting-cal.log
+
+modules/Tracker/tracker-huntercrash2.log

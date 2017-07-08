@@ -270,7 +270,8 @@ public class VisualizerHunter extends Visualizer {
 			int c=ps.getcolor();
 			g.noFill();
 			g.stroke(c,255);
-			players.get(ps.id).draw(g);
+			if (players.get(ps.id)!=null)
+				players.get(ps.id).draw(g);
 		}
 		g.shapeMode(PConstants.CENTER);
 	}

@@ -15,10 +15,10 @@
 	<true/>
 
 	<key>Label</key>
-	<string>com.tc.gpuflids</string>
+	<string>com.tc.gpufluids</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Users/bst/Dropbox/Pulsefield/src/Video/Tracker/OF/GPUFluids/bin/GPUFluidsDebug.app/Contents/MacOS/GPUFluidsDebug</string>
+		<string>/Users/bst/Dropbox/Pulsefield/src/modules/GPUFluids/bin/GPUFluidsDebug.app/Contents/MacOS/GPUFluidsDebug</string>
 	</array>
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/RUN</string>

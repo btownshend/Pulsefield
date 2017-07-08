@@ -9,7 +9,7 @@
 		<key>PATH</key>
 		<string></string>
 		<key>DYLD_LIBRARY_PATH</key>
-		<string>/Users/bst/Dropbox/Pulsefield/src/LIDAR/FrontEndLIDAR</string>
+		<string>/Users/bst/Dropbox/Pulsefield/src/modules/FrontEnd</string>
 	</dict>
 	<key>RunAtLoad</key>
 	<false/>
@@ -20,7 +20,9 @@
 	<string>com.tc.frontend</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Users/bst/Dropbox/Pulsefield/src/LIDAR/FrontEndLIDAR/frontend</string>
+		<string>/Users/bst/Dropbox/Pulsefield/src/modules/FrontEnd/frontend</string>
+		<string>-n</string>
+		<string>2</string>
 		<string>-B10</string>
 		<string>-D</string>
 		<string>/Users/bst/Desktop/PF_LOGS/frontend_dbg.log</string>
@@ -29,7 +31,7 @@
 		<string>/Users/bst/Desktop/PF_LOGS</string>
 	</array>
 	<key>WorkingDirectory</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/LIDAR/FrontEndLIDAR</string>
+	<string>/Users/bst/Dropbox/Pulsefield/src/modules/FrontEnd</string>
 	<key>StandardOutPath</key>
 	<string>/Users/bst/Desktop/PF_LOGS/frontend_stdout.log</string>
 	<key>StandardErrorPath</key>
