@@ -12,7 +12,6 @@ World::World(float maxRange): groups(GROUPDIST,UNGROUPDIST) {
     lastframe=0;
     priorngroups=0;
     initWindow();
-    drawRange=true;
     miny=0;
     maxy=maxRange;
     minx=-maxRange;

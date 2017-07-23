@@ -38,7 +38,8 @@ class World {
     pthread_t displayThread;
     static void *runDisplay(void *w);
     void makeAssignments(const Vis &vis, float entrylike);
-    bool drawRange;   // True to draw ranges on plots
+    static bool drawRange;   // True to draw ranges on plots
+    static bool drawBG;   // True to draw bg on plots
 
     void initWindow();
     void drawinfo(cairo_t *cr, float left,  float top, float width, float height) const;
@@ -84,4 +85,7 @@ public:
     std::vector<float> getFramePerformance() const { return people.getFramePerformance(); }
     int numPeople() const { return people.size(); }
     int getLastID() const { return people.getLastID(); }
+
+    static void setDrawRange(bool on) { drawRange=on; }
+    static void setDrawBG(bool on) { drawBG=on; }
 };

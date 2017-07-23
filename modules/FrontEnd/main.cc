@@ -9,13 +9,15 @@
 #include "parameters.h"
 #include "sickio.h"
 #include "leg.h"
+#include "world.h"
 
 static int nsick=1;
 unsigned int MAXRANGE=12000;
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr, "Usage: %s [-n units] [-B maxrange] [-R | -r recordfile | -p playfile [-L] [-s] [-l] [-x slowfactor] [-F frame1:frameN | -F nframes]  [-m matframes [-M matfile ]] [-P] ] [-V] [[-D debugfile] -d debug]\n",argv[0]);
     fprintf(stderr,"\t-B maxrange\t\tset maximum range in meters\n");
+    fprintf(stderr, "Usage: %s [-n units] [-b] [-B maxrange] [-R | -r recordfile | -p playfile [-L] [-s] [-l] [-x slowfactor] [-F frame1:frameN | -F nframes]  [-m matframes [-M matfile ]] [-P] ] [-v] [-V] [[-D debugfile] -d debug]\n",argv[0]);
+    fprintf(stderr,"\t-b\t\tdo background identification of fixed targets in active area\n");
     fprintf(stderr,"\t-R dir\t\trecord into default filename based on current date and time\n");
     fprintf(stderr,"\t-r file\t\trecord into given file\n");
     fprintf(stderr,"\t-p file\t\tplayback from given file\n");
@@ -30,6 +32,7 @@ void usage(int argc,char *argv[]) {
     fprintf(stderr,"\t\t-D file\tspecify debug file name\n");
     fprintf(stderr,"\t-d debug\t\tset debug option (e.g -d4, -dFrontEnd:4)\n");
     fprintf(stderr,"\t-c comment\tlog a comment\n");
+    fprintf(stderr,"\t-v\t\tdraw LIDAR ranges (use twice to also draw bg)\n");
     fprintf(stderr,"\t-V\t\tenable /vis messages\n");
     fprintf(stderr,"\t-n nlidar\t\tnumber of LIDAR units\n");
     exit(1);
@@ -52,13 +55,17 @@ int main(int argc, char *argv[])
     int frameN=-1;
     std::string comments;
     bool savePerfData=false;
-
+    int verbose=0;
+    
     SetDebug("THREAD:1");   // Print thread names in debug messages, if any
 
-    while ((ch=getopt(argc,argv,"d:D:B:sr:R:p:Llx:m:M:VF:c:Pn:"))!=-1) {
+    while ((ch=getopt(argc,argv,"d:D:bB:sr:R:p:Llx:m:M:vVF:c:Pn:"))!=-1) {
 	switch (ch) {
 	case 'd':
 	    SetDebug(optarg);
+	    break;
+	case 'b':
+	    Background::setRangeOnly(false);
 	    break;
 	case 'B':
 	    maxRange=atof(optarg)*UNITSPERM;
@@ -119,6 +126,12 @@ int main(int argc, char *argv[])
 	    break;
 	case 'x':
 	    speedFactor=atof(optarg);
+	    break;
+	case 'v':
+	    verbose++;
+	    World::setDrawRange(true);
+	    if (verbose>1)
+		World::setDrawBG(true);
 	    break;
 	case 'V':
 	    visoutput=true;

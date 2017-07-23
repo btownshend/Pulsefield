@@ -6,6 +6,9 @@
 #include "parameters.h"
 #include "vis.h"
 
+bool World::drawRange=False;
+bool World::drawBG=False;
+
 void World::initWindow() {
     dbg("World.initWindow",1) << "Creating thread for display..." << std::flush;
     surface=0;   // Until the thread gets rolling and sets it
@@ -229,7 +232,6 @@ void World::draw(int nsick, const SickIO * const * sick) const {
      }
 
      // Draw background
-     bool drawBG=false;
      if (drawBG) {
 	 for (int j=0;j<nsick;j++) {
 	     cairo_set_line_width(cr,1*pixel);

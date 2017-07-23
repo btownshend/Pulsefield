@@ -6,6 +6,8 @@
 #include "vis.h"
 #include "world.h"
 
+bool Background::rangeOnly=true;
+
 Background::Background() {
     bginit=BGINITFRAMES;
 }
@@ -55,33 +57,35 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
 	} else {
 	    // Compute result
 	    result[i]=0.0;
-	    for (int k=0;k<NRANGES-1;k++) {
-		// This is a background pixel if it matches the ranges of this scan's background, or is farther than maximum background
-		if (srange[i]>range[k][i]-2*sigma[k][i] && k==0)
-		    // If more than the far background (-2sigma), then certain this is background
+	    if (!rangeOnly) {
+		for (int k=0;k<NRANGES-1;k++) {
+		    // This is a background pixel if it matches the ranges of this scan's background, or is farther than maximum background
+		    if (srange[i]>range[k][i]-2*sigma[k][i] && k==0)
+			// If more than the far background (-2sigma), then certain this is background
+			result[i]=1.0;
+		    else 
+			result[i]+=(1-result[i])*freq[k][i]*normpdf(srange[i],range[k][i],sigma[k][i]); 
+
+		    // Use adjacent scans
+		    if (i>0)
+			result[i]+=(1-result[i])*freq[k][i-1]*ADJSCANBGWEIGHT*normpdf(srange[i],range[k][i-1],sigma[k][i-1]);
+		    if (i+1<sick.getNumMeasurements())
+			result[i]+=(1-result[i])*freq[k][i+1]*ADJSCANBGWEIGHT*normpdf(srange[i],range[k][i+1],sigma[k][i+1]);
+
+		    // Check if it is between this and adjacent background
+		    if (i>0 && ((srange[i]>range[0][i]) != (srange[i]>range[0][i-1]))) {
+			result[i]+=(1-result[i])*freq[0][i]*freq[0][i-1]*INTERPSCANBGWEIGHT/fabs(range[0][i-1]-range[0][i]);
+			dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i-1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
+		    }
+		    if (i+1<sick.getNumMeasurements() && ((srange[i]>range[0][i]) != (srange[i]>range[0][i+1]))) {
+			dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0)  <<std::fixed <<  srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i+1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
+			result[i]+=(1-result[i])*freq[0][i]*freq[0][i+1]*INTERPSCANBGWEIGHT/fabs(range[0][i]-range[0][i+1]);
+		    }
+		}
+		if (result[i]>1.0) {
+		    dbg("Background.like",1) << "Scan " << i << " at " << srange[i] << " had prob " << result[i] << "; reducing to 1.0"  << std::endl;
 		    result[i]=1.0;
-		else 
-		    result[i]+=(1-result[i])*freq[k][i]*normpdf(srange[i],range[k][i],sigma[k][i]); 
-
-		// Use adjacent scans
-		if (i>0)
-		    result[i]+=(1-result[i])*freq[k][i-1]*ADJSCANBGWEIGHT*normpdf(srange[i],range[k][i-1],sigma[k][i-1]);
-		if (i+1<sick.getNumMeasurements())
-		    result[i]+=(1-result[i])*freq[k][i+1]*ADJSCANBGWEIGHT*normpdf(srange[i],range[k][i+1],sigma[k][i+1]);
-
-		// Check if it is between this and adjacent background
-		if (i>0 && ((srange[i]>range[0][i]) != (srange[i]>range[0][i-1]))) {
-		    result[i]+=(1-result[i])*freq[0][i]*freq[0][i-1]*INTERPSCANBGWEIGHT/fabs(range[0][i-1]-range[0][i]);
-		    		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0) << std::fixed << srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i-1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
 		}
-		if (i+1<sick.getNumMeasurements() && ((srange[i]>range[0][i]) != (srange[i]>range[0][i+1]))) {
-		    		    dbg("Background.like",4) << "Scan " << i << " at " << std::setprecision(0)  <<std::fixed <<  srange[i] << " is between adjacent background ranges of " << range[0][i] << " and " << range[0][i+1] << ": result=" << std::setprecision(3) << result[i] << std::endl;
-		    result[i]+=(1-result[i])*freq[0][i]*freq[0][i+1]*INTERPSCANBGWEIGHT/fabs(range[0][i]-range[0][i+1]);
-		}
-	    }
-	    if (result[i]>1.0) {
-		dbg("Background.like",1) << "Scan " << i << " at " << srange[i] << " had prob " << result[i] << "; reducing to 1.0"  << std::endl;
-		result[i]=1.0;
 	    }
 	}
 	// Make this into a  likelihood -- need to have it reflect the p(obs|bg) in the same way that we have p(obs|target) so they can be compared
@@ -93,6 +97,9 @@ std::vector<float> Background::like(const Vis &vis, const World &world) const {
 
 void Background::update(const SickIO &sick, const std::vector<int> &assignments, bool all) {
     setup(sick);
+    if (rangeOnly)
+	return;
+    
     if (bginit>0) {
 	bginit--;
 	if (bginit==0) {
