@@ -336,11 +336,33 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	int bestindices[2]={0,0};
 
 	for (int t1=0;t1<targets.size();t1++) {
+	    // Ignore targets already assigned or with too few points
 	    if (targets[t1].isAssigned() || targets[t1].size()<2)
 		continue;
-	    for (int t2=0;t2<targets.size();t2++) {
+	    // Check if close to another assigned track
+	    float mindist=1e10;
+	    for (int texist=0;texist<targets.size();texist++) {
+		if (targets[texist].isAssigned())
+		    mindist=std::min(mindist,(targets[t1].getCenter(sick)-targets[texist].getCenter(sick)).norm());
+	    }
+	    if (mindist<MINNEWPERSONSEP)  {
+		dbg("World.track",1) << "Target " << t1 << " at " << targets[t1].getCenter(sick) << " is too close to existing target (dist=" << mindist << ")" << " -- ignoring" << std::endl;
+		continue;
+	    }
+	    for (int t2=t1+1;t2<targets.size();t2++) {
 		if (targets[t2].isAssigned() || targets[t2].size()<2)
 		    continue;
+		// Check if close to another assigned track
+		float mindist=1e10;
+		for (int texist=0;texist<targets.size();texist++) {
+		    if (targets[texist].isAssigned())
+			mindist=std::min(mindist,(targets[t2].getCenter(sick)-targets[texist].getCenter(sick)).norm());
+		}
+		if (mindist<MINNEWPERSONSEP)  {
+		    // dbg("World.track",1) << "Target " << t2 << " is too close to existing target (dist=" << mindist << ")" << std::endl;
+		    continue;
+		}
+
 		float dist=(targets[t1].getCenter(sick)-targets[t2].getCenter(sick)).norm();
 		dbg("World.track",4) << "Unassigned targets " << t1 << " and " << t2 << " are separated by " << dist << std::endl;
 		if (dist>=MINLEGSEP && dist <= MAXLEGSEP && fabs(dist-MEANLEGSEP)<fabs(bestsep-MEANLEGSEP) ) {
@@ -353,23 +375,11 @@ void World::makeAssignments(const Vis &vis, float entrylike) {
 	}
 	if (bestsep<=MAXLEGSEP) {
 	    dbg("World.track",1) << "Potential new initial track using targets " << bestindices[0] << "," << bestindices[1] << " with separation " << bestsep << std::endl;
-	    // Check if these are too close to an existing person
-	    float mindist=1e10;
-	    for (int t1=0;t1<targets.size();t1++) {
-		for (int k=0;k<2;k++)
-		    if (targets[t1].isAssigned())
-			mindist=std::min(mindist,(targets[bestindices[k]].getCenter(sick)-targets[t1].getCenter(sick)).norm());
-	    }
-	    if (mindist<MINNEWPERSONSEP) {
-		dbg("World.track",1) << "New track too close to existing target (dist=" << mindist << ")" << std::endl;
-	    } else {
-		dbg("World.track",1) << "New track is at least " << mindist << " from all existing tracks" << std::endl;
-		Point l1=targets[bestindices[0]].getCenter(sick);
-		Point l2=targets[bestindices[1]].getCenter(sick);
-		people.add(l1,l2);
-		targets[bestindices[0]].setAssignments(assignments,legassigned,people.size()-1,0);
-		targets[bestindices[1]].setAssignments(assignments,legassigned,people.size()-1,1);
-	    }
+	    Point l1=targets[bestindices[0]].getCenter(sick);
+	    Point l2=targets[bestindices[1]].getCenter(sick);
+	    people.add(l1,l2);
+	    targets[bestindices[0]].setAssignments(assignments,legassigned,people.size()-1,0);
+	    targets[bestindices[1]].setAssignments(assignments,legassigned,people.size()-1,1);
 	} else {
 	    dbg("World.track",2) << "Not creating a track - no pair appropriately spaced" << std::endl;
 	}
