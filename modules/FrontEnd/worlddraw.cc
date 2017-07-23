@@ -120,8 +120,8 @@ void World::draw(int nsick, const SickIO * const * sick) const {
      cairo_translate(cr,width/2.0,height/2.0);
 
      // Push to right side of screen if we the aspect ratio doesn't fit
-     if (width>height*getWidth()/getHeight())
-	 cairo_translate(cr,(width-height*getWidth()/getHeight())/2,0);
+     //     if (width>height*getWidth()/getHeight())
+     //	 cairo_translate(cr,(width-height*getWidth()/getHeight())/2,0);
 
      // Scale to correct dimensions and flip Y axis, leaving a 5pixel margin
      float pixel=std::max(getWidth()/(width-10),getHeight()/(height-10));
