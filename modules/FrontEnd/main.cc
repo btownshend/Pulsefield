@@ -15,9 +15,9 @@ static int nsick=1;
 unsigned int MAXRANGE=12000;
 
 void usage(int argc,char *argv[]) {
-    fprintf(stderr,"\t-B maxrange\t\tset maximum range in meters\n");
     fprintf(stderr, "Usage: %s [-n units] [-b] [-B maxrange] [-R | -r recordfile | -p playfile [-L] [-s] [-l] [-x slowfactor] [-F frame1:frameN | -F nframes]  [-m matframes [-M matfile ]] [-P] ] [-v] [-V] [[-D debugfile] -d debug]\n",argv[0]);
     fprintf(stderr,"\t-b\t\tdo background identification of fixed targets in active area\n");
+    fprintf(stderr,"\t-B maxrange\tset maximum range in meters\n");
     fprintf(stderr,"\t-R dir\t\trecord into default filename based on current date and time\n");
     fprintf(stderr,"\t-r file\t\trecord into given file\n");
     fprintf(stderr,"\t-p file\t\tplayback from given file\n");
@@ -34,7 +34,7 @@ void usage(int argc,char *argv[]) {
     fprintf(stderr,"\t-c comment\tlog a comment\n");
     fprintf(stderr,"\t-v\t\tdraw LIDAR ranges (use twice to also draw bg)\n");
     fprintf(stderr,"\t-V\t\tenable /vis messages\n");
-    fprintf(stderr,"\t-n nlidar\t\tnumber of LIDAR units\n");
+    fprintf(stderr,"\t-n nlidar\tnumber of LIDAR units\n");
     exit(1);
 }
 
