@@ -111,7 +111,7 @@ static void cameraPoseFromHomography(const cv::Mat& H, cv::Mat& pose)
     pose.col(3) = H.col(2) / tnorm; //vector t [R|t]
 }
 
-bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,bool flipX1, bool flipY1, bool flipX2, bool flipY2) {
+bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,int argc,float speed,bool flipX1, bool flipY1, bool flipX2, bool flipY2) {
     dbg("RelMapping",1) << "tok=" << tok << ", speed=" << speed << std::endl;
     bool handled=false;
     
@@ -130,37 +130,37 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
 	speedY=speed*(flipY2?-1:1);;
     }
 
-    if (tok=="xy") {
+    if (tok=="xy" && argc==2) {
 	// xy pad
 	if (~locked[selected]) {
 	    pt->setX(argv[0]->f*(speedX>0?1:-1));
 	    pt->setY(argv[1]->f*(speedY>0?1:-1));
 	}
 	handled=true;
-    } else if (tok=="lock") {
+    } else if (tok=="lock" && argc==1) {
 	locked[selected]=argv[0]->f > 0;
 	handled=true;
-    } else if (tok=="selpair") {
+    } else if (tok=="selpair" && argc==1) {
 	if (argv[0]->f > 0)
 	    selected=atoi(nexttok)-1;
 	handled=true;
-    } else if (tok=="left") {
+    } else if (tok=="left" && argc==1) {
 	if (~locked[selected] && argv[0]->f > 0)
 	    pt->setX(std::max(-1.0f,pt->X()-speedX));
 	handled=true;
-    } else if (tok=="right") {
+    } else if (tok=="right" && argc==1) {
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
 	    pt->setX(std::min(1.0f,pt->X()+speedX));
 	handled=true;
-    } else if (tok=="up") {
+    } else if (tok=="up" && argc==1) {
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
 	    pt->setY(std::min(1.0f,pt->Y()+speedY));
 	handled=true;
-    } else if (tok=="down") {
+    } else if (tok=="down" && argc==1) {
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
 	    pt->setY(std::max(-1.0f,pt->Y()-speedY));
 	handled=true;
-    } else if (tok=="est") {
+    } else if (tok=="est" && argc==1) {
 	if (atoi(nexttok)==2 && ~locked[selected] && argv[0]->f > 0) {
 	    setDevicePt(Calibration::instance()->map(getDevicePt(0),unit1,unit2),1);
 	    dbg("RelMapping.handleOSCMessage",1) << "Estimated position for unit " << unit2 << ": " << pt2[selected] << std::endl;
@@ -171,7 +171,7 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
 	    dbg("RelMapping.handleOSCMessage",1) << "Est click ignored" << std::endl;
 	}
 	handled=true;
-    } else if (tok=="align") {
+    } else if (tok=="align" && argc==1) {
 	int  side;
 	UnitType type;
 	if (atoi(nexttok)==1) {
@@ -342,7 +342,7 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 
     if (strcmp(tok,"cal")==0) {
 	tok=strtok(NULL,"/");
-	if (strcmp(tok,"sel")==0) {
+	if (strcmp(tok,"sel")==0 && argc==1) {
 	    if (argv[0]->f > 0) {
 		std::string dir=strtok(NULL,"/");
 		int which=atoi(strtok(NULL,"/"))-1;
@@ -368,25 +368,25 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 		}
 	    }
 	    handled=true;
-	} else if (strcmp(tok,"speed")==0) {
+	} else if (strcmp(tok,"speed")==0 && argc==1) {
 	    speed=rotaryToSpeed(argv[0]->f);
 	    showStatus("Set speed to " + std::to_string(std::round(speed*32767)));
 	    handled=true;
-	}  else if (strcmp(tok,"flipx")==0) {
+	}  else if (strcmp(tok,"flipx")==0 && argc==1) {
 	    int which=atoi(strtok(NULL,"/"))-1;
 	    if (which==0)
 		flipX[curMap->getUnit(0)]=argv[0]->f>0;
 	    else
 		flipX[curMap->getUnit(1)]=argv[0]->f>0;
 	    handled=true;
-	}  else if (strcmp(tok,"flipy")==0) {
+	}  else if (strcmp(tok,"flipy")==0 && argc==1) {
 	    int which=atoi(strtok(NULL,"/"))-1;
 	    if (which==0)
 		flipY[curMap->getUnit(0)]=argv[0]->f>0;
 	    else
 		flipY[curMap->getUnit(1)]=argv[0]->f>0;
 	    handled=true;
-	} else if (strcmp(tok,"recompute")==0) {
+	} else if (strcmp(tok,"recompute")==0 && argc==1) {
 	    if (argv[0]->f > 0) {
 		if (recompute() == 0)
 		    showStatus("Updated mappings");
@@ -401,7 +401,7 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	} else if (strcmp(tok,"redistribute")==0) {
 	    redistribute();
 	    handled=true;
-	} else if (strcmp(tok,"lasermode")==0) {
+	} else if (strcmp(tok,"lasermode")==0 && argc==1) {
 	    if (argv[0]->f > 0) {
 		int col=atoi(strtok(NULL,"/"))-1;
 		laserMode=(LaserMode)(col);
@@ -410,7 +410,7 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	}  else {
 	    // Pass down to currently selected relMapping
 	    dbg("Calibration.handleOSCMessage",1) << "Handing off message to curMap" << std::endl;
-	    handled=curMap->handleOSCMessage(tok,argv,speed,flipX[curMap->getUnit(0)],flipY[curMap->getUnit(0)],flipX[curMap->getUnit(1)],flipY[curMap->getUnit(1)]);
+	    handled=curMap->handleOSCMessage(tok,argv,argc,speed,flipX[curMap->getUnit(0)],flipY[curMap->getUnit(0)],flipX[curMap->getUnit(1)],flipY[curMap->getUnit(1)]);
 	}
     }
     if (handled)

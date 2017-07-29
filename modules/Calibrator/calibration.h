@@ -34,7 +34,7 @@ class RelMapping {
 public:
     RelMapping(int u1, int u2, UnitType t1, UnitType t2);
     void updateUI(bool flipX1,bool flipY1, bool flipX2, bool flipY2) const;
-    bool handleOSCMessage(std::string tok, lo_arg **argv,float speed,bool flipX1, bool flipY1, bool flipX2, bool flipY2);
+    bool handleOSCMessage(std::string tok, lo_arg **argv,int argc,float speed,bool flipX1, bool flipY1, bool flipX2, bool flipY2);
     void save(ptree &p) const;
     void load(ptree &p);
     void redistribute();  // Redistribute calibration points optimally
