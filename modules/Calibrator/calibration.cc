@@ -398,6 +398,9 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	} else if (strcmp(tok,"load")==0) {
 	    load();
 	    handled=true;
+	} else if (strcmp(tok,"redistribute")==0) {
+	    redistribute();
+	    handled=true;
 	} else if (strcmp(tok,"lasermode")==0) {
 	    if (argv[0]->f > 0) {
 		int col=atoi(strtok(NULL,"/"))-1;
@@ -596,6 +599,51 @@ void RelMapping::load(ptree &p) {
     } catch (boost::property_tree::ptree_bad_path ex) {
 	std::cerr << "Unable to find 'pairs' in laser settings" << std::endl;
     }
+}
+
+void RelMapping::redistribute() {
+    dbg("RelMapping.redistribute",1) << "Redistributing(" << unit1 << ", " << unit2 << ")" << std::endl;
+    if (type1!=PROJECTOR || type2!=PROJECTOR) {
+	dbg("RelMapping.redistribute",1) << "Not projector-projector mapping" << std::endl;
+	return;
+    }
+    const float inset=0.9f;   // Set points with [-inset,inset] relative position in each projector
+    Point p=Calibration::instance()->map(relToProj(Point(-inset,-inset)),unit1,Calibration::instance()->worldUnit());  // Lower left of proj1 in world
+    Point q=Calibration::instance()->map(relToProj(Point(inset,inset)),unit1,Calibration::instance()->worldUnit());  // Upper right of proj1 in world
+    Point ll1=p.min(q);
+    Point ur1=p.max(q);
+    p=Calibration::instance()->map(relToProj(Point(-inset,-inset)),unit2,Calibration::instance()->worldUnit());  // Lower left of proj2 in world
+    q=Calibration::instance()->map(relToProj(Point(inset,inset)),unit2,Calibration::instance()->worldUnit());  // Upper right of proj2 in world
+    Point ll2=p.min(q);
+    Point ur2=p.max(q);
+    dbg("RelMapping.redistribute",2) << "Unit " << unit1 << ": " << ll1 << " - " << ur1 << std::endl;
+    dbg("RelMapping.redistribute",2) << "Unit " << unit2 << ": " << ll2 << " - " << ur2 << std::endl;
+    Point bboxll =ll1.max(ll2);
+    Point bboxur =ur1.min(ur2);
+    dbg("RelMapping.redistribute",2) << "Bounds: " << bboxll << " - " << bboxur << std::endl;
+    Point mid=(bboxll+bboxur)/2;
+    Point sz=bboxur-bboxll;
+    assert(sz.X()>0 && sz.Y() >0);
+    // Setup calibration points as a pattern:
+    //     1           2
+    //           5 
+    //       6      7
+    //           8
+    //     3           4
+    const Point pattern[] = {Point(-1.0f,-1.0f), Point(1.0f,-1.0f),Point(-1.0f,1.0f),Point(1.0f,1.0f),Point(1.0f,-.5f),Point(-0.5f,0.0f),Point(0.5f,0.0f),Point(0.0f,0.5f)};
+    for (int i=0;i<sizeof(pattern)/sizeof(pattern[0]);i++) {
+	Point w=Point(mid.X()+pattern[i].X()*sz.X()/2,mid.Y()+pattern[i].Y()*sz.Y()/2);
+	Point d1=Calibration::instance()->map(w,Calibration::instance()->worldUnit(),unit1);
+	Point d2=Calibration::instance()->map(w,Calibration::instance()->worldUnit(),unit2);
+	dbg("RelMapping.redistribute",2) << "Point " << i << "@ " << w << ": " << d1 << " - " << d2 << std::endl;
+	pt1[i]=projToRel(d1);
+	pt2[i]=projToRel(d2);
+    }
+}
+
+void Calibration::redistribute() {
+    dbg("Calibration.redistribute",1) << "Redistributing." << std::endl;
+    curMap->redistribute();
 }
 
 void Calibration::save()  {

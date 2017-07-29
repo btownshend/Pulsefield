@@ -37,6 +37,7 @@ public:
     bool handleOSCMessage(std::string tok, lo_arg **argv,float speed,bool flipX1, bool flipY1, bool flipX2, bool flipY2);
     void save(ptree &p) const;
     void load(ptree &p);
+    void redistribute();  // Redistribute calibration points optimally
     int addMatches(std::vector<cv::detail::ImageFeatures> &features,    std::vector<cv::detail::MatchesInfo> &pairwiseMatches) const;
     int getUnit(int i) const  { if (i==0) return unit1; else return unit2; }
     void sendCnt() const;  // Send OSC with cnt of locked points to TouchOSC
@@ -91,6 +92,7 @@ class Calibration {
     }
     void updateUI() const;
     void updateTracker() const;
+    void redistribute();  // Redistribute calibration points optimally
     void save();
     void load();
     LaserMode getLaserMode() const { return laserMode; }		// Get the current mode for laser display
@@ -109,4 +111,5 @@ class Calibration {
     int send(std::string path, float value) const;
 
     int numProj() const { return nproj; }
+    int worldUnit() const { return nunits; }
 };
