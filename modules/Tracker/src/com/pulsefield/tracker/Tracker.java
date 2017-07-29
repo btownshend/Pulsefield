@@ -50,7 +50,7 @@ public class Tracker extends PApplet {
 	VisualizerSyphon visSyphonOF;
 	
 	int currentvis=-1;
-	static NetAddress TO, OF, AL, MAX, CK, VD;
+	static NetAddress TO, OF, AL, MAX, CK, VD, FE;
 	People people, mousePeople;
 	Ableton ableton;
 	boolean useMAX;
@@ -144,6 +144,7 @@ public class Tracker extends PApplet {
 		AL = new NetAddress(config.getHost("AL"), config.getPort("AL"));
 		CK = new NetAddress(config.getHost("CK"), config.getPort("CK"));
 		VD = new NetAddress(config.getHost("VD"), config.getPort("VD"));
+		FE = new NetAddress(config.getHost("FE"), config.getPort("FE"));
 		logger.config("Sending to myself at "+VD.address()+":"+VD.port());
 		logger.config("Sending chuck commands to "+config.getHost("CK")+":"+config.getPort("CK"));
 		logger.config("AL at "+config.getHost("AL")+":"+config.getPort("AL"));
@@ -200,6 +201,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setmaxx", "/video/maxx");
 		oscP5.plug(this, "setminy", "/video/miny");
 		oscP5.plug(this, "setmaxy", "/video/maxy");
+		oscP5.plug(this,"locklidar","/video/locklidar");
 		unhandled = new HashMap<String,Boolean>();
 		projectors=new Projector[numProjectors];
 		for (int i=0;i<numProjectors;i++)
@@ -446,6 +448,8 @@ public class Tracker extends PApplet {
 			Laser.getInstance().sendMessage(msg);
 		else if (dest.equals("VD"))
 			oscP5.send(msg,VD);
+		else if (dest.equals("FE"))
+			oscP5.send(msg,FE);
 		else
 			logger.severe("sendOSC: Bad destination: "+dest);
 	}
@@ -981,6 +985,24 @@ public class Tracker extends PApplet {
 		makeCanvases();
 	}
 
+    synchronized public void locklidar() {
+	lockLIDARToVideo(0.5f);
+    }
+
+    // Adjust LIDAR bounds to be a fixed margin around video bounds
+    	public void lockLIDARToVideo(float margin) {
+	    lidarminx=minx-margin;
+	    lidarminy=miny-margin;
+	    lidarmaxx=maxx+margin;
+	    lidarmaxy=maxy+margin;
+	    sendOSC("FE","/pf/minx",lidarminx);
+	    sendOSC("FE","/pf/maxx",lidarmaxx);
+	    sendOSC("FE","/pf/miny",lidarminy);
+	    sendOSC("FE","/pf/maxy",lidarmaxy);
+	    logger.info("Set LIDAR to video bounds + " + margin + ": " + lidarminx + "," + lidarminy + " - " + lidarmaxx + "," + lidarmaxy);
+	    resetcoords();
+	}
+    
 	// Get pixels per meter
 	public static float getPixelsPerMeter() {
 		return Math.min(theTracker.canvas.width/getFloorSize().x, theTracker.canvas.height/getFloorSize().y);
