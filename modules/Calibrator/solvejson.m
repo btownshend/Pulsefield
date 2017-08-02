@@ -1,17 +1,17 @@
 % Load and solve the mappings in matlab
-if ~exist('mats')
-  fd=fopen('settings_proj.json');
-  x=char(fread(fd,inf))';  % Read the file
-                           % Replace numeric strings with values
-  x=regexprep(x,'"([0-9.e-]*)"','$1');
-  j=jsondecode(x);
-  c=j.calibration;
-  mats=reshape(c.homographies,[],3,3);
-  x=pack(mats);
-  m1=unpack(x);
-  x2=pack(m1);
-  assert(all(abs(x-x2)<1e-10));
-end
+fd=fopen('settings_proj.json');
+d=char(fread(fd,inf))';  % Read the file
+                         % Replace numeric strings with values
+fclose(fd);
+d=regexprep(d,'"([0-9.e-]*)"','$1');
+j=jsondecode(d);
+c=j.calibration;
+mats=reshape(c.homographies,[],3,3);
+x=pack(mats);
+m1=unpack(x);
+x2=pack(m1);
+assert(all(abs(x-x2)<1e-10));
+
 fprintf('Initial error=%f\n',allerror(c,x,2));
 options=optimset('display','final','maxfunevals',100000,'maxiter',100000,'tolx',1e-10,'tolfun',1e-8);
 lasterr=0;
@@ -28,6 +28,14 @@ while true
   end
   lasterr=finerr;
 end
+mats(end,:,:)=eye(3);
+c.homographies=reshape(mats,size(homographies));
+j.calibration=c;
+dfinal=jsonencode(j);
+fd=fopen('settings_projout.json','w');
+fwrite(fd,dfinal);
+fclose(fd);
+
 
 function mats=unpack(x)
 % Last 2 units are translation & rotation only (3 parameters)
@@ -103,5 +111,3 @@ for i=1:length(m.pairs)
   end
 end
 end
-
-    
