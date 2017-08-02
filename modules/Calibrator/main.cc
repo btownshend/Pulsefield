@@ -50,7 +50,6 @@ int main(int argc, char *argv[]) {
 
     TrackerComm::initialize(urls);
     Calibration::initialize(nproj,nlidar,urls);
-    Calibration::instance()->load();
     
     dbg("main",1) << "Creating OSCHandler on port " << port << std::endl;
     OSCHandler osc(port);
