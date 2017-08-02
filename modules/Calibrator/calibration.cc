@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <stdlib.h>
 #include "calibration.h"
 #include "trackerComm.h"
 #include "dbg.h"
@@ -11,6 +12,7 @@ static const float MAXLIDARRANGE=30;   // Maximum range of LIDAR to use (in mete
 static const float MAXWORLDCOORD=15;   // Maximum world coordinate (in meters) -- use same for negative direction
 
 std::shared_ptr<Calibration> Calibration::theInstance=NULL;   // Singleton
+std::ostream &flatMat(std::ostream &s, const cv::Mat &m);
 
 RelMapping::RelMapping(int u1, int u2, UnitType t1, UnitType t2): pt1(PTSPERPAIR), pt2(PTSPERPAIR), locked(PTSPERPAIR) {
     unit1=u1;
@@ -667,6 +669,20 @@ void Calibration::save()  {
 	flips.push_back(std::make_pair("",f));
     }
     p.put_child("flips",flips);
+    ptree h;
+    for (int i=0;i<homographies.size();i++) {
+	ptree m;
+	cv::Mat mat=homographies[i];
+	for (int r=0;r<3;r++)
+	    for (int c=0;c<3;c++) {
+		float v=mat.at<double>(c,r);
+		ptree ch;
+		ch.put("",v);
+		m.push_back(std::make_pair("",ch));
+	    }
+	h.push_back(std::make_pair("",m));
+    }
+    p.put_child("homographies",h);
     config.pt().put_child("calibration",p);
     config.save();
     ((Calibration *)this)->showStatus("Saved configuration");
@@ -717,9 +733,32 @@ void Calibration::load() {
 	    i++;
 	}
     } catch (boost::property_tree::ptree_bad_path ex) {
-	std::cerr << "Unable to find 'mappings' in laser settings" << std::endl;
+	std::cerr << "Unable to find 'mappings' in calibration settings" << std::endl;
     }
-    recompute();
+
+    try {
+	ptree ht=p.get_child("homographies");
+	int i=0;
+	dbg("Calibration.load",1) << "Loading homographies..." << std::endl;
+	for (ptree::iterator h = ht.begin(); h != ht.end();++h) {
+	    ptree mt=h->second;
+	    int c=0, r=0;
+	    for (ptree::iterator m = mt.begin(); m != mt.end();++m) {
+		homographies[i].at<double>(c,r)=m->second.get<double>("");
+		c++;
+		if (c==3) {
+		    c=0;
+		    r++;
+		}
+	    }
+	    flatMat(DbgFile(dbgf__,"Calibration.load",1) << "Homography for unit " << i << " = \n",homographies[i]) << std::endl;
+	    i++;
+	}
+    } catch (boost::property_tree::ptree_bad_path ex) {
+	std::cerr << "Unable to find 'homographies' in calibration settings" << std::endl;
+	recompute();
+    }
+
     showStatus("Loaded configuration");
 }
 
