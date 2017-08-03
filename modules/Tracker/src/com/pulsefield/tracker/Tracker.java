@@ -34,6 +34,7 @@ public class Tracker extends PApplet {
 	private static final long serialVersionUID = 1L;
 	private int tick=0;
 	private int liveTick=0;  // Tick at which last AL message received
+	private int beatsPerMinute=150; // Representing rate for music-sync'd visualizations.
 	public float avgFrameRate=0;
 	static OscP5 oscP5;
 	NetAddress myRemoteLocation;
@@ -1300,5 +1301,12 @@ public class Tracker extends PApplet {
 		return location.x>=minx && location.x <=maxx && location.y >= miny && location.y <= maxy;
 	}
 
+	public int getBeatsPerMinute() {
+		return beatsPerMinute;
+	}
+
+	public void setBeatsPerMinute(int value) {
+		beatsPerMinute = value;
+	}
 }
 

@@ -1,5 +1,7 @@
 package com.pulsefield.tracker;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,7 +15,9 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTextArea;
+import javax.swing.event.ChangeEvent;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
@@ -29,6 +33,8 @@ public class GUI extends JFrame {
 	private JCheckBox showProjectors;
 	private JTextArea fps;
 	private JLabel lblFps;
+	private JLabel lblBpm;
+    private JSlider sliderBpm;
 	private JCheckBox drawBorders;
 	private JCheckBox enableMenu;
     private final static Logger logger = Logger.getLogger(GUI.class.getName());
@@ -163,7 +169,30 @@ public class GUI extends JFrame {
 		gbc_appSelect.gridx = 1;
 		gbc_appSelect.gridy = 4;
 		contentPane.add(appSelect, gbc_appSelect);
-		
+
+		// Beats-Per-Minute control.
+		lblBpm = new JLabel("BPM (" + Tracker.theTracker.getBeatsPerMinute() + ")");
+		GridBagConstraints gbc_Bpm = new GridBagConstraints();
+		gbc_Bpm.anchor = GridBagConstraints.LINE_START;
+		gbc_Bpm.gridx = 1;
+		gbc_Bpm.gridy = 6;
+		contentPane.add(lblBpm, gbc_Bpm);
+
+		sliderBpm = new JSlider(JSlider.HORIZONTAL, 30, 300, Tracker.theTracker.getBeatsPerMinute());
+		sliderBpm.setMinorTickSpacing(10);
+		sliderBpm.setPaintTicks(true);
+		sliderBpm.setPaintLabels(true);
+
+		sliderBpm.addChangeListener((ChangeEvent event) -> {
+			Tracker.theTracker.setBeatsPerMinute(sliderBpm.getValue());
+			lblBpm.setText("BPM (" + Tracker.theTracker.getBeatsPerMinute() + ") ");
+		});
+		gbc_Bpm.gridx = 1;
+		gbc_Bpm.gridy++;
+		gbc_Bpm.gridwidth = 3;
+		gbc_Bpm.fill = GridBagConstraints.HORIZONTAL;
+		contentPane.add(sliderBpm, gbc_Bpm);
+
 		lblFps = new JLabel("FPS:");
 		GridBagConstraints gbc_lblFps = new GridBagConstraints();
 		gbc_lblFps.insets = new Insets(0, 0, 0, 5);
