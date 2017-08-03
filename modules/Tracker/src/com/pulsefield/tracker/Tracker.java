@@ -588,7 +588,7 @@ public class Tracker extends PApplet {
 			Visualizer.drawText(canvas, 0.2f, "The Pulsefield", minx+0.3f*(maxx-minx), miny+0.9f*(maxy-miny));
 			canvas.popStyle();
 		}
-		if (enableMenu) {
+		if (enableMenu && vis[currentvis]!=visMenu) {
 			canvas.pushStyle();
 			visMenu.hotSpotDraw(canvas);
 			canvas.popStyle();

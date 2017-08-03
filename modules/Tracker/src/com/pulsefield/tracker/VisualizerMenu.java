@@ -38,7 +38,7 @@ public class VisualizerMenu extends Visualizer {
 	static final PVector hotSpot = new PVector(0f,0f);  // Location of hotspot (in meters) (updated when drawn)
 	static final int HOTSPOTCOUNT=30;  // Number of frames to trigger
 	
-	static final int SELECTIONCOUNT=20;  // Number of frames to trigger a selection
+	static final int SELECTIONCOUNT=30;  // Number of frames to trigger a selection
 	
 	/** Cursor radius (in meters) **/
 	static final float CURSOR_RADIUS = 0.3f;
@@ -133,10 +133,11 @@ public class VisualizerMenu extends Visualizer {
 		for(int index : visualizerIndices) {
 			// TODO Improved location finding.
 			int nattempts=100;
+			float activeArea=0.85f;
 			while(nattempts>0) {
 				PVector proposedPosition = Tracker.normalizedToFloor(new PVector(
-						(float)((Math.random() * 1.8) - 0.9), 
-						(float)((Math.random() * 1.8) - 0.9)));
+						(float)((Math.random() * 2*activeArea) - activeArea), 
+						(float)((Math.random() * 2*activeArea) - activeArea)));
 				float minDistance = Float.NaN;
 				for(PVector otherPosition : allPositions) {
 					float currDistance = PVector.dist(proposedPosition, otherPosition);
