@@ -17,6 +17,9 @@ import processing.core.PVector;
 public class VisualizerMenu extends Visualizer {
 	int selectingPerson;
 	int selectedCount;
+	int selectedApp;
+	int appCount;
+	
 	PImage menuImage;
 	
 	/** How many menu items to display at once (includes "next page" item). */
@@ -34,6 +37,8 @@ public class VisualizerMenu extends Visualizer {
 	static final float hotSpotRadius=0.3f;   // Radius of hot spot in meters
 	static final PVector hotSpot = new PVector(0f,0f);  // Location of hotspot (in meters) (updated when drawn)
 	static final int HOTSPOTCOUNT=30;  // Number of frames to trigger
+	
+	static final int SELECTIONCOUNT=20;  // Number of frames to trigger a selection
 	
 	/** Cursor radius (in meters) **/
 	static final float CURSOR_RADIUS = 0.3f;
@@ -173,19 +178,30 @@ public class VisualizerMenu extends Visualizer {
 			logger.fine("Selecting person "+selectingPerson+" not found");
 			return;
 		}
+		boolean hit=false;
 		for(Leg leg : ps.legs) {
 			PVector legPosition = leg.getOriginInMeters();
 			for(MenuItem item : menuItems) {
 				float currDistance = PVector.dist(legPosition, item.position);
 				if(currDistance < SELECTION_DISTANCE) {
 					if(item.visualizer != -1) {
-						((Tracker)parent).setapp(item.visualizer);
+						if (selectedApp == item.visualizer) {
+							appCount++;
+							if (appCount >= SELECTIONCOUNT)
+								((Tracker)parent).setapp(item.visualizer);
+						} else {
+							selectedApp=item.visualizer;
+							appCount=1;
+						}
+						hit=true;
 					} else {
 						initializeItems(p);
 					}
 				}
 			}
 		}
+		if (!hit) 
+			selectedApp=-1;
 	}
 	
 	@Override
@@ -202,6 +218,11 @@ public class VisualizerMenu extends Visualizer {
 		for(MenuItem item : menuItems) {
 			g.fill(0xff000000);
 			g.ellipse(item.position.x, item.position.y, 2*SELECTION_DISTANCE,2*SELECTION_DISTANCE );
+			if (item.visualizer==selectedApp) {
+				g.fill(0xff00ff00);
+				g.arc(item.position.x, item.position.y, 2*SELECTION_DISTANCE,2*SELECTION_DISTANCE,0f,(float)(2*Math.PI*appCount/SELECTIONCOUNT));
+			}
+
 			g.fill(0xffffffff);
 			g.pushMatrix();
 			g.translate( item.position.x, item.position.y);
