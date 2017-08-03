@@ -198,14 +198,19 @@ public class VisualizerMenu extends Visualizer {
 
 		g.stroke(0xffffffff);
 		g.textAlign(PConstants.CENTER, PConstants.CENTER);
+		Person ps=p.get(selectingPerson);
 		for(MenuItem item : menuItems) {
 			g.fill(0xff000000);
 			g.ellipse(item.position.x, item.position.y, 2*SELECTION_DISTANCE,2*SELECTION_DISTANCE );
 			g.fill(0xffffffff);
-			drawText(g,TEXT_HEIGHT,item.name, item.position.x, item.position.y);
+			g.pushMatrix();
+			g.translate( item.position.x, item.position.y);
+			g.rotate(PVector.sub(item.position, ps.getOriginInMeters()).heading()+(float)Math.PI/2);
+			drawText(g,TEXT_HEIGHT,item.name,0,0);
+			g.popMatrix();
 		}
 		// Draw cursor for selecting person
-		Person ps=p.get(selectingPerson);
+
 		float scale=Math.min(CURSOR_RADIUS*2/cursor.width,CURSOR_RADIUS*2/cursor.height);
 		int c=ps.getcolor();
 		g.fill(c,255);
