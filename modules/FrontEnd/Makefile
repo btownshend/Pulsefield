@@ -32,7 +32,7 @@ CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(UTIL) -I$(SICKTOOLBOX)/lms
 CFLAGS=$(DEBUG)  $(OPTIMIZE)
 LDFLAGS=-L$(LIBLOLIBDIR) -L$(MATLABLIBDIR) $(DEBUG) $(PROFILE) -L$(CAIROLIBDIR)
 LIBES=-llo $(SICKLIB) $(MATLABLIBES) $(CAIROLIBES) -L$(OPENCVLIBDIR) $(OPENCVLIBES) -g 
-CXXSRCS=frontend.cc handlers.cc dest.cc main.cc urlconfig.cc sickio.cc sickframe.cc background.cc world.cc snapshot.cc vis.cc person.cc dbg.cc point.cc worlddraw.cc lookuptable.cc  leg.cc legstats.cc groups.cc kalmanfilter.cc findtargets.cc configuration.cc
+CXXSRCS=frontend.cc handlers.cc dest.cc main.cc urlconfig.cc sickio.cc sickframe.cc background.cc world.cc snapshot.cc vis.cc person.cc dbg.cc point.cc worlddraw.cc lookuptable.cc  leg.cc legstats.cc groups.cc kalmanfilter.cc findtargets.cc configuration.cc outsiders.cc
 CSRCS=
 SRCS=$(CXXSRCS) $(CSRCS)
 all: frontend
@@ -622,8 +622,15 @@ frontend.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxM
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 frontend.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 frontend.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h background.h
-frontend.o: wrapper.h world.h person.h legstats.h leg.h groups.h snapshot.h
-frontend.o: vis.h parameters.h
+frontend.o: wrapper.h world.h /opt/local/include/cairo/cairo-xlib.h
+frontend.o: /opt/local/include/cairo/cairo.h
+frontend.o: /opt/local/include/cairo/cairo-version.h
+frontend.o: /opt/local/include/cairo/cairo-features.h
+frontend.o: /opt/local/include/cairo/cairo-deprecated.h
+frontend.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
+frontend.o: /opt/local/include/X11/Xfuncproto.h
+frontend.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
+frontend.o: groups.h outsiders.h snapshot.h vis.h parameters.h
 handlers.o: frontend.h /opt/local/include/lo/lo.h
 handlers.o: /opt/local/include/lo/lo_endian.h
 handlers.o: /opt/local/include/lo/lo_types.h
@@ -1192,7 +1199,16 @@ handlers.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxM
 handlers.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 handlers.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
 handlers.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h background.h
-handlers.o: wrapper.h parameters.h world.h person.h legstats.h leg.h groups.h
+handlers.o: wrapper.h parameters.h world.h
+handlers.o: /opt/local/include/cairo/cairo-xlib.h
+handlers.o: /opt/local/include/cairo/cairo.h
+handlers.o: /opt/local/include/cairo/cairo-version.h
+handlers.o: /opt/local/include/cairo/cairo-features.h
+handlers.o: /opt/local/include/cairo/cairo-deprecated.h
+handlers.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
+handlers.o: /opt/local/include/X11/Xfuncproto.h
+handlers.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
+handlers.o: groups.h outsiders.h
 ../../lib/C++Util/dest.o: ../../lib/C++Util/dest.h ../../lib/C++Util/dbg.h
 main.o: frontend.h /opt/local/include/lo/lo.h
 main.o: /opt/local/include/lo/lo_endian.h /opt/local/include/lo/lo_types.h
@@ -1758,7 +1774,15 @@ main.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuffe
 main.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 main.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 main.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-main.o: ../../lib/C++Util/point.h background.h wrapper.h leg.h
+main.o: ../../lib/C++Util/point.h background.h wrapper.h leg.h world.h
+main.o: /opt/local/include/cairo/cairo-xlib.h
+main.o: /opt/local/include/cairo/cairo.h
+main.o: /opt/local/include/cairo/cairo-version.h
+main.o: /opt/local/include/cairo/cairo-features.h
+main.o: /opt/local/include/cairo/cairo-deprecated.h
+main.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
+main.o: /opt/local/include/X11/Xfuncproto.h /opt/local/include/X11/Xosdefs.h
+main.o: person.h legstats.h groups.h outsiders.h
 ../../lib/C++Util/urlconfig.o: ../../lib/C++Util/dbg.h
 ../../lib/C++Util/urlconfig.o: ../../lib/C++Util/urlconfig.h
 sickio.o: sickio.h
@@ -1810,17 +1834,32 @@ background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5x
 background.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 background.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-background.o: ../../lib/C++Util/point.h wrapper.h world.h person.h legstats.h
-background.o: leg.h ../../lib/C++Util/dest.h groups.h
+background.o: ../../lib/C++Util/point.h wrapper.h world.h
+background.o: /opt/local/include/cairo/cairo-xlib.h
+background.o: /opt/local/include/cairo/cairo.h
+background.o: /opt/local/include/cairo/cairo-version.h
+background.o: /opt/local/include/cairo/cairo-features.h
+background.o: /opt/local/include/cairo/cairo-deprecated.h
+background.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
+background.o: /opt/local/include/X11/Xfuncproto.h
+background.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
+background.o: ../../lib/C++Util/dest.h groups.h outsiders.h
 world.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 world.o: /opt/local/include/lo/lo_types.h
 world.o: /opt/local/include/lo/lo_osc_types.h
 world.o: /opt/local/include/lo/lo_errors.h
 world.o: /opt/local/include/lo/lo_lowlevel.h
 world.o: /opt/local/include/lo/lo_serverthread.h
-world.o: /opt/local/include/lo/lo_macros.h world.h person.h
-world.o: ../../lib/C++Util/point.h legstats.h leg.h ../../lib/C++Util/dest.h
-world.o: background.h groups.h vis.h sickio.h
+world.o: /opt/local/include/lo/lo_macros.h world.h
+world.o: /opt/local/include/cairo/cairo-xlib.h
+world.o: /opt/local/include/cairo/cairo.h
+world.o: /opt/local/include/cairo/cairo-version.h
+world.o: /opt/local/include/cairo/cairo-features.h
+world.o: /opt/local/include/cairo/cairo-deprecated.h
+world.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
+world.o: /opt/local/include/X11/Xfuncproto.h /opt/local/include/X11/Xosdefs.h
+world.o: person.h ../../lib/C++Util/point.h legstats.h leg.h
+world.o: ../../lib/C++Util/dest.h background.h groups.h outsiders.h sickio.h
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -1828,7 +1867,7 @@ world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBuff
 world.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 world.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-world.o: ../../lib/C++Util/dbg.h wrapper.h parameters.h
+world.o: ../../lib/C++Util/dbg.h wrapper.h vis.h parameters.h
 snapshot.o: sickio.h
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 snapshot.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -1844,9 +1883,16 @@ snapshot.o: /opt/local/include/lo/lo_osc_types.h
 snapshot.o: /opt/local/include/lo/lo_errors.h
 snapshot.o: /opt/local/include/lo/lo_lowlevel.h
 snapshot.o: /opt/local/include/lo/lo_serverthread.h
-snapshot.o: /opt/local/include/lo/lo_macros.h wrapper.h world.h person.h
-snapshot.o: legstats.h leg.h ../../lib/C++Util/dest.h groups.h snapshot.h
-snapshot.o: vis.h
+snapshot.o: /opt/local/include/lo/lo_macros.h wrapper.h world.h
+snapshot.o: /opt/local/include/cairo/cairo-xlib.h
+snapshot.o: /opt/local/include/cairo/cairo.h
+snapshot.o: /opt/local/include/cairo/cairo-version.h
+snapshot.o: /opt/local/include/cairo/cairo-features.h
+snapshot.o: /opt/local/include/cairo/cairo-deprecated.h
+snapshot.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
+snapshot.o: /opt/local/include/X11/Xfuncproto.h
+snapshot.o: /opt/local/include/X11/Xosdefs.h person.h legstats.h leg.h
+snapshot.o: ../../lib/C++Util/dest.h groups.h outsiders.h snapshot.h vis.h
 vis.o: vis.h sickio.h
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 vis.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
@@ -1880,8 +1926,15 @@ person.o: ../../lib/C++Util/dbg.h background.h wrapper.h parameters.h
 person.o: normal.h lookuptable.h groups.h
 ../../lib/C++Util/dbg.o: ../../lib/C++Util/dbg.h
 ../../lib/C++Util/point.o: ../../lib/C++Util/point.h
-worlddraw.o: world.h person.h /opt/local/include/lo/lo.h
-worlddraw.o: /opt/local/include/lo/lo_endian.h
+worlddraw.o: /opt/local/include/cairo/cairo.h
+worlddraw.o: /opt/local/include/cairo/cairo-version.h
+worlddraw.o: /opt/local/include/cairo/cairo-features.h
+worlddraw.o: /opt/local/include/cairo/cairo-deprecated.h
+worlddraw.o: /opt/local/include/cairo/cairo-xlib.h
+worlddraw.o: /opt/local/include/X11/Xlib.h /opt/local/include/X11/X.h
+worlddraw.o: /opt/local/include/X11/Xfuncproto.h
+worlddraw.o: /opt/local/include/X11/Xosdefs.h world.h person.h
+worlddraw.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 worlddraw.o: /opt/local/include/lo/lo_types.h
 worlddraw.o: /opt/local/include/lo/lo_osc_types.h
 worlddraw.o: /opt/local/include/lo/lo_errors.h
@@ -1889,7 +1942,7 @@ worlddraw.o: /opt/local/include/lo/lo_lowlevel.h
 worlddraw.o: /opt/local/include/lo/lo_serverthread.h
 worlddraw.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/point.h
 worlddraw.o: legstats.h leg.h ../../lib/C++Util/dest.h background.h groups.h
-worlddraw.o: ../../lib/C++Util/dbg.h parameters.h vis.h sickio.h
+worlddraw.o: outsiders.h sickio.h
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
@@ -1897,7 +1950,7 @@ worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
 worlddraw.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
-worlddraw.o: wrapper.h
+worlddraw.o: ../../lib/C++Util/dbg.h wrapper.h parameters.h vis.h
 lookuptable.o: lookuptable.h normal.h parameters.h ../../lib/C++Util/dbg.h
 leg.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
 leg.o: /opt/local/include/lo/lo_types.h /opt/local/include/lo/lo_osc_types.h
@@ -1931,8 +1984,37 @@ groups.o: /opt/local/include/lo/lo_lowlevel.h
 groups.o: /opt/local/include/lo/lo_serverthread.h
 groups.o: /opt/local/include/lo/lo_macros.h ../../lib/C++Util/point.h
 groups.o: person.h legstats.h leg.h ../../lib/C++Util/dbg.h parameters.h
-kalmanfilter.o: kalmanfilter.h ../../lib/C++Util/point.h
-kalmanfilter.o: ../../lib/C++Util/dbg.h
+kalmanfilter.o: kalmanfilter.h /opt/local/include/opencv2/video/tracking.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/cvdef.h
+kalmanfilter.o: /opt/local/include/opencv2/core/hal/interface.h
+kalmanfilter.o: /opt/local/include/opencv2/core/version.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/base.hpp
+kalmanfilter.o: /opt/local/include/opencv2/opencv_modules.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/cvstd.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/ptr.inl.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/neon_utils.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/traits.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/matx.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/saturate.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/fast_math.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/types.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/mat.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/bufferpool.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/mat.inl.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/persistence.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/operations.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/cvstd.inl.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/utility.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/core_c.h
+kalmanfilter.o: /opt/local/include/opencv2/core/types_c.h
+kalmanfilter.o: /opt/local/include/opencv2/core/optim.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/ovx.hpp
+kalmanfilter.o: /opt/local/include/opencv2/core/cvdef.h
+kalmanfilter.o: /opt/local/include/opencv2/imgproc.hpp
+kalmanfilter.o: /opt/local/include/opencv2/imgproc/imgproc_c.h
+kalmanfilter.o: /opt/local/include/opencv2/imgproc/types_c.h
+kalmanfilter.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h
 ../../lib/C++Util/findtargets.o: ../../lib/C++Util/findtargets.h
 ../../lib/C++Util/findtargets.o: ../../lib/C++Util/point.h
 ../../lib/C++Util/findtargets.o: ../../lib/C++Util/dbg.h
@@ -2591,3 +2673,19 @@ configuration.o: /opt/local/include/boost/range/detail/safe_bool.hpp
 configuration.o: /opt/local/include/boost/property_tree/detail/json_parser/wide_encoding.hpp
 configuration.o: /opt/local/include/boost/property_tree/detail/json_parser/standard_callbacks.hpp
 configuration.o: /opt/local/include/boost/property_tree/detail/json_parser_write.hpp
+outsiders.o: outsiders.h sickio.h
+outsiders.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xx.hh
+outsiders.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickLIDAR.hh
+outsiders.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickException.hh
+outsiders.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxBufferMonitor.hh
+outsiders.o: ../../../sicktoolbox/trunk/c++/drivers/lms5xx/sicklms5xx/SickLMS5xxMessage.hh
+outsiders.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickMessage.hh
+outsiders.o: ../../../sicktoolbox/trunk/c++/drivers/base/src/SickBufferMonitor.hh
+outsiders.o: ../../lib/C++Util/point.h ../../lib/C++Util/dbg.h background.h
+outsiders.o: /opt/local/include/lo/lo.h /opt/local/include/lo/lo_endian.h
+outsiders.o: /opt/local/include/lo/lo_types.h
+outsiders.o: /opt/local/include/lo/lo_osc_types.h
+outsiders.o: /opt/local/include/lo/lo_errors.h
+outsiders.o: /opt/local/include/lo/lo_lowlevel.h
+outsiders.o: /opt/local/include/lo/lo_serverthread.h
+outsiders.o: /opt/local/include/lo/lo_macros.h wrapper.h

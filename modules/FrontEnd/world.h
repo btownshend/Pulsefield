@@ -15,6 +15,7 @@
 #include "dest.h"
 #include "background.h"
 #include "groups.h"
+#include "outsiders.h"
 
 class Vis;
 typedef struct _cairo_surface cairo_surface_t;
@@ -23,6 +24,7 @@ class World {
     int lastframe;
     People people;
     Groups groups;
+    Outsiders outsiders;
     int priorngroups;
     std::set<int> lastid;
 
@@ -88,4 +90,6 @@ public:
 
     static void setDrawRange(bool on) { drawRange=on; }
     static void setDrawBG(bool on) { drawBG=on; }
+
+    Outsiders& getOutsiders() { return outsiders; }
 };

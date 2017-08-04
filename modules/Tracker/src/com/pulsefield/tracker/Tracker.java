@@ -169,6 +169,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "pfframe", "/pf/frame");
 		oscP5.plug(this, "pfupdate", "/pf/update");
 		oscP5.plug(this, "pfscanpt","/pf/scanpt");
+		oscP5.plug(this, "pfoutsiders","/pf/outsiders");
 		oscP5.plug(this, "pfaligncorner","/pf/aligncorner");
 		oscP5.plug(this, "pfgeo","/pf/geo");
 		oscP5.plug(this, "pfgroup", "/pf/group");
@@ -1244,6 +1245,10 @@ public class Tracker extends PApplet {
 		}
 		lidar[unit][scanPt]=new PVector(x,y);
 		//logger.finer("scanPt("+unit+", "+scanPt+", "+x+", "+y+" -> "+lidar[unit][scanPt]);
+	}
+	
+	public void pfoutsiders(int group, int ndiv, int v1,  int v2,  int v3,  int v4) {
+		logger.info("Got /pf/outsiders " +group);
 	}
 	
 	public void cycle() {

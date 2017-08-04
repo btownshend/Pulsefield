@@ -8,7 +8,7 @@
 
 static const bool REASSIGNPOINTS=false;
 
-World::World(float maxRange): groups(GROUPDIST,UNGROUPDIST) {
+World::World(float maxRange): groups(GROUPDIST,UNGROUPDIST), outsiders(Point(0,0))  {
     lastframe=0;
     priorngroups=0;
     initWindow();
@@ -548,6 +548,9 @@ void World::track( const Vis &vis, int frame, float fps,double elapsed) {
 	    dbg("World.track",2)  << people[i] << std::endl;
     }
 
+    // Track hits outside the Pulsefield
+    outsiders.update(lastframe, vis.getSick());
+    
     struct timeval processDone; gettimeofday(&processDone,0);
     float procTime=(processDone.tv_sec-processStart.tv_sec)*1e6+(processDone.tv_usec-processStart.tv_usec);
     dbg("World.processing",1)  << "Processed " << people.size() << " people in " << procTime << " usec" << std::endl;
