@@ -101,3 +101,5 @@ modules/Tracker/tracker-crash-while-adjusting-cal.log
 modules/Tracker/tracker-huntercrash2.log
 
 modules/Calibrator/Debug1.out
+
+modules/LED/LED

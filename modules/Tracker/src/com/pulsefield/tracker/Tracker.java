@@ -50,7 +50,7 @@ public class Tracker extends PApplet {
 	VisualizerSyphon visSyphonOF;
 	
 	int currentvis=-1;
-	static NetAddress TO, OF, AL, MAX, CK, VD, FE;
+	static NetAddress TO, OF, AL, MAX, CK, VD, FE, AR;
 	People people, mousePeople;
 	Ableton ableton;
 	boolean useMAX;
@@ -144,6 +144,7 @@ public class Tracker extends PApplet {
 		CK = new NetAddress(config.getHost("CK"), config.getPort("CK"));
 		VD = new NetAddress(config.getHost("VD"), config.getPort("VD"));
 		FE = new NetAddress(config.getHost("FE"), config.getPort("FE"));
+		AR = new NetAddress(config.getHost("AR"), config.getPort("AR"));
 		logger.config("Sending to myself at "+VD.address()+":"+VD.port());
 		logger.config("Sending chuck commands to "+config.getHost("CK")+":"+config.getPort("CK"));
 		logger.config("AL at "+config.getHost("AL")+":"+config.getPort("AL"));
@@ -151,7 +152,8 @@ public class Tracker extends PApplet {
 		touchOSC = new TouchOSC(oscP5, TO);
 		oFOSC = new OFOSC(oscP5,OF);
 		ableton = new Ableton(oscP5, AL);
-
+		LEDs.theLEDs=new LEDs(AR.address(),AR.port());
+		
 		new Laser(oscP5, new NetAddress(config.getHost("LASER"), config.getPort("LASER")));
 		synth = new Max(this,oscP5, MAX);
 
@@ -1248,7 +1250,12 @@ public class Tracker extends PApplet {
 	}
 	
 	public void pfoutsiders(int group, int ndiv, int v1,  int v2,  int v3,  int v4) {
-		logger.info("Got /pf/outsiders " +group);
+		logger.fine("Got /pf/outsiders " +group+", "+ndiv);
+		LEDs.theLEDs.setOutsiderDivisions(ndiv);
+		LEDs.theLEDs.setOutsiders(group, v1);
+		LEDs.theLEDs.setOutsiders(group+1, v2);
+		LEDs.theLEDs.setOutsiders(group+2, v3);
+		LEDs.theLEDs.setOutsiders(group+3, v4);
 	}
 	
 	public void cycle() {
@@ -1310,4 +1317,3 @@ public class Tracker extends PApplet {
 	}
 
 }
-
