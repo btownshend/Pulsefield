@@ -73,7 +73,7 @@ public class Tracker extends PApplet {
 	PGraphicsOpenGL canvas;
 	Projector projectors[];
 	Config jconfig;
-	static PVector alignCorners[]=new PVector[0];
+	static PVector alignCorners[][]=new PVector[2][0];
 	static ProjCursor cursors[]=null;
 	Map<String,Boolean> unhandled;
 	PVector[][] lidar = new PVector[2][571];
@@ -1210,15 +1210,17 @@ public class Tracker extends PApplet {
 		}
 	}
 
-	public void pfaligncorner(int cornerNumber, int numCorners, float x, float y) {
+	public void pfaligncorner(int unit, int cornerNumber, int numCorners, float x, float y, float wx, float wy) {
 		//logger.fine("Corner "+cornerNumber+"/"+numCorners+" at "+x+", "+y);
-
-		if (alignCorners.length!=numCorners) {
+		unit=unit-1;  // Switch to 0-based indexing
+		if (alignCorners.length < unit+1)
+			alignCorners=new PVector[unit+1][numCorners];
+		if (alignCorners[unit].length!=numCorners) {
 			//logger.fine("Resize alignCorners from "+alignCorners.length+" to "+numCorners);
-			alignCorners=new PVector[numCorners];
+			alignCorners[unit]=new PVector[numCorners];
 		}
 		if (cornerNumber >= 0)
-			alignCorners[cornerNumber]=new PVector(x,y);
+			alignCorners[unit][cornerNumber]=new PVector(wx,wy);
 	}
 	
 
