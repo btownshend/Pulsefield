@@ -103,3 +103,5 @@ modules/Tracker/tracker-huntercrash2.log
 modules/Calibrator/Debug1.out
 
 modules/LED/LED
+
+modules/LED/test

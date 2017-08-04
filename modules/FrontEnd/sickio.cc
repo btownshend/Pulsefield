@@ -121,7 +121,7 @@ void SickIO::setSynchronization(bool isMaster, int phase) {
 	sick_lms_5xx->SetSickOutput6Mode(SickLMS5xx::SICK_LMS_5XX_OUTPUT_MODE_MASTER_SYNC);
     } else {
 	sick_lms_5xx->SetSickInput3Mode(SickLMS5xx::SICK_LMS_5XX_INPUT_MODE_SLAVE_SYNC);
-	sick_lms_5xx->SetSickSyncPhase(phase);
+	//	sick_lms_5xx->SetSickSyncPhase(phase);
     }
 }
 
@@ -324,12 +324,24 @@ void SickIO::sendMessages(const char *host, int port) const {
     lo_address addr = lo_address_new(host, cbuf);
 
     // Background
-    if (bg.getRange(0).size() > 0) {
+    // if (bg.getRange(0).size() > 0) {
+    // 	static int scanpt=0;
+    // 	// cycle through all available scanpts to send just four point/transmission, to not load network and keep things balanced
+    // 	for (int k=0;k<4;k++) {
+    // 	    scanpt=(scanpt+1)%bg.getRange(0).size();
+    // 	    bg.sendMessages(addr,scanpt);
+    // 	}
+    // }
+
+    if (1) {
+	// Send scan points
 	static int scanpt=0;
 	// cycle through all available scanpts to send just four point/transmission, to not load network and keep things balanced
 	for (int k=0;k<4;k++) {
-	    scanpt=(scanpt+1)%bg.getRange(0).size();
-	    bg.sendMessages(addr,scanpt);
+	    scanpt=(scanpt+1)%getNumMeasurements();
+	    // Send current scan point:  (lidar unit, scanpt, x, y) - in world coords
+	    Point p=getWorldPoint(scanpt);
+	    lo_send(addr,"/pf/scanpt","iiff",id,scanpt,p.X()/UNITSPERM,p.Y()/UNITSPERM);
 	}
     }
 
