@@ -90,15 +90,22 @@ public class VisualizerTestPattern extends VisualizerDot {
 			g.line(ac[i].x, ac[i].y, (float)(ac[i].x+CLEN*Math.cos(angle)), (float)(ac[i].y+CLEN*Math.sin(angle)));
 			angle+=Math.PI/2;
 			g.line(ac[i].x, ac[i].y, (float)(ac[i].x+CLEN*Math.cos(angle)),(float)(ac[i].y+CLEN*Math.sin(angle)));
-		}
-		g.stroke(0,255,0);
-		g.fill(0,255,0);
-		if (Tracker.theTracker.lidarbg != null)
-			for (PVector pt: Tracker.theTracker.lidarbg) {
-				if (pt!=null)
-					g.point(pt.x, pt.y);
 			}
 
+		if (Tracker.theTracker.lidar != null)
+			for (int i=0;i<Tracker.theTracker.lidar.length;i++) {
+				if (i==0) {
+					g.stroke(255,0,0);
+					g.fill(255,0,0);
+				} else {
+					g.stroke(0,255,0);
+					g.fill(0,255,0);		
+				}
+				for (PVector pt: Tracker.theTracker.lidar[i]) {
+					if (pt!=null)
+						g.point(pt.x, pt.y);
+				}
+			}
 	}
 	
 	@Override

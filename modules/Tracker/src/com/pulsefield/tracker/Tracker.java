@@ -76,8 +76,7 @@ public class Tracker extends PApplet {
 	static PVector alignCorners[]=new PVector[0];
 	static ProjCursor cursors[]=null;
 	Map<String,Boolean> unhandled;
-	PVector[] lidar = new PVector[381];
-	PVector[] lidarbg = new PVector[381];
+	PVector[][] lidar = new PVector[2][571];
 	PGraphicsOpenGL mask[];
 	int pselect[];
 	boolean drawBounds=false;   // True to overlay projector bounds
@@ -169,7 +168,7 @@ public class Tracker extends PApplet {
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
 		oscP5.plug(this, "pfupdate", "/pf/update");
-		oscP5.plug(this, "pfbackground","/pf/background");
+		oscP5.plug(this, "pfscanpt","/pf/scanpt");
 		oscP5.plug(this, "pfaligncorner","/pf/aligncorner");
 		oscP5.plug(this, "pfgeo","/pf/geo");
 		oscP5.plug(this, "pfgroup", "/pf/group");
@@ -1230,16 +1229,19 @@ public class Tracker extends PApplet {
 	public void pfgroup(int frame, int gid, int gsize, float life, float centroidX, float centroidY, float diameter) {
 		// Not implemented.
 	}
-
-	public void pfbackground(int scanPt,int nrange,float angle,float backRange,float currRange) {
-		if (lidar.length != nrange) {
-			lidar=new PVector[nrange];
-			lidarbg=new PVector[nrange];
+	
+	public void pfscanpt(int unit, int scanPt,float x, float y) {
+		if (lidar.length<unit) {
+			logger.config("Resizing lidar[] to "+(unit+1)+" entries");
+			lidar=new PVector[unit][lidar[0].length];
 		}
-		// pfbackground sends in range [-95,95]
-		lidar[scanPt]=new PVector(-currRange*sin(angle*PI/180),currRange*cos(angle*PI/180));
-		lidarbg[scanPt]=new PVector(-backRange*sin(angle*PI/180),backRange*cos(angle*PI/180));
-		//logger.fine("background("+scanPt,", "+nrange+", "+angle+", "+backRange+", "+currRange+") -> "+lidar[scanPt]);
+		unit=unit-1;  // Switch to 0-origin
+		if (lidar[unit].length<scanPt+1) {
+			logger.config("Resizing lidar["+unit+"] to "+(scanPt+1)+" entries");
+			lidar[unit]=new PVector[scanPt+1];
+		}
+		lidar[unit][scanPt]=new PVector(x,y);
+		//logger.finer("scanPt("+unit+", "+scanPt+", "+x+", "+y+" -> "+lidar[unit][scanPt]);
 	}
 	
 	public void cycle() {
