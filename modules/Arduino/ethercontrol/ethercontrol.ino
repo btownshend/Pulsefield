@@ -90,10 +90,6 @@ void setup() {
   Serial.print("Have ");
   Serial.print((int)strip.numPixels());
   Serial.println(" leds");
-
-  EthernetClient tmp;
-  Serial.print("socket offset: ");
-  Serial.println(&tmp.getSocket() - (uint8_t *)&tmp);
 }
 
 
@@ -123,7 +119,6 @@ void loop() {
   EthernetClient client = server.available();
 
   if (client) {
-    Serial.print(client.getSocket());
     static unsigned long lasttime = micros(), pause = 0;
     uint8_t cmdbuf[20];
     while (client.available() != 0) {

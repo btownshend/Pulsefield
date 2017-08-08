@@ -105,3 +105,5 @@ modules/Calibrator/Debug1.out
 modules/LED/LED
 
 modules/LED/test
+
+modules/Arduino/ethercontrol/CHANGES
