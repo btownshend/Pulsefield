@@ -1,0 +1,28 @@
+LP
+Max alloc = 2900
+Pin 32: port=3@28, bitmask=0x20
+Pin 33: port=3@28, bitmask=0x10
+Pin 34: port=3@28, bitmask=0x8
+Pin 35: port=3@28, bitmask=0x4
+Pin 36: port=3@28, bitmask=0x2
+Pin 37: port=3@28, bitmask=0x1
+Pin 38: port=4@2B, bitmask=0x80
+Pin 39: port=7@34, bitmask=0x4
+Pin 40: port=7@34, bitmask=0x2
+Pin 41: port=7@34, bitmask=0x1
+Pin 42: port=12@10B, bitmask=0x80
+Pin 43: port=12@10B, bitmask=0x40
+Pin 44: port=12@10B, bitmask=0x20
+Pin 45: port=12@10B, bitmask=0x10
+Pin 46: port=12@10B, bitmask=0x8
+Pin 47: port=12@10B, bitmask=0x4
+Pin 48: port=12@10B, bitmask=0x2
+Pin 49: port=12@10B, bitmask=0x1
+Pin 50: port=2@25, bitmask=0x8
+Pin 51: port=2@25, bitmask=0x4
+Pin 52: port=2@25, bitmask=0x2
+Pin 53: port=2@25, bitmask=0x1
+Listening at 192.168.0.70 port: 1500
+Have 1120 leds
+socket offset: 12
+
