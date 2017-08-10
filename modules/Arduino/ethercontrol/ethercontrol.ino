@@ -152,6 +152,7 @@ void loop() {
           break;
         case 'F':	// Fast set mode F start_low,start_high,cnt,grbgrbgrb...; sets up to 255 LEDs in one command
           // Note order is GRB, not RGB
+          // All of the data MUST have the high bit set or the data won't latch into the strip
           if (getcmd(&client, cmdbuf, 3) >= 0) {
             uint16_t index = cmdbuf[1] * 256 + cmdbuf[0];
             int cnt = cmdbuf[2] * 3;
@@ -175,7 +176,7 @@ void loop() {
                 Serial.println("disconnect");
                 return;
               } else if (nread < 0) { // Nothing available
-                Serial.println("Empty");
+                //Serial.println("Empty");
                 nread = 0;
               }
               cnt = cnt - nread;
@@ -281,7 +282,7 @@ void loop() {
             client.write(id);
             //Serial.print('@');
             //Serial.print('V');
-            //Serial.println(id);
+            Serial.println(id);
           }
           break;
       }
