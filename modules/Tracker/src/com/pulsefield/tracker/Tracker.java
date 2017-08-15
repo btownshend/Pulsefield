@@ -987,7 +987,7 @@ public class Tracker extends PApplet {
 		makeCanvases();
 	}
 
-    synchronized public void locklidar() {
+    synchronized public void locklidar(float onoff) {
 	lockLIDARToVideo(0.5f);
     }
 
