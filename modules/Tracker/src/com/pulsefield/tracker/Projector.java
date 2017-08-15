@@ -140,9 +140,13 @@ public class Projector {
 					final float CURSORLEN=50f;
 					//logger.fine("Cursor "+i+"/"+c.length+" for proj "+c[i].proj+" @ "+c[i].pos.x+", "+c[i].pos.y);
 					//ttest(c[i].pos.x,c[i].pos.y,c[i].pos.z);
-					pcanvas.ellipse(c[i].pos.x, c[i].pos.y, CURSORLEN/2, CURSORLEN/2);
-					pcanvas.line(c[i].pos.x-CURSORLEN,c[i].pos.y,c[i].pos.x+CURSORLEN,c[i].pos.y);
-					pcanvas.line(c[i].pos.x,c[i].pos.y-CURSORLEN,c[i].pos.x,c[i].pos.y+CURSORLEN);
+					pcanvas.pushMatrix();
+					pcanvas.translate(c[i].pos.x,c[i].pos.y);
+					pcanvas.ellipse(0,0, CURSORLEN/2, CURSORLEN/2);
+					pcanvas.rotate((float)(((id%2==0)?1:-1)*Tracker.theTracker.frameCount*2*Math.PI/20/30));
+					pcanvas.line(-CURSORLEN,0,CURSORLEN,0);
+					pcanvas.line(0,-CURSORLEN,0,CURSORLEN);
+					pcanvas.popMatrix();
 				}
 			}
 		}
