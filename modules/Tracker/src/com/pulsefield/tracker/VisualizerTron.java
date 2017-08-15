@@ -162,7 +162,9 @@ public class VisualizerTron extends Visualizer {
 			int gpos=postogrid(newpos);
 			if (currentgrid.containsKey(id)  && currentgrid.get(id)!=-1) {
 				int oldgpos=currentgrid.get(id);
-				assert(grid[oldgpos].id == id);
+				if (grid[oldgpos].id != id) {
+					logger.warning("grid["+oldgpos+"]="+grid[oldgpos].id+", but expected id "+id);
+				}
 				int priorgpos=grid[oldgpos].prevgrid;
 				if (gpos==priorgpos && grid[oldgpos].id==id) {
 					// Retracing prior step, undo last step
