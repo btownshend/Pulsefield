@@ -28,8 +28,8 @@ while true
   end
   lasterr=finerr;
 end
-mats(end,:,:)=eye(3);
-c.homographies=reshape(mats,size(homographies));
+mats(end+1,:,:)=eye(3);
+c.homographies=reshape(mats,size(c.homographies));
 j.calibration=c;
 dfinal=jsonencode(j);
 fd=fopen('settings_projout.json','w');
