@@ -119,6 +119,29 @@ public abstract class Visualizer {
 			drawBorders(g);
 	}
 
+	public void borderMessage(PGraphics g, String msg) {
+		final PVector center=Tracker.getFloorCenter();
+		final PVector sz=Tracker.getFloorSize();
+		final float textHeight=0.2f;   // Height in meters
+
+		//g.fill(50, 255, 255);
+		g.textAlign(PConstants.CENTER,PConstants.CENTER);
+		g.fill(0xff00ff00);
+		g.strokeWeight(0.02f);
+		final float borderPosition=0.48f;
+		for (int i=0;i<4;i++) {
+			g.pushMatrix();
+			g.translate(center.x, center.y);
+			g.rotate((float)(Math.PI*i/2));
+			if (i==0 || i==2)
+				g.translate(0f,sz.y*borderPosition);
+			else
+				g.translate(0f,sz.x*borderPosition);
+			drawText(g,textHeight,msg, 0,0);
+			g.popMatrix();
+		}
+	}
+	
 	// Draw to laser
 	public void drawLaser(PApplet parent, People p) {
 	;	

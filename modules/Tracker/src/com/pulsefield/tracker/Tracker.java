@@ -50,7 +50,7 @@ public class Tracker extends PApplet {
 	VisualizerSyphon visSyphonOF;
 	
 	int currentvis=-1;
-	static NetAddress TO, OF, AL, MAX, CK, VD;
+	static NetAddress TO, OF, AL, MAX, CK, VD, FE, AR;
 	People people, mousePeople;
 	Ableton ableton;
 	boolean useMAX;
@@ -73,11 +73,10 @@ public class Tracker extends PApplet {
 	PGraphicsOpenGL canvas;
 	Projector projectors[];
 	Config jconfig;
-	static PVector alignCorners[]=new PVector[0];
+	static PVector alignCorners[][]=new PVector[2][0];
 	static ProjCursor cursors[]=null;
 	Map<String,Boolean> unhandled;
-	PVector[] lidar = new PVector[381];
-	PVector[] lidarbg = new PVector[381];
+	PVector[][] lidar = new PVector[2][571];
 	PGraphicsOpenGL mask[];
 	int pselect[];
 	boolean drawBounds=false;   // True to overlay projector bounds
@@ -144,6 +143,8 @@ public class Tracker extends PApplet {
 		AL = new NetAddress(config.getHost("AL"), config.getPort("AL"));
 		CK = new NetAddress(config.getHost("CK"), config.getPort("CK"));
 		VD = new NetAddress(config.getHost("VD"), config.getPort("VD"));
+		FE = new NetAddress(config.getHost("FE"), config.getPort("FE"));
+		AR = new NetAddress(config.getHost("AR"), config.getPort("AR"));
 		logger.config("Sending to myself at "+VD.address()+":"+VD.port());
 		logger.config("Sending chuck commands to "+config.getHost("CK")+":"+config.getPort("CK"));
 		logger.config("AL at "+config.getHost("AL")+":"+config.getPort("AL"));
@@ -151,7 +152,8 @@ public class Tracker extends PApplet {
 		touchOSC = new TouchOSC(oscP5, TO);
 		oFOSC = new OFOSC(oscP5,OF);
 		ableton = new Ableton(oscP5, AL);
-
+		LEDs.theLEDs=new LEDs(AR.address(),AR.port());
+		
 		new Laser(oscP5, new NetAddress(config.getHost("LASER"), config.getPort("LASER")));
 		synth = new Max(this,oscP5, MAX);
 
@@ -168,7 +170,8 @@ public class Tracker extends PApplet {
 		// Setup OSC handlers
 		oscP5.plug(this, "pfframe", "/pf/frame");
 		oscP5.plug(this, "pfupdate", "/pf/update");
-		oscP5.plug(this, "pfbackground","/pf/background");
+		oscP5.plug(this, "pfscanpt","/pf/scanpt");
+		oscP5.plug(this, "pfoutsiders","/pf/outsiders");
 		oscP5.plug(this, "pfaligncorner","/pf/aligncorner");
 		oscP5.plug(this, "pfgeo","/pf/geo");
 		oscP5.plug(this, "pfgroup", "/pf/group");
@@ -200,6 +203,7 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setmaxx", "/video/maxx");
 		oscP5.plug(this, "setminy", "/video/miny");
 		oscP5.plug(this, "setmaxy", "/video/maxy");
+		oscP5.plug(this,"locklidar","/video/locklidar");
 		unhandled = new HashMap<String,Boolean>();
 		projectors=new Projector[numProjectors];
 		for (int i=0;i<numProjectors;i++)
@@ -446,6 +450,8 @@ public class Tracker extends PApplet {
 			Laser.getInstance().sendMessage(msg);
 		else if (dest.equals("VD"))
 			oscP5.send(msg,VD);
+		else if (dest.equals("FE"))
+			oscP5.send(msg,FE);
 		else
 			logger.severe("sendOSC: Bad destination: "+dest);
 	}
@@ -584,7 +590,7 @@ public class Tracker extends PApplet {
 			Visualizer.drawText(canvas, 0.2f, "The Pulsefield", minx+0.3f*(maxx-minx), miny+0.9f*(maxy-miny));
 			canvas.popStyle();
 		}
-		if (enableMenu) {
+		if (enableMenu && vis[currentvis]!=visMenu) {
 			canvas.pushStyle();
 			visMenu.hotSpotDraw(canvas);
 			canvas.popStyle();
@@ -981,6 +987,24 @@ public class Tracker extends PApplet {
 		makeCanvases();
 	}
 
+    synchronized public void locklidar() {
+	lockLIDARToVideo(0.5f);
+    }
+
+    // Adjust LIDAR bounds to be a fixed margin around video bounds
+    	public void lockLIDARToVideo(float margin) {
+	    lidarminx=minx-margin;
+	    lidarminy=miny-margin;
+	    lidarmaxx=maxx+margin;
+	    lidarmaxy=maxy+margin;
+	    sendOSC("FE","/pf/minx",lidarminx);
+	    sendOSC("FE","/pf/maxx",lidarmaxx);
+	    sendOSC("FE","/pf/miny",lidarminy);
+	    sendOSC("FE","/pf/maxy",lidarmaxy);
+	    logger.info("Set LIDAR to video bounds + " + margin + ": " + lidarminx + "," + lidarminy + " - " + lidarmaxx + "," + lidarmaxy);
+	    resetcoords();
+	}
+    
 	// Get pixels per meter
 	public static float getPixelsPerMeter() {
 		return Math.min(theTracker.canvas.width/getFloorSize().x, theTracker.canvas.height/getFloorSize().y);
@@ -1189,15 +1213,17 @@ public class Tracker extends PApplet {
 		}
 	}
 
-	public void pfaligncorner(int cornerNumber, int numCorners, float x, float y) {
+	public void pfaligncorner(int unit, int cornerNumber, int numCorners, float x, float y, float wx, float wy) {
 		//logger.fine("Corner "+cornerNumber+"/"+numCorners+" at "+x+", "+y);
-
-		if (alignCorners.length!=numCorners) {
+		unit=unit-1;  // Switch to 0-based indexing
+		if (alignCorners.length < unit+1)
+			alignCorners=new PVector[unit+1][numCorners];
+		if (alignCorners[unit].length!=numCorners) {
 			//logger.fine("Resize alignCorners from "+alignCorners.length+" to "+numCorners);
-			alignCorners=new PVector[numCorners];
+			alignCorners[unit]=new PVector[numCorners];
 		}
 		if (cornerNumber >= 0)
-			alignCorners[cornerNumber]=new PVector(x,y);
+			alignCorners[unit][cornerNumber]=new PVector(wx,wy);
 	}
 	
 
@@ -1208,16 +1234,28 @@ public class Tracker extends PApplet {
 	public void pfgroup(int frame, int gid, int gsize, float life, float centroidX, float centroidY, float diameter) {
 		// Not implemented.
 	}
-
-	public void pfbackground(int scanPt,int nrange,float angle,float backRange,float currRange) {
-		if (lidar.length != nrange) {
-			lidar=new PVector[nrange];
-			lidarbg=new PVector[nrange];
+	
+	public void pfscanpt(int unit, int scanPt,float x, float y) {
+		if (lidar.length<unit) {
+			logger.config("Resizing lidar[] to "+(unit+1)+" entries");
+			lidar=new PVector[unit][lidar[0].length];
 		}
-		// pfbackground sends in range [-95,95]
-		lidar[scanPt]=new PVector(-currRange*sin(angle*PI/180),currRange*cos(angle*PI/180));
-		lidarbg[scanPt]=new PVector(-backRange*sin(angle*PI/180),backRange*cos(angle*PI/180));
-		//logger.fine("background("+scanPt,", "+nrange+", "+angle+", "+backRange+", "+currRange+") -> "+lidar[scanPt]);
+		unit=unit-1;  // Switch to 0-origin
+		if (lidar[unit].length<scanPt+1) {
+			logger.config("Resizing lidar["+unit+"] to "+(scanPt+1)+" entries");
+			lidar[unit]=new PVector[scanPt+1];
+		}
+		lidar[unit][scanPt]=new PVector(x,y);
+		//logger.finer("scanPt("+unit+", "+scanPt+", "+x+", "+y+" -> "+lidar[unit][scanPt]);
+	}
+	
+	public void pfoutsiders(int group, int ndiv, int v1,  int v2,  int v3,  int v4) {
+		logger.fine("Got /pf/outsiders " +group+", "+ndiv);
+		LEDs.theLEDs.setOutsiderDivisions(ndiv);
+		LEDs.theLEDs.setOutsiders(group, v1);
+		LEDs.theLEDs.setOutsiders(group+1, v2);
+		LEDs.theLEDs.setOutsiders(group+2, v3);
+		LEDs.theLEDs.setOutsiders(group+3, v4);
 	}
 	
 	public void cycle() {
@@ -1279,4 +1317,3 @@ public class Tracker extends PApplet {
 	}
 
 }
-

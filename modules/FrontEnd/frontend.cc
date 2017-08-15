@@ -630,6 +630,12 @@ void FrontEnd::sendMessages(double elapsed) {
 		sick[j]->sendMessages(dests.getHost(i),dests.getPort(i));
 	lastFrame=frame;
     }
+
+    if (frame%10 == 0) {
+	// Send outsider messages every 10 frames
+	for (int i=0;i<dests.size();i++)
+	    world->getOutsiders().sendMessages(dests.getHost(i),dests.getPort(i));
+    }
 }
 
 void FrontEnd::save()  {

@@ -15,6 +15,7 @@
 #include "dest.h"
 #include "background.h"
 #include "groups.h"
+#include "outsiders.h"
 
 class Vis;
 typedef struct _cairo_surface cairo_surface_t;
@@ -23,6 +24,7 @@ class World {
     int lastframe;
     People people;
     Groups groups;
+    Outsiders outsiders;
     int priorngroups;
     std::set<int> lastid;
 
@@ -38,7 +40,8 @@ class World {
     pthread_t displayThread;
     static void *runDisplay(void *w);
     void makeAssignments(const Vis &vis, float entrylike);
-    bool drawRange;   // True to draw ranges on plots
+    static bool drawRange;   // True to draw ranges on plots
+    static bool drawBG;   // True to draw bg on plots
 
     void initWindow();
     void drawinfo(cairo_t *cr, float left,  float top, float width, float height) const;
@@ -84,4 +87,9 @@ public:
     std::vector<float> getFramePerformance() const { return people.getFramePerformance(); }
     int numPeople() const { return people.size(); }
     int getLastID() const { return people.getLastID(); }
+
+    static void setDrawRange(bool on) { drawRange=on; }
+    static void setDrawBG(bool on) { drawBG=on; }
+
+    Outsiders& getOutsiders() { return outsiders; }
 };

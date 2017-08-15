@@ -81,24 +81,34 @@ public class VisualizerTestPattern extends VisualizerDot {
 		// Draw any alignment corners
 		g.stroke(255,0,255);
 		g.strokeWeight(0.03f);
-		PVector ac[]=Tracker.alignCorners;  // Need to copy since it could be changed asynchronously
-		for (int i=0;i<ac.length;i++) {
-			if (ac[i]==null)
-				continue;
-			final float CLEN=0.5f;
-			double angle=Math.atan2(ac[i].y,ac[i].x)-Math.PI/4;
-			g.line(ac[i].x, ac[i].y, (float)(ac[i].x+CLEN*Math.cos(angle)), (float)(ac[i].y+CLEN*Math.sin(angle)));
-			angle+=Math.PI/2;
-			g.line(ac[i].x, ac[i].y, (float)(ac[i].x+CLEN*Math.cos(angle)),(float)(ac[i].y+CLEN*Math.sin(angle)));
-		}
-		g.stroke(0,255,0);
-		g.fill(0,255,0);
-		if (Tracker.theTracker.lidarbg != null)
-			for (PVector pt: Tracker.theTracker.lidarbg) {
-				if (pt!=null)
-					g.point(pt.x, pt.y);
-			}
+		for (int j=0;j<Tracker.alignCorners.length;j++) {
+			PVector ac[]=Tracker.alignCorners[j];  // Need to copy since it could be changed asynchronously
+			for (int i=0;i<ac.length;i++) {
+				if (ac[i]==null)
+					continue;
 
+				final float CLEN=0.5f;
+				double angle=Math.atan2(ac[i].y,ac[i].x)-Math.PI/4;
+				g.line(ac[i].x, ac[i].y, (float)(ac[i].x+CLEN*Math.cos(angle)), (float)(ac[i].y+CLEN*Math.sin(angle)));
+				angle+=Math.PI/2;
+				g.line(ac[i].x, ac[i].y, (float)(ac[i].x+CLEN*Math.cos(angle)),(float)(ac[i].y+CLEN*Math.sin(angle)));
+			}
+		}
+
+		if (Tracker.theTracker.lidar != null)
+			for (int i=0;i<Tracker.theTracker.lidar.length;i++) {
+				if (i==0) {
+					g.stroke(255,0,0);
+					g.fill(255,0,0);
+				} else {
+					g.stroke(0,255,0);
+					g.fill(0,255,0);		
+				}
+				for (PVector pt: Tracker.theTracker.lidar[i]) {
+					if (pt!=null)
+						g.point(pt.x, pt.y);
+				}
+			}
 	}
 	
 	@Override

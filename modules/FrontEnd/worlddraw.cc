@@ -6,6 +6,9 @@
 #include "parameters.h"
 #include "vis.h"
 
+bool World::drawRange=False;
+bool World::drawBG=False;
+
 void World::initWindow() {
     dbg("World.initWindow",1) << "Creating thread for display..." << std::flush;
     surface=0;   // Until the thread gets rolling and sets it
@@ -41,8 +44,9 @@ void *World::runDisplay(void *arg) {
 
     while (1) {
 	XEvent e;
+	dbg("World.runDisplay",8) << "Wait for event (dpy=" << world->dpy << ")" << std::endl;
 	XNextEvent(world->dpy, &e);
-	dbg("World.initWindow",8) << "Got event " << e.type << std::endl;
+	dbg("World.runDisplay",8) << "Got event " << e.type << std::endl;
 
 	switch (e.type) {
 	case ConfigureNotify:
@@ -94,7 +98,7 @@ void World::draw(int nsick, const SickIO * const * sick) const {
     if (surface==NULL)
 	return;
     
-    //dbg("World.draw",2) << "locking mutex" << std::endl;
+    dbg("World.draw",8) << "locking mutex" << std::endl;
      pthread_mutex_lock(&((World *)this)->displayMutex);
      //dbg("World.draw",2) << "got mutex lock" << std::endl;
 
@@ -117,12 +121,12 @@ void World::draw(int nsick, const SickIO * const * sick) const {
      cairo_translate(cr,width/2.0,height/2.0);
 
      // Push to right side of screen if we the aspect ratio doesn't fit
-     if (width>height*getWidth()/getHeight())
-	 cairo_translate(cr,(width-height*getWidth()/getHeight())/2,0);
+     //     if (width>height*getWidth()/getHeight())
+     //	 cairo_translate(cr,(width-height*getWidth()/getHeight())/2,0);
 
      // Scale to correct dimensions and flip Y axis, leaving a 5pixel margin
      float pixel=std::max(getWidth()/(width-10),getHeight()/(height-10));
-
+     
      cairo_scale(cr,1/pixel,-1/pixel); 
 
      // Move center to center of active area
@@ -229,7 +233,6 @@ void World::draw(int nsick, const SickIO * const * sick) const {
      }
 
      // Draw background
-     bool drawBG=false;
      if (drawBG) {
 	 for (int j=0;j<nsick;j++) {
 	     cairo_set_line_width(cr,1*pixel);
@@ -267,6 +270,6 @@ void World::draw(int nsick, const SickIO * const * sick) const {
      cairo_paint(cr);
      cairo_destroy(cr);
      XFlush(dpy);
-     //dbg("World.draw",2) << "Unlocking mutex" << std::endl;
+     dbg("World.draw",8) << "Unlocking mutex" << std::endl;
      pthread_mutex_unlock(&((World *)this)->displayMutex);
 }

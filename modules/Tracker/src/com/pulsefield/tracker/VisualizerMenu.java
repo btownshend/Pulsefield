@@ -17,6 +17,9 @@ import processing.core.PVector;
 public class VisualizerMenu extends Visualizer {
 	int selectingPerson;
 	int selectedCount;
+	int selectedApp;
+	int appCount;
+	
 	PImage menuImage;
 	
 	/** How many menu items to display at once (includes "next page" item). */
@@ -34,6 +37,8 @@ public class VisualizerMenu extends Visualizer {
 	static final float hotSpotRadius=0.3f;   // Radius of hot spot in meters
 	static final PVector hotSpot = new PVector(0f,0f);  // Location of hotspot (in meters) (updated when drawn)
 	static final int HOTSPOTCOUNT=30;  // Number of frames to trigger
+	
+	static final int SELECTIONCOUNT=30;  // Number of frames to trigger a selection
 	
 	/** Cursor radius (in meters) **/
 	static final float CURSOR_RADIUS = 0.3f;
@@ -128,10 +133,11 @@ public class VisualizerMenu extends Visualizer {
 		for(int index : visualizerIndices) {
 			// TODO Improved location finding.
 			int nattempts=100;
+			float activeArea=0.85f;
 			while(nattempts>0) {
 				PVector proposedPosition = Tracker.normalizedToFloor(new PVector(
-						(float)((Math.random() * 1.8) - 0.9), 
-						(float)((Math.random() * 1.8) - 0.9)));
+						(float)((Math.random() * 2*activeArea) - activeArea), 
+						(float)((Math.random() * 2*activeArea) - activeArea)));
 				float minDistance = Float.NaN;
 				for(PVector otherPosition : allPositions) {
 					float currDistance = PVector.dist(proposedPosition, otherPosition);
@@ -173,19 +179,30 @@ public class VisualizerMenu extends Visualizer {
 			logger.fine("Selecting person "+selectingPerson+" not found");
 			return;
 		}
+		boolean hit=false;
 		for(Leg leg : ps.legs) {
 			PVector legPosition = leg.getOriginInMeters();
 			for(MenuItem item : menuItems) {
 				float currDistance = PVector.dist(legPosition, item.position);
 				if(currDistance < SELECTION_DISTANCE) {
 					if(item.visualizer != -1) {
-						((Tracker)parent).setapp(item.visualizer);
+						if (selectedApp == item.visualizer) {
+							appCount++;
+							if (appCount >= SELECTIONCOUNT)
+								((Tracker)parent).setapp(item.visualizer);
+						} else {
+							selectedApp=item.visualizer;
+							appCount=1;
+						}
+						hit=true;
 					} else {
 						initializeItems(p);
 					}
 				}
 			}
 		}
+		if (!hit) 
+			selectedApp=-1;
 	}
 	
 	@Override
@@ -194,18 +211,29 @@ public class VisualizerMenu extends Visualizer {
 		if (p.pmap.isEmpty())
 			return;
 		
+		super.borderMessage(g,"Headlamps OFF");
 		g.ellipseMode(PConstants.CENTER);
 
 		g.stroke(0xffffffff);
 		g.textAlign(PConstants.CENTER, PConstants.CENTER);
+		Person ps=p.get(selectingPerson);
 		for(MenuItem item : menuItems) {
 			g.fill(0xff000000);
 			g.ellipse(item.position.x, item.position.y, 2*SELECTION_DISTANCE,2*SELECTION_DISTANCE );
+			if (item.visualizer==selectedApp) {
+				g.fill(0xff00ff00);
+				g.arc(item.position.x, item.position.y, 2*SELECTION_DISTANCE,2*SELECTION_DISTANCE,0f,(float)(2*Math.PI*appCount/SELECTIONCOUNT));
+			}
+
 			g.fill(0xffffffff);
-			drawText(g,TEXT_HEIGHT,item.name, item.position.x, item.position.y);
+			g.pushMatrix();
+			g.translate( item.position.x, item.position.y);
+			g.rotate(PVector.sub(item.position, ps.getOriginInMeters()).heading()+(float)Math.PI/2);
+			drawText(g,TEXT_HEIGHT,item.name,0,0);
+			g.popMatrix();
 		}
 		// Draw cursor for selecting person
-		Person ps=p.get(selectingPerson);
+
 		float scale=Math.min(CURSOR_RADIUS*2/cursor.width,CURSOR_RADIUS*2/cursor.height);
 		int c=ps.getcolor();
 		g.fill(c,255);

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <stdlib.h>
 #include "calibration.h"
 #include "trackerComm.h"
 #include "dbg.h"
@@ -11,6 +12,7 @@ static const float MAXLIDARRANGE=30;   // Maximum range of LIDAR to use (in mete
 static const float MAXWORLDCOORD=15;   // Maximum world coordinate (in meters) -- use same for negative direction
 
 std::shared_ptr<Calibration> Calibration::theInstance=NULL;   // Singleton
+std::ostream &flatMat(std::ostream &s, const cv::Mat &m);
 
 RelMapping::RelMapping(int u1, int u2, UnitType t1, UnitType t2): pt1(PTSPERPAIR), pt2(PTSPERPAIR), locked(PTSPERPAIR) {
     unit1=u1;
@@ -111,7 +113,7 @@ static void cameraPoseFromHomography(const cv::Mat& H, cv::Mat& pose)
     pose.col(3) = H.col(2) / tnorm; //vector t [R|t]
 }
 
-bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,bool flipX1, bool flipY1, bool flipX2, bool flipY2) {
+bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,int argc,float speed,bool flipX1, bool flipY1, bool flipX2, bool flipY2) {
     dbg("RelMapping",1) << "tok=" << tok << ", speed=" << speed << std::endl;
     bool handled=false;
     
@@ -130,37 +132,37 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
 	speedY=speed*(flipY2?-1:1);;
     }
 
-    if (tok=="xy") {
+    if (tok=="xy" && argc==2) {
 	// xy pad
 	if (~locked[selected]) {
 	    pt->setX(argv[0]->f*(speedX>0?1:-1));
 	    pt->setY(argv[1]->f*(speedY>0?1:-1));
 	}
 	handled=true;
-    } else if (tok=="lock") {
+    } else if (tok=="lock" && argc==1) {
 	locked[selected]=argv[0]->f > 0;
 	handled=true;
-    } else if (tok=="selpair") {
+    } else if (tok=="selpair" && argc==1) {
 	if (argv[0]->f > 0)
 	    selected=atoi(nexttok)-1;
 	handled=true;
-    } else if (tok=="left") {
+    } else if (tok=="left" && argc==1) {
 	if (~locked[selected] && argv[0]->f > 0)
 	    pt->setX(std::max(-1.0f,pt->X()-speedX));
 	handled=true;
-    } else if (tok=="right") {
+    } else if (tok=="right" && argc==1) {
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
 	    pt->setX(std::min(1.0f,pt->X()+speedX));
 	handled=true;
-    } else if (tok=="up") {
+    } else if (tok=="up" && argc==1) {
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
 	    pt->setY(std::min(1.0f,pt->Y()+speedY));
 	handled=true;
-    } else if (tok=="down") {
+    } else if (tok=="down" && argc==1) {
 	if (selected>=0 && ~locked[selected] && argv[0]->f > 0)
 	    pt->setY(std::max(-1.0f,pt->Y()-speedY));
 	handled=true;
-    } else if (tok=="est") {
+    } else if (tok=="est" && argc==1) {
 	if (atoi(nexttok)==2 && ~locked[selected] && argv[0]->f > 0) {
 	    setDevicePt(Calibration::instance()->map(getDevicePt(0),unit1,unit2),1);
 	    dbg("RelMapping.handleOSCMessage",1) << "Estimated position for unit " << unit2 << ": " << pt2[selected] << std::endl;
@@ -171,7 +173,7 @@ bool RelMapping::handleOSCMessage(std::string tok, lo_arg **argv,float speed,boo
 	    dbg("RelMapping.handleOSCMessage",1) << "Est click ignored" << std::endl;
 	}
 	handled=true;
-    } else if (tok=="align") {
+    } else if (tok=="align" && argc==1) {
 	int  side;
 	UnitType type;
 	if (atoi(nexttok)==1) {
@@ -342,7 +344,7 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 
     if (strcmp(tok,"cal")==0) {
 	tok=strtok(NULL,"/");
-	if (strcmp(tok,"sel")==0) {
+	if (strcmp(tok,"sel")==0 && argc==1) {
 	    if (argv[0]->f > 0) {
 		std::string dir=strtok(NULL,"/");
 		int which=atoi(strtok(NULL,"/"))-1;
@@ -368,25 +370,25 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 		}
 	    }
 	    handled=true;
-	} else if (strcmp(tok,"speed")==0) {
+	} else if (strcmp(tok,"speed")==0 && argc==1) {
 	    speed=rotaryToSpeed(argv[0]->f);
 	    showStatus("Set speed to " + std::to_string(std::round(speed*32767)));
 	    handled=true;
-	}  else if (strcmp(tok,"flipx")==0) {
+	}  else if (strcmp(tok,"flipx")==0 && argc==1) {
 	    int which=atoi(strtok(NULL,"/"))-1;
 	    if (which==0)
 		flipX[curMap->getUnit(0)]=argv[0]->f>0;
 	    else
 		flipX[curMap->getUnit(1)]=argv[0]->f>0;
 	    handled=true;
-	}  else if (strcmp(tok,"flipy")==0) {
+	}  else if (strcmp(tok,"flipy")==0 && argc==1) {
 	    int which=atoi(strtok(NULL,"/"))-1;
 	    if (which==0)
 		flipY[curMap->getUnit(0)]=argv[0]->f>0;
 	    else
 		flipY[curMap->getUnit(1)]=argv[0]->f>0;
 	    handled=true;
-	} else if (strcmp(tok,"recompute")==0) {
+	} else if (strcmp(tok,"recompute")==0 && argc==1) {
 	    if (argv[0]->f > 0) {
 		if (recompute() == 0)
 		    showStatus("Updated mappings");
@@ -398,7 +400,10 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	} else if (strcmp(tok,"load")==0) {
 	    load();
 	    handled=true;
-	} else if (strcmp(tok,"lasermode")==0) {
+	} else if (strcmp(tok,"redistribute")==0) {
+	    redistribute();
+	    handled=true;
+	} else if (strcmp(tok,"lasermode")==0 && argc==1) {
 	    if (argv[0]->f > 0) {
 		int col=atoi(strtok(NULL,"/"))-1;
 		laserMode=(LaserMode)(col);
@@ -407,7 +412,7 @@ int Calibration::handleOSCMessage_impl(const char *path, const char *types, lo_a
 	}  else {
 	    // Pass down to currently selected relMapping
 	    dbg("Calibration.handleOSCMessage",1) << "Handing off message to curMap" << std::endl;
-	    handled=curMap->handleOSCMessage(tok,argv,speed,flipX[curMap->getUnit(0)],flipY[curMap->getUnit(0)],flipX[curMap->getUnit(1)],flipY[curMap->getUnit(1)]);
+	    handled=curMap->handleOSCMessage(tok,argv,argc,speed,flipX[curMap->getUnit(0)],flipY[curMap->getUnit(0)],flipX[curMap->getUnit(1)],flipY[curMap->getUnit(1)]);
 	}
     }
     if (handled)
@@ -598,6 +603,51 @@ void RelMapping::load(ptree &p) {
     }
 }
 
+void RelMapping::redistribute() {
+    dbg("RelMapping.redistribute",1) << "Redistributing(" << unit1 << ", " << unit2 << ")" << std::endl;
+    if (type1!=PROJECTOR || type2!=PROJECTOR) {
+	dbg("RelMapping.redistribute",1) << "Not projector-projector mapping" << std::endl;
+	return;
+    }
+    const float inset=0.9f;   // Set points with [-inset,inset] relative position in each projector
+    Point p=Calibration::instance()->map(relToProj(Point(-inset,-inset)),unit1,Calibration::instance()->worldUnit());  // Lower left of proj1 in world
+    Point q=Calibration::instance()->map(relToProj(Point(inset,inset)),unit1,Calibration::instance()->worldUnit());  // Upper right of proj1 in world
+    Point ll1=p.min(q);
+    Point ur1=p.max(q);
+    p=Calibration::instance()->map(relToProj(Point(-inset,-inset)),unit2,Calibration::instance()->worldUnit());  // Lower left of proj2 in world
+    q=Calibration::instance()->map(relToProj(Point(inset,inset)),unit2,Calibration::instance()->worldUnit());  // Upper right of proj2 in world
+    Point ll2=p.min(q);
+    Point ur2=p.max(q);
+    dbg("RelMapping.redistribute",2) << "Unit " << unit1 << ": " << ll1 << " - " << ur1 << std::endl;
+    dbg("RelMapping.redistribute",2) << "Unit " << unit2 << ": " << ll2 << " - " << ur2 << std::endl;
+    Point bboxll =ll1.max(ll2);
+    Point bboxur =ur1.min(ur2);
+    dbg("RelMapping.redistribute",2) << "Bounds: " << bboxll << " - " << bboxur << std::endl;
+    Point mid=(bboxll+bboxur)/2;
+    Point sz=bboxur-bboxll;
+    assert(sz.X()>0 && sz.Y() >0);
+    // Setup calibration points as a pattern:
+    //     1           2
+    //           5 
+    //       6      7
+    //           8
+    //     3           4
+    const Point pattern[] = {Point(-1.0f,-1.0f), Point(1.0f,-1.0f),Point(-1.0f,1.0f),Point(1.0f,1.0f),Point(1.0f,-.5f),Point(-0.5f,0.0f),Point(0.5f,0.0f),Point(0.0f,0.5f)};
+    for (int i=0;i<sizeof(pattern)/sizeof(pattern[0]);i++) {
+	Point w=Point(mid.X()+pattern[i].X()*sz.X()/2,mid.Y()+pattern[i].Y()*sz.Y()/2);
+	Point d1=Calibration::instance()->map(w,Calibration::instance()->worldUnit(),unit1);
+	Point d2=Calibration::instance()->map(w,Calibration::instance()->worldUnit(),unit2);
+	dbg("RelMapping.redistribute",2) << "Point " << i << "@ " << w << ": " << d1 << " - " << d2 << std::endl;
+	pt1[i]=projToRel(d1);
+	pt2[i]=projToRel(d2);
+    }
+}
+
+void Calibration::redistribute() {
+    dbg("Calibration.redistribute",1) << "Redistributing." << std::endl;
+    curMap->redistribute();
+}
+
 void Calibration::save()  {
     dbg("Calibration.save",1) << "Saving calibration to ptree" << std::endl;
     ptree p;
@@ -619,6 +669,20 @@ void Calibration::save()  {
 	flips.push_back(std::make_pair("",f));
     }
     p.put_child("flips",flips);
+    ptree h;
+    for (int i=0;i<homographies.size();i++) {
+	ptree m;
+	cv::Mat mat=homographies[i];
+	for (int r=0;r<3;r++)
+	    for (int c=0;c<3;c++) {
+		float v=mat.at<double>(c,r);
+		ptree ch;
+		ch.put("",v);
+		m.push_back(std::make_pair("",ch));
+	    }
+	h.push_back(std::make_pair("",m));
+    }
+    p.put_child("homographies",h);
     config.pt().put_child("calibration",p);
     config.save();
     ((Calibration *)this)->showStatus("Saved configuration");
@@ -669,9 +733,32 @@ void Calibration::load() {
 	    i++;
 	}
     } catch (boost::property_tree::ptree_bad_path ex) {
-	std::cerr << "Unable to find 'mappings' in laser settings" << std::endl;
+	std::cerr << "Unable to find 'mappings' in calibration settings" << std::endl;
     }
-    recompute();
+
+    try {
+	ptree ht=p.get_child("homographies");
+	int i=0;
+	dbg("Calibration.load",1) << "Loading homographies..." << std::endl;
+	for (ptree::iterator h = ht.begin(); h != ht.end();++h) {
+	    ptree mt=h->second;
+	    int c=0, r=0;
+	    for (ptree::iterator m = mt.begin(); m != mt.end();++m) {
+		homographies[i].at<double>(c,r)=m->second.get<double>("");
+		c++;
+		if (c==3) {
+		    c=0;
+		    r++;
+		}
+	    }
+	    flatMat(DbgFile(dbgf__,"Calibration.load",1) << "Homography for unit " << i << " = \n",homographies[i]) << std::endl;
+	    i++;
+	}
+    } catch (boost::property_tree::ptree_bad_path ex) {
+	std::cerr << "Unable to find 'homographies' in calibration settings" << std::endl;
+	recompute();
+    }
+
     showStatus("Loaded configuration");
 }
 
