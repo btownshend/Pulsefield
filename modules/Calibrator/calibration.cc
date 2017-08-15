@@ -625,7 +625,11 @@ void RelMapping::redistribute() {
     dbg("RelMapping.redistribute",2) << "Bounds: " << bboxll << " - " << bboxur << std::endl;
     Point mid=(bboxll+bboxur)/2;
     Point sz=bboxur-bboxll;
-    assert(sz.X()>0 && sz.Y() >0);
+    if (sz.X()<1.0 || sz.Y() < 1.0) {
+	fprintf(stderr,"Redistribute sizes too small: (%.2f, %.2f)\n",sz.X(), sz.Y());
+	Calibration::instance()->showStatus("Redistribute failed");
+	return;
+    }
     // Setup calibration points as a pattern:
     //     1           2
     //           5 

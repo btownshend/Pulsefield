@@ -62,7 +62,6 @@ class Calibration {
     std::vector<bool> flipX, flipY;	// to flip display and arrow directions -- one for each unit+world at end
 
     float speed;		// speed of arrow movements in device coords/click
-    void showStatus(std::string line);	// Display status in touchOSC
     int handleOSCMessage_impl(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg);
     Calibration(int nproj, int nlidar, URLConfig &urls);   // Only ever called by initialize()
     int recompute();		// Use acquired data to estimate transformations
@@ -87,6 +86,7 @@ class Calibration {
 	assert(theInstance);
 	return theInstance;
     }
+    void showStatus(std::string line);	// Display status in touchOSC
     static int handleOSCMessage(const char *path, const char *types, lo_arg **argv,int argc,lo_message msg) {
 	return instance()->handleOSCMessage_impl(path,types,argv,argc,msg);
     }
