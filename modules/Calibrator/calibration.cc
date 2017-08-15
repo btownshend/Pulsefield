@@ -609,7 +609,7 @@ void RelMapping::redistribute() {
 	dbg("RelMapping.redistribute",1) << "Not projector-projector mapping" << std::endl;
 	return;
     }
-    const float inset=0.9f;   // Set points with [-inset,inset] relative position in each projector
+    const float inset=0.8f;   // Set points with [-inset,inset] relative position in each projector
     Point p=Calibration::instance()->map(relToProj(Point(-inset,-inset)),unit1,Calibration::instance()->worldUnit());  // Lower left of proj1 in world
     Point q=Calibration::instance()->map(relToProj(Point(inset,inset)),unit1,Calibration::instance()->worldUnit());  // Upper right of proj1 in world
     Point ll1=p.min(q);
