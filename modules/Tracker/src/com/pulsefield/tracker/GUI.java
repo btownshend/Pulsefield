@@ -170,22 +170,22 @@ public class GUI extends JFrame {
 		gbc_appSelect.gridy = 4;
 		contentPane.add(appSelect, gbc_appSelect);
 
-		// Steps-Per-Minute control (how fast 'update' modules should update).
-		lblSpm = new JLabel("Steps-Per-Minute (" + Tracker.theTracker.getStepsPerMinute() + ")");
+		// Tempo (BPM) control.
+		lblSpm = new JLabel("BPM (" +  MasterClock.gettempo() + ")");
 		GridBagConstraints gbc_Spm = new GridBagConstraints();
 		gbc_Spm.anchor = GridBagConstraints.LINE_START;
 		gbc_Spm.gridx = 1;
 		gbc_Spm.gridy = 6;
 		contentPane.add(lblSpm, gbc_Spm);
 
-		sliderSpm = new JSlider(JSlider.HORIZONTAL, 30, 300, Tracker.theTracker.getStepsPerMinute());
+		sliderSpm = new JSlider(JSlider.HORIZONTAL, 30, 300, (int) MasterClock.gettempo());
 		sliderSpm.setMinorTickSpacing(10);
 		sliderSpm.setPaintTicks(true);
 		sliderSpm.setPaintLabels(true);
 
 		sliderSpm.addChangeListener((ChangeEvent event) -> {
-			Tracker.theTracker.setStepsPerMinute(sliderSpm.getValue());
-			lblSpm.setText("Steps-Per-Minute (" + Tracker.theTracker.getStepsPerMinute() + ") ");
+			MasterClock.settempo(sliderSpm.getValue());
+			lblSpm.setText("BPM (" + MasterClock.gettempo() + ") ");
 		});
 		
 		gbc_Spm.gridx = 1;

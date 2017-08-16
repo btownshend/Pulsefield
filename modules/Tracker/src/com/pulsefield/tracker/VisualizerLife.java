@@ -21,7 +21,7 @@ public class VisualizerLife extends Visualizer {
 	Cell legGrid[][];
 
 	// Number of 'life' game iterations per minute (higher number is faster pace).
-	int iterationsPerMinute = 155; 
+	float iterationsPerMinute; 
 
 	// How many milliseconds to wait between cycles; calculated from iterationsPerMinute.
 	long lifeDelayMillis;
@@ -188,8 +188,10 @@ public class VisualizerLife extends Visualizer {
 	}
 
 	public void update(PApplet parent, People allpos) {
+		
+		iterationsPerMinute = MasterClock.gettempo();
 
-		iterationsPerMinute = Tracker.theTracker.getStepsPerMinute();
+		// iterationsPerMinute = Tracker.theTracker.getStepsPerMinute();
 
 		// Calculate delay until next cycle should take place; do this on every update as it's a fungible setting.
 		lifeDelayMillis = (long) (1000 * (60.0 / iterationsPerMinute));
