@@ -1,4 +1,5 @@
 package com.pulsefield.tracker;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -13,7 +14,9 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTextArea;
+import javax.swing.event.ChangeEvent;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
@@ -29,6 +32,8 @@ public class GUI extends JFrame {
 	private JCheckBox showProjectors;
 	private JTextArea fps;
 	private JLabel lblFps;
+	private JLabel lblSpm;
+	private JSlider sliderSpm;
 	private JCheckBox drawBorders;
 	private JCheckBox enableMenu;
     private final static Logger logger = Logger.getLogger(GUI.class.getName());
@@ -163,7 +168,31 @@ public class GUI extends JFrame {
 		gbc_appSelect.gridx = 1;
 		gbc_appSelect.gridy = 4;
 		contentPane.add(appSelect, gbc_appSelect);
+
+		// Tempo (BPM) control.
+		lblSpm = new JLabel("BPM (" +  MasterClock.gettempo() + ")");
+		GridBagConstraints gbc_Spm = new GridBagConstraints();
+		gbc_Spm.anchor = GridBagConstraints.LINE_START;
+		gbc_Spm.gridx = 1;
+		gbc_Spm.gridy = 6;
+		contentPane.add(lblSpm, gbc_Spm);
+
+		sliderSpm = new JSlider(JSlider.HORIZONTAL, 30, 300, (int) MasterClock.gettempo());
+		sliderSpm.setMinorTickSpacing(10);
+		sliderSpm.setPaintTicks(true);
+		sliderSpm.setPaintLabels(true);
+
+		sliderSpm.addChangeListener((ChangeEvent event) -> {
+			MasterClock.settempo(sliderSpm.getValue());
+			lblSpm.setText("BPM (" + MasterClock.gettempo() + ") ");
+		});
 		
+		gbc_Spm.gridx = 1;
+		gbc_Spm.gridy++;
+		gbc_Spm.gridwidth = 3;
+		gbc_Spm.fill = GridBagConstraints.HORIZONTAL;
+		contentPane.add(sliderSpm, gbc_Spm);
+
 		lblFps = new JLabel("FPS:");
 		GridBagConstraints gbc_lblFps = new GridBagConstraints();
 		gbc_lblFps.insets = new Insets(0, 0, 0, 5);
