@@ -1,5 +1,4 @@
 package com.pulsefield.tracker;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;

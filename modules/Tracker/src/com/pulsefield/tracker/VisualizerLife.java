@@ -45,6 +45,8 @@ public class VisualizerLife extends Visualizer {
 
 	int personCount = 0;
 
+	PlaySound playSound = new PlaySound();
+
 	public enum Cell {
 		NOLIFE,
 		LIFE,
@@ -91,40 +93,22 @@ public class VisualizerLife extends Visualizer {
 	}
 
 	public void clickSound(int fileNumber) {
-		// TODO: Move the file opening to an initialization.
+		String clickSoundFile;
 
-		try
-		{
-			// open the sound file as a Java input stream
-			String clickSoundFile;
-
-			switch (fileNumber) {
-			case 2:
-				clickSoundFile = "./data/life/spaceshipG.au";
-				break;
-			case 1:
-				clickSoundFile = "./data/life/spaceshipF.au";
-				break;
-			case 0:
-			default:
-				clickSoundFile = "./data/life/spaceshipEb.au";
-				break;
-			}
-
-			InputStream in = new FileInputStream(clickSoundFile);
-
-			// PApplet.println("Sound : " + fileNumber + " = " + clickSoundFile);
-
-			// create an audiostream from the inputstream
-			AudioStream audioStream = new AudioStream(in);
-
-			// play the audio clip with the audioplayer class
-			AudioPlayer.player.start(audioStream);
+		switch (fileNumber) {
+		case 2:
+			clickSoundFile = "./data/life/spaceshipG.au";
+			break;
+		case 1:
+			clickSoundFile = "./data/life/spaceshipF.au";
+			break;
+		case 0:
+		default:
+			clickSoundFile = "./data/life/spaceshipEb.au";
+			break;
 		}
-		catch (Exception e)
-		{
-			PApplet.println("failed to play sound due to exception : " + e.getMessage());
-		}
+
+		playSound.play(clickSoundFile);
 	}
 
 	public void setupLifeGrid() {
@@ -166,12 +150,12 @@ public class VisualizerLife extends Visualizer {
 
 	public void start() {
 		super.start();
-		// Laser.getInstance().setFlag("body",0.0f);
 		Laser.getInstance().setFlag("legs",0.0f);
 		setupLifeGrid();
 	}
 
 	public void stop() {
+		playSound.stopAll();
 		super.stop();
 	}
 
