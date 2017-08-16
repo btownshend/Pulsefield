@@ -1,7 +1,6 @@
 package com.pulsefield.tracker;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -34,7 +33,7 @@ public class GUI extends JFrame {
 	private JTextArea fps;
 	private JLabel lblFps;
 	private JLabel lblSpm;
-    private JSlider sliderSpm;
+	private JSlider sliderSpm;
 	private JCheckBox drawBorders;
 	private JCheckBox enableMenu;
     private final static Logger logger = Logger.getLogger(GUI.class.getName());
