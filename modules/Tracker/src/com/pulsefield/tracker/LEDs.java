@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import oscP5.OscP5;
 
 public class LEDs extends Thread {
 	private final static Logger logger = Logger.getLogger(Tracker.class.getName());
@@ -83,10 +84,10 @@ public class LEDs extends Thread {
 			outsiders[i]=(i<90);
 		start();
 		// Setup OSC plugs
-		oscP5.plug(this,"setPPeriod","/led/pulsebow/pperiod");
-		oscP5.plug(this,"setCPeriod","/led/pulsebow/cperiod");
-		oscP5.plug(this,"setPSpatial","/led/pulsebow/pspatial");
-		oscP5.plug(this,"setCSpatial","/led/pulsebow/cspatial");
+		Tracker.oscP5.plug(this,"setPPeriod","/led/pulsebow/pperiod");
+		Tracker.oscP5.plug(this,"setCPeriod","/led/pulsebow/cperiod");
+		Tracker.oscP5.plug(this,"setPSpatial","/led/pulsebow/pspatial");
+		Tracker.oscP5.plug(this,"setCSpatial","/led/pulsebow/cspatial");
 	}
 
 	void open() {
@@ -450,18 +451,18 @@ public class LEDs extends Thread {
 	}
 
     public void refreshTO() {
-    	sendOSC("TO","/led/pulsebow/pperiod/value",String.format("%.1f",parameters.get("pperiod")));
-    	sendOSC("TO","/led/pulsebow/cperiod/value",String.format("%.1f",parameters.get("cperiod")));
-    	sendOSC("TO","/led/pulsebow/pspatial/value",String.format("%.1f",parameters.get("pspatial")));
-    	sendOSC("TO","/led/pulsebow/cspatial/value",String.format("%.1f",parameters.get("cspatial")));
+    	Tracker.sendOSC("TO","/led/pulsebow/pperiod/value",String.format("%.1f",parameters.get("pperiod")));
+    	Tracker.sendOSC("TO","/led/pulsebow/cperiod/value",String.format("%.1f",parameters.get("cperiod")));
+    	Tracker.sendOSC("TO","/led/pulsebow/pspatial/value",String.format("%.1f",parameters.get("pspatial")));
+    	Tracker.sendOSC("TO","/led/pulsebow/cspatial/value",String.format("%.1f",parameters.get("cspatial")));
     }
     
     private static float expcontrol(float v,float lo,float hi) {
-    	return exp(v*log(hi/lo)+log(lo));
+    	return (float) Math.exp(v*Math.log(hi/lo)+Math.log(lo));
     }
 
     public void setPperiod(float v) {
-	logger.notice("setPperiod("+v+")");
+	logger.info("setPperiod("+v+")");
 	parameters.put("pperiod",expcontrol(v,0.1f,20f));
 	refreshTO();
     }

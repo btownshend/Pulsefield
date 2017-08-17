@@ -35,7 +35,7 @@ public class Tracker extends PApplet {
 	private int tick=0;
 	private int liveTick=0;  // Tick at which last AL message received
 	public float avgFrameRate=0;
-	static OscP5 oscP5;
+	public static OscP5 oscP5;
 	NetAddress myRemoteLocation;
 	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
 	static float lidarminy=-5f, lidarmaxy=5f, lidarminx=-5f, lidarmaxx=5f, lidarRotation=0f; // Bounds of tracking
