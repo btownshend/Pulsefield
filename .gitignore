@@ -107,3 +107,7 @@ modules/LED/LED
 modules/LED/test
 
 modules/Arduino/ethercontrol/CHANGES
+
+modules/Calibrator/settings_projin.json
+
+modules/Calibrator/settings_projout.json

@@ -609,7 +609,7 @@ void RelMapping::redistribute() {
 	dbg("RelMapping.redistribute",1) << "Not projector-projector mapping" << std::endl;
 	return;
     }
-    const float inset=0.9f;   // Set points with [-inset,inset] relative position in each projector
+    const float inset=0.75f;   // Set points with [-inset,inset] relative position in each projector
     Point p=Calibration::instance()->map(relToProj(Point(-inset,-inset)),unit1,Calibration::instance()->worldUnit());  // Lower left of proj1 in world
     Point q=Calibration::instance()->map(relToProj(Point(inset,inset)),unit1,Calibration::instance()->worldUnit());  // Upper right of proj1 in world
     Point ll1=p.min(q);
@@ -625,14 +625,18 @@ void RelMapping::redistribute() {
     dbg("RelMapping.redistribute",2) << "Bounds: " << bboxll << " - " << bboxur << std::endl;
     Point mid=(bboxll+bboxur)/2;
     Point sz=bboxur-bboxll;
-    assert(sz.X()>0 && sz.Y() >0);
+    if (sz.X()<1.0 || sz.Y() < 1.0) {
+	fprintf(stderr,"Redistribute sizes too small: (%.2f, %.2f)\n",sz.X(), sz.Y());
+	Calibration::instance()->showStatus("Redistribute failed");
+	return;
+    }
     // Setup calibration points as a pattern:
     //     1           2
     //           5 
     //       6      7
     //           8
     //     3           4
-    const Point pattern[] = {Point(-1.0f,-1.0f), Point(1.0f,-1.0f),Point(-1.0f,1.0f),Point(1.0f,1.0f),Point(1.0f,-.5f),Point(-0.5f,0.0f),Point(0.5f,0.0f),Point(0.0f,0.5f)};
+    const Point pattern[] = {Point(-1.0f,-1.0f), Point(1.0f,-1.0f),Point(-1.0f,1.0f),Point(1.0f,1.0f),Point(0.0f,-.5f),Point(-0.5f,0.0f),Point(0.5f,0.0f),Point(0.0f,0.5f)};
     for (int i=0;i<sizeof(pattern)/sizeof(pattern[0]);i++) {
 	Point w=Point(mid.X()+pattern[i].X()*sz.X()/2,mid.Y()+pattern[i].Y()*sz.Y()/2);
 	Point d1=Calibration::instance()->map(w,Calibration::instance()->worldUnit(),unit1);

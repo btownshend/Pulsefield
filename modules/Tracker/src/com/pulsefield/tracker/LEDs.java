@@ -6,6 +6,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class LEDs extends Thread {
@@ -30,21 +32,49 @@ public class LEDs extends Thread {
 	private int physleds[];  // Current state of each LED in Arduino
 	int ledOrder[];    // Map from arduino LED number to sequence here; -1 indicates LED should be blanked
 	Boolean outsiders[];  // Outsiders, true if someone present; array maps full circle, starting at logical LED 1
-
+	int bgMode;
+	Map<String,Float> parameters;
+	
 	public LEDs(String host, int port) {
+		parameters=new HashMap<String,Float>();
 		hostName=host;
 		portNumber=port;
 		syncCounter=0;
+		bgMode=0;
 		// State of each LED in arduino
 		physleds=new int[nphys];
 		for (int i=0;i<physleds.length;i++)
 			physleds[i]=-1;
 		// Ordering of LEDS;   physical LED p ->  ledOrder[p] logical LED;  ledOrder[0]==-1 for unused LEDs
+		final int leadSkip=5;  // Number to skip at physical beginning of each strip
+		final int tailSkip=6;  // Number to skip at physical end of each strip
+		final int order[]={1,2,3,4,-5,-6,-7,-8};  // Order of strips going CW (-ve = reversed)
+		final float initAngle=45;   // Angle of first strip, first active LED in world coords
+		final int nLogical=nstrip*(ledperstrip-leadSkip-tailSkip);
+		final int offset=(int)(initAngle/360*nLogical+0.5);
 		ledOrder=new int[nphys];
+		logger.info("Have "+nLogical+" LEDs with offset of "+offset);
+		
+		for (int i=0;i<order.length;i++)
+			for (int j=0;j<ledperstrip;j++) {
+				int physpos, logicalpos;
+				if (order[i]>0)
+					physpos=(order[i]-1)*ledperstrip+j;
+				else
+					physpos=(-order[i])*ledperstrip-j-1;
+				if (j<leadSkip || j>ledperstrip-tailSkip-1)
+					logicalpos=-1;
+				else
+					logicalpos=(i*(ledperstrip-leadSkip-tailSkip)+j-leadSkip-offset+nLogical)%nLogical;
+				
+				ledOrder[physpos]=logicalpos;
+			}
+		String msg="";
 		for (int i=0;i<ledOrder.length;i++)
-			ledOrder[i]=i;
+			msg=msg+" "+ledOrder[i];
+		logger.info("LED order:"+msg);
 		// Desired new state of logical LEDs
-		leds=new int[nphys];
+		leds=new int[nLogical];
 		for (int i=0;i<leds.length;i++)
 			leds[i]=0x0;
 		// Outsiders
@@ -52,6 +82,11 @@ public class LEDs extends Thread {
 		for (int i=0;i<outsiders.length;i++)
 			outsiders[i]=(i<90);
 		start();
+		// Setup OSC plugs
+		oscP5.plug(this,"setPPeriod","/led/pulsebow/pperiod");
+		oscP5.plug(this,"setCPeriod","/led/pulsebow/cperiod");
+		oscP5.plug(this,"setPSpatial","/led/pulsebow/pspatial");
+		oscP5.plug(this,"setCSpatial","/led/pulsebow/cspatial");
 	}
 
 	void open() {
@@ -191,24 +226,37 @@ public class LEDs extends Thread {
 				newPhys[i]=0;  // Blank unused LEDs
 			ndiffs+=(newPhys[i]==physleds[i])?0:1;
 		}
-		int pos=0;
-		while (pos<nphys) {
-			int nsend=nphys-pos;
-			if (nsend>160) nsend=160;
-			byte msg[]=makeFUpdate(pos,nsend,newPhys);
+		if (ndiffs==0) {
+			logger.info("Nothing to update");
+			// Sync anyway to keep arduino active
 			sendsync();
-			send(msg);
 			syncwait();
-			pos+=nsend;
-		}
+		} else {
+			int pos=0;
+			while (pos<nphys) {
+				while (pos<nphys && newPhys[pos]==physleds[pos])
+					pos++;  // No update needed
+				if (pos==nphys)
+					break;
+				int nsend=nphys-pos;
+				if (nsend>160) nsend=160;
+				while (newPhys[pos+nsend-1]==physleds[pos+nsend-1])
+					nsend--;  // Won't hit zero since the first one needs update
+				byte msg[]=makeFUpdate(pos,nsend,newPhys);
+				sendsync();
+				send(msg);
+				syncwait();
+				pos+=nsend;
+			}
 
-		byte goMsg[]=new byte[3];
-		goMsg[0]='P';   // Pause setting
-		int pauseTime=(int)(1000/MAXUPDATERATE+0.5);
-		assert(pauseTime<=255);
-		goMsg[1]=(byte)pauseTime;
-		goMsg[2]='G';  // Go
-		send(goMsg);
+			byte goMsg[]=new byte[3];
+			goMsg[0]='P';   // Pause setting
+			int pauseTime=(int)(1000/MAXUPDATERATE+0.5);
+			assert(pauseTime<=255);
+			goMsg[1]=(byte)pauseTime;
+			goMsg[2]='G';  // Go
+			send(goMsg);
+		}
 	}
 
 	// Separate thread to process input
@@ -254,11 +302,26 @@ public class LEDs extends Thread {
 	}
 
 	void bg() {
-		//stripid();
-		//rainbow();
-		pulsebow();
+		switch (bgMode) {
+		case 0:
+			stripid();
+			break;
+		case 1:
+			pulsebow();
+			break;
+		case 2:
+			rainbow();
+			break;
+		default:
+			logger.info("Bad bgMode: "+bgMode);
+			bgMode=0;
+		}
 	}
 
+	void setbgmode(int newMode) {
+		bgMode=newMode;
+	}
+	
 	// Set strips for ID
 	void stripid() {		
 		final String colnames[]={"red","green", "blue","magenta","cyan","yellow","pinkish", "white"};
@@ -269,18 +332,21 @@ public class LEDs extends Thread {
 		clear();
 		for (int k=0;k<nstrip;k++) {
 			int offset=k*ledperstrip;
-			for (int i=phase;i<ledperstrip;i+=nphase)
-				set(offset+i,col[k][0],col[k][1],col[k][2]);
+			for (int i=phase;i<ledperstrip;i+=nphase) {
+				int lled=ledOrder[offset+i];
+				if (lled>=0)
+					set(lled,col[k][0],col[k][1],col[k][2]);
+			}
 			logger.info(String.format("Strip %d is %s.  Clk=pin %d, Data=pin %d\n", k, colnames[k],clkpins[k],datapins[k]));
 		}
 		phase=(phase+1)%nphase;
 	}
 
 	void pulsebow() {
-		final float pperiod=4;  // Period of pulsing (in seconds)
-		final float cperiod=20;   // Period of color rotation
-		final float pspatial=250;  // Spatial period of pulsing
-		final float cspatial=20000;  // Spatial period of color
+		final float pperiod=parameters.getOrDefault("pperiod", 5.0f);  // Period of pulsing (in seconds)
+		final float cperiod=parameters.getOrDefault("cperiod", 20.0f);   // Period of color rotation
+		final float pspatial=parameters.getOrDefault("pspatial",250.0f);  // Spatial period of pulsing
+		final float cspatial=parameters.getOrDefault("cspatial",20000.0f);  // Spatial period of color
 		final float maxlev=1;
 		final float minlev=0.2f;
 
@@ -382,6 +448,23 @@ public class LEDs extends Thread {
 			}
 		}
 	}
+
+    public void refreshTO() {
+    	sendOSC("TO","/led/pulsebow/pperiod/value",String.format("%.1f",parameters.get("pperiod")));
+    	sendOSC("TO","/led/pulsebow/cperiod/value",String.format("%.1f",parameters.get("cperiod")));
+    	sendOSC("TO","/led/pulsebow/pspatial/value",String.format("%.1f",parameters.get("pspatial")));
+    	sendOSC("TO","/led/pulsebow/cspatial/value",String.format("%.1f",parameters.get("cspatial")));
+    }
+    
+    private static float expcontrol(float v,float lo,float hi) {
+    	return exp(v*log(hi/lo)+log(lo));
+    }
+
+    public void setPperiod(float v) {
+	logger.notice("setPperiod("+v+")");
+	parameters.put("pperiod",expcontrol(v,0.1f,20f));
+	refreshTO();
+    }
 
 }
 

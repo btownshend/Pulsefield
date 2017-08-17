@@ -12,6 +12,7 @@ int port = 1500;
 EthernetServer server = EthernetServer(port);
 
 long nrcvd;
+unsigned long lastReceived;   // Time in millis() of last received command
 
 void setup() {
   int i;
@@ -84,6 +85,7 @@ void setup() {
   strip.setPixelColor(0, strip.Color(127, 0, 0));
   show();
 
+  lastReceived = millis(); // Time of last received byte
 
   nrcvd = 0;
 
@@ -126,6 +128,7 @@ void loop() {
       int id;
       // Get a command from host
       int cmd = client.read();
+      lastReceived = millis(); // Time of last received byte
       Serial.print((char)cmd);
       nrcvd++;
       switch (cmd) {
@@ -287,8 +290,41 @@ void loop() {
           break;
       }
     }
-    Serial.println(".");
   }
+  if (millis() - lastReceived > 5000)
+    // No ethernet commands
+    fallback();
+//  else
+//    Serial.print(".");
+}
+
+
+// Periods in msecs
+float baseperiod = 3;
+float rperiod = baseperiod;
+float gperiod = baseperiod + 2;
+float bperiod = baseperiod + 3;
+float rspacing = 30;
+float gspacing = 30;
+float bspacing = 30;
+float pi = 3.14159;
+int offset = 1;
+long int lastmilli = 0;
+int count = 0;
+
+void fallback() {
+  int r = 63 + 63 * cos(2 * pi * (millis() / rperiod / 1000 ));
+  int g = 63 + 63 * cos(2 * pi * (millis() / gperiod / 1000 ));
+  int b = 63 + 63 * cos(2 * pi * (millis() / bperiod / 1000 ));
+
+  for (int index = 0; index < strip.numPixels() - offset; index++) {
+    strip.setPixelColor(index, strip.getPixelColor(index + offset));
+  }
+  for (int index = 1; index <= offset; index++)
+    strip.setPixelColor(strip.numPixels() - offset, strip.Color(r, g, b));
+  //delay(100);
+  strip.show();
+  Serial.print("$");
 }
 
 void show() {

@@ -21,7 +21,7 @@ do
     fi
 done
 starttime=$
-for app in record frontend calibrator osc9001 osc9998 osc9999 chuck tracker gpufluid
+for app in frontend calibrator osc9001 osc9998 osc9999 chuck tracker gpufluid # record
 do
   launchctl $load $app.plist
   echo $load $app.plist
@@ -34,7 +34,7 @@ then
    # Apps don't respond well to launchctl -- keeps coming to foreground
    # In any case, unload won't work with apps
    echo Launching Ableton
-   open -a '/Applications/Ableton Live 9.7 Beta.app' '/Users/bst/Dropbox/Pulsefield/Marcos Share/PULSEFIELD1A Project/PULSEFIELD2016.als'
+   open -a '/Applications/Ableton Live 9.7 Beta.app' '/Users/bst/Dropbox/Pulsefield/Marcos Share/PULSEFIELD1A Project/PULSEFIELD2017-BM.als'
    echo Launching MadMapper
    open -a '/Applications/MadMapper.app' '/Users/bst/Dropbox/Pulsefield/MadMapper/Pulsefield-4Proj.mad'
 else

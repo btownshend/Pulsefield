@@ -14,10 +14,15 @@
 	<key>KeepAlive</key>
 	<true/>
 
+	<key>ProgramArguments</key>
+	<array>
+	  <string>/Users/bst/Dropbox/Pulsefield/src/modules/Calibrator/calibrator</string>
+	  <string>-d2</string>
+	  <string>-D</string>
+	  <string>/Users/bst/Desktop/PF_LOGS/calibrator_dbg.log</string>
+	</array>
 	<key>Label</key>
 	<string>com.tc.calibrator</string>
-	<key>Program</key>
-	<string>/Users/bst/Dropbox/Pulsefield/src/modules/Calibrator/calibrator</string>
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/modules/Calibrator</string>
 	<key>StandardOutPath</key>
