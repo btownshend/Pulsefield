@@ -879,7 +879,7 @@ public class Tracker extends PApplet {
 		} else if (theOscMessage.addrPattern().startsWith("/vis/")) {
 			// logger.warning("Unhandled vis message: "+theOscMessage.addrPattern());
 		} else if (!unhandled.containsKey(theOscMessage.addrPattern())) {
-			logger.warning("Received an unhandled OSC message: ");
+			logger.warning("Received an unhandled OSC message: "+theOscMessage.addrPattern());
 			theOscMessage.print();
 			unhandled.put(theOscMessage.addrPattern(),true);		
 		}  /* print the address pattern and the typetag of the received OscMessage */
