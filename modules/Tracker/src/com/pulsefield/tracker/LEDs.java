@@ -226,16 +226,28 @@ public class LEDs extends Thread {
 				newPhys[i]=0;  // Blank unused LEDs
 			ndiffs+=(newPhys[i]==physleds[i])?0:1;
 		}
-		int pos=0;
-		while (pos<nphys) {
-			int nsend=nphys-pos;
-			if (nsend>160) nsend=160;
-			byte msg[]=makeFUpdate(pos,nsend,newPhys);
+		if (ndiffs==0) {
+			logger.info("Nothing to update");
+			// Sync anyway to keep arduino active
 			sendsync();
-			send(msg);
 			syncwait();
-			pos+=nsend;
-		}
+		} else {
+			int pos=0;
+			while (pos<nphys) {
+				while (pos<nphys && newPhys[pos]==physleds[pos])
+					pos++;  // No update needed
+				if (pos==nphys)
+					break;
+				int nsend=nphys-pos;
+				if (nsend>160) nsend=160;
+				while (newPhys[pos+nsend-1]==physleds[pos+nsend-1])
+					nsend--;  // Won't hit zero since the first one needs update
+				byte msg[]=makeFUpdate(pos,nsend,newPhys);
+				sendsync();
+				send(msg);
+				syncwait();
+				pos+=nsend;
+			}
 
 			byte goMsg[]=new byte[3];
 			goMsg[0]='P';   // Pause setting
@@ -244,6 +256,7 @@ public class LEDs extends Thread {
 			goMsg[1]=(byte)pauseTime;
 			goMsg[2]='G';  // Go
 			send(goMsg);
+		}
 	}
 
 	// Separate thread to process input
