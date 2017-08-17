@@ -2,6 +2,7 @@ package com.pulsefield.tracker;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
@@ -20,7 +21,7 @@ class ParticleSystem {
 
 
 	void attractor(PVector c, float force) {
-		// Add a gravitional force that acts on all particles
+		// Add a gravitational force that acts on all particles.
 		for (int i = particles.size()-1; i >= 0; i--) {
 			particles.get(i).attractor(c, force);
 		}
@@ -55,10 +56,15 @@ class ParticleSystem {
 		particles.add(p);
 	}
 
+	void addParticle(PVector origin, PVector velocity, PVector acceleration, int color) {
+		// Magic number '-0.2' here is rotation; a slight gravity rotation has a nice effect.
+		// Think of it as a coriolis effect.
+		Particle p = new Particle(origin, velocity, acceleration, -0.2f, 700.0f, color, img);
+		particles.add(p);
+	}
+
 	// A method to test if the particle system still has particles
 	boolean dead() {
 		return particles.isEmpty();
 	}
-
 }
-

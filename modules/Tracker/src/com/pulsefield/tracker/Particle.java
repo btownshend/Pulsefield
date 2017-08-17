@@ -14,22 +14,51 @@ class Particle {
 	PVector location;
 	PVector velocity;
 	PVector acceleration;
+	float attractorRotation;
 	float lifespan, maxlifespan;
 	int color;
 	PImage img;
 
+	Particle(PVector loc, PVector velo, int color, PImage img) {
+		// Note: Default set here:
+		// attractorRotation specified here as 90 degrees.
+		// maxlifespan as 500.0.
 
-	Particle(PVector l, PVector v, int color, PImage img) {
+		this(loc, getDefaultVector(velo), getDefaultAcceleration(), 90, 500.0f, color, img);
+	}
+
+	private static PVector getDefaultVector(PVector velo) {
+		return fuzzVector(velo, 0.3f/300, 0.3f/300);
+	}
+
+	private static PVector getDefaultAcceleration() {
+		final PVector defaultAccel = new PVector(0f, -0.03f/300);
+		return defaultAccel;
+	}
+
+	// Fuzz the input vector; used to spread and vary particle velocity and acceleration.
+	private static PVector fuzzVector(PVector vector, float xMaxFuzz, float yMaxFuzz) {
+		return new PVector((float)rng.nextGaussian()*xMaxFuzz+vector.x, (float)rng.nextGaussian()*yMaxFuzz + vector.y);
+	}
+
+	Particle(PVector loc, PVector velo, PVector accel, float rotation, float maxlife, int color, PImage img) {
 		this.img=img;
-		//float kscale=0.5f;
-		//this.color=((int)((color&0xff)*kscale)) | ((int)(((color>>8)&0xff)*kscale)<<8) | ((int)(((color>>16)&0xff)*kscale)<<16) | 0xff000000;
-		//logger.fine("color = "+Integer.toHexString(color)+" -> "+Integer.toHexString(this.color));
 		this.color=color;
-		acceleration = new PVector(0f, -0.03f/300);
-		velocity = new PVector((float)rng.nextGaussian()*0.3f/300+v.x, (float)rng.nextGaussian()*0.3f/300 + v.y);
-		location = l.copy();
-		maxlifespan = 500.0f;
+		location = loc.copy();
+		velocity = velo.copy();
+		acceleration = accel;
+		attractorRotation = rotation;
+		maxlifespan = maxlife;
 		lifespan = maxlifespan;
+	}
+
+	// Utility function to generate a vector with a random direction and magniture plus a directional force.
+	public static PVector genRandomVector(float dispersionForce, float accelVectorX, float accelVectorY) {
+		double maxRange = dispersionForce;
+		double minRange = -1 * dispersionForce;
+		float xaccel = (float) (minRange + Math.random() * (maxRange-minRange)) + accelVectorX;
+		float yaccel = (float) (minRange + Math.random() * (maxRange-minRange)) + accelVectorY;
+		return new PVector(xaccel,yaccel);
 	}
 
 	void attractor(PVector c, float force) {
@@ -38,7 +67,7 @@ class Particle {
 		float dist2=dir.magSq();
 		dir.normalize();
 		dir.mult(100f/300*force/PApplet.max(100.0f/300, dist2));
-		dir.rotate(90);  
+		dir.rotate(attractorRotation);
 		velocity.add(dir);
 	}
 
@@ -85,4 +114,3 @@ class Particle {
 		return (lifespan < 0.0);
 	}
 }
-
