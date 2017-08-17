@@ -32,6 +32,7 @@ public class LEDs extends Thread {
 	private int physleds[];  // Current state of each LED in Arduino
 	int ledOrder[];    // Map from arduino LED number to sequence here; -1 indicates LED should be blanked
 	Boolean outsiders[];  // Outsiders, true if someone present; array maps full circle, starting at logical LED 1
+	int bgMode;
 	Map<String,Float> parameters;
 	
 	public LEDs(String host, int port) {
@@ -39,6 +40,7 @@ public class LEDs extends Thread {
 		hostName=host;
 		portNumber=port;
 		syncCounter=0;
+		bgMode=0;
 		// State of each LED in arduino
 		physleds=new int[nphys];
 		for (int i=0;i<physleds.length;i++)
@@ -263,11 +265,26 @@ public class LEDs extends Thread {
 	}
 
 	void bg() {
-		//stripid();
-		//rainbow();
-		pulsebow();
+		switch (bgMode) {
+		case 0:
+			stripid();
+			break;
+		case 1:
+			pulsebow();
+			break;
+		case 2:
+			rainbow();
+			break;
+		default:
+			logger.info("Bad bgMode: "+bgMode);
+			bgMode=0;
+		}
 	}
 
+	void setbgmode(int newMode) {
+		bgMode=newMode;
+	}
+	
 	// Set strips for ID
 	void stripid() {		
 		final String colnames[]={"red","green", "blue","magenta","cyan","yellow","pinkish", "white"};
