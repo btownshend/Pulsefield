@@ -461,9 +461,24 @@ public class LEDs extends Thread {
     	return (float) Math.exp(v*Math.log(hi/lo)+Math.log(lo));
     }
 
-    public void setPperiod(float v) {
-	logger.info("setPperiod("+v+")");
+    public void setPPeriod(float v) {
+	logger.info("setPPeriod("+v+")");
 	parameters.put("pperiod",expcontrol(v,0.1f,20f));
+	refreshTO();
+    }
+    public void setCPeriod(float v) {
+	logger.info("setCPeriod("+v+")");
+	parameters.put("cperiod",expcontrol(v,1f,100f));
+	refreshTO();
+    }
+    public void setPSpatial(float v) {
+	logger.info("setPSpatial("+v+")");
+	parameters.put("pspatial",expcontrol(v,2f,10000f));
+	refreshTO();
+    }
+    public void setCSpatial(float v) {
+	logger.info("setCSpatial("+v+")");
+	parameters.put("cspatial",expcontrol(v,2f,10000f));
 	refreshTO();
     }
 
