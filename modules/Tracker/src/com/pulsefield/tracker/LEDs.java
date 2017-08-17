@@ -305,10 +305,11 @@ public class LEDs extends Thread {
 	void bg() {
 		switch (bgMode) {
 		case 0:
-			stripid();
+			//alloff();
+			pulsebow();
 			break;
 		case 1:
-			pulsebow();
+			stripid();
 			break;
 		case 2:
 			rainbow();
@@ -323,6 +324,10 @@ public class LEDs extends Thread {
 		bgMode=newMode;
 	}
 	
+	void alloff() {
+		for (int i=0;i<leds.length;i++)
+			leds[i]=0;
+	}
 	// Set strips for ID
 	void stripid() {		
 		final String colnames[]={"red","green", "blue","magenta","cyan","yellow","pinkish", "white"};
@@ -428,6 +433,7 @@ public class LEDs extends Thread {
 	
 	// Set outsiders flags for given pos from 32-bits packed into val
 	public void setOutsiders(int pos, int val) {
+		logger.info("setOutsiders("+pos+","+val+")");
 		for (int i=0;i<32;i++) {
 			if (pos*32+i >= outsiders.length)
 				break;
