@@ -6,6 +6,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class LEDs extends Thread {
@@ -30,8 +32,10 @@ public class LEDs extends Thread {
 	private int physleds[];  // Current state of each LED in Arduino
 	int ledOrder[];    // Map from arduino LED number to sequence here; -1 indicates LED should be blanked
 	Boolean outsiders[];  // Outsiders, true if someone present; array maps full circle, starting at logical LED 1
-
+	Map<String,Float> parameters;
+	
 	public LEDs(String host, int port) {
+		parameters=new HashMap<String,Float>();
 		hostName=host;
 		portNumber=port;
 		syncCounter=0;
@@ -52,6 +56,11 @@ public class LEDs extends Thread {
 		for (int i=0;i<outsiders.length;i++)
 			outsiders[i]=(i<90);
 		start();
+		// Setup OSC plugs
+		oscP5.plug(this,"setPPeriod","/led/pulsebow/pperiod");
+		oscP5.plug(this,"setCPeriod","/led/pulsebow/cperiod");
+		oscP5.plug(this,"setPSpatial","/led/pulsebow/pspatial");
+		oscP5.plug(this,"setCSpatial","/led/pulsebow/cspatial");
 	}
 
 	void open() {
@@ -277,10 +286,10 @@ public class LEDs extends Thread {
 	}
 
 	void pulsebow() {
-		final float pperiod=4;  // Period of pulsing (in seconds)
-		final float cperiod=20;   // Period of color rotation
-		final float pspatial=250;  // Spatial period of pulsing
-		final float cspatial=20000;  // Spatial period of color
+		final float pperiod=parameters.getOrDefault("pperiod", 5.0f);  // Period of pulsing (in seconds)
+		final float cperiod=parameters.getOrDefault("cperiod", 20.0f);   // Period of color rotation
+		final float pspatial=parameters.getOrDefault("pspatial",250.0f);  // Spatial period of pulsing
+		final float cspatial=parameters.getOrDefault("cspatial",20000.0f);  // Spatial period of color
 		final float maxlev=1;
 		final float minlev=0.2f;
 
@@ -382,6 +391,23 @@ public class LEDs extends Thread {
 			}
 		}
 	}
+
+    public void refreshTO() {
+    	sendOSC("TO","/led/pulsebow/pperiod/value",String.format("%.1f",parameters.get("pperiod")));
+    	sendOSC("TO","/led/pulsebow/cperiod/value",String.format("%.1f",parameters.get("cperiod")));
+    	sendOSC("TO","/led/pulsebow/pspatial/value",String.format("%.1f",parameters.get("pspatial")));
+    	sendOSC("TO","/led/pulsebow/cspatial/value",String.format("%.1f",parameters.get("cspatial")));
+    }
+    
+    private static float expcontrol(float v,float lo,float hi) {
+    	return exp(v*log(hi/lo)+log(lo));
+    }
+
+    public void setPperiod(float v) {
+	logger.notice("setPperiod("+v+")");
+	parameters.put("pperiod",expcontrol(v,0.1f,20f));
+	refreshTO();
+    }
 
 }
 
