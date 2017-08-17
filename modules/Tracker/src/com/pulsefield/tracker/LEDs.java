@@ -444,7 +444,7 @@ public class LEDs extends Thread {
 				int k2=(int)((i+0.5)*leds.length/outsiders.length);
 				for (int k=k1;k<k2;k++) {
 					if (k>=0 && k<leds.length)
-						leds[k]=0xff0000;  // RED for outsiders
+						leds[k]=0x7f7f7f-leds[k];  // RED for outsiders
 				}
 			}
 		}
