@@ -46,11 +46,35 @@ public class LEDs extends Thread {
 		for (int i=0;i<physleds.length;i++)
 			physleds[i]=-1;
 		// Ordering of LEDS;   physical LED p ->  ledOrder[p] logical LED;  ledOrder[0]==-1 for unused LEDs
+		final int leadSkip=5;  // Number to skip at physical beginning of each strip
+		final int tailSkip=6;  // Number to skip at physical end of each strip
+		final int order[]={1,2,3,4,-5,-6,-7,-8};  // Order of strips going CW (-ve = reversed)
+		final float initAngle=45;   // Angle of first strip, first active LED in world coords
+		final int nLogical=nstrip*(ledperstrip-leadSkip-tailSkip);
+		final int offset=(int)(initAngle/360*nLogical+0.5);
 		ledOrder=new int[nphys];
+		logger.info("Have "+nLogical+" LEDs with offset of "+offset);
+		
+		for (int i=0;i<order.length;i++)
+			for (int j=0;j<ledperstrip;j++) {
+				int physpos, logicalpos;
+				if (order[i]>0)
+					physpos=(order[i]-1)*ledperstrip+j;
+				else
+					physpos=(-order[i])*ledperstrip-j-1;
+				if (j<leadSkip || j>ledperstrip-tailSkip-1)
+					logicalpos=-1;
+				else
+					logicalpos=(i*(ledperstrip-leadSkip-tailSkip)+j-leadSkip-offset+nLogical)%nLogical;
+				
+				ledOrder[physpos]=logicalpos;
+			}
+		String msg="";
 		for (int i=0;i<ledOrder.length;i++)
-			ledOrder[i]=i;
+			msg=msg+" "+ledOrder[i];
+		logger.info("LED order:"+msg);
 		// Desired new state of logical LEDs
-		leds=new int[nphys];
+		leds=new int[nLogical];
 		for (int i=0;i<leds.length;i++)
 			leds[i]=0x0;
 		// Outsiders
@@ -213,13 +237,13 @@ public class LEDs extends Thread {
 			pos+=nsend;
 		}
 
-		byte goMsg[]=new byte[3];
-		goMsg[0]='P';   // Pause setting
-		int pauseTime=(int)(1000/MAXUPDATERATE+0.5);
-		assert(pauseTime<=255);
-		goMsg[1]=(byte)pauseTime;
-		goMsg[2]='G';  // Go
-		send(goMsg);
+			byte goMsg[]=new byte[3];
+			goMsg[0]='P';   // Pause setting
+			int pauseTime=(int)(1000/MAXUPDATERATE+0.5);
+			assert(pauseTime<=255);
+			goMsg[1]=(byte)pauseTime;
+			goMsg[2]='G';  // Go
+			send(goMsg);
 	}
 
 	// Separate thread to process input
@@ -295,8 +319,11 @@ public class LEDs extends Thread {
 		clear();
 		for (int k=0;k<nstrip;k++) {
 			int offset=k*ledperstrip;
-			for (int i=phase;i<ledperstrip;i+=nphase)
-				set(offset+i,col[k][0],col[k][1],col[k][2]);
+			for (int i=phase;i<ledperstrip;i+=nphase) {
+				int lled=ledOrder[offset+i];
+				if (lled>=0)
+					set(lled,col[k][0],col[k][1],col[k][2]);
+			}
 			logger.info(String.format("Strip %d is %s.  Clk=pin %d, Data=pin %d\n", k, colnames[k],clkpins[k],datapins[k]));
 		}
 		phase=(phase+1)%nphase;
