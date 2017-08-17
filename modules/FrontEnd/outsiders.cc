@@ -18,7 +18,6 @@ void Outsiders::update(int frame, const SickIO *s) {
     curFrame=frame;
     for (int i=0;i<s->getNumMeasurements();i++)
 	update(s->getWorldPoint(i));
-    dump();
 }
 
 void Outsiders::dump() const {
@@ -39,17 +38,23 @@ void Outsiders::sendMessages(const char *host, int port) const {
     sprintf(cbuf,"%d",port);
     lo_address addr = lo_address_new(host, cbuf);
 
+    dump();
+
     // Send bits of outsiders
     int nvals=(int)((nDivisions+31)/32);
     int nmsgs=(int)((nvals+3)/4);
     nvals=nmsgs*4;
     int v[nvals];
+    for (int i=0;i<nvals;i++)
+	v[i]=0;
     for (int i=0;i<nDivisions;i++)  {
 	if (lastHit[i]>=curFrame-life)
 	    v[(int)(i/32)] |=1<<(i%32);
     }
-    for (int i=0;i<nvals;i+=4)
+    for (int i=0;i<nvals;i+=4) {
 	lo_send(addr,"/pf/outsiders","iiiiii",i,nDivisions,v[i],v[i+1],v[i+2],v[i+3]);
+	dbg("Outsiders.sendMessages",1) << "v=[" << v[i] << "," << v[i+1] << "," << v[i+2] << "," << v[i+3] << std::endl;
+    }
 
     // Done!
     lo_address_free(addr);
