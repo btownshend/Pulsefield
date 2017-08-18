@@ -62,6 +62,7 @@ class Track {
 	int trackNum;
 	int lowestSeenEmptyClip, highestSeenUsedClip;
 	int infoRequestsPending;  // Incremented when we request clip info, zeroed when we get a reply
+    boolean warningState;   // True when we're in a state where clip info not available
     private final static Logger logger = Logger.getLogger(Track.class.getName());
 
 	Track(int trackNum) {
@@ -70,6 +71,7 @@ class Track {
 		playing=null;
 		triggered=null;
 		this.trackNum=trackNum;
+		warningState=false;
 		lowestSeenEmptyClip=MAXCLIPS;
 		highestSeenUsedClip=-1;
 		infoRequestsPending=0;
@@ -133,9 +135,15 @@ class Track {
 	int numClips() {
 		if (highestSeenUsedClip+1<lowestSeenEmptyClip) {
 			// Don't yet know how many clips there are
+		    if (!warningState)
 			logger.warning("Ableton:numClips() - haven't determined number of clips yet for track "+this.name+"("+this.trackNum+")");
-			clipInfoRequest();
-			return -1;
+		    warningState=true;
+		    clipInfoRequest();
+		    return -1;
+		}
+		if (warningState) {
+		    warningState=false;
+		    logger.info("Ableton:numClips() - now have data for track "+this.name+"("+this.trackNum+")");
 		}
 		return lowestSeenEmptyClip;
 	}
