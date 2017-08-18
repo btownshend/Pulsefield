@@ -76,7 +76,7 @@ public class VisualizerRainbow extends Visualizer {
 	GoalBox goal1, goal2, goal3;
 
 	VisualizerRainbow(PApplet parent) {
-		PImage img = parent.loadImage("3x3-solid.png");
+		PImage img = parent.loadImage("tinycircle.png");
 		universe = new ParticleSystem(img);
 
 		// Create Goals.
