@@ -49,6 +49,7 @@ class Effects {
 		defaultEffects = new Effects(synth,DEFAULTEFFECTSTRACK);
 		// Whack 
 		defaultEffects.add("WHACK","C1");
+		defaultEffects.add("WHACK-Bowie","C1");
 		defaultEffects.add("Smash", "C1");
 		// DNA
 		defaultEffects.add("BREAK","C1");
