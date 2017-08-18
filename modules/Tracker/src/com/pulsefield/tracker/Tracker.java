@@ -1020,6 +1020,16 @@ public class Tracker extends PApplet {
 	public static PVector getFloorSize() {
 		return new PVector(maxx-minx,maxy-miny);
 	}
+
+	// Get maximum floor dimension (in meters).
+	public static float getFloorDimensionMax() {
+		return Math.max(maxx - minx, maxy - miny);
+	}
+
+	// Get maximum floor dimension (in meters).
+	public static float getFloorDimensionMin() {
+		return Math.min(maxx - minx, maxy - miny);
+	}
 	
 	synchronized public void pfstarted() {
 		logger.entering(this.toString(), "pfstarted");
