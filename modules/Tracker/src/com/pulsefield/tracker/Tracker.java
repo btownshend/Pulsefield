@@ -269,6 +269,7 @@ public class Tracker extends PApplet {
 		addVis("Stickman",new VisualizerStickman(this,synth),true);
 		addVis("Hunter", new VisualizerHunter(this,synth),true);
 		addVis("Gravity", new VisualizerGravity(this), true);
+		addVis("Rainbow", new VisualizerRainbow(this), true);
 		addVis("TestPattern",new VisualizerTestPattern(this),false);
 		setapp(vis.length-1);
 	}
