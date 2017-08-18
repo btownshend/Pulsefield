@@ -40,8 +40,9 @@ class Notes  {
 		this.difficultyClass=difficultyClass;
 		this.difficultyMeter=Integer.parseInt(difficultyMeter);
 		String rv[]=radarValues.split(",");
-		if (rv.length != 5)
-			logger.warning("Bad radarValues (expected 5, found "+rv.length+"): "+radarValues);
+		if (rv.length != 5 && rv.length!=22)
+		    // Documentation says 5, but some files have 22
+		    logger.info("Unexpected number of  radarValues for "+type+" (expected 5 or 22, found "+rv.length+"): "+radarValues);
 		this.radarValues = new float[rv.length];
 		for (int i=0;i<rv.length;i++)
 			this.radarValues[i]=Float.parseFloat(rv[i]);
@@ -162,6 +163,7 @@ public class Simfile {
 	// Load from a .SM file
 	public final void loadSM(String dir, String filename) throws FileNotFoundException {
 		//Note that FileReader is used, not File, since File is not Closeable
+	        logger.info("Loading SimFile "+dir+"/"+filename+"...");
 		this.dir=new File(dir);
 		Scanner scanner = new Scanner(new FileReader(new File(dir,filename)));
 		scanner.useDelimiter(";");
@@ -231,7 +233,13 @@ public class Simfile {
 
 	public PImage getBanner(Tracker tracker, PGraphics g) {
 		String fname=getTag("BANNER");
+		if (fname.isEmpty()) {
+			logger.warning("No banner for "+dir);
+			return null;
+		}
 		PImage result = tracker.loadImage(new File(dir,fname).getAbsolutePath());
+		if (result==null)
+			logger.severe("Failed loadImage of "+dir+"/"+fname);
 		return result;
 	}
 	

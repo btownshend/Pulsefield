@@ -32,7 +32,7 @@ public class People {
 
 	public void setnpeople(int n) {
 		if (n!=pmap.size()) {
-			logger.warning("Had "+pmap.size()+" people, but got message that there are "+n+" .. cleared.");
+			logger.info("Had "+pmap.size()+" people, but got message that there are "+n+" .. cleared.");
 			pmap.clear();
 		}
 	}

@@ -1,6 +1,7 @@
 package com.pulsefield.tracker;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 
 import processing.core.PApplet;
 
@@ -33,9 +34,8 @@ public class VisualizerVDMX extends VisualizerSyphon {
 			pid=Runtime.getRuntime().exec(cmd);
 			logger.info("pid="+pid.toString()+", isAlive="+pid.isAlive());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-       		        logger.warning("Unable to launch VDMX app: "+app.getAbsolutePath());
-			e.printStackTrace();
+		    logger.log(Level.WARNING,"Unable to launch VDMX app: "+app.getAbsolutePath(),e);
+		    e.printStackTrace();
 		}
 	}
 	

@@ -5,6 +5,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.DefaultComboBoxModel;
@@ -44,7 +45,8 @@ public class GUI extends JFrame {
 					theGUI = new GUI();
 					theGUI.setVisible(true);
 				} catch (Exception e) {
-					e.printStackTrace();
+				    logger.log(Level.SEVERE,"Exception in start",e);
+				    e.printStackTrace();
 				}
 			}
 		});
@@ -230,7 +232,8 @@ public class GUI extends JFrame {
 					appSelect.setSelectedIndex(Tracker.theTracker.currentvis);
 					enableMenu.setSelected(Tracker.theTracker.enableMenu);
 				} catch (Exception e) {
-					e.printStackTrace();
+				    logger.log(Level.SEVERE,"Exception in run",e);
+				    e.printStackTrace();
 				}
 			}
 		});

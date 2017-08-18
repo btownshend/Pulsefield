@@ -26,7 +26,7 @@ class Voice {
 	}
 	void play(Scale scale, Synth synth, int duration, int channel) {
 		if (mainline[0]==null || mainline[1]==null) {
-			logger.warning("Voice.Play: ID "+id+" has no vornoi line");
+			logger.warning("play: ID "+id+" has no vornoi line; mainline="+mainline[0]+","+mainline[1]);
 			return;
 		}
 		PVector diff=new PVector(mainline[0].x,mainline[0].y);

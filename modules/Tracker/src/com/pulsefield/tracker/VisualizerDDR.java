@@ -3,6 +3,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import oscP5.OscMessage;
@@ -83,6 +84,7 @@ class Song {
 			try {
 				sf.loadSM(sfdir,sfname);
 			} catch (FileNotFoundException e) {
+			    logger.log(Level.SEVERE,"Unable to load file "+sfdir+"/"+sfname,e);
 				e.printStackTrace();
 			}
 		}

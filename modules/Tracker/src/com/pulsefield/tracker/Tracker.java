@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -625,6 +626,7 @@ public class Tracker extends PApplet {
 			try {
 				server = new SyphonServer(this, "Tracker");
 			} catch (Exception e) {
+			    logger.log(Level.SEVERE,"Exception while creating syphon server",e);
 				e.printStackTrace();
 				exit();
 			}
@@ -683,8 +685,8 @@ public class Tracker extends PApplet {
 		//SyphonTest.draw(this);
 		Config.saveIfModified(this);   // Save if modified
 		} catch (Exception e) {
-			logger.severe("exception in draw(): "+e.getMessage());
-			e.printStackTrace();
+		    logger.log(Level.SEVERE,"exception in draw(): "+e);
+		    e.printStackTrace();
 		}
 	}
 
@@ -886,7 +888,7 @@ public class Tracker extends PApplet {
 			unhandled.put(theOscMessage.addrPattern(),true);		
 		}  /* print the address pattern and the typetag of the received OscMessage */
 		} catch (Exception e) {
-			logger.severe("oscEvent exception: "+e.getMessage()+"("+e.toString()+")");
+			logger.log(Level.SEVERE,"oscEvent exception: "+e.getMessage()+"("+e.toString()+")",e);
 			e.printStackTrace();
 		}
 	}
