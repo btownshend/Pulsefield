@@ -248,13 +248,13 @@ class MoleculeFactory {
 }
 
 // Freeze visualizer
-public class VisualizerFreeze extends Visualizer {
+public class VisualizerFreeze extends VisualizerDot  {
 	long startTime;
 	Effects effects;
 	MoleculeFactory mFactory;
 
 	VisualizerFreeze(PApplet parent, Synth synth) {
-		super();
+		super(parent);
 		effects=Effects.defaultEffects;
 	}
 	
