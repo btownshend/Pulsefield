@@ -878,6 +878,8 @@ public class Tracker extends PApplet {
 			visDDR.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
 			synth.handleMessage(theOscMessage);
+		} else if (theOscMessage.addrPattern().startsWith("/led")) {
+			LEDs.theLEDs.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/pf/set")) {
 			// logger.warning("Unhandled set message: "+theOscMessage.addrPattern());
 		} else if (theOscMessage.addrPattern().startsWith("/vis/")) {
