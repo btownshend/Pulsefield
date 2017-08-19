@@ -531,7 +531,7 @@ public class Tracker extends PApplet {
 		tick++;
 		avgFrameRate=avgFrameRate*(1f-1f/20f)+frameRate/20f;
 		if (GUI.theGUI != null)
-			GUI.theGUI.updateFPS();
+			GUI.theGUI.updateDisplayValues();
 		if (tick%20 == 0)
 			updateTO(tick%40==0);
 		
