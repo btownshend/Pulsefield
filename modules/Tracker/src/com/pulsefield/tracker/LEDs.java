@@ -194,7 +194,7 @@ public class LEDs extends Thread {
 						//logger.info("At sync "+syncCounter+", received sync "+lastSyncReceived);
 						int nbehind=syncCounter-lastSyncReceived;
 						if (nbehind<0) nbehind+=256;
-						if (nbehind > 0)
+						if (nbehind > 1)
 							logger.warning("Behind by "+nbehind+" sync messages");
 					}
 					lastRead=(byte)d;
