@@ -1,0 +1,13 @@
+#!/bin/bash
+
+$PFROOT/bin/oscbroadcast -s9001 -t osc.udp://localhost:9005 -t osc.udp://localhost:7002 -t osc.udp://localhost:7790 2> ../log/oscbroadcast9001.err.log > ../log/oscbroadcast9001.run.log &
+echo $! > /tmp/oscb9001.pid
+
+$PFROOT/bin/oscbroadcast -s9998 -t osc.udp://10.1.10.19:9998 -t osc.udp://127.0.0.1:7790 2> ../log/oscbroadcast9998.err.log > ../log/oscbroadcast9998.run.log &
+echo $! > /tmp/oscb9998.pid
+
+$PFROOT/bin/oscbroadcast -s9999 -t osc.udp://localhost:7770 -t osc.udp://localhost:7002 -t osc.udp://localhost:7780 -t osc.udp://127.0.0.1:7790 2> ../log/oscbroadcast9999.err.log > ../log/oscbroadcast9999.run.log &
+echo $! > /tmp/oscb9999.pid
+
+
+

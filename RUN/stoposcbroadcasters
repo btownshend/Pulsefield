@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for pidfile in oscb9001.pid oscb9998.pid oscb9999.pid
+do
+  pid=`cat /tmp/$pidfile`
+  kill $pid
+done
+
+rm oscb9001.pid oscb9998.pid oscb9999.pid
+
