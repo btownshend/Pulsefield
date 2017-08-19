@@ -174,7 +174,7 @@ public class LEDs extends Thread {
 		syncCounter=(syncCounter+1)&0xff;
 		msg[1]=(byte)syncCounter;
 		send(msg);
-		logger.info("Sent sync "+syncCounter);
+		//logger.info("Sent sync "+syncCounter);
 	}
 
 	void syncwait() {
@@ -186,12 +186,12 @@ public class LEDs extends Thread {
 			try {
 				while (is.available()>0) {
 					int d = is.read();
-					logger.info("Available: "+is.available()+", got "+d);
+					//logger.info("Available: "+is.available()+", got "+d);
 					if (d==-1)
 						break;
 					if (lastRead=='A') {
 						lastSyncReceived=d;
-						logger.info("At sync "+syncCounter+", received sync "+lastSyncReceived);
+						//logger.info("At sync "+syncCounter+", received sync "+lastSyncReceived);
 						int nbehind=syncCounter-lastSyncReceived;
 						if (nbehind<0) nbehind+=256;
 						if (nbehind > 0)
@@ -227,7 +227,7 @@ public class LEDs extends Thread {
 	}
 	
 	void update() {
-		logger.info("update");
+		//logger.info("update");
 
 		int newPhys[]=new int[nphys];
 		int ndiffs=0;
@@ -240,7 +240,7 @@ public class LEDs extends Thread {
 			ndiffs+=(newPhys[i]==physleds[i])?0:1;
 		}
 		if (ndiffs==0) {
-			logger.info("Nothing to update");
+			//logger.info("Nothing to update");
 			// Sync anyway to keep arduino active
 			sendsync();
 			syncwait();
@@ -317,7 +317,6 @@ public class LEDs extends Thread {
 	void bg() {
 		switch (bgMode) {
 		case 0:
-			//alloff();
 			pulsebow();
 			break;
 		case 1:
@@ -358,7 +357,7 @@ public class LEDs extends Thread {
 				if (lled>=0)
 					set(lled,col[k][0],col[k][1],col[k][2]);
 			}
-			logger.info(String.format("Strip %d is %s.  Clk=pin %d, Data=pin %d\n", k, colnames[k],clkpins[k],datapins[k]));
+			//logger.info(String.format("Strip %d is %s.  Clk=pin %d, Data=pin %d\n", k, colnames[k],clkpins[k],datapins[k]));
 		}
 		phase=(phase+1)%nphase;
 	}
@@ -448,7 +447,7 @@ public class LEDs extends Thread {
 	
 	// Set outsiders flags for given pos from 32-bits packed into val
 	public void setOutsiders(int pos, int val) {
-		logger.info("setOutsiders("+pos+","+val+")");
+		//logger.info("setOutsiders("+pos+","+val+")");
 		for (int i=0;i<32;i++) {
 			if (pos*32+i >= outsiders.length)
 				break;
