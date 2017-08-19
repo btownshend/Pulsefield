@@ -276,11 +276,13 @@ public class LEDs extends Thread {
 	public void run() {
 		logger.info("Started thread");
 		open();
+		int nupdates=0;
+		long start=System.nanoTime();
+
 		while (true) {
 			// Loop forever, updating Arduino with current LED settings
 			if (!keepalive())
 				continue;
-			long start=System.nanoTime();
 			//echotest();
 			//echotest();
 			bg();
@@ -288,7 +290,13 @@ public class LEDs extends Thread {
 			update();
 
 			long finish=System.nanoTime();
-			logger.info("Update loop took "+(finish-start)/1000000+" msec");
+			float time=(finish-start)/1000000000f;  // Elapsed in sec
+			nupdates++;
+			if (time>10) { // Display message every 10s
+				logger.info(String.format("Average LED Update rate = %.2f/sec (nupdates=%d, time=%f)",nupdates*1.0f/time,nupdates,time));
+				nupdates=0;
+				start=finish;
+			}
 		}
 		// Not reached
 	}
