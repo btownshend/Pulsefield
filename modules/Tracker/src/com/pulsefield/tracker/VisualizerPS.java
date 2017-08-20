@@ -39,8 +39,11 @@ public class VisualizerPS extends Visualizer {
 					ps2.push(pos.getNormalizedPosition(), PVector.div(pos.getNormalizedVelocity(),parent.frameRate));   // Convert velocity into normalized units/frame
 				}
 
-			for (int k=0;k<birthrate;k++)
-				ps.addParticle(pos.getOriginInMeters(),pos.getcolor());
+			for (int k=0;k<birthrate;k++) {
+				Particle particle = new Particle(pos.getOriginInMeters());
+				particle.color = pos.getcolor();
+				ps.addParticle(particle);
+			}
 		}
 		int toRemove=-1;
 
@@ -78,7 +81,7 @@ public class VisualizerPS extends Visualizer {
 		
 		for (Map.Entry<Integer,ParticleSystem> me: systems.entrySet()) {
 			ParticleSystem ps=me.getValue();
-			ps.draw(g);
+			ps.draw(g, 1.0f);
 		}
 	}
 

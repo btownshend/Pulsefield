@@ -36,6 +36,7 @@ public class Tracker extends PApplet {
 	private int tick=0;
 	private int liveTick=0;  // Tick at which last AL message received
 	public float avgFrameRate=0;
+	float targetFramerate = 30;
 	public static OscP5 oscP5;
 	NetAddress myRemoteLocation;
 	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
@@ -49,6 +50,8 @@ public class Tracker extends PApplet {
 	VisualizerMenu visMenu;
 	VisualizerMinim visMinim;
 	VisualizerSyphon visSyphonOF;
+	VisualizerRainbow visRainbow;
+	VisualizerGravity visGravity;
 	
 	int currentvis=-1;
 	static NetAddress TO, OF, AL, MAX, CK, VD, FE, AR;
@@ -125,7 +128,7 @@ public class Tracker extends PApplet {
 			System.exit(1);
 		}
 
-		frameRate(30);
+		frameRate(targetFramerate);
 		mouseID=90;
 		cycler=new AutoCycler();
 		
@@ -269,8 +272,8 @@ public class Tracker extends PApplet {
 		addVis("Life", new VisualizerLife(this),true);
 		addVis("Stickman",new VisualizerStickman(this,synth),true);
 		addVis("Hunter", new VisualizerHunter(this,synth),true);
-		addVis("Gravity", new VisualizerGravity(this), true);
-		addVis("Rainbow", new VisualizerRainbow(this), true);
+		addVis("Gravity", visGravity = new VisualizerGravity(this), true);
+		addVis("Rainbow", visRainbow = new VisualizerRainbow(this), true);
 		addVis("TestPattern",new VisualizerTestPattern(this),false);
 		setapp(vis.length-1);
 	}
@@ -876,6 +879,9 @@ public class Tracker extends PApplet {
 			visNavier.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/video/ddr")) {
 			visDDR.handleMessage(theOscMessage);
+		} else if (theOscMessage.addrPattern().startsWith("/video/particlefield")) {
+			visRainbow.handleMessage(theOscMessage);
+			visGravity.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
 			synth.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/pf/set")) {
