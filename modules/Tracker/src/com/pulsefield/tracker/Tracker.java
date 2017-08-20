@@ -258,7 +258,7 @@ public class Tracker extends PApplet {
 		addVis("Bowie",new VisualizerZiggy(this,"bowie","Bowie","WHACK-Bowie"),true);
 		addVis("Soccer",new VisualizerSoccer(this),true);
 		addVis("Menu",visMenu=new VisualizerMenu(this),false);
-		addVis("Visualizer",visMinim=new VisualizerMinim(this,fourier,renderer!=FX2D),false);
+		addVis("Visualizer",visMinim=new VisualizerMinim(this,fourier,renderer==P3D),false);
 		addVis("Calypso",new VisualizerCalypso(this,synth),true);
 		addVis("DNA",new VisualizerDNA(this),true);
 		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
