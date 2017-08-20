@@ -206,6 +206,8 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setmaxy", "/video/maxy");
 		oscP5.plug(this,"locklidar","/video/locklidar");
 		unhandled = new HashMap<String,Boolean>();
+		// Add some known unhandled messages to avoid warnings
+		unhandled.put("/ping",true);	
 		projectors=new Projector[numProjectors];
 		for (int i=0;i<numProjectors;i++)
 			projectors[i] = new Projector(this,i+1,1920,1080);
