@@ -1,12 +1,9 @@
 package com.pulsefield.tracker;
 
-import com.sun.prism.paint.Color;
-
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PVector;
-import processing.core.PImage;
 
 class GoalBox {
 	Integer color = 0xFFDDDDDD;
@@ -28,21 +25,22 @@ class GoalBox {
 	}
 
 	private void calcCoords() {
-		x1 = center.x - (size/2);
-		x2 = center.x + (size/2);
-		y1 = center.y - (size/2);
-		y2 = center.y + (size/2);
+		x1 = center.x - (size / 2);
+		x2 = center.x + (size / 2);
+		y1 = center.y - (size / 2);
+		y2 = center.y + (size / 2);
 	}
 
 	void draw(PGraphics g) {
 		g.fill(color);
 		g.rect(x1, y1, size, size);
 
-		// Look at the sign of a y coord to determine the "outside" of the field in order
+		// Look at the sign of a y coord to determine the "outside" of the field
+		// in order
 		// to orient the score display.
 		int outsidey = (int) Math.signum(y1);
-		g.textAlign(PConstants.CENTER,PConstants.CENTER);
-		Visualizer.drawText(g, 0.3f, Integer.toString(score), center.x, center.y + (-1 * outsidey * size));
+		g.textAlign(PConstants.CENTER, PConstants.CENTER);
+		Visualizer.drawText(g, 0.3f, Integer.toString(score), center.x, center.y + (-0.8f * outsidey * size));
 	}
 
 	// Particle goal check includes color matching.
@@ -55,7 +53,7 @@ class GoalBox {
 
 	// Check if the given vector is inside the goalbox.
 	Boolean goal(PVector p) {
-		if (( p.x > x1 && p.x < x2 ) && (p.y > y1 && p.y < y2)) {
+		if ((p.x > x1 && p.x < x2) && (p.y > y1 && p.y < y2)) {
 			return true;
 		}
 
@@ -67,33 +65,50 @@ class GoalBox {
 	}
 }
 
-
 public class VisualizerGravity extends VisualizerParticleSystem {
 	GoalBox goal1, goal2;
-	PImage img;
+	int winningScore = 10000;
+	boolean gameOver = false;
+	int updatesBetweenNextGame = 600; // Needs to be longer than
+	// maxParticleLife.
+	int intergameUpdateCounter = 0;
 
 	VisualizerGravity(PApplet parent) {
 		super(parent);
-		img = parent.loadImage("circle.png");		
 
 		// Create Goals.
 		goal1 = new GoalBox();
 		goal2 = new GoalBox();
-
 	}
 
 	@Override
 	public void start() {
 		super.start();
-		
-		PApplet.println("My VPS universe is " + universe);
 
-		universe.maxParticles = 20000;
-		particleScale = 0.8f;
-		
+		setDefaultParameters();
+
 		// Reset goal scores.
 		goal1.score = 0;
 		goal2.score = 0;
+	}
+
+	void resetGame() {
+		gameOver = false;
+		goal1.score = 0;
+		goal2.score = 0;
+	}
+
+	void setDefaultParameters() {
+
+		universe.maxParticles = 20000;
+		universe.particleRandomDriftAccel = 0.000008f;
+		universe.particleMaxLife = 500;
+		universe.backgroundBrightness = 0.0f;
+		universe.forceRotation = 340.0f;
+		particleScale = 0.5f;
+		personGravity = 0.001f;
+
+		setTO();
 	}
 
 	@Override
@@ -104,58 +119,82 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 		goal1.color = 0xFFDD22DD;
 		goal2.setCenter(p2);
 		goal2.color = 0xFF22DDDD;
-		
-		// Resize goals for field.
-		goal1.setSize(Tracker.getFloorDimensionMin() / 8);
-		goal2.setSize(Tracker.getFloorDimensionMin() / 8);
-		
+
+		// Reset the game when it's time.
+		if (gameOver) {
+			if (intergameUpdateCounter-- <= 0) {
+				resetGame();
+			}
+		} else {
+			// Resize goals for field.
+			goal1.setSize(Tracker.getFloorDimensionMin() / 8);
+			goal2.setSize(Tracker.getFloorDimensionMin() / 8);
+		}
+
 		// TODO: Vary particlesPerUpdate based on sound context.
-		int particlesPerUpdate = 15;
+		// TODO: OSC Control for this.
+		int particlesPerUpdate = 10;
 
 		// Create some particles unless there are too many already.
 		if (universe.particlesRemaining() > particlesPerUpdate) {
 			for (int i = 0; i < particlesPerUpdate; i++) {
-				// Give particles a dispersing force to mix them up a little
-				// (yes, we're re-using this but it's ok).
-				PVector acceleration = Particle.genRandomVector(0.01f / 300, 0.0f, 0.0f);
 
-				// Send particles towards the black hole but with a rotation to
-				// avoid it.
-				PVector corner1 = Tracker.normalizedToFloor(new PVector(1.0f, -1.0f));
-				PVector corner2 = Tracker.normalizedToFloor(new PVector(-1.0f, 1.0f));
-				PVector corner1Velocity = Tracker.getFloorCenter().sub(Tracker.normalizedToFloor(corner1)).normalize().div(100)
-						.rotate(-0.5f);
-				PVector corner2Velocity = Tracker.getFloorCenter().sub(Tracker.normalizedToFloor(corner2)).normalize().div(100)
-						.rotate(-0.5f);
+				if (!gameOver) {
+					// Send particles towards the black hole but with a
+					// rotation to avoid going directly in.
+					PVector corner1 = Tracker.normalizedToFloor(new PVector(1.0f, -1.0f));
+					PVector corner2 = Tracker.normalizedToFloor(new PVector(-1.0f, 1.0f));
+					PVector corner1Velocity = Tracker.getFloorCenter().sub(Tracker.normalizedToFloor(corner1))
+							.normalize().div(30).rotate(-0.5f);
+					PVector corner2Velocity = Tracker.getFloorCenter().sub(Tracker.normalizedToFloor(corner2))
+							.normalize().div(30).rotate(-0.5f);
 
-				// ParticleImage(PVector loc, PVector velo, PVector accel, float rotation, float maxlife, int color, PImage img) {
+					Particle particle1 = new ImageParticle(corner1, universe, textures.get("circle.png"));
+					particle1.velocity = corner1Velocity;
+					particle1.color = goal1.color;
+					particle1.rotationRadians = 0.0f;
 
-				Particle particle1 = new ImageParticle(corner1, universe, img);
-				particle1.velocity = corner1Velocity;
-				particle1.acceleration = acceleration;
-				particle1.color = goal1.color;
+					Particle particle2 = new ImageParticle(corner2, universe, textures.get("circle.png"));
+					particle2.velocity = corner2Velocity;
+					particle2.color = goal2.color;
+					particle2.rotationRadians = 0.0f;
 
-				Particle particle2 = new ImageParticle(corner2, universe, img);
-				particle2.velocity = corner2Velocity;
-				particle2.acceleration = acceleration;
-				particle2.color = goal2.color;
-
-				universe.addParticle(particle1);
-				universe.addParticle(particle2);
+					universe.addParticle(particle1);
+					universe.addParticle(particle2);
+				}
 
 				// Just some fluff particles for more visual interest.
+				Particle particleFluff = new ImageParticle(
+						Particle.genRandomVector(Tracker.getFloorDimensionMax() / 2, 0f, 0f), universe,
+						textures.get("blur.png"));
+				particleFluff.velocity = Particle.genRandomVector(0.005f / 300, 0.0f, 0.0f);
+				particleFluff.color = 0x99FFFFFF;
+				particleFluff.scale = 0.5f;
+				particleFluff.maxLifespan = 200;
+				particleFluff.opacity = 0.4f;
 
-				Particle particleFluff = new ImageParticle(Particle.genRandomVector(Tracker.getFloorDimensionMax(), 0f, 0f), universe, img);
-				particleFluff.acceleration = Particle.genRandomVector(0.01f / 300, 0.0f, 0.0f);
-				particleFluff.velocity = Particle.genRandomVector(0.01f / 300, 0.0f, 0.0f);
-				particleFluff.color = Color.WHITE.hashCode();
-				
-				universe.addParticle(particleFluff);
+				if (gameOver && intergameUpdateCounter > 300) {
+					particleFluff.scale = 0.8f;
+					particleFluff.opacity = 0.8f;
+
+					// Use color + 1 so fluff doesn't get scored when the
+					// game restarts.
+					if (goal1.score >= winningScore) {
+						particleFluff.color = goal1.color + 1;
+						universe.addParticle(particleFluff);
+					}
+					if (goal2.score >= winningScore) {
+						particleFluff.color = goal2.color + 1;
+						universe.addParticle(particleFluff);
+					}
+				} else {
+					universe.addParticle(particleFluff);
+				}
 			}
 		}
 
-		for (int id: p.pmap.keySet()) {
-			Person pos=p.pmap.get(id);
+		for (int id : p.pmap.keySet()) {
+			Person pos = p.pmap.get(id);
 
 			// Users will be half attractors and half repulsors.
 			int sign = 1;
@@ -163,20 +202,38 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 				sign = -1;
 			}
 
-			universe.attractor(pos.getOriginInMeters(), sign * 0.001f);
+			// Increase gravity if a person is moving making dynamic
+			// solutions to the game interesting.
+			universe.attractor(pos.getOriginInMeters(), sign * personGravity
+					* (float) Math.min(Math.max(pos.getVelocityInMeters().mag() * 3.0f, 1.0), 2.0));
 		}
 
 		// Scan particles for actions needed.
-		for (int i = universe.particles.size()-1; i >= 0; i--) {
+		for (int i = universe.particles.size() - 1; i >= 0; i--) {
+
 			// Remove and score particles that have hit a goal.
 			// TODO: Refactor for N goals.
 			Particle particle = universe.particles.get(i);
-			if (goal1.goal(particle)) {
-				goal1.scoreUp();
-				universe.particles.remove(particle);
-			} else if (goal2.goal(particle)) {
-				goal2.scoreUp();
-				universe.particles.remove(particle);
+
+			if (!gameOver) {
+				if (goal1.goal(particle)) {
+					goal1.scoreUp();
+					universe.particles.remove(particle);
+				} else if (goal2.goal(particle)) {
+					goal2.scoreUp();
+					universe.particles.remove(particle);
+				}
+
+				if (goal1.score >= winningScore) {
+					gameOver = true;
+					goal1.setSize(Tracker.getFloorDimensionMin() / 6);
+					intergameUpdateCounter = updatesBetweenNextGame;
+				}
+				if (goal2.score >= winningScore) {
+					gameOver = true;
+					goal2.setSize(Tracker.getFloorDimensionMin() / 6);
+					intergameUpdateCounter = updatesBetweenNextGame;
+				}
 			}
 
 			// Remove particles that have hit the 'Black hole'.
@@ -186,7 +243,14 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 		}
 
 		// Central attractor ("black hole").
-		universe.attractor(Tracker.getFloorCenter(), 0.005f);
+		// TODO: OSC Slider for black hole force.
+		universe.attractor(Tracker.getFloorCenter(), 0.006f);
+
+		// Clear the field before the next game starts.
+		if (intergameUpdateCounter > 0 && intergameUpdateCounter < 300) {
+			universe.attractor(Tracker.getFloorCenter(), 0.0001f * (300 - intergameUpdateCounter));
+		}
+
 		universe.update();
 	}
 
@@ -196,17 +260,18 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 
 		goal1.draw(g);
 		goal2.draw(g);
-		
-		for (int id: p.pmap.keySet()) {
+
+		for (int id : p.pmap.keySet()) {
 			String label = "+";
 			if (id % 2 == 0) {
 				label = "-";
 			}
 
-			Person pos=p.pmap.get(id);
+			Person pos = p.pmap.get(id);
 			g.fill(0xEEFFFFFF);
-			g.textAlign(PConstants.CENTER,PConstants.CENTER);
+			g.textAlign(PConstants.CENTER, PConstants.CENTER);
 			Visualizer.drawText(g, 0.4f, label, pos.getOriginInMeters().x, pos.getOriginInMeters().y);
 		}
 	}
 }
+
