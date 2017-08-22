@@ -1,6 +1,7 @@
 package com.pulsefield.tracker;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.logging.Level;
 
 import processing.core.PApplet;
@@ -27,12 +28,14 @@ public class VisualizerVDMX extends VisualizerSyphon {
 			logger.warning("VDMX project: "+proj.getAbsolutePath()+" does not exist.");		
 			return;
 		}
-		String cmd="/usr/bin/open -W -a "+app.getAbsolutePath()+" \""+proj.getAbsolutePath()+"\"";  // Make the open wait for the subprocess so we know when it truly exits
+		ProcessBuilder pb=new ProcessBuilder("/usr/bin/open","-W","-a",app.getAbsolutePath(),proj.getAbsolutePath());
+		pb.redirectErrorStream(true);
+		pb.redirectOutput(Redirect.appendTo(new File("/tmp/vdmx.log")));
 		try {
-			// Launch the app
-			logger.info("Launching VDMX app with: '"+cmd+"'");
-			pid=Runtime.getRuntime().exec(cmd);
+			logger.info("Launching VDMX app with: '"+pb.toString()+"'");
+			pid=pb.start();
 			logger.info("pid="+pid.toString()+", isAlive="+pid.isAlive());
+
 		} catch (IOException e) {
 		    logger.log(Level.WARNING,"Unable to launch VDMX app: "+app.getAbsolutePath(),e);
 		    e.printStackTrace();
@@ -59,7 +62,7 @@ public class VisualizerVDMX extends VisualizerSyphon {
 		if (pid==null || !pid.isAlive()) {
 			if (pid!=null)
 				logger.info("subprocess exitted; status="+pid.exitValue());
-			//((Tracker)parent).cycle();
+			((Tracker)parent).cycle();
 		}
 	}
 

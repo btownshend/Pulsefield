@@ -19,6 +19,7 @@ public class VisualizerGrid extends VisualizerPS {
 	int song=0;
 	PVector titlePos = new PVector(0,0);
 	protected boolean drawGrid = true;
+	private boolean didIncr = false;
 	
 	VisualizerGrid(PApplet parent) {
 		super(parent);
@@ -72,8 +73,12 @@ public class VisualizerGrid extends VisualizerPS {
 
 
 	public void update(PApplet parent, People allpos) {
-		if (allpos.pmap.size() == 0)
-			songIncr(1);
+		if (allpos.pmap.size() == 0) {
+			if (!didIncr)
+				songIncr(1);
+			didIncr=true;
+		} else
+			didIncr=true;
 		super.update(parent,allpos);
 		titlePos.x=Tracker.minx+Tracker.getFloorSize().x/4;
 		titlePos.y=Tracker.miny+0.24f+0.1f;

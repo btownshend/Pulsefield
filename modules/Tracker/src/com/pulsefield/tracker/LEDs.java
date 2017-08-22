@@ -9,6 +9,8 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import oscP5.OscMessage;
 import oscP5.OscP5;
 
 public class LEDs extends Thread {
@@ -35,9 +37,18 @@ public class LEDs extends Thread {
 	Boolean outsiders[];  // Outsiders, true if someone present; array maps full circle, starting at logical LED 1
 	int bgMode;
 	Map<String,Float> parameters;
+	private int fgMode;
+	private String fgModeNames[]={"inverse"};
+	private String bgModeNames[]={"pulsebow","stripid","rainbow","blank"};
+	
 	
 	public LEDs(String host, int port) {
 		parameters=new HashMap<String,Float>();
+		setPPeriod(0.5f);
+		setCPeriod(0.5f);
+		setPSpatial(0.5f);
+		setCSpatial(0.5f);
+		fgMode=0; bgMode=0;
 		hostName=host;
 		portNumber=port;
 		syncCounter=0;
@@ -88,6 +99,7 @@ public class LEDs extends Thread {
 		Tracker.oscP5.plug(this,"setCPeriod","/led/pulsebow/cperiod");
 		Tracker.oscP5.plug(this,"setPSpatial","/led/pulsebow/pspatial");
 		Tracker.oscP5.plug(this,"setCSpatial","/led/pulsebow/cspatial");
+		refreshTO();
 	}
 
 	void open() {
@@ -162,7 +174,7 @@ public class LEDs extends Thread {
 		syncCounter=(syncCounter+1)&0xff;
 		msg[1]=(byte)syncCounter;
 		send(msg);
-		logger.info("Sent sync "+syncCounter);
+		//logger.info("Sent sync "+syncCounter);
 	}
 
 	void syncwait() {
@@ -174,15 +186,15 @@ public class LEDs extends Thread {
 			try {
 				while (is.available()>0) {
 					int d = is.read();
-					logger.info("Available: "+is.available()+", got "+d);
+					//logger.info("Available: "+is.available()+", got "+d);
 					if (d==-1)
 						break;
 					if (lastRead=='A') {
 						lastSyncReceived=d;
-						logger.info("At sync "+syncCounter+", received sync "+lastSyncReceived);
+						//logger.info("At sync "+syncCounter+", received sync "+lastSyncReceived);
 						int nbehind=syncCounter-lastSyncReceived;
 						if (nbehind<0) nbehind+=256;
-						if (nbehind > 0)
+						if (nbehind > 1)
 							logger.warning("Behind by "+nbehind+" sync messages");
 					}
 					lastRead=(byte)d;
@@ -215,7 +227,7 @@ public class LEDs extends Thread {
 	}
 	
 	void update() {
-		logger.info("update");
+		//logger.info("update");
 
 		int newPhys[]=new int[nphys];
 		int ndiffs=0;
@@ -228,7 +240,7 @@ public class LEDs extends Thread {
 			ndiffs+=(newPhys[i]==physleds[i])?0:1;
 		}
 		if (ndiffs==0) {
-			logger.info("Nothing to update");
+			//logger.info("Nothing to update");
 			// Sync anyway to keep arduino active
 			sendsync();
 			syncwait();
@@ -264,11 +276,13 @@ public class LEDs extends Thread {
 	public void run() {
 		logger.info("Started thread");
 		open();
+		int nupdates=0;
+		long start=System.nanoTime();
+
 		while (true) {
 			// Loop forever, updating Arduino with current LED settings
 			if (!keepalive())
 				continue;
-			long start=System.nanoTime();
 			//echotest();
 			//echotest();
 			bg();
@@ -276,7 +290,13 @@ public class LEDs extends Thread {
 			update();
 
 			long finish=System.nanoTime();
-			logger.info("Update loop took "+(finish-start)/1000000+" msec");
+			float time=(finish-start)/1000000000f;  // Elapsed in sec
+			nupdates++;
+			if (time>10) { // Display message every 10s
+				logger.info(String.format("Average LED Update rate = %.2f/sec (nupdates=%d, time=%f)",nupdates*1.0f/time,nupdates,time));
+				nupdates=0;
+				start=finish;
+			}
 		}
 		// Not reached
 	}
@@ -305,7 +325,6 @@ public class LEDs extends Thread {
 	void bg() {
 		switch (bgMode) {
 		case 0:
-			//alloff();
 			pulsebow();
 			break;
 		case 1:
@@ -314,8 +333,11 @@ public class LEDs extends Thread {
 		case 2:
 			rainbow();
 			break;
+		case 3:
+			alloff();
+			break;
 		default:
-			logger.info("Bad bgMode: "+bgMode);
+			logger.warning("Bad bgMode: "+bgMode);
 			bgMode=0;
 		}
 	}
@@ -343,7 +365,7 @@ public class LEDs extends Thread {
 				if (lled>=0)
 					set(lled,col[k][0],col[k][1],col[k][2]);
 			}
-			logger.info(String.format("Strip %d is %s.  Clk=pin %d, Data=pin %d\n", k, colnames[k],clkpins[k],datapins[k]));
+			//logger.info(String.format("Strip %d is %s.  Clk=pin %d, Data=pin %d\n", k, colnames[k],clkpins[k],datapins[k]));
 		}
 		phase=(phase+1)%nphase;
 	}
@@ -433,7 +455,7 @@ public class LEDs extends Thread {
 	
 	// Set outsiders flags for given pos from 32-bits packed into val
 	public void setOutsiders(int pos, int val) {
-		logger.info("setOutsiders("+pos+","+val+")");
+		//logger.info("setOutsiders("+pos+","+val+")");
 		for (int i=0;i<32;i++) {
 			if (pos*32+i >= outsiders.length)
 				break;
@@ -443,16 +465,22 @@ public class LEDs extends Thread {
 
 	// Update LEDs based on outsider flags
 	synchronized void fg() {
-		logger.info("fg: outsiders.length="+outsiders.length);
-		for (int i=0;i<outsiders.length;i++) {
-			if (outsiders[i]) {
-				int k1=(int)((i-0.5)*leds.length/outsiders.length);
-				int k2=(int)((i+0.5)*leds.length/outsiders.length);
-				for (int k=k1;k<k2;k++) {
-					if (k>=0 && k<leds.length)
-						leds[k]=0x7f7f7f-leds[k];  // RED for outsiders
+		//logger.info("fg: outsiders.length="+outsiders.length);
+		switch (fgMode) {
+		case 0:
+			for (int i=0;i<outsiders.length;i++) {
+				if (outsiders[i]) {
+					int k1=(int)((i-0.5)*leds.length/outsiders.length);
+					int k2=(int)((i+0.5)*leds.length/outsiders.length);
+					for (int k=k1;k<k2;k++) {
+						if (k>=0 && k<leds.length)
+							leds[k]=0x7f7f7f-leds[k];  // RED for outsiders
+					}
 				}
 			}
+			break;
+		default:
+			logger.warning("Bad fgMode: "+fgMode);
 		}
 	}
 
@@ -461,6 +489,10 @@ public class LEDs extends Thread {
     	Tracker.sendOSC("TO","/led/pulsebow/cperiod/value",String.format("%.1f",parameters.get("cperiod")));
     	Tracker.sendOSC("TO","/led/pulsebow/pspatial/value",String.format("%.1f",parameters.get("pspatial")));
     	Tracker.sendOSC("TO","/led/pulsebow/cspatial/value",String.format("%.1f",parameters.get("cspatial")));
+    	Tracker.sendOSC("TO", "/led/bgmode",bgModeNames[bgMode]);
+    	Tracker.sendOSC("TO", String.format("/led/bgmode/buttons/1/%d",bgMode+1),1.0f);
+    	Tracker.sendOSC("TO", "/led/fgmode",fgModeNames[fgMode]);
+    	Tracker.sendOSC("TO", String.format("/led/fgmode/buttons/1/%d",fgMode+1),1.0f);
     }
     
     private static float expcontrol(float v,float lo,float hi) {
@@ -488,6 +520,27 @@ public class LEDs extends Thread {
 	refreshTO();
     }
 
+    public boolean handleMessage(OscMessage msg) {
+    	logger.info("OSC message: "+msg.toString()+"("+msg.get(0).floatValue()+")");
+    	String pattern=msg.addrPattern();
+    	String components[]=pattern.split("/");
+    	if (components.length==6 && components[3].equals("buttons")) {
+    		if (msg.get(0).floatValue()<0.5f)
+    			return true;
+    		int col=Integer.parseInt(components[5])-1;
+    		logger.info(components[2]+": col="+col);
+    		if (components[2].equals("bgmode") && col < bgModeNames.length)
+    			bgMode=col;
+    		else if (components[2].equals("fgmode")  && col < fgModeNames.length)
+    			fgMode=col;
+    		else
+    			logger.warning("Bad buttons cmd: "+msg.toString());
+    		refreshTO();
+    		return true;
+    	} 
+    	logger.warning("Bad LED message: "+msg.toString()+"comp len="+components.length+",1="+components[1]);
+    	return false;
+    }
 }
 
 

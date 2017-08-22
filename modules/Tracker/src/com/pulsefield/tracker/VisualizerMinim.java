@@ -17,7 +17,7 @@ public class VisualizerMinim extends VisualizerGrid {
 		select=-1;			// activate first renderer in list
 		// setup renderers
 		radar = new RadarRenderer(fourier);
-
+		logger.info("Initializing VisualizerMinim, is3D="+is3D);
 		if (is3D) {
 			// Can only do vortex if the main renderer supports 3D
 			vortex = new VortexRenderer(fourier);

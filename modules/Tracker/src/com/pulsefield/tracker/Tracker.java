@@ -213,6 +213,8 @@ public class Tracker extends PApplet {
 		oscP5.plug(this, "setmaxy", "/video/maxy");
 		oscP5.plug(this,"locklidar","/video/locklidar");
 		unhandled = new HashMap<String,Boolean>();
+		// Add some known unhandled messages to avoid warnings
+		unhandled.put("/ping",true);	
 		projectors=new Projector[numProjectors];
 		for (int i=0;i<numProjectors;i++)
 			projectors[i] = new Projector(this,i+1,1920,1080);
@@ -259,11 +261,11 @@ public class Tracker extends PApplet {
 		addVis("CHucK",new VisualizerChuck(this),false);
 		addVis("Proximity",visProximity = new VisualizerProximity(this),true);
 		addVis("Cows",new VisualizerCows(this),true);
-		addVis("Trump",new VisualizerWhack(this,"whack","Whack","WHACK"),true);
+		addVis("Trump",new VisualizerWhack(this,"whack","Whack","WHACK"),false);
 		addVis("Bowie",new VisualizerZiggy(this,"bowie","Bowie","WHACK-Bowie"),true);
 		addVis("Soccer",new VisualizerSoccer(this),true);
 		addVis("Menu",visMenu=new VisualizerMenu(this),false);
-		addVis("Visualizer",visMinim=new VisualizerMinim(this,fourier,renderer!=FX2D),false);
+		addVis("Visualizer",visMinim=new VisualizerMinim(this,fourier,renderer==P3D),false);
 		addVis("Calypso",new VisualizerCalypso(this,synth),true);
 		addVis("DNA",new VisualizerDNA(this),true);
 		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
@@ -271,7 +273,7 @@ public class Tracker extends PApplet {
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
 		addVis("Osmos",new VisualizerOsmos(this,synth),true);
 		addVis("Freeze",new VisualizerFreeze(this,synth),true);
-		addVis("VDMX",new VisualizerVDMX(this,Tracker.pfroot+"/../VDMX/Projects/ValentinesDayStarter/Valentines Day Starter.vdmx5"),false);
+		addVis("VDMX",new VisualizerVDMX(this,Tracker.pfroot+"/../VDMX/Projects/ValentinesDayStarter/Valentines.vdmx5"),false);
 		addVis("Measure",new VisualizerMeasure(this),true);
 		addVis("Life", new VisualizerLife(this),true);
 		addVis("Stickman",new VisualizerStickman(this,synth),true);
@@ -893,6 +895,8 @@ public class Tracker extends PApplet {
 			visPads.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
 			synth.handleMessage(theOscMessage);
+		} else if (theOscMessage.addrPattern().startsWith("/led")) {
+			LEDs.theLEDs.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/pf/set")) {
 			// logger.warning("Unhandled set message: "+theOscMessage.addrPattern());
 		} else if (theOscMessage.addrPattern().startsWith("/vis/")) {
