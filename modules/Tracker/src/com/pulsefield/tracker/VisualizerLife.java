@@ -89,7 +89,7 @@ public class VisualizerLife extends Visualizer {
 	}
 
 	VisualizerLife(PApplet parent) {
-		setupLifeGrid();
+		// setupLifeGrid();
 	}
 
 	public void clickSound(int fileNumber) {
@@ -111,8 +111,16 @@ public class VisualizerLife extends Visualizer {
 		playSound.play(clickSoundFile);
 	}
 
+	private void checkFieldSizeChange() {
+		PVector sz=Tracker.getFloorSize();
+
+		if (((int) Math.ceil((sz.x/gridSpacing)) != this.columns) ||
+		((int) Math.ceil((sz.y/gridSpacing)) != this.rows)) {
+			setupLifeGrid();
+		}
+	}
+	
 	public void setupLifeGrid() {
-		PApplet.println("setupLifeGrid()");
 		PVector sz=Tracker.getFloorSize();
 
 		columns=(int) Math.ceil((sz.x/gridSpacing));
@@ -322,6 +330,8 @@ public class VisualizerLife extends Visualizer {
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g, p);		
 
+		checkFieldSizeChange();
+		
 		// Set box border line, width and color.  We "pulse" the grid color for visual interest.
 		g.strokeWeight(0.01f);
 

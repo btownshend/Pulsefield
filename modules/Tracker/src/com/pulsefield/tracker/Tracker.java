@@ -36,6 +36,7 @@ public class Tracker extends PApplet {
 	private int tick=0;
 	private int liveTick=0;  // Tick at which last AL message received
 	public float avgFrameRate=0;
+	float targetFramerate = 30;
 	public static OscP5 oscP5;
 	NetAddress myRemoteLocation;
 	static final float screenrotation=0f; // 90f;   // Rotate raw coordinates CCW by this number of degrees
@@ -49,6 +50,12 @@ public class Tracker extends PApplet {
 	VisualizerMenu visMenu;
 	VisualizerMinim visMinim;
 	VisualizerSyphon visSyphonOF;
+	VisualizerRainbow visRainbow;
+	VisualizerGravity visGravity;
+	VisualizerGuitar visGuitar;
+	VisualizerVoronoi visVoronoi;
+	VisualizerProximity visProximity;
+	VisualizerPads visPads;
 	
 	int currentvis=-1;
 	static NetAddress TO, OF, AL, MAX, CK, VD, FE, AR;
@@ -125,7 +132,7 @@ public class Tracker extends PApplet {
 			System.exit(1);
 		}
 
-		frameRate(30);
+		frameRate(targetFramerate);
 		mouseID=90;
 		cycler=new AutoCycler();
 		
@@ -240,7 +247,7 @@ public class Tracker extends PApplet {
 
 	private void addVisualizers() {
 		Scale scale=new Scale("Major","C");
-		addVis("Pads",new VisualizerPads(this, synth),false);
+		addVis("Pads", visPads = new VisualizerPads(this, synth),false);
 		addVis("Navier",visNavier=new VisualizerNavier(this,synth),true); 
 		addVis("NavierOF",visNavierOF=new VisualizerNavierOF(this,synth,"GPUFluidsDebug"),true); 
 		addVis("Tron",new VisualizerTron(this,scale,synth),true);
@@ -248,11 +255,11 @@ public class Tracker extends PApplet {
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		addVis("DDR",visDDR=new VisualizerDDR(this),true);
 		addVis("Poly",new VisualizerPoly(this,scale,synth),true);
-		addVis("Voronoi",new VisualizerVoronoi(this,scale,synth),true);
-		addVis("Guitar",new VisualizerGuitar(this,synth),true);
+		addVis("Voronoi",visVoronoi = new VisualizerVoronoi(this,scale,synth),true);
+		addVis("Guitar", visGuitar = new VisualizerGuitar(this,synth),true);
 		addVis("Dot",new VisualizerDot(this),false);
 		addVis("CHucK",new VisualizerChuck(this),false);
-		addVis("Proximity",new VisualizerProximity(this),true);
+		addVis("Proximity",visProximity = new VisualizerProximity(this),true);
 		addVis("Cows",new VisualizerCows(this),true);
 		addVis("Trump",new VisualizerWhack(this,"whack","Whack","WHACK"),false);
 		addVis("Bowie",new VisualizerZiggy(this,"bowie","Bowie","WHACK-Bowie"),true);
@@ -271,8 +278,8 @@ public class Tracker extends PApplet {
 		addVis("Life", new VisualizerLife(this),true);
 		addVis("Stickman",new VisualizerStickman(this,synth),true);
 		addVis("Hunter", new VisualizerHunter(this,synth),true);
-		addVis("Gravity", new VisualizerGravity(this), true);
-		addVis("Rainbow", new VisualizerRainbow(this), true);
+		addVis("Gravity", visGravity = new VisualizerGravity(this), true);
+		addVis("Rainbow", visRainbow = new VisualizerRainbow(this), true);
 		addVis("TestPattern",new VisualizerTestPattern(this),false);
 		setapp(vis.length-1);
 	}
@@ -533,7 +540,7 @@ public class Tracker extends PApplet {
 		tick++;
 		avgFrameRate=avgFrameRate*(1f-1f/20f)+frameRate/20f;
 		if (GUI.theGUI != null)
-			GUI.theGUI.updateFPS();
+			GUI.theGUI.updateDisplayValues();
 		if (tick%20 == 0)
 			updateTO(tick%40==0);
 		
@@ -878,6 +885,14 @@ public class Tracker extends PApplet {
 			visNavier.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/video/ddr")) {
 			visDDR.handleMessage(theOscMessage);
+		} else if (theOscMessage.addrPattern().startsWith("/video/particlefield")) {
+			visRainbow.handleMessage(theOscMessage);
+			visGravity.handleMessage(theOscMessage);
+			visAbleton.handleMessage(theOscMessage);
+			visGuitar.handleMessage(theOscMessage);
+			visVoronoi.handleMessage(theOscMessage);
+			visProximity.handleMessage(theOscMessage);
+			visPads.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
 			synth.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/led")) {

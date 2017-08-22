@@ -32,8 +32,8 @@ public class GUI extends JFrame {
 	private JCheckBox showProjectors;
 	private JTextArea fps;
 	private JLabel lblFps;
-	private JLabel lblSpm;
-	private JSlider sliderSpm;
+	private JLabel lblBPM;
+	private JSlider sliderBPM;
 	private JCheckBox drawBorders;
 	private JCheckBox enableMenu;
     private final static Logger logger = Logger.getLogger(GUI.class.getName());
@@ -171,28 +171,30 @@ public class GUI extends JFrame {
 		contentPane.add(appSelect, gbc_appSelect);
 
 		// Tempo control.
-		lblSpm = new JLabel("BPM (" + MasterClock.gettempo() + ")");
-		GridBagConstraints gbc_Spm = new GridBagConstraints();
-		gbc_Spm.anchor = GridBagConstraints.LINE_START;
-		gbc_Spm.gridx = 1;
-		gbc_Spm.gridy = 6;
-		contentPane.add(lblSpm, gbc_Spm);
+		lblBPM = new JLabel(genBPMLabel());
+		GridBagConstraints gbc_BPM = new GridBagConstraints();
+		gbc_BPM.anchor = GridBagConstraints.LINE_START;
+		gbc_BPM.gridx = 1;
+		gbc_BPM.gridy = 6;
+		contentPane.add(lblBPM, gbc_BPM);
 
-		sliderSpm = new JSlider(JSlider.HORIZONTAL, 30, 300, (int) MasterClock.gettempo());
-		sliderSpm.setMinorTickSpacing(10);
-		sliderSpm.setPaintTicks(true);
-		sliderSpm.setPaintLabels(true);
+		int BPMSlideMin = 30;
+		int BPMSlideMax = 300;
+		sliderBPM = new JSlider(JSlider.HORIZONTAL, BPMSlideMin, BPMSlideMax, (int) MasterClock.gettempo());
+		sliderBPM.setMinorTickSpacing(10);
+		sliderBPM.setPaintTicks(true);
+		sliderBPM.setPaintLabels(true);
 
-		sliderSpm.addChangeListener((ChangeEvent event) -> {
-			MasterClock.settempo(sliderSpm.getValue());
-			lblSpm.setText("BPM (" + MasterClock.gettempo() + ") ");
+		sliderBPM.addChangeListener((ChangeEvent event) -> {
+			MasterClock.settempo(sliderBPM.getValue());
+			lblBPM.setText(genBPMLabel());
 		});
-		
-		gbc_Spm.gridx = 1;
-		gbc_Spm.gridy++;
-		gbc_Spm.gridwidth = 3;
-		gbc_Spm.fill = GridBagConstraints.HORIZONTAL;
-		contentPane.add(sliderSpm, gbc_Spm);
+
+		gbc_BPM.gridx = 1;
+		gbc_BPM.gridy++;
+		gbc_BPM.gridwidth = 3;
+		gbc_BPM.fill = GridBagConstraints.HORIZONTAL;
+		contentPane.add(sliderBPM, gbc_BPM);
 
 		lblFps = new JLabel("FPS:");
 		GridBagConstraints gbc_lblFps = new GridBagConstraints();
@@ -210,8 +212,15 @@ public class GUI extends JFrame {
 		update();
 	}
 	
-	void updateFPS() {
+	String genBPMLabel() {
+		return "BPM (" + MasterClock.gettempo() + ")";
+	}
+
+	// Update settings and values that change frequently.
+	void updateDisplayValues() {
 		fps.setText(String.format("%.0f", Tracker.theTracker.avgFrameRate));
+		lblBPM.setText(genBPMLabel());
+		sliderBPM.setValue((int) MasterClock.gettempo());
 	}
 	
 	void update() {

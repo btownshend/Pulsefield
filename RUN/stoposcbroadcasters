@@ -1,0 +1,7 @@
+#!/bin/bash
+
+PIDFILE=/tmp/oscbroadcaster.pidlist
+
+kill `cat $PIDFILE`
+
+rm $PIDFILE
