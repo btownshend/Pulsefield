@@ -40,18 +40,18 @@ class Particle {
 		this.location = location.copy();
 	}
 
-	Particle(PVector location, ParticleSystem ps) {
+	Particle(PVector location, ParticleSystemSettings pss) {
 		this(location);
-		adoptSettingsFromParticleSystem(ps);
+		loadParticleSystemSettings(pss);
 	}
 
-	void adoptSettingsFromParticleSystem(ParticleSystem ps) {
-		PVector acceleration = Particle.genRandomVector(ps.particleRandomDriftAccel, ps.tiltx, ps.tilty);
+	void loadParticleSystemSettings(ParticleSystemSettings pss) {
+		PVector acceleration = Particle.genRandomVector(pss.particleRandomDriftAccel, pss.tiltx, pss.tilty);
 		this.acceleration = acceleration;
-		this.fadeDeath = ps.fadeDeath;
-		this.rotationRate = ps.particleRotation;
-		this.setLifespan(ps.particleMaxLife);
-		this.opacity = ps.startOpacity;
+		this.fadeDeath = pss.fadeDeath;
+		this.rotationRate = pss.particleRotation;
+		this.setLifespan(pss.particleMaxLife);
+		this.opacity = pss.startOpacity;
 	}
 
 	void setLifespan(int lifespan) {
@@ -173,8 +173,8 @@ class TextParticle extends Particle {
 		this.text = text;
 	}	
 	
-	TextParticle(PVector location, ParticleSystem ps, String text) {
-		super(location, ps);
+	TextParticle(PVector location, ParticleSystemSettings pss, String text) {
+		super(location, pss);
 		this.text = text;
 	}
 
@@ -193,8 +193,8 @@ class TriangleParticle extends Particle {
 		super(location);
 	}
 	
-	TriangleParticle(PVector location, ParticleSystem ps) {
-		super(location, ps);
+	TriangleParticle(PVector location, ParticleSystemSettings pss) {
+		super(location, pss);
 	}
 
 	@Override
@@ -216,8 +216,8 @@ class ImageParticle extends Particle {
 		super(location);
 	}
 	
-	ImageParticle(PVector location, ParticleSystem ps, PImage image) {
-		super(location, ps);
+	ImageParticle(PVector location, ParticleSystemSettings pss, PImage image) {
+		super(location, pss);
 		this.image = image;
 	}
 

@@ -28,19 +28,23 @@ public class VisualizerPS extends VisualizerParticleSystem {
 	
 	@Override
 	void setUniverseDefaults() {
-		universe.tilty = -0.03f / 300;
-		universe.particleMaxLife = 500;
-		universe.startOpacity = 0.05f;
-		universe.forceRotation = 90;
-		universe.particleRandomDriftAccel = 0.0f;
-		universe.blendMode = -1; // Use custom blend.
-		universe.personForce = 0f;
+		ParticleSystemSettings pss = new ParticleSystemSettings();
+		
+		pss.tilty = -0.03f / 300;
+		pss.particleMaxLife = 500;
+		pss.startOpacity = 0.05f;
+		pss.forceRotation = 90;
+		pss.particleRandomDriftAccel = 0.0f;
+		pss.blendMode = -1; // Use custom blend.
+		pss.personForce = 0f;
+		
+		universe.settings = pss;
 	}
 
 	public void update(PApplet parent, People p) {
 		for (int id: p.pmap.keySet()) {
 			Person pos=p.pmap.get(id);
-			ParticleSystem ps=systems.get(id);			
+			ParticleSystem ps=systems.get(id);
 			if (ps==null) {
 				logger.fine("Added new particle system for ID "+id);
 				ps=new ParticleSystem();
@@ -58,11 +62,11 @@ public class VisualizerPS extends VisualizerParticleSystem {
 				}
 
 			for (int k=0;k<birthrate;k++) {
-				Particle particle = new ImageParticle(pos.getOriginInMeters(), ps, img);
+				Particle particle = new ImageParticle(pos.getOriginInMeters(), ps.settings, img);
 				
 				particle.color = pos.getcolor();
 				particle.velocity = Particle.fuzzVector(new PVector(0f,0f), 0.3f/300, 0.3f/300);
-				particle.adoptSettingsFromParticleSystem(universe);
+				particle.loadParticleSystemSettings(universe.settings);
 				
 				ps.addParticle(particle);
 			}
@@ -71,10 +75,13 @@ public class VisualizerPS extends VisualizerParticleSystem {
 
 		for (Map.Entry<Integer,ParticleSystem> me: systems.entrySet()) {
 			ParticleSystem ps=me.getValue();
+			
+			// Use universe as the template for all the particle systems.
+			ps.settings = universe.settings;
 			ps.update();
 			
-			if (universe.personForce != 0f) {
-				applyPeopleGravity(ps, p, universe.personForce);
+			if (universe.settings.personForce != 0f) {
+				ps.applyPeopleGravity(p);
 			}
 
 			int id = me.getKey();
