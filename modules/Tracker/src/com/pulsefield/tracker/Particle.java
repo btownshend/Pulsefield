@@ -34,9 +34,6 @@ class Particle {
 	Boolean dieOffscreen = true;
 	float dieOffscreenBuffer = 0.5f;
 
-	int blendMode = PGraphics.BLEND; // BLEND, ADD, SUBRACT, LIGHTEST, DARKEST,
-										// MULTIPLY, OVERLAY, etc.
-
 	static Random rng = new Random();
 
 	Particle(PVector location) {
@@ -52,10 +49,8 @@ class Particle {
 		PVector acceleration = Particle.genRandomVector(ps.particleRandomDriftAccel, ps.tiltx, ps.tilty);
 		this.acceleration = acceleration;
 		this.fadeDeath = ps.fadeDeath;
-		;
 		this.rotationRate = ps.particleRotation;
 		this.setLifespan(ps.particleMaxLife);
-		this.blendMode = ps.blendMode;
 		this.opacity = ps.startOpacity;
 	}
 
@@ -67,7 +62,7 @@ class Particle {
 	// Particle PVector utilities.
 	// Fuzz the input vector; used to spread and vary particle position,
 	// velocity, acceleration.
-	private static PVector fuzzVector(final PVector vector, final float xMaxFuzz, final float yMaxFuzz) {
+	public static PVector fuzzVector(PVector vector, float xMaxFuzz, float yMaxFuzz) {
 		return new PVector((float) rng.nextGaussian() * xMaxFuzz + vector.x,
 				(float) rng.nextGaussian() * yMaxFuzz + vector.y);
 	}
@@ -92,12 +87,13 @@ class Particle {
 	void push(PVector c, PVector pushvel) {
 		// Push particles with pushvel velocity
 		// Scales with distance
-		float dist = PVector.sub(c, location).mag();
-		PVector dir = pushvel.copy();
-		float releffect = PApplet.max(0.0f, 1.0f - dist * 3f);
-		dir.mult(releffect);
-		location.add(dir);
+		float distance = PVector.sub(c, location).mag();
+		PVector direction = pushvel.copy();
+		float releffect = PApplet.max(0.0f, (1.0f - (distance * 3f)));
+		direction.mult(releffect);
+		location.add(direction);
 	}
+	
 
 	// Update particle location.
 	void update() {
@@ -144,7 +140,6 @@ class Particle {
 		} else {
 			drawParticle(g, location, scale * this.scale);
 		}
-		g.blendMode(blendMode);
 	}
 
 	// TODO: There is probably a more elegant way to do this.
@@ -173,6 +168,11 @@ class Particle {
 class TextParticle extends Particle {
 	String text;
 
+	TextParticle(PVector location, String text) {
+		super(location);
+		this.text = text;
+	}	
+	
 	TextParticle(PVector location, ParticleSystem ps, String text) {
 		super(location, ps);
 		this.text = text;
@@ -189,6 +189,10 @@ class TextParticle extends Particle {
 
 class TriangleParticle extends Particle {
 
+	TriangleParticle(PVector location) {
+		super(location);
+	}
+	
 	TriangleParticle(PVector location, ParticleSystem ps) {
 		super(location, ps);
 	}
@@ -208,9 +212,12 @@ class ImageParticle extends Particle {
 
 	PImage image;
 
+	ImageParticle(PVector location, PImage image) {
+		super(location);
+	}
+	
 	ImageParticle(PVector location, ParticleSystem ps, PImage image) {
 		super(location, ps);
-
 		this.image = image;
 	}
 

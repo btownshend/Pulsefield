@@ -85,8 +85,6 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 	public void start() {
 		super.start();
 
-		setDefaultParameters();
-
 		// Reset goal scores.
 		goal1.score = 0;
 		goal2.score = 0;
@@ -98,17 +96,14 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 		goal2.score = 0;
 	}
 
-	void setDefaultParameters() {
-
+	
+	void setUniverseDefaults() {
 		universe.maxParticles = 20000;
 		universe.particleRandomDriftAccel = 0.000008f;
 		universe.particleMaxLife = 500;
-		universe.backgroundBrightness = 0.0f;
 		universe.forceRotation = 340.0f;
-		particleScale = 0.5f;
-		personGravity = 0.001f;
-
-		setTO();
+		universe.particleScale = 0.5f;
+		universe.personForce = 0.001f;
 	}
 
 	@Override
@@ -204,7 +199,7 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 
 			// Increase gravity if a person is moving making dynamic
 			// solutions to the game interesting.
-			universe.attractor(pos.getOriginInMeters(), sign * personGravity
+			universe.attractor(pos.getOriginInMeters(), sign * universe.personForce
 					* (float) Math.min(Math.max(pos.getVelocityInMeters().mag() * 3.0f, 1.0), 2.0));
 		}
 

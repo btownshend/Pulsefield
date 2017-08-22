@@ -7,6 +7,7 @@ import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
+import processing.opengl.PGL;
 
 // An ArrayList is used to manage the list of Particles
 
@@ -14,16 +15,15 @@ class ParticleSystem {
 	// An arraylist for all the particles.
 	ArrayList<Particle> particles;
 
-	// Particles can be images or circles. If circleSize is set it overrides the
-	// image.
-	PImage img;
-
 	float particleRandomDriftAccel = 0.02f / 300;
 	float forceRotation = 0.0f;
 	float particleRotation = 0.0f;
 	int particleMaxLife = 500;
-	int blendMode = PGraphics.BLEND;
-	float backgroundBrightness = 0.0f;
+	// blendMode can be -1 (for custom) or PGraphics.BLEND, .ADD, .SUBTRACT, etc.
+	int blendMode = -1; 
+	float personForce = 0.005f;
+	float particleScale = 1.0f;
+
 	float fadeDeath = 0.1f;
 	float startOpacity = 1.0f;
 
@@ -37,15 +37,6 @@ class ParticleSystem {
 
 	ParticleSystem() {
 		particles = new ArrayList<Particle>(); // Initialize the arraylist
-	}
-
-	ParticleSystem(PImage img) {
-		particles = new ArrayList<Particle>(); // Initialize the arraylist
-		this.img = img;
-	}
-
-	ParticleSystem(float circleSize) {
-		this(new PImage());
 	}
 
 	void attractor(PVector c, float force) {
@@ -83,12 +74,27 @@ class ParticleSystem {
 		return maxParticles - particles.size();
 	}
 
-	void draw(PGraphics g, float particleScale) {
-		g.background(backgroundBrightness * 255);
-		// PApplet.println("drawing " + particles.size() + " particles of max "
-		// + maxParticles);
+	// Called before particles are drawn; perform setup here.
+	void drawPrep(PGraphics g) {		
+		if (blendMode == -1) {
+			customBlend(g);
+		} else {
+			g.blendMode(blendMode);
+		}
+	}
+
+	void customBlend(PGraphics g) {
+		g.resetShader();
+		PGL pgl=g.beginPGL();
+		pgl.blendFunc(PGL.SRC_ALPHA, PGL.ONE_MINUS_SRC_ALPHA); 
+		pgl.blendEquation(PGL.FUNC_ADD);
+		g.endPGL();
+	}
+
+	void draw(PGraphics g) {
+		drawPrep(g);
 		for (Particle p : particles) {
-			p.draw(g, particleScale);
+			p.draw(g, this.particleScale);
 		}
 	}
 

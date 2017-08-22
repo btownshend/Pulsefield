@@ -7,9 +7,6 @@ import processing.core.PGraphics;
 import processing.core.PVector;
 
 public class VisualizerRainbow extends VisualizerParticleSystem {
-	float personGravity = 0.005f;
-	float particleSize = 3.0f;
-
 	private float rainbowPositionDegrees = 0.0f;
 	private float rainbowAdvance = 0.0f;
 	float rainbowAdvanceIncrement = 0.1f; // rotation of the colors positions
@@ -20,14 +17,19 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 	}
 
 	@Override
-	public void start() {
-		super.start();
+	void setUniverseDefaults() {
 		universe.maxParticles = 20000;
-		particleScale = 0.15f;
-		personGravity = 0.0015f;
+		universe.particleScale = 0.15f;
+		universe.personForce = 0.005f;
 		universe.particleRotation = 0.25f;
 		universe.forceRotation = 3.0f;
 		universe.particleMaxLife = 175;
+	}
+	
+	@Override
+	public void start() {
+		super.start();
+
 
 		// Rainbow uses legs for attraction scaling.
 		Laser.getInstance().setFlag("legs", 0.0f);

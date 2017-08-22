@@ -52,6 +52,10 @@ public class Tracker extends PApplet {
 	VisualizerSyphon visSyphonOF;
 	VisualizerRainbow visRainbow;
 	VisualizerGravity visGravity;
+	VisualizerGuitar visGuitar;
+	VisualizerVoronoi visVoronoi;
+	VisualizerProximity visProximity;
+	VisualizerPads visPads;
 	
 	int currentvis=-1;
 	static NetAddress TO, OF, AL, MAX, CK, VD, FE, AR;
@@ -241,7 +245,7 @@ public class Tracker extends PApplet {
 
 	private void addVisualizers() {
 		Scale scale=new Scale("Major","C");
-		addVis("Pads",new VisualizerPads(this, synth),false);
+		addVis("Pads", visPads = new VisualizerPads(this, synth),false);
 		addVis("Navier",visNavier=new VisualizerNavier(this,synth),true); 
 		addVis("NavierOF",visNavierOF=new VisualizerNavierOF(this,synth,"GPUFluidsDebug"),true); 
 		addVis("Tron",new VisualizerTron(this,scale,synth),true);
@@ -249,11 +253,11 @@ public class Tracker extends PApplet {
 		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
 		addVis("DDR",visDDR=new VisualizerDDR(this),true);
 		addVis("Poly",new VisualizerPoly(this,scale,synth),true);
-		addVis("Voronoi",new VisualizerVoronoi(this,scale,synth),true);
-		addVis("Guitar",new VisualizerGuitar(this,synth),true);
+		addVis("Voronoi",visVoronoi = new VisualizerVoronoi(this,scale,synth),true);
+		addVis("Guitar", visGuitar = new VisualizerGuitar(this,synth),true);
 		addVis("Dot",new VisualizerDot(this),false);
 		addVis("CHucK",new VisualizerChuck(this),false);
-		addVis("Proximity",new VisualizerProximity(this),true);
+		addVis("Proximity",visProximity = new VisualizerProximity(this),true);
 		addVis("Cows",new VisualizerCows(this),true);
 		addVis("Trump",new VisualizerWhack(this,"whack","Whack","WHACK"),true);
 		addVis("Bowie",new VisualizerZiggy(this,"bowie","Bowie","WHACK-Bowie"),true);
@@ -882,6 +886,11 @@ public class Tracker extends PApplet {
 		} else if (theOscMessage.addrPattern().startsWith("/video/particlefield")) {
 			visRainbow.handleMessage(theOscMessage);
 			visGravity.handleMessage(theOscMessage);
+			visAbleton.handleMessage(theOscMessage);
+			visGuitar.handleMessage(theOscMessage);
+			visVoronoi.handleMessage(theOscMessage);
+			visProximity.handleMessage(theOscMessage);
+			visPads.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
 			synth.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/pf/set")) {
