@@ -98,12 +98,16 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 
 	
 	void setUniverseDefaults() {
-		universe.maxParticles = 20000;
-		universe.particleRandomDriftAccel = 0.000008f;
-		universe.particleMaxLife = 500;
-		universe.forceRotation = 340.0f;
-		universe.particleScale = 0.5f;
-		universe.personForce = 0.001f;
+		ParticleSystemSettings pss = new ParticleSystemSettings();
+		
+		pss.maxParticles = 20000;
+		pss.particleRandomDriftAccel = 0.000008f;
+		pss.particleMaxLife = 500;
+		pss.forceRotation = 340.0f;
+		pss.particleScale = 0.5f;
+		pss.personForce = 0.001f;
+		
+		universe.settings = pss;
 	}
 
 	@Override
@@ -144,12 +148,12 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 					PVector corner2Velocity = Tracker.getFloorCenter().sub(Tracker.normalizedToFloor(corner2))
 							.normalize().div(30).rotate(-0.5f);
 
-					Particle particle1 = new ImageParticle(corner1, universe, textures.get("circle.png"));
+					Particle particle1 = new ImageParticle(corner1, universe.settings, textures.get("circle.png"));
 					particle1.velocity = corner1Velocity;
 					particle1.color = goal1.color;
 					particle1.rotationRadians = 0.0f;
 
-					Particle particle2 = new ImageParticle(corner2, universe, textures.get("circle.png"));
+					Particle particle2 = new ImageParticle(corner2, universe.settings, textures.get("circle.png"));
 					particle2.velocity = corner2Velocity;
 					particle2.color = goal2.color;
 					particle2.rotationRadians = 0.0f;
@@ -160,7 +164,7 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 
 				// Just some fluff particles for more visual interest.
 				Particle particleFluff = new ImageParticle(
-						Particle.genRandomVector(Tracker.getFloorDimensionMax() / 2, 0f, 0f), universe,
+						Particle.genRandomVector(Tracker.getFloorDimensionMax() / 2, 0f, 0f), universe.settings,
 						textures.get("blur.png"));
 				particleFluff.velocity = Particle.genRandomVector(0.005f / 300, 0.0f, 0.0f);
 				particleFluff.color = 0x99FFFFFF;
@@ -199,7 +203,7 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 
 			// Increase gravity if a person is moving making dynamic
 			// solutions to the game interesting.
-			universe.attractor(pos.getOriginInMeters(), sign * universe.personForce
+			universe.attractor(pos.getOriginInMeters(), sign * universe.settings.personForce
 					* (float) Math.min(Math.max(pos.getVelocityInMeters().mag() * 3.0f, 1.0), 2.0));
 		}
 

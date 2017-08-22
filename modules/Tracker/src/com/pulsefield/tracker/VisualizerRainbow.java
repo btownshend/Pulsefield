@@ -18,12 +18,16 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 
 	@Override
 	void setUniverseDefaults() {
-		universe.maxParticles = 20000;
-		universe.particleScale = 0.15f;
-		universe.personForce = 0.005f;
-		universe.particleRotation = 0.25f;
-		universe.forceRotation = 3.0f;
-		universe.particleMaxLife = 175;
+		ParticleSystemSettings pss = new ParticleSystemSettings();
+		
+		pss.maxParticles = 20000;
+		pss.particleScale = 0.15f;
+		pss.personForce = 0.005f;
+		pss.particleRotation = 0.25f;
+		pss.forceRotation = 3.0f;
+		pss.particleMaxLife = 175;
+		
+		universe.settings = pss;
 	}
 	
 	@Override
@@ -40,7 +44,7 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 			float distanceFromCenter, PVector center) {
 
 		PVector origin = center.copy().add(new PVector(0, distanceFromCenter).rotate(rotation));
-		Particle p = new ImageParticle(origin, universe, textures.get("oval.png"));
+		Particle p = new ImageParticle(origin, universe.settings, textures.get("oval.png"));
 		p.color = color;
 
 		PVector velocityV = center.copy().sub(origin).normalize().setMag(velocity).rotate(angle);
@@ -53,7 +57,7 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 	public void update(PApplet parent, People p) {
 		int particlesPerUpdate = 360;
 		rainbowAdvance = (rainbowAdvance + rainbowAdvanceIncrement) % 360;
-
+		
 		// Create some particles unless there are too many already.
 		if (universe.particlesRemaining() >= 360) {
 			for (int i = 0; i < particlesPerUpdate; i++) {

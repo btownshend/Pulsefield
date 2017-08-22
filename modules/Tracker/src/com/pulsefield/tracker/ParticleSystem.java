@@ -11,14 +11,13 @@ import processing.opengl.PGL;
 
 // An ArrayList is used to manage the list of Particles
 
-class ParticleSystem {
-	// An arraylist for all the particles.
-	ArrayList<Particle> particles;
 
+class ParticleSystemSettings {
 	float particleRandomDriftAccel = 0.02f / 300;
 	float forceRotation = 0.0f;
 	float particleRotation = 0.0f;
 	int particleMaxLife = 500;
+	
 	// blendMode can be -1 (for custom) or PGraphics.BLEND, .ADD, .SUBTRACT, etc.
 	int blendMode = -1; 
 	float personForce = 0.005f;
@@ -31,25 +30,39 @@ class ParticleSystem {
 	float tiltx = 0.0f;
 	float tilty = 0.0f;
 
-	// if maxParticles is the hard upper limit on number of particles.
-	// New particles will be rejected if it's surpassed.
+	// maxParticles is the hard upper limit on number of particles.
 	long maxParticles = 50000;
+}
 
+
+class ParticleSystem {
+	// An arraylist for all the particles.
+	ArrayList<Particle> particles;
+	ParticleSystemSettings settings;
+	
 	ParticleSystem() {
-		particles = new ArrayList<Particle>(); // Initialize the arraylist
+		particles = new ArrayList<Particle>(); // Initialize the arraylist.
+		settings = new ParticleSystemSettings();
 	}
 
 	void attractor(PVector c, float force) {
 		// Add a gravitational force that acts on all particles.
 		for (int i = particles.size() - 1; i >= 0; i--) {
-			particles.get(i).attractor(c, force, PApplet.radians(forceRotation));
+			particles.get(i).attractor(c, force, PApplet.radians(settings.forceRotation));
+		}
+	}
+	
+	void applyPeopleGravity(People p) {
+		if (settings.personForce != 0.0f) {
+			for (Person pos : p.pmap.values()) {
+				attractor(pos.getOriginInMeters(), settings.personForce);
+			}
 		}
 	}
 
 	void push(PVector c, PVector spd) {
-		// push particles we're moving through
-		for (int i = particles.size() - 1; i >= 0; i--) {
-			particles.get(i).push(c, spd);
+		for (Particle p : particles) {
+			p.push(c, spd);
 		}
 	}
 
@@ -66,20 +79,18 @@ class ParticleSystem {
 	}
 
 	// How many particles are left until the max? This allows clients that want
-	// to batch
-	// particle creation to know when that's acceptable. Can return a negative
-	// value if
-	// there is a deficit (e.g. if maxParticles is reduced after creation).
+	// to batch particle creation to know when that's acceptable. Can return a negative
+	// value if there is a deficit (e.g. if maxParticles is reduced after creation).
 	long particlesRemaining() {
-		return maxParticles - particles.size();
+		return settings.maxParticles - particles.size();
 	}
 
 	// Called before particles are drawn; perform setup here.
 	void drawPrep(PGraphics g) {		
-		if (blendMode == -1) {
+		if (settings.blendMode == -1) {
 			customBlend(g);
 		} else {
-			g.blendMode(blendMode);
+			g.blendMode(settings.blendMode);
 		}
 	}
 
@@ -94,14 +105,11 @@ class ParticleSystem {
 	void draw(PGraphics g) {
 		drawPrep(g);
 		for (Particle p : particles) {
-			p.draw(g, this.particleScale);
+			p.draw(g, settings.particleScale);
 		}
 	}
 
 	void addParticle(Particle p) {
-		// PApplet.println("Request to add particle (" + particlesRemaining() +
-		// "left) Particle : " + p + " with location " + p.location);
-
 		// Don't allow creation of more than the allowed number of particles.
 		if (particlesRemaining() <= 0) {
 			return;

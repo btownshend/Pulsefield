@@ -69,24 +69,13 @@ class VisualizerParticleSystem extends Visualizer {
 		}
 	}
 
-	static void applyPeopleGravity(ParticleSystem ps, People p, float force) {
-		for (int id : p.pmap.keySet()) {
-			Person pos = p.pmap.get(id);
-			ps.attractor(pos.getOriginInMeters(), force);
-		}
-	}
-	
-	void applyPeopleGravity(People p) {
-		applyPeopleGravity(universe, p, universe.personForce);
-	}
-
 	// Apply gravity for persons scaling the effect based on their leg
 	// separation.
 	void applyPeopleGravityLegScaled(People p) {
 		for (int id : p.pmap.keySet()) {
 			Person pos = p.pmap.get(id);
 			universe.attractor(pos.getOriginInMeters(),
-					(float) (universe.personForce * (1.2 - pos.getLegSeparationInMeters())));
+					(float) (universe.settings.personForce * (1.2 - pos.getLegSeparationInMeters())));
 		}
 	}
 
@@ -116,21 +105,21 @@ class VisualizerParticleSystem extends Visualizer {
 		if (components.length < 3 || !components[2].equals(oscName))
 			logger.warning("VisualizerParticleSystem: Expected /video/" + oscName + " messages, got " + msg.toString());
 		else if (components.length == 4 && components[3].equals("maxparticles")) {
-			universe.maxParticles = (long) Math.pow(2, msg.get(0).floatValue());
+			universe.settings.maxParticles = (long) Math.pow(2, msg.get(0).floatValue());
 		} else if (components.length == 4 && components[3].equals("particledispersion")) {
-			universe.particleRandomDriftAccel = msg.get(0).floatValue();
+			universe.settings.particleRandomDriftAccel = msg.get(0).floatValue();
 		} else if (components.length == 4 && components[3].equals("forcerotation")) {
-			universe.forceRotation = msg.get(0).floatValue();
+			universe.settings.forceRotation = msg.get(0).floatValue();
 		} else if (components.length == 4 && components[3].equals("particlerotation")) {
-			universe.particleRotation = msg.get(0).floatValue();
+			universe.settings.particleRotation = msg.get(0).floatValue();
 		} else if (components.length == 4 && components[3].equals("particlemaxlife")) {
-			universe.particleMaxLife = (int) msg.get(0).floatValue();
+			universe.settings.particleMaxLife = (int) msg.get(0).floatValue();
 		} else if (components.length == 4 && components[3].equals("particleopacity")) {
-			universe.startOpacity = msg.get(0).floatValue();
+			universe.settings.startOpacity = msg.get(0).floatValue();
 		} else if (components.length == 4 && components[3].equals("persongravity")) {
-			universe.personForce = msg.get(0).floatValue();
+			universe.settings.personForce = msg.get(0).floatValue();
 		} else if (components.length == 4 && components[3].equals("particlescale")) {
-			universe.particleScale = msg.get(0).floatValue();
+			universe.settings.particleScale = msg.get(0).floatValue();
 		} else if (components.length == 6 && components[3].equals("blendmode")) {
 			handleBlendSettingMessage(msg);
 		} else if (components.length == 4 && components[3].equals("tilt")) {
@@ -144,8 +133,8 @@ class VisualizerParticleSystem extends Visualizer {
 	private void handleTilt(OscMessage msg) {
 		msg.addrPattern().split("/");
 
-		universe.tiltx = msg.get(0).floatValue() * 0.0001f;
-		universe.tilty = msg.get(1).floatValue() * 0.0001f;
+		universe.settings.tiltx = msg.get(0).floatValue() * 0.0001f;
+		universe.settings.tilty = msg.get(1).floatValue() * 0.0001f;
 	}
 
 	private void handleBlendSettingMessage(OscMessage msg) {
@@ -162,28 +151,28 @@ class VisualizerParticleSystem extends Visualizer {
 
 			switch (clicked) {
 			case "2/1":
-				universe.blendMode = -1; // Custom.
+				universe.settings.blendMode = -1; // Custom.
 				break;
 			case "2/2":
-				universe.blendMode = PConstants.ADD;
+				universe.settings.blendMode = PConstants.ADD;
 				break;
 			case "2/3":
-				universe.blendMode = PConstants.SUBTRACT;
+				universe.settings.blendMode = PConstants.SUBTRACT;
 				break;
 			case "2/4":
-				universe.blendMode = PConstants.SCREEN;
+				universe.settings.blendMode = PConstants.SCREEN;
 				break;
 			case "1/1":
-				universe.blendMode = PConstants.LIGHTEST;
+				universe.settings.blendMode = PConstants.LIGHTEST;
 				break;
 			case "1/2":
-				universe.blendMode = PConstants.BLEND;
+				universe.settings.blendMode = PConstants.BLEND;
 				break;
 			case "1/3":
-				universe.blendMode = PConstants.OVERLAY;
+				universe.settings.blendMode = PConstants.OVERLAY;
 				break;
 			case "1/4":
-				universe.blendMode = PConstants.MULTIPLY;
+				universe.settings.blendMode = PConstants.MULTIPLY;
 				break;
 			}
 		}
@@ -200,14 +189,14 @@ class VisualizerParticleSystem extends Visualizer {
 	}
 
 	public void setTO() {
-		setTOValue("maxparticles", Math.log(universe.maxParticles) / Math.log(2), "%.4f");
-		setTOValue("particleaccel", universe.particleRandomDriftAccel, "%.4f");
-		setTOValue("forcerotation", universe.forceRotation, "%.4f");
-		setTOValue("particlerotation", universe.particleRotation, "%.4f");
-		setTOValue("particlemaxlife", universe.particleMaxLife, "%.4f");
-		setTOValue("particleopacity", universe.startOpacity, "%.4f");
-		setTOValue("persongravity", universe.personForce, "%.4f");
-		setTOValue("particlescale", universe.particleScale, "%.4f");
+		setTOValue("maxparticles", Math.log(universe.settings.maxParticles) / Math.log(2), "%.4f");
+		setTOValue("particleaccel", universe.settings.particleRandomDriftAccel, "%.4f");
+		setTOValue("forcerotation", universe.settings.forceRotation, "%.4f");
+		setTOValue("particlerotation", universe.settings.particleRotation, "%.4f");
+		setTOValue("particlemaxlife", universe.settings.particleMaxLife, "%.4f");
+		setTOValue("particleopacity", universe.settings.startOpacity, "%.4f");
+		setTOValue("persongravity", universe.settings.personForce, "%.4f");
+		setTOValue("particlescale", universe.settings.particleScale, "%.4f");
 
 		setTiltTO();
 	}
@@ -216,17 +205,8 @@ class VisualizerParticleSystem extends Visualizer {
 		TouchOSC to = TouchOSC.getInstance();
 		OscMessage set = new OscMessage("/video/" + oscName + "/tilt");
 		set.add("set");
-		set.add(universe.tiltx);
-		set.add(universe.tilty);
+		set.add(universe.settings.tiltx);
+		set.add(universe.settings.tilty);
 		to.sendMessage(set);
-		
-		/* 
-		set = new OscMessage("/video/" + oscName + "/tilt"  + "/value");
-		set.
-		set.add(String.format("%.4f", universe.tiltx));
-		set.add(String.format("%.4f", universe.tilty));
-		
-		PApplet.println(" sending message : " + set);
-		to.sendMessage(set); */
 	}
 }
