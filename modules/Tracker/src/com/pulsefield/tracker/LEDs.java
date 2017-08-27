@@ -247,14 +247,14 @@ public class LEDs extends Thread {
 		} else {
 			int pos=0;
 			while (pos<nphys) {
-				while (pos<nphys && newPhys[pos]==physleds[pos])
-					pos++;  // No update needed
+				//while (pos<nphys && newPhys[pos]==physleds[pos])
+				//	pos++;  // No update needed
 				if (pos==nphys)
 					break;
 				int nsend=nphys-pos;
 				if (nsend>160) nsend=160;
-				while (newPhys[pos+nsend-1]==physleds[pos+nsend-1])
-					nsend--;  // Won't hit zero since the first one needs update
+				//while (newPhys[pos+nsend-1]==physleds[pos+nsend-1])
+				//	nsend--;  // Won't hit zero since the first one needs update
 				byte msg[]=makeFUpdate(pos,nsend,newPhys);
 				sendsync();
 				send(msg);
