@@ -58,10 +58,11 @@ public class LEDs extends Thread {
 		for (int i=0;i<physleds.length;i++)
 			physleds[i]=-1;
 		// Ordering of LEDS;   physical LED p ->  ledOrder[p] logical LED;  ledOrder[0]==-1 for unused LEDs
-		final int leadSkip=5;  // Number to skip at physical beginning of each strip
-		final int tailSkip=6;  // Number to skip at physical end of each strip
-		final int order[]={1,2,3,4,-5,-6,-7,-8};  // Order of strips going CW (-ve = reversed)
-		final float initAngle=45;   // Angle of first strip, first active LED in world coords
+		final int leadSkip=2;  // Number to skip at physical beginning of each strip
+		final int tailSkip=2;  // Number to skip at physical end of each strip
+		//final int order[]={1,2,3,4,-5,-6,-7,-8};  // Order of strips going CW (-ve = reversed)
+		final int order[]={8,7,6,5,-4,-3,-2,-1};  // Order of strips going CW (-ve = reversed)
+		final float initAngle=267;   // Angle of first strip, first active LED in world coords
 		final int nLogical=nstrip*(ledperstrip-leadSkip-tailSkip);
 		final int offset=(int)(initAngle/360*nLogical+0.5);
 		ledOrder=new int[nphys];
