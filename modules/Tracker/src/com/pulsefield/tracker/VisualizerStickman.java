@@ -330,11 +330,13 @@ public class VisualizerStickman extends Visualizer {
 		super.draw(t, g, p);
 		
 		g.ellipseMode(PConstants.CENTER);
-		for (Person ps: p.pmap.values()) {  
-			int c=ps.getcolor();
-			g.noFill();
-			g.stroke(c,255);
-			sticks.get(ps.id).draw(g);
+		for (Person ps: p.pmap.values()) { 
+			if (sticks.get(ps.id)!=null) {
+				int c=ps.getcolor();
+				g.noFill();
+				g.stroke(c,255);
+				sticks.get(ps.id).draw(g);
+			}
 		}
 	}
 }
