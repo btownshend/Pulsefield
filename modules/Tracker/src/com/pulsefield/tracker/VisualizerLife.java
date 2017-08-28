@@ -30,7 +30,7 @@ public class VisualizerLife extends Visualizer {
 	long lastLifeTimestamp;
 
 	// Dimension of grid squares in meters.
-	float gridSpacing = 0.12f;
+	float gridSpacing = 0.3f;
 
 	// Count of currently living organisms [0] and historically going back.
 	int lifeHistoryLen = 100;
