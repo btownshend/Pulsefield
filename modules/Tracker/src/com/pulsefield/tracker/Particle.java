@@ -2,6 +2,7 @@ package com.pulsefield.tracker;
 
 import java.awt.Color;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -35,6 +36,7 @@ class Particle {
 	float dieOffscreenBuffer = 0.5f;
 
 	static Random rng = new Random();
+    private final static Logger logger = Logger.getLogger(People.class.getName());
 
 	Particle(PVector location) {
 		this.location = location.copy();
@@ -211,6 +213,7 @@ class TriangleParticle extends Particle {
 class ImageParticle extends Particle {
 
 	PImage image;
+    private final static Logger logger = Logger.getLogger(People.class.getName());
 
 	ImageParticle(PVector location, PImage image) {
 		super(location);
@@ -218,6 +221,8 @@ class ImageParticle extends Particle {
 	
 	ImageParticle(PVector location, ParticleSystemSettings pss, PImage image) {
 		super(location, pss);
+		if (image==null)
+			logger.severe("ImageParticle: image is null");
 		this.image = image;
 	}
 
