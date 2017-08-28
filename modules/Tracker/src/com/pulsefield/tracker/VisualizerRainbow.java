@@ -35,6 +35,8 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 		super.start();
 
 
+		Ableton.getInstance().setTrackSet("Osmos");
+
 		// Rainbow uses legs for attraction scaling.
 		Laser.getInstance().setFlag("legs", 0.0f);
 	}

@@ -85,6 +85,8 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 	public void start() {
 		super.start();
 
+		Ableton.getInstance().setTrackSet("Osmos");
+
 		// Reset goal scores.
 		goal1.score = 0;
 		goal2.score = 0;
