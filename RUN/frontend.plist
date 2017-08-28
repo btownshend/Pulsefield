@@ -26,9 +26,7 @@
 		<string>-B10</string>
 		<string>-D</string>
 		<string>/Users/bst/Desktop/PF_LOGS/frontend_dbg.log</string>
-		<string>-dOutsiders:2</string>
-		<string>-R</string>
-		<string>/Users/bst/Desktop/PF_LOGS</string>
+		<string>-d1</string>
 	</array>
 	<key>WorkingDirectory</key>
 	<string>/Users/bst/Dropbox/Pulsefield/src/modules/FrontEnd</string>

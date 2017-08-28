@@ -1,0 +1,13 @@
+#!/bin/sh
+./movelogs
+for app in frontend calibrator osc9001 osc9998 osc9999 chuck tracker gpufluid # record
+do
+  launchctl unload $app.plist
+  echo unload $app.plist
+done
+for app in frontend calibrator osc9001 osc9998 osc9999 chuck tracker gpufluid # record
+do
+  launchctl load $app.plist
+  echo load $app.plist
+done
+
