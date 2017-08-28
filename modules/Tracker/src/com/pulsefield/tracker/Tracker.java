@@ -694,7 +694,7 @@ public class Tracker extends PApplet {
 		//SyphonTest.draw(this);
 		Config.saveIfModified(this);   // Save if modified
 		} catch (Exception e) {
-		    logger.log(Level.SEVERE,"exception in draw(): "+e);
+		    logger.log(Level.SEVERE,"exception in draw(): ",e);
 		    e.printStackTrace();
 		}
 	}
