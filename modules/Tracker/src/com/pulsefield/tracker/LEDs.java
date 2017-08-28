@@ -39,7 +39,7 @@ public class LEDs extends Thread {
 	Map<String,Float> parameters;
 	private int fgMode;
 	private String fgModeNames[]={"inverse"};
-	private String bgModeNames[]={"pulsebow","stripid","rainbow","blank"};
+	private String bgModeNames[]={"pulsebow","stripid","rainbow","blank","white"};
 	
 	
 	public LEDs(String host, int port) {
@@ -48,7 +48,7 @@ public class LEDs extends Thread {
 		setCPeriod(0.5f);
 		setPSpatial(0.5f);
 		setCSpatial(0.5f);
-		fgMode=0; bgMode=0;
+		fgMode=0; bgMode=4;
 		hostName=host;
 		portNumber=port;
 		syncCounter=0;
@@ -335,7 +335,10 @@ public class LEDs extends Thread {
 			rainbow();
 			break;
 		case 3:
-			alloff();
+			setall(0);
+			break;
+		case 4:
+			setall(31);
 			break;
 		default:
 			logger.warning("Bad bgMode: "+bgMode);
@@ -351,6 +354,12 @@ public class LEDs extends Thread {
 		for (int i=0;i<leds.length;i++)
 			leds[i]=0;
 	}
+	
+	void setall(int x) {
+		for (int i=0;i<leds.length;i++)
+			leds[i]=x;
+	}
+	
 	// Set strips for ID
 	void stripid() {		
 		final String colnames[]={"red","green", "blue","magenta","cyan","yellow","pinkish", "white"};
