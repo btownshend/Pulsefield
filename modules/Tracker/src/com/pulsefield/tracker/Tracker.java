@@ -913,6 +913,10 @@ public class Tracker extends PApplet {
 	}
 
 	public static PVector mapVelocity(PVector velInMetersPerSecond) {
+		if (velInMetersPerSecond == null) {
+			logger.severe("velInMetersPerSecond is null");
+			return new PVector(0,0);
+		}
 		PVector sz=getFloorSize();
 		return new PVector(-velInMetersPerSecond.x*2f/sz.x,velInMetersPerSecond.y*2f/sz.y);
 	}
