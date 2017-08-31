@@ -17,7 +17,8 @@ public class Leg {
     @SuppressWarnings("unused")
 	private final static Logger logger = Logger.getLogger(Leg.class.getName());
 
-	Leg(PVector position) { this.position=new PVector(position.x,position.y); }
+    Leg(PVector position) { this.position=new PVector(position.x,position.y);
+    this.velocity=new PVector(0,0); }
 	
 	void move(PVector newpos, PVector newvel) {
 		position=new PVector(newpos.x,newpos.y);
