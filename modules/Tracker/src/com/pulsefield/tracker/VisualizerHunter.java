@@ -35,7 +35,7 @@ class Hunter {
 	// Number of seconds that a person needs to be next to another to tag them.
 	final float TIMETOTAG=1.0f;
 	// Distance threshold at which a player is considered to be tagging another. (meters)
-	final float TAGTHRESH=0.6f;
+	final float TAGTHRESH=1.0f;
 	// Distance threshold a player needs to be from another to have them be started as a target. (meters)
 	final float STARTTHRESH=TAGTHRESH + 0.1f;
 	
