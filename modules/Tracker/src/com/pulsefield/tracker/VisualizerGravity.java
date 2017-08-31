@@ -90,6 +90,13 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 		// Reset goal scores.
 		goal1.score = 0;
 		goal2.score = 0;
+		
+		PVector p1 = Tracker.normalizedToFloor(new PVector(-0.8f, -0.8f));
+		PVector p2 = Tracker.normalizedToFloor(new PVector(0.8f, 0.8f));
+		goal1.setCenter(p1);
+		goal1.color = 0xFFDD22DD;
+		goal2.setCenter(p2);
+		goal2.color = 0xFF22DDDD;
 	}
 
 	void resetGame() {
@@ -114,13 +121,6 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 
 	@Override
 	public void update(PApplet parent, People p) {
-		PVector p1 = Tracker.normalizedToFloor(new PVector(-0.8f, -0.8f));
-		PVector p2 = Tracker.normalizedToFloor(new PVector(0.8f, 0.8f));
-		goal1.setCenter(p1);
-		goal1.color = 0xFFDD22DD;
-		goal2.setCenter(p2);
-		goal2.color = 0xFF22DDDD;
-
 		// Reset the game when it's time.
 		if (gameOver) {
 			if (intergameUpdateCounter-- <= 0) {
@@ -259,6 +259,11 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g, p);
 
+		PVector p1 = Tracker.normalizedToFloor(new PVector(-0.8f, -0.8f));
+		PVector p2 = Tracker.normalizedToFloor(new PVector(0.8f, 0.8f));
+		goal1.setCenter(p1);
+		goal2.setCenter(p2);
+		
 		goal1.draw(g);
 		goal2.draw(g);
 
