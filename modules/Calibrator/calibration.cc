@@ -760,8 +760,8 @@ void Calibration::load() {
 	}
     } catch (boost::property_tree::ptree_bad_path ex) {
 	std::cerr << "Unable to find 'homographies' in calibration settings" << std::endl;
-	recompute();
     }
+    recompute();
 
     showStatus("Loaded configuration");
 }
