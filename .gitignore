@@ -113,3 +113,11 @@ modules/Calibrator/settings_projin.json
 modules/Calibrator/settings_projout.json
 
 RUN/frontend.plist.orig
+
+modules/FrontEnd/frontend1s
+
+modules/FrontEnd/frontend2
+
+modules/FrontEnd/frontend2s
+
+modules/FrontEnd/frontend5
