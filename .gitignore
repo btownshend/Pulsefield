@@ -111,3 +111,5 @@ modules/Arduino/ethercontrol/CHANGES
 modules/Calibrator/settings_projin.json
 
 modules/Calibrator/settings_projout.json
+
+RUN/frontend.plist.orig
