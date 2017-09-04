@@ -24,6 +24,8 @@
 		<string>-n</string>
 		<string>2</string>
 		<string>-B10</string>
+		<string>-R</string>
+		<string>/Users/bst/Desktop/PF_LOGS</string>
 		<string>-D</string>
 		<string>/Users/bst/Desktop/PF_LOGS/frontend_dbg.log</string>
 	</array>
