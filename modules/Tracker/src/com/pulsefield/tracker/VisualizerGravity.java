@@ -90,7 +90,8 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 	// Rotating center image representing the blackhole.
 	Particle blackhole;
 
-    private final static Logger logger = Logger.getLogger(Tracker.class.getName());
+	@SuppressWarnings("unused")
+	private final static Logger logger = Logger.getLogger(Tracker.class.getName());
 	
 	float sourceVelocity;
 	float sourceAngle;
@@ -107,7 +108,7 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 	public void start() {
 		super.start();
 
-		// Black hole
+		// Rotating black hole image.
 		PImage blackholeImage = textures.get("blackhole.png");
 		ParticleSystemSettings blackholePSS = new ParticleSystemSettings();
 		blackholePSS.particleRotation = 0.1f;
@@ -124,7 +125,7 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 		goal1.score = 0;
 		goal2.score = 0;
 
-		// Randomize team assignments.
+		// Used to randomize person color assignments.
 		for (int i = 0; i < teamAssignment.length; i++) {
 			teamAssignment[i] = rng.nextBoolean();
 		}
@@ -140,12 +141,6 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 		// Set some randomized game parameters.
 		sourceVelocity = (float) (rng.nextFloat() * 0.02 + 0.001);
 		sourceAngle = (float) (rng.nextFloat()) * 2 - 1.0f;
-
-		// Place goals.
-		PVector p1 = Tracker.normalizedToFloor(new PVector(-0.8f, -0.8f));
-		PVector p2 = Tracker.normalizedToFloor(new PVector(0.8f, 0.8f));
-		goal1.setCenter(p1);
-		goal2.setCenter(p2);
 	}
 
 	void setUniverseDefaults() {
@@ -173,6 +168,12 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 			goal1.setSize(Tracker.getFloorDimensionMin() / 8);
 			goal2.setSize(Tracker.getFloorDimensionMin() / 8);
 		}
+
+		// Place goals.
+		PVector p1 = Tracker.normalizedToFloor(new PVector(-0.8f, -0.8f));
+		PVector p2 = Tracker.normalizedToFloor(new PVector(0.8f, 0.8f));
+		goal1.setCenter(p1);
+		goal2.setCenter(p2);
 
 		// Update blackhole for rotation and force to center.
 		blackhole.update();
