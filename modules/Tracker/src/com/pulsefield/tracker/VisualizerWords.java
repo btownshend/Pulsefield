@@ -4,7 +4,6 @@ import java.awt.Color;
 
 import processing.core.PApplet;
 import processing.core.PGraphics;
-import processing.core.PImage;
 import processing.core.PVector;
 
 import java.awt.*;
@@ -12,15 +11,13 @@ import java.awt.image.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 
 import javax.swing.*;
 
 public class VisualizerWords extends VisualizerParticleSystem {
 	String words = "Pulsefield";
-	private float rainbowPositionDegrees = 0.0f;
-	private float rainbowAdvance = 0.0f;
-	float rainbowAdvanceIncrement = 0.1f; // rotation of the colors positions
-											// per update.
+	static Random rng = new Random();
 
 	VisualizerWords(PApplet parent) {
 		super(parent);
@@ -45,126 +42,92 @@ public class VisualizerWords extends VisualizerParticleSystem {
 		super.start();
 	}
 
-	// Create a particle specified by a distance and angle from a center point.
-	private void spewParticle(ParticleSystem universe, int color, float rotation, float angle, float velocity,
-			float distanceFromCenter, PVector center) {
-
-		PVector origin = center.copy().add(new PVector(0, distanceFromCenter).rotate(rotation));
-		// Particle p = new ImageParticle(origin, universe.settings, textures.get("blur.png"));
-		Particle p = new TriangleParticle(origin, universe.settings);
-
-		p.color = color;
-
-		PVector velocityV = center.copy().sub(origin).normalize().setMag(velocity / 100).rotate(angle);
-		p.velocity = velocityV;
-
-		universe.addParticle(p);
-	}
-
 	@Override
 	public void update(PApplet parent, People p) {
-		int particlesPerUpdate = 360;
-		rainbowAdvance = (rainbowAdvance + rainbowAdvanceIncrement) % 360;
+		int particlesPerUpdate = 30;
 
-		if (universe.particlesRemaining() >= 360) {
-			for (int i = 0; i < 50; i++) {
-				// Just some fluff particles for more visual interest.
+		if (universe.particlesRemaining() >= particlesPerUpdate) {
+			for (int i = 0; i < particlesPerUpdate; i++) {
+				// Particle particleFluff = new TriangleParticle(Particle.genRandomVector(Tracker.getFloorDimensionMax()
+				// / 2, 0f, 0f), universe.settings);
+				Particle particleFluff = new ImageParticle(Particle.genRandomVector(Tracker.getFloorDimensionMax() / 2, 0f, 0f), universe.settings,
+						textures.get("3x3-solid.png"));
 
-				/*
-				Particle particleFluff = new ImageParticle(
-						Particle.genRandomVector(Tracker.getFloorDimensionMax() / 2, 0f, 0f), universe.settings,
-						textures.get("blur.png"));
-				*/
-
-				Particle particleFluff = new TriangleParticle(Particle.genRandomVector(Tracker.getFloorDimensionMax() / 2, 0f, 0f), universe.settings);
-				// particleFluff.velocity = Particle.genRandomVector(0.001f / 300, 0.0f, 0.0f);
-				particleFluff.color = 0x99FFFFFF;
-				particleFluff.scale = 1.0f;
-				particleFluff.setLifespan(500);
-				particleFluff.opacity = 0.7f;
+				particleFluff.color = 0xFFFFFFFF;
+				// Randomize scale from 1.2 to 2.2.
+				particleFluff.scale = rng.nextFloat() + 1.2f;
+				particleFluff.setLifespan(400);
+				particleFluff.opacity = 0.6f;
 				universe.addParticle(particleFluff);
 			}
 		}
 
-		/*
-		
-		// Create some particles unless there are too many already.
-		if (universe.particlesRemaining() >= 360) {
-			for (int i = 0; i < particlesPerUpdate; i++) {
-				rainbowPositionDegrees = (rainbowPositionDegrees + 1) % 360;
-				int color = Color.HSBtoRGB((rainbowPositionDegrees + rainbowAdvance) / 360.0f, 1.0f, 1.0f);
-		
-				spewParticle(universe, color, (rainbowPositionDegrees / 360.0f) * 2 * (float) Math.PI, 0.0f, 0.0f,
-						Tracker.getFloorDimensionMin() / 1.5f, Tracker.getFloorCenter());
-			}
-		}
-		*/
-		
-		String words = "Pulse\nField\n<time>";
+		// TODO: Parameterize this .. perhaps move it into TouchOSC?
+		String words = "     The\nPulsefield\n <time>";
 
 		if (words.contains("<time>")) {
 			final long timestamp = new Date().getTime();
 			final Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(timestamp);
-			// and here's how to get the String representation
-			final String timeString = new SimpleDateFormat("HH:mm:ss:SSS").format(cal.getTime());
-		words = words.replace("<time>", timeString);
+			final String timeString = new SimpleDateFormat("HH:mm:ss").format(cal.getTime());
+			words = words.replace("<time>", timeString);
 		}
 
+		// The integer passed here represents the fineness of the font, a sort of pixels-per-inch.
+		// A small number will make them blocky, made of few attractors. A large number will make
+		// them smooth but will cause performance issues (many attractors).
 		int[][] attArray = LettersToMatrix(words, 16);
 
-		// double s = ((Math.sin(System.currentTimeMillis() / 10000)) + Math.PI) / Math.PI;
-		// s = 1.0;
-		
+		int height = attArray.length;
+		int width = attArray[0].length;
 
+		// Calculate constraining dimension for scale. Aim to make the rendering use the entire floor with
+		// a little buffer.
+		float xscale = Tracker.getFloorSize().x * 0.95f / width;
+		float yscale = Tracker.getFloorSize().y * 0.95f / height;
+		float xyscale = Math.min(xscale, yscale);
 
-		float breathTime = 20000;
-		float scale = (float) Math.sin((((System.currentTimeMillis() % ((int) breathTime)) / (breathTime / 2)) - 1) * Math.PI);
+		// -1 multiplier due to field orientation.
+		float ytop = Tracker.getFloorCenter().y - (-1 * xyscale * height / 2.0f);
+		float xtop = Tracker.getFloorCenter().x - (-1 * xyscale * width / 2.0f);
 
-		float mult = Tracker.getFloorSize().x / (60.0f);
+		float direction = 1.0f;
+
+		// Pulse-away the particles once every N seconds with varying strength (tuned for visual appeal).
+		if ((System.currentTimeMillis() % 1500) < 400) {
+			direction = -1 * (System.currentTimeMillis() % 60000) / 8000.0f;
+		}
+
 		for (int i = 0; i < attArray.length; i++) {
 			for (int j = 0; j < attArray[i].length; j++) {
 				if (attArray[i][j] != 0) {
 
-					PVector subchar = new PVector(Tracker.getFloorCenter().x - (1 * (j * mult)) + Tracker.getFloorSize().x / 2.2f,
-							Tracker.getFloorCenter().y + (1 * (i * mult)) - Tracker.getFloorSize().x / 2.2f);
+					float xpos = xtop - (j * xyscale);
+					float ypos = ytop - ((attArray.length - i) * xyscale);
 
-					universe.attractor(subchar, (float) (0.000050f * scale * attArray[i][j]));
+					// Subcharacter attractor. Think of this as an e-ink particle.
+					PVector subchar = new PVector(xpos, ypos);
+					universe.attractor(subchar, (float) (direction * 0.000020f * attArray[i][j]));
 
-					// Apply drag to particle when it's near an attractor.
+					// Apply drag to particle when it's near an attractor to "stick" the particle.
 					for (Particle part : universe.particles) {
-
 						float distance = PVector.sub(part.location, subchar).mag();
 
-						if (distance < 0.1f) {
-							if (scale < 0) {
-								part.velocity = part.velocity.mult(1.1f);
-							} else
-								// Particles still move because acceleration builds!
+						// Scale stickyness distance (which acts as a border around the font) with field
+						// size (e.g. xyscale).
+						if (distance < (0.6f * xyscale)) {
 								part.velocity = part.velocity.mult(0.00f);
-
 						}
-
-						/*
-							float distance = 1 / PVector.sub(part.location, subchar).div(100.0f).magSq();
-						
-							float decel = 1 + 1 / (distance);
-							// decel = 1.0f;
-						
-							part.velocity = part.velocity.div(decel);
-						 */
 					}
 				}
 			}
 		}
 
-
-		// applyPeopleGravity(p);
-
 		// Generate particles around people.
 		for (int id : p.pmap.keySet()) {
 			Person pos = p.pmap.get(id);
 			Particle part = new TriangleParticle(pos.getOriginInMeters(), universe.settings);
+			part.scale = 1.2f;
 			part.color = pos.getcolor();
 			universe.addParticle(part);
 		}
@@ -178,17 +141,13 @@ public class VisualizerWords extends VisualizerParticleSystem {
 		drawPeople(g, p);
 	}
 
+	// Given text, return a 2d array plotting the text for later rendering with attractors.
 	int[][] LettersToMatrix(String letters, int points) {
 		Font font = new Font("SansSerif", Font.PLAIN, points);
 		FontMetrics metrics = new JLabel().getFontMetrics(font);
 
 		int height = 0;
 		int width = 0;
-
-		/*
-		int width = metrics.stringWidth(letters);
-		int height = metrics.getMaxAscent();
-		*/
 
 		// Calculate height and width.
 		for (String line : letters.split("\n")) {
@@ -212,9 +171,9 @@ public class VisualizerWords extends VisualizerParticleSystem {
 
 		int[][] matrix = new int[height][width];
 
-		for (int j = 0; j < height; j++) { // Scroll through rows
-			for (int i = 0; i < width; i++) { // Scroll through columns
-				// check for != 0 as black is -(2^24) and that's negative
+		for (int j = 0; j < height; j++) {
+			for (int i = 0; i < width; i++) {
+				// Check for != 0 as black is -(2^24) and that's negative.
 				int v = bi.getRGB(i, j) != 0 ? 1 : 0;
 				matrix[j][i] = v;
 			}
