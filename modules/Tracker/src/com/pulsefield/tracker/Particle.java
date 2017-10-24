@@ -111,17 +111,17 @@ class Particle {
 		// -1 maxLifespan means infinite life.
 		if (maxLifespan == -1) {
 			return;
-		}
-		
-		lifespan--;
-		
-		// Fade Death is intended to:
-		// Start fading at fadeDeath of the particle's age (e.g. if it's .2
-		// (20%) and the particle
-		// has a maxLifespan of 100 then fading will happen when there is 20
-		// lifespan left.
-		if ((lifespan / maxLifespan) <= fadeDeath) {
-			opacity = opacity - (opacity / (lifespan));
+		} else {
+			// Age particle.
+			lifespan--;
+
+			// Fade Death is intended to:
+			// Start fading at fadeDeath of the particle's age (e.g. if it's .2
+			// (20%) and the particle has a maxLifespan of 100 then fading will
+			// happen when there is 20 lifespan left.
+			if ((lifespan / maxLifespan) <= fadeDeath) {
+				opacity = opacity - (opacity / (lifespan));
+			}
 		}
 	}
 
@@ -136,11 +136,15 @@ class Particle {
 		}
 
 		// Report invisible or lifeless particles as dead for the particleSystem
-		// to cull.
+		// to cull. This assumes a zero-opacity particle will never come
+		// back to being visible.
 		return (lifespan <= 0 || opacity <= 0.0);
 	}
 
 	// Display the particle; note secondary scale.
+	// TODO: Clarify the duplicate scale. The purpose of this is to have one scale for the
+	// visualizer to have a relative scale for the particle visualization (e.g. image size
+	// similar to square) and another for scaling all particles through the touchosc interface.
 	void draw(PGraphics g, float scale) {
 		if (rotationRadians != 0f) {
 			rotateBegin(g, location);
