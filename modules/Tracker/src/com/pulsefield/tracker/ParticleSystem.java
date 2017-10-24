@@ -5,12 +5,8 @@ import java.util.Iterator;
 
 import processing.core.PApplet;
 import processing.core.PGraphics;
-import processing.core.PImage;
 import processing.core.PVector;
 import processing.opengl.PGL;
-
-// An ArrayList is used to manage the list of Particles
-
 
 class ParticleSystemSettings {
 	float particleRandomDriftAccel = 0.02f / 300;

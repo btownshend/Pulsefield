@@ -51,6 +51,7 @@ public class Tracker extends PApplet {
 	VisualizerMinim visMinim;
 	VisualizerSyphon visSyphonOF;
 	VisualizerRainbow visRainbow;
+	VisualizerWords visWords;
 	VisualizerGravity visGravity;
 	VisualizerGuitar visGuitar;
 	VisualizerVoronoi visVoronoi;
@@ -280,6 +281,7 @@ public class Tracker extends PApplet {
 		addVis("Hunter", new VisualizerHunter(this,synth),true);
 		addVis("Gravity", visGravity = new VisualizerGravity(this), true);
 		addVis("Rainbow", visRainbow = new VisualizerRainbow(this), true);
+		addVis("Words", visWords = new VisualizerWords(this), true);
 		addVis("TestPattern",new VisualizerTestPattern(this),false);
 		setapp(vis.length-1);
 	}
@@ -893,6 +895,7 @@ public class Tracker extends PApplet {
 			visVoronoi.handleMessage(theOscMessage);
 			visProximity.handleMessage(theOscMessage);
 			visPads.handleMessage(theOscMessage);
+			visWords.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/midi/pgm")) {
 			synth.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/led")) {

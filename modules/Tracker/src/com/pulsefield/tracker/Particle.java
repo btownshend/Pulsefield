@@ -2,6 +2,7 @@ package com.pulsefield.tracker;
 
 import java.awt.Color;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -11,18 +12,21 @@ import processing.core.PVector;
 
 // A simple Particle class.
 class Particle {
+    final static Logger logger = Logger.getLogger(Tracker.class.getName());
+	
 	PVector location;
 	PVector velocity = new PVector(0, 0);
 	PVector acceleration = new PVector(0, 0);
 	float accelerationFuzz = -0.03f; // Tendency to move in a random direction.
 	float xMaxFuzz = 0.0f; // Tendency to move in direction x.
 	float yMaxFuzz = 0.0f; // Tendency to move in direction y.
-	int maxLifespan = 500; // In count-of-updates.
+	private int maxLifespan = 500; // In count-of-updates.
 	int lifespan = maxLifespan;
 	float opacity = 1.0f;
 	float fadeDeath = 0.0f; // fade opacity in the last e.g. 10% (0.1f) of the
 							// particle's life.
 	float scale = 1.0f; // Particle specific scale.
+	float forceRotation = 0.0f;
 
 	int color = Color.WHITE.hashCode();
 	float rotationRate = 0.0f;
@@ -41,7 +45,7 @@ class Particle {
 	}
 
 	Particle(PVector location, ParticleSystemSettings pss) {
-		this(location);
+		this(location = location.copy());
 		loadParticleSystemSettings(pss);
 	}
 
@@ -93,14 +97,24 @@ class Particle {
 		direction.mult(releffect);
 		location.add(direction);
 	}
-	
 
 	// Update particle location.
 	void update() {
 		velocity.add(acceleration);
 		location.add(velocity);
+		
+		if (rotationRate != 0.0f) {
+			// Increment the rotation and keep range in +/- 2Pi.
+			rotationRadians += rotationRate % (Math.PI * 2);
+		}
+		
+		// -1 maxLifespan means infinite life.
+		if (maxLifespan == -1) {
+			return;
+		}
+		
 		lifespan--;
-
+		
 		// Fade Death is intended to:
 		// Start fading at fadeDeath of the particle's age (e.g. if it's .2
 		// (20%) and the particle
@@ -108,11 +122,6 @@ class Particle {
 		// lifespan left.
 		if ((lifespan / maxLifespan) <= fadeDeath) {
 			opacity = opacity - (opacity / (lifespan));
-		}
-
-		if (rotationRate > 0.0f) {
-			// Increment the rotation and keep range in +/- 2Pi.
-			rotationRadians += rotationRate % (Math.PI * 2);
 		}
 	}
 
@@ -131,7 +140,7 @@ class Particle {
 		return (lifespan <= 0 || opacity <= 0.0);
 	}
 
-	// Display the particle..
+	// Display the particle; note secondary scale.
 	void draw(PGraphics g, float scale) {
 		if (rotationRadians != 0f) {
 			rotateBegin(g, location);
@@ -162,7 +171,6 @@ class Particle {
 	void rotateEnd(PGraphics g) {
 		g.popMatrix();
 	}
-
 }
 
 class TextParticle extends Particle {
@@ -199,7 +207,7 @@ class TriangleParticle extends Particle {
 
 	@Override
 	void drawParticle(PGraphics g, PVector l, float scale) {
-		float sideLen = 0.2f;
+		float sideLen = 5.0f;
 		g.noStroke();
 		g.shapeMode(PConstants.CENTER);
 		g.fill(color, opacity * 255);
@@ -209,7 +217,6 @@ class TriangleParticle extends Particle {
 }
 
 class ImageParticle extends Particle {
-
 	PImage image;
 
 	ImageParticle(PVector location, PImage image) {
@@ -218,11 +225,21 @@ class ImageParticle extends Particle {
 	
 	ImageParticle(PVector location, ParticleSystemSettings pss, PImage image) {
 		super(location, pss);
+//		if (image == null || !image.isLoaded()) {
+		if (image == null) {
+
+			logger.severe("Image " + image + " missing or not loaded in constructor.");
+		}
 		this.image = image;
 	}
 
 	@Override
 	void drawParticle(PGraphics g, PVector l, float scale) {
+		if (image == null) {
+			logger.severe("Image " + image + " missing.  Not drawing.");
+			return;
+		}
+
 		g.imageMode(PConstants.CENTER);
 		g.tint(color, Math.min(opacity * 255, maxOpacity * 255));
 		g.image(image, l.x, l.y, scale * image.width / Tracker.getPixelsPerMeter(),
