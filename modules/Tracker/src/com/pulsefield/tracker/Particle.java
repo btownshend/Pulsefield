@@ -222,6 +222,7 @@ class TriangleParticle extends Particle {
 
 class ImageParticle extends Particle {
 	PImage image;
+    private final static Logger logger = Logger.getLogger(People.class.getName());
 
 	ImageParticle(PVector location, PImage image) {
 		super(location);
@@ -229,11 +230,8 @@ class ImageParticle extends Particle {
 	
 	ImageParticle(PVector location, ParticleSystemSettings pss, PImage image) {
 		super(location, pss);
-//		if (image == null || !image.isLoaded()) {
-		if (image == null) {
-
-			logger.severe("Image " + image + " missing or not loaded in constructor.");
-		}
+		if (image==null)
+			logger.severe("ImageParticle: image is null");
 		this.image = image;
 	}
 

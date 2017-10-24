@@ -46,6 +46,10 @@ public class VisualizerProximity extends VisualizerPS {
 	}
 
 	public int clipNumber(int nclips,int id1, int id2) {
+		if (nclips==0) {
+			logger.severe("nclips=0");
+			return 0;
+		}
 		return (id1*7+id2)%nclips;
 	}
 	

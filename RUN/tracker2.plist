@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Enabled</key>
+	<false/>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>PFROOT</key>
+		<string>/Users/bst/Dropbox/Pulsefield/src</string>
+	</dict>
+	<key>RunAtLoad</key>
+	<false/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>Label</key>
+	<string>com.tc.tracker</string>
+	<key>ProgramArguments</key>
+	<array>
+	  <string>/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/bin/java</string>
+	  <string>-ea</string>
+	  <string>-XX:+HeapDumpOnOutOfMemoryError</string>
+	  <string>-Djava.library.path=/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/Syphon/library</string>
+	  <string>-Dfile.encoding=UTF-8</string>
+	  <string>-classpath</string>
+	  <string>/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/build:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/promidi/library/promidi.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/oscP5/library/oscP5.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/processing3/gluegen-rt-natives-macosx-universal.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/processing3/gluegen-rt.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/processing3/jogl-all-natives-macosx-universal.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/processing3/jogl-all.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/processing3/core.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/Syphon/library/jsyphon.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/Syphon/library/Syphon.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/minim/library/jl1.0.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/minim/library/jsminim.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/minim/library/minim.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/minim/library/mp3spi1.9.4.jar:/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/lib/minim/library/tritonus_share.jar</string>
+	  <string>com.pulsefield.tracker.Tracker</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>/Users/bst/Dropbox/Pulsefield/src/modules/Tracker/build</string>
+	<key>StandardOutPath</key>
+	<string>/Users/bst/Desktop/PF_LOGS/tracker_stdout.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/bst/Desktop/PF_LOGS/tracker_stderr.log</string>
+</dict>
+</plist>

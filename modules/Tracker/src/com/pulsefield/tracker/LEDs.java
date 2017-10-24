@@ -39,7 +39,7 @@ public class LEDs extends Thread {
 	Map<String,Float> parameters;
 	private int fgMode;
 	private String fgModeNames[]={"inverse"};
-	private String bgModeNames[]={"pulsebow","stripid","rainbow","blank"};
+	private String bgModeNames[]={"pulsebow","stripid","rainbow","blank","white"};
 	
 	
 	public LEDs(String host, int port) {
@@ -48,7 +48,7 @@ public class LEDs extends Thread {
 		setCPeriod(0.5f);
 		setPSpatial(0.5f);
 		setCSpatial(0.5f);
-		fgMode=0; bgMode=0;
+		fgMode=0; bgMode=4;
 		hostName=host;
 		portNumber=port;
 		syncCounter=0;
@@ -58,10 +58,11 @@ public class LEDs extends Thread {
 		for (int i=0;i<physleds.length;i++)
 			physleds[i]=-1;
 		// Ordering of LEDS;   physical LED p ->  ledOrder[p] logical LED;  ledOrder[0]==-1 for unused LEDs
-		final int leadSkip=5;  // Number to skip at physical beginning of each strip
-		final int tailSkip=6;  // Number to skip at physical end of each strip
-		final int order[]={1,2,3,4,-5,-6,-7,-8};  // Order of strips going CW (-ve = reversed)
-		final float initAngle=45;   // Angle of first strip, first active LED in world coords
+		final int leadSkip=2;  // Number to skip at physical beginning of each strip
+		final int tailSkip=2;  // Number to skip at physical end of each strip
+		//final int order[]={1,2,3,4,-5,-6,-7,-8};  // Order of strips going CW (-ve = reversed)
+		final int order[]={8,7,6,5,-4,-3,-2,-1};  // Order of strips going CW (-ve = reversed)
+		final float initAngle=267;   // Angle of first strip, first active LED in world coords
 		final int nLogical=nstrip*(ledperstrip-leadSkip-tailSkip);
 		final int offset=(int)(initAngle/360*nLogical+0.5);
 		ledOrder=new int[nphys];
@@ -247,14 +248,14 @@ public class LEDs extends Thread {
 		} else {
 			int pos=0;
 			while (pos<nphys) {
-				while (pos<nphys && newPhys[pos]==physleds[pos])
-					pos++;  // No update needed
+				//while (pos<nphys && newPhys[pos]==physleds[pos])
+				//	pos++;  // No update needed
 				if (pos==nphys)
 					break;
 				int nsend=nphys-pos;
 				if (nsend>160) nsend=160;
-				while (newPhys[pos+nsend-1]==physleds[pos+nsend-1])
-					nsend--;  // Won't hit zero since the first one needs update
+				//while (newPhys[pos+nsend-1]==physleds[pos+nsend-1])
+				//	nsend--;  // Won't hit zero since the first one needs update
 				byte msg[]=makeFUpdate(pos,nsend,newPhys);
 				sendsync();
 				send(msg);
@@ -334,7 +335,10 @@ public class LEDs extends Thread {
 			rainbow();
 			break;
 		case 3:
-			alloff();
+			setall(0);
+			break;
+		case 4:
+			setall(31);
 			break;
 		default:
 			logger.warning("Bad bgMode: "+bgMode);
@@ -350,6 +354,12 @@ public class LEDs extends Thread {
 		for (int i=0;i<leds.length;i++)
 			leds[i]=0;
 	}
+	
+	void setall(int x) {
+		for (int i=0;i<leds.length;i++)
+			leds[i]=x;
+	}
+	
 	// Set strips for ID
 	void stripid() {		
 		final String colnames[]={"red","green", "blue","magenta","cyan","yellow","pinkish", "white"};

@@ -1,0 +1,5 @@
+#!/bin/sh
+logdir=~/Desktop/PF_LOGS
+subdir=$logdir/COPIED_$(date "+%y%m%d_%H%M%S")
+mkdir $subdir
+mv $logdir/[a-z]* $subdir

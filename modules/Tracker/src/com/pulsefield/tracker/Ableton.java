@@ -392,10 +392,9 @@ public class Ableton {
 		else if (state==3)
 			t.triggered=c;
 
-		if (state==1 && clip==bgClip && track==trackSet.bgTrack && oldState!=1 && oldState!=-1) {  // For some reasons, get 1->1 messages when starting
+		if (state==1 && clip==bgClip && trackSet!=null &&  track==trackSet.bgTrack && oldState!=1 && oldState!=-1) {  // For some reasons, get 1->1 messages when starting
 			bgClip=-1;
-			if (trackSet!=null)
-				startBgTrack();   // Start a new bg track
+			startBgTrack();   // Start a new bg track
 		}
 		
 		OscMessage msg = new OscMessage("/grid/table/"+(t.songTrack+1)+"/track");

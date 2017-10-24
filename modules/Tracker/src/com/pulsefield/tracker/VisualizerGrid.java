@@ -116,7 +116,7 @@ public class VisualizerGrid extends VisualizerPS {
 //					Ableton.getInstance().stopClip(track, current);
 				assignments.put(pos.id,closest);
 				int nclips=Ableton.getInstance().getTrack(track).numClips();
-				if (nclips!=-1)
+				if (nclips>0)
 					Ableton.getInstance().playClip(track,closest%nclips);
 			}
 		}

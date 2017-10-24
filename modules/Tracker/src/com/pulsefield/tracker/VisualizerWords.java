@@ -40,6 +40,8 @@ public class VisualizerWords extends VisualizerParticleSystem {
 	@Override
 	public void start() {
 		super.start();
+
+		Ableton.getInstance().setTrackSet("Osmos");
 	}
 
 	@Override

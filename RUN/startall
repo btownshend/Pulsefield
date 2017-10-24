@@ -21,11 +21,13 @@ do
     fi
 done
 starttime=$
-for app in frontend calibrator osc9001 osc9998 osc9999 chuck tracker gpufluid # record
+for app in frontend calibrator osc9001 osc9998 osc9999 chuck gpufluid # tracker # record
 do
   launchctl $load $app.plist
   echo $load $app.plist
 done
+
+echo 'Launch tracker from Eclipse (make sure only one is running)'
 
 launchctl list | grep com.tc
 

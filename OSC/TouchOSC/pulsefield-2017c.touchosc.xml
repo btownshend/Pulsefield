@@ -323,8 +323,6 @@
     <control name="bGFiZWw2MjM=" x="455" y="52" w="25" h="71" color="red" type="labelv" text="UmVwZWw=" size="14" background="false" outline="false"/>
     <control name="bGFiZWw2MjQ=" x="118" y="178" w="41" h="63" color="red" type="labelv" text="Qmx1cg==" size="12" background="false" outline="false"/>
     <control name="bGFiZWw2MjU=" x="455" y="173" w="25" h="130" color="red" type="labelv" text="UGVyc29uIEZvcmNl" size="14" background="false" outline="false"/>
-    <control name="ZmFkZXI4Ng==" x="214" y="12" w="50" h="450" color="red" scalef="0.0" scalet="1.0" osc_cs="L3ZpZGVvL3BhcnRpY2xlZmllbGQvcGFydGljbGVibHVy" type="faderv" response="absolute" inverted="false" centered="false"/>
-    <control name="bGFiZWw2MjY=" x="229" y="146" w="24" h="187" color="red" type="labelv" text="UGFydGljbGUgQmx1cg==" size="14" background="false" outline="false"/>
   </tabpage>
   <tabpage name="NA==" scalef="0.0" scalet="1.0" li_t="" li_c="gray" li_s="14" li_o="false" li_b="false" la_t="" la_c="gray" la_s="14" la_o="false" la_b="false">
     <control name="bGFiZWwzNzA=" x="291" y="29" w="161" h="120" color="red" type="labelh" text="" size="14" background="true" outline="true"/>

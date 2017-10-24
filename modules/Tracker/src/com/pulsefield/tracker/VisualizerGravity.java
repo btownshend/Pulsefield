@@ -118,6 +118,8 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 		blackhole.setLifespan(-1);
 
 		resetGame();
+
+		Ableton.getInstance().setTrackSet("Osmos");
 	}
 
 	void resetGame() {
@@ -311,6 +313,11 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g, p);
 
+		PVector p1 = Tracker.normalizedToFloor(new PVector(-0.8f, -0.8f));
+		PVector p2 = Tracker.normalizedToFloor(new PVector(0.8f, 0.8f));
+		goal1.setCenter(p1);
+		goal2.setCenter(p2);
+		
 		goal1.draw(g);
 		goal2.draw(g);
 

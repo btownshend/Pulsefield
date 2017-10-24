@@ -208,6 +208,10 @@ public class VisualizerVoronoi extends VisualizerPS {
 			drawText(g,0.20f,"T"+tnum,(float)cc.coord(0),(float)cc.coord(1));
 			tnum++;
 			for (Pnt site: triangle) {
+				if (site==null) {
+					logger.severe("site=null");
+					continue;
+				}
 				if (done.contains(site)) continue;
 				done.add(site);
 				PntWithID idsite=((PntWithID)site);

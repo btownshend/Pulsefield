@@ -33,6 +33,8 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 	@Override
 	public void start() {
 		super.start();
+
+		Ableton.getInstance().setTrackSet("Osmos");
 	}
 
 	// Create a particle specified by a distance and angle from a center point.

@@ -4,8 +4,8 @@
 
 // Class to keep track of hits outside the pulsefield
 class Outsiders {
-    static const int innerRadius=1000;   // Inner radius
-    static const int outerRadius=2000 ; // Outder
+    static const int innerRadius=6500;   // Inner radius
+    static const int outerRadius=12000 ; // Outder
     static const int nDivisions=360;  // Divide circle into this many points
     static const int life=10;   // How many frames to hits survive
     int curFrame;

@@ -251,11 +251,11 @@ int SickFrame::read(FILE *fd, int version) {
 
 void SickFrame::write(FILE *fd, int cid, int version) const {
     if (version==1)
-	fprintf(fd,"%d %ud %ld %ud %d %d\n",cid,scanCounter,acquired.tv_sec,acquired.tv_usec,nechoes,num_measurements);
+	fprintf(fd,"%d %u %ld %u %d %d\n",cid,scanCounter,acquired.tv_sec,acquired.tv_usec,nechoes,num_measurements);
     else if (version==2) {
 	// More complete data
-	fprintf(fd,"P %d %ud %ld %d %d %ud ",cid,scanCounter,acquired.tv_sec,acquired.tv_usec,nechoes,num_measurements);
-	fprintf(fd,"%ud %ud %ud %ud %ud %ud %ud %ud ",devNumber,serialNumber,devStatus,telegramCounter,scanTime, transmitTime,digitalInputs, digitalOutputs);
+	fprintf(fd,"P %d %u %ld %d %d %u ",cid,scanCounter,acquired.tv_sec,acquired.tv_usec,nechoes,num_measurements);
+	fprintf(fd,"%u %u %u %u %u %u %u %u ",devNumber,serialNumber,devStatus,telegramCounter,scanTime, transmitTime,digitalInputs, digitalOutputs);
 	fprintf(fd,"%d %d\n", (int)(scanFrequency*100+0.5), (int)(measurementFrequency/100+0.5));
     } else {
 	std::cerr << "Bad version (" << version << ") for SickFrame::write()" << std::endl;

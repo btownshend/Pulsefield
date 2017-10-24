@@ -659,25 +659,10 @@ public class Tracker extends PApplet {
 		scale(-1,1);
 		translate(-width/2,-height/2);
 		background(0);
-		image(canvas, width/2, height/2, canvas.width*cscale, canvas.height*cscale);
-		
-
-		if (drawMasks) {
-			// Draw masks on screen
-			float maskScale=mask[0].width/(width/4f);
-//			logger.fine("maskscale="+maskScale);
-			float h=mask[0].height/maskScale;
-			float w=mask[0].width/maskScale;
-			imageMode(CORNER);
-			rect(0, height-h-2, w+2, h+2);
-			image(mask[0],1,height-h-1,w,h);
-			rect(width-w-2, height-h-2, w+2, h+2);
-			image(mask[1],width-w-1,height-h-1,w,h);
-		}
-		
+		image(canvas, width/2, height/2, canvas.width*cscale, canvas.height*cscale);		
 		popMatrix();
 
-		if (showProjectors) {
+		if (showProjectors || drawMasks) {
 			// Use top-left, top-right corners for projector images
 			float pfrac = 0.25f;  // Use this much of the height of the window for projs
 			float pheight=this.height*pfrac;
@@ -690,13 +675,16 @@ public class Tracker extends PApplet {
 				float x=(i%2==0)?0:width-pwidth;
 				float y=(i<2)?0:height-pheight;
 				rect(x, y, pwidth, pheight);
-				image(projectors[i].pcanvas, x+1, y+1f, pwidth-2, pheight-2);
+				if (drawMasks)
+					image(mask[i], x+1, y+1f, pwidth-2, pheight-2);
+				else
+					image(projectors[i].pcanvas, x+1, y+1f, pwidth-2, pheight-2);
 			}
 		}
 		//SyphonTest.draw(this);
 		Config.saveIfModified(this);   // Save if modified
 		} catch (Exception e) {
-		    logger.log(Level.SEVERE,"exception in draw(): "+e);
+		    logger.log(Level.SEVERE,"exception in draw(): ",e);
 		    e.printStackTrace();
 		}
 	}
@@ -916,6 +904,10 @@ public class Tracker extends PApplet {
 	}
 
 	public static PVector mapVelocity(PVector velInMetersPerSecond) {
+		if (velInMetersPerSecond == null) {
+			logger.severe("velInMetersPerSecond is null");
+			return new PVector(0,0);
+		}
 		PVector sz=getFloorSize();
 		return new PVector(-velInMetersPerSecond.x*2f/sz.x,velInMetersPerSecond.y*2f/sz.y);
 	}
