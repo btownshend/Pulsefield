@@ -32,6 +32,7 @@ class VisualizerParticleSystem extends Visualizer {
 				if (file.isFile()) {
 					try {
 						textures.put(file.getName(), parent.loadImage(file.getAbsolutePath()));
+						logger.info("Loaded particle texture filename " + file.getAbsolutePath());
 					} catch (Exception e) {
 						PApplet.println("Failed to load image " + file.getAbsolutePath());
 					}
@@ -46,13 +47,17 @@ class VisualizerParticleSystem extends Visualizer {
 		universe = new ParticleSystem();
 		
 		setUniverseDefaults();
-
-		Laser.getInstance().setFlag("body", 0.0f);
 		setTO();
 	}
 	
-	// TODO: Make this virtual ?   This is for subclasses to specify their defaults.
-	void setUniverseDefaults() {	
+	@Override
+	public void stop() {
+		universe = null;
+		super.stop();
+	}
+	
+	// setUniverseDefaults is a method for subclasses to specify their defaults.
+	void setUniverseDefaults() {
 	}
 
 	@Override
@@ -76,6 +81,15 @@ class VisualizerParticleSystem extends Visualizer {
 			Person pos = p.pmap.get(id);
 			universe.attractor(pos.getOriginInMeters(),
 					(float) (universe.settings.personForce * (1.2 - pos.getLegSeparationInMeters())));
+		}
+	}
+	
+	// Apply gravity for persons scaling the effect based on their leg
+	// separation.
+	void applyPeopleGravity(People p) {
+		for (int id : p.pmap.keySet()) {
+			Person pos = p.pmap.get(id);
+			universe.attractor(pos.getOriginInMeters(),universe.settings.personForce);
 		}
 	}
 

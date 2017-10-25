@@ -20,11 +20,11 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 	void setUniverseDefaults() {
 		ParticleSystemSettings pss = new ParticleSystemSettings();
 		
-		pss.maxParticles = 20000;
-		pss.particleScale = 0.15f;
-		pss.personForce = 0.005f;
-		pss.particleRotation = 0.25f;
-		pss.forceRotation = 3.0f;
+		pss.maxParticles = 15000;
+		pss.particleScale = 1.0f;
+		pss.personForce = 0.002f;
+		pss.particleRotation = 0.01f;
+		pss.forceRotation = 0.0f;
 		pss.particleMaxLife = 175;
 		
 		universe.settings = pss;
@@ -34,11 +34,7 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 	public void start() {
 		super.start();
 
-
 		Ableton.getInstance().setTrackSet("Osmos");
-
-		// Rainbow uses legs for attraction scaling.
-		Laser.getInstance().setFlag("legs", 0.0f);
 	}
 
 	// Create a particle specified by a distance and angle from a center point.
@@ -46,9 +42,10 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 			float distanceFromCenter, PVector center) {
 
 		PVector origin = center.copy().add(new PVector(0, distanceFromCenter).rotate(rotation));
-		Particle p = new ImageParticle(origin, universe.settings, textures.get("oval.png"));
+		Particle p = new ImageParticle(origin, universe.settings, textures.get("blur.png"));
+		p.scale = 0.4f;
 		p.color = color;
-
+		
 		PVector velocityV = center.copy().sub(origin).normalize().setMag(velocity).rotate(angle);
 		p.velocity = velocityV;
 
@@ -71,7 +68,7 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 			}
 		}
 
-		applyPeopleGravityLegScaled(p);
+		applyPeopleGravity(p);
 		universe.update();
 	}
 

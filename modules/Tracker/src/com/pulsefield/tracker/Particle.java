@@ -12,18 +12,21 @@ import processing.core.PVector;
 
 // A simple Particle class.
 class Particle {
+    final static Logger logger = Logger.getLogger(Tracker.class.getName());
+	
 	PVector location;
 	PVector velocity = new PVector(0, 0);
 	PVector acceleration = new PVector(0, 0);
 	float accelerationFuzz = -0.03f; // Tendency to move in a random direction.
 	float xMaxFuzz = 0.0f; // Tendency to move in direction x.
 	float yMaxFuzz = 0.0f; // Tendency to move in direction y.
-	int maxLifespan = 500; // In count-of-updates.
+	private int maxLifespan = 500; // In count-of-updates.
 	int lifespan = maxLifespan;
 	float opacity = 1.0f;
 	float fadeDeath = 0.0f; // fade opacity in the last e.g. 10% (0.1f) of the
 							// particle's life.
 	float scale = 1.0f; // Particle specific scale.
+	float forceRotation = 0.0f;
 
 	int color = Color.WHITE.hashCode();
 	float rotationRate = 0.0f;
@@ -36,14 +39,13 @@ class Particle {
 	float dieOffscreenBuffer = 0.5f;
 
 	static Random rng = new Random();
-    private final static Logger logger = Logger.getLogger(People.class.getName());
 
 	Particle(PVector location) {
 		this.location = location.copy();
 	}
 
 	Particle(PVector location, ParticleSystemSettings pss) {
-		this(location);
+		this(location = location.copy());
 		loadParticleSystemSettings(pss);
 	}
 
@@ -95,26 +97,31 @@ class Particle {
 		direction.mult(releffect);
 		location.add(direction);
 	}
-	
 
 	// Update particle location.
 	void update() {
 		velocity.add(acceleration);
 		location.add(velocity);
-		lifespan--;
-
-		// Fade Death is intended to:
-		// Start fading at fadeDeath of the particle's age (e.g. if it's .2
-		// (20%) and the particle
-		// has a maxLifespan of 100 then fading will happen when there is 20
-		// lifespan left.
-		if ((lifespan / maxLifespan) <= fadeDeath) {
-			opacity = opacity - (opacity / (lifespan));
-		}
-
-		if (rotationRate > 0.0f) {
+		
+		if (rotationRate != 0.0f) {
 			// Increment the rotation and keep range in +/- 2Pi.
 			rotationRadians += rotationRate % (Math.PI * 2);
+		}
+		
+		// -1 maxLifespan means infinite life.
+		if (maxLifespan == -1) {
+			return;
+		} else {
+			// Age particle.
+			lifespan--;
+
+			// Fade Death is intended to:
+			// Start fading at fadeDeath of the particle's age (e.g. if it's .2
+			// (20%) and the particle has a maxLifespan of 100 then fading will
+			// happen when there is 20 lifespan left.
+			if ((lifespan / maxLifespan) <= fadeDeath) {
+				opacity = opacity - (opacity / (lifespan));
+			}
 		}
 	}
 
@@ -129,11 +136,15 @@ class Particle {
 		}
 
 		// Report invisible or lifeless particles as dead for the particleSystem
-		// to cull.
+		// to cull. This assumes a zero-opacity particle will never come
+		// back to being visible.
 		return (lifespan <= 0 || opacity <= 0.0);
 	}
 
-	// Display the particle..
+	// Display the particle; note secondary scale.
+	// TODO: Clarify the duplicate scale. The purpose of this is to have one scale for the
+	// visualizer to have a relative scale for the particle visualization (e.g. image size
+	// similar to square) and another for scaling all particles through the touchosc interface.
 	void draw(PGraphics g, float scale) {
 		if (rotationRadians != 0f) {
 			rotateBegin(g, location);
@@ -164,7 +175,6 @@ class Particle {
 	void rotateEnd(PGraphics g) {
 		g.popMatrix();
 	}
-
 }
 
 class TextParticle extends Particle {
@@ -201,7 +211,7 @@ class TriangleParticle extends Particle {
 
 	@Override
 	void drawParticle(PGraphics g, PVector l, float scale) {
-		float sideLen = 0.2f;
+		float sideLen = 5.0f;
 		g.noStroke();
 		g.shapeMode(PConstants.CENTER);
 		g.fill(color, opacity * 255);
@@ -211,7 +221,6 @@ class TriangleParticle extends Particle {
 }
 
 class ImageParticle extends Particle {
-
 	PImage image;
     private final static Logger logger = Logger.getLogger(People.class.getName());
 
@@ -228,6 +237,11 @@ class ImageParticle extends Particle {
 
 	@Override
 	void drawParticle(PGraphics g, PVector l, float scale) {
+		if (image == null) {
+			logger.severe("Image " + image + " missing.  Not drawing.");
+			return;
+		}
+
 		g.imageMode(PConstants.CENTER);
 		g.tint(color, Math.min(opacity * 255, maxOpacity * 255));
 		g.image(image, l.x, l.y, scale * image.width / Tracker.getPixelsPerMeter(),
