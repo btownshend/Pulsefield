@@ -269,6 +269,7 @@ public class Tracker extends PApplet {
 		addVis("Visualizer",visMinim=new VisualizerMinim(this,fourier,renderer==P3D),false);
 		addVis("Calypso",new VisualizerCalypso(this,synth),true);
 		addVis("DNA",new VisualizerDNA(this),true);
+		addVis("Syphon",new VisualizerSyphon(this,"Syphoner","Screen Sharing"),false);
 		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
 		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
@@ -840,7 +841,7 @@ public class Tracker extends PApplet {
 		if (present)
 			PApplet.main(new String[] { "--present","com.pulsefield.tracker.Tracker"});
 		else
-			PApplet.main(new String[] {"--display=3","com.pulsefield.tracker.Tracker" });
+			PApplet.main(new String[] {"--display=1","com.pulsefield.tracker.Tracker" });
 	}
 
 	/* incoming osc message are forwarded to the oscEvent method. */
