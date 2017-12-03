@@ -29,7 +29,7 @@ public class VisualizerMenu extends Visualizer {
 	static final float MIN_DISTANCE = 1.0f;
 	
 	/** How far a person needs to be to be able to select the menu item (in meters). */
-	static final float SELECTION_DISTANCE = 0.3f;
+	static final float SELECTION_DISTANCE = 0.3f/2;
 	
 	/** Text height (in meters) **/
 	static final float TEXT_HEIGHT = SELECTION_DISTANCE/2;

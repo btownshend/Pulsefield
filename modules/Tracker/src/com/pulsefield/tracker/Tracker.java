@@ -30,7 +30,7 @@ public class Tracker extends PApplet {
 	private static boolean autocycle = false;
 	private static boolean starting = true;   // Disable bad OSC messages before setup
 	private static boolean genFrameMsgs = false;
-	private static int numProjectors = 4;
+	private static int numProjectors = 2;
 	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
 	private int tick=0;
@@ -1009,7 +1009,7 @@ public class Tracker extends PApplet {
 	}
 
     synchronized public void locklidar(float onoff) {
-	lockLIDARToVideo(0.5f);
+	lockLIDARToVideo(0.0f);  // Distance to expand
     }
 
     // Adjust LIDAR bounds to be a fixed margin around video bounds
