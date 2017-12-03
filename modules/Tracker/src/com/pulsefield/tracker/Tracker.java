@@ -49,7 +49,7 @@ public class Tracker extends PApplet {
 	VisualizerDDR visDDR;
 	VisualizerMenu visMenu;
 	VisualizerMinim visMinim;
-	VisualizerSyphon visSyphonOF;
+	VisualizerSyphon visSyphon;
 	VisualizerRainbow visRainbow;
 	VisualizerWords visWords;
 	VisualizerGravity visGravity;
@@ -269,7 +269,7 @@ public class Tracker extends PApplet {
 		addVis("Visualizer",visMinim=new VisualizerMinim(this,fourier,renderer==P3D),false);
 		addVis("Calypso",new VisualizerCalypso(this,synth),true);
 		addVis("DNA",new VisualizerDNA(this),true);
-		addVis("Syphon",new VisualizerSyphon(this,"Syphoner","Screen Sharing"),false);
+		addVis("Syphon",visSyphon=new VisualizerSyphon(this,"TCPSyphonClient","Default(31053)"),false);
 		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
 		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
@@ -874,6 +874,8 @@ public class Tracker extends PApplet {
 			visNavierOF.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/video/navier")) {
 			visNavier.handleMessage(theOscMessage);
+		} else if (theOscMessage.addrPattern().startsWith("/video/syphon")) {
+			visSyphon.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/video/ddr")) {
 			visDDR.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/video/particlefield")) {

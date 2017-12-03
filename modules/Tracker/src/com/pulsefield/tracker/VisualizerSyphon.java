@@ -2,6 +2,7 @@ package com.pulsefield.tracker;
 import java.util.HashMap;
 
 import codeanticode.syphon.SyphonClient;
+import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -12,6 +13,9 @@ public class VisualizerSyphon extends Visualizer {
 	String appName, serverName;
 	boolean wasActive=false;
 	boolean captureNextFrame=false;
+	float translateX=0f, translateY=0f;
+	float rotate=0f;
+	float scaleX=1f, scaleY=1f;
 	
 	VisualizerSyphon(PApplet parent, String appName, String serverName) {
 		super();
@@ -102,9 +106,55 @@ public class VisualizerSyphon extends Visualizer {
 //				logger.fine("");
 //				//canvas.updatePixels();
 //			}
-			drawImage(g,canvas,Tracker.getFloorCenter().x,Tracker.getFloorCenter().y,
+			g.translate(Tracker.getFloorCenter().x,Tracker.getFloorCenter().y);
+			g.rotate(rotate);
+			g.scale(scaleX, scaleY);
+			g.translate(translateX, translateY);
+			drawImage(g,canvas,0f,0f,
 					Tracker.getFloorSize().x,Tracker.getFloorSize().y);
 			wasActive=true;
 		}
 	}
+	
+	public void handleMessage(OscMessage msg) {
+		logger.fine("Syphon message: "+msg.toString());
+		String pattern=msg.addrPattern();
+		String components[]=pattern.split("/");
+		
+		if (components.length<3 || !components[2].equals("syphon")) 
+			logger.warning("Navier: Expected /video/syphon messages, got "+msg.toString());
+		else if (components.length==4 && components[3].equals("rotate")) {
+			rotate=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("translateX")) {
+			translateX=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("translateY")) {
+			translateY=msg.get(0).floatValue();
+		} else if (components.length==4 && components[3].equals("scaleX")) {
+			scaleX=(float) Math.pow(10.0,msg.get(0).floatValue());
+		} else if (components.length==4 && components[3].equals("scaleY")) {
+			scaleY=(float) Math.pow(10.0,msg.get(0).floatValue());
+		} else 
+			logger.warning("Unknown Syphon Message: "+msg.toString());
+		logger.warning("rotate="+rotate+", translate=("+translateX+","+translateY+"), scale=("+scaleX+","+scaleY+")");
+		setTO();
+	}
+
+	private void setTOValue(String name, double value, String fmt) {
+		TouchOSC to=TouchOSC.getInstance();
+		OscMessage set = new OscMessage("/video/syphon/"+name);
+		set.add(value);
+		to.sendMessage(set);
+		set=new OscMessage("/video/syphon/"+name+"/value");
+		set.add(String.format(fmt, value));
+		to.sendMessage(set);
+	}
+	
+	public void setTO() {
+		setTOValue("scaleX",Math.log10(scaleX),"%.2f");
+		setTOValue("scaleY",Math.log10(scaleY),"%.2f");
+		setTOValue("rotate",rotate,"%.2f");
+		setTOValue("translateX",translateX,"%.4f");
+		setTOValue("translateY",translateY,"%.4f");
+	}
+	
 }
