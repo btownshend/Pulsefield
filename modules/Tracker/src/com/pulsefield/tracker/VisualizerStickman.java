@@ -310,7 +310,7 @@ public class VisualizerStickman extends Visualizer {
 		// Update internal state of the Marbles
 		for (int id: allpos.pmap.keySet()) {
 			if (!sticks.containsKey(id))
-				sticks.put(id,new Stickman(2.0f,id));
+				sticks.put(id,new Stickman(1.0f,id));
 			sticks.get(id).updatePosition(allpos.get(id));
 			//logger.fine("Marble "+id+" moved to "+currentpos.toString());
 		}
