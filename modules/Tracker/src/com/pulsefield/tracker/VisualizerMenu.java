@@ -32,7 +32,7 @@ public class VisualizerMenu extends Visualizer {
 	static final float SELECTION_DISTANCE = 0.3f;
 	
 	/** Text height (in meters) **/
-	static final float TEXT_HEIGHT = 0.15f;
+	static final float TEXT_HEIGHT = SELECTION_DISTANCE/2;
 	
 	static final float hotSpotRadius=0.3f;   // Radius of hot spot in meters
 	static final PVector hotSpot = new PVector(0f,0f);  // Location of hotspot (in meters) (updated when drawn)
@@ -41,7 +41,7 @@ public class VisualizerMenu extends Visualizer {
 	static final int SELECTIONCOUNT=30;  // Number of frames to trigger a selection
 	
 	/** Cursor radius (in meters) **/
-	static final float CURSOR_RADIUS = 0.3f;
+	static final float CURSOR_RADIUS = SELECTION_DISTANCE;
 
 	/** Set of items currently being displayed. */
 	HashSet<MenuItem> menuItems = new HashSet<MenuItem>();
