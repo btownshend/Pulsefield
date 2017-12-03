@@ -17,7 +17,7 @@ class GoalBox {
 
 	Float size = 0.2f;
 
-	private PVector center; // Center coordinate.
+	private PVector center = new PVector(0,0); // Center coordinate.
 	private Float x1, x2, y1, y2;
 
 	void setCenter(PVector c) {
