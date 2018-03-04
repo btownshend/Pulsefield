@@ -180,7 +180,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 	@Override
 	public void draw(Tracker t, PGraphics g, People allpos) {
-		final boolean showConnections=false;
+		final boolean showConnections=true;
 		super.draw(t, g, allpos);
 		if (allpos.pmap.isEmpty())
 			return;
