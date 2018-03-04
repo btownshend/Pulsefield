@@ -205,7 +205,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 			Pnt cc=triangle.getCircumcenter();
 			g.fill(255);
 			g.textAlign(PConstants.CENTER,PConstants.CENTER);
-			drawText(g,0.20f,"T"+tnum,(float)cc.coord(0),(float)cc.coord(1));
+			//drawText(g,0.20f,"T"+tnum,(float)cc.coord(0),(float)cc.coord(1));
 			tnum++;
 			for (Pnt site: triangle) {
 				if (site==null) {
