@@ -192,8 +192,8 @@ public class VisualizerVoronoi extends VisualizerPS {
 		for (Triangle triangle : dt) {
 			if (showConnections){
 				g.noFill();
-				g.strokeWeight(0.01f);
-				g.stroke(0,0,255);
+				g.strokeWeight(0.04f);
+				g.stroke(0,127,255);
 				g.beginShape();
 				for (int i=0;i<3;i++) {
 					Pnt c=triangle.get(i);
@@ -221,7 +221,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 				// Draw all the surrounding triangles
 				g.noFill();
 				g.stroke(0,255,0);
-				g.strokeWeight(0.01f);
+				g.strokeWeight(0.02f);
 				g.beginShape();
 				for (Triangle tri: list) {
 					Pnt c=tri.getCircumcenter();
