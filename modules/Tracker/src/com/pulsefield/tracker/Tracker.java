@@ -30,7 +30,7 @@ public class Tracker extends PApplet {
 	private static boolean autocycle = false;
 	private static boolean starting = true;   // Disable bad OSC messages before setup
 	private static boolean genFrameMsgs = false;
-	private static int numProjectors = 2;
+	private static int numProjectors = 4;
 	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
 	private int tick=0;
