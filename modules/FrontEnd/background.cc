@@ -144,7 +144,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 	    range[bestk][i]=srange[i]*1.0f/tc + range[bestk][i]*(1-1.0f/tc);
 	    freq[bestk][i]+=1.0f/tc;
 	    if (!bginit)
-		sigma[bestk][i]=std::min((double)MAXBGSIGMA,sqrt(sigma[bestk][i]*sigma[bestk][i]*(1-1.0f/tc)+(srange[i]-range[bestk][i])*(srange[i]-oldrange)*1.0f/tc));
+		sigma[bestk][i]=std::min((float)MAXBGSIGMA,sqrt(sigma[bestk][i]*sigma[bestk][i]*(1-1.0f/tc)+(srange[i]-range[bestk][i])*(srange[i]-oldrange)*1.0f/tc));
 	    consecutiveInvisible[bestk][i]=0;
 	} else if (srange[i]>range[0][i]+FARTHRESHOLD) {
 	    // New long distance point, update range[0] faster
@@ -154,7 +154,7 @@ void Background::update(const SickIO &sick, const std::vector<int> &assignments,
 		range[0][i]=srange[i];
 	    else {
 		range[0][i]=srange[i]*1.0f/FARUPDATETC + range[0][i]*(1-1.0f/FARUPDATETC);
-		sigma[0][i]=std::min((double)MAXBGSIGMA,sqrt(sigma[0][i]*sigma[0][i]*(1-1.0f/FARUPDATETC)+(srange[i]-range[0][i])*(srange[i]-oldrange)*1.0f/FARUPDATETC));
+		sigma[0][i]=std::min((float)MAXBGSIGMA,sqrt(sigma[0][i]*sigma[0][i]*(1-1.0f/FARUPDATETC)+(srange[i]-range[0][i])*(srange[i]-oldrange)*1.0f/FARUPDATETC));
 	    }
 	    freq[0][i]+=1.0f/tc;
 	    consecutiveInvisible[0][i]=0;

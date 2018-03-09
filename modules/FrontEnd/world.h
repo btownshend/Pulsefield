@@ -11,6 +11,7 @@
 #include <vector>
 #include <ostream>
 #include <cairo-xlib.h>
+#include <algorithm>
 #include "person.h"
 #include "dest.h"
 #include "background.h"
@@ -77,7 +78,7 @@ public:
     void setMaxY(float v) { maxy=v; }
 
     float distanceToBoundary(Point p) const {
-	double d=fabs(p.X()-minx); 
+	float d=fabs(p.X()-minx); 
 	d=std::min(d,fabs(p.Y()-miny));
 	d=std::min(d,fabs(p.X()-maxx));
 	d=std::min(d,fabs(p.Y()-maxy));
