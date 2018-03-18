@@ -8,7 +8,7 @@ LIBLOLIBDIR=/opt/local/lib
 MATLAB=/Applications/MATLAB
 MATLABINC=$(MATLAB)/extern/include
 MATLABLIBDIR=$(MATLAB)/bin/maci64
-#MATLABLIBES=-lmx -lmat
+MATLABLIBES=-lmx -lmat
 
 SICKTOOLBOX=$(BASEDIR)/sicktoolbox/trunk/c++/drivers
 SICKLIBDIR=$(SICKTOOLBOX)/lms5xx/sicklms5xx/.libs
@@ -25,7 +25,7 @@ OPENCVLIBES=-lopencv_ml -lopencv_video -lopencv_core
 #CXX=/opt/local/bin/g++
 #DEBUG=-g -ggdb -Wall -D_GLIBCXX_DEBUG
 CXX=clang++
-DEBUG=-g  -Wall  # -DMATLAB
+DEBUG=-g  -Wall  -DMATLAB
 PROFILE=
 OPTIMIZE=-Ofast
 CXXFLAGS=-pthread $(DEBUG) $(OPTIMIZE) $(PROFILE) -I$(UTIL) -I$(SICKTOOLBOX)/lms5xx -I$(SICKTOOLBOX)/base/src -I$(MATLABINC) -I$(CAIROINC) $(OPENCVINC) -I/opt/X11/include -Wno-overloaded-virtual -Wno-unused-local-typedef
