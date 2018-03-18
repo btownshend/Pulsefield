@@ -212,6 +212,28 @@ for i=1:length(ids)
       plot(frame(vis(:,2)),spd2(vis(:,2)),[color2,'.']);
       xlabel('Frame');
       title('Leg Speed');
+    elseif strcmp(args.other(oth),'leg1vel')
+      vel1=legvel(:,1,1);
+      vel2=legvel(:,1,2);
+      h1=plot(frame,vel1,[color1,'--']);
+      hold on;
+      h2=plot(frame,vel2,[color2,'-']);
+      plot(frame(vis(:,1)),vel1(vis(:,1)),[color1,'.']);
+      plot(frame(vis(:,2)),vel2(vis(:,2)),[color2,'.']);
+      xlabel('Frame');
+      title('Leg1 Velocity');
+      legend([h1,h2],{'X','Y'});
+    elseif strcmp(args.other(oth),'leg2vel')
+      vel1=legvel(:,2,1);
+      vel2=legvel(:,2,2);
+      h1=plot(frame,vel1,[color1,'--']);
+      hold on;
+      h2=plot(frame,vel2,[color2,'-']);
+      plot(frame(vis(:,1)),vel1(vis(:,1)),[color1,'.']);
+      plot(frame(vis(:,2)),vel2(vis(:,2)),[color2,'.']);
+      xlabel('Frame');
+      title('Leg2 Velocity');
+      legend([h1,h2],{'X','Y'});
     elseif strcmp(args.other(oth),'predict')
       pstd=sqrt((loc(:,:,1)-predloc(:,:,1)).^2+(loc(:,:,2)-predloc(:,:,2)).^2);
       pstd(all(predloc==0,3))=nan;   % Initial prediction
