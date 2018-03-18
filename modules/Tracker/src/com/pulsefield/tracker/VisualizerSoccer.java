@@ -87,22 +87,25 @@ class Ball {
 	public void collisionDetect(Person p) {
 		for (int i=0;i<2;i++) {
 			Leg leg=p.legs[i];
-
-			float sep=PVector.dist(leg.getOriginInMeters(),position);
+		    PVector sep = PVector.sub(leg.getOriginInMeters(),position);
 			float minSep=leg.getDiameterInMeters()/2+radius;
-			if (sep<minSep) { // && PVector.dot(velocity, leg.getVelocityInMeters())<=0) {
-				logger.fine("Ball at "+position+" with velocity="+velocity+" collided with leg at "+leg.getOriginInMeters()+", velocity="+leg.getVelocityInMeters()+", minsep="+minSep);
-				// Perform a kick in the ball-not-moving frame of reference
-				// Calculate a kick velocity
-				PVector kickvelocity=PVector.mult(PVector.sub(leg.getVelocityInMeters(),velocity),leg.getMassInKg()/(leg.getMassInKg()+mass)*(1+restitution));
-				// And add the kickvelocity to its current velocity (ie switch back to work frame of reference)
-				velocity.add(kickvelocity);
-				logger.fine("New ball velocity="+velocity);
+			if (sep.mag()<minSep) { // && PVector.dot(velocity, leg.getVelocityInMeters())<=0) {
+			    // Compute closing speed
+				float closingSpeed=PVector.dot(PVector.sub(leg.getVelocityInMeters(),velocity),sep)/sep.mag();
+				logger.fine("Frame "+Tracker.theTracker.frameCount+": Ball at "+position+" with velocity="+velocity+" collided with leg at "+leg.getOriginInMeters()+", velocity="+leg.getVelocityInMeters()+", minsep="+minSep+", closing="+closingSpeed);
+				if (closingSpeed<0) {
+				    // Perform a kick in the ball-not-moving frame of reference
+				    // Calculate a kick velocity
+				    PVector kickvelocity=PVector.mult(PVector.sub(leg.getVelocityInMeters(),velocity),leg.getMassInKg()/(leg.getMassInKg()+mass)*(1+restitution));
+				    // And add the kickvelocity to its current velocity (ie switch back to work frame of reference)
+				    velocity.add(kickvelocity);
+				    logger.fine("New ball velocity="+velocity);
+				    impactSound(1);
+				}
 				// And make sure the ball stays outside the leg
 				PVector shiftDir=new PVector(velocity.x,velocity.y);
-				shiftDir.setMag(minSep-sep);
+				shiftDir.setMag(minSep-sep.mag());
 				position.add(shiftDir);
-				impactSound(1);
 			}
 		}
 	}
