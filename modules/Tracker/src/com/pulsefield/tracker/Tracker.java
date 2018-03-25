@@ -44,6 +44,7 @@ public class Tracker extends PApplet {
 	static float miny, maxy, minx, maxx; // Bound of video display (in LIDAR coordinates - meters)
 	static Visualizer vis[] = new Visualizer[0];
 	VisualizerGrid visGrid;
+	VisualizerMeasure visMeasure;
 	VisualizerNavier visNavier;
 	VisualizerNavierOF visNavierOF;
 	VisualizerDDR visDDR;
@@ -276,7 +277,7 @@ public class Tracker extends PApplet {
 		addVis("Osmos",new VisualizerOsmos(this,synth),true);
 		addVis("Freeze",new VisualizerFreeze(this,synth),true);
 		addVis("VDMX",new VisualizerVDMX(this,Tracker.pfroot+"/../VDMX/Projects/ValentinesDayStarter/Valentines.vdmx5"),false);
-		addVis("Measure",new VisualizerMeasure(this),true);
+		addVis("Measure",visMeasure=new VisualizerMeasure(this),true);
 		addVis("Life", new VisualizerLife(this),true);
 		addVis("Stickman",new VisualizerStickman(this,synth),true);
 		addVis("Hunter", new VisualizerHunter(this,synth),true);
@@ -855,7 +856,9 @@ public class Tracker extends PApplet {
 		else if (theOscMessage.addrPattern().startsWith("/video/app/buttons") == true)
 			vsetapp(theOscMessage);
 		else if (theOscMessage.addrPattern().startsWith("/grid")) {
+			// Grid messages need to be broadcast to all apps that use Grid, since they each keep their own state
 			visGrid.handleMessage(theOscMessage);
+			visMeasure.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/live") || theOscMessage.addrPattern().startsWith("/remix/error")) {
 			liveTick=tick;
 			ableton.handleMessage(theOscMessage);
