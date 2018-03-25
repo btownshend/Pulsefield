@@ -43,7 +43,7 @@ public class Tracker extends PApplet {
 	static float lidarminy=-5f, lidarmaxy=5f, lidarminx=-5f, lidarmaxx=5f, lidarRotation=0f; // Bounds of tracking
 	static float miny, maxy, minx, maxx; // Bound of video display (in LIDAR coordinates - meters)
 	static Visualizer vis[] = new Visualizer[0];
-	VisualizerGrid visAbleton;
+	VisualizerGrid visGrid;
 	VisualizerNavier visNavier;
 	VisualizerNavierOF visNavierOF;
 	VisualizerDDR visDDR;
@@ -252,8 +252,8 @@ public class Tracker extends PApplet {
 		addVis("Navier",visNavier=new VisualizerNavier(this,synth),true); 
 		addVis("NavierOF",visNavierOF=new VisualizerNavierOF(this,synth,"GPUFluidsDebug"),true); 
 		addVis("Tron",new VisualizerTron(this,scale,synth),true);
-		addVis("Grid",visAbleton=new VisualizerGrid(this),true);
-		oscP5.plug(visAbleton,  "songIncr", "/touchosc/song/incr");
+		addVis("Grid",visGrid=new VisualizerGrid(this),true);
+		oscP5.plug(visGrid,  "songIncr", "/touchosc/song/incr");
 		addVis("DDR",visDDR=new VisualizerDDR(this),true);
 		addVis("Poly",new VisualizerPoly(this,scale,synth),true);
 		addVis("Voronoi",visVoronoi = new VisualizerVoronoi(this,scale,synth),true);
@@ -855,7 +855,7 @@ public class Tracker extends PApplet {
 		else if (theOscMessage.addrPattern().startsWith("/video/app/buttons") == true)
 			vsetapp(theOscMessage);
 		else if (theOscMessage.addrPattern().startsWith("/grid")) {
-			visAbleton.handleMessage(theOscMessage);
+			visGrid.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/live") || theOscMessage.addrPattern().startsWith("/remix/error")) {
 			liveTick=tick;
 			ableton.handleMessage(theOscMessage);
@@ -881,7 +881,7 @@ public class Tracker extends PApplet {
 		} else if (theOscMessage.addrPattern().startsWith("/video/particlefield")) {
 			visRainbow.handleMessage(theOscMessage);
 			visGravity.handleMessage(theOscMessage);
-			visAbleton.handleMessage(theOscMessage);
+			visGrid.handleMessage(theOscMessage);
 			visGuitar.handleMessage(theOscMessage);
 			visVoronoi.handleMessage(theOscMessage);
 			visProximity.handleMessage(theOscMessage);
