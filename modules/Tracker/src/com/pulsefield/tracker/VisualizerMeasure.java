@@ -100,29 +100,41 @@ class Measure {
 	
 }
 
-public class VisualizerMeasure extends VisualizerGrid {
+public class VisualizerMeasure extends Visualizer {
 	Measure measure;
-
+	Grid grid;
+	
 	VisualizerMeasure(PApplet parent) {
-		super(parent);
-		drawGrid=false;
+		super();
+		String songs[] = {"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","PB"};
+		grid=new Grid(songs);
 		measure=new Measure(new PVector(0f,0f));
 	}
 	
 	@Override
 	public void start() {
 		super.start();
-		// trackSet taken care of in Grid.start()
+		grid.start();
 	}
 	
+	@Override
+	public void stop() {
+		super.stop();
+		grid.stop();
+	}
+	
+	@Override
 	public void update(PApplet parent, People p) {
-		super.update(parent,p);
+		grid.update(p);
 		measure.update(p);
 	}
 	
+	@Override
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g, p);
+		// Grid is not drawn -- invisible
 		// g.shapeMode(PApplet.CENTER);
 		measure.draw(g, p);
+		grid.drawTitle(g);
 	}
 }
