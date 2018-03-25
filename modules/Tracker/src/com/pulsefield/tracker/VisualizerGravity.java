@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -355,6 +356,12 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 		}
 		if (useGrid)
 			grid.drawTitle(g);
+	}
+	
+	@Override
+	public void handleMessage(OscMessage theOscMessage) {
+		if (useGrid && !grid.handleMessage(theOscMessage))
+			super.handleMessage(theOscMessage);
 	}
 }
 

@@ -2,6 +2,7 @@ package com.pulsefield.tracker;
 
 import java.awt.Color;
 
+import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
@@ -95,5 +96,11 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 		if (useGrid)
 			grid.drawTitle(g);
 		drawPeople(g, p);
+	}
+	
+	@Override
+	public void handleMessage(OscMessage theOscMessage) {
+		if (useGrid && !grid.handleMessage(theOscMessage))
+			super.handleMessage(theOscMessage);
 	}
 }

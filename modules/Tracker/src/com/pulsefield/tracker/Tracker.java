@@ -859,6 +859,8 @@ public class Tracker extends PApplet {
 			// Grid messages need to be broadcast to all apps that use Grid, since they each keep their own state
 			visGrid.handleMessage(theOscMessage);
 			visMeasure.handleMessage(theOscMessage);
+			visGravity.handleMessage(theOscMessage);
+			visRainbow.handleMessage(theOscMessage);
 		} else if (theOscMessage.addrPattern().startsWith("/live") || theOscMessage.addrPattern().startsWith("/remix/error")) {
 			liveTick=tick;
 			ableton.handleMessage(theOscMessage);
