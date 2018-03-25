@@ -89,7 +89,7 @@ public class VisualizerGrid extends VisualizerPS {
 			// Check for song advance
 			if (PVector.sub(titlePos, pos.getOriginInMeters()).mag() < 0.3f) {
 				// Change song
-				//songIncr(1);
+				songIncr(1);
 			}
 			int closest=-1;
 			int current=-1;
