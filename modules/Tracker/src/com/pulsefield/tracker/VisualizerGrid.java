@@ -15,7 +15,7 @@ public class VisualizerGrid extends VisualizerPS {
 	float gposx[], gposy[];
 	float gridwidth, gridheight;
 	int ncell;
-	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","AN","PB"};
+	String songs[] = {"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","PB"};
 	int song=0;
 	PVector titlePos = new PVector(0,0);
 	protected boolean drawGrid = true;
