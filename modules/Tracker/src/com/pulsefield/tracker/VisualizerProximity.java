@@ -10,7 +10,7 @@ import processing.core.PVector;
 
 public class VisualizerProximity extends VisualizerPS {
 	HashMap<Integer,Integer> assignments;
-	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","AN","PB"};
+	String songs[]={"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","PB"};
 	int song=0;
 	TrackSet ts;
 	static final float MAXSEP=0.2f; // Maximum separation to trigger
