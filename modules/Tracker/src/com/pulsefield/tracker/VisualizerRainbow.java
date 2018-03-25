@@ -11,9 +11,15 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 	private float rainbowAdvance = 0.0f;
 	float rainbowAdvanceIncrement = 0.1f; // rotation of the colors positions
 											// per update.
+	final boolean useGrid = true;
+	Grid grid;
 
 	VisualizerRainbow(PApplet parent) {
 		super(parent);
+		if (useGrid) {
+			final String songs[] = {"OL"};
+			grid=new Grid(songs);
+		}
 	}
 
 	@Override
@@ -33,10 +39,19 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 	@Override
 	public void start() {
 		super.start();
-
-		Ableton.getInstance().setTrackSet("Osmos");
+		if (useGrid)
+			grid.start();
+		else
+			Ableton.getInstance().setTrackSet("Osmos");
 	}
 
+	@Override
+	public void stop() {
+		super.stop();
+		if (useGrid)
+			grid.stop();
+	}
+	
 	// Create a particle specified by a distance and angle from a center point.
 	private void spewParticle(ParticleSystem universe, int color, float rotation, float angle, float velocity,
 			float distanceFromCenter, PVector center) {
@@ -54,6 +69,8 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 
 	@Override
 	public void update(PApplet parent, People p) {
+		if (useGrid)
+			grid.update(p);
 		int particlesPerUpdate = 360;
 		rainbowAdvance = (rainbowAdvance + rainbowAdvanceIncrement) % 360;
 		
@@ -75,6 +92,8 @@ public class VisualizerRainbow extends VisualizerParticleSystem {
 	@Override
 	public void draw(Tracker t, PGraphics g, People p) {
 		super.draw(t, g, p);
+		if (useGrid)
+			grid.drawTitle(g);
 		drawPeople(g, p);
 	}
 }

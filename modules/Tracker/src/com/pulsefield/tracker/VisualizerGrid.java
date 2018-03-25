@@ -43,4 +43,3 @@ public class VisualizerGrid extends VisualizerPS {
 			super.handleMessage(theOscMessage);
 	}
 }
-

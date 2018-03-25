@@ -95,13 +95,21 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 	
 	float sourceVelocity;
 	float sourceAngle;
-
+	
+	final boolean useGrid = true;
+	Grid grid;
+	
 	VisualizerGravity(PApplet parent) {
 		super(parent);
 
 		// Create Goals.
 		goal1 = new GoalBox();
 		goal2 = new GoalBox();
+		
+		if (useGrid) {
+			final String songs[] = {"FI"};
+			grid=new Grid(songs);
+		}
 	}
 
 	@Override
@@ -119,9 +127,19 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 
 		resetGame();
 
-		Ableton.getInstance().setTrackSet("Osmos");
+		if (useGrid)
+			grid.start();
+		else
+			Ableton.getInstance().setTrackSet("Osmos");
 	}
 
+	@Override
+	public void stop() {
+		super.stop();
+		if (useGrid)
+			grid.stop();
+	}
+	
 	void resetGame() {
 		gameOver = false;
 		goal1.score = 0;
@@ -241,6 +259,7 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 					universe.addParticle(particleFluff);
 				}
 			}
+
 		}
 
 		for (int id : p.pmap.keySet()) {
@@ -299,6 +318,9 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 		}
 
 		universe.update();
+		
+		if (useGrid)
+			grid.update(p);
 	}
 
 	// Mix up the team color assignments from game to game using the teamAssignments map.
@@ -331,6 +353,8 @@ public class VisualizerGravity extends VisualizerParticleSystem {
 			g.fill(teamColor(id));
 			g.ellipse(pos.getOriginInMeters().x, pos.getOriginInMeters().y, .3f, .3f);
 		}
+		if (useGrid)
+			grid.drawTitle(g);
 	}
 }
 
