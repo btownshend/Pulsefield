@@ -309,7 +309,6 @@ class NavierOFSettings {
 
 		float canvasScale=0.5f;   // Relative size of OF canvas to local floor image
 		int currentSettings;
-		private int bordercolor;
 		PImage buffer=null;
 		PImage iao;
 		int rainbow = 0;

@@ -1,8 +1,6 @@
 package com.pulsefield.tracker;
 
 import java.util.Arrays;
-import java.io.*;
-import sun.audio.*;
 
 import processing.core.PApplet;
 import processing.core.PGraphics;

@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import oscP5.OscMessage;
-import oscP5.OscP5;
 
 public class LEDs extends Thread {
 	private final static Logger logger = Logger.getLogger(Tracker.class.getName());
@@ -362,10 +361,10 @@ public class LEDs extends Thread {
 	
 	// Set strips for ID
 	void stripid() {		
-		final String colnames[]={"red","green", "blue","magenta","cyan","yellow","pinkish", "white"};
+		//final String colnames[]={"red","green", "blue","magenta","cyan","yellow","pinkish", "white"};
 		final int col[][]={{255,0,0},{0,255,0},{0,0,255},{255,0,255},{0,255,255}, {255,255,0}, {255,64,64}, {255,255,255}};
-		final int clkpins[]={48,46,44,42,36,34,32,40};
-		final int datapins[]={49,47,45,43,37,35,33,41};
+		//final int clkpins[]={48,46,44,42,36,34,32,40};
+		//final int datapins[]={49,47,45,43,37,35,33,41};
 		final int nphase=3;
 		clear();
 		for (int k=0;k<nstrip;k++) {

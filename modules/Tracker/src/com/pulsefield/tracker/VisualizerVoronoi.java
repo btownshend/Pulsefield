@@ -188,7 +188,7 @@ public class VisualizerVoronoi extends VisualizerPS {
 		// Draw Voronoi diagram
 		// Keep track of sites done; no drawing for initial triangles sites
 		HashSet<Pnt> done = new HashSet<Pnt>(initialTriangle);
-		int tnum=0;
+		//int tnum=0;
 		for (Triangle triangle : dt) {
 			if (showConnections){
 				g.noFill();
@@ -202,11 +202,11 @@ public class VisualizerVoronoi extends VisualizerPS {
 				g.endShape(PConstants.CLOSE);
 			}
 
-			Pnt cc=triangle.getCircumcenter();
+			//Pnt cc=triangle.getCircumcenter();
 			g.fill(255);
 			g.textAlign(PConstants.CENTER,PConstants.CENTER);
 			//drawText(g,0.20f,"T"+tnum,(float)cc.coord(0),(float)cc.coord(1));
-			tnum++;
+			//tnum++;
 			for (Pnt site: triangle) {
 				if (site==null) {
 					logger.severe("site=null");

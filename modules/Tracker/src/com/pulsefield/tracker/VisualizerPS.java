@@ -6,7 +6,6 @@ import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
-import processing.opengl.PGL;
 
 // Multiple Particle System class.
 public class VisualizerPS extends VisualizerParticleSystem {
