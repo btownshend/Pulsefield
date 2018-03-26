@@ -281,8 +281,14 @@ public class LEDs extends Thread {
 
 		while (true) {
 			// Loop forever, updating Arduino with current LED settings
-			if (!keepalive())
+			if (!keepalive()) {
+				try {
+					Thread.sleep(retryInterval);  // Wait a bit to not consume CPU
+				} catch (InterruptedException e) {
+					;
+				}
 				continue;
+			}
 			//echotest();
 			//echotest();
 			bg();
