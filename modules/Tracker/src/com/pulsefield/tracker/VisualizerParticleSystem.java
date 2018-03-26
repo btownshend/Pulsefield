@@ -26,7 +26,7 @@ class VisualizerParticleSystem extends Visualizer {
 		File directory = new File("data/particleimages/");
 		File[] files = directory.listFiles();
 		if (files == null || files.length <= 0) {
-			PApplet.println("No image files to load");
+			logger.severe("No image files to load from "+directory.getAbsolutePath());		
 		} else {
 			for (File file : files) {
 				if (file.isFile()) {
