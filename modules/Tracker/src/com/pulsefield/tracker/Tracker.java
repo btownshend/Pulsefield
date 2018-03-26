@@ -249,41 +249,42 @@ public class Tracker extends PApplet {
 
 	private void addVisualizers() {
 		Scale scale=new Scale("Major","C");
+		final boolean originalMusic = true;   // Set to only include apps that have original music
 		addVis("Pads", visPads = new VisualizerPads(this, synth),false);
 		addVis("Navier",visNavier=new VisualizerNavier(this,synth),true); 
 		addVis("NavierOF",visNavierOF=new VisualizerNavierOF(this,synth,"GPUFluidsDebug"),true); 
-		addVis("Tron",new VisualizerTron(this,scale,synth),true);
+		addVis("Tron",new VisualizerTron(this,scale,synth),!originalMusic);
 		addVis("Grid",visGrid=new VisualizerGrid(this),true);
 		oscP5.plug(visGrid,  "songIncr", "/touchosc/song/incr");
-		addVis("DDR",visDDR=new VisualizerDDR(this),true);
+		addVis("DDR",visDDR=new VisualizerDDR(this),!originalMusic);
 		addVis("Poly",new VisualizerPoly(this,scale,synth),true);
 		addVis("Voronoi",visVoronoi = new VisualizerVoronoi(this,scale,synth),true);
 		addVis("Guitar", visGuitar = new VisualizerGuitar(this,synth),true);
 		addVis("Dot",new VisualizerDot(this),false);
-		addVis("CHucK",new VisualizerChuck(this),false);
+		addVis("CHucK",new VisualizerChuck(this),true);
 		addVis("Proximity",visProximity = new VisualizerProximity(this),true);
-		addVis("Cows",new VisualizerCows(this),true);
+		addVis("Cows",new VisualizerCows(this),!originalMusic);
 		addVis("Trump",new VisualizerWhack(this,"whack","Whack","WHACK"),false);
-		addVis("Bowie",new VisualizerZiggy(this,"bowie","Bowie","WHACK-Bowie"),true);
-		addVis("Soccer",new VisualizerSoccer(this),true);
+		addVis("Bowie",new VisualizerZiggy(this,"bowie","Bowie","WHACK-Bowie"),!originalMusic);
+		addVis("Soccer",new VisualizerSoccer(this),!originalMusic);
 		addVis("Menu",visMenu=new VisualizerMenu(this),false);
 		addVis("Visualizer",visMinim=new VisualizerMinim(this,fourier,renderer==P3D),false);
 		addVis("Calypso",new VisualizerCalypso(this,synth),true);
-		addVis("DNA",new VisualizerDNA(this),true);
+		addVis("DNA",new VisualizerDNA(this),!originalMusic);
 		addVis("Syphon",visSyphon=new VisualizerSyphon(this,"TCPSyphonClient","Default(31053)"),false);
 		//visSyphon = new VisualizerSyphon(this,"Syphoner","Evernote");
 		//visSyphon = new VisualizerSyphon(this,"Tutorial","Main Camera");
 		//addVis("Balls",new VisualizerUnity(this,"Tutorial","Balls.app"),true);
-		addVis("Osmos",new VisualizerOsmos(this,synth),true);
-		addVis("Freeze",new VisualizerFreeze(this,synth),true);
+		addVis("Osmos",new VisualizerOsmos(this,synth),!originalMusic);
+		addVis("Freeze",new VisualizerFreeze(this,synth),!originalMusic);
 		addVis("VDMX",new VisualizerVDMX(this,Tracker.pfroot+"/../VDMX/Projects/ValentinesDayStarter/Valentines.vdmx5"),false);
 		addVis("Measure",visMeasure=new VisualizerMeasure(this),true);
 		addVis("Life", new VisualizerLife(this),true);
-		addVis("Stickman",new VisualizerStickman(this,synth),true);
-		addVis("Hunter", new VisualizerHunter(this,synth),true);
+		addVis("Stickman",new VisualizerStickman(this,synth),!originalMusic);
+		addVis("Hunter", new VisualizerHunter(this,synth),!originalMusic);
 		addVis("Gravity", visGravity = new VisualizerGravity(this), true);
 		addVis("Rainbow", visRainbow = new VisualizerRainbow(this), true);
-		addVis("Words", visWords = new VisualizerWords(this), true);
+		addVis("Words", visWords = new VisualizerWords(this), !originalMusic);
 		addVis("TestPattern",new VisualizerTestPattern(this),false);
 		setapp(vis.length-1);
 	}
