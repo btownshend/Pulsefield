@@ -42,7 +42,7 @@ public class VisualizerProximity extends VisualizerPS {
 			song=(song+1)%songs.length;
 		logger.fine("Song="+song);
 		TrackSet ts=Ableton.getInstance().setTrackSet(songs[song]);
-		logger.fine("Starting grid with song "+song+": "+ts.name);
+		logger.fine("Starting proximity with song "+song+": "+ts.name);
 	}
 
 	public int clipNumber(int nclips,int id1, int id2) {
@@ -181,5 +181,7 @@ public class VisualizerProximity extends VisualizerPS {
 	public void setnpeople(int n) {
 		// Ignored for now
 	}
+	
+	// TODO: Doesn't handle grid OSC messages to change song
 }
 
