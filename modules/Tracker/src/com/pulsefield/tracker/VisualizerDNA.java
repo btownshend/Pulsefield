@@ -430,13 +430,16 @@ public class VisualizerDNA extends VisualizerDot {
 	static final int NUMRANDSTRANDS=10;
 	long startTime;
 	Effects effects;
-
+	Grid grid;
+	
 	HashMap<Integer, PlayerStrand> strands;
 
 	VisualizerDNA(PApplet parent) {
 		super(parent);
 		strands = new HashMap<Integer, PlayerStrand>();
 		this.effects=Effects.defaultEffects;
+		final String songs[] = {"MB","NG"};
+		grid=new Grid(songs);
 	}
 	
 	public void update(PApplet parent, People allpos) {		
@@ -458,6 +461,7 @@ public class VisualizerDNA extends VisualizerDot {
 			}
 		}
 		Strand.updateAll(effects);
+		grid.update(allpos);
 	}
 
 
@@ -468,12 +472,14 @@ public class VisualizerDNA extends VisualizerDot {
 		for (int i=0;i<NUMRANDSTRANDS;i++)
 			new Strand(new PVector((float)Math.random()*(Tracker.maxx-Tracker.minx)+Tracker.minx,(float)Math.random()*(Tracker.maxy-Tracker.miny)+Tracker.miny),
 					PVector.random2D(),"NNNN");
+		grid.start();
 	}
 
 	public void stop() {
 		Strand.destroyAll();
 		super.stop();
 		logger.info("Stopping DNA at "+System.currentTimeMillis());
+		grid.stop();
 	}
 
 	@Override

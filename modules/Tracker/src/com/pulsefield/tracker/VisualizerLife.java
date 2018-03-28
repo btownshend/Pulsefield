@@ -44,7 +44,8 @@ public class VisualizerLife extends Visualizer {
 	int personCount = 0;
 
 	PlaySound playSound = new PlaySound();
-
+	Grid grid;
+	
 	public enum Cell {
 		NOLIFE,
 		LIFE,
@@ -88,6 +89,8 @@ public class VisualizerLife extends Visualizer {
 
 	VisualizerLife(PApplet parent) {
 		// setupLifeGrid();
+		final String songs[] = {"PR","EP","NG"};
+		grid=new Grid(songs);
 	}
 
 	public void clickSound(int fileNumber) {
@@ -106,7 +109,7 @@ public class VisualizerLife extends Visualizer {
 			break;
 		}
 
-		playSound.play(clickSoundFile);
+		//playSound.play(clickSoundFile);
 	}
 
 	private void checkFieldSizeChange() {
@@ -158,11 +161,13 @@ public class VisualizerLife extends Visualizer {
 		super.start();
 		Laser.getInstance().setFlag("legs",0.0f);
 		setupLifeGrid();
+		grid.start();
 	}
 
 	public void stop() {
 		playSound.stopAll();
 		super.stop();
+		grid.stop();
 	}
 
 	// Count the number of neighbors at a specified coordinate.	
@@ -311,6 +316,7 @@ public class VisualizerLife extends Visualizer {
 				}
 			}
 		}
+		grid.update(allpos);
 	}
 
 	private float avgArray(int[] data, int count) {
@@ -369,6 +375,7 @@ public class VisualizerLife extends Visualizer {
 				// PApplet.println("filling " + i + "x" + j + "at" + x1 + "x" + y1 + "with" + drawGrid[i][j].color());
 			}
 		}
+		//grid.draw(g,p);
 	}
 
 	public void drawLaser(PApplet parent, People p) {
