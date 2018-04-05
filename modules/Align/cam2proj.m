@@ -1,0 +1,9 @@
+function [px,py]=cam2proj(pmap,cx,cy)
+[mgx,mgy]=meshgrid(pmap.cx,pmap.cy);
+centroidx=pmap.centroid(:,:,1);
+centroidy=pmap.centroid(:,:,2);
+sel=isfinite(centroidx)&isfinite(centroidy);
+Fx=scatteredInterpolant(centroidx(sel),centroidy(sel),mgx(sel));
+Fy=scatteredInterpolant(centroidx(sel),centroidy(sel),mgy(sel));
+px=Fx(cx,cy);
+py=Fy(cx,cy);
