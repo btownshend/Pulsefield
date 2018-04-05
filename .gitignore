@@ -125,3 +125,5 @@ modules/FrontEnd/frontend5
 modules/Align/*.png
 
 modules/Tracker/thread_debug/
+
+modules/Align/settings_proj_align.json
