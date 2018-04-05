@@ -814,6 +814,9 @@ public class Tracker extends PApplet {
 
 
 			mask[j].endDraw();
+			mask[j].setModified();   // 4/2018: As of processing3, it seems there is a bug that pixel updates don't propagate;  this explicitly forces update
+			// This may be related to https://github.com/processing/processing/pull/5042
+			// Without this line, masks don't get updated and/or seem to cause changes to the wrong masks
 		}
 	}
 	
