@@ -123,3 +123,5 @@ modules/FrontEnd/frontend2s
 modules/FrontEnd/frontend5
 
 modules/Align/*.png
+
+modules/Tracker/thread_debug/

@@ -59,6 +59,7 @@ public class Tracker extends PApplet {
 	VisualizerProximity visProximity;
 	VisualizerPads visPads;
 	
+	long draw1, draw2;    // Timing metrics
 	float loadAvg=0;   // Current load average (frac of time main thread is in draw vs. holding in processing)
 	int currentvis=-1;
 	static NetAddress TO, OF, AL, MAX, CK, VD, FE, AR;
