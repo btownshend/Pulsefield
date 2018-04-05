@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="p3"/>
 	<classpathentry kind="src" path="data"/>
 	<classpathentry kind="src" path="lib/gifAnimation/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
@@ -17,8 +18,7 @@
 	<classpathentry kind="lib" path="lib/processing3/gluegen-rt-natives-macosx-universal.jar"/>
 	<classpathentry kind="lib" path="lib/processing3/gluegen-rt.jar"/>
 	<classpathentry kind="lib" path="lib/processing3/jogl-all-natives-macosx-universal.jar"/>
-	<classpathentry kind="lib" path="lib/processing3/jogl-all.jar"/>
-	<classpathentry kind="lib" path="lib/processing3/core.jar" sourcepath="/Users/bst/Dropbox/Processing/processing3 source/core"/>
+	<classpathentry kind="lib" path="lib/processing3/jogl-all.jar" sourcepath="p3/processing"/>
 	<classpathentry kind="lib" path="lib/Syphon/library/jsyphon.jar" sourcepath="lib/Syphon/src">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Tracker/lib/Syphon/library"/>
