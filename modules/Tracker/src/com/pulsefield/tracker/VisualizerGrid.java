@@ -3,7 +3,7 @@ import oscP5.OscMessage;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 
-public class VisualizerGrid extends VisualizerPS {
+public class VisualizerGrid extends VisualizerDot {
 	Grid grid;
 	
 	VisualizerGrid(PApplet parent) {
