@@ -11,7 +11,8 @@ import processing.core.PVector;
 
 public class Grid {
     protected final static Logger logger = Logger.getLogger(Grid.class.getName());
-
+    ParticleSystem ps;
+    
 	HashMap<Integer,Integer> assignments;
 	HashMap<Integer,String> gridColors;
 	float gposx[], gposy[];
@@ -28,6 +29,7 @@ public class Grid {
 		gridColors = new HashMap<Integer,String>();
 		song=0;
 		setupGrid();
+		ps=new ParticleSystem();
 	}
 	
 	public void setupGrid() {
@@ -137,21 +139,50 @@ public class Grid {
 			int id=entry.getKey();
 			int cell=entry.getValue();
 			//logger.fine("grid "+cell+", id="+id+" "+gridColors.get(cell));
-			g.fill(127,0,0,127);
-			g.strokeWeight(.05f);
-			g.stroke(255,0,0);
-			PVector gcenter=new PVector(gposx[cell],gposy[cell]);
-			PVector tl = Tracker.normalizedToFloor(PVector.sub(gcenter, gridOffset));
-			PVector br = Tracker.normalizedToFloor(PVector.add(gcenter, gridOffset));
-			g.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
-			g.fill(255);
+
 			TrackSet ts=Ableton.getInstance().trackSet;
 			Track track=Ableton.getInstance().getTrack(id%(ts.numTracks)+ts.firstTrack);
+			Clip clip=track.getClip(cell%track.numClips());
+
+			float lev=Math.max(track.meter[0],track.meter[1]);   // Level should go from 1.0->0.0
+			//float pos=Math.min(1.0f,clip.position);   // Track time scaled down to approx 0.0-1.0
+			
+			g.fill(127,0,0,127*lev);
+			g.strokeWeight(.05f*lev);
+			g.stroke(255,0,0,255*lev);
+			PVector gcenter=new PVector(gposx[cell],gposy[cell]);
+			PVector tl = Tracker.normalizedToFloor(PVector.sub(gcenter, PVector.mult(gridOffset,lev)));
+			PVector br = Tracker.normalizedToFloor(PVector.add(gcenter, PVector.mult(gridOffset,lev)));
+			if (lev>0) {
+				g.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
+				for (int i=0;i<20;i++) {
+					Particle particle=new Particle(Tracker.normalizedToFloor(gcenter));
+					particle.color=p.get(id).getcolor();
+					float theta=(float)(Math.random()*2*Math.PI);
+					//final float spinPeriod=1.0f;
+					//float theta=(float)((clip.position+i/20.0/10+Math.random()*.1) * Math.PI*2/spinPeriod);
+					float speed=0.05f/clip.length;
+					particle.velocity=(new PVector(lev*(float)(speed+speed/10*Math.random()),0)).rotate(theta);
+					particle.opacity=lev*lev;
+					final float accel=(float)(0.0002f*Math.random())*0;
+					if (track.meter[0]>track.meter[1])
+						particle.acceleration=new PVector(accel,0);
+					else
+						particle.acceleration=new PVector(-accel,0);
+
+					ps.addParticle(particle);
+				}
+			}
+			g.fill(255);
+
 			if (track.numClips()>0) {
-				Clip clip=track.getClip(cell%track.numClips());
-				Visualizer.drawText(g,0.16f,track.getName()+"-"+clip.getName()+" P"+id,gcenter.x,gcenter.y,gridOffset.x,gridOffset.y);
+				String t=String.format("%s-%s[%d] %.2f L=%f,R=%f, ID=%d", track.getName(),clip.getName(),clip.clipNum,clip.position,track.meter[0],track.meter[1],id);
+				//logger.info("At "+tl+"; "+br+": "+t);
+				Visualizer.drawText(g,0.08f,t,br.x,tl.y,br.x-tl.x,br.y-tl.y);
 			}
 		}
+		ps.update();
+		ps.draw(g);
 	}
 
 	public void drawTitle(PGraphics g) {
