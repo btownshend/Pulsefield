@@ -134,18 +134,12 @@ function pmap=buildpmap(lbl,allim)
     centroid=c2;
   end
 
-  % Plot centroids
-  setfig(['centroids - ',lbl]);clf;
-  imshow(maxim);
-  hold on;
-  plot(centroid(:,:,1),centroid(:,:,2),'-');
-  plot(shiftdim(centroid(:,:,1),1),shiftdim(centroid(:,:,2),1),'-');
-  title('Centroids');
-  xlabel('X');
-  ylabel('Y');
 
   % Now build a map that can unwarp a camera image
   % proj2cam(x,y) contains the index in a camera image that maps to (x,y) in projector space 
   % cam2proj(x,y) contains the index in projector space that maps to (x,y) in camera space x=1:1376, y=1:1824
-  pmap=struct('centroid',centroid,'cx',((1:size(centroid,1))-0.5)/size(centroid,1),'cy',((1:size(centroid,2))-0.5)/size(centroid,2));
+  pmap=struct('centroid',centroid,'cx',((1:size(centroid,1))-0.5)/size(centroid,1),'cy',((1:size(centroid,2))-0.5)/size(centroid,2),'maxim',maxim,'lbl',lbl);
+
+  % Plot centroids
+  plotcentroids(pmap);
 end
