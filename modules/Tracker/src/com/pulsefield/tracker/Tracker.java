@@ -59,6 +59,7 @@ public class Tracker extends PApplet {
 	VisualizerProximity visProximity;
 	VisualizerPads visPads;
 	
+	float loadAvg=0;   // Current load average (frac of time main thread is in draw vs. holding in processing)
 	int currentvis=-1;
 	static NetAddress TO, OF, AL, MAX, CK, VD, FE, AR;
 	People people, mousePeople;
@@ -534,6 +535,9 @@ public class Tracker extends PApplet {
 	}
 
 	synchronized public void draw() {
+	    draw1 = System.nanoTime();
+	    long schedDelay=draw1-draw2;
+
 		try {
 		if (starting) {
 			// Setup visualizers at first draw
@@ -690,6 +694,11 @@ public class Tracker extends PApplet {
 		    logger.log(Level.SEVERE,"exception in draw(): ",e);
 		    e.printStackTrace();
 		}
+	    draw2 = System.nanoTime();
+	    long execTime=draw2-draw1;
+	    float loadInstant = (float)(execTime*1.0f/(execTime+schedDelay));
+	    loadAvg=loadAvg*0.95f + loadInstant*0.05f;  // Exponential weighting
+	    logger.fine(String.format("draw: %.1f ms exec, %.1f ms sched (fraction=%.0f%%, %.0f%% avg)",execTime/1e6, schedDelay/1e6, loadInstant*100, loadAvg*100));
 	}
 
 	private void buildMasks(PGraphicsOpenGL canvas) {

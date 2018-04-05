@@ -30,8 +30,8 @@ public class GUI extends JFrame {
 	private boolean initialized=false;
 	private JCheckBox useMasks;
 	private JCheckBox showProjectors;
-	private JTextArea fps;
-	private JLabel lblFps;
+	private JTextArea fps, load;
+	private JLabel lblFps, lblLoad;
 	private JLabel lblBPM;
 	private JSlider sliderBPM;
 	private JCheckBox drawBorders;
@@ -212,6 +212,20 @@ public class GUI extends JFrame {
 		gbc_fps.gridx = 5;
 		gbc_fps.gridy = 8;
 		contentPane.add(fps, gbc_fps);
+
+		lblLoad = new JLabel("Load:");
+		GridBagConstraints gbc_lblLoad = new GridBagConstraints();
+		gbc_lblLoad.insets = new Insets(0, 0, 0, 5);
+		gbc_lblLoad.gridx = 4;
+		gbc_lblLoad.gridy = 9;
+		contentPane.add(lblLoad, gbc_lblLoad);
+		
+		load=new JTextArea("Load");
+		GridBagConstraints gbc_load = new GridBagConstraints();
+		gbc_load.gridx = 5;
+		gbc_load.gridy = 9;
+		contentPane.add(load, gbc_load);
+		
 		initialized=true;
 		update();
 	}
@@ -223,6 +237,8 @@ public class GUI extends JFrame {
 	// Update settings and values that change frequently.
 	void updateDisplayValues() {
 		fps.setText(String.format("%.0f", Tracker.theTracker.avgFrameRate));
+		load.setText(String.format("%.0f%%", Tracker.theTracker.loadAvg*100));
+
 		lblBPM.setText(genBPMLabel());
 		sliderBPM.setValue((int) MasterClock.gettempo());
 	}
