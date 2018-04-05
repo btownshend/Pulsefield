@@ -786,12 +786,18 @@ public class Tracker extends PApplet {
 		int fulloff=0xff000000;
 		for (int j=0;j<mask.length;j++) {
 			mask[j].blendMode(ADD);
+			// int oncnt=0;
 			for (int i=0;i<pselect.length;i++) {
 				mask[j].pixels[i]=(pselect[i]==j)?fullon:fulloff;
+				//if (mask[j].pixels[i]==fullon)
+				//	oncnt++;
 			}
+			//logger.fine(String.format("mask[%d].pixels[%d]=0x%x, oncnt=%d",j,10,mask[j].pixels[10],oncnt));
 			//mask[j].pixels[10]=47;
 			mask[j].updatePixels();
 			mask[j].filter(BLUR,1f);
+			//logger.fine(String.format("mask[%d].pixels[%d]=0x%x",j,10,mask[j].pixels[10]));
+
 //			mask[j].filter(ERODE);
 //			mask[j].filter(DILATE);
 
