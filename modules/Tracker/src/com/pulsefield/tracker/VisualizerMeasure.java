@@ -106,7 +106,7 @@ public class VisualizerMeasure extends Visualizer {
 	
 	VisualizerMeasure(PApplet parent) {
 		super();
-		String songs[] = {"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","PB"};
+		String songs[] = {"QU","PB"};
 		grid=new Grid(songs);
 		measure=new Measure(new PVector(0f,0f));
 	}

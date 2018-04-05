@@ -8,7 +8,7 @@ public class VisualizerGrid extends VisualizerPS {
 	
 	VisualizerGrid(PApplet parent) {
 		super(parent);
-		final String songs[] = {"QU","DB","NG","FI","FO","GA","MB","EP","OL","PR","PB"};
+		final String songs[] = {"DB","NG","FI","FO","MB","EP","OL","PB"};
 		grid=new Grid(songs);
 	}
 	
