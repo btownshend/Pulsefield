@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import oscP5.OscMessage;
+import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PVector;
