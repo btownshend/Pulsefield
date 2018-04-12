@@ -211,7 +211,7 @@ public class VisualizerMenu extends Visualizer {
 		if (p.pmap.isEmpty())
 			return;
 		
-		super.borderMessage(g,"Headlamps OFF");
+		//super.borderMessage(g,"Headlamps OFF");
 		g.ellipseMode(PConstants.CENTER);
 
 		g.stroke(0xffffffff);
