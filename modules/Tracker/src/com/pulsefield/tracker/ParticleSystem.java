@@ -28,6 +28,9 @@ class ParticleSystemSettings {
 
 	// maxParticles is the hard upper limit on number of particles.
 	long maxParticles = 50000;
+	
+	// genRate for grid particle generation
+	float genRate=20.0f*60.0f;   // Particles/second at each source
 }
 
 

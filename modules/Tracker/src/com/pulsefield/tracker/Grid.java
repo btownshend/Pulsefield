@@ -11,7 +11,9 @@ import processing.core.PVector;
 
 public class Grid {
     protected final static Logger logger = Logger.getLogger(Grid.class.getName());
-    ParticleSystem ps;
+    ParticleSystem universe;
+	String oscName = "particlefield";
+
     
 	HashMap<Integer,Integer> assignments;
 	HashMap<Integer,String> gridColors;
@@ -29,7 +31,7 @@ public class Grid {
 		gridColors = new HashMap<Integer,String>();
 		song=0;
 		setupGrid();
-		ps=new ParticleSystem();
+		universe=new ParticleSystem();
 	}
 	
 	public void setupGrid() {
@@ -155,8 +157,8 @@ public class Grid {
 			PVector br = Tracker.normalizedToFloor(PVector.add(gcenter, PVector.mult(gridOffset,lev)));
 			if (lev>0) {
 				g.rect(tl.x,tl.y,(br.x-tl.x),(br.y-tl.y));
-				for (int i=0;i<20;i++) {
-					Particle particle=new Particle(Tracker.normalizedToFloor(gcenter));
+				for (int i=0;i<universe.settings.genRate/Tracker.theTracker.frameRate;i++) {
+					Particle particle=new Particle(Tracker.normalizedToFloor(gcenter),universe.settings);
 					particle.color=p.get(id).getcolor();
 					float theta=(float)(Math.random()*2*Math.PI);
 					//final float spinPeriod=1.0f;
@@ -164,13 +166,13 @@ public class Grid {
 					float speed=0.05f/clip.length;
 					particle.velocity=(new PVector(lev*(float)(speed+speed/10*Math.random()),0)).rotate(theta);
 					particle.opacity=lev*lev;
-					final float accel=(float)(0.0002f*Math.random())*0;
-					if (track.meter[0]>track.meter[1])
-						particle.acceleration=new PVector(accel,0);
-					else
-						particle.acceleration=new PVector(-accel,0);
+//					final float accel=(float)(0.0002f*Math.random())*0;
+//					if (track.meter[0]>track.meter[1])
+//						particle.acceleration=new PVector(accel,0);
+//					else
+//						particle.acceleration=new PVector(-accel,0);
 
-					ps.addParticle(particle);
+					universe.addParticle(particle);
 				}
 			}
 			g.fill(255);
@@ -181,8 +183,8 @@ public class Grid {
 				Visualizer.drawText(g,0.08f,t,br.x,tl.y,br.x-tl.x,br.y-tl.y);
 			}
 		}
-		ps.update();
-		ps.draw(g);
+		universe.update();
+		universe.draw(g);
 	}
 
 	public void drawTitle(PGraphics g) {
@@ -220,8 +222,133 @@ public class Grid {
 		} else if (components[1].equals("grid") && components[2].equals("song")) {
 			Ableton.getInstance().setTrackSet(theOscMessage.get(0).stringValue());
 			handled=true;
+		} else if (theOscMessage.addrPattern().startsWith("/video/particlefield")) {
+			handleParticleMessage(theOscMessage);
+			handled=true;
 		}
 		return handled;
+	}
+	
+	public void handleParticleMessage(OscMessage msg) {
+		if (universe == null)
+			universe = new ParticleSystem();
+
+		logger.fine("Grid Particle message: " + msg.toString());
+
+		String pattern = msg.addrPattern();
+		String components[] = pattern.split("/");
+		PApplet.println("ParticleField OSC Message (" + components.length + " len) " + msg.toString() + " : "
+				+ msg.get(0).floatValue());
+
+		if (components.length < 3 || !components[2].equals(oscName))
+			logger.warning("VisualizerParticleSystem: Expected /video/" + oscName + " messages, got " + msg.toString());
+		else if (components.length == 4 && components[3].equals("maxparticles")) {
+			universe.settings.maxParticles = (long) Math.pow(2, msg.get(0).floatValue());
+		} else if (components.length == 4 && components[3].equals("particledispersion")) {
+			universe.settings.particleRandomDriftAccel = msg.get(0).floatValue();
+		} else if (components.length == 4 && components[3].equals("forcerotation")) {
+			universe.settings.forceRotation = msg.get(0).floatValue();
+		} else if (components.length == 4 && components[3].equals("particlerotation")) {
+			universe.settings.particleRotation = msg.get(0).floatValue();
+		} else if (components.length == 4 && components[3].equals("genrate")) {
+			universe.settings.genRate = msg.get(0).floatValue();
+		} else if (components.length == 4 && components[3].equals("particlemaxlife")) {
+			universe.settings.particleMaxLife = (int) msg.get(0).floatValue();
+		} else if (components.length == 4 && components[3].equals("particleopacity")) {
+			universe.settings.startOpacity = msg.get(0).floatValue();
+		} else if (components.length == 4 && components[3].equals("persongravity")) {
+			universe.settings.personForce = msg.get(0).floatValue();
+		} else if (components.length == 4 && components[3].equals("particlescale")) {
+			universe.settings.particleScale = msg.get(0).floatValue();
+		} else if (components.length == 6 && components[3].equals("blendmode")) {
+			handleBlendSettingMessage(msg);
+		} else if (components.length == 4 && components[3].equals("tilt")) {
+			handleTilt(msg);
+		} else
+			logger.warning("unhandled OSC message"+msg);
+
+		setTO();
+	}
+	
+
+	private void handleTilt(OscMessage msg) {
+		msg.addrPattern().split("/");
+
+		universe.settings.tiltx = msg.get(0).floatValue() * 0.0001f;
+		universe.settings.tilty = msg.get(1).floatValue() * 0.0001f;
+	}
+
+	private void handleBlendSettingMessage(OscMessage msg) {
+		String components[] = msg.addrPattern().split("/");
+
+		if (components.length < 5) {
+			logger.warning("handleBlendSettingMessage: Expected more components in " + msg.toString());
+		} else {
+			// If it's an "off" (0.0) message, ignore it.
+			if (msg.get(0).floatValue() == 0.0) {
+				return;
+			}
+			String clicked = components[4].toString() + "/" + components[5].toString();
+
+			switch (clicked) {
+			case "2/1":
+				universe.settings.blendMode = -1; // Custom.
+				break;
+			case "2/2":
+				universe.settings.blendMode = PConstants.ADD;
+				break;
+			case "2/3":
+				universe.settings.blendMode = PConstants.SUBTRACT;
+				break;
+			case "2/4":
+				universe.settings.blendMode = PConstants.SCREEN;
+				break;
+			case "1/1":
+				universe.settings.blendMode = PConstants.LIGHTEST;
+				break;
+			case "1/2":
+				universe.settings.blendMode = PConstants.BLEND;
+				break;
+			case "1/3":
+				universe.settings.blendMode = PConstants.OVERLAY;
+				break;
+			case "1/4":
+				universe.settings.blendMode = PConstants.MULTIPLY;
+				break;
+			}
+		}
+	}
+
+	private void setTOValue(String name, double value, String fmt) {
+		TouchOSC to = TouchOSC.getInstance();
+		OscMessage set = new OscMessage("/video/" + oscName + "/" + name);
+		set.add(value);
+		to.sendMessage(set);
+		set = new OscMessage("/video/" + oscName + "/" + name + "/value");
+		set.add(String.format(fmt, value));
+		to.sendMessage(set);
+	}
+
+	public void setTO() {
+		setTOValue("maxparticles", Math.log(universe.settings.maxParticles) / Math.log(2), "%.4f");
+		setTOValue("particleaccel", universe.settings.particleRandomDriftAccel, "%.4f");
+		setTOValue("forcerotation", universe.settings.forceRotation, "%.4f");
+		setTOValue("particlerotation", universe.settings.particleRotation, "%.4f");
+		setTOValue("particlemaxlife", universe.settings.particleMaxLife, "%.4f");
+		setTOValue("particleopacity", universe.settings.startOpacity, "%.4f");
+		setTOValue("persongravity", universe.settings.personForce, "%.4f");
+		setTOValue("particlescale", universe.settings.particleScale, "%.4f");
+		setTOValue("genrate", universe.settings.genRate, "%.4f");
+		setTiltTO();
+	}
+
+	public void setTiltTO() {
+		TouchOSC to = TouchOSC.getInstance();
+		OscMessage set = new OscMessage("/video/" + oscName + "/tilt");
+		set.add("set");
+		set.add(universe.settings.tiltx);
+		set.add(universe.settings.tilty);
+		to.sendMessage(set);
 	}
 }
 
