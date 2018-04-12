@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="p3"/>
 	<classpathentry kind="src" path="data"/>
 	<classpathentry kind="src" path="lib/gifAnimation/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
@@ -30,5 +29,6 @@
 	<classpathentry kind="lib" path="lib/minim/library/minim.jar"/>
 	<classpathentry kind="lib" path="lib/minim/library/mp3spi1.9.4.jar"/>
 	<classpathentry kind="lib" path="lib/minim/library/tritonus_share.jar"/>
+	<classpathentry kind="lib" path="lib/processing3/core.jar" sourcepath="processing3 source/core/src/processing/core"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
