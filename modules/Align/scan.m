@@ -1,7 +1,7 @@
 nproj=4;
-navg=2;
-nlevels=2;
-night=false;
+navg=4;
+nlevels=6;
+night=true;
 
 if night
   exptime=80;
