@@ -1,13 +1,14 @@
 package com.pulsefield.tracker;
 import oscP5.OscMessage;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PGraphics;
 
-public class VisualizerGrid extends VisualizerDot {
+public class VisualizerGrid extends Visualizer {
 	Grid grid;
 	
 	VisualizerGrid(PApplet parent) {
-		super(parent);
+		super();
 		final String songs[] = {"DB","NG","FI","FO","MB","EP","OL","PB"};
 		grid=new Grid(songs);
 	}
@@ -29,7 +30,7 @@ public class VisualizerGrid extends VisualizerDot {
 	
 	@Override
 	public void update(PApplet parent, People allpos) {
-		super.update(parent,allpos);
+		//super.update(parent,allpos);
 		grid.update(allpos);;
 	}
 
