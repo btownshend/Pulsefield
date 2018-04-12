@@ -23,6 +23,11 @@ public class VisualizerGrid extends VisualizerDot {
 		grid.stop();
 	}
 	
+	public void songIncr(float set) {
+		grid.songIncr(set);
+	}
+	
+	@Override
 	public void update(PApplet parent, People allpos) {
 		super.update(parent,allpos);
 		grid.update(allpos);;
