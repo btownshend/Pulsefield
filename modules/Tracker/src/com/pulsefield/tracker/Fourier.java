@@ -11,6 +11,8 @@ import processing.core.PApplet;
 /// abstract class for audio visualization
 
  abstract class AudioRenderer implements AudioListener {
+		final boolean disabled=false;
+
 		Minim minim;
 
   float[] left;
@@ -20,6 +22,8 @@ import processing.core.PApplet;
   
   	AudioRenderer(PApplet parent) {
 		// setup player
+		if (disabled)
+			return;
 		minim = new Minim(parent);
 		minim.getLineIn().addListener(this);
   	}
@@ -35,6 +39,8 @@ public class Fourier extends AudioRenderer {
 
 	Fourier(PApplet parent) {
 		super(parent);
+		if (disabled)
+			return;
 		AudioSource source=minim.getLineIn();
 		float gain = (float) .125;
 		fft = new FFT(source.bufferSize(), source.sampleRate());
@@ -44,6 +50,8 @@ public class Fourier extends AudioRenderer {
 	}
 
 	void calc(int bands) {
+		if (disabled)
+			return;
 		if(left != null) {
 			monoFFT = new float[bands];
 			leftFFT = new float[bands];

@@ -71,7 +71,8 @@ public abstract class Visualizer {
 		final float lineSize=textHeight*2;
 
 		//g.fill(50, 255, 255);
-		t.visMinim.radar.draw(t, g);
+		//if (t.visMinim != null)
+			t.visMinim.radar.draw(t, g);
 		g.textAlign(PConstants.CENTER,PConstants.CENTER);
 		g.stroke(255);
 		g.strokeWeight(0.02f);
