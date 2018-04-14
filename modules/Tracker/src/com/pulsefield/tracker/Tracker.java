@@ -1,9 +1,19 @@
 package com.pulsefield.tracker;
 import java.awt.Color;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.management.LockInfo;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -101,7 +111,7 @@ public class Tracker extends PApplet {
 	static Tracker theTracker;
     static String pfroot;
     private final static Logger logger = Logger.getLogger(Tracker.class.getName());
-
+    private static FileWriter runInfoFile = null;
     
 	public void settings() {
 		// If Tracker uses FX2D or P2D for renderer, then we can't do 3D and vortexRenderer will be blank!
@@ -700,8 +710,36 @@ public class Tracker extends PApplet {
 	    float loadInstant = (float)(execTime*1.0f/(execTime+schedDelay));
 	    loadAvg=loadAvg*0.95f + loadInstant*0.05f;  // Exponential weighting
 	    logger.fine(String.format("draw: %.1f ms exec, %.1f ms sched (fraction=%.0f%%, %.0f%% avg)",execTime/1e6, schedDelay/1e6, loadInstant*100, loadAvg*100));
+	    runInfo(execTime, schedDelay);
 	}
 
+	public void runInfo(float execTime, float schedDelay) {
+		// Log run information into run file
+		String currentTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
+
+		if (runInfoFile == null) {
+	         String fname= "/Users/bst/Desktop/PF_LOGS/TrackerInfo-"+(new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date()))+".txt";
+	         try {
+	        	 runInfoFile = new FileWriter(fname);
+	        	 runInfoFile.write("time\tapp\tnpeople\tdraw ms\tsched ms\ttotal mb\tfree mb\n");
+	         } catch (IOException e) {
+	        	 logger.severe("Unable to open "+fname+" for writing");
+	         }
+	         logger.config("Saving run info to "+fname);
+		}
+		final int mb = 1024*1024;
+		//Getting the runtime reference from system
+		Runtime runtime = Runtime.getRuntime();
+
+		String msg=String.format("%s\t%s\t%d\t%.2f\t%.2f\t%.1f\t%.1f",currentTime,vis[currentvis].name,people.pmap.size(),execTime/1e6, schedDelay/1e6,runtime.totalMemory()*1.0/mb, runtime.freeMemory()*1.0/mb);
+	    try {
+			runInfoFile.write(msg+"\n");
+			runInfoFile.flush();
+		} catch (IOException e) {
+			logger.severe("Failed write to runInfo file");
+		}
+	}
+	
 	private void buildMasks(PGraphicsOpenGL canvas) {
 		for (int i=0;i<mask.length;i++) {
 			mask[i].beginDraw();
@@ -862,7 +900,7 @@ public class Tracker extends PApplet {
 		if (present)
 			PApplet.main(new String[] { "--present","com.pulsefield.tracker.Tracker"});
 		else
-			PApplet.main(new String[] {"--display=1","com.pulsefield.tracker.Tracker" });
+			PApplet.main(new String[] {"--display=2","com.pulsefield.tracker.Tracker" });
 	}
 
 	/* incoming osc message are forwarded to the oscEvent method. */
