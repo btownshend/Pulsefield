@@ -14,9 +14,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import codeanticode.syphon.SyphonServer;
 import netP5.NetAddress;
@@ -886,6 +888,20 @@ public class Tracker extends PApplet {
 	private static void setupLogging() throws SecurityException, IOException {
 		// Setup logging
 		LogManager.getLogManager().readConfiguration(new FileInputStream("logging.properties"));
+		String currentTime = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
+		String dir="/Users/bst/Desktop/PF_LOGS/";
+		String origlog=dir+"tracker0.0.log";
+		String logfile=dir+"Tracker-"+currentTime+".log";
+		logger.config("Moving "+origlog+" to "+logfile);
+
+		try {
+			ProcessBuilder builder = new ProcessBuilder("mv", origlog,logfile);
+			builder.start(); // may throw IOException
+		} catch (IOException e) {
+			logger.severe("Failed file link: "+e.getMessage());
+		}
+	}
+	
 	}
 	
 	public static void main(String args[]) {
