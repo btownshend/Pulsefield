@@ -71,7 +71,7 @@ public class Tracker extends PApplet {
 	VisualizerProximity visProximity;
 	VisualizerPads visPads;
 	
-	long draw1, draw2;    // Timing metrics
+	long draw1, draw2=0;    // Timing metrics
 	float loadAvg=0;   // Current load average (frac of time main thread is in draw vs. holding in processing)
 	int currentvis=-1;
 	static NetAddress TO, OF, AL, MAX, CK, VD, FE, AR;
@@ -550,7 +550,8 @@ public class Tracker extends PApplet {
 	synchronized public void draw() {
 	    draw1 = System.nanoTime();
 	    long schedDelay=draw1-draw2;
-
+	    long timePoints[]=new long[10]; int tpindex=0;
+	    
 		try {
 		if (starting) {
 			// Setup visualizers at first draw
@@ -566,6 +567,7 @@ public class Tracker extends PApplet {
 		if (tick%20 == 0)
 			updateTO(tick%40==0);
 		
+		timePoints[tpindex++]=System.nanoTime()-draw1;
 		canvas.beginDraw();
 		// Transform so that coords for drawing are in meters
 		canvas.resetMatrix();
@@ -609,13 +611,16 @@ public class Tracker extends PApplet {
 			setapp(getAppIndex("Menu"));
 
 		sendMouseOSC();
-
+		
+		timePoints[tpindex++]=System.nanoTime()-draw1;
 		vis[currentvis].update(this, people);
 		//		translate((width-height)/2f,0);
+		timePoints[tpindex++]=System.nanoTime()-draw1;
 
 		canvas.pushStyle();
 		canvas.pushMatrix();
 		vis[currentvis].draw(this, canvas,people);
+		timePoints[tpindex++]=System.nanoTime()-draw1;
 		canvas.popMatrix();
 		canvas.popStyle();
 		if (enableTitle) {
@@ -663,7 +668,8 @@ public class Tracker extends PApplet {
 			}
 			logger.config("Done creating new syphon server");
 		}
-		
+		timePoints[tpindex++]=System.nanoTime()-draw1;
+
 		if (server != null) {
 			server.sendImage(canvas);
 		}
@@ -671,6 +677,7 @@ public class Tracker extends PApplet {
 			buildMasks(canvas);
 		for (int i=0;i<projectors.length;i++)
 			projectors[i].render(canvas,useMasks?mask[i]:null,drawBounds);
+		timePoints[tpindex++]=System.nanoTime()-draw1;
 
 		imageMode(CENTER);
 		// Canvas is RH, so need to flip it back to draw on main window (which is LH)
@@ -682,6 +689,7 @@ public class Tracker extends PApplet {
 		image(canvas, width/2, height/2, canvas.width*cscale, canvas.height*cscale);		
 		popMatrix();
 
+		timePoints[tpindex++]=System.nanoTime()-draw1;
 		if (showProjectors || drawMasks) {
 			// Use top-left, top-right corners for projector images
 			float pfrac = 0.25f;  // Use this much of the height of the window for projs
@@ -701,21 +709,31 @@ public class Tracker extends PApplet {
 					image(projectors[i].pcanvas, x+1, y+1f, pwidth-2, pheight-2);
 			}
 		}
+		timePoints[tpindex++]=System.nanoTime()-draw1;
+
 		//SyphonTest.draw(this);
 		Config.saveIfModified(this);   // Save if modified
 		} catch (Exception e) {
 		    logger.log(Level.SEVERE,"exception in draw(): ",e);
 		    e.printStackTrace();
 		}
-	    draw2 = System.nanoTime();
-	    long execTime=draw2-draw1;
-	    float loadInstant = (float)(execTime*1.0f/(execTime+schedDelay));
-	    loadAvg=loadAvg*0.95f + loadInstant*0.05f;  // Exponential weighting
-	    logger.fine(String.format("draw: %.1f ms exec, %.1f ms sched (fraction=%.0f%%, %.0f%% avg)",execTime/1e6, schedDelay/1e6, loadInstant*100, loadAvg*100));
-	    runInfo(execTime, schedDelay);
+		if (draw2==0) {
+			// First time, just initializing
+			draw2 = System.nanoTime();
+			processDump();
+		} else {
+			draw2 = System.nanoTime();
+			long execTime=draw2-draw1;
+			if (execTime+schedDelay > 1e9)  // Stalled for a second or more
+				processDump();
+			float loadInstant = (float)(execTime*1.0f/(execTime+schedDelay));
+			loadAvg=loadAvg*0.95f + loadInstant*0.05f;  // Exponential weighting
+			//logger.fine(String.format("draw: %.1f ms exec, %.1f ms sched (fraction=%.0f%%, %.0f%% avg)",execTime/1e6, schedDelay/1e6, loadInstant*100, loadAvg*100));
+			runInfo(execTime, schedDelay,timePoints,tpindex);
+		}
 	}
 
-	public void runInfo(float execTime, float schedDelay) {
+	public void runInfo(long execTime, long schedDelay, long[] timePoints, int nPoints) {
 		// Log run information into run file
 		String currentTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
 
@@ -723,9 +741,13 @@ public class Tracker extends PApplet {
 	         String fname= "/Users/bst/Desktop/PF_LOGS/TrackerInfo-"+(new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date()))+".txt";
 	         try {
 	        	 runInfoFile = new FileWriter(fname);
-	        	 runInfoFile.write("time\tapp\tnpeople\tdraw ms\tsched ms\ttotal mb\tfree mb\n");
+	        	String hdr="time\tframe\tapp\tnpeople\tdraw ns\tsched ns\ttotal mb\tfree mb";
+	        	 for (int i=0;i<nPoints;i++) {
+	        		 hdr+=String.format("\ttp%d ns",i);
+	        	 } 
+	        	 runInfoFile.write(hdr+"\n");
 	         } catch (IOException e) {
-	        	 logger.severe("Unable to open "+fname+" for writing");
+	        	 logger.severe("Unable to open "+fname+" for writing: "+e.getMessage());
 	         }
 	         logger.config("Saving run info to "+fname);
 		}
@@ -733,13 +755,33 @@ public class Tracker extends PApplet {
 		//Getting the runtime reference from system
 		Runtime runtime = Runtime.getRuntime();
 
-		String msg=String.format("%s\t%s\t%d\t%.2f\t%.2f\t%.1f\t%.1f",currentTime,vis[currentvis].name,people.pmap.size(),execTime/1e6, schedDelay/1e6,runtime.totalMemory()*1.0/mb, runtime.freeMemory()*1.0/mb);
-	    try {
+		String msg=String.format("%s\t%d\t%s\t%d\t%d\t%d\t%.1f\t%.1f",currentTime,lastFrameReceived,vis[currentvis].name,people.pmap.size(),execTime, schedDelay,runtime.totalMemory()*1.0/mb, runtime.freeMemory()*1.0/mb);
+		for (int i=0;i<nPoints;i++) {
+			msg+=String.format("\t%d", timePoints[i]);
+		}
+		try {	
 			runInfoFile.write(msg+"\n");
-			runInfoFile.flush();
+			//runInfoFile.flush();
 		} catch (IOException e) {
 			logger.severe("Failed write to runInfo file");
 		}
+	}
+	
+	public void processDump() {
+		// Dump all running processes into a file
+
+		
+		String fname= "/Users/bst/Desktop/PF_LOGS/TrackerProcesses-"+(new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date()))+".txt";
+		try {
+			ProcessBuilder builder = new ProcessBuilder("ps", "-Avr");
+			File outfile=new File(fname);
+			builder.redirectOutput(outfile);
+			builder.redirectError(outfile);
+			builder.start(); // may throw IOException
+		} catch (IOException e) {
+			logger.severe("Failed process dump: "+e.getMessage());
+		}
+		logger.config("Dumped process to "+fname);
 	}
 	
 	private void buildMasks(PGraphicsOpenGL canvas) {
