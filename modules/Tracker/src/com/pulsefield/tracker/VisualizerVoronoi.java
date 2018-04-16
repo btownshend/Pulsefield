@@ -253,7 +253,12 @@ public class VisualizerVoronoi extends VisualizerPS {
 
 				// Draw the major line
 				if (hasLine && v.playing) {
-					g.stroke(allpos.get(idsite.id).getcolor());
+					Person p=allpos.get(idsite.id);
+					if (p==null) {
+						logger.warning("person at site "+idsite.id+" is null");
+					} else {
+						g.stroke(p.getcolor());
+					}
 					g.strokeWeight(0.05f);
 					PVector scoord1=v.mainline[0];
 					PVector scoord2=v.mainline[1];
