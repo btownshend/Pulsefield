@@ -414,7 +414,7 @@ public class Tracker extends PApplet {
 	}
 	
 	public void setworld2screen(int proj, float x00, float x01, float x02, float x10, float x11, float x12, float x20, float x21, float x22) {
-		logger.finer("setworld2screen("+proj+","+x00+","+x01+"...)");
+		logger.fine("setworld2screen("+proj+","+x00+","+x01+"...)");
 		if (proj<0 || proj>=projectors.length) {
 			logger.warning("setworld2screen: Bad projector number: "+proj);
 			return;
@@ -424,6 +424,7 @@ public class Tracker extends PApplet {
 				x10,x11,0,x12,
 				  0,  0,0,  0.5f,
 				x20,x21,0,x22);
+		PApplet.println("Tracker.setWorld2Screen");
 		projectors[proj].setWorld2Screen(mat);
 	}
 	
@@ -432,7 +433,7 @@ public class Tracker extends PApplet {
 		mat.set(x00,x01,x02,
 				x10,x11,x12);
 		logger.finer("setprojection("+proj+":");
-		mat.print();
+		//mat.print();
 		projectors[proj].setProjection(mat);
 	}
 	
@@ -449,7 +450,7 @@ public class Tracker extends PApplet {
 				x20,x21,x22,x23,
 				0,0,0,1);
 		logger.finer("setcameraview("+proj+":");
-		mat.print();
+		//mat.print();
 		projectors[proj].setCameraView(mat);
 	}
 
@@ -606,6 +607,7 @@ public class Tracker extends PApplet {
 		} else {
 			mouseVel.set(0f,0f);
 		}
+
 		prevMousePressed=mousePressed;
 		if (enableMenu && visMenu.hotSpotCheck(this,people))
 			setapp(getAppIndex("Menu"));
@@ -942,6 +944,12 @@ public class Tracker extends PApplet {
 		} catch (IOException e) {
 			logger.severe("Failed file link: "+e.getMessage());
 		}
+		
+//		String currentTime = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
+//		FileHandler fh = new FileHandler("/Users/bst/Desktop/PF_LOGS/Tracker-"+currentTime + ".log");
+//		fh.setFormatter(new SimpleFormatter());
+//		fh.setLevel(Level.ALL);
+//		logger.addHandler(fh);
 	}
 	
 	}
