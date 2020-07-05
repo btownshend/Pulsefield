@@ -845,7 +845,7 @@ public class Tracker extends PApplet {
 		}
 		
 		
-		int maskcnt[]=new int[pselect.length];
+		//int maskcnt[]=new int[pselect.length];
 		// pselect is a persistent map of which projector gets which pixel
 		for (int i=0;i<pselect.length;i++) {
 			if (pselect[i]==mask.length) {
@@ -861,7 +861,7 @@ public class Tracker extends PApplet {
 					pselect[i]=mask.length;  // No projector 
 				}
 			}
-			maskcnt[pselect[i]]+=1;
+			//maskcnt[pselect[i]]+=1;
 		}
 			
 		//logger.fine("Mask has projector 0: "+maskcnt[0]+", 1: "+maskcnt[1]+", None: "+maskcnt[2]);
@@ -952,6 +952,36 @@ public class Tracker extends PApplet {
 //		logger.addHandler(fh);
 	}
 	
+	private static void runProfile() {
+	    try {
+	        final int noSeconds = 50;
+	        final int sleepMillis = 50;
+	        final int noSamples = noSeconds * 1000 / sleepMillis;
+
+	        ThreadMXBean thb = ManagementFactory.getThreadMXBean();
+	        Map<String,Integer> blockCounts = new HashMap<String, Integer>(50);
+	        for (int i = 0; i < noSamples ; i++) {
+	            long[] ids = thb.getAllThreadIds();
+	            ThreadInfo[] infs = thb.getThreadInfo(ids, 0);
+	            for (ThreadInfo ti : infs) {
+	                LockInfo lockInf = ti.getLockInfo();
+	                if (lockInf != null) {
+	                    String key = ti.getThreadName()+lockInf.toString();
+	                    Integer cnt = blockCounts.get(key);
+	                    blockCounts.put(key, cnt == null ? 1 : cnt+1);
+	                }
+	            }
+
+	            Thread.sleep(sleepMillis);
+	        }
+
+	        System.out.println("Locks:");
+	        for (String lockName : blockCounts.keySet()) {
+	            System.out.println(lockName + " : " + blockCounts.get(lockName));
+	        }
+	    } catch (InterruptedException iex) {
+	        Thread.currentThread().interrupt();
+	    }
 	}
 	
 	public static void main(String args[]) {
@@ -963,6 +993,15 @@ public class Tracker extends PApplet {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		// Start profiling
+		Thread thr = new Thread() {
+			public void run() {
+				runProfile();
+			}
+		};
+		thr.setPriority(Thread.MAX_PRIORITY-1);
+		thr.start();
+		    
 		if (present)
 			PApplet.main(new String[] { "--present","com.pulsefield.tracker.Tracker"});
 		else

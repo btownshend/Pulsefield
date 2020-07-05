@@ -15,5 +15,5 @@
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.pulsefield.tracker.Tracker"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Tracker"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea -XX:+HeapDumpOnOutOfMemoryError"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea -XX:+HeapDumpOnOutOfMemoryError -XshowSettings"/>
 </launchConfiguration>
