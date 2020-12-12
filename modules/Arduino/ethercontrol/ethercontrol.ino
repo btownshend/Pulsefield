@@ -206,6 +206,7 @@ void loop() {
             if (client.write(ebuf, n[1]) != n[1])
               Serial.println("Echo write failure");
           }
+	  break;
         case 'G':  // Go
           if (pause > 0 && micros() < lasttime + pause) {
             Serial.print("Pausing for ");
