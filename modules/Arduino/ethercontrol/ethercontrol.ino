@@ -117,6 +117,8 @@ uint8_t ecSocket(EthernetClient *client)
   return ((uint8_t *)client)[2];
 }
 
+String fbsettings;
+
 void loop() {
   EthernetClient client = server.available();
 
@@ -288,6 +290,18 @@ void loop() {
             Serial.println(id);
           }
           break;
+      case '$':
+	  // Set fallback mode and parameters
+	  fbsettings="";
+	  for (int i=0;i<80;i++) {
+	      unsigned int x=client.read();
+	      nrcvd++;
+	      if (x==0 || x=='\n' || x=='\r')
+		  break;
+	      fbsettings+=char(x);
+	  }
+	  lastReceived=0;   // Jump immediately to fallback
+	  break;
       }
     }
   }
@@ -312,7 +326,46 @@ int offset = 1;
 long int lastmilli = 0;
 int count = 0;
 
-void fallback() {
+String getValue(String data, char separator, int index)
+{
+    int found = 0;
+    int strIndex[] = { 0, -1 };
+    int maxIndex = data.length() - 1;
+
+    for (int i = 0; i <= maxIndex && found <= index; i++) {
+        if (data.charAt(i) == separator || i == maxIndex) {
+            found++;
+            strIndex[0] = strIndex[1] + 1;
+            strIndex[1] = (i == maxIndex) ? i+1 : i;
+        }
+    }
+    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
+
+String getSetting(int index)
+{
+    return getValue(fbsettings.substring(1),',',index);
+}
+
+int getIntSetting(int index, int def)
+{
+    String s=getSetting(index);
+    if (s.length() == 0)
+	return def;
+    else
+	return s.toInt();
+}
+
+float getFloatSetting(int index, float def)
+{
+    String s=getSetting(index);
+    if (s.length() == 0)
+	return def;
+    else
+	return s.toFloat();
+}
+
+void rainbow() {
   int r = 63 + 63 * cos(2 * pi * (millis() / rperiod / 1000 ));
   int g = 63 + 63 * cos(2 * pi * (millis() / gperiod / 1000 ));
   int b = 63 + 63 * cos(2 * pi * (millis() / bperiod / 1000 ));
@@ -324,7 +377,74 @@ void fallback() {
     strip.setPixelColor(strip.numPixels() - offset, strip.Color(r, g, b));
   //delay(100);
   strip.show();
-  Serial.print("$");
+}
+
+void sparkle() {
+    int r = 63 + 63 * cos(2 * pi * (millis()  / getFloatSetting(2,3) / 1000 ));
+    int g = 63 + 63 * cos(2 * pi * (millis()  / getFloatSetting(3,4) / 1000 ));
+    int b = 63 + 63 * cos(2 * pi * (millis()  / getFloatSetting(4,5) / 1000 ));
+    const int nsparkle=min(getIntSetting(0,30),100);
+    static int onpixels[100];
+    const int offperiod=getIntSetting(1,40);
+    int debug=getIntSetting(5,0);
+    
+    // Loop through current on pixels
+    for (int i=0;i<nsparkle;i++) {
+	if (random(0,offperiod) == 0) {
+	    // Change this pixel
+	    if (debug) {
+		Serial.print(onpixels[i]);
+		Serial.print(" off, ");
+	    }
+	    strip.setPixelColor(onpixels[i], strip.Color(0,0,0));  // Turn off current pixel
+	    onpixels[i]=random(0,strip.numPixels());   // Pick a new one
+	    strip.setPixelColor(onpixels[i], strip.Color(r, g, b));  // Turn it on
+	    if (debug) {
+		Serial.print(onpixels[i]);
+		Serial.print("=");
+		Serial.print(r); Serial.print(",");
+		Serial.print(g); Serial.print(",");
+		Serial.println(b);
+	    }
+	}
+    }
+  strip.show();
+}
+
+void fallback() {
+    static int i=0;
+    static unsigned long lasttime=millis();
+    switch (fbsettings[0]) {
+    case 'R':
+	rainbow();
+	break;
+    case 'S':
+    default:
+	sparkle();
+    }
+    i=i+1;
+    if (i>=100) {
+	unsigned long now=millis();
+	float freq=100/((now-lasttime)/1000.0);
+	Serial.print("rate=");
+	Serial.print(freq);
+	Serial.print(", settings=");
+	Serial.println(fbsettings);
+	if (0) {
+	    for (int j=0;j<10;j++) {
+		int x = getIntSetting(j,-1);
+		Serial.print("arg[");
+		Serial.print(j);
+		Serial.print("]=");
+		Serial.println(x);
+		if (x<0)
+		    break;
+	    }
+	}
+
+	i=0;
+	lasttime=now;
+    }
 }
 
 void show() {
