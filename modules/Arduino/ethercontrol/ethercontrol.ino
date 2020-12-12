@@ -15,7 +15,7 @@ long nrcvd;
 unsigned long lastReceived;   // Time in millis() of last received command
 
 void setup() {
-  int i;
+  unsigned int i;
 
   strip.init();
   // Update the strip, to start they are all 'off'
@@ -370,7 +370,7 @@ void rainbow() {
   int g = 63 + 63 * cos(2 * pi * (millis() / gperiod / 1000 ));
   int b = 63 + 63 * cos(2 * pi * (millis() / bperiod / 1000 ));
 
-  for (int index = 0; index < strip.numPixels() - offset; index++) {
+  for (unsigned int index = 0; index < strip.numPixels() - offset; index++) {
     strip.setPixelColor(index, strip.getPixelColor(index + offset));
   }
   for (int index = 1; index <= offset; index++)
