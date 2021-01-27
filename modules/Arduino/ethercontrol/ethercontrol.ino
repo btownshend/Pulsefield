@@ -1,5 +1,5 @@
 #include <LPD8806multi.h>
-
+#include <EEPROM.h>
 #include <Ethernet.h>
 #include "SPI.h"
 
@@ -13,6 +13,7 @@ EthernetServer server = EthernetServer(port);
 
 long nrcvd;
 unsigned long lastReceived;   // Time in millis() of last received command
+String fbsettings="S20,5,300,310,330";
 
 void setup() {
   unsigned int i;
@@ -92,6 +93,15 @@ void setup() {
   Serial.print("Have ");
   Serial.print((int)strip.numPixels());
   Serial.println(" leds");
+
+  // Load fbsettings
+  fbsettings="";
+  for (int i=0;i<100;i++) {
+      uint8_t x=EEPROM.read(i);
+      if (x==0)
+	  break;
+      fbsettings+=char(x);
+  }
 }
 
 
@@ -116,8 +126,6 @@ uint8_t ecSocket(EthernetClient *client)
   // KLUDGE-Read value of sock from private data in EthernetClient
   return ((uint8_t *)client)[2];
 }
-
-String fbsettings;
 
 void loop() {
   EthernetClient client = server.available();
@@ -294,9 +302,10 @@ void loop() {
       case '$':
 	  // Set fallback mode and parameters
 	  fbsettings="";
-	  for (int i=0;i<80;i++) {
+	  for (uint8_t i=0;i<80;i++) {
 	      unsigned int x=client.read();
 	      nrcvd++;
+	      EEPROM.write(i,x);
 	      if (x==0 || x=='\n' || x=='\r')
 		  break;
 	      fbsettings+=char(x);
