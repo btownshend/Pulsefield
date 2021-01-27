@@ -39,10 +39,9 @@ public class LEDs extends Thread {
 	int bgMode;
 	Map<String, Float> parameters;
 	private int fgMode;
-	private String fgModeNames[]={"inverse"};
-	private String bgModeNames[]={"pulsebow","stripid","rainbow","blank","white"};
-	
-	
+	private String fgModeNames[] = { "inverse" , "off" };
+	private String bgModeNames[] = { "pulsebow", "stripid", "rainbow", "sparkle", "blank", "white" };
+
 	public LEDs(String host, int port) {
 		parameters = new HashMap<String, Float>();
 		setPPeriod(0.5f);
@@ -55,16 +54,19 @@ public class LEDs extends Thread {
 		syncCounter = 0;
 		bgMode = 0;
 		// State of each LED in arduino
-		final int leadSkip=2;  // Number to skip at physical beginning of each strip
-		final int tailSkip=2;  // Number to skip at physical end of each strip
-		//final int order[]={1,2,3,4,-5,-6,-7,-8};  // Order of strips going CW (-ve = reversed)
-		final int order[]={8,7,6,5,-4,-3,-2,-1};  // Order of strips going CW (-ve = reversed)
-		final float initAngle=267;   // Angle of first strip, first active LED in world coords
 		physleds = new int[nphys];
 		for (int i = 0; i < physleds.length; i++)
 			physleds[i] = -1;
 		// Ordering of LEDS; physical LED p -> ledOrder[p] logical LED; ledOrder[0]==-1
 		// for unused LEDs
+		final int leadSkip = 0; // 2; // Number to skip at physical beginning of each strip
+		final int tailSkip = 0; // 2; // Number to skip at physical end of each strip
+		// final int order[]={1,2,3,4,-5,-6,-7,-8}; // Order of strips going CW (-ve =
+		// reversed)
+		// final int order[]={8,7,6,5,-4,-3,-2,-1}; // Order of strips going CW (-ve =
+		// reversed)
+		final int order[] = { 4, 6, 5, 3, 7, 2, 1, 8 }; // Order of strips going CW (-ve = reversed)
+		final float initAngle = 0; // 267; // Angle of first strip, first active LED in world coords
 		final int nLogical = nstrip * (ledperstrip - leadSkip - tailSkip);
 		final int offset = (int) (initAngle / 360 * nLogical + 0.5);
 		ledOrder = new int[nphys];
@@ -187,6 +189,7 @@ public class LEDs extends Thread {
 		int nattempts = 50;
 		// if (lastSyncReceived==syncCounter)
 		// sendsync(); // Keep an extra sync pending
+		System.out.print("S");
 		while (lastSyncReceived != syncCounter && nattempts-- > 0) {
 			keepalive();
 			try {
@@ -214,7 +217,9 @@ public class LEDs extends Thread {
 			} catch (InterruptedException e) {
 				; // ignore
 			}
+			System.out.print(".");
 		}
+		System.out.println("!");
 	}
 
 	byte[] makeFUpdate(int pos, int nsend, int newPhys[]) {
@@ -299,9 +304,14 @@ public class LEDs extends Thread {
 			}
 			// echotest();
 			// echotest();
+			logger.info("bg");
 			bg();
+			logger.info("fg");
 			fg();
+			logger.info("update");
 			update();
+			logger.info("done");
+
 
 			long finish = System.nanoTime();
 			float time = (finish - start) / 1000000000f; // Elapsed in sec
@@ -351,9 +361,12 @@ public class LEDs extends Thread {
 			rainbow();
 			break;
 		case 3:
-			setall(0);
+			sparkle();
 			break;
 		case 4:
+			setall(0);
+			break;
+		case 5:
 			setall(31);
 			break;
 		default:
@@ -449,6 +462,39 @@ public class LEDs extends Thread {
 		logger.info("Last LED=" + leds[numLED() - 1]);
 	}
 
+	static int col = 0x7f0000;
+
+	void sparkle() {
+		final float pperiod = parameters.getOrDefault("pperiod", 5.0f); // Period of pulsing (in seconds)
+		final float cperiod = parameters.getOrDefault("cperiod", 20.0f); // Period of color rotation
+		final float pspatial = parameters.getOrDefault("pspatial", 250.0f); // Spatial period of pulsing
+		final float cspatial = parameters.getOrDefault("cspatial", 20000.0f); // Spatial period of color
+
+		
+		final float meanon = cperiod;
+		final float oncycles = pperiod+1;
+		final float poff = 1/oncycles;
+		final float pon = poff * meanon/numLED();
+		int non=0;
+		int noff=0;
+		
+		for (int i = 0; i < numLED(); i++)
+			if (leds[i] == 0) {
+				if (Math.random() < pon) {
+					leds[i] = col;
+					non++;
+				}
+			} else if (Math.random() < poff) {
+				leds[i] = 0;
+				noff++;
+			}
+		int total=0;
+		for (int i=0;i<numLED();i++)
+			total=total+(leds[i]!=0?1:0);
+		
+		logger.info("sparkle turned on "+non+" and turned off "+noff+"; total="+total);
+	}
+
 	void echotest() {
 		final int ndata = 10;
 		byte data[] = new byte[ndata + 3];
@@ -508,6 +554,8 @@ public class LEDs extends Thread {
 					}
 				}
 			}
+			break;
+		case 1: // off
 			break;
 		default:
 			logger.warning("Bad fgMode: " + fgMode);
