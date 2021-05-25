@@ -65,8 +65,13 @@ void setup() {
 
   // Setup ethernet
   // NOTE: 3/11/13 - these were set to 192.168.3.* for use with switch, etc
+  //IPAddress ip(192, 168, 0, 71);
+  //IPAddress gateway(192, 168, 0, 1);
+
+  // Settings if behind the BroTrend AC1200 WiFi Extender
+  // IPAddress ip(192, 168, 2, 70);
   IPAddress ip(192, 168, 0, 70);
-  IPAddress gateway(192, 168, 0, 1);
+  IPAddress gateway(192, 168, 2, 1);
   IPAddress subnet(255, 255, 255, 0);
 
   Ethernet.begin(mac, ip, gateway, subnet);
@@ -139,7 +144,7 @@ void loop() {
       // Get a command from host
       int cmd = client.read();
       lastReceived = millis(); // Time of last received byte
-      Serial.print((char)cmd);
+      //      Serial.print((char)cmd);
       nrcvd++;
       switch (cmd) {
         case 'S':  // Set
